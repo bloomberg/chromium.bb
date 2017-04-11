@@ -7,6 +7,7 @@
 
 import argparse
 import calendar
+import collections
 import datetime
 import gzip
 import logging
@@ -34,9 +35,9 @@ def _OpenMaybeGz(path, mode=None):
   return open(path, mode or 'r')
 
 
-def _UnmangleRemainingSymbols(symbol_group, tool_prefix):
+def _UnmangleRemainingSymbols(symbols, tool_prefix):
   """Uses c++filt to unmangle any symbols that need it."""
-  to_process = [s for s in symbol_group if s.name.startswith('_Z')]
+  to_process = [s for s in symbols if s.name.startswith('_Z')]
   if not to_process:
     return
 
@@ -50,7 +51,7 @@ def _UnmangleRemainingSymbols(symbol_group, tool_prefix):
     to_process[i].name = line
 
 
-def _NormalizeNames(symbol_group):
+def _NormalizeNames(symbols):
   """Ensures that all names are formatted in a useful way.
 
   This includes:
@@ -60,9 +61,9 @@ def _NormalizeNames(symbol_group):
     - Moving "vtable for" and the like to be suffixes rather than prefixes.
   """
   found_prefixes = set()
-  for symbol in symbol_group:
+  for symbol in symbols:
     if symbol.name.startswith('*'):
-      # See comment in _RemoveDuplicatesAndCalculatePadding() about when this
+      # See comment in _CalculatePadding() about when this
       # can happen.
       continue
 
@@ -103,9 +104,9 @@ def _NormalizeNames(symbol_group):
   logging.debug('Found name prefixes of: %r', found_prefixes)
 
 
-def _NormalizeObjectPaths(symbol_group):
+def _NormalizeObjectPaths(symbols):
   """Ensures that all paths are formatted in a useful way."""
-  for symbol in symbol_group:
+  for symbol in symbols:
     path = symbol.object_path
     if path.startswith('obj/'):
       # Convert obj/third_party/... -> third_party/...
@@ -130,7 +131,7 @@ def _NormalizeSourcePath(path):
   return path
 
 
-def _ExtractSourcePaths(symbol_group, output_directory):
+def _ExtractSourcePaths(symbols, output_directory):
   """Fills in the .source_path attribute of all symbols.
 
   Returns True if source paths were found.
@@ -138,7 +139,7 @@ def _ExtractSourcePaths(symbol_group, output_directory):
   all_found = True
   mapper = ninja_parser.SourceFileMapper(output_directory)
 
-  for symbol in symbol_group:
+  for symbol in symbols:
     object_path = symbol.object_path
     if symbol.source_path or not object_path:
       continue
@@ -154,15 +155,14 @@ def _ExtractSourcePaths(symbol_group, output_directory):
   return all_found
 
 
-def _RemoveDuplicatesAndCalculatePadding(symbol_group):
-  """Removes symbols at the same address and calculates the |padding| field.
+def _CalculatePadding(symbols):
+  """Populates the |padding| field based on symbol addresses.
 
   Symbols must already be sorted by |address|.
   """
-  to_remove = []
   seen_sections = []
-  for i, symbol in enumerate(symbol_group[1:]):
-    prev_symbol = symbol_group[i]
+  for i, symbol in enumerate(symbols[1:]):
+    prev_symbol = symbols[i]
     if prev_symbol.section_name != symbol.section_name:
       assert symbol.section_name not in seen_sections, (
           'Input symbols must be sorted by section, then address.')
@@ -170,12 +170,10 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
       continue
     if symbol.address <= 0 or prev_symbol.address <= 0:
       continue
-    # Fold symbols that are at the same address (happens in nm output).
+    # Padding-only symbols happen for ** symbol gaps.
     prev_is_padding_only = prev_symbol.size_without_padding == 0
     if symbol.address == prev_symbol.address and not prev_is_padding_only:
-      symbol.size = max(prev_symbol.size, symbol.size)
-      to_remove.add(symbol)
-      continue
+      assert False, 'Found duplicate symbols:\n%r\n%r' % (prev_symbol, symbol)
     # Even with symbols at the same address removed, overlaps can still
     # happen. In this case, padding will be negative (and this is fine).
     padding = symbol.address - prev_symbol.end_address
@@ -200,62 +198,163 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
     assert symbol.size >= 0, (
         'Symbol has negative size (likely not sorted propertly): '
         '%r\nprev symbol: %r' % (symbol, prev_symbol))
-  # Map files have no overlaps, so worth special-casing the no-op case.
-  if to_remove:
-    logging.info('Removing %d overlapping symbols', len(to_remove))
-    symbol_group -= models.SymbolGroup(to_remove)
 
 
-def Analyze(path, lazy_paths=None):
-  """Returns a SizeInfo for the given |path|.
+def _ClusterSymbols(symbols):
+  """Returns a new list of symbols with some symbols moved into groups.
 
-  Args:
-    path: Can be a .size file, or a .map(.gz). If the latter, then lazy_paths
-        must be provided as well.
+  Groups include:
+   * Symbols that have [clone] in their name (created by compiler optimization).
+   * Star symbols (such as "** merge strings", and "** symbol gap")
   """
-  if path.endswith('.size'):
-    logging.debug('Loading results from: %s', path)
-    size_info = file_format.LoadSizeInfo(path)
-    # Recompute derived values (padding and function names).
-    logging.info('Calculating padding')
-    _RemoveDuplicatesAndCalculatePadding(size_info.symbols)
-    logging.info('Deriving signatures')
-    # Re-parse out function parameters.
-    _NormalizeNames(size_info.symbols)
-    return size_info
-  elif not path.endswith('.map') and not path.endswith('.map.gz'):
-    raise Exception('Expected input to be a .map or a .size')
-  else:
+  # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
+  # Example name suffixes:
+  #     [clone .part.322]
+  #     [clone .isra.322]
+  #     [clone .constprop.1064]
+
+  # Step 1: Create name map, find clones, collect star syms into replacements.
+  logging.debug('Creating name -> symbol map')
+  clone_indices = []
+  indices_by_full_name = {}
+  # (name, full_name) -> [(index, sym),...]
+  replacements_by_name = collections.defaultdict(list)
+  for i, symbol in enumerate(symbols):
+    if symbol.name.startswith('**'):
+      # "symbol gap 3" -> "symbol gaps"
+      name = re.sub(r'\s+\d+$', 's', symbol.name)
+      replacements_by_name[(name, None)].append((i, symbol))
+    elif symbol.full_name:
+      if symbol.full_name.endswith(']') and ' [clone ' in symbol.full_name:
+        clone_indices.append(i)
+      else:
+        indices_by_full_name[symbol.full_name] = i
+
+  # Step 2: Collect same-named clone symbols.
+  logging.debug('Grouping all clones')
+  group_names_by_index = {}
+  for i in clone_indices:
+    symbol = symbols[i]
+    # Multiple attributes could exist, so search from left-to-right.
+    stripped_name = symbol.name[:symbol.name.index(' [clone ')]
+    stripped_full_name = symbol.full_name[:symbol.full_name.index(' [clone ')]
+    name_tup = (stripped_name, stripped_full_name)
+    replacement_list = replacements_by_name[name_tup]
+
+    if not replacement_list:
+      # First occurance, check for non-clone symbol.
+      non_clone_idx = indices_by_full_name.get(stripped_name)
+      if non_clone_idx is not None:
+        non_clone_symbol = symbols[non_clone_idx]
+        replacement_list.append((non_clone_idx, non_clone_symbol))
+        group_names_by_index[non_clone_idx] = stripped_name
+
+    replacement_list.append((i, symbol))
+    group_names_by_index[i] = stripped_name
+
+  # Step 3: Undo clustering when length=1.
+  # Removing these groups means Diff() logic must know about [clone] suffix.
+  to_clear = []
+  for name_tup, replacement_list in replacements_by_name.iteritems():
+    if len(replacement_list) == 1:
+      to_clear.append(name_tup)
+  for name_tup in to_clear:
+    del replacements_by_name[name_tup]
+
+  # Step 4: Replace first symbol from each cluster with a SymbolGroup.
+  before_symbol_count = sum(len(x) for x in replacements_by_name.itervalues())
+  logging.debug('Creating %d symbol groups from %d symbols. %d clones had only '
+                'one symbol.', len(replacements_by_name), before_symbol_count,
+                len(to_clear))
+
+  len_delta = len(replacements_by_name) - before_symbol_count
+  grouped_symbols = [None] * (len(symbols) + len_delta)
+  dest_index = 0
+  src_index = 0
+  seen_names = set()
+  replacement_names_by_index = {}
+  for name_tup, replacement_list in replacements_by_name.iteritems():
+    for tup in replacement_list:
+      replacement_names_by_index[tup[0]] = name_tup
+
+  sorted_items = replacement_names_by_index.items()
+  sorted_items.sort(key=lambda tup: tup[0])
+  for index, name_tup in sorted_items:
+    count = index - src_index
+    grouped_symbols[dest_index:dest_index + count] = (
+        symbols[src_index:src_index + count])
+    src_index = index + 1
+    dest_index += count
+    if name_tup not in seen_names:
+      seen_names.add(name_tup)
+      group_symbols = [tup[1] for tup in replacements_by_name[name_tup]]
+      grouped_symbols[dest_index] = models.SymbolGroup(
+          group_symbols, name=name_tup[0], full_name=name_tup[1],
+          section_name=group_symbols[0].section_name)
+      dest_index += 1
+
+  assert len(grouped_symbols[dest_index:None]) == len(symbols[src_index:None])
+  grouped_symbols[dest_index:None] = symbols[src_index:None]
+  logging.debug('Finished making groups.')
+  return grouped_symbols
+
+
+def LoadAndPostProcessSizeInfo(path):
+  """Returns a SizeInfo for the given |path|."""
+  logging.debug('Loading results from: %s', path)
+  size_info = file_format.LoadSizeInfo(path)
+  _PostProcessSizeInfo(size_info)
+  return size_info
+
+
+def _PostProcessSizeInfo(size_info):
+  logging.info('Normalizing symbol names')
+  _NormalizeNames(size_info.raw_symbols)
+  logging.info('Calculating padding')
+  _CalculatePadding(size_info.raw_symbols)
+  logging.info('Grouping decomposed functions')
+  size_info.symbols = models.SymbolGroup(
+      _ClusterSymbols(size_info.raw_symbols))
+  logging.info('Processed %d symbols', len(size_info.raw_symbols))
+
+
+def CreateSizeInfo(map_path, lazy_paths=None, no_source_paths=False,
+                   raw_only=False):
+  """Creates a SizeInfo from the given map file."""
+  if not no_source_paths:
     # output_directory needed for source file information.
     lazy_paths.VerifyOutputDirectory()
-    # tool_prefix needed for c++filt.
-    lazy_paths.VerifyToolPrefix()
+  # tool_prefix needed for c++filt.
+  lazy_paths.VerifyToolPrefix()
 
-    with _OpenMaybeGz(path) as map_file:
-      section_sizes, symbols = linker_map_parser.MapFileParser().Parse(map_file)
-    size_info = models.SizeInfo(section_sizes, models.SymbolGroup(symbols))
+  with _OpenMaybeGz(map_path) as map_file:
+    section_sizes, raw_symbols = (
+        linker_map_parser.MapFileParser().Parse(map_file))
 
-    # Map file for some reason doesn't unmangle all names.
-    logging.info('Calculating padding')
-    _RemoveDuplicatesAndCalculatePadding(size_info.symbols)
-    # Unmangle prints its own log statement.
-    _UnmangleRemainingSymbols(size_info.symbols, lazy_paths.tool_prefix)
+  if not no_source_paths:
     logging.info('Extracting source paths from .ninja files')
-    all_found = _ExtractSourcePaths(size_info.symbols,
-                                    lazy_paths.output_directory)
+    all_found = _ExtractSourcePaths(raw_symbols, lazy_paths.output_directory)
     assert all_found, (
         'One or more source file paths could not be found. Likely caused by '
         '.ninja files being generated at a different time than the .map file.')
-    # Resolve paths prints its own log statement.
-    logging.info('Normalizing names')
-    _NormalizeNames(size_info.symbols)
-    logging.info('Normalizing paths')
-    _NormalizeObjectPaths(size_info.symbols)
+  # Map file for some reason doesn't unmangle all names.
+  # Unmangle prints its own log statement.
+  _UnmangleRemainingSymbols(raw_symbols, lazy_paths.tool_prefix)
+  logging.info('Normalizing object paths')
+  _NormalizeObjectPaths(raw_symbols)
+  size_info = models.SizeInfo(section_sizes, raw_symbols)
 
-  if logging.getLogger().isEnabledFor(logging.INFO):
+  # Name normalization not strictly required, but makes for smaller files.
+  if raw_only:
+    logging.info('Normalizing symbol names')
+    _NormalizeNames(size_info.raw_symbols)
+  else:
+    _PostProcessSizeInfo(size_info)
+
+  if logging.getLogger().isEnabledFor(logging.DEBUG):
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.info(line)
-  logging.info('Finished analyzing %d symbols', len(size_info.symbols))
+  logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
   return size_info
 
 
@@ -303,22 +402,28 @@ def _ParseGnArgs(args_path):
 
 def main(argv):
   parser = argparse.ArgumentParser(argv)
-  parser.add_argument('elf_file', help='Path to input ELF file.')
-  parser.add_argument('output_file', help='Path to output .size(.gz) file.')
+  parser.add_argument('--elf-file', required=True,
+                      help='Path to input ELF file. Currently used for '
+                           'capturing metadata. Pass "" to skip metadata '
+                           'collection.')
   parser.add_argument('--map-file',
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?')
+  parser.add_argument('--output-file', required=True,
+                      help='Path to output .size file.')
+  parser.add_argument('--no-source-paths', action='store_true',
+                      help='Do not use .ninja files to map '
+                           'object_path -> source_path')
   paths.AddOptions(parser)
   args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
   if not args.output_file.endswith('.size'):
     parser.error('output_file must end with .size')
 
   if args.map_file:
+    if (not args.map_file.endswith('.map')
+        and not args.map_file.endswith('.map.gz')):
+      parser.error('Expected --map-file to end with .map or .map.gz')
     map_file_path = args.map_file
-  elif args.elf_file.endswith('.size'):
-    # Allow a .size file to be passed as input as well. Useful for measuring
-    # serialization speed.
-    pass
   else:
     map_file_path = args.elf_file + '.map'
     if not os.path.exists(map_file_path):
@@ -328,7 +433,7 @@ def main(argv):
 
   lazy_paths = paths.LazyPaths(args=args, input_file=args.elf_file)
   metadata = None
-  if args.elf_file and not args.elf_file.endswith('.size'):
+  if args.elf_file:
     logging.debug('Constructing metadata')
     git_rev = _DetectGitRevision(os.path.dirname(args.elf_file))
     build_id = BuildIdFromElf(args.elf_file, lazy_paths.tool_prefix)
@@ -349,17 +454,18 @@ def main(argv):
         models.METADATA_GN_ARGS: gn_args,
     }
 
-  size_info = Analyze(map_file_path, lazy_paths)
+  size_info = CreateSizeInfo(map_file_path, lazy_paths,
+                             no_source_paths=args.no_source_paths,
+                             raw_only=True)
 
   if metadata:
+    size_info.metadata = metadata
     logging.debug('Validating section sizes')
     elf_section_sizes = _SectionSizesFromElf(args.elf_file,
                                              lazy_paths.tool_prefix)
     for k, v in elf_section_sizes.iteritems():
       assert v == size_info.section_sizes.get(k), (
           'ELF file and .map file do not match.')
-
-    size_info.metadata = metadata
 
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))

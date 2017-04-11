@@ -29,9 +29,20 @@ def _PrettySize(size):
   return '%.1fmb' % size
 
 
+def _DiffPrefix(diff, sym):
+  if diff.IsAdded(sym):
+    return '+ '
+  if diff.IsRemoved(sym):
+    return '- '
+  if sym.size:
+    return '~ '
+  return '= '
+
+
 class Describer(object):
-  def __init__(self, verbose=False):
+  def __init__(self, verbose=False, recursive=False):
     self.verbose = verbose
+    self.recursive = recursive
 
   def _DescribeSectionSizes(self, section_sizes):
     relevant_names = models.SECTION_TO_SECTION_NAME.values()
@@ -58,68 +69,76 @@ class Describer(object):
         yield '    {}: {:,} bytes'.format(name, section_sizes[name])
 
   def _DescribeSymbol(self, sym):
-    # SymbolGroups are passed here when we don't want to expand them.
     if sym.IsGroup():
-      if self.verbose:
-        yield ('{} {:<8} {} (count={})  padding={}  '
-               'size_without_padding={}').format(
-                    sym.section, sym.size, sym.name, len(sym), sym.padding,
-                    sym.size_without_padding)
-      else:
-        yield '{} {:<8} {} (count={})'.format(sym.section, sym.size, sym.name,
-                                              len(sym))
-      return
-
+      address = 'Group'
+    else:
+      address = hex(sym.address)
     if self.verbose:
-      yield '{}@0x{:<8x}  size={}  padding={}  size_without_padding={}'.format(
-          sym.section, sym.address, sym.size, sym.padding,
-          sym.size_without_padding)
+      count_part = '  count=%d' % len(sym) if sym.IsGroup() else ''
+      yield '{}@{:<9s}  size={}  padding={}  size_without_padding={}{}'.format(
+          sym.section, address, sym.size, sym.padding, sym.size_without_padding,
+          count_part)
       yield '    source_path={} \tobject_path={}'.format(
           sym.source_path, sym.object_path)
-      if sym.full_name:
-        yield '    is_anonymous={}  full_name={}'.format(
-            int(sym.is_anonymous), sym.full_name)
       if sym.name:
         yield '    is_anonymous={}  name={}'.format(
             int(sym.is_anonymous), sym.name)
+        if sym.full_name:
+          yield '               full_name={}'.format(sym.full_name)
+      elif sym.full_name:
+        yield '    is_anonymous={}  full_name={}'.format(
+            int(sym.is_anonymous), sym.full_name)
     else:
-      yield '{}@0x{:<8x}  {:<7} {}'.format(
-          sym.section, sym.address, sym.size,
+      yield '{}@{:<9s}  {:<7} {}'.format(
+          sym.section, address, sym.size,
           sym.source_path or sym.object_path or '{no path}')
       if sym.name:
-        yield '    {}'.format(sym.name)
+        count_part = ' (count=%d)' % len(sym) if sym.IsGroup() else ''
+        yield '    {}{}'.format(sym.name, count_part)
 
-  def _DescribeSymbolGroup(self, group, prefix_func=None):
-    total_size = group.size
-    yield 'Showing {:,} symbols with total size: {} bytes'.format(
-        len(group), total_size)
-    code_syms = group.WhereInSection('t')
-    code_size = code_syms.size
-    ro_size = code_syms.Inverted().WhereInSection('r').size
-    yield '.text={:<10} .rodata={:<10} other={:<10} total={}'.format(
-        _PrettySize(code_size), _PrettySize(ro_size),
-        _PrettySize(total_size - code_size - ro_size),
-        _PrettySize(total_size))
-    unique_paths = set(s.object_path for s in group)
-    yield 'Number of object files: {}'.format(len(unique_paths))
-    yield ''
-    yield 'First columns are: running total, type, size'
-
+  def _DescribeSymbolGroupChildren(self, group, indent=0):
     running_total = 0
-    prefix = ''
     sorted_syms = group if group.is_sorted else group.Sorted()
+    is_diff = isinstance(group, models.SymbolDiff)
 
-    prefix = ''
+    indent_prefix = '> ' * indent
+    diff_prefix = ''
     for s in sorted_syms:
       if group.IsBss() or not s.IsBss():
         running_total += s.size
       for l in self._DescribeSymbol(s):
         if l[:4].isspace():
-          yield '{} {}'.format(' ' * (8 + len(prefix)), l)
+          indent_size = 8 + len(indent_prefix) + len(diff_prefix)
+          yield '{} {}'.format(' ' * indent_size, l)
         else:
-          if prefix_func:
-            prefix = prefix_func(s)
-          yield '{}{:8} {}'.format(prefix, running_total, l)
+          if is_diff:
+            diff_prefix = _DiffPrefix(group, s)
+          yield '{}{}{:8} {}'.format(indent_prefix, diff_prefix,
+                                     running_total, l)
+
+      if self.recursive and s.IsGroup():
+        for l in self._DescribeSymbolGroupChildren(s, indent=indent + 1):
+          yield l
+
+  def _DescribeSymbolGroup(self, group):
+    total_size = group.size
+    code_syms = group.WhereInSection('t')
+    code_size = code_syms.size
+    ro_size = code_syms.Inverted().WhereInSection('r').size
+    unique_paths = set(s.object_path for s in group)
+    header_desc = [
+        'Showing {:,} symbols with total size: {} bytes'.format(
+            len(group), total_size),
+        '.text={:<10} .rodata={:<10} other={:<10} total={}'.format(
+            _PrettySize(code_size), _PrettySize(ro_size),
+            _PrettySize(total_size - code_size - ro_size),
+            _PrettySize(total_size)),
+        'Number of object files: {}'.format(len(unique_paths)),
+        '',
+        'First columns are: running total, type, size',
+    ]
+    children_desc = self._DescribeSymbolGroupChildren(group)
+    return itertools.chain(header_desc, children_desc)
 
   def _DescribeSymbolDiff(self, diff):
     header_template = ('{} symbols added (+), {} changed (~), {} removed (-), '
@@ -150,17 +169,8 @@ class Describer(object):
       path_delta_desc.append('Removed files:')
       path_delta_desc.extend('  ' + p for p in sorted(removed_paths))
 
-    def prefix_func(sym):
-      if diff.IsAdded(sym):
-        return '+ '
-      if diff.IsRemoved(sym):
-        return '- '
-      if sym.size:
-        return '~ '
-      return '= '
-
     diff = diff if self.verbose else diff.WhereNotUnchanged()
-    group_desc = self._DescribeSymbolGroup(diff, prefix_func=prefix_func)
+    group_desc = self._DescribeSymbolGroup(diff)
     return itertools.chain(symbol_delta_desc, path_delta_desc, ('',),
                            group_desc)
 
@@ -211,6 +221,7 @@ class Describer(object):
 
 def DescribeSizeInfoCoverage(size_info):
   """Yields lines describing how accurate |size_info| is."""
+  symbols = models.SymbolGroup(size_info.raw_symbols)
   for section in models.SECTION_TO_SECTION_NAME:
     if section == 'd':
       expected_size = sum(v for k, v in size_info.section_sizes.iteritems()
@@ -230,7 +241,7 @@ def DescribeSizeInfoCoverage(size_info):
       return (template % (section, size_percent, actual_size, count,
                           expected_size - actual_size, padding))
 
-    in_section = size_info.symbols.WhereInSection(section)
+    in_section = symbols.WhereInSection(section)
     yield one_stat(in_section)
 
     star_syms = in_section.WhereNameMatches(r'^\*')
@@ -264,8 +275,9 @@ def DescribeMetadata(metadata):
   return sorted('%s=%s' % t for t in display_dict.iteritems())
 
 
-def GenerateLines(obj, verbose=False):
-  return Describer(verbose).GenerateLines(obj)
+def GenerateLines(obj, verbose=False, recursive=False):
+  """Returns an iterable of lines (without \n) that describes |obj|."""
+  return Describer(verbose=verbose, recursive=recursive).GenerateLines(obj)
 
 
 def WriteLines(lines, func):

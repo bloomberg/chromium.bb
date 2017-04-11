@@ -14,7 +14,6 @@ import sys
 
 import helpers
 import map2size
-import paths
 
 
 # Node dictionary keys. These are output in json read by the webapp so
@@ -167,8 +166,7 @@ def _CopyTemplateFiles(dest_dir):
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('input_file',
-                      help='Path to input file. Can be a linker .map file, or '
-                           'a .size file.')
+                      help='Path to input .size file.')
   parser.add_argument('--report-dir', metavar='PATH', required=True,
                       help='Write output to the specified directory. An HTML '
                             'report is generated here.')
@@ -177,11 +175,9 @@ def main(argv):
                            'space)')
   parser.add_argument('--include-symbols', action='store_true',
                       help='Use per-symbol granularity rather than per-file.')
-  paths.AddOptions(parser)
   args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
 
-  lazy_paths = paths.LazyPaths(args=args, input_file=args.input_file)
-  size_info = map2size.Analyze(args.input_file, lazy_paths)
+  size_info = map2size.LoadAndPostProcessSizeInfo(args.input_file)
   symbols = size_info.symbols
   if not args.include_bss:
     symbols = symbols.WhereInSection('b').Inverted()

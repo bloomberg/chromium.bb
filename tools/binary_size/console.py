@@ -93,17 +93,19 @@ class _Session(object):
         self._variables['size_info%d' % (i + 1)] = size_info
         self._variables['symbols%d' % (i + 1)] = size_info.symbols
 
-  def _PrintFunc(self, obj, verbose=False, use_pager=None, to_file=None):
+  def _PrintFunc(self, obj, verbose=False, recursive=False, use_pager=None,
+                 to_file=None):
     """Prints out the given Symbol / SymbolGroup / SymbolDiff / SizeInfo.
 
     Args:
       obj: The object to be printed.
       verbose: Show more detailed output.
+      recursive: Print children of nested SymbolGroups.
       use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
-    lines = describe.GenerateLines(obj, verbose=verbose)
+    lines = describe.GenerateLines(obj, verbose=verbose, recursive=recursive)
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
   def _ElfPathForSymbol(self, symbol):
@@ -245,7 +247,7 @@ def main(argv):
     if not path.endswith('.size'):
       parser.error('All inputs must end with ".size"')
 
-  size_infos = [map2size.Analyze(p) for p in args.inputs]
+  size_infos = [map2size.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
   lazy_paths = paths.LazyPaths(args=args, input_file=args.inputs[0])
   session = _Session(size_infos, lazy_paths)
 

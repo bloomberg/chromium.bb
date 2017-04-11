@@ -51,19 +51,26 @@ class SizeInfo(object):
 
   Fields:
     section_sizes: A dict of section_name -> size.
-    symbols: A SymbolGroup with all symbols in it.
+    raw_symbols: A flat list of all symbols.
+    symbols: A SymbolGroup containing raw_symbols, but with some Symbols grouped
+        into sub-SymbolGroups.
     metadata: A dict.
   """
   __slots__ = (
       'section_sizes',
+      'raw_symbols',
       'symbols',
       'metadata',
   )
 
   """Root size information."""
-  def __init__(self, section_sizes, symbols, metadata=None):
+  def __init__(self, section_sizes, raw_symbols, grouped_symbols=None,
+               metadata=None):
     self.section_sizes = section_sizes  # E.g. {'.text': 0}
-    self.symbols = symbols  # List of symbols sorted by address per-section.
+    # List of symbols sorted by address per-section.
+    self.raw_symbols = raw_symbols
+    # Root SymbolGroup. Cloned symbols grouped together within sub-SymbolGroups.
+    self.symbols = grouped_symbols
     self.metadata = metadata or {}
 
 
@@ -130,7 +137,12 @@ class BaseSymbol(object):
     Keys are not guaranteed to be unique within a SymbolGroup. For example, it
     is common to have multiple "** merge strings" symbols, which will have a
     common key."""
-    return (self.section_name, self.full_name or self.name)
+    stripped_full_name = self.full_name
+    if stripped_full_name:
+      clone_idx = stripped_full_name.find(' [clone ')
+      if clone_idx != -1:
+        stripped_full_name = stripped_full_name[:clone_idx]
+    return (self.section_name, stripped_full_name or self.name)
 
 
 class Symbol(BaseSymbol):
@@ -193,18 +205,20 @@ class SymbolGroup(BaseSymbol):
       '_size',
       '_symbols',
       '_filtered_symbols',
+      'full_name',
       'name',
       'section_name',
       'is_sorted',
   )
 
   def __init__(self, symbols, filtered_symbols=None, name=None,
-               section_name=None, is_sorted=False):
+               full_name=None, section_name=None, is_sorted=False):
     self._padding = None
     self._size = None
     self._symbols = symbols
     self._filtered_symbols = filtered_symbols or []
     self.name = name or ''
+    self.full_name = full_name
     self.section_name = section_name or '.*'
     self.is_sorted = is_sorted
 
@@ -248,23 +262,24 @@ class SymbolGroup(BaseSymbol):
 
   @property
   def address(self):
-    return 0
-
-  @property
-  def full_name(self):
-    return None
+    first = self._symbols[0].address
+    return first if all(s.address == first for s in self._symbols) else 0
 
   @property
   def is_anonymous(self):
-    return False
+    first = self._symbols[0].is_anonymous
+    return first if all(
+        s.is_anonymous == first for s in self._symbols) else False
 
   @property
   def object_path(self):
-    return None
+    first = self._symbols[0].object_path
+    return first if all(s.object_path == first for s in self._symbols) else None
 
   @property
   def source_path(self):
-    return None
+    first = self._symbols[0].source_path
+    return first if all(s.source_path == first for s in self._symbols) else None
 
   @property
   def size(self):
@@ -510,14 +525,16 @@ class SymbolDiff(SymbolGroup):
       '_removed_ids',
   )
 
-  def __init__(self, added, removed, similar):
+  def __init__(self, added, removed, similar, name=None, full_name=None,
+               section_name=None):
     self._added_ids = set(id(s) for s in added)
     self._removed_ids = set(id(s) for s in removed)
     symbols = []
     symbols.extend(added)
     symbols.extend(removed)
     symbols.extend(similar)
-    super(SymbolDiff, self).__init__(symbols)
+    super(SymbolDiff, self).__init__(symbols, name=name, full_name=full_name,
+                                     section_name=section_name)
 
   def __repr__(self):
     return '%s(%d added, %d removed, %d changed, %d unchanged, size=%d)' % (
@@ -588,46 +605,73 @@ def Diff(new, old):
     return SizeInfoDiff(section_sizes, symbol_diff, old.metadata, new.metadata)
 
   assert isinstance(new, SymbolGroup) and isinstance(old, SymbolGroup)
+  return _DiffSymbols(new, old)
+
+
+def _NegateAll(symbols):
+  ret = []
+  for symbol in symbols:
+    if symbol.IsGroup():
+      duped = SymbolDiff([], _NegateAll(symbol), [], name=symbol.name,
+                         full_name=symbol.full_name,
+                         section_name=symbol.section_name)
+    else:
+      duped = copy.copy(symbol)
+      duped.size = -duped.size
+      duped.padding = -duped.padding
+    ret.append(duped)
+  return ret
+
+
+def _DiffSymbols(new_group, old_group):
   symbols_by_key = collections.defaultdict(list)
-  for s in old:
+  for s in old_group:
     symbols_by_key[s._Key()].append(s)
 
   added = []
-  removed = []
   similar = []
   # For similar symbols, padding is zeroed out. In order to not lose the
   # information entirely, store it in aggregate.
   padding_by_section_name = collections.defaultdict(int)
-  for new_sym in new:
+  for new_sym in new_group:
     matching_syms = symbols_by_key.get(new_sym._Key())
     if matching_syms:
       old_sym = matching_syms.pop(0)
-      # More stable/useful to compare size without padding.
-      size_diff = (new_sym.size_without_padding -
-                   old_sym.size_without_padding)
-      merged_sym = Symbol(new_sym.section_name, size_diff,
-                          address=new_sym.address, name=new_sym.name,
-                          source_path=new_sym.source_path,
-                          object_path=new_sym.object_path,
-                          full_name=new_sym.full_name,
-                          is_anonymous=new_sym.is_anonymous)
+      if old_sym.IsGroup() and new_sym.IsGroup():
+        merged_sym = _DiffSymbols(new_sym, old_sym)
+      else:
+        size_diff = new_sym.size_without_padding - old_sym.size_without_padding
+        merged_sym = Symbol(new_sym.section_name, size_diff,
+                            address=new_sym.address, name=new_sym.name,
+                            source_path=new_sym.source_path,
+                            object_path=new_sym.object_path,
+                            full_name=new_sym.full_name,
+                            is_anonymous=new_sym.is_anonymous)
+
+        # Diffs are more stable when comparing size without padding, except when
+        # the symbol is a padding-only symbol.
+        if new_sym.size_without_padding == 0 and size_diff == 0:
+          merged_sym.padding = new_sym.padding - old_sym.padding
+        else:
+          padding_by_section_name[new_sym.section_name] += (
+              new_sym.padding - old_sym.padding)
+
       similar.append(merged_sym)
-      padding_by_section_name[new_sym.section_name] += (
-          new_sym.padding - old_sym.padding)
     else:
       added.append(new_sym)
 
+  removed = []
   for remaining_syms in symbols_by_key.itervalues():
-    for old_sym in remaining_syms:
-      duped = copy.copy(old_sym)
-      duped.size = -duped.size
-      duped.padding = -duped.padding
-      removed.append(duped)
+    if remaining_syms:
+      removed.extend(_NegateAll(remaining_syms))
 
   for section_name, padding in padding_by_section_name.iteritems():
-    similar.append(Symbol(section_name, padding,
-                          name="** aggregate padding of diff'ed symbols"))
-  return SymbolDiff(added, removed, similar)
+    if padding != 0:
+      similar.append(Symbol(section_name, padding,
+                            name="** aggregate padding of diff'ed symbols"))
+  return SymbolDiff(added, removed, similar, name=new_group.name,
+                    full_name=new_group.full_name,
+                    section_name=new_group.section_name)
 
 
 def _ExtractPrefixBeforeSeparator(string, separator, count=1):

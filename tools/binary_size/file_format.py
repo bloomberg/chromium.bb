@@ -44,7 +44,7 @@ def _SaveSizeInfoToFile(size_info, file_obj):
   # Store a single copy of all paths and have them referenced by index.
   # Using an OrderedDict makes the indices more repetitive (better compression).
   path_tuples = collections.OrderedDict.fromkeys(
-      (s.object_path, s.source_path) for s in size_info.symbols)
+      (s.object_path, s.source_path) for s in size_info.raw_symbols)
   for i, key in enumerate(path_tuples):
     path_tuples[key] = i
   file_obj.write('%d\n' % len(path_tuples))
@@ -52,7 +52,8 @@ def _SaveSizeInfoToFile(size_info, file_obj):
   _LogSize(file_obj, 'paths')  # For libchrome, adds 200kb.
 
   # Symbol counts by section.
-  by_section = size_info.symbols.GroupBySectionName().SortedByName()
+  by_section = models.SymbolGroup(size_info.raw_symbols)
+  by_section = by_section.GroupBySectionName().SortedByName()
   file_obj.write('%s\n' % '\t'.join(g.name for g in by_section))
   file_obj.write('%s\n' % '\t'.join(str(len(g)) for g in by_section))
 
@@ -127,7 +128,7 @@ def _LoadSizeInfoFromFile(file_obj):
   sizes = read_numeric(delta=False)
   path_indices = read_numeric(delta=True)
 
-  symbol_list = [None] * sum(section_counts)
+  raw_symbols = [None] * sum(section_counts)
   symbol_idx = 0
   for section_index, cur_section_name in enumerate(section_names):
     for i in xrange(section_counts[section_index]):
@@ -146,11 +147,10 @@ def _LoadSizeInfoFromFile(file_obj):
       new_sym.is_anonymous = is_anonymous
       new_sym.padding = 0  # Derived
       new_sym.full_name = None  # Derived
-      symbol_list[symbol_idx] = new_sym
+      raw_symbols[symbol_idx] = new_sym
       symbol_idx += 1
 
-  symbols = models.SymbolGroup(symbol_list)
-  return models.SizeInfo(section_sizes, symbols, metadata=metadata)
+  return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata)
 
 
 def SaveSizeInfo(size_info, path):

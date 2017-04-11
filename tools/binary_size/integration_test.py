@@ -63,18 +63,37 @@ class IntegrationTest(unittest.TestCase):
   def _CloneSizeInfo(self):
     if not IntegrationTest.size_info:
       lazy_paths = paths.LazyPaths(output_directory=_TEST_DATA_DIR)
-      IntegrationTest.size_info = map2size.Analyze(_TEST_MAP_PATH, lazy_paths)
+      IntegrationTest.size_info = (
+          map2size.CreateSizeInfo(_TEST_MAP_PATH, lazy_paths))
     return copy.deepcopy(IntegrationTest.size_info)
 
   @_CompareWithGolden
   def test_Map2Size(self):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       _RunApp('map2size.py', '--output-directory', _TEST_DATA_DIR,
-              '--map-file', _TEST_MAP_PATH, '', temp_file.name)
-      size_info = map2size.Analyze(temp_file.name)
+              '--map-file', _TEST_MAP_PATH, '--elf-file', '',
+              '--output-file', temp_file.name)
+      size_info = map2size.LoadAndPostProcessSizeInfo(temp_file.name)
+    # Check that saving & loading is the same as directly parsing the .map.
+    expected_size_info = self._CloneSizeInfo()
+    self.assertEquals(expected_size_info.metadata, size_info.metadata)
+    expected = '\n'.join(describe.GenerateLines(
+        expected_size_info, verbose=True, recursive=True)),
+    actual = '\n'.join(describe.GenerateLines(
+        size_info, verbose=True, recursive=True)),
+    self.assertEquals(expected, actual)
+
     sym_strs = (repr(sym) for sym in size_info.symbols)
     stats = describe.DescribeSizeInfoCoverage(size_info)
     return itertools.chain(stats, sym_strs)
+
+  def test_Map2Size_NoSourcePaths(self):
+    # Just tests that it doesn't crash.
+    with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
+      _RunApp('map2size.py', '--no-source-paths',
+              '--map-file', _TEST_MAP_PATH, '--elf-file', '',
+              '--output-file', temp_file.name)
+      map2size.LoadAndPostProcessSizeInfo(temp_file.name)
 
   @_CompareWithGolden
   def test_ConsoleNullDiff(self):
@@ -94,6 +113,10 @@ class IntegrationTest(unittest.TestCase):
     size_info1.symbols[1].size -= 10
     diff = models.Diff(size_info1, size_info2)
     return describe.GenerateLines(diff, verbose=True)
+
+  @_CompareWithGolden
+  def test_FullDescription(self):
+    return describe.GenerateLines(self._CloneSizeInfo())
 
   @_CompareWithGolden
   def test_SymbolGroupMethods(self):
