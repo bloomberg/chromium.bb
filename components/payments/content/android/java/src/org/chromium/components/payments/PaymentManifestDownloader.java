@@ -79,5 +79,5 @@ public class PaymentManifestDownloader {
     private static native void nativeDownloadPaymentMethodManifest(
             WebContents webContents, URI methodName, ManifestDownloadCallback callback);
     private static native void nativeDownloadWebAppManifest(
-            WebContents webContents, URI methodName, ManifestDownloadCallback callback);
+            WebContents webContents, URI webAppManifestUri, ManifestDownloadCallback callback);
 }

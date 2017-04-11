@@ -41,10 +41,11 @@ class ParseCallback {
             env, web_app_manifest_urls.size());
 
     for (size_t i = 0; i < web_app_manifest_urls.size(); ++i) {
-      DCHECK(Java_PaymentManifestParser_addUri(
+      bool is_valid_uri = Java_PaymentManifestParser_addUri(
           env, juris.obj(), base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(
-              env, web_app_manifest_urls[i].spec())));
+              env, web_app_manifest_urls[i].spec()));
+      DCHECK(is_valid_uri);
     }
 
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.

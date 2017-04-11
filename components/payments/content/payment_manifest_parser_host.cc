@@ -82,9 +82,6 @@ void PaymentManifestParserHost::OnPaymentMethodParse(
     return;
   }
 
-  PaymentMethodCallback callback = std::move(pending_callback_it->second);
-  pending_payment_method_callbacks_.erase(pending_callback_it);
-
   const size_t kMaximumNumberOfWebAppUrls = 100U;
   if (web_app_manifest_urls.size() > kMaximumNumberOfWebAppUrls) {
     // If more than 100 items, then something went wrong in the utility
@@ -101,6 +98,9 @@ void PaymentManifestParserHost::OnPaymentMethodParse(
       return;
     }
   }
+
+  PaymentMethodCallback callback = std::move(pending_callback_it->second);
+  pending_payment_method_callbacks_.erase(pending_callback_it);
 
   // Can trigger synchronous deletion of this object, so can't access any of
   // the member variables after this block.

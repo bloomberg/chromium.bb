@@ -212,6 +212,7 @@ public class PaymentManifestVerifier implements ManifestDownloadCallback, Manife
 
         mPendingWebAppManifestsCount = webAppManifestUris.length;
         for (int i = 0; i < webAppManifestUris.length; i++) {
+            assert webAppManifestUris[i] != null;
             mDownloader.downloadWebAppManifest(webAppManifestUris[i], this);
         }
     }
