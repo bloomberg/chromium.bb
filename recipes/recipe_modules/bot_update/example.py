@@ -44,7 +44,7 @@ def RunSteps(api):
         gerrit_no_reset=gerrit_no_reset,
         gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
   else:
-    api.bot_update.ensure_checkout(
+    bot_update_step = api.bot_update.ensure_checkout(
         no_shallow=no_shallow,
         patch=patch,
         with_branch_heads=with_branch_heads,
@@ -56,6 +56,8 @@ def RunSteps(api):
         suffix=suffix,
         gerrit_no_reset=gerrit_no_reset,
         gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref)
+    if patch:
+      api.bot_update.deapply_patch(bot_update_step)
 
 
 def GenTests(api):

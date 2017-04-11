@@ -319,3 +319,57 @@ class BotUpdateApi(recipe_api.RecipeApi):
             self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))
 
     return step_result
+
+  def _resolve_fixed_revisions(self, bot_update_json):
+    """Set all fixed revisions from the first sync to their respective
+    got_X_revision values.
+
+    If on the first sync, a revision was requested to be HEAD, this avoids
+    using HEAD potentially resolving to a different revision on the second
+    sync. Instead, we sync explicitly to whatever was checked out the first
+    time.
+
+    Example (chromium trybot used with v8 patch):
+
+    First sync was called with
+    bot_update.py --revision src@abc --revision src/v8@HEAD
+    Fixed revisions are: src, src/v8
+    Got_revision_mapping: src->got_revision, src/v8->got_v8_revision
+    got_revision = abc, got_v8_revision = deadbeef
+    Second sync will be called with
+    bot_update.py --revision src@abc --revision src/v8@deadbeef
+
+    Example (chromium trybot used with chromium DEPS change, changing v8 from
+    "v8_before" to "v8_after"):
+
+    First sync was called with
+    bot_update.py --revision src@abc
+    Fixed revisions are: src
+    Got_revision_mapping: src->got_revision, src/v8->got_v8_revision
+    got_revision = abc, got_v8_revision = v8_after
+    Second sync will be called with
+    bot_update.py --revision src@abc
+    When deapplying the patch, v8 will be synced to v8_before.
+    """
+    for name in bot_update_json.get('fixed_revisions', {}):
+      rev_property = self.m.gclient.c.got_revision_mapping.get(name)
+      if rev_property and bot_update_json['properties'].get(rev_property):
+        self.m.gclient.c.revisions[name] = str(
+            bot_update_json['properties'][rev_property])
+
+  def deapply_patch(self, bot_update_step):
+    """Deapplies a patch, taking care of DEPS and solution revisions properly.
+    """
+    bot_update_json = bot_update_step.json.output
+    # We only override first solution here to make sure that we correctly revert
+    # changes to DEPS file, which is particularly important for auto-rolls. It
+    # is also imporant that we do not assume that corresponding revision is
+    # stored in the 'got_revision' as some gclient configs change the default
+    # mapping for their own purposes.
+    first_solution_name = self.m.gclient.c.solutions[0].name
+    rev_property = self.m.gclient.c.got_revision_mapping[first_solution_name]
+    self.m.gclient.c.revisions[first_solution_name] = str(
+        bot_update_json['properties'][rev_property])
+    self._resolve_fixed_revisions(bot_update_json)
+
+    self.ensure_checkout(patch=False, update_presentation=False)
