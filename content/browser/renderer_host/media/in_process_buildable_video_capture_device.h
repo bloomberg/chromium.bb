@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_IN_PROCESS_BUILDABLE_VIDEO_CAPTURE_DEVICE_H_
 
 #include "content/browser/renderer_host/media/video_capture_controller.h"
+#include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_client.h"

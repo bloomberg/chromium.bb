@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoCaptureManager is used to open/close, start/stop, enumerate available
-// video capture devices, and manage VideoCaptureController's.
-// All functions are expected to be called from Browser::IO thread. Some helper
-// functions (*OnDeviceThread) will dispatch operations to the device thread.
-// VideoCaptureManager will open OS dependent instances of VideoCaptureDevice.
-// A device can only be opened once.
-
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_MANAGER_H_
 
@@ -26,15 +19,14 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/buildable_video_capture_device.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
+#include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "media/capture/video/video_capture_system.h"
 #include "media/capture/video_capture_types.h"
 
 #if defined(OS_ANDROID)
@@ -45,7 +37,11 @@ namespace content {
 class VideoCaptureController;
 class VideoCaptureControllerEventHandler;
 
-// VideoCaptureManager opens/closes and start/stops video capture devices.
+// VideoCaptureManager is used to open/close, start/stop, enumerate available
+// video capture devices, and manage VideoCaptureController's.
+// In its main usage in production, an instance is created by MediaStreamManager
+// on the Browser::IO thread. All public methods are expected to be called from
+// the Browser::IO thread. A device can only be opened once.
 class CONTENT_EXPORT VideoCaptureManager
     : public MediaStreamProvider,
       public BuildableVideoCaptureDevice::Callbacks {
@@ -56,9 +52,8 @@ class CONTENT_EXPORT VideoCaptureManager
   using DoneCB =
       base::Callback<void(const base::WeakPtr<VideoCaptureController>&)>;
 
-  VideoCaptureManager(
-      std::unique_ptr<media::VideoCaptureSystem> capture_system,
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+  explicit VideoCaptureManager(
+      std::unique_ptr<VideoCaptureProvider> video_capture_provider);
 
   // AddVideoCaptureObserver() can be called only before any devices are opened.
   // RemoveAllVideoCaptureObservers() can be called only after all devices
@@ -266,9 +261,6 @@ class CONTENT_EXPORT VideoCaptureManager
   bool application_state_has_running_activities_;
 #endif
 
-  // The message loop of media stream device thread, where VCD's live.
-  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
-
   // Only accessed on Browser::IO thread.
   base::ObserverList<MediaStreamProviderListener> listeners_;
   media::VideoCaptureSessionId new_capture_session_id_;
@@ -291,9 +283,7 @@ class CONTENT_EXPORT VideoCaptureManager
   // bundles a session id integer and an associated photo-related request.
   std::list<std::pair<int, base::Closure>> photo_request_queue_;
 
-  // Device creation factory injected on construction from MediaStreamManager or
-  // from the test harness.
-  std::unique_ptr<media::VideoCaptureSystem> video_capture_system_;
+  const std::unique_ptr<VideoCaptureProvider> video_capture_provider_;
 
   base::ObserverList<media::VideoCaptureObserver> capture_observers_;
 

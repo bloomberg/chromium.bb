@@ -49,7 +49,6 @@
 
 namespace media {
 class AudioSystem;
-class VideoCaptureSystem;
 }
 
 namespace url {
@@ -63,6 +62,7 @@ class FakeMediaStreamUIProxy;
 class MediaStreamRequester;
 class MediaStreamUIProxy;
 class VideoCaptureManager;
+class VideoCaptureProvider;
 
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow. The classes requesting new media streams are answered
@@ -92,8 +92,7 @@ class CONTENT_EXPORT MediaStreamManager
   // |video_capture_system| or |device_task_runner| are null.
   explicit MediaStreamManager(
       media::AudioSystem* audio_system,
-      std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+      std::unique_ptr<VideoCaptureProvider> video_capture_provider);
 
   ~MediaStreamManager() override;
 
@@ -282,8 +281,7 @@ class CONTENT_EXPORT MediaStreamManager
   using DeviceRequests = std::list<LabeledDeviceRequest>;
 
   void InitializeMaybeAsync(
-      std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+      std::unique_ptr<VideoCaptureProvider> video_capture_provider);
 
   // |output_parameters| contains real values only if the request requires it.
   void HandleAccessRequestResponse(

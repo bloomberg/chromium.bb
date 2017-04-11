@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
+#include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
@@ -394,12 +395,11 @@ void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
 }
 
 MediaStreamManager::MediaStreamManager(media::AudioSystem* audio_system)
-    : MediaStreamManager(audio_system, nullptr, nullptr) {}
+    : MediaStreamManager(audio_system, nullptr) {}
 
 MediaStreamManager::MediaStreamManager(
     media::AudioSystem* audio_system,
-    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
+    std::unique_ptr<VideoCaptureProvider> video_capture_provider)
     : audio_system_(audio_system),
 #if defined(OS_WIN)
       video_capture_thread_("VideoCaptureThread"),
@@ -408,13 +408,9 @@ MediaStreamManager::MediaStreamManager(
           switches::kUseFakeUIForMediaStream)) {
   DCHECK(audio_system_);
 
-  if (!video_capture_system) {
-    video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
-        media::VideoCaptureDeviceFactory::CreateFactory(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-  }
-  if (!device_task_runner) {
-    device_task_runner = audio_system_->GetTaskRunner();
+  if (!video_capture_provider) {
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
+        audio_system_->GetTaskRunner();
 #if defined(OS_WIN)
     // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
     // buggy third party Direct Show modules, http://crbug.com/428958.
@@ -422,9 +418,13 @@ MediaStreamManager::MediaStreamManager(
     CHECK(video_capture_thread_.Start());
     device_task_runner = video_capture_thread_.task_runner();
 #endif
+    video_capture_provider = base::MakeUnique<InProcessVideoCaptureProvider>(
+        base::MakeUnique<media::VideoCaptureSystemImpl>(
+            media::VideoCaptureDeviceFactory::CreateFactory(
+                BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
+        std::move(device_task_runner));
   }
-  InitializeMaybeAsync(std::move(video_capture_system),
-                       std::move(device_task_runner));
+  InitializeMaybeAsync(std::move(video_capture_provider));
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // BrowserMainLoop always creates the PowerMonitor instance before creating
@@ -1229,8 +1229,7 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
 }
 
 void MediaStreamManager::InitializeMaybeAsync(
-    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner) {
+    std::unique_ptr<VideoCaptureProvider> video_capture_provider) {
   // Some unit tests initialize the MSM in the IO thread and assume the
   // initialization is done synchronously. Other clients call this from a
   // different thread and expect initialization to run asynchronously.
@@ -1238,8 +1237,8 @@ void MediaStreamManager::InitializeMaybeAsync(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&MediaStreamManager::InitializeMaybeAsync,
-                   base::Unretained(this), base::Passed(&video_capture_system),
-                   std::move(device_task_runner)));
+                   base::Unretained(this),
+                   base::Passed(&video_capture_provider)));
     return;
   }
 
@@ -1279,8 +1278,8 @@ void MediaStreamManager::InitializeMaybeAsync(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
 
-  video_capture_manager_ = new VideoCaptureManager(
-      std::move(video_capture_system), std::move(device_task_runner));
+  video_capture_manager_ =
+      new VideoCaptureManager(std::move(video_capture_provider));
   video_capture_manager_->RegisterListener(this);
 
   media_devices_manager_.reset(

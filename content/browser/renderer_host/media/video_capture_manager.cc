@@ -25,7 +25,6 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/renderer_host/media/in_process_buildable_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,11 +103,9 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
     : controller_(controller), session_id_(session_id), params_(params) {}
 
 VideoCaptureManager::VideoCaptureManager(
-    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
-    : device_task_runner_(std::move(device_task_runner)),
-      new_capture_session_id_(1),
-      video_capture_system_(std::move(video_capture_system)) {}
+    std::unique_ptr<VideoCaptureProvider> video_capture_provider)
+    : new_capture_session_id_(1),
+      video_capture_provider_(std::move(video_capture_provider)) {}
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(controllers_.empty());
@@ -131,7 +128,6 @@ void VideoCaptureManager::RegisterListener(
     MediaStreamProviderListener* listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(listener);
-  DCHECK(device_task_runner_);
   listeners_.AddObserver(listener);
 #if defined(OS_ANDROID)
   application_state_has_running_activities_ = true;
@@ -152,17 +148,10 @@ void VideoCaptureManager::EnumerateDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureManager::EnumerateDevices";
 
-  // OK to use base::Unretained(video_capture_system_) since we own the
-  // |video_capture_system_| and |this| is bound in
-  // |devices_enumerated_callback|.
-  device_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&media::VideoCaptureSystem::GetDeviceInfosAsync,
-                 base::Unretained(video_capture_system_.get()),
-                 // Pass a timer for UMA histogram collection.
-                 media::BindToCurrentLoop(base::Bind(
-                     &VideoCaptureManager::OnDeviceInfosReceived, this,
-                     base::Owned(new base::ElapsedTimer()), client_callback))));
+  // Pass a timer for UMA histogram collection.
+  video_capture_provider_->GetDeviceInfosAsync(media::BindToCurrentLoop(
+      base::Bind(&VideoCaptureManager::OnDeviceInfosReceived, this,
+                 base::Owned(new base::ElapsedTimer()), client_callback)));
 }
 
 int VideoCaptureManager::Open(const MediaStreamDevice& device) {
@@ -797,10 +786,10 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
     return existing_device;
   }
 
-  VideoCaptureController* new_controller = new VideoCaptureController(
-      device_info.id, device_info.type, params,
-      base::MakeUnique<InProcessBuildableVideoCaptureDevice>(
-          device_task_runner_, video_capture_system_.get()));
+  VideoCaptureController* new_controller =
+      new VideoCaptureController(device_info.id, device_info.type, params,
+                                 video_capture_provider_->CreateBuildableDevice(
+                                     device_info.id, device_info.type));
   controllers_.emplace_back(new_controller);
   return new_controller;
 }

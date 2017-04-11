@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_name.h"
@@ -148,8 +149,12 @@ class MediaDevicesManagerTest : public ::testing::Test {
     video_capture_device_factory_ = video_capture_device_factory.get();
     auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
-    video_capture_manager_ = new VideoCaptureManager(
-        std::move(video_capture_system), base::ThreadTaskRunnerHandle::Get());
+    auto video_capture_provider =
+        base::MakeUnique<InProcessVideoCaptureProvider>(
+            std::move(video_capture_system),
+            base::ThreadTaskRunnerHandle::Get());
+    video_capture_manager_ =
+        new VideoCaptureManager(std::move(video_capture_provider));
     media_devices_manager_.reset(new MediaDevicesManager(
         audio_system_.get(), video_capture_manager_, nullptr));
   }

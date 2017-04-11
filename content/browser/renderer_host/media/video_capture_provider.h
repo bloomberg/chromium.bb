@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_capture_device.h"
+#include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
 
 namespace content {
@@ -63,6 +64,22 @@ class CONTENT_EXPORT BuildableVideoCaptureDevice {
   // Methods for specific types of devices.
   virtual void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
                                               base::OnceClosure done_cb) = 0;
+};
+
+class CONTENT_EXPORT VideoCaptureProvider {
+ public:
+  virtual ~VideoCaptureProvider() {}
+
+  // The passed-in |result_callback| must guarantee that the called
+  // instance stays alive until |result_callback| is invoked.
+  virtual void GetDeviceInfosAsync(
+      const base::Callback<
+          void(const std::vector<media::VideoCaptureDeviceInfo>&)>&
+          result_callback) = 0;
+
+  virtual std::unique_ptr<BuildableVideoCaptureDevice> CreateBuildableDevice(
+      const std::string& device_id,
+      MediaStreamType stream_type) = 0;
 };
 
 }  // namespace content

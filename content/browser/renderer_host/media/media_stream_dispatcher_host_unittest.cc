@@ -237,16 +237,17 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
            const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
 };
 
-class MockVideoCaptureSystem : public media::VideoCaptureSystem {
+class MockVideoCaptureProvider : public VideoCaptureProvider {
  public:
   MOCK_METHOD1(GetDeviceInfosAsync,
                void(const base::Callback<
                     void(const std::vector<media::VideoCaptureDeviceInfo>&)>&
                         result_callback));
 
-  MOCK_METHOD1(
-      CreateDevice,
-      std::unique_ptr<media::VideoCaptureDevice>(const std::string& device_id));
+  MOCK_METHOD2(CreateBuildableDevice,
+               std::unique_ptr<BuildableVideoCaptureDevice>(
+                   const std::string& device_id,
+                   MediaStreamType stream_type));
 };
 
 class MediaStreamDispatcherHostTest : public testing::Test {
@@ -261,12 +262,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-    auto mock_video_capture_system = base::MakeUnique<MockVideoCaptureSystem>();
-    mock_video_capture_system_ = mock_video_capture_system.get();
+    auto mock_video_capture_provider =
+        base::MakeUnique<MockVideoCaptureProvider>();
+    mock_video_capture_provider_ = mock_video_capture_provider.get();
     // Create our own MediaStreamManager.
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
-        audio_system_.get(), std::move(mock_video_capture_system),
-        base::ThreadTaskRunnerHandle::Get());
+        audio_system_.get(), std::move(mock_video_capture_provider));
 
     MockResourceContext* mock_resource_context =
         static_cast<MockResourceContext*>(
@@ -295,7 +296,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   void SetUp() override {
     stub_video_device_ids_.emplace_back(kRegularVideoDeviceId);
     stub_video_device_ids_.emplace_back(kDepthVideoDeviceId);
-    ON_CALL(*mock_video_capture_system_, GetDeviceInfosAsync(_))
+    ON_CALL(*mock_video_capture_provider_, GetDeviceInfosAsync(_))
         .WillByDefault(Invoke(
             [this](const base::Callback<void(
                        const std::vector<media::VideoCaptureDeviceInfo>&)>&
@@ -473,7 +474,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   media::AudioDeviceDescriptions audio_device_descriptions_;
   std::vector<std::string> stub_video_device_ids_;
   url::Origin origin_;
-  MockVideoCaptureSystem* mock_video_capture_system_;
+  MockVideoCaptureProvider* mock_video_capture_provider_;
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithVideoOnly) {

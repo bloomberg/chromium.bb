@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/media/media_stream_options.h"
@@ -202,8 +203,11 @@ class VideoCaptureManagerTest : public testing::Test {
     video_capture_device_factory_ = video_capture_device_factory.get();
     auto video_capture_system = base::MakeUnique<media::VideoCaptureSystemImpl>(
         std::move(video_capture_device_factory));
-    vcm_ = new VideoCaptureManager(std::move(video_capture_system),
-                                   base::ThreadTaskRunnerHandle::Get());
+    auto video_capture_provider =
+        base::MakeUnique<InProcessVideoCaptureProvider>(
+            std::move(video_capture_system),
+            base::ThreadTaskRunnerHandle::Get());
+    vcm_ = new VideoCaptureManager(std::move(video_capture_provider));
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->SetToDefaultDevicesConfig(
         kNumberOfFakeDevices);
