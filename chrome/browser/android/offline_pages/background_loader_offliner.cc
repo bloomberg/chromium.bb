@@ -201,14 +201,11 @@ bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
   return false;
 }
 
-void BackgroundLoaderOffliner::DocumentLoadedInFrame(
-    content::RenderFrameHost* render_host) {
-  // Inform snapshot controller if in main frame.
-  if (!render_host->GetParent())
-    snapshot_controller_->DocumentAvailableInMainFrame();
+void BackgroundLoaderOffliner::DocumentAvailableInMainFrame() {
+  snapshot_controller_->DocumentAvailableInMainFrame();
 }
 
-void BackgroundLoaderOffliner::DidStopLoading() {
+void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame() {
   if (!pending_request_.get()) {
     DVLOG(1) << "DidStopLoading called even though no pending request.";
     return;

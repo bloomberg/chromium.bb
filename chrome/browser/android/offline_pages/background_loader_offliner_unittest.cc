@@ -147,13 +147,12 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   const base::HistogramTester& histograms() const { return histogram_tester_; }
   int64_t progress() { return progress_; }
 
-  void CompleteLoading() {
-    // For some reason, setting loading to True will call DidStopLoading
-    // on the observers.
-    offliner()->web_contents_tester()->TestSetIsLoading(true);
-  }
-
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
+
+  void CompleteLoading() {
+    offliner()->DocumentOnLoadCompletedInMainFrame();
+    PumpLoop();
+  }
 
  private:
   void OnCompletion(const SavePageRequest& request,
@@ -433,7 +432,7 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
       "OfflinePages.Background.BackgroundLoadingFailedCode.async_loading",
       105,  // ERR_NAME_NOT_RESOLVED
       1);
-  offliner()->DidStopLoading();
+  CompleteLoading();
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());
@@ -457,7 +456,7 @@ TEST_F(BackgroundLoaderOfflinerTest, NoNextOnInternetDisconnected) {
   offliner()->DidFinishNavigation(handle.get());
   // NavigationHandle is always destroyed after finishing navigation.
   handle.reset();
-  offliner()->DidStopLoading();
+  CompleteLoading();
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());
@@ -473,7 +472,7 @@ TEST_F(BackgroundLoaderOfflinerTest, OnlySavesOnceOnMultipleLoads) {
   // First load
   CompleteLoading();
   // Second load
-  offliner()->DidStopLoading();
+  CompleteLoading();
   PumpLoop();
   model()->CompleteSavingAsSuccess();
   PumpLoop();

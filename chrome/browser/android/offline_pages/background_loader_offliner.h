@@ -47,8 +47,8 @@ class BackgroundLoaderOffliner : public Offliner,
   bool HandleTimeout(const SavePageRequest& request) override;
 
   // WebContentsObserver implementation.
-  void DocumentLoadedInFrame(content::RenderFrameHost* render_frame) override;
-  void DidStopLoading() override;
+  void DocumentAvailableInMainFrame() override;
+  void DocumentOnLoadCompletedInMainFrame() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
   void DidFinishNavigation(
