@@ -34,18 +34,18 @@
 namespace blink {
 
 // Normal constructor: allocates for a given fftSize.
-FFTFrame::FFTFrame(unsigned /*fftSize*/) : m_FFTSize(0), m_log2FFTSize(0) {
+FFTFrame::FFTFrame(unsigned /*fftSize*/) : fft_size_(0), log2fft_size_(0) {
   NOTREACHED();
 }
 
 // Creates a blank/empty frame (interpolate() must later be called).
-FFTFrame::FFTFrame() : m_FFTSize(0), m_log2FFTSize(0) {
+FFTFrame::FFTFrame() : fft_size_(0), log2fft_size_(0) {
   NOTREACHED();
 }
 
 // Copy constructor.
 FFTFrame::FFTFrame(const FFTFrame& frame)
-    : m_FFTSize(frame.m_FFTSize), m_log2FFTSize(frame.m_log2FFTSize) {
+    : fft_size_(frame.fft_size_), log2fft_size_(frame.log2fft_size_) {
   NOTREACHED();
 }
 
@@ -53,17 +53,17 @@ FFTFrame::~FFTFrame() {
   NOTREACHED();
 }
 
-void FFTFrame::doFFT(const float* data) {
+void FFTFrame::DoFFT(const float* data) {
   NOTREACHED();
 }
 
-void FFTFrame::doInverseFFT(float* data) {
+void FFTFrame::DoInverseFFT(float* data) {
   NOTREACHED();
 }
 
-void FFTFrame::initialize() {}
+void FFTFrame::Initialize() {}
 
-void FFTFrame::cleanup() {
+void FFTFrame::Cleanup() {
   NOTREACHED();
 }
 
