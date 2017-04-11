@@ -19,6 +19,38 @@ const char* kSrcXPropName = "SRC_X";
 const char* kSrcYPropName = "SRC_Y";
 const char* kSrcWPropName = "SRC_W";
 const char* kSrcHPropName = "SRC_H";
+const char* kRotationPropName = "rotation";
+
+// TODO(dcastagna): Remove the following defines once they're in libdrm headers.
+#if !defined(DRM_ROTATE_0)
+#define DRM_ROTATE_0 0
+#define DRM_ROTATE_90 1
+#define DRM_ROTATE_180 2
+#define DRM_ROTATE_270 3
+#define DRM_REFLECT_X 4
+#define DRM_REFLECT_Y 5
+#endif
+
+uint32_t OverlayTransformToDrmRotationPropertyValue(
+    gfx::OverlayTransform transform) {
+  switch (transform) {
+    case gfx::OVERLAY_TRANSFORM_NONE:
+      return 0;
+    case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+      return 1 << DRM_REFLECT_X;
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+      return 1 << DRM_REFLECT_Y;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+      return 1 << DRM_ROTATE_90;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+      return 1 << DRM_ROTATE_180;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+      return 1 << DRM_ROTATE_270;
+    default:
+      NOTREACHED();
+  }
+  return 0;
+}
 
 }  // namespace
 
@@ -51,11 +83,13 @@ HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t plane_id,
 HardwareDisplayPlaneAtomic::~HardwareDisplayPlaneAtomic() {
 }
 
-bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModeAtomicReq* property_set,
-                                              uint32_t crtc_id,
-                                              uint32_t framebuffer,
-                                              const gfx::Rect& crtc_rect,
-                                              const gfx::Rect& src_rect) {
+bool HardwareDisplayPlaneAtomic::SetPlaneData(
+    drmModeAtomicReq* property_set,
+    uint32_t crtc_id,
+    uint32_t framebuffer,
+    const gfx::Rect& crtc_rect,
+    const gfx::Rect& src_rect,
+    const gfx::OverlayTransform transform) {
   int plane_set_succeeded =
       drmModeAtomicAddProperty(property_set, plane_id_, crtc_prop_.id,
                                crtc_id) &&
@@ -76,7 +110,10 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModeAtomicReq* property_set,
       drmModeAtomicAddProperty(property_set, plane_id_, src_w_prop_.id,
                                src_rect.width()) &&
       drmModeAtomicAddProperty(property_set, plane_id_, src_h_prop_.id,
-                               src_rect.height());
+                               src_rect.height()) &&
+      drmModeAtomicAddProperty(
+          property_set, plane_id_, rotation_prop_.id,
+          OverlayTransformToDrmRotationPropertyValue(transform));
   if (!plane_set_succeeded) {
     PLOG(ERROR) << "Failed to set plane data";
     return false;
@@ -87,16 +124,18 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModeAtomicReq* property_set,
 bool HardwareDisplayPlaneAtomic::InitializeProperties(
     DrmDevice* drm,
     const ScopedDrmObjectPropertyPtr& plane_props) {
-  bool props_init = crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
-                    fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
-                    crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
-                    crtc_y_prop_.Initialize(drm, kCrtcYPropName, plane_props) &&
-                    crtc_w_prop_.Initialize(drm, kCrtcWPropName, plane_props) &&
-                    crtc_h_prop_.Initialize(drm, kCrtcHPropName, plane_props) &&
-                    src_x_prop_.Initialize(drm, kSrcXPropName, plane_props) &&
-                    src_y_prop_.Initialize(drm, kSrcYPropName, plane_props) &&
-                    src_w_prop_.Initialize(drm, kSrcWPropName, plane_props) &&
-                    src_h_prop_.Initialize(drm, kSrcHPropName, plane_props);
+  bool props_init =
+      crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
+      fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
+      crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
+      crtc_y_prop_.Initialize(drm, kCrtcYPropName, plane_props) &&
+      crtc_w_prop_.Initialize(drm, kCrtcWPropName, plane_props) &&
+      crtc_h_prop_.Initialize(drm, kCrtcHPropName, plane_props) &&
+      src_x_prop_.Initialize(drm, kSrcXPropName, plane_props) &&
+      src_y_prop_.Initialize(drm, kSrcYPropName, plane_props) &&
+      src_w_prop_.Initialize(drm, kSrcWPropName, plane_props) &&
+      src_h_prop_.Initialize(drm, kSrcHPropName, plane_props) &&
+      rotation_prop_.Initialize(drm, kRotationPropName, plane_props);
 
   if (!props_init) {
     LOG(ERROR) << "Unable to get plane properties.";

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_HARDWARE_DISPLAY_PLANE_ATOMIC_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_HARDWARE_DISPLAY_PLANE_ATOMIC_H_
 
+#include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
 #include <stdint.h>
@@ -28,7 +29,8 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
                     uint32_t crtc_id,
                     uint32_t framebuffer,
                     const gfx::Rect& crtc_rect,
-                    const gfx::Rect& src_rect);
+                    const gfx::Rect& src_rect,
+                    const gfx::OverlayTransform transform);
 
   void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
   CrtcController* crtc() const { return crtc_; }
@@ -56,6 +58,7 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   Property src_y_prop_;
   Property src_w_prop_;
   Property src_h_prop_;
+  Property rotation_prop_;
   CrtcController* crtc_ = nullptr;
 };
 
