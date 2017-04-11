@@ -303,6 +303,7 @@ public class ItemChooserDialog {
                 row = (ViewHolder) convertView.getTag();
             }
 
+            row.mTextView.setSelected(position == mSelectedItem);
             row.mTextView.setEnabled(isEnabled(position));
             row.mTextView.setText(getDisplayText(position));
 

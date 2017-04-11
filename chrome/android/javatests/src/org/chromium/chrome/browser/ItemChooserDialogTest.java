@@ -11,6 +11,7 @@ import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -117,6 +118,19 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
                 }));
     }
 
+    private TextView getDescriptionTextView(Dialog dialog, int position) {
+        final ListView items = (ListView) dialog.findViewById(R.id.items);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return items.getChildAt(0) != null;
+            }
+        });
+
+        View item = items.getChildAt(position - 1);
+        return (TextView) item.findViewById(R.id.description);
+    }
+
     @LargeTest
     public void testSimpleItemSelection() {
         Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -154,6 +168,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         // Select the first item and verify it got selected.
         selectItem(dialog, 1, "key1", true);
+        assertTrue(getDescriptionTextView(dialog, 1).isSelected());
 
         mChooserDialog.dismiss();
     }
