@@ -447,9 +447,10 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
       const override {
     DCHECK(!IsOldVideoConstraints());
     if (host_) {
-      return media::VideoCaptureFormat(
-          host_->plugin_frame_size_, kDefaultOutputFrameRate,
-          ToPixelFormat(host_->plugin_frame_format_));
+      return base::Optional<media::VideoCaptureFormat>(
+          media::VideoCaptureFormat(
+              host_->plugin_frame_size_, kDefaultOutputFrameRate,
+              ToPixelFormat(host_->plugin_frame_format_)));
     }
     return base::Optional<media::VideoCaptureFormat>();
   }

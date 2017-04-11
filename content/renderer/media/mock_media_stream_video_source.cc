@@ -104,7 +104,7 @@ void MockMediaStreamVideoSource::StopSourceImpl() {
 
 base::Optional<media::VideoCaptureFormat>
 MockMediaStreamVideoSource::GetCurrentFormatImpl() const {
-  return format_;
+  return base::Optional<media::VideoCaptureFormat>(format_);
 }
 
 void MockMediaStreamVideoSource::DeliverVideoFrame(

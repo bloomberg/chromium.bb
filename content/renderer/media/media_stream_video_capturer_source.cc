@@ -655,7 +655,8 @@ void MediaStreamVideoCapturerSource::StopSourceImpl() {
 base::Optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormatImpl() const {
   DCHECK(!IsOldVideoConstraints());
-  return capture_params_.requested_format;
+  return base::Optional<media::VideoCaptureFormat>(
+      capture_params_.requested_format);
 }
 
 void MediaStreamVideoCapturerSource::OnRunStateChanged(bool is_running) {
