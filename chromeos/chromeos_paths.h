@@ -26,6 +26,7 @@ enum {
   FILE_OWNER_KEY,           // Full path to the owner key file.
   FILE_INSTALL_ATTRIBUTES,  // Full path to the install attributes file.
   FILE_MACHINE_INFO,        // Full path to machine hardware info file.
+  FILE_VPD,                 // Full path to VPD file.
   FILE_UPTIME,              // Full path to the file via which the kernel
                             // exposes the current device uptime.
   FILE_UPDATE_REBOOT_NEEDED_UPTIME,  // Full path to a file in which Chrome can

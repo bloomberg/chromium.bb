@@ -32,6 +32,9 @@ const base::FilePath::CharType kInstallAttributesFileName[] =
 const base::FilePath::CharType kMachineHardwareInfoFileName[] =
     FILE_PATH_LITERAL("/tmp/machine-info");
 
+const base::FilePath::CharType kVpdFileName[] =
+    FILE_PATH_LITERAL("/var/log/vpd_2.0.txt");
+
 const base::FilePath::CharType kUptimeFileName[] =
     FILE_PATH_LITERAL("/proc/uptime");
 
@@ -73,6 +76,9 @@ bool PathProvider(int key, base::FilePath* result) {
     case FILE_MACHINE_INFO:
       *result = base::FilePath(kMachineHardwareInfoFileName);
       break;
+    case FILE_VPD:
+      *result = base::FilePath(kVpdFileName);
+      break;
     case FILE_UPTIME:
       *result = base::FilePath(kUptimeFileName);
       break;
@@ -111,8 +117,8 @@ void RegisterPathProvider() {
 
 void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
   CHECK(!base::SysInfo::IsRunningOnChromeOS());
-  // Override these paths on the desktop, so that enrollment and cloud
-  // policy work and can be tested.
+  // Override these paths on the desktop, so that enrollment and cloud policy
+  // work and can be tested.
   base::FilePath parent = base::MakeAbsoluteFilePath(stubs_dir);
   PathService::Override(
       DIR_USER_POLICY_KEYS,
@@ -132,6 +138,11 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
   PathService::OverrideAndCreateIfNeeded(
       FILE_MACHINE_INFO,
       parent.AppendASCII("stub_machine-info"),
+      is_absolute,
+      create);
+  PathService::OverrideAndCreateIfNeeded(
+      FILE_VPD,
+      parent.AppendASCII("stub_vpd"),
       is_absolute,
       create);
   PathService::Override(

@@ -42,6 +42,7 @@ constexpr char kArcLowDiskError[] =
 
 constexpr char kStubPolicyFile[] = "stub_policy";
 constexpr char kStubDevicePolicyFile[] = "stub_device_policy";
+constexpr char kStubStateKeysFile[] = "stub_state_keys";
 
 // Returns a location for |file| that is specific to the given |cryptohome_id|.
 // These paths will be relative to DIR_USER_POLICY_KEYS, and can be used only
@@ -72,6 +73,34 @@ void StoreFile(const base::FilePath& path, const std::string& data) {
       base::WriteFile(path, data.data(), size) != size) {
     LOG(WARNING) << "Failed to write to " << path.value();
   }
+}
+
+// Helper to asynchronously read (or if missing create) state key stubs.
+std::vector<std::string> ReadCreateStateKeysStub(const base::FilePath& path) {
+  std::string contents;
+  if (base::PathExists(path)) {
+    contents = GetFileContent(path);
+  } else {
+    // Create stub state keys on the fly.
+    for (int i = 0; i < 5; ++i) {
+      contents += crypto::SHA256HashString(
+          base::IntToString(i) +
+          base::Int64ToString(base::Time::Now().ToJavaTime()));
+    }
+    StoreFile(path, contents);
+  }
+
+  std::vector<std::string> state_keys;
+  for (size_t i = 0; i < contents.size() / 32; ++i) {
+    state_keys.push_back(contents.substr(i * 32, 32));
+  }
+  return state_keys;
+}
+
+// Turn pass-by-value into pass-by-reference as expected by StateKeysCallback.
+void RunStateKeysCallbackStub(SessionManagerClient::StateKeysCallback callback,
+                              std::vector<std::string> state_keys) {
+  callback.Run(state_keys);
 }
 
 }  // namespace
@@ -991,12 +1020,18 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                        const std::vector<std::string>& flags) override {}
 
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override {
-    std::vector<std::string> state_keys;
-    for (int i = 0; i < 5; ++i)
-      state_keys.push_back(crypto::SHA256HashString(base::IntToString(i)));
-
-    if (!callback.is_null())
-      callback.Run(state_keys);
+    base::FilePath owner_key_path;
+    CHECK(PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path));
+    const base::FilePath state_keys_path =
+        owner_key_path.DirName().AppendASCII(kStubStateKeysFile);
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        base::TaskTraits()
+            .WithShutdownBehavior(
+                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+            .MayBlock(),
+        base::Bind(&ReadCreateStateKeysStub, state_keys_path),
+        base::Bind(&RunStateKeysCallbackStub, callback));
   }
 
   void CheckArcAvailability(const ArcCallback& callback) override {

@@ -61,8 +61,7 @@ const char kEchoCouponFile[] = "/var/cache/echo/vpd_echo.txt";
 const char kEchoCouponEq[] = "=";
 const char kEchoCouponDelim[] = "\n";
 
-// File to get VPD info from, and key/value delimiters of the file.
-const char kVpdFile[] = "/var/log/vpd_2.0.txt";
+// Key/value delimiters for VPD file.
 const char kVpdEq[] = "=";
 const char kVpdDelim[] = "\n";
 
@@ -471,13 +470,22 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     std::string stub_contents =
         "\"serial_number\"=\"stub_" +
         base::Int64ToString(base::Time::Now().ToJavaTime()) + "\"\n";
-    int bytes_written = base::WriteFile(machine_info_path,
-                                        stub_contents.c_str(),
-                                        stub_contents.size());
-    // static_cast<int> is fine because stub_contents is small.
+    int bytes_written = base::WriteFile(
+        machine_info_path, stub_contents.c_str(), stub_contents.size());
     if (bytes_written < static_cast<int>(stub_contents.size())) {
-      LOG(ERROR) << "Error writing machine info stub: "
-                 << machine_info_path.value();
+      PLOG(ERROR) << "Error writing machine info stub "
+                  << machine_info_path.value();
+    }
+  }
+
+  base::FilePath vpd_path;
+  PathService::Get(chromeos::FILE_VPD, &vpd_path);
+  if (!base::SysInfo::IsRunningOnChromeOS() && !base::PathExists(vpd_path)) {
+    std::string stub_contents = "\"ActivateDate\"=\"2000-01\"\n";
+    int bytes_written =
+        base::WriteFile(vpd_path, stub_contents.c_str(), stub_contents.size());
+    if (bytes_written < static_cast<int>(stub_contents.size())) {
+      PLOG(ERROR) << "Error writing vpd stub " << vpd_path.value();
     }
   }
 
@@ -487,7 +495,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
                                    kEchoCouponEq,
                                    kEchoCouponDelim);
-  parser.GetNameValuePairsFromFile(base::FilePath(kVpdFile),
+  parser.GetNameValuePairsFromFile(vpd_path,
                                    kVpdEq,
                                    kVpdDelim);
 
