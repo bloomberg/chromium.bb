@@ -121,6 +121,8 @@
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height">56dp</dimen>
     <dimen name="overlay_panel_text_size">18sp</dimen>
+    <dimen name="overlay_panel_bar_handle_offset_y">6dp</dimen>
+    <dimen name="overlay_panel_bar_padding_bottom">4dp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>
@@ -247,6 +249,7 @@
     <dimen name="toolbar_button_width">48dp</dimen>
     <dimen name="toolbar_handle_height">4dp</dimen>
     <dimen name="toolbar_handle_width">40dp</dimen>
+    <dimen name="toolbar_handle_corner_radius">2dp</dimen>
     <dimen name="toolbar_handle_margin_top">14dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>

@@ -35,22 +35,10 @@ void ReaderModeLayer::SetProperties(
   bar_height = floor(bar_height);
 
   OverlayPanelLayer::SetProperties(
-      dp_to_px,
-      content_layer,
-      bar_height,
-      panel_x,
-      panel_y,
-      panel_width,
-      panel_height,
-      bar_margin_side,
-      bar_height,
-      0.0f,
-      text_opacity,
-      bar_border_visible,
-      bar_border_height,
-      bar_shadow_visible,
-      bar_shadow_opacity,
-      1.0f);
+      dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
+      panel_height, bar_margin_side, bar_height, 0.0f, text_opacity,
+      bar_border_visible, bar_border_height, bar_shadow_visible,
+      bar_shadow_opacity, 1.0f, 0, 0);
 }
 
 ReaderModeLayer::ReaderModeLayer(

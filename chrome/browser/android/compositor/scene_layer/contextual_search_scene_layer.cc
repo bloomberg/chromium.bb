@@ -122,6 +122,9 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean touch_highlight_visible,
     jfloat touch_highlight_x_offset,
     jfloat touch_highlight_width,
+    jint bar_handle_resource_id,
+    jfloat bar_handle_offset_y,
+    jfloat bar_padding_bottom,
     jobject j_profile) {
   // Load the thumbnail if necessary.
   std::string thumbnail_url =
@@ -178,7 +181,8 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       progress_bar_height, progress_bar_opacity, progress_bar_completion,
       divider_line_visibility_percentage, divider_line_width,
       divider_line_height, divider_line_color, divider_line_x_offset,
-      touch_highlight_visible, touch_highlight_x_offset, touch_highlight_width);
+      touch_highlight_visible, touch_highlight_x_offset, touch_highlight_width,
+      bar_handle_resource_id, bar_handle_offset_y, bar_padding_bottom);
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);

@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
@@ -81,10 +79,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private static final float TAB_SWITCHER_TOOLBAR_ALPHA = 0.7f;
 
     /** The white version of the toolbar handle; used for dark themes and incognito. */
-    private final Bitmap mHandleLight;
+    private final Drawable mHandleLight;
 
     /** The dark version of the toolbar handle; this is the default handle to use. */
-    private final Bitmap mHandleDark;
+    private final Drawable mHandleDark;
 
     /** A handle to the bottom sheet. */
     private BottomSheet mBottomSheet;
@@ -114,13 +112,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public BottomToolbarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        int defaultHandleColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_40);
-        mHandleDark = generateHandleBitmap(defaultHandleColor);
-
-        int lightHandleColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.white_alpha_50);
-        mHandleLight = generateHandleBitmap(lightHandleColor);
+        mHandleDark = ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.toolbar_handle_dark);
+        mHandleLight = ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.toolbar_handle_light);
     }
 
     @Override
@@ -225,7 +220,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // The toolbar handle is part of the control container so it can draw on top of the other
         // toolbar views. Get the root view and search for the handle.
         mToolbarHandleView = (ImageView) getRootView().findViewById(R.id.toolbar_handle);
-        mToolbarHandleView.setImageBitmap(mHandleDark);
+        mToolbarHandleView.setImageDrawable(mHandleDark);
     }
 
     @Override
@@ -240,7 +235,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // switch color based on the static tab's theme color. This is done so fade in/out looks
         // correct.
         boolean isLight = ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
-        mToolbarHandleView.setImageBitmap(isLight ? mHandleLight : mHandleDark);
+        mToolbarHandleView.setImageDrawable(isLight ? mHandleLight : mHandleDark);
     }
 
     @Override
@@ -249,33 +244,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         // Allow the location bar to expand to the full height of the control container.
         out.top -= getExtraTopMargin() * mUrlExpansionPercent;
-    }
-
-    /**
-     * Generate the bitmap used as the handle on the toolbar. This indicates that the toolbar can
-     * be pulled up.
-     * @return The handle as a bitmap.
-     */
-    private Bitmap generateHandleBitmap(int handleColor) {
-        int handleWidth = getResources().getDimensionPixelSize(R.dimen.toolbar_handle_width);
-        int handleHeight = getResources().getDimensionPixelSize(R.dimen.toolbar_handle_height);
-
-        Bitmap handle = Bitmap.createBitmap(handleWidth, handleHeight, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(handle);
-
-        // Clear the canvas to be completely transparent.
-        canvas.drawARGB(0, 0, 0, 0);
-
-        Paint paint = new Paint();
-        paint.setColor(handleColor);
-        paint.setAntiAlias(true);
-
-        RectF rect = new RectF(0, 0, handleWidth, handleHeight);
-
-        // Use height / 2 for the corner radius so the handle always takes the shape of a pill.
-        canvas.drawRoundRect(rect, handleHeight / 2f, handleHeight / 2f, paint);
-
-        return handle;
     }
 
     @Override
