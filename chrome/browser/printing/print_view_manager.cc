@@ -31,9 +31,8 @@ namespace {
 
 // Keeps track of pending scripted print preview closures.
 // No locking, only access on the UI thread.
-base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::
-    DestructorAtExit g_scripted_print_preview_closure_map =
-        LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
+    g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
