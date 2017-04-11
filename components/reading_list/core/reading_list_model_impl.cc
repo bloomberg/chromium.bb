@@ -461,6 +461,28 @@ void ReadingListModelImpl::SetEntryDistilledState(
   }
 }
 
+void ReadingListModelImpl::SetContentSuggestionsExtra(
+    const GURL& url,
+    const reading_list::ContentSuggestionsExtra& extra) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(loaded());
+  ReadingListEntry* entry = GetMutableEntryFromURL(url);
+  if (!entry) {
+    return;
+  }
+
+  for (ReadingListModelObserver& observer : observers_) {
+    observer.ReadingListWillUpdateEntry(this, url);
+  }
+  entry->SetContentSuggestionsExtra(extra);
+  if (storage_layer_) {
+    storage_layer_->SaveEntry(*entry);
+  }
+  for (ReadingListModelObserver& observer : observers_) {
+    observer.ReadingListDidApplyChanges(this);
+  }
+}
+
 std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
 ReadingListModelImpl::CreateBatchToken() {
   return base::MakeUnique<ReadingListModelImpl::ScopedReadingListBatchUpdate>(

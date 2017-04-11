@@ -80,6 +80,9 @@ class ReadingListModelImpl : public ReadingListModel,
                              const GURL& distilled_url,
                              int64_t distillation_size,
                              const base::Time& distillation_date) override;
+  void SetContentSuggestionsExtra(
+      const GURL& url,
+      const reading_list::ContentSuggestionsExtra& extra) override;
 
   void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override;
   ReadingListEntry* SyncMergeEntry(
