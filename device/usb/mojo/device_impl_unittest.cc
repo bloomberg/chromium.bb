@@ -161,11 +161,8 @@ class USBDeviceImplTest : public testing::Test {
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
     DevicePtr proxy;
-
-    // Owns itself.
-    new DeviceImpl(
-        mock_device_,
-        permission_provider_.GetWeakPtr(), mojo::MakeRequest(&proxy));
+    DeviceImpl::Create(mock_device_, permission_provider_.GetWeakPtr(),
+                       mojo::MakeRequest(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.

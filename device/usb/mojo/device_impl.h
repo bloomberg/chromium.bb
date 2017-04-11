@@ -17,8 +17,7 @@
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 namespace usb {
@@ -30,12 +29,16 @@ class PermissionProvider;
 // lifetime.
 class DeviceImpl : public Device, public device::UsbDevice::Observer {
  public:
-  DeviceImpl(scoped_refptr<UsbDevice> device,
-             base::WeakPtr<PermissionProvider> permission_provider,
-             DeviceRequest request);
+  static void Create(scoped_refptr<UsbDevice> device,
+                     base::WeakPtr<PermissionProvider> permission_provider,
+                     DeviceRequest request);
+
   ~DeviceImpl() override;
 
  private:
+  DeviceImpl(scoped_refptr<UsbDevice> device,
+             base::WeakPtr<PermissionProvider> permission_provider);
+
   // Closes the device if it's open. This will always set |device_handle_| to
   // null.
   void CloseHandle();
@@ -104,7 +107,7 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
-  mojo::Binding<Device> binding_;
+  mojo::StrongBindingPtr<Device> binding_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);

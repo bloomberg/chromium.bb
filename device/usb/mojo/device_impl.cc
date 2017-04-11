@@ -99,26 +99,28 @@ void OnIsochronousTransferOut(
 
 }  // namespace
 
-DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
-                       base::WeakPtr<PermissionProvider> permission_provider,
-                       DeviceRequest request)
-    : device_(device),
-      permission_provider_(permission_provider),
-      observer_(this),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {
-  DCHECK(device_);
-  // This object owns itself and will be destroyed if,
-  //  * the device is disconnected or
-  //  * the message pipe it is bound to is closed or the message loop is
-  //  * destructed.
-  observer_.Add(device_.get());
-  binding_.set_connection_error_handler(
-      base::Bind([](DeviceImpl* self) { delete self; }, this));
+// static
+void DeviceImpl::Create(scoped_refptr<UsbDevice> device,
+                        base::WeakPtr<PermissionProvider> permission_provider,
+                        DeviceRequest request) {
+  auto* device_impl =
+      new DeviceImpl(std::move(device), std::move(permission_provider));
+  device_impl->binding_ = mojo::MakeStrongBinding(base::WrapUnique(device_impl),
+                                                  std::move(request));
 }
 
 DeviceImpl::~DeviceImpl() {
   CloseHandle();
+}
+
+DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
+                       base::WeakPtr<PermissionProvider> permission_provider)
+    : device_(std::move(device)),
+      permission_provider_(std::move(permission_provider)),
+      observer_(this),
+      weak_factory_(this) {
+  DCHECK(device_);
+  observer_.Add(device_.get());
 }
 
 void DeviceImpl::CloseHandle() {
@@ -434,7 +436,7 @@ void DeviceImpl::IsochronousTransferOut(
 
 void DeviceImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
   DCHECK_EQ(device_, device);
-  delete this;
+  binding_->Close();
 }
 
 }  // namespace usb
