@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_scheduler.h"
 #include "components/metrics/proto/translate_event.pb.h"
+#include "components/metrics/proto/ukm/source.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/proto/ranker_model.pb.h"
@@ -23,9 +24,12 @@
 #include "components/translate/core/browser/ranker_model.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/ukm/test_ukm_service.h"
+#include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -72,7 +76,13 @@ class TranslateRankerImplTest : public ::testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 
+  ukm::TestUkmService* GetTestUkmService() {
+    return ukm_service_test_harness_.test_ukm_service();
+  }
+
  private:
+  ukm::UkmServiceTestingHarness ukm_service_test_harness_;
+
   // Override the default URL fetcher to return custom responses for tests.
   net::TestURLFetcherFactory url_fetcher_factory_;
 
@@ -165,7 +175,8 @@ std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
   locale_weight["en-ca"] = 0.11f;
   locale_weight["zh-cn"] = 0.12f;  // Normalized to lowercase.
 
-  auto impl = base::MakeUnique<TranslateRankerImpl>(base::FilePath(), GURL());
+  auto impl = base::MakeUnique<TranslateRankerImpl>(base::FilePath(), GURL(),
+                                                    GetTestUkmService());
   impl->OnModelAvailable(std::move(model));
   base::RunLoop().RunUntilIdle();
   return impl;
@@ -311,13 +322,16 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
   std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
 
+  GURL url0("https://www.google.com");
+  GURL url1("https://www.gmail.com");
+
   // Check that flushing an empty cache will return an empty vector.
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
-  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6));
+  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3), url0);
+  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6), url1);
 
   // Capture the data and verify that it is as expected.
   ranker->FlushTranslateEvents(&flushed_events);
@@ -329,6 +343,14 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
   // Check that the cache has been cleared.
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
+
+  ASSERT_EQ(2U, GetTestUkmService()->sources_count());
+  EXPECT_EQ(
+      url0.spec(),
+      GetTestUkmService()->GetSourceForUrl(url0.spec().c_str())->url().spec());
+  EXPECT_EQ(
+      url1.spec(),
+      GetTestUkmService()->GetSourceForUrl(url1.spec().c_str())->url().spec());
 }
 
 TEST_F(TranslateRankerImplTest, LoggingDisabled) {
@@ -339,13 +361,14 @@ TEST_F(TranslateRankerImplTest, LoggingDisabled) {
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
-  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6));
+  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6), GURL());
 
   // Logging is disabled, so no events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
+  EXPECT_EQ(0ul, GetTestUkmService()->sources_count());
 }
 
 TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
@@ -357,9 +380,9 @@ TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
-  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6));
+  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6), GURL());
 
   // Logging is disabled, so no events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);
@@ -368,9 +391,9 @@ TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
   // Override the feature setting to disable logging.
   ranker->EnableLogging(false);
 
-  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3));
-  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6));
+  ranker->AddTranslateEvent(CreateTranslateEvent("fr", "en", 1, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("jp", "en", 2, 0, 3), GURL());
+  ranker->AddTranslateEvent(CreateTranslateEvent("es", "de", 4, 5, 6), GURL());
 
   // Logging is disabled, so no events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);

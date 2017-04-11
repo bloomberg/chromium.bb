@@ -18,9 +18,15 @@
 #include "components/translate/core/browser/translate_ranker.h"
 #include "url/gurl.h"
 
+class GURL;
+
 namespace chrome_intelligence {
 class RankerModel;
 }  // namespace chrome_intelligence
+
+namespace ukm {
+class UkmService;
+}  // namespace ukm
 
 namespace metrics {
 class TranslateEventProto;
@@ -76,7 +82,9 @@ struct TranslateRankerFeatures {
 // whether the user should be given a translation prompt or not.
 class TranslateRankerImpl : public TranslateRanker {
  public:
-  TranslateRankerImpl(const base::FilePath& model_path, const GURL& model_url);
+  TranslateRankerImpl(const base::FilePath& model_path,
+                      const GURL& model_url,
+                      ukm::UkmService* ukm_service);
   ~TranslateRankerImpl() override;
 
   // Get the file path of the translate ranker model, by default with a fixed
@@ -98,8 +106,8 @@ class TranslateRankerImpl : public TranslateRanker {
   bool ShouldOfferTranslation(const TranslatePrefs& translate_prefs,
                               const std::string& src_lang,
                               const std::string& dst_lang) override;
-  void AddTranslateEvent(
-      const metrics::TranslateEventProto& translate_event) override;
+  void AddTranslateEvent(const metrics::TranslateEventProto& translate_event,
+                         const GURL& url) override;
   void FlushTranslateEvents(
       std::vector<metrics::TranslateEventProto>* events) override;
 
@@ -114,6 +122,12 @@ class TranslateRankerImpl : public TranslateRanker {
   bool CheckModelLoaderForTesting();
 
  private:
+  void SendEventToUKM(const metrics::TranslateEventProto& translate_event,
+                      const GURL& url);
+
+  // Used to log URL-keyed metrics. This pointer will outlive |this|.
+  ukm::UkmService* ukm_service_;
+
   // Used to sanity check the threading of this ranker.
   base::SequenceChecker sequence_checker_;
 

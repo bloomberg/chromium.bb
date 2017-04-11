@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,6 +27,8 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "components/ukm/ukm_entry_builder.h"
+#include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "url/gurl.h"
 
@@ -132,8 +135,10 @@ void TranslateRankerFeatures::WriteTo(std::ostream& stream) const {
 }
 
 TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
-                                         const GURL& model_url)
-    : is_logging_enabled_(
+                                         const GURL& model_url,
+                                         ukm::UkmService* ukm_service)
+    : ukm_service_(ukm_service),
+      is_logging_enabled_(
           base::FeatureList::IsEnabled(kTranslateRankerLogging)),
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
@@ -274,11 +279,43 @@ void TranslateRankerImpl::FlushTranslateEvents(
   event_cache_.clear();
 }
 
+void TranslateRankerImpl::SendEventToUKM(
+    const metrics::TranslateEventProto& event,
+    const GURL& url) {
+  if (!ukm_service_) {
+    DVLOG(3) << "No UKM service.";
+    return;
+  }
+  DVLOG(3) << "Sending event for url: " << url.spec();
+  int32_t source_id = ukm_service_->GetNewSourceID();
+  ukm_service_->UpdateSourceURL(source_id, url);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_service_->GetEntryBuilder(source_id, "Translate");
+  // The metrics added here should be kept in sync with the documented
+  // metrics in tools/metrics/ukm/ukm.xml.
+  // TODO(hamelphi): Remove hashing functions once UKM accepts strings metrics.
+  builder->AddMetric("SourceLanguage",
+                     base::HashMetricName(event.source_language()));
+  builder->AddMetric("TargetLanguage",
+                     base::HashMetricName(event.target_language()));
+  builder->AddMetric("Country", base::HashMetricName(event.country()));
+  builder->AddMetric("AcceptCount", event.accept_count());
+  builder->AddMetric("DeclineCount", event.decline_count());
+  builder->AddMetric("IgnoreCount", event.ignore_count());
+  builder->AddMetric("RankerVersion", event.ranker_version());
+  builder->AddMetric("RankerResponse", event.ranker_response());
+  builder->AddMetric("EventType", event.event_type());
+}
+
 void TranslateRankerImpl::AddTranslateEvent(
-    const metrics::TranslateEventProto& event) {
+    const metrics::TranslateEventProto& event,
+    const GURL& url) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (IsLoggingEnabled()) {
     DVLOG(3) << "Adding translate ranker event.";
+    if (url.is_valid()) {
+      SendEventToUKM(event, url);
+    }
     event_cache_.push_back(event);
   }
 }

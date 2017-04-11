@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class GURL;
+
 namespace metrics {
 class TranslateEventProto;
 }  // namespace metrics
@@ -49,7 +51,8 @@ class TranslateRanker : public KeyedService {
 
   // Caches the translate event.
   virtual void AddTranslateEvent(
-      const metrics::TranslateEventProto& translate_event) = 0;
+      const metrics::TranslateEventProto& translate_event,
+      const GURL& url) = 0;
 
   // Transfers cached translate events to the given vector pointer and clears
   // the cache.

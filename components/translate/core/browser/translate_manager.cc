@@ -606,7 +606,8 @@ void TranslateManager::RecordTranslateEvent(int event_type) {
       static_cast<metrics::TranslateEventProto::EventType>(event_type));
   translate_event_->set_event_timestamp_sec(
       (base::TimeTicks::Now() - base::TimeTicks()).InSeconds());
-  translate_ranker_->AddTranslateEvent(*translate_event_);
+  translate_ranker_->AddTranslateEvent(*translate_event_,
+                                       translate_driver_->GetVisibleURL());
 }
 
 }  // namespace translate

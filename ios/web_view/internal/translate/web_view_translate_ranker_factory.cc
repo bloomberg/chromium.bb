@@ -44,7 +44,8 @@ WebViewTranslateRankerFactory::BuildServiceInstanceFor(
       base::MakeUnique<translate::TranslateRankerImpl>(
           translate::TranslateRankerImpl::GetModelPath(
               web_view_browser_state->GetStatePath()),
-          translate::TranslateRankerImpl::GetModelURL());
+          translate::TranslateRankerImpl::GetModelURL(),
+          nullptr /* ukm::UkmService */);
   // WebView has no consumer of translate ranker events, so don't generate them.
   ranker->EnableLogging(false);
 

@@ -29,6 +29,10 @@ namespace autofill {
 class AutofillMetrics;
 }  // namespace autofill
 
+namespace translate {
+class TranslateRankerImpl;
+}
+
 namespace metrics {
 class MetricsServiceClient;
 }
@@ -112,6 +116,7 @@ class UkmService {
   friend autofill::AutofillMetrics;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
+  friend translate::TranslateRankerImpl;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,

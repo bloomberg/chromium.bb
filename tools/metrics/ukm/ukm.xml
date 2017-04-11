@@ -41,4 +41,21 @@ along with a detailed description for each metric.
   <metric name="UploadDecision"/>
 </event>
 
+<event name="Translate">
+  <owner>hamelphi@chromium.org</owner>
+  <summary>
+    Metrics related to a Translate event. These metrics are described in
+    TranslateEventProto.
+  </summary>
+  <metric name="AcceptCount"/>
+  <metric name="Country"/>
+  <metric name="DeclineCount"/>
+  <metric name="EventType"/>
+  <metric name="IgnoreCount"/>
+  <metric name="RankerResponse"/>
+  <metric name="RankerVersion"/>
+  <metric name="SourceLanguage"/>
+  <metric name="TargetLanguage"/>
+</event>
+
 </ukm-configuration>
