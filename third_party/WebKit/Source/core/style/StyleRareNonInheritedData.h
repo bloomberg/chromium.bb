@@ -64,8 +64,8 @@ class StyleTransformData;
 class StyleWillChangeData;
 
 // Page size type.
-// StyleRareNonInheritedData::m_pageSize is meaningful only when
-// StyleRareNonInheritedData::m_pageSizeType is PAGE_SIZE_RESOLVED.
+// StyleRareNonInheritedData::page_size_ is meaningful only when
+// StyleRareNonInheritedData::page_size_type_ is PAGE_SIZE_RESOLVED.
 enum PageSizeType {
   PAGE_SIZE_AUTO,            // size: auto
   PAGE_SIZE_AUTO_LANDSCAPE,  // size: landscape

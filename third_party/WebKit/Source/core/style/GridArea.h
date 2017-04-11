@@ -47,8 +47,8 @@ namespace blink {
 // efficient one memory-wise.
 const int kGridMaxTracks = 1000;
 
-// A span in a single direction (either rows or columns). Note that |startLine|
-// and |endLine| are grid lines' indexes.
+// A span in a single direction (either rows or columns). Note that |start_line|
+// and |end_line| are grid lines' indexes.
 // Despite line numbers in the spec start in "1", the indexes here start in "0".
 struct GridSpan {
   USING_FAST_MALLOC(GridSpan);

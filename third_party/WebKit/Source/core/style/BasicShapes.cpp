@@ -91,7 +91,7 @@ float BasicShapeCircle::FloatValueForRadiusInBox(FloatSize box_size) const {
     return std::min(std::min(std::abs(center.X()), width_delta),
                     std::min(std::abs(center.Y()), height_delta));
 
-  // If radius.type() == BasicShapeRadius::FarthestSide.
+  // If radius.type() == BasicShapeRadius::kFarthestSide.
   return std::max(std::max(center.X(), width_delta),
                   std::max(center.Y(), height_delta));
 }

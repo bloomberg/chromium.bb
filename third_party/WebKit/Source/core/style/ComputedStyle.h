@@ -3281,7 +3281,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // 'z-index: 0'.  The difference of them from normal stacking contexts is that
   // they don't determine the stacking of the elements underneath them.  (Note:
   // There are also other elements treated as stacking context during painting,
-  // but not managed in stacks. See ObjectPainter::paintAllPhasesAtomically().)
+  // but not managed in stacks. See ObjectPainter::PaintAllPhasesAtomically().)
   void UpdateIsStackingContext(bool is_document_element, bool is_in_top_layer);
   bool IsStacked() const {
     return IsStackingContext() || GetPosition() != EPosition::kStatic;
@@ -3294,9 +3294,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasUniquePseudoStyle() const;
   bool HasPseudoElementStyle() const;
 
-  // Note: canContainAbsolutePositionObjects should return true if
-  // canContainFixedPositionObjects.  We currently never use this value
-  // directly, always OR'ing it with canContainFixedPositionObjects.
+  // Note: CanContainAbsolutePositionObjects should return true if
+  // CanContainFixedPositionObjects.  We currently never use this value
+  // directly, always OR'ing it with CanContainFixedPositionObjects.
   bool CanContainAbsolutePositionObjects() const {
     return GetPosition() != EPosition::kStatic;
   }
@@ -3510,7 +3510,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Color accessors are all private to make sure callers use
-  // visitedDependentColor instead to access them.
+  // VisitedDependentColor instead to access them.
   StyleColor BorderLeftColor() const {
     return surround_->border_.Left().GetColor();
   }

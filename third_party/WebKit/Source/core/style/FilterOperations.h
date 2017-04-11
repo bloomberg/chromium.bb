@@ -63,7 +63,7 @@ class CORE_EXPORT FilterOperations {
 
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
-  // See also FilterEffect::mapRect.
+  // See also FilterEffect::MapRect.
   FloatRect MapRect(const FloatRect&) const;
 
   bool HasFilterThatAffectsOpacity() const;

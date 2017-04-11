@@ -110,7 +110,7 @@ class CORE_EXPORT FilterOperation
 
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
-  // See also FilterEffect::mapRect.
+  // See also FilterEffect::MapRect.
   virtual FloatRect MapRect(const FloatRect& rect) const { return rect; }
 
  protected:

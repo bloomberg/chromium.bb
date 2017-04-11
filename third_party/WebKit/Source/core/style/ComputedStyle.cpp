@@ -510,7 +510,7 @@ static bool DependenceOnContentHeightHasChanged(const ComputedStyle& a,
 
 StyleDifference ComputedStyle::VisualInvalidationDiff(
     const ComputedStyle& other) const {
-  // Note, we use .get() on each DataRef below because DataRef::operator== will
+  // Note, we use .Get() on each DataRef below because DataRef::operator== will
   // do a deep compare, which is duplicate work when we're going to compare each
   // property inside this function anyway.
 
@@ -605,7 +605,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     const ComputedStyle& other) const {
   // FIXME: Not all cases in this method need both full layout and paint
   // invalidation.
-  // Should move cases into diffNeedsFullLayout() if
+  // Should move cases into DiffNeedsFullLayout() if
   // - don't need paint invalidation at all;
   // - or the layoutObject knows how to exactly invalidate paints caused by the
   //   layout change instead of forced full paint invalidation.
@@ -835,7 +835,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     return true;
 
   // Movement of non-static-positioned object is special cased in
-  // ComputedStyle::visualInvalidationDiff().
+  // ComputedStyle::VisualInvalidationDiff().
 
   return false;
 }
@@ -976,8 +976,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
     return true;
 
   for (CSSPropertyID property_id : *value->NativeInvalidationProperties()) {
-    // TODO(ikilpatrick): remove isInterpolableProperty check once
-    // CSSPropertyEquality::propertiesEqual correctly handles all properties.
+    // TODO(ikilpatrick): remove IsInterpolableProperty check once
+    // CSSPropertyEquality::PropertiesEqual correctly handles all properties.
     if (!CSSPropertyMetadata::IsInterpolableProperty(property_id) ||
         !CSSPropertyEquality::PropertiesEqual(property_id, *this, other))
       return true;
@@ -1183,8 +1183,8 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
 
   // Force a stacking context for transform-style: preserve-3d. This happens
   // even if preserves-3d is ignored due to a 'grouping property' being present
-  // which requires flattening. See ComputedStyle::usedTransformStyle3D() and
-  // ComputedStyle::hasGroupingProperty().
+  // which requires flattening. See ComputedStyle::UsedTransformStyle3D() and
+  // ComputedStyle::HasGroupingProperty().
   // This is legacy behavior that is left ambiguous in the official specs.
   // See crbug.com/663650 for more details."
   if (TransformStyle3D() == kTransformStyle3DPreserve3D) {
