@@ -23,20 +23,24 @@ extern "C" {
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace device {
 
 class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
  public:
-  HidServiceWin(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  HidServiceWin(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   ~HidServiceWin() override;
 
   void Connect(const HidDeviceId& device_id,
                const ConnectCallback& callback) override;
 
  private:
-  static void EnumerateOnFileThread(
+  static void EnumerateBlocking(
       base::WeakPtr<HidServiceWin> service,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   static void CollectInfoFromButtonCaps(PHIDP_PREPARSED_DATA preparsed_data,
                                         HIDP_REPORT_TYPE report_type,
                                         USHORT button_caps_length,
@@ -45,9 +49,9 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
                                        HIDP_REPORT_TYPE report_type,
                                        USHORT value_caps_length,
                                        HidCollectionInfo* collection_info);
-  static void AddDeviceOnFileThread(
+  static void AddDeviceBlocking(
       base::WeakPtr<HidServiceWin> service,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const std::string& device_path);
 
   // DeviceMonitorWin::Observer implementation:
@@ -59,8 +63,8 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   // Tries to open the device read-write and falls back to read-only.
   static base::win::ScopedHandle OpenDevice(const std::string& device_path);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
   base::WeakPtrFactory<HidServiceWin> weak_factory_;
 

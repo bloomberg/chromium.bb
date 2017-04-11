@@ -19,11 +19,10 @@
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/memory/free_deleter.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_win.h"
 #include "device/hid/hid_device_info.h"
@@ -32,19 +31,18 @@
 namespace device {
 
 HidServiceWin::HidServiceWin(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : file_task_runner_(file_task_runner),
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      blocking_task_runner_(std::move(blocking_task_runner)),
       device_observer_(this),
       weak_factory_(this) {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(task_runner_.get());
   DeviceMonitorWin* device_monitor =
       DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_HID);
-  if (device_monitor) {
+  if (device_monitor)
     device_observer_.Add(device_monitor);
-  }
-  file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HidServiceWin::EnumerateOnFileThread,
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&HidServiceWin::EnumerateBlocking,
                             weak_factory_.GetWeakPtr(), task_runner_));
 }
 
@@ -74,9 +72,9 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 }
 
 // static
-void HidServiceWin::EnumerateOnFileThread(
+void HidServiceWin::EnumerateBlocking(
     base::WeakPtr<HidServiceWin> service,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   HDEVINFO device_info_set =
       SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, NULL, NULL,
                           DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
@@ -115,8 +113,7 @@ void HidServiceWin::EnumerateOnFileThread(
       std::string device_path(
           base::SysWideToUTF8(device_interface_detail_data->DevicePath));
       DCHECK(base::IsStringASCII(device_path));
-      AddDeviceOnFileThread(service, task_runner,
-                            base::ToLowerASCII(device_path));
+      AddDeviceBlocking(service, task_runner, base::ToLowerASCII(device_path));
     }
   }
 
@@ -170,9 +167,9 @@ void HidServiceWin::CollectInfoFromValueCaps(
 }
 
 // static
-void HidServiceWin::AddDeviceOnFileThread(
+void HidServiceWin::AddDeviceBlocking(
     base::WeakPtr<HidServiceWin> service,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const std::string& device_path) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
@@ -270,17 +267,17 @@ void HidServiceWin::AddDeviceOnFileThread(
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
-  file_task_runner_->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&HidServiceWin::AddDeviceOnFileThread,
-                 weak_factory_.GetWeakPtr(), task_runner_, device_path));
+      base::Bind(&HidServiceWin::AddDeviceBlocking, weak_factory_.GetWeakPtr(),
+                 task_runner_, device_path));
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
                                     const std::string& device_path) {
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
-  file_task_runner_->PostTaskAndReply(
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing),
       base::Bind(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
                  device_path));
