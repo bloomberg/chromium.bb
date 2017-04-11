@@ -137,6 +137,8 @@ class SlaveStatus(object):
           builder_status_lib.SlaveBuilderStatus.GetAllSlaveBuildbucketInfo(
               self.buildbucket_client, scheduled_buildbucket_info_dict,
               dry_run=self.dry_run))
+      logging.info('Got buildbucket info for builds: %s',
+                   self.all_buildbucket_info_dict.keys())
       self.buildbucket_info_dict = self._GetNewSlaveBuildbucketInfo(
           self.all_buildbucket_info_dict, self.completed_builds)
       self._SetStatusBuildsDict()
@@ -144,6 +146,8 @@ class SlaveStatus(object):
     self.all_cidb_status_dict = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
             self.db, self.master_build_id, self.all_buildbucket_info_dict))
+    logging.info('Got CIDB info for builds: %s',
+                 self.all_cidb_status_dict.keys())
     self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
         self.all_cidb_status_dict, self.completed_builds)
 

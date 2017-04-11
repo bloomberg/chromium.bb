@@ -181,4 +181,5 @@ class AuthorizedHttp(object):
       headers['Authorization'] = 'Bearer %s' % self.token
       resp, content = self.http.request(*args, **kwargs)
 
+    logging.info('Response %s Content %s', resp, content)
     return resp, content
