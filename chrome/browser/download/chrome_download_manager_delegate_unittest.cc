@@ -60,29 +60,6 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   ~MockWebContentsDelegate() override {}
 };
 
-// Google Mock action that posts a task to the current message loop that invokes
-// the first argument of the mocked method as a callback. Said argument must be
-// a base::Callback<void(ParamType)>. |result| must be of |ParamType| and is
-// bound as that parameter.
-// Example:
-//   class FooClass {
-//    public:
-//     virtual void Foo(base::Callback<void(bool)> callback);
-//   };
-//   ...
-//   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
-//     .WillOnce(ScheduleCallback(false));
-ACTION_P(ScheduleCallback, result) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(arg0, result));
-}
-
-// Similar to ScheduleCallback, but binds 2 arguments.
-ACTION_P2(ScheduleCallback2, result0, result1) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0, result0, result1));
-}
-
 // Subclass of the ChromeDownloadManagerDelegate that uses a mock
 // DownloadProtectionService.
 class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
