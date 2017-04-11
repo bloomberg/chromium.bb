@@ -99,7 +99,10 @@ void MaybeConstrainPanelSizeForSierraBug() {
                      forWebContents:(content::WebContents*)webContents {
   if ((self = [super init])) {
     base::ScopedCFTypeRef<CFArrayRef> certChain(
-        certificate->CreateOSCertChainForCert());
+        net::x509_util::CreateSecCertificateArrayForX509Certificate(
+            certificate));
+    if (!certChain)
+      return self;
     NSArray* certificates = base::mac::CFToNSCast(certChain.get());
     certificates_.reset([certificates retain]);
   }

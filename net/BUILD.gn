@@ -37,6 +37,12 @@ posix_avoid_mmap = is_android && current_cpu != "x86"
 use_v8_in_net = !is_ios && !is_proto_quic
 enable_built_in_dns = !is_ios && !is_proto_quic
 
+# True if certificates are represented with DER byte buffers. This can be true
+# in addition to use_openssl_certs or use_nss_certs, in that case byte certs
+# are used internally but OpenSSL or NSS are used for certificate verification.
+# TODO(mattm): crbug.com/671420: Implement and enable this for all platforms.
+use_byte_certs = is_mac
+
 buildflag_header("features") {
   header = "net_features.h"
   flags = [
@@ -45,6 +51,7 @@ buildflag_header("features") {
     "DISABLE_FTP_SUPPORT=$disable_ftp_support",
     "ENABLE_MDNS=$enable_mdns",
     "ENABLE_WEBSOCKETS=$enable_websockets",
+    "USE_BYTE_CERTS=$use_byte_certs",
   ]
 }
 
@@ -585,6 +592,7 @@ component("net") {
       "cert/test_root_certs_win.cc",
       "cert/x509_cert_types_mac.cc",
       "cert/x509_cert_types_win.cc",
+      "cert/x509_certificate_bytes.cc",
       "cert/x509_certificate_ios.cc",
       "cert/x509_certificate_known_roots_win.h",
       "cert/x509_certificate_mac.cc",
@@ -592,6 +600,8 @@ component("net") {
       "cert/x509_certificate_win.cc",
       "cert/x509_util_android.cc",
       "cert/x509_util_android.h",
+      "cert/x509_util_ios.cc",
+      "cert/x509_util_ios.h",
       "cert/x509_util_mac.cc",
       "cert/x509_util_mac.h",
       "cert/x509_util_nss.cc",
@@ -1730,6 +1740,26 @@ component("net") {
         "dns/address_sorter_posix.h",
         "dns/dns_client.cc",
       ]
+    }
+
+    if (use_byte_certs) {
+      if (is_ios) {
+        sources -= [ "cert/x509_certificate_ios.cc" ]
+      }
+      if (is_mac) {
+        sources -= [ "cert/x509_certificate_mac.cc" ]
+      }
+      if (use_nss_certs) {
+        sources -= [ "cert/x509_certificate_nss.cc" ]
+      }
+      if (use_openssl_certs) {
+        sources -= [ "cert/x509_certificate_openssl.cc" ]
+      }
+      if (is_win) {
+        sources -= [ "cert/x509_certificate_win.cc" ]
+      }
+    } else {
+      sources -= [ "cert/x509_certificate_bytes.cc" ]
     }
 
     if (!use_openssl_certs) {

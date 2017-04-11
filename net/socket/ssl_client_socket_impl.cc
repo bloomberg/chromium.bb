@@ -225,6 +225,13 @@ scoped_refptr<X509Certificate> OSChainFromBuffers(STACK_OF(CRYPTO_BUFFER) *
     return nullptr;
   }
 
+#if BUILDFLAG(USE_BYTE_CERTS)
+  std::vector<CRYPTO_BUFFER*> intermediate_chain;
+  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(openssl_chain); ++i)
+    intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(openssl_chain, i));
+  return X509Certificate::CreateFromHandle(
+      sk_CRYPTO_BUFFER_value(openssl_chain, 0), intermediate_chain);
+#else
   // Convert the certificate chains to a platform certificate handle.
   std::vector<base::StringPiece> der_chain;
   der_chain.reserve(sk_CRYPTO_BUFFER_num(openssl_chain));
@@ -236,9 +243,10 @@ scoped_refptr<X509Certificate> OSChainFromBuffers(STACK_OF(CRYPTO_BUFFER) *
         CRYPTO_BUFFER_len(cert)));
   }
   return X509Certificate::CreateFromDERCertChain(der_chain);
+#endif
 }
 
-#if !defined(OS_IOS)
+#if !defined(OS_IOS) && !BUILDFLAG(USE_BYTE_CERTS)
 bssl::UniquePtr<CRYPTO_BUFFER> OSCertHandleToBuffer(
     X509Certificate::OSCertHandle os_handle) {
   std::string der_encoded;
@@ -1582,6 +1590,14 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
+#if BUILDFLAG(USE_BYTE_CERTS)
+    std::vector<CRYPTO_BUFFER*> chain_raw;
+    chain_raw.push_back(ssl_config_.client_cert->os_cert_handle());
+    for (X509Certificate::OSCertHandle cert :
+         ssl_config_.client_cert->GetIntermediateCertificates()) {
+      chain_raw.push_back(cert);
+    }
+#else
     std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
     std::vector<CRYPTO_BUFFER*> chain_raw;
     bssl::UniquePtr<CRYPTO_BUFFER> buf =
@@ -1605,6 +1621,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       chain_raw.push_back(buf.get());
       chain.push_back(std::move(buf));
     }
+#endif
 
     if (!SSL_set_chain_and_key(ssl_.get(), chain_raw.data(), chain_raw.size(),
                                nullptr, &SSLContext::kPrivateKeyMethod)) {
@@ -1641,7 +1658,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
                                      digests.size());
 
     net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
-                      NetLog::IntCallback("cert_count", chain.size()));
+                      NetLog::IntCallback("cert_count", chain_raw.size()));
     return 1;
   }
 #endif  // defined(OS_IOS)

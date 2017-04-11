@@ -30,6 +30,7 @@
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_mac.h"
 #include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_platform_key_util.h"
 #include "net/ssl/ssl_private_key.h"
@@ -84,9 +85,13 @@ SecKeyRef FetchSecKeyRefForCertificate(const X509Certificate* certificate,
   OSStatus status;
   base::ScopedCFTypeRef<SecIdentityRef> identity;
   {
+    base::ScopedCFTypeRef<SecCertificateRef> os_cert(
+        x509_util::CreateSecCertificateFromX509Certificate(certificate));
+    if (!os_cert)
+      return nullptr;
     base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    status = SecIdentityCreateWithCertificate(
-        keychain, certificate->os_cert_handle(), identity.InitializeInto());
+    status = SecIdentityCreateWithCertificate(keychain, os_cert.get(),
+                                              identity.InitializeInto());
   }
   if (status != noErr) {
     OSSTATUS_LOG(WARNING, status);

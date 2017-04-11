@@ -208,8 +208,11 @@ void ClearTableViewDataSourcesIfNeeded(NSWindow*) {}
   identities_.reset(CFArrayCreateMutable(
       kCFAllocatorDefault, numCerts, &kCFTypeArrayCallBacks));
   for (size_t i = 0; i < numCerts; ++i) {
-    SecCertificateRef cert =
-        observer_->cert_request_info()->client_certs[i]->os_cert_handle();
+    base::ScopedCFTypeRef<SecCertificateRef> cert(
+        net::x509_util::CreateSecCertificateFromX509Certificate(
+            observer_->cert_request_info()->client_certs[i].get()));
+    if (!cert)
+      continue;
     SecIdentityRef identity;
     if (SecIdentityCreateWithCertificate(NULL, cert, &identity) == noErr) {
       CFArrayAppendValue(identities_, identity);

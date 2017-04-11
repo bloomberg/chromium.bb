@@ -202,7 +202,8 @@ void CopyCertChainToVerifyResult(CFArrayRef cert_chain,
   }
 
   scoped_refptr<X509Certificate> verified_cert_with_chain =
-      X509Certificate::CreateFromHandle(verified_cert, verified_chain);
+      x509_util::CreateX509CertificateFromSecCertificate(verified_cert,
+                                                         verified_chain);
   if (verified_cert_with_chain)
     verify_result->verified_cert = std::move(verified_cert_with_chain);
   else
@@ -212,7 +213,7 @@ void CopyCertChainToVerifyResult(CFArrayRef cert_chain,
 // Returns true if the certificate uses MD2, MD4, MD5, or SHA1, and false
 // otherwise. A return of false also includes the case where the signature
 // algorithm couldn't be conclusively labeled as weak.
-bool CertUsesWeakHash(X509Certificate::OSCertHandle cert_handle) {
+bool CertUsesWeakHash(SecCertificateRef cert_handle) {
   x509_util::CSSMCachedCertificate cached_cert;
   OSStatus status = cached_cert.Init(cert_handle);
   if (status)
@@ -616,7 +617,7 @@ class OSXKnownRootHelper {
       return false;
     SecCertificateRef root_ref = reinterpret_cast<SecCertificateRef>(
         const_cast<void*>(CFArrayGetValueAtIndex(chain, n - 1)));
-    SHA256HashValue hash = X509Certificate::CalculateFingerprint256(root_ref);
+    SHA256HashValue hash = x509_util::CalculateFingerprint256(root_ref);
     return known_roots_.find(hash) != known_roots_.end();
   }
 
@@ -636,7 +637,7 @@ class OSXKnownRootHelper {
     for (CFIndex i = 0, size = CFArrayGetCount(cert_array); i < size; ++i) {
       SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
           const_cast<void*>(CFArrayGetValueAtIndex(cert_array, i)));
-      known_roots_.insert(X509Certificate::CalculateFingerprint256(cert));
+      known_roots_.insert(x509_util::CalculateFingerprint256(cert));
     }
   }
 
@@ -782,7 +783,9 @@ int VerifyWithGivenFlags(X509Certificate* cert,
     }
 
     ScopedCFTypeRef<CFMutableArrayRef> cert_array(
-        cert->CreateOSCertChainForCert());
+        x509_util::CreateSecCertificateArrayForX509Certificate(cert));
+    if (!cert_array)
+      return ERR_CERT_INVALID;
 
     // Beginning with the certificate chain as supplied by the server, attempt
     // to verify the chain. If a failure is encountered, trim a certificate
