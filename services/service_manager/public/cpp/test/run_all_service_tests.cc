@@ -12,11 +12,6 @@
 #include "services/catalog/catalog.h"
 #include "services/service_manager/public/cpp/test/service_test_catalog.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "mojo/android/system/mojo_jni_registrar.h"
-#endif
-
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
 
@@ -24,10 +19,6 @@ int main(int argc, char** argv) {
       service_manager::test::CreateTestCatalog());
 
   mojo::edk::Init();
-
-#if defined(OS_ANDROID)
-  mojo::android::RegisterSystemJni(base::android::AttachCurrentThread());
-#endif
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
