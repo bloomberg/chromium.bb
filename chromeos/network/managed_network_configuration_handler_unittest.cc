@@ -549,7 +549,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   EXPECT_EQ(1, policy_observer_.GetPoliciesAppliedCountAndReset());
 }
 
-TEST_F(ManagedNetworkConfigurationHandlerTest, PolicyApplicationRunning) {
+// TODO(stevenjb): https://crbug.com/710241
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       DISABLED_PolicyApplicationRunning) {
   InitializeStandardProfiles();
   EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _)).Times(AnyNumber());
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _))
@@ -580,7 +582,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, PolicyApplicationRunning) {
   EXPECT_FALSE(managed_handler()->IsAnyPolicyApplicationRunning());
 }
 
-TEST_F(ManagedNetworkConfigurationHandlerTest, UpdatePolicyAfterFinished) {
+// TODO(stevenjb): https://crbug.com/710241
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       DISABLED_UpdatePolicyAfterFinished) {
   InitializeStandardProfiles();
   EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _));
   EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
@@ -686,7 +690,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
+// TODO(stevenjb): https://crbug.com/710241
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       DISABLED_SetPolicyUpdateManagedNewGUID) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_managed_wifi1.json",
              kUser1ProfilePath,
@@ -747,7 +753,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedVPN) {
   VerifyAndClearExpectations();
 }
 
-TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
+// TODO(stevenjb): https://crbug.com/710241
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       DISABLED_SetPolicyReapplyToManaged) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
              kUser1ProfilePath,

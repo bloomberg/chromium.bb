@@ -681,7 +681,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 }
 
 // TODO(stevenjb): Find a better way to set this up on Chrome OS.
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
+// TODO(stevenjb): https://crbug.com/710241
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       DISABLED_GetManagedProperties) {
   const std::string uidata_blob =
       "{ \"user_settings\": {"
       "      \"WiFi\": {"
