@@ -1422,9 +1422,7 @@ void WebContentsImpl::WasUnOccluded() {
 bool WebContentsImpl::NeedToFireBeforeUnload() {
   // TODO(creis): Should we fire even for interstitial pages?
   return WillNotifyDisconnection() && !ShowingInterstitialPage() &&
-         !GetRenderViewHost()->SuddenTerminationAllowed() &&
-         (GetMainFrame()->ShouldDispatchBeforeUnload() ||
-          GetMainFrame()->ShouldDispatchUnload());
+         !GetRenderViewHost()->SuddenTerminationAllowed();
 }
 
 void WebContentsImpl::DispatchBeforeUnload() {

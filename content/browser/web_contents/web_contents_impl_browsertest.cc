@@ -1020,29 +1020,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 namespace {
-void NavigateToDataURLAndExpectBeforeUnload(Shell* shell,
-                                            const std::string& html,
-                                            bool expect_onbeforeunload) {
-  NavigateToURL(shell, GURL("data:text/html," + html));
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
-  EXPECT_EQ(expect_onbeforeunload, rfh->ShouldDispatchBeforeUnload());
-}
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NoOnBeforeUnload) {
-  const std::string NO_BEFORE_UNLOAD_HTML = "<html><body>foo</body></html>";
-  NavigateToDataURLAndExpectBeforeUnload(shell(), NO_BEFORE_UNLOAD_HTML, false);
-}
-
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OnBeforeUnload) {
-  const std::string BEFORE_UNLOAD_HTML =
-      "<html><body><script>window.onbeforeunload=function(e) {}</script>"
-      "</body></html>";
-  NavigateToDataURLAndExpectBeforeUnload(shell(), BEFORE_UNLOAD_HTML, true);
-}
-
-namespace {
 
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {

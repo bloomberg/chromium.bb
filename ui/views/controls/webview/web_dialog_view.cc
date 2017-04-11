@@ -110,8 +110,7 @@ bool WebDialogView::CanClose() {
     return true;
   }
 
-  if (!is_attempting_close_dialog_ &&
-      web_view_->web_contents()->NeedToFireBeforeUnload()) {
+  if (!is_attempting_close_dialog_) {
     // Fire beforeunload event when user attempts to close the dialog.
     is_attempting_close_dialog_ = true;
     web_view_->web_contents()->DispatchBeforeUnload();

@@ -255,6 +255,14 @@ static void RemoveAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
   }
 }
 
+static bool AllowsBeforeUnloadListeners(LocalDOMWindow* window) {
+  DCHECK(window);
+  LocalFrame* frame = window->GetFrame();
+  if (!frame)
+    return false;
+  return frame->IsMainFrame();
+}
+
 unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
   return WindowsWithUnloadEventListeners().Count(
       const_cast<LocalDOMWindow*>(this));
@@ -1440,10 +1448,17 @@ void LocalDOMWindow::AddedEventListener(
     AddUnloadEventListener(this);
   } else if (event_type == EventTypeNames::beforeunload) {
     UseCounter::Count(document(), UseCounter::kDocumentBeforeUnloadRegistered);
-    AddBeforeUnloadEventListener(this);
-    if (GetFrame() && !GetFrame()->IsMainFrame())
+    if (AllowsBeforeUnloadListeners(this)) {
+      // This is confusingly named. It doesn't actually add the listener. It
+      // just increments a count so that we know we have listeners registered
+      // for the purposes of determining if we can fast terminate the renderer
+      // process.
+      AddBeforeUnloadEventListener(this);
+    } else {
+      // Subframes return false from allowsBeforeUnloadListeners.
       UseCounter::Count(document(),
                         UseCounter::kSubFrameBeforeUnloadRegistered);
+    }
   }
 }
 
@@ -1461,7 +1476,8 @@ void LocalDOMWindow::RemovedEventListener(
 
   if (event_type == EventTypeNames::unload) {
     RemoveUnloadEventListener(this);
-  } else if (event_type == EventTypeNames::beforeunload) {
+  } else if (event_type == EventTypeNames::beforeunload &&
+             AllowsBeforeUnloadListeners(this)) {
     RemoveBeforeUnloadEventListener(this);
   }
 }

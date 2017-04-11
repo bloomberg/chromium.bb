@@ -4745,21 +4745,6 @@ void RenderFrameImpl::ExitFullscreen() {
   Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
 }
 
-void RenderFrameImpl::SuddenTerminationDisablerChanged(
-    bool present,
-    blink::WebFrameClient::SuddenTerminationDisablerType type) {
-  switch (type) {
-    case blink::WebFrameClient::kBeforeUnloadHandler:
-      Send(new FrameHostMsg_BeforeUnloadHandlersPresent(routing_id_, present));
-      break;
-    case blink::WebFrameClient::kUnloadHandler:
-      Send(new FrameHostMsg_UnloadHandlersPresent(routing_id_, present));
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void RenderFrameImpl::RegisterProtocolHandler(const WebString& scheme,
                                               const WebURL& url,
                                               const WebString& title) {
