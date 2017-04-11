@@ -67,11 +67,13 @@ AutoScanManager.prototype = {
   },
 
   /**
-   * Restart auto-scan under the current settings.
+   * Restart auto-scan under the current settings if it is currently running.
    */
-  restart: function() {
-    this.stop_();
-    this.start_();
+  restartIfRunning: function() {
+    if (this.isRunning()) {
+      this.stop_();
+      this.start_();
+    }
   },
 
   /**
@@ -95,8 +97,6 @@ AutoScanManager.prototype = {
    */
   setScanTime: function(scanTime) {
     this.scanTime_ = scanTime;
-    if (this.isRunning()) {
-      this.restart();
-    }
+    this.restartIfRunning();
   },
 };

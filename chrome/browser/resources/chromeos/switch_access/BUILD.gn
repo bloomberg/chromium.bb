@@ -41,6 +41,26 @@ run_jsbundler("switch_access_copied_files") {
   ]
 }
 
+test("switch_access_tests") {
+  deps = [
+    ":switch_access_webuijs_tests",
+    "//chrome/test:browser_tests_runner",
+  ]
+}
+
+js2gtest("switch_access_webuijs_tests") {
+  test_type = "webui"
+  sources = [
+    "auto_scan_manager_unittest.gtestjs",
+    "tree_walker_unittest.gtestjs",
+  ]
+  extra_js_files = [
+    "auto_scan_manager.js",
+    "tree_walker.js",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
 # TODO: refactor this into another file like generate_manifest.gni
 # to share with other extensions.
 template("manifest") {

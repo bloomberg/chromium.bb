@@ -135,8 +135,7 @@ SwitchAccess.prototype = {
    * @override
    */
   performedUserAction: function() {
-    if (this.autoScanManager_.isRunning())
-      this.autoScanManager_.restart();
+    this.autoScanManager_.restartIfRunning();
   },
 
   /**

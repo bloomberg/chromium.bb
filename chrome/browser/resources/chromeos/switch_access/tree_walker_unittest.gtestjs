@@ -19,6 +19,9 @@ AutomationTreeWalkerUnitTest.prototype = {
     'tree_walker.js',
   ],
 
+  /** @override */
+  browsePreload: DUMMY_URL,
+
   getSampleTree: function() {
     // root
     //   middle1
@@ -75,14 +78,45 @@ AutomationTreeWalkerUnitTest.prototype = {
   }
 };
 
+TEST_F('AutomationTreeWalkerUnitTest', 'MoveToNode', function() {
+  let t = this.getSampleTree();
+  let treeWalker = new AutomationTreeWalker();
+
+  let interesting = {focusable: true};
+  t.leaf1.state = interesting;
+  t.leaf2.state = interesting;
+  t.middle2.state = interesting;
+  t.leaf5.state = interesting;
+
+  // Move to next node.
+  assertEquals(t.leaf1, treeWalker.moveToNode(t.root, t.root, true));
+  assertEquals(t.leaf1, treeWalker.moveToNode(t.middle1, t.root, true));
+  assertEquals(t.leaf2, treeWalker.moveToNode(t.leaf1, t.root, true));
+  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf2, t.root, true));
+  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf3, t.root, true));
+  assertEquals(t.leaf5, treeWalker.moveToNode(t.middle2, t.root, true));
+  assertEquals(t.leaf5, treeWalker.moveToNode(t.leaf4, t.root, true));
+  assertEquals(t.leaf1, treeWalker.moveToNode(t.leaf5, t.root, true));
+
+  // Move to previous node.
+  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf5, t.root, false));
+  assertEquals(t.middle2, treeWalker.moveToNode(t.leaf4, t.root, false));
+  assertEquals(t.leaf2, treeWalker.moveToNode(t.middle2, t.root, false));
+  assertEquals(t.leaf2, treeWalker.moveToNode(t.leaf3, t.root, false));
+  assertEquals(t.leaf1, treeWalker.moveToNode(t.leaf2, t.root, false));
+  assertEquals(t.leaf5, treeWalker.moveToNode(t.leaf1, t.root, false));
+  assertEquals(t.leaf5, treeWalker.moveToNode(t.middle1, t.root, false));
+  assertEquals(t.leaf5, treeWalker.moveToNode(t.root, t.root, false));
+});
+
 TEST_F('AutomationTreeWalkerUnitTest', 'GetNextNode', function() {
-  let tree = this.getSampleTree();
+  let t = this.getSampleTree();
   let treeWalker = new AutomationTreeWalker();
 
   let order =
-      [tree.root, tree.middle1, tree.leaf1, tree.leaf2, tree.leaf3,
-      tree.middle2, tree.leaf4, tree.leaf5];
-  let node = tree.root;
+      [t.root, t.middle1, t.leaf1, t.leaf2, t.leaf3,
+      t.middle2, t.leaf4, t.leaf5];
+  let node = t.root;
   for (let i = 0; i < order.length; i++) {
     assertEquals(order[i], node);
     node = treeWalker.getNextNode_(node);
@@ -91,13 +125,13 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetNextNode', function() {
 });
 
 TEST_F('AutomationTreeWalkerUnitTest', 'GetPreviousNode', function() {
-  let tree = this.getSampleTree();
+  let t = this.getSampleTree();
   let treeWalker = new AutomationTreeWalker();
 
   let order =
-      [tree.leaf5, tree.leaf4, tree.middle2, tree.leaf3, tree.leaf2,
-      tree.leaf1, tree.middle1, tree.root];
-  let node = tree.leaf5;
+      [t.leaf5, t.leaf4, t.middle2, t.leaf3, t.leaf2,
+      t.leaf1, t.middle1, t.root];
+  let node = t.leaf5;
   for (let i = 0; i < order.length; i++) {
     assertEquals(order[i], node);
     node = treeWalker.getPreviousNode_(node);
@@ -106,17 +140,17 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetPreviousNode', function() {
 });
 
 TEST_F('AutomationTreeWalkerUnitTest', 'GetYoungestDescendant', function() {
-  let tree = this.getSampleTree();
+  let t = this.getSampleTree();
   let treeWalker = new AutomationTreeWalker();
 
-  assertEquals(tree.leaf5, treeWalker.getYoungestDescendant_(tree.root));
-  assertEquals(tree.leaf3, treeWalker.getYoungestDescendant_(tree.middle1));
-  assertEquals(tree.leaf5, treeWalker.getYoungestDescendant_(tree.middle2));
-  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf1));
-  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf2));
-  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf3));
-  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf4));
-  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf5));
+  assertEquals(t.leaf5, treeWalker.getYoungestDescendant_(t.root));
+  assertEquals(t.leaf3, treeWalker.getYoungestDescendant_(t.middle1));
+  assertEquals(t.leaf5, treeWalker.getYoungestDescendant_(t.middle2));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf1));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf2));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf3));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf4));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(t.leaf5));
 });
 
 TEST_F('AutomationTreeWalkerUnitTest', 'IsInteresting', function() {
