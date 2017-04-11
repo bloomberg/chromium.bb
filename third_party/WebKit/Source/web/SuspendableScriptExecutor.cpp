@@ -178,7 +178,10 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(
       callback_(callback),
       blocking_option_(kNonBlocking),
       keep_alive_(this),
-      executor_(executor) {}
+      executor_(executor) {
+  CHECK(script_state_);
+  CHECK(script_state_->ContextIsValid());
+}
 
 SuspendableScriptExecutor::~SuspendableScriptExecutor() {}
 
