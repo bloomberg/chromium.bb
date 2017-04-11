@@ -1400,13 +1400,16 @@ void ChromeContentRendererClient::AddImageContextMenuProperties(
     const WebURLResponse& response,
     std::map<std::string, std::string>* properties) {
   DCHECK(properties);
-  WebString header_key(WebString::FromASCII(
+
+  WebString cpct_value = response.HttpHeaderField(WebString::FromASCII(
       data_reduction_proxy::chrome_proxy_content_transform_header()));
-  if (!response.HttpHeaderField(header_key).IsNull() &&
-      data_reduction_proxy::IsEmptyImagePreview(
-          response.HttpHeaderField(header_key).Utf8())) {
-    (*properties)[
-        data_reduction_proxy::chrome_proxy_content_transform_header()] =
+  WebString chrome_proxy_value = response.HttpHeaderField(
+      WebString::FromASCII(data_reduction_proxy::chrome_proxy_header()));
+
+  if (data_reduction_proxy::IsEmptyImagePreview(cpct_value.Utf8(),
+                                                chrome_proxy_value.Utf8())) {
+    (*properties)
+        [data_reduction_proxy::chrome_proxy_content_transform_header()] =
             data_reduction_proxy::empty_image_directive();
   }
 }

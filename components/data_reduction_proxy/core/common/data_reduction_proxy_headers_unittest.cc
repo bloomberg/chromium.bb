@@ -77,6 +77,28 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
           "Another-Header: empty-image\n",
           false,
       },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy: q=low\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy: foo=bar, Q=LOW\n",
+          true,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: q=low\n"
+          "Chrome-Proxy: empty-image\n",
+          false,
+      },
+      {
+          "HTTP/1.1 200 OK\n"
+          "Chrome-Proxy-Content-Transform: foo\n"
+          "Chrome-Proxy: q=low\n",
+          true,
+      },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::string headers(tests[i].headers);
@@ -89,30 +111,30 @@ TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
 
 TEST_F(DataReductionProxyHeadersTest, IsEmptyImagePreviewValue) {
   const struct {
-    const char* header;
+    const char* chrome_proxy_content_transform_header;
+    const char* chrome_proxy_header;
     bool expected_result;
   } tests[] = {
-      {
-          "foo", false,
-      },
-      {
-          "", false,
-      },
-      {
-          "empty-image", true,
-      },
-      {
-          "empty-image;foo", true,
-      },
-      {
-          "Empty-Image", true,
-      },
-      {
-          "foo;empty-image", false,
-      },
+      {"", "", false},
+      {"foo", "", false},
+      {"", "bar", false},
+      {"foo", "bar", false},
+      {"empty-image", "", true},
+      {"empty-image;foo", "", true},
+      {"Empty-Image", "", true},
+      {"foo;empty-image", "", false},
+      {"empty-image", "foo", true},
+      {"foo;empty-image", "bar", false},
+      {"", "q=low", true},
+      {"foo", "q=low", true},
+      {"foo", "bar, baz, Q=LOW ", true},
+      {"empty-image", "q=low", true},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i)
-    EXPECT_EQ(tests[i].expected_result, IsEmptyImagePreview(tests[i].header));
+  for (const auto& test : tests) {
+    EXPECT_EQ(test.expected_result,
+              IsEmptyImagePreview(test.chrome_proxy_content_transform_header,
+                                  test.chrome_proxy_header));
+  }
 }
 
 TEST_F(DataReductionProxyHeadersTest, IsLitePagePreview) {

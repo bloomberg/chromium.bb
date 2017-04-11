@@ -111,7 +111,8 @@ bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers);
 // Returns true if the provided value of the Chrome-Proxy-Content-Transform
 // response header that is provided in |content_transform_value| indicates that
 // an empty image has been provided.
-bool IsEmptyImagePreview(const std::string& content_transform_value);
+bool IsEmptyImagePreview(const std::string& content_transform_value,
+                         const std::string& chrome_proxy_value);
 
 // Returns true if the Chrome-Proxy-Content-Transform response header indicates
 // that a lite page has been provided.

@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
 using base::StringPiece;
@@ -40,6 +41,9 @@ const char kEmptyImageDirective[] = "empty-image";
 const char kLitePageDirective[] = "lite-page";
 const char kCompressedVideoDirective[] = "compressed-video";
 const char kIdentityDirective[] = "identity";
+
+// The legacy Chrome-Proxy response header directive for LoFi images.
+const char kLegacyChromeProxyLoFiResponseDirective[] = "q=low";
 
 const char kChromeProxyLitePageIngoreBlacklistDirective[] =
     "exp=ignore_preview_blacklist";
@@ -81,29 +85,26 @@ bool StartsWithActionPrefix(base::StringPiece header_value,
 
 // Returns true if the provided transform type is specified in the provided
 // Chrome-Proxy-Content-Transform header value.
-bool IsPreviewTypeInHeaderValue(const std::string& header_value,
-                                const std::string& transform_type) {
-  std::vector<std::string> tokens =
-      base::SplitString(base::ToLowerASCII(header_value), ";",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (tokens.empty())
-    return false;
-  std::string header_transform_type;
-  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &header_transform_type);
-  return header_transform_type == transform_type;
+bool IsPreviewTypeInHeaderValue(base::StringPiece header_value,
+                                base::StringPiece transform_type) {
+  DCHECK_EQ(transform_type, base::ToLowerASCII(transform_type));
+
+  // The Chrome-Proxy-Content-Transform header consists of a single
+  // transformation type string followed by zero or more semicolon-delimited
+  // options, e.g. "empty-image", "empty-image;foo-option".
+  base::StringPiece token = base::TrimWhitespaceASCII(
+      header_value.substr(0, header_value.find(';')), base::TRIM_ALL);
+  return base::LowerCaseEqualsASCII(token, transform_type);
 }
 
 // Returns true if the provided transform type is specified in the
 // Chrome-Proxy-Content-Transform-Header.
 bool IsPreviewType(const net::HttpResponseHeaders& headers,
-                   const std::string& transform_type) {
-  std::string header_value;
-  if (!headers.GetNormalizedHeader(
-          data_reduction_proxy::chrome_proxy_content_transform_header(),
-          &header_value)) {
-    return false;
-  }
-  return IsPreviewTypeInHeaderValue(header_value, transform_type);
+                   base::StringPiece transform_type) {
+  std::string value;
+  return headers.EnumerateHeader(nullptr, kChromeProxyContentTransformHeader,
+                                 &value) &&
+         IsPreviewTypeInHeaderValue(value, transform_type);
 }
 
 // Returns true if there is a cycle in |url_chain|.
@@ -158,12 +159,27 @@ const char* if_heavy_qualifier() {
 }
 
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers) {
-  return IsPreviewType(headers, kEmptyImageDirective);
+  return IsPreviewType(headers, kEmptyImageDirective) ||
+         headers.HasHeaderValue(kChromeProxyHeader,
+                                kLegacyChromeProxyLoFiResponseDirective);
 }
 
-bool IsEmptyImagePreview(const std::string& content_transform_value) {
-  return IsPreviewTypeInHeaderValue(content_transform_value,
-                                    kEmptyImageDirective);
+bool IsEmptyImagePreview(const std::string& content_transform_value,
+                         const std::string& chrome_proxy_value) {
+  if (IsPreviewTypeInHeaderValue(content_transform_value, kEmptyImageDirective))
+    return true;
+
+  // Look for "q=low" in the "Chrome-Proxy" response header.
+  net::HttpUtil::ValuesIterator values(chrome_proxy_value.begin(),
+                                       chrome_proxy_value.end(), ',');
+  while (values.GetNext()) {
+    base::StringPiece value(values.value_begin(), values.value_end());
+    if (base::LowerCaseEqualsASCII(value,
+                                   kLegacyChromeProxyLoFiResponseDirective)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool IsLitePagePreview(const net::HttpResponseHeaders& headers) {

@@ -549,6 +549,49 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
       WebCachePolicy::kBypassingCache);
 }
 
+TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
+  KURL test_url(kParsedURLString, kTestURL);
+  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+  ResourceRequest request = ResourceRequest(test_url);
+  ImageResource* image_resource = ImageResource::Create(request);
+  image_resource->SetStatus(ResourceStatus::kPending);
+
+  std::unique_ptr<MockImageResourceObserver> observer =
+      MockImageResourceObserver::Create(image_resource->GetContent());
+  ResourceFetcher* fetcher = CreateFetcher();
+
+  // Send the image response.
+  ResourceResponse resource_response(KURL(), "image/jpeg", sizeof(kJpegImage),
+                                     g_null_atom);
+  resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
+
+  image_resource->ResponseReceived(resource_response, nullptr);
+  image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
+                             sizeof(kJpegImage));
+  image_resource->Finish();
+  EXPECT_FALSE(image_resource->ErrorOccurred());
+  ASSERT_TRUE(image_resource->GetContent()->HasImage());
+  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
+  EXPECT_EQ(2, observer->ImageChangedCount());
+  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnLastImageChanged());
+  // The observer should have been notified that the image load completed.
+  EXPECT_TRUE(observer->ImageNotifyFinishedCalled());
+  EXPECT_EQ(kJpegImageWidth, observer->ImageWidthOnImageNotifyFinished());
+  EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
+  EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());
+  EXPECT_EQ(kJpegImageHeight,
+            image_resource->GetContent()->GetImage()->height());
+
+  // Call reloadIfLoFiOrPlaceholderImage() after the image has finished loading.
+  image_resource->ReloadIfLoFiOrPlaceholderImage(fetcher,
+                                                 Resource::kReloadAlways);
+
+  EXPECT_EQ(3, observer->ImageChangedCount());
+  TestThatReloadIsStartedThenServeReload(
+      test_url, image_resource, image_resource->GetContent(), observer.get(),
+      WebCachePolicy::kBypassingCache);
+}
+
 TEST(ImageResourceTest,
      ReloadIfLoFiOrPlaceholderAfterFinishedWithoutLoFiHeaders) {
   KURL test_url(kParsedURLString, kTestURL);

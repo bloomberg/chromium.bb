@@ -461,8 +461,11 @@ bool ImageResource::ShouldReloadBrokenPlaceholder() const {
 static bool IsLoFiImage(const ImageResource& resource) {
   if (resource.IsLoaded()) {
     return resource.GetResponse()
-        .HttpHeaderField("chrome-proxy-content-transform")
-        .Contains("empty-image");
+               .HttpHeaderField("chrome-proxy-content-transform")
+               .Contains("empty-image") ||
+           resource.GetResponse()
+               .HttpHeaderField("chrome-proxy")
+               .Contains("q=low");
   }
   return resource.GetResourceRequest().GetPreviewsState() &
          WebURLRequest::kServerLoFiOn;
