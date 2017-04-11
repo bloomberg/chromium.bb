@@ -28,6 +28,7 @@ namespace device {
 
 class BluetoothAdapterMac;
 class BluetoothRemoteGattServiceMac;
+class BluetoothRemoteGattDescriptorMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
@@ -90,6 +91,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void DidUpdateNotificationState(CBCharacteristic* characteristic,
                                   NSError* error);
   void DidDiscoverDescriptors(CBCharacteristic* characteristic, NSError* error);
+  void DidUpdateValueForDescriptor(CBDescriptor* cb_descriptor, NSError* error);
+  void DidWriteValueForDescriptor(CBDescriptor* descriptor, NSError* error);
 
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
 
@@ -122,6 +125,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Returns BluetoothRemoteGattServiceMac based on the CBService.
   BluetoothRemoteGattServiceMac* GetBluetoothRemoteGattService(
       CBService* service) const;
+
+  // Returns BluetoothRemoteGattDescriptorMac based on the CBDescriptor.
+  BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptor(
+      CBDescriptor* cb_descriptor) const;
 
   // Callback used when the CoreBluetooth Peripheral is disconnected.
   void DidDisconnectPeripheral(NSError* error);

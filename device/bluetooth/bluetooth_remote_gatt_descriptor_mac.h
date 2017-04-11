@@ -44,8 +44,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorMac
                              const ErrorCallback& error_callback) override;
 
  private:
+  friend class BluetoothLowEnergyDeviceMac;
   friend class BluetoothRemoteGattCharacteristicMac;
+  friend class BluetoothTestMac;
 
+  // Calls callbacks, when -[id<CBPeripheralDelegate>
+  // peripheral:didUpdateValueForDescriptor:error:] is called.
+  void DidUpdateValueForDescriptor(NSError* error);
+  // Calls callbacks, when -[id<CBPeripheralDelegate>
+  // peripheral:didWriteValueForDescriptor:error:] is called.
+  void DidWriteValueForDescriptor(NSError* error);
+
+  // Returns CoreBluetooth peripheral.
+  CBPeripheral* GetCBPeripheral() const;
   // Returns CoreBluetooth descriptor.
   CBDescriptor* GetCBDescriptor() const;
   // gatt_characteristic_ owns instances of this class.
@@ -58,6 +69,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorMac
   BluetoothUUID uuid_;
   // Descriptor value.
   std::vector<uint8_t> value_;
+  // True if a gatt read or write request is in progress.
+  bool value_read_or_write_in_progress_;
+  // ReadRemoteDescriptor request callbacks.
+  std::pair<ValueCallback, ErrorCallback> read_value_callbacks_;
+  // WriteRemoteDescriptor request callbacks.
+  std::pair<base::Closure, ErrorCallback> write_value_callbacks_;
 };
 
 // Stream operator for logging.

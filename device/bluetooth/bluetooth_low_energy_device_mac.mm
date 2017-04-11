@@ -16,6 +16,8 @@
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_low_energy_peripheral_delegate.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_mac.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 
 using device::BluetoothDevice;
@@ -332,6 +334,24 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverDescriptors(
   SendNotificationIfDiscoveryComplete();
 }
 
+void BluetoothLowEnergyDeviceMac::DidUpdateValueForDescriptor(
+    CBDescriptor* cb_descriptor,
+    NSError* error) {
+  BluetoothRemoteGattDescriptorMac* gatt_descriptor =
+      GetBluetoothRemoteGattDescriptor(cb_descriptor);
+  DCHECK(gatt_descriptor);
+  gatt_descriptor->DidUpdateValueForDescriptor(error);
+}
+
+void BluetoothLowEnergyDeviceMac::DidWriteValueForDescriptor(
+    CBDescriptor* cb_descriptor,
+    NSError* error) {
+  BluetoothRemoteGattDescriptorMac* gatt_descriptor =
+      GetBluetoothRemoteGattDescriptor(cb_descriptor);
+  DCHECK(gatt_descriptor);
+  gatt_descriptor->DidWriteValueForDescriptor(error);
+}
+
 // static
 std::string BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(
     CBPeripheral* peripheral) {
@@ -398,6 +418,20 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
       return gatt_service_mac;
   }
   return nullptr;
+}
+
+device::BluetoothRemoteGattDescriptorMac*
+BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattDescriptor(
+    CBDescriptor* cb_descriptor) const {
+  CBCharacteristic* cb_characteristic = cb_descriptor.characteristic;
+  device::BluetoothRemoteGattServiceMac* gatt_service =
+      GetBluetoothRemoteGattService(cb_characteristic.service);
+  DCHECK(gatt_service);
+  device::BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
+      gatt_service->GetBluetoothRemoteGattCharacteristicMac(cb_characteristic);
+  DCHECK(gatt_characteristic);
+  return gatt_characteristic->GetBluetoothRemoteGattDescriptorMac(
+      cb_descriptor);
 }
 
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {

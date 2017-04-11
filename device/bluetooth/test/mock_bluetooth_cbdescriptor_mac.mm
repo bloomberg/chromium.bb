@@ -15,6 +15,7 @@ using base::scoped_nsobject;
   // Owner of this instance.
   CBCharacteristic* _characteristic;
   scoped_nsobject<CBUUID> _UUID;
+  scoped_nsobject<NSData> _value;
 }
 @end
 
@@ -50,12 +51,31 @@ using base::scoped_nsobject;
   return _UUID.get();
 }
 
+- (NSData*)value {
+  return _value.get();
+}
+
 - (CBDescriptor*)descriptor {
   return ObjCCast<CBDescriptor>(self);
 }
 
 - (CBCharacteristic*)characteristic {
   return _characteristic;
+}
+
+- (void)simulateReadWithValue:(id)value error:(NSError*)error {
+  _value.reset([value copy]);
+  CBPeripheral* peripheral = _characteristic.service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+      didUpdateValueForDescriptor:self.descriptor
+                            error:error];
+}
+
+- (void)simulateWriteWithError:(NSError*)error {
+  CBPeripheral* peripheral = _characteristic.service.peripheral;
+  [peripheral.delegate peripheral:peripheral
+       didWriteValueForDescriptor:self.descriptor
+                            error:error];
 }
 
 @end

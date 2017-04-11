@@ -7,17 +7,11 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
+#import <CoreBluetooth/CoreBluetooth.h>
 #include <unordered_map>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
-
-#if defined(__OBJC__)
-#import <CoreBluetooth/CoreBluetooth.h>
-#else
-@class CBCharacteristic;
-typedef NS_ENUM(NSInteger, CBCharacteristicWriteType);
-#endif  // defined(__OBJC__)
 
 namespace device {
 
@@ -66,6 +60,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
       const ErrorCallback& error_callback) override;
 
  private:
+  friend class BluetoothLowEnergyDeviceMac;
   friend class BluetoothRemoteGattDescriptorMac;
   friend class BluetoothRemoteGattServiceMac;
   friend class BluetoothTestMac;

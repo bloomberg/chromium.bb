@@ -19,6 +19,9 @@
 - (instancetype)initWithCharacteristic:(CBCharacteristic*)characteristic
                                 CBUUID:(CBUUID*)uuid;
 
+- (void)simulateReadWithValue:(id)value error:(NSError*)error;
+- (void)simulateWriteWithError:(NSError*)error;
+
 @end
 
 #endif  // DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_CBDESCRIPTOR_MAC_H_

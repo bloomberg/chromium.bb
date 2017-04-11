@@ -184,9 +184,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, GetUUID) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor and GetValue with empty value buffer.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Empty) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
@@ -203,11 +207,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Empty) {
   EXPECT_EQ(empty_vector, last_read_value_);
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor with empty value buffer.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Empty) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -223,11 +231,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Empty) {
 
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 // Tests ReadRemoteDescriptor completing after Chrome objects are deleted.
+// macOS: Not applicable: This can never happen if CBPeripheral delegate is set
+// to nil.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_AfterDeleted) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::NOT_EXPECTED),
@@ -246,7 +260,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_AfterDeleted) {
 
 #if defined(OS_ANDROID)
 // Tests WriteRemoteDescriptor completing after Chrome objects are deleted.
+// macOS: Not applicable: This can never happen if CBPeripheral delegate is set
+// to nil.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_AfterDeleted) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -263,9 +283,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_AfterDeleted) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor and GetValue with non-empty value buffer.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
@@ -285,11 +309,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor) {
   EXPECT_EQ(test_vector, last_read_value_);
   EXPECT_EQ(test_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor with non-empty value buffer.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
@@ -303,11 +331,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor) {
 
   EXPECT_EQ(test_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor and GetValue multiple times.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Twice) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
@@ -336,11 +368,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_Twice) {
   EXPECT_EQ(empty_vector, last_read_value_);
   EXPECT_EQ(empty_vector, descriptor1_->GetValue());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor multiple times.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Twice) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
@@ -367,12 +403,16 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_Twice) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(empty_vector, last_write_value_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor on two descriptors.
 TEST_F(BluetoothRemoteGattDescriptorTest,
        ReadRemoteDescriptor_MultipleDescriptors) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
@@ -400,12 +440,16 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(test_vector1, descriptor1_->GetValue());
   EXPECT_EQ(test_vector2, descriptor2_->GetValue());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor on two descriptors.
 TEST_F(BluetoothRemoteGattDescriptorTest,
        WriteRemoteDescriptor_MultipleDescriptors) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> test_vector1;
@@ -431,11 +475,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest,
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor asynchronous error.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadError) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::NOT_EXPECTED),
@@ -448,11 +496,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadError) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor asynchronous error.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteError) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -468,11 +520,17 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteError) {
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_INVALID_LENGTH,
             last_gatt_error_code_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 // Tests ReadRemoteDescriptor synchronous error.
+// Test not relevant for macOS since descriptor read cannot generate
+// synchronous error.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadSynchronousError) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   SimulateGattDescriptorReadWillFailSynchronouslyOnce(descriptor1_);
@@ -500,7 +558,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadSynchronousError) {
 
 #if defined(OS_ANDROID)
 // Tests WriteRemoteDescriptor synchronous error.
+// Test not relevant for macOS since descriptor write cannot generate
+// synchronous error.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteSynchronousError) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   SimulateGattDescriptorWriteWillFailSynchronouslyOnce(descriptor1_);
@@ -527,9 +591,13 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteSynchronousError) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor error with a pending read operation.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_ReadPending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
@@ -552,11 +620,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_ReadPending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor error with a pending write operation.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_WritePending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -580,11 +652,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_WritePending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests ReadRemoteDescriptor error with a pending write operation.
 TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_WritePending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -607,11 +683,15 @@ TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_WritePending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests WriteRemoteDescriptor error with a pending Read operation.
 TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_ReadPending) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
 
   std::vector<uint8_t> empty_vector;
@@ -634,7 +714,7 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteRemoteDescriptor_ReadPending) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
 // Tests that read requests after a device disconnects but before the
@@ -684,5 +764,52 @@ TEST_F(BluetoothRemoteGattDescriptorTest, WriteDuringDisconnect) {
   // TODO(crbug.com/621901): Test that an error was returned.
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_MACOSX)
+// Tests NSString for descriptor value for macOS.
+// https://developer.apple.com/reference/corebluetooth/cbdescriptor
+TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSString) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
+
+  descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
+                                     GetGattErrorCallback(Call::NOT_EXPECTED));
+  EXPECT_EQ(1, gatt_read_descriptor_attempts_);
+
+  std::string test_string = "Hello";
+  SimulateGattDescriptorReadNSString(descriptor1_, test_string);
+  base::RunLoop().RunUntilIdle();
+
+  std::vector<uint8_t> test_vector(test_string.begin(), test_string.end());
+  EXPECT_EQ(test_vector, last_read_value_);
+  EXPECT_EQ(test_vector, descriptor1_->GetValue());
+}
+
+// Tests NSNumber for descriptor value for macOS.
+// https://developer.apple.com/reference/corebluetooth/cbdescriptor
+TEST_F(BluetoothRemoteGattDescriptorTest, ReadRemoteDescriptor_NSNumber) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeDescriptorBoilerplate());
+
+  descriptor1_->ReadRemoteDescriptor(GetReadValueCallback(Call::EXPECTED),
+                                     GetGattErrorCallback(Call::NOT_EXPECTED));
+  EXPECT_EQ(1, gatt_read_descriptor_attempts_);
+
+  const short test_number = 0x1234;
+  SimulateGattDescriptorReadNSNumber(descriptor1_, test_number);
+  base::RunLoop().RunUntilIdle();
+
+  uint8_t values[] = {0x34, 0x12};
+  std::vector<uint8_t> test_vector(values, values + arraysize(values));
+  EXPECT_EQ(test_vector, last_read_value_);
+  EXPECT_EQ(test_vector, descriptor1_->GetValue());
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace device
