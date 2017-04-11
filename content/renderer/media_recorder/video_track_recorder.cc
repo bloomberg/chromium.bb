@@ -39,6 +39,22 @@ using video_track_recorder::kVEAEncoderMinResolutionHeight;
 
 namespace content {
 
+libyuv::RotationMode MediaVideoRotationToRotationMode(
+    media::VideoRotation rotation) {
+  switch (rotation) {
+    case media::VIDEO_ROTATION_0:
+      return libyuv::kRotate0;
+    case media::VIDEO_ROTATION_90:
+      return libyuv::kRotate90;
+    case media::VIDEO_ROTATION_180:
+      return libyuv::kRotate180;
+    case media::VIDEO_ROTATION_270:
+      return libyuv::kRotate270;
+  }
+  NOTREACHED() << rotation;
+  return libyuv::kRotate0;
+}
+
 namespace {
 
 using CodecId = VideoTrackRecorder::CodecId;
@@ -219,10 +235,21 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     DCHECK(video_frame->HasTextures());
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, video_frame->format());
 
+    const gfx::Size& old_visible_size = video_frame->visible_rect().size();
+    gfx::Size new_visible_size = old_visible_size;
+
+    media::VideoRotation video_rotation = media::VIDEO_ROTATION_0;
+    if (video_frame->metadata()->GetRotation(
+            media::VideoFrameMetadata::ROTATION, &video_rotation) &&
+        (video_rotation == media::VIDEO_ROTATION_90 ||
+         video_rotation == media::VIDEO_ROTATION_270)) {
+      new_visible_size.SetSize(old_visible_size.height(),
+                               old_visible_size.width());
+    }
+
     frame = media::VideoFrame::CreateFrame(
-        media::PIXEL_FORMAT_I420, video_frame->coded_size(),
-        video_frame->visible_rect(), video_frame->natural_size(),
-        video_frame->timestamp());
+        media::PIXEL_FORMAT_I420, new_visible_size, gfx::Rect(new_visible_size),
+        new_visible_size, video_frame->timestamp());
 
     const SkImageInfo info = SkImageInfo::MakeN32(
         frame->visible_rect().width(), frame->visible_rect().height(),
@@ -247,26 +274,22 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
       DLOG(ERROR) << "Error trying to map PaintSurface's pixels";
       return;
     }
-    // TODO(mcasas): Use the incoming frame's rotation when
-    // https://bugs.chromium.org/p/webrtc/issues/detail?id=6069 is closed.
-    const libyuv::RotationMode source_rotation = libyuv::kRotate0;
+
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                      : libyuv::FOURCC_ARGB;
-    if (libyuv::ConvertToI420(static_cast<uint8*>(pixmap.writable_addr()),
-                              pixmap.getSafeSize(),
-                              frame->visible_data(media::VideoFrame::kYPlane),
-                              frame->stride(media::VideoFrame::kYPlane),
-                              frame->visible_data(media::VideoFrame::kUPlane),
-                              frame->stride(media::VideoFrame::kUPlane),
-                              frame->visible_data(media::VideoFrame::kVPlane),
-                              frame->stride(media::VideoFrame::kVPlane),
-                              0 /* crop_x */, 0 /* crop_y */,
-                              pixmap.width(), pixmap.height(),
-                              frame->visible_rect().width(),
-                              frame->visible_rect().height(),
-                              source_rotation,
-                              source_pixel_format) != 0) {
+    if (libyuv::ConvertToI420(
+            static_cast<uint8*>(pixmap.writable_addr()), pixmap.getSafeSize(),
+            frame->visible_data(media::VideoFrame::kYPlane),
+            frame->stride(media::VideoFrame::kYPlane),
+            frame->visible_data(media::VideoFrame::kUPlane),
+            frame->stride(media::VideoFrame::kUPlane),
+            frame->visible_data(media::VideoFrame::kVPlane),
+            frame->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
+            0 /* crop_y */, pixmap.width(), pixmap.height(),
+            old_visible_size.width(), old_visible_size.height(),
+            MediaVideoRotationToRotationMode(video_rotation),
+            source_pixel_format) != 0) {
       DLOG(ERROR) << "Error converting frame to I420";
       return;
     }
