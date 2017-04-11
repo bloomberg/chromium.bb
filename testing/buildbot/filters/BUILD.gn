@@ -44,3 +44,11 @@ source_set("interactive_ui_tests_filters") {
     "//testing/buildbot/filters/site-per-process.interactive_ui_tests.filter",
   ]
 }
+
+source_set("ash_unittests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/ash_mus_unittests.filter",
+  ]
+}
