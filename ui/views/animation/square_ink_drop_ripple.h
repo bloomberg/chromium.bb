@@ -60,15 +60,6 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
                       const gfx::Point& center_point,
                       SkColor color,
                       float visible_opacity);
-
-  SquareInkDropRipple(const gfx::Size& large_size,
-                      int large_corner_radius,
-                      const gfx::Size& small_size,
-                      int small_corner_radius,
-                      const gfx::Point& initial_center_point,
-                      const gfx::Point& target_center_point,
-                      SkColor color,
-                      float visible_opacity);
   ~SquareInkDropRipple() override;
 
   void set_activated_shape(ActivatedShape shape) { activated_shape_ = shape; }
@@ -107,17 +98,6 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
                           ui::LayerAnimationObserver* observer) override;
   void SetStateToHidden() override;
   void AbortAllAnimations() override;
-
-  // Animates the |root_layer_| to the specified |center_point|. The animation
-  // will be configured with the given |duration|, |tween|, and
-  // |preemption_strategy| values. The |observer| will be added to all
-  // LayerAnimationSequences if not null.
-  void AnimateCenterPoint(
-      const gfx::Point& center_point,
-      base::TimeDelta duration,
-      ui::LayerAnimator::PreemptionStrategy preemption_strategy,
-      gfx::Tween::Type tween,
-      ui::LayerAnimationObserver* observer);
 
   // Animates all of the painted shape layers to the specified |transforms|. The
   // animation will be configured with the given |duration|, |tween|, and
@@ -179,26 +159,23 @@ class VIEWS_EXPORT SquareInkDropRipple : public InkDropRipple {
   ActivatedShape activated_shape_;
 
   // Ink drop opacity when it is visible.
-  float visible_opacity_;
-
-  // The center point that the ripple will animate to.
-  gfx::Point target_center_point_;
+  const float visible_opacity_;
 
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be large.
-  gfx::Size large_size_;
+  const gfx::Size large_size_;
 
   // Corner radius used to draw the rounded rectangles corner for any
   // InkDropState whose final frame should be large.
-  int large_corner_radius_;
+  const int large_corner_radius_;
 
   // Maximum size that an ink drop will be drawn to for any InkDropState whose
   // final frame should be small.
-  gfx::Size small_size_;
+  const gfx::Size small_size_;
 
   // Corner radius used to draw the rounded rectangles corner for any
   // InkDropState whose final frame should be small.
-  int small_corner_radius_;
+  const int small_corner_radius_;
 
   // ui::LayerDelegate to paint circles for all the circle layers.
   std::unique_ptr<CircleLayerDelegate> circle_layer_delegate_;
