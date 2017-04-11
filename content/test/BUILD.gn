@@ -1683,10 +1683,6 @@ test("content_unittests") {
     ]
   }
 
-  if (enable_mojo_media) {
-    deps += [ "//media/mojo/services" ]
-  }
-
   # Screen capture unit tests.
   if (is_linux || is_mac || is_win) {
     deps += [ "//third_party/libyuv" ]
