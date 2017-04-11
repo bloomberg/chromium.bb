@@ -18,10 +18,28 @@ static_library("open_from_clipboard") {
   }
 
   deps = [
+    ":open_from_clipboard_impl",
     "//base",
+    "//net",
     "//ui/base:base",
     "//url",
   ]
+}
+
+# Helper classes used by "open_from_clipboard" target. These classes must have
+# no dependencies on "//base:i18n".
+source_set("open_from_clipboard_impl") {
+  sources = [
+    "clipboard_recent_content_impl_ios.h",
+    "clipboard_recent_content_impl_ios.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+  assert_no_deps = [ "//base:i18n" ]
+  if (is_ios) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
 }
 
 static_library("test_support") {
@@ -50,6 +68,7 @@ source_set("unit_tests") {
 
   deps = [
     ":open_from_clipboard",
+    ":open_from_clipboard_impl",
     "//base",
     "//testing/gtest",
     "//ui/base:test_support",

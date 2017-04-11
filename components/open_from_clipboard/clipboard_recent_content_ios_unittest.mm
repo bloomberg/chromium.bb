@@ -9,6 +9,9 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
+#import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -37,28 +40,55 @@ void SetPasteboardContent(const char* data) {
                setValue:[NSString stringWithUTF8String:data]
       forPasteboardType:@"public.plain-text"];
 }
-const char kUnrecognizedURL[] = "ftp://foo/";
-const char kRecognizedURL[] = "http://bar/";
-const char kRecognizedURL2[] = "http://bar/2";
+const char kUnrecognizedURL[] = "bad://foo/";
+const char kRecognizedURL[] = "good://bar/";
+const char kRecognizedURL2[] = "good://bar/2";
 const char kAppSpecificURL[] = "test://qux/";
 const char kAppSpecificScheme[] = "test";
+const char kRecognizedScheme[] = "good";
 NSTimeInterval kSevenHours = 60 * 60 * 7;
 }  // namespace
+
+@interface ClipboardRecentContentImplIOSWithFakeUptime
+    : ClipboardRecentContentImplIOS
+@property(nonatomic) NSTimeInterval fakeUptime;
+
+- (instancetype)initWithDelegate:(id<ClipboardRecentContentDelegate>)delegate
+               authorizedSchemes:(NSArray*)authorizedSchemes
+                    userDefaults:(NSUserDefaults*)groupUserDefaults
+                          uptime:(NSTimeInterval)uptime;
+
+@end
+
+@implementation ClipboardRecentContentImplIOSWithFakeUptime
+
+@synthesize fakeUptime = _fakeUptime;
+
+- (instancetype)initWithDelegate:(id<ClipboardRecentContentDelegate>)delegate
+               authorizedSchemes:(NSSet*)authorizedSchemes
+                    userDefaults:(NSUserDefaults*)groupUserDefaults
+                          uptime:(NSTimeInterval)uptime {
+  self = [super initWithAuthorizedSchemes:authorizedSchemes
+                             userDefaults:groupUserDefaults
+                                 delegate:delegate];
+  if (self) {
+    _fakeUptime = uptime;
+  }
+  return self;
+}
+
+- (NSTimeInterval)uptime {
+  return self.fakeUptime;
+}
+
+@end
 
 class ClipboardRecentContentIOSWithFakeUptime
     : public ClipboardRecentContentIOS {
  public:
-  ClipboardRecentContentIOSWithFakeUptime(const std::string& application_scheme,
-                                          NSUserDefaults* group_user_defaults)
-      : ClipboardRecentContentIOS(application_scheme, group_user_defaults) {}
-  // Sets the uptime.
-  void SetUptime(base::TimeDelta uptime) { uptime_ = uptime; }
-
- protected:
-  base::TimeDelta Uptime() const override { return uptime_; }
-
- private:
-  base::TimeDelta uptime_;
+  ClipboardRecentContentIOSWithFakeUptime(
+      ClipboardRecentContentImplIOS* implementation)
+      : ClipboardRecentContentIOS(implementation) {}
 };
 
 class ClipboardRecentContentIOSTest : public ::testing::Test {
@@ -76,23 +106,31 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
 
   void ResetClipboardRecentContent(const std::string& application_scheme,
                                    base::TimeDelta time_delta) {
-    clipboard_content_.reset(new ClipboardRecentContentIOSWithFakeUptime(
-        application_scheme, [NSUserDefaults standardUserDefaults]));
-    clipboard_content_->SetUptime(time_delta);
+    clipboard_content_implementation_ =
+        [[ClipboardRecentContentImplIOSWithFakeUptime alloc]
+             initWithDelegate:nil
+            authorizedSchemes:@[
+              base::SysUTF8ToNSString(kRecognizedScheme),
+              base::SysUTF8ToNSString(application_scheme)
+            ]
+                 userDefaults:[NSUserDefaults standardUserDefaults]
+                       uptime:time_delta.InSecondsF()];
+
+    clipboard_content_ =
+        base::MakeUnique<ClipboardRecentContentIOSWithFakeUptime>(
+            clipboard_content_implementation_);
   }
 
-  void SetStoredPasteboardChangeDate(NSDate* changeDate) {
-    clipboard_content_->last_pasteboard_change_date_.reset([changeDate copy]);
-    clipboard_content_->SaveToUserDefaults();
-  }
-
-  void SetStoredPasteboardChangeCount(NSInteger newChangeCount) {
-    clipboard_content_->last_pasteboard_change_count_ = newChangeCount;
-    clipboard_content_->SaveToUserDefaults();
+  void SetStoredPasteboardChangeDate(NSDate* change_date) {
+    clipboard_content_implementation_.lastPasteboardChangeDate =
+        [change_date copy];
+    [clipboard_content_implementation_ saveToUserDefaults];
   }
 
  protected:
   std::unique_ptr<ClipboardRecentContentIOSWithFakeUptime> clipboard_content_;
+  ClipboardRecentContentImplIOSWithFakeUptime*
+      clipboard_content_implementation_;
 };
 
 TEST_F(ClipboardRecentContentIOSTest, SchemeFiltering) {
@@ -164,7 +202,7 @@ TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboard) {
   // Check that the pasteboard content is still suppressed.
   EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
 
-  // Check that the even if the device is restarted, pasteboard content is
+  // Check that even if the device is restarted, pasteboard content is
   // still suppressed.
   SimulateDeviceRestart();
   EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
