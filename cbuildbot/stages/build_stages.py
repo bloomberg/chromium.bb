@@ -166,8 +166,6 @@ class CleanUpStage(generic_stages.BuilderStage):
             buildbucket_ids,
             dryrun=self._run.options.debug)
 
-        build_id, db = self._run.GetCIDBHandle()
-
         result_map = buildbucket_lib.GetResultMap(cancel_content)
         for buildbucket_id, result in result_map.iteritems():
           # Check if the result contains error messages.
@@ -177,19 +175,6 @@ class CleanUpStage(generic_stages.BuilderStage):
                             "Please check the status of the build.",
                             buildbucket_id,
                             buildbucket_lib.GetErrorReason(result))
-          elif db:
-            # The build was successfully canceled by Buildbucket,
-            # change its status to 'aborted' in CIDB.
-            build = db.GetBuildStatusWithBuildbucketId(buildbucket_id)
-            if build is not None:
-              result = db.FinishBuild(
-                  build['id'], status=constants.BUILDER_STATUS_ABORTED,
-                  summary=('Canceled by master build %s CleanUpStage' %
-                           build_id))
-              if result:
-                logging.info('Updated build %s build_id %s to status %s.',
-                             build['build_config'], build['id'],
-                             constants.BUILDER_STATUS_ABORTED)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

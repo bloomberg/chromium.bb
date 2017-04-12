@@ -506,11 +506,6 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
     self.assertEqual(cancel_mock.call_count, 1)
 
-    self.assertEqual(self.fake_db.GetBuildStatus(0)['status'],
-                     constants.BUILDER_STATUS_ABORTED)
-    self.assertEqual(self.fake_db.GetBuildStatus(1)['status'],
-                     constants.BUILDER_STATUS_INFLIGHT)
-
   def testNoObsoleteSlaveBuilds(self):
     """Test no obsolete slave builds."""
     search_content = {
