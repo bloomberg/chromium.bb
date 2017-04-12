@@ -1238,9 +1238,9 @@ TEST_F(GLRendererSkipTest, DrawQuad) {
   DrawFrame(renderer_.get(), viewport_size);
 }
 
-TEST_F(GLRendererSkipTest, SkipQuadRect) {
+TEST_F(GLRendererSkipTest, SkipVisibleRect) {
   gfx::Size viewport_size(100, 100);
-  gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
+  gfx::Rect quad_rect = gfx::Rect(0, 0, 40, 40);
 
   int root_pass_id = 1;
   RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
@@ -1248,11 +1248,15 @@ TEST_F(GLRendererSkipTest, SkipQuadRect) {
                                         gfx::Transform(), FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 10, 10);
   AddQuad(root_pass, quad_rect, SK_ColorGREEN);
+  root_pass->shared_quad_state_list.front()->is_clipped = true;
+  root_pass->shared_quad_state_list.front()->clip_rect =
+      gfx::Rect(0, 0, 40, 40);
+  root_pass->quad_list.front()->visible_rect = gfx::Rect(20, 20, 20, 20);
 
   renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   DrawFrame(renderer_.get(), viewport_size);
-  // DrawElements should not be called because the quad rect is outside the
-  // scissor.
+  // DrawElements should not be called because the visible rect is outside the
+  // scissor, even though the clip rect and quad rect intersect the scissor.
 }
 
 TEST_F(GLRendererSkipTest, SkipClippedQuads) {

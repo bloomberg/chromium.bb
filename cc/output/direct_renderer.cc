@@ -408,16 +408,13 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
   if (render_pass_scissor.IsEmpty())
     return true;
 
-  if (quad.shared_quad_state->is_clipped) {
-    gfx::Rect r = quad.shared_quad_state->clip_rect;
-    r.Intersect(render_pass_scissor);
-    return r.IsEmpty();
-  }
+  gfx::Rect target_rect = MathUtil::MapEnclosingClippedRect(
+      quad.shared_quad_state->quad_to_target_transform, quad.visible_rect);
+  if (quad.shared_quad_state->is_clipped)
+    target_rect.Intersect(quad.shared_quad_state->clip_rect);
 
-  gfx::RectF intersection = MathUtil::MapClippedRect(
-      quad.shared_quad_state->quad_to_target_transform, gfx::RectF(quad.rect));
-  intersection.Intersect(gfx::RectF(render_pass_scissor));
-  return intersection.IsEmpty();
+  target_rect.Intersect(render_pass_scissor);
+  return target_rect.IsEmpty();
 }
 
 void DirectRenderer::SetScissorStateForQuad(
