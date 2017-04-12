@@ -330,12 +330,26 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
       event_dispatched_loop.QuitClosure());
 
   std::vector<ServiceWorkerFetchRequest> requests;
+
+  constexpr int kFirstResponseCode = 200;
+  constexpr int kSecondResponseCode = 201;
+
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/funny_cat.txt", 200 /* status_code */,
-      "This text describes a scenario involving a funny cat."));
+      "GET", "https://example.com/funny_cat.txt",
+      TestResponseBuilder(kFirstResponseCode)
+          .SetResponseData(
+              "This text describes a scenario involving a funny cat.")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .AddResponseHeader("X-Cat", "yes")
+          .Build()));
+
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/crazy_cat.txt", 200 /* status_code */,
-      "This text describes another scenario that involves a crazy cat."));
+      "GET", "https://example.com/crazy_cat.txt",
+      TestResponseBuilder(kSecondResponseCode)
+          .SetResponseData(
+              "This text describes another scenario that involves a crazy cat.")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .Build()));
 
   // Create the registration with the given |requests|.
   {
@@ -366,14 +380,26 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     ASSERT_EQ(fetches[i].request.url, requests[i].url);
     EXPECT_EQ(fetches[i].request.method, requests[i].method);
 
-    EXPECT_EQ(fetches[i].request.url, fetches[i].response.url_list[0]);
-
-    // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response.status_code, 200);
-    EXPECT_TRUE(fetches[i].response.status_text.empty());
+    EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
     EXPECT_EQ(fetches[i].response.response_type,
               blink::kWebServiceWorkerResponseTypeDefault);
-    EXPECT_FALSE(fetches[i].response.headers.empty());
+
+    switch (i) {
+      case 0:
+        EXPECT_EQ(fetches[i].response.status_code, kFirstResponseCode);
+        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
+        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 1u);
+        break;
+      case 1:
+        EXPECT_EQ(fetches[i].response.status_code, kSecondResponseCode);
+        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
+        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 0u);
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    // TODO(peter): change-detector tests for unsupported properties.
     EXPECT_EQ(fetches[i].response.error,
               blink::kWebServiceWorkerResponseErrorUnknown);
 

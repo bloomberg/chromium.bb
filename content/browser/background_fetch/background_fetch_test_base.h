@@ -18,6 +18,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
+namespace net {
+class HttpResponseHeaders;
+}
+
 namespace content {
 
 class BackgroundFetchRegistrationId;
@@ -35,6 +39,36 @@ class BackgroundFetchTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Structure encapsulating the data for a injected response. Should only be
+  // created by the builder, which also defines the ownership semantics.
+  struct TestResponse {
+    TestResponse();
+    ~TestResponse();
+
+    scoped_refptr<net::HttpResponseHeaders> headers;
+    std::string data;
+  };
+
+  // Builder for creating a TestResponse object with the given data. The faked
+  // download manager will respond to the corresponding request based on this.
+  class TestResponseBuilder {
+   public:
+    explicit TestResponseBuilder(int response_code);
+    ~TestResponseBuilder();
+
+    TestResponseBuilder& AddResponseHeader(const std::string& name,
+                                           const std::string& value);
+    TestResponseBuilder& SetResponseData(std::string data);
+
+    // Finalizes the builder and invalidates the underlying response.
+    std::unique_ptr<TestResponse> Build();
+
+   private:
+    std::unique_ptr<TestResponse> response_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestResponseBuilder);
+  };
+
   // Creates a Background Fetch registration backed by a Service Worker
   // registration for the testing origin. The resulting registration will be
   // stored in |*registration_id|. Returns whether creation was successful,
@@ -45,13 +79,11 @@ class BackgroundFetchTestBase : public ::testing::Test {
       WARN_UNUSED_RESULT;
 
   // Creates a ServiceWorkerFetchRequest instance for the given details and
-  // provides a faked response with |status_code| and |response_text| to the
-  // download manager, that will resolve the download with that information.
+  // provides a faked |response| with the faked download manager.
   ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
       const std::string& method,
-      const std::string& url_string,
-      int status_code,
-      const std::string& response_text);
+      const std::string& url,
+      std::unique_ptr<TestResponse> response);
 
   // Returns the embedded worker test helper instance, which can be used to
   // influence the behaviour of the Service Worker events.

@@ -48,6 +48,18 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
     return fetch_request_;
   }
 
+  // Returns the response code for the download. Available for both successful
+  // and failed requests.
+  int GetResponseCode() const;
+
+  // Returns the response text for the download. Available for all started
+  // items.
+  const std::string& GetResponseText() const;
+
+  // Returns the response headers for the download. Available for both
+  // successful and failed requests.
+  const std::map<std::string, std::string>& GetResponseHeaders() const;
+
   // Returns the URL chain for the response, including redirects.
   const std::vector<GURL>& GetURLChain() const;
 
@@ -59,9 +71,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
   // Returns the time at which the response was completed.
   const base::Time& GetResponseTime() const;
-
-  // Returns the mime type describing the response, as indicated by the server.
-  const std::string& GetResponseType() const;
 
  private:
   friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
@@ -81,6 +90,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   std::string download_guid_;
   DownloadItem::DownloadState download_state_ = DownloadItem::IN_PROGRESS;
 
+  int response_code_ = 0;
+  std::string response_text_;
+  std::map<std::string, std::string> response_headers_;
+
   // ---- Data associated with the response ------------------------------------
 
   // Indicates whether response data has been populated.
@@ -90,7 +103,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   base::FilePath file_path_;
   int64_t file_size_ = 0;
   base::Time response_time_;
-  std::string response_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestInfo);
 };

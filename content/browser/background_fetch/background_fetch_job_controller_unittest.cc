@@ -74,9 +74,9 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     // Provide fake responses for the given |request_data| pairs.
     for (const auto& pair : request_data) {
-      CreateRequestWithProvidedResponse(pair.second, pair.first,
-                                        200 /* status_code */,
-                                        "" /* response_text */);
+      CreateRequestWithProvidedResponse(
+          pair.second, pair.first,
+          TestResponseBuilder(200 /* response_code */).Build());
     }
   }
 

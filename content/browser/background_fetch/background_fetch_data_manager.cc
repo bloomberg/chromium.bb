@@ -211,40 +211,31 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
         url::Origin(request->GetURLChain().back().GetOrigin()));
 
     settled_fetch.response.url_list = request->GetURLChain();
-
-    // TODO(peter): The |status_code| should match what the download manager ran
-    // in to in the BackgroundFetchResponseInfo.
-    settled_fetch.response.status_code = 200;
-    // TODO: settled_fetch.response.status_text
-
     settled_fetch.response.response_type =
         blink::kWebServiceWorkerResponseTypeDefault;
 
-    // TODO(peter): The |headers| should be set to the real response headers,
-    // but the download manager does not relay those to us yet.
-    if (!request->GetResponseType().empty() && !opaque) {
-      settled_fetch.response.headers["Content-Type"] =
-          request->GetResponseType();
-    }
+    if (!opaque) {
+      settled_fetch.response.status_code = request->GetResponseCode();
+      settled_fetch.response.status_text = request->GetResponseText();
+      settled_fetch.response.headers.insert(
+          request->GetResponseHeaders().begin(),
+          request->GetResponseHeaders().end());
 
-    if (request->GetFileSize() > 0 && !opaque) {
-      DCHECK(!request->GetFilePath().empty());
+      // Include the response data as a blob backed by the downloaded file.
+      if (request->GetFileSize() > 0) {
+        DCHECK(!request->GetFilePath().empty());
+        std::unique_ptr<BlobHandle> blob_handle =
+            blob_storage_context_->CreateFileBackedBlob(
+                request->GetFilePath(), 0 /* offset */, request->GetFileSize(),
+                base::Time() /* expected_modification_time */);
 
-      std::unique_ptr<BlobHandle> blob_handle =
-          blob_storage_context_->CreateFileBackedBlob(
-              request->GetFilePath(), 0 /* offset */, request->GetFileSize(),
-              base::Time() /* expected_modification_time */);
+        // TODO(peter): Appropriately handle !blob_handle
+        if (blob_handle) {
+          settled_fetch.response.blob_uuid = blob_handle->GetUUID();
+          settled_fetch.response.blob_size = request->GetFileSize();
 
-      // TODO(peter): Appropriately handle !blob_handle
-      if (blob_handle) {
-        settled_fetch.response.blob_uuid = blob_handle->GetUUID();
-        settled_fetch.response.blob_size = request->GetFileSize();
-
-        // TODO(peter): Remove when we relay the real response headers.
-        settled_fetch.response.headers["Content-Length"] =
-            std::to_string(request->GetFileSize());
-
-        blob_handles.push_back(std::move(blob_handle));
+          blob_handles.push_back(std::move(blob_handle));
+        }
       }
     }
 
