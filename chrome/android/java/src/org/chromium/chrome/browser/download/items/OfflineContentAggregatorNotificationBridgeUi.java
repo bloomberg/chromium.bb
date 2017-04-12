@@ -41,6 +41,11 @@ public class OfflineContentAggregatorNotificationBridgeUi
         destroyServiceDelegate();
     }
 
+    /** @see OfflineContentProvider#openItem(ContentId) */
+    public void openItem(ContentId id) {
+        mProvider.openItem(id);
+    }
+
     // OfflineContentProvider.Observer implementation.
     @Override
     public void onItemsAvailable() {}
