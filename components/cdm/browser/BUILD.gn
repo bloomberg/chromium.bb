@@ -10,15 +10,19 @@ source_set("browser") {
     "media_drm_storage_impl.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
+    "//content/public/browser",
+    "//media/mojo/interfaces",
+    "//url",
+  ]
+
+  deps = [
     "//components/cdm/common",
     "//components/prefs",
-    "//content/public/browser",
     "//content/public/common",
     "//ipc",
     "//media",
-    "//media/mojo/interfaces",
   ]
 }
 
