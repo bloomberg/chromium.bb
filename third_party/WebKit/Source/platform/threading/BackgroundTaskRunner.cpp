@@ -5,7 +5,7 @@
 #include "platform/threading/BackgroundTaskRunner.h"
 
 #include "base/location.h"
-#include "base/task_scheduler/post_task.h"
+#include "base/threading/worker_pool.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -13,11 +13,8 @@ namespace blink {
 void BackgroundTaskRunner::PostOnBackgroundThread(
     const WebTraceLocation& location,
     std::unique_ptr<CrossThreadClosure> closure) {
-  base::PostTaskWithTraits(
-      location,
-      base::TaskTraits().WithShutdownBehavior(
-          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
-      ConvertToBaseCallback(std::move(closure)));
+  base::WorkerPool::PostTask(
+      location, ConvertToBaseCallback(std::move(closure)), false /* ignored */);
 }
 
 }  // namespace blink
