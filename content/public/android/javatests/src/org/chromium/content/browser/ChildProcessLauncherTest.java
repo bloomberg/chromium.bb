@@ -406,7 +406,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
         final ChildProcessConnection[] sandboxedConnections =
                 ChildProcessLauncher.getSandboxedConnectionArrayForTesting(
-                        context.getPackageName());
+                        context, context.getPackageName());
 
         // Wait for the retry to succeed.
         CriteriaHelper.pollInstrumentationThread(

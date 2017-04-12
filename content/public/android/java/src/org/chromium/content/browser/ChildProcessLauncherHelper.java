@@ -101,7 +101,7 @@ class ChildProcessLauncherHelper {
         final String packageName =
                 params == null ? context.getPackageName() : params.getPackageName();
         try {
-            return ChildProcessLauncher.getNumberOfServices(context, inSandbox, packageName);
+            return ChildConnectionAllocator.getNumberOfServices(context, inSandbox, packageName);
         } catch (RuntimeException e) {
             // Unittest packages do not declare services. Some tests require a realistic number
             // to test child process policies, so pick a high-ish number here.
