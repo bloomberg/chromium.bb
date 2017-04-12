@@ -65,6 +65,10 @@ class ReadingListSuggestionsProvider : public ContentSuggestionsProvider,
 
   // Updates the |category_status_| and notifies the |observer_|, if necessary.
   void NotifyStatusChanged(CategoryStatus new_status);
+
+  // Sets the dismissed status of the entry to |dismissed|.
+  void SetDismissedState(const GURL& url, bool dismissed);
+
   CategoryStatus category_status_;
   const Category provided_category_;
 

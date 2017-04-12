@@ -15,6 +15,12 @@ namespace ntp_snippets {
 
 namespace {
 
+const char kTitleUnread1[] = "title1";
+const char kTitleUnread2[] = "title2";
+const char kTitleUnread3[] = "title3";
+const char kTitleUnread4[] = "title4";
+const char kTitleRead1[] = "title_read1";
+
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
@@ -46,11 +52,35 @@ class ReadingListSuggestionsProviderTest : public ::testing::Test {
     return Category::FromKnownCategory(KnownCategories::READING_LIST);
   }
 
+  void AddEntries() {
+    model_->AddEntry(url_unread1_, kTitleUnread1,
+                     reading_list::ADDED_VIA_CURRENT_APP);
+    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    model_->AddEntry(url_unread2_, kTitleUnread2,
+                     reading_list::ADDED_VIA_CURRENT_APP);
+    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    model_->AddEntry(url_read1_, kTitleRead1,
+                     reading_list::ADDED_VIA_CURRENT_APP);
+    model_->SetReadStatus(url_read1_, true);
+    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    model_->AddEntry(url_unread3_, kTitleUnread3,
+                     reading_list::ADDED_VIA_CURRENT_APP);
+    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    model_->AddEntry(url_unread4_, kTitleUnread4,
+                     reading_list::ADDED_VIA_CURRENT_APP);
+  }
+
  protected:
   base::SimpleTestClock* clock_;
   std::unique_ptr<ReadingListModelImpl> model_;
   testing::StrictMock<MockContentSuggestionsProviderObserver> observer_;
   std::unique_ptr<ReadingListSuggestionsProvider> provider_;
+
+  const GURL url_unread1_{"http://www.foo1.bar"};
+  const GURL url_unread2_{"http://www.foo2.bar"};
+  const GURL url_unread3_{"http://www.foo3.bar"};
+  const GURL url_unread4_{"http://www.foo4.bar"};
+  const GURL url_read1_{"http://www.bar.foor"};
 };
 
 TEST_F(ReadingListSuggestionsProviderTest, CategoryInfo) {
@@ -64,37 +94,15 @@ TEST_F(ReadingListSuggestionsProviderTest, CategoryInfo) {
 }
 
 TEST_F(ReadingListSuggestionsProviderTest, ReturnsThreeLatestUnreadSuggestion) {
-  GURL url_unread1 = GURL("http://www.foo1.bar");
-  GURL url_unread2 = GURL("http://www.foo2.bar");
-  GURL url_unread3 = GURL("http://www.foo3.bar");
-  GURL url_unread4 = GURL("http://www.foo4.bar");
-  GURL url_read1 = GURL("http://www.bar.foor");
-  std::string title_unread1 = "title1";
-  std::string title_unread2 = "title2";
-  std::string title_unread3 = "title3";
-  std::string title_unread4 = "title4";
-  std::string title_read1 = "title_read1";
-  model_->AddEntry(url_unread1, title_unread1,
-                   reading_list::ADDED_VIA_CURRENT_APP);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  model_->AddEntry(url_unread2, title_unread2,
-                   reading_list::ADDED_VIA_CURRENT_APP);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  model_->AddEntry(url_read1, title_read1, reading_list::ADDED_VIA_CURRENT_APP);
-  model_->SetReadStatus(url_read1, true);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  model_->AddEntry(url_unread3, title_unread3,
-                   reading_list::ADDED_VIA_CURRENT_APP);
-  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
-  model_->AddEntry(url_unread4, title_unread4,
-                   reading_list::ADDED_VIA_CURRENT_APP);
+  AddEntries();
 
-  EXPECT_CALL(observer_,
-              OnNewSuggestions(
-                  _, ReadingListCategory(),
-                  ElementsAre(Property(&ContentSuggestion::url, url_unread4),
-                              Property(&ContentSuggestion::url, url_unread3),
-                              Property(&ContentSuggestion::url, url_unread2))));
+  EXPECT_CALL(
+      observer_,
+      OnNewSuggestions(
+          _, ReadingListCategory(),
+          ElementsAre(Property(&ContentSuggestion::url, url_unread4_),
+                      Property(&ContentSuggestion::url, url_unread3_),
+                      Property(&ContentSuggestion::url, url_unread2_))));
 
   CreateProvider();
 }
@@ -118,6 +126,31 @@ TEST_F(ReadingListSuggestionsProviderTest, ReturnsOnlyUnreadSuggestion) {
                   ElementsAre(Property(&ContentSuggestion::url, url_unread1))));
 
   CreateProvider();
+}
+
+TEST_F(ReadingListSuggestionsProviderTest, DismissesEntry) {
+  AddEntries();
+
+  EXPECT_CALL(
+      observer_,
+      OnNewSuggestions(
+          _, ReadingListCategory(),
+          ElementsAre(Property(&ContentSuggestion::url, url_unread4_),
+                      Property(&ContentSuggestion::url, url_unread3_),
+                      Property(&ContentSuggestion::url, url_unread2_))));
+
+  CreateProvider();
+
+  EXPECT_CALL(
+      observer_,
+      OnNewSuggestions(
+          _, ReadingListCategory(),
+          ElementsAre(Property(&ContentSuggestion::url, url_unread4_),
+                      Property(&ContentSuggestion::url, url_unread2_),
+                      Property(&ContentSuggestion::url, url_unread1_))));
+
+  provider_->DismissSuggestion(
+      ContentSuggestion::ID(ReadingListCategory(), url_unread3_.spec()));
 }
 
 }  // namespace

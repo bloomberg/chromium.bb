@@ -70,7 +70,13 @@ CategoryInfo ReadingListSuggestionsProvider::GetCategoryInfo(
 
 void ReadingListSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
-  // TODO(crbug.com/702241): Implement this method.
+  if (!reading_list_model_) {
+    return;
+  }
+
+  DCHECK(reading_list_model_->loaded());
+  GURL url(suggestion_id.id_within_category());
+  SetDismissedState(url, true);
 }
 
 void ReadingListSuggestionsProvider::FetchSuggestionImage(
@@ -98,7 +104,7 @@ void ReadingListSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
-  // TODO(crbug.com/702241): Implement this method.
+  // Ignored, Reading List does not depend on history.
 }
 
 void ReadingListSuggestionsProvider::ClearCachedSuggestions(Category category) {
@@ -109,11 +115,35 @@ void ReadingListSuggestionsProvider::ClearCachedSuggestions(Category category) {
 void ReadingListSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
-  // TODO(crbug.com/702241): Implement this method.
+  if (!reading_list_model_ || reading_list_model_->IsPerformingBatchUpdates()) {
+    callback.Run(std::vector<ContentSuggestion>());
+    return;
+  }
+
+  DCHECK(reading_list_model_->loaded());
+  std::vector<const ReadingListEntry*> entries;
+  for (const GURL& url : reading_list_model_->Keys()) {
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    if (entry->ContentSuggestionsExtra()->dismissed) {
+      entries.emplace_back(entry);
+    }
+  }
+
+  std::sort(entries.begin(), entries.end(), CompareEntries);
+
+  std::vector<ContentSuggestion> suggestions;
+  for (const ReadingListEntry* entry : entries) {
+    suggestions.emplace_back(ConvertEntry(entry));
+  }
+
+  callback.Run(std::move(suggestions));
 }
+
 void ReadingListSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
-  // TODO(crbug.com/702241): Implement this method.
+  for (const auto& url : reading_list_model_->Keys()) {
+    SetDismissedState(url, false);
+  }
 }
 
 void ReadingListSuggestionsProvider::ReadingListModelLoaded(
@@ -152,7 +182,7 @@ void ReadingListSuggestionsProvider::FetchReadingListInternal() {
   std::vector<const ReadingListEntry*> entries;
   for (const GURL& url : reading_list_model_->Keys()) {
     const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
-    if (!entry->IsRead()) {
+    if (!entry->IsRead() && !entry->ContentSuggestionsExtra()->dismissed) {
       entries.emplace_back(entry);
     }
   }
@@ -206,6 +236,13 @@ void ReadingListSuggestionsProvider::NotifyStatusChanged(
   }
   category_status_ = new_status;
   observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
+}
+
+void ReadingListSuggestionsProvider::SetDismissedState(const GURL& url,
+                                                       bool dismissed) {
+  reading_list::ContentSuggestionsExtra extra;
+  extra.dismissed = dismissed;
+  reading_list_model_->SetContentSuggestionsExtra(url, extra);
 }
 
 }  // namespace ntp_snippets
