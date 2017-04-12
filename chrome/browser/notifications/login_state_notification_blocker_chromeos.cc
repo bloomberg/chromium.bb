@@ -4,45 +4,25 @@
 
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "ash/wm/window_properties.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "components/session_manager/core/session_manager.h"
 #include "ui/message_center/message_center.h"
+
+using session_manager::SessionManager;
+using session_manager::SessionState;
 
 LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
     message_center::MessageCenter* message_center)
-    : NotificationBlocker(message_center),
-      locked_(false),
-      observing_(true) {
-  // This class is created in the ctor of NotificationUIManager which is created
-  // when a notification is created, so ash::Shell should be initialized, except
-  // when running as a mus client (ash::Shell is not initialized when that is
-  // the case).
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->AddShellObserver(this);
-
-  // LoginState may not exist in some tests.
-  if (chromeos::LoginState::IsInitialized())
-    chromeos::LoginState::Get()->AddObserver(this);
-  chromeos::UserAddingScreen::Get()->AddObserver(this);
+    : NotificationBlocker(message_center) {
+  // SessionManager may not exist in some tests.
+  if (SessionManager::Get())
+    SessionManager::Get()->AddObserver(this);
 }
 
 LoginStateNotificationBlockerChromeOS::
     ~LoginStateNotificationBlockerChromeOS() {
-  // In some tests, the notification blockers may be removed without calling
-  // OnAppTerminating().
-  if (chromeos::LoginState::IsInitialized())
-    chromeos::LoginState::Get()->RemoveObserver(this);
-  if (observing_) {
-    if (ash::Shell::HasInstance())
-      ash::Shell::Get()->RemoveShellObserver(this);
-    chromeos::UserAddingScreen::Get()->RemoveObserver(this);
-  }
+  if (SessionManager::Get())
+    SessionManager::Get()->RemoveObserver(this);
 }
 
 bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
@@ -50,38 +30,12 @@ bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
   if (ash::system_notifier::ShouldAlwaysShowPopups(notification.notifier_id()))
     return true;
 
-  if (locked_)
-    return false;
-
-  if (chromeos::UserAddingScreen::Get()->IsRunning())
-    return false;
-
-  if (chromeos::LoginState::IsInitialized())
-    return chromeos::LoginState::Get()->IsUserLoggedIn();
+  if (SessionManager::Get())
+    return SessionManager::Get()->session_state() == SessionState::ACTIVE;
 
   return true;
 }
 
-void LoginStateNotificationBlockerChromeOS::OnLockStateChanged(bool locked) {
-  locked_ = locked;
-  NotifyBlockingStateChanged();
-}
-
-void LoginStateNotificationBlockerChromeOS::OnAppTerminating() {
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->RemoveShellObserver(this);
-  chromeos::UserAddingScreen::Get()->RemoveObserver(this);
-  observing_ = false;
-}
-
-void LoginStateNotificationBlockerChromeOS::LoggedInStateChanged() {
-  NotifyBlockingStateChanged();
-}
-
-void LoginStateNotificationBlockerChromeOS::OnUserAddingStarted() {
-  NotifyBlockingStateChanged();
-}
-
-void LoginStateNotificationBlockerChromeOS::OnUserAddingFinished() {
+void LoginStateNotificationBlockerChromeOS::OnSessionStateChanged() {
   NotifyBlockingStateChanged();
 }

@@ -6,17 +6,19 @@
 
 #include <memory>
 
-#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/login/login_state.h"
+#include "components/session_manager/core/session_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
 using base::UTF8ToUTF16;
+using session_manager::SessionManager;
+using session_manager::SessionState;
 
 class LoginStateNotificationBlockerChromeOSTest
     : public ash::test::AshTestBase,
@@ -28,8 +30,9 @@ class LoginStateNotificationBlockerChromeOSTest
 
   // ash::tests::AshTestBase overrides:
   void SetUp() override {
-    chromeos::LoginState::Initialize();
-    chromeos::LoginState::Get()->set_always_logged_in(false);
+    session_manager_ = base::MakeUnique<SessionManager>();
+    session_manager_->SetSessionState(SessionState::LOGIN_PRIMARY);
+
     ash::test::AshTestBase::SetUp();
     blocker_.reset(new LoginStateNotificationBlockerChromeOS(
         message_center::MessageCenter::Get()));
@@ -40,7 +43,6 @@ class LoginStateNotificationBlockerChromeOSTest
     blocker_->RemoveObserver(this);
     blocker_.reset();
     ash::test::AshTestBase::TearDown();
-    chromeos::LoginState::Shutdown();
   }
 
   // message_center::NotificationBlocker::Observer overrides:
@@ -66,14 +68,14 @@ class LoginStateNotificationBlockerChromeOSTest
   }
 
   void SetLockedState(bool locked) {
-    // TODO(xiyuan): Use SessionManager and not call ash.
-    static_cast<ash::SessionStateObserver*>(ash::Shell::Get())
-        ->LockStateChanged(locked);
+    SessionManager::Get()->SetSessionState(locked ? SessionState::LOCKED
+                                                  : SessionState::ACTIVE);
   }
 
  private:
   int state_changed_count_;
   std::unique_ptr<message_center::NotificationBlocker> blocker_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSTest);
 };
@@ -85,16 +87,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, BaseTest) {
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_NONE,
-      chromeos::LoginState::LOGGED_IN_USER_NONE);
+  SessionManager::Get()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+  SessionManager::Get()->SetSessionState(SessionState::ACTIVE);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
@@ -119,16 +117,12 @@ TEST_F(LoginStateNotificationBlockerChromeOSTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Login screen.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_NONE,
-      chromeos::LoginState::LOGGED_IN_USER_NONE);
+  SessionManager::Get()->SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_EQ(0, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Logged in as a normal user.
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+  SessionManager::Get()->SetSessionState(SessionState::ACTIVE);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 

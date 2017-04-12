@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -65,11 +64,6 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
         state_changed_count_(0) {}
   ~LoginStateNotificationBlockerChromeOSBrowserTest() override {}
 
-  void SetUpOnMainThread() override {
-    chromeos::LoginState::Get()->set_always_logged_in(false);
-    chromeos::LoginManagerTest::SetUpOnMainThread();
-  }
-
   void TearDownOnMainThread() override {
     if (blocker_)
       blocker_->RemoveObserver(this);
@@ -128,7 +122,9 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  // Two session state changes for login:
+  //   LOGIN_PRIMARY -> LOGGED_IN_NOT_ACTIVE -> ACTIVE.
+  EXPECT_EQ(2, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
@@ -164,7 +160,9 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);
-  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  // Two session state changes for login:
+  //   LOGIN_PRIMARY -> LOGGED_IN_NOT_ACTIVE -> ACTIVE.
+  EXPECT_EQ(2, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 
   // Multi-login user switch.
