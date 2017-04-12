@@ -59,9 +59,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Sets the total engagement required for triggering the banner in testing.
   static void SetTotalEngagementToTrigger(double engagement);
 
-  // Returns whether or not the URLs match for everything except for the ref.
-  static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
-
   // Requests an app banner. If |is_debug_mode| is true, any failure in the
   // pipeline will be reported to the devtools console.
   virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);

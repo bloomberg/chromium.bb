@@ -37,6 +37,13 @@ InstallableParams ParamsToGetManifest() {
   return InstallableParams();
 }
 
+// Returns whether or not the URLs match for everything except for the ref.
+bool URLsAreForTheSamePage(const GURL& first, const GURL& second) {
+  return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
+         first.path_piece() == second.path_piece() &&
+         first.query_piece() == second.query_piece();
+}
+
 }  // anonymous namespace
 
 namespace banners {
@@ -55,14 +62,6 @@ void AppBannerManager::SetTimeDeltaForTesting(int days) {
 // static
 void AppBannerManager::SetTotalEngagementToTrigger(double engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
-}
-
-// static
-bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
-                                             const GURL& second) {
-  return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
-         first.path_piece() == second.path_piece() &&
-         first.query_piece() == second.query_piece();
 }
 
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,
