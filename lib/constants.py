@@ -620,8 +620,8 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'caroline-no-vmtest-pre-cq',      # skylake      kernel 3.18
     'daisy_spring-no-vmtest-pre-cq',  # arm          kernel 3.8
     'lumpy-no-vmtest-pre-cq',         # sandybridge  kernel 3.8
-    'rambi-no-vmtest-pre-cq',         # baytrail     kernel 4.4
-    'samus-pre-cq',                   # broadwell    kernel 3.14      vmtest
+    'rambi-pre-cq',                   # baytrail     kernel 4.4       vmtest
+    'samus-no-vmtest-pre-cq',         # broadwell    kernel 3.14
     'whirlwind-no-vmtest-pre-cq',     # brillo
     'x86-alex-no-vmtest-pre-cq',      # x86          kernel 3.8
 ]
