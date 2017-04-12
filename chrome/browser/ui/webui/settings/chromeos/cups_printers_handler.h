@@ -99,11 +99,6 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                         const base::FilePath& ppd_path,
                         bool ipp_everywhere);
 
-  // Callback for PpdProvider::ResolveCallback.
-  void ResolvePpdDone(std::unique_ptr<Printer> printer,
-                      printing::PpdProvider::CallbackResultCode result,
-                      const std::string& ppd_contents);
-
   std::unique_ptr<chromeos::PrinterDiscoverer> printer_discoverer_;
   scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
   std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;

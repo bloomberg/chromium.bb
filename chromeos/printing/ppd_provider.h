@@ -57,11 +57,15 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
     std::string ppd_server_root = "https://www.gstatic.com/chromeos_printing";
   };
 
-  // Result of a ResolvePpd() call.  If the result code is SUCCESS, then the
-  // string holds the contents of a PPD (that may or may not be gzipped).
-  // Otherwise, the string will be empty.
+  // Result of a ResolvePpd() call.
+  // If the result code is SUCCESS, then:
+  //    string holds the contents of a PPD (that may or may not be gzipped).
+  //    required_filters holds the names of the filters referenced in the ppd.
+  // Otherwise, these fields will be empty.
   using ResolvePpdCallback =
-      base::Callback<void(CallbackResultCode, const std::string&)>;
+      base::Callback<void(CallbackResultCode,
+                          const std::string&,
+                          const std::vector<std::string>& required_filters)>;
 
   // Result of a ResolveManufacturers() call.  If the result code is SUCCESS,
   // then the vector contains a sorted list of manufacturers for which we have

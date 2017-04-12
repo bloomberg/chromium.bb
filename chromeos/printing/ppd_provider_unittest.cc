@@ -32,6 +32,30 @@ namespace {
 // Name of the fake server we're resolving ppds from.
 const char kPpdServer[] = "bogus.google.com";
 
+// A pseudo-ppd that should get cupsFilter lines extracted from it.
+const char kCupsFilterPpdContents[] = R"(
+Other random contents that we don't care about.
+*cupsFilter: "application/vnd.cups-raster 0 my_filter"
+More random contents that we don't care about
+*cupsFilter: "application/vnd.cups-awesome 0 a_different_filter"
+*cupsFilter: "application/vnd.cups-awesomesauce 0 filter3"
+Yet more randome contents that we don't care about.
+More random contents that we don't care about.
+)";
+
+// A pseudo-ppd that should get cupsFilter2 lines extracted from it.
+// We also have cupsFilter lines in here, but since cupsFilter2 lines
+// exist, the cupsFilter lines should be ignored.
+const char kCupsFilter2PpdContents[] = R"(
+Other random contents that we don't care about.
+*cupsFilter: "application/vnd.cups-raster 0 my_filter"
+More random contents that we don't care about
+*cupsFilter2: "foo bar 0 the_real_filter"
+*cupsFilter2: "bar baz 381 another_real_filter"
+Yet more randome contents that we don't care about.
+More random contents that we don't care about.
+)";
+
 class PpdProviderTest : public ::testing::Test {
  public:
   PpdProviderTest()
@@ -105,8 +129,8 @@ class PpdProviderTest : public ::testing::Test {
          R"([
             ["printer_c", "printer_c_ref"]
             ])"},
-        {"ppds/printer_a.ppd", "a"},
-        {"ppds/printer_b.ppd", "b"},
+        {"ppds/printer_a.ppd", kCupsFilterPpdContents},
+        {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
         {"ppds/printer_c.ppd", "c"},
         {"user_supplied_ppd_directory/user_supplied.ppd", "u"}};
     int next_file_num = 0;
@@ -150,8 +174,13 @@ class PpdProviderTest : public ::testing::Test {
 
   // Capture the result of a ResolvePpd() call.
   void CaptureResolvePpd(PpdProvider::CallbackResultCode code,
-                         const std::string& contents) {
-    captured_resolve_ppd_.push_back({code, contents});
+                         const std::string& ppd_contents,
+                         const std::vector<std::string>& ppd_filters) {
+    CapturedResolvePpdResults results;
+    results.code = code;
+    results.ppd_contents = ppd_contents;
+    results.ppd_filters = ppd_filters;
+    captured_resolve_ppd_.push_back(results);
   }
 
   // Capture the result of a ResolveUsbIds() call.
@@ -210,8 +239,12 @@ class PpdProviderTest : public ::testing::Test {
       std::pair<PpdProvider::CallbackResultCode, std::vector<std::string>>>
       captured_resolve_printers_;
 
-  std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
-      captured_resolve_ppd_;
+  struct CapturedResolvePpdResults {
+    PpdProvider::CallbackResultCode code;
+    std::string ppd_contents;
+    std::vector<std::string> ppd_filters;
+  };
+  std::vector<CapturedResolvePpdResults> captured_resolve_ppd_;
 
   std::vector<std::pair<PpdProvider::CallbackResultCode, std::string>>
       captured_resolve_usb_ids_;
@@ -408,10 +441,10 @@ TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
   Drain(*provider);
 
   ASSERT_EQ(2UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
-  EXPECT_EQ("b", captured_resolve_ppd_[0].second);
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].first);
-  EXPECT_EQ("c", captured_resolve_ppd_[1].second);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(kCupsFilter2PpdContents, captured_resolve_ppd_[0].ppd_contents);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].code);
+  EXPECT_EQ("c", captured_resolve_ppd_[1].ppd_contents);
 }
 
 // Test that we *don't* resolve a ppd URL over non-file schemes.  It's not clear
@@ -430,8 +463,8 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
   Drain(*provider);
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_ppd_[0].first);
-  EXPECT_TRUE(captured_resolve_ppd_[0].second.empty());
+  EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_ppd_[0].code);
+  EXPECT_TRUE(captured_resolve_ppd_[0].ppd_contents.empty());
 }
 
 // Test a successful ppd resolution from a user_supplied_url field when
@@ -457,8 +490,8 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
   Drain(*provider);
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
-  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].ppd_contents);
 }
 
 // Test that we cache ppd resolutions when we fetch them and that we can resolve
@@ -483,8 +516,8 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
     Drain(*provider);
 
     ASSERT_EQ(1UL, captured_resolve_ppd_.size());
-    EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
-    EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
+    EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+    EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].ppd_contents);
   }
   // ScopedTempDir goes out of scope, so the source file should now be
   // deleted.  But if we resolve again, we should hit the cache and
@@ -502,8 +535,36 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
   Drain(*provider);
 
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].first);
-  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].second);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].ppd_contents);
+}
+
+// Test that the filter extraction code successfully pulls the filters
+// from the ppds resolved.
+TEST_F(PpdProviderTest, ExtractPpdFilters) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  Printer::PpdReference ref;
+  ref.effective_make_and_model = "printer_a_ref";
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  ref.effective_make_and_model = "printer_b_ref";
+  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
+                                       base::Unretained(this)));
+  Drain(*provider);
+
+  ASSERT_EQ(2UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
+  EXPECT_EQ(
+      std::vector<std::string>({"a_different_filter", "filter3", "my_filter"}),
+      captured_resolve_ppd_[0].ppd_filters);
+
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].code);
+  EXPECT_EQ(kCupsFilter2PpdContents, captured_resolve_ppd_[1].ppd_contents);
+  EXPECT_EQ(
+      std::vector<std::string>({"another_real_filter", "the_real_filter"}),
+      captured_resolve_ppd_[1].ppd_filters);
 }
 
 }  // namespace

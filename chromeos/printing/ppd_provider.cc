@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <set>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -18,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -38,6 +40,89 @@
 namespace chromeos {
 namespace printing {
 namespace {
+
+// Extract cupsFilter/cupsFilter2 filter names from the contents
+// of a ppd, pre-split into lines.
+
+// cupsFilter2 lines look like this:
+//
+// *cupsFilter2: "application/vnd.cups-raster application/vnd.foo 100
+// rastertofoo"
+//
+// cupsFilter lines look like this:
+//
+// *cupsFilter: "application/vnd.cups-raster 100 rastertofoo"
+//
+// |field_name| is the starting token we look for (*cupsFilter: or
+// *cupsFilter2:).
+//
+// |num_value_tokens| is the number of tokens we expect to find in the
+// value string.  The filter is always the last of these.
+//
+// This function looks at each line in ppd_lines for lines of this format, and,
+// for each one found, adds the name of the filter (rastertofoo in the examples
+// above) to the returned set.
+//
+// This would be simpler with re2, but re2 is not an allowed dependency in
+// this part of the tree.
+std::set<std::string> ExtractCupsFilters(
+    const std::vector<std::string>& ppd_lines,
+    const std::string& field_name,
+    int num_value_tokens) {
+  std::set<std::string> ret;
+  std::string delims(" \n\t\r\"");
+
+  for (const std::string& line : ppd_lines) {
+    base::StringTokenizer line_tok(line, delims);
+
+    if (!line_tok.GetNext()) {
+      continue;
+    }
+    if (line_tok.token_piece() != field_name) {
+      continue;
+    }
+
+    // Skip to the last of the value tokens.
+    for (int i = 0; i < num_value_tokens; ++i) {
+      if (!line_tok.GetNext()) {
+        // Continue the outer loop.
+        goto next_line;
+      }
+    }
+
+    if (line_tok.token_piece() != "") {
+      ret.insert(line_tok.token_piece().as_string());
+    }
+  next_line : {}  // Lint requires {} instead of ; for an empty statement.
+  }
+  return ret;
+}
+
+// The ppd spec explicitly disallows quotes inside quoted strings, and provides
+// no way for including escaped quotes in a quoted string.  It also requires
+// that the string be a single line, and that everything in these fields be
+// 7-bit ASCII.  The CUPS spec on these particular fields is not particularly
+// rigorous, but specifies no way of including escaped spaces in the tokens
+// themselves, and the cups *code* just parses out these lines with a sscanf
+// call that uses spaces as delimiters.
+//
+// Furthermore, cups (post 1.5) discards all cupsFilter lines if *any*
+// cupsFilter2 lines exist.
+//
+// All of this is a long way of saying the regular-expression based parsing
+// done here is, to the best of my knowledge, actually conformant to the specs
+// that exist, and not just a hack.
+std::vector<std::string> ExtractFiltersFromPpd(
+    const std::string& ppd_contents) {
+  std::vector<std::string> lines = base::SplitString(
+      ppd_contents, "\n\r", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  std::set<std::string> filters = ExtractCupsFilters(lines, "*cupsFilter2:", 4);
+  if (filters.empty()) {
+    // No cupsFilter2 lines found, fall back to looking for cupsFilter lines.
+    filters = ExtractCupsFilters(lines, "*cupsFilter:", 3);
+  }
+  return std::vector<std::string>(filters.begin(), filters.end());
+}
 
 // Returns false if there are obvious errors in the reference that will prevent
 // resolution.
@@ -203,9 +288,8 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       // thing if there is one.
       LOG(ERROR) << "PPD " << next.first.effective_make_and_model
                  << " not found in server index";
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(next.second, PpdProvider::INTERNAL_ERROR, std::string()));
+      FinishPpdResolution(next.second, PpdProvider::INTERNAL_ERROR,
+                          std::string());
       ppd_resolution_queue_.pop_front();
     }
   }
@@ -273,8 +357,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     // Do a sanity check here, so we can assumed |reference| is well-formed in
     // the rest of this class.
     if (!PpdReferenceIsWellFormed(reference)) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(cb, PpdProvider::INTERNAL_ERROR, ""));
+      FinishPpdResolution(cb, PpdProvider::INTERNAL_ERROR, std::string());
       return;
     }
     // First step, check the cache.  If the cache lookup fails, we'll (try to)
@@ -389,6 +472,21 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                                                  &file_fetch_contents_);
   }
 
+  void FinishPpdResolution(const ResolvePpdCallback& cb,
+                           PpdProvider::CallbackResultCode result_code,
+                           const std::string& ppd_contents) {
+    if (result_code == PpdProvider::SUCCESS) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(cb, PpdProvider::SUCCESS, ppd_contents,
+                                ExtractFiltersFromPpd(ppd_contents)));
+    } else {
+      // Just post the failure.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(cb, result_code, std::string(),
+                                std::vector<std::string>()));
+    }
+  }
+
   // Callback when the cache lookup for a ppd request finishes.  If we hit in
   // the cache, satisfy the resolution, otherwise kick it over to the fetcher
   // queue to be grabbed from a server.
@@ -397,8 +495,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                                  const PpdCache::FindResult& result) {
     if (result.success) {
       // Cache hit.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(cb, PpdProvider::SUCCESS, result.contents));
+      FinishPpdResolution(cb, PpdProvider::SUCCESS, result.contents);
     } else {
       // Cache miss.  Queue it to be satisfied by the fetcher queue.
       ppd_resolution_queue_.push_back({reference, cb});
@@ -559,19 +656,17 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
   void OnPpdFetchComplete() {
     DCHECK(!ppd_resolution_queue_.empty());
     std::string contents;
+
     if ((ValidateAndGetResponseAsString(&contents) != PpdProvider::SUCCESS) ||
         contents.size() > kMaxPpdSizeBytes) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(ppd_resolution_queue_.front().second,
-                                PpdProvider::SERVER_ERROR, std::string()));
+      FinishPpdResolution(ppd_resolution_queue_.front().second,
+                          PpdProvider::SERVER_ERROR, std::string());
     } else {
       ppd_cache_->Store(
           PpdReferenceToCacheKey(ppd_resolution_queue_.front().first), contents,
-
           base::Callback<void()>());
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(ppd_resolution_queue_.front().second,
-                                PpdProvider::SUCCESS, contents));
+      FinishPpdResolution(ppd_resolution_queue_.front().second,
+                          PpdProvider::SUCCESS, contents);
     }
     ppd_resolution_queue_.pop_front();
   }
@@ -653,8 +748,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       if (!entry.first.user_supplied_ppd_url.empty()) {
         filtered_queue.push_back(entry);
       } else {
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(entry.second, code, std::string()));
+        FinishPpdResolution(entry.second, code, std::string());
       }
     }
     ppd_resolution_queue_ = std::move(filtered_queue);

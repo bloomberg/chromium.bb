@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -119,7 +120,10 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   void ResolvePpdDone(const Printer& printer,
                       const PrinterSetupCallback& cb,
                       printing::PpdProvider::CallbackResultCode result,
-                      const std::string& ppd_contents) {
+                      const std::string& ppd_contents,
+                      const std::vector<std::string>& ppd_filters) {
+    // TODO(justincarlson) - Use ppd_filters to invoke cups components downloads
+    // if needed.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     switch (result) {
       case chromeos::printing::PpdProvider::SUCCESS:
