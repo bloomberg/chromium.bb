@@ -3687,7 +3687,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                                                has_rows, has_cols,
 #endif
                                                bsize)
-                     : -1;
+                     : 0;
 #else
   const int unify_bsize = 0;
   const int pl = partition_plane_context(xd, mi_row, mi_col,
