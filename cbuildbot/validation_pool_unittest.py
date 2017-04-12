@@ -917,12 +917,14 @@ class TestCoreLogic(MoxBase):
   def _UpdatedDependencyMap(self, dependency_map):
     pool = self.MakePool()
 
-    visited = set()
-    visiting = set()
+    directs = dict((k, set(v)) for (k, v) in dependency_map.iteritems())
 
     keys = dependency_map.keys()
     for change in keys:
-      pool._UpdateDependencyMap(dependency_map, change, visiting, visited)
+      visited = pool._DepthFirstSearch(directs, change)
+      visited.remove(change)
+      if visited:
+        dependency_map[change] = visited
 
   def test_UpdateDependencyMapOnTransitiveDependency(self):
     """Test _UpdateDependencyMap on transitive dependency."""
@@ -1076,6 +1078,141 @@ class TestCoreLogic(MoxBase):
         p[1]: {p[2]}
     }
     self.assertDictEqual(dep_map, expected_map)
+
+  def testGetDependMapForDeepGraph(self):
+    r"""Create a graph which would take exponential time naively.
+
+    The graph looks like this:
+        a_1
+       /   \
+      b_1  c_1
+       \  /
+        a_2
+       /   \
+      b_2  c_2
+       \  /
+        a_3
+        ...100 similar chains
+       /  \
+      b_100 c_100
+    """
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=3 * 100)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    p_iter = iter(p)
+
+    a, b, c = None, None, None
+    chunks = []
+
+    while True:
+      a = next(p_iter, None)
+      if not a:
+        break
+      # Chain the previous block to this block.
+      if c:
+        self.patch_mock.SetCQDependencies(b, [a])
+        self.patch_mock.SetCQDependencies(c, [a])
+      b, c = next(p_iter), next(p_iter)
+      self.patch_mock.SetCQDependencies(a, [b, c])
+      chunks.append((a, b, c))
+
+    transitive_dependencies = pool.GetDependMapForChanges(p, patches)
+
+    for i in range(len(chunks) - 1, -1, -1):
+      a, b, c = chunks[i]
+      nodes_above = set(p for chunk in chunks[0:i] for p in chunk)
+      self.assertEqual(nodes_above,
+                       transitive_dependencies.get(a, set()))
+
+
+  def testGetDependMapForChangesComplex(self):
+    """Test GetDependMapForChanges on complex graph.
+
+    This should not hang.
+    """
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=53)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    self.patch_mock.SetCQDependencies(p[0], [])
+    self.patch_mock.SetCQDependencies(p[1], [p[2]])
+    self.patch_mock.SetCQDependencies(p[2], [p[1]])
+    self.patch_mock.SetCQDependencies(p[3], [])
+    self.patch_mock.SetCQDependencies(p[4], [])
+    self.patch_mock.SetCQDependencies(p[5], [])
+    self.patch_mock.SetCQDependencies(p[6], [p[7]])
+    self.patch_mock.SetCQDependencies(p[7], [p[22]])
+    self.patch_mock.SetCQDependencies(p[8], [p[9]])
+    self.patch_mock.SetCQDependencies(p[9], [p[29]])
+    self.patch_mock.SetCQDependencies(p[10], [p[11]])
+    self.patch_mock.SetCQDependencies(p[11], [p[8]])
+    self.patch_mock.SetCQDependencies(p[12], [p[13]])
+    self.patch_mock.SetCQDependencies(p[13], [p[30]])
+    self.patch_mock.SetCQDependencies(p[14], [p[12]])
+    self.patch_mock.SetCQDependencies(p[15], [p[16]])
+    self.patch_mock.SetCQDependencies(p[16], [p[17]])
+    self.patch_mock.SetCQDependencies(p[17], [p[18]])
+    self.patch_mock.SetCQDependencies(p[18], [p[14]])
+    self.patch_mock.SetCQDependencies(p[19], [p[20]])
+    self.patch_mock.SetCQDependencies(p[20], [p[48], p[31]])
+    self.patch_mock.SetCQDependencies(p[21], [p[19]])
+    self.patch_mock.SetCQDependencies(p[22], [p[21]])
+    self.patch_mock.SetCQDependencies(p[23], [p[6]])
+    self.patch_mock.SetCQDependencies(p[24], [p[23]])
+    self.patch_mock.SetCQDependencies(p[25], [p[24]])
+    self.patch_mock.SetCQDependencies(p[26], [p[25]])
+    self.patch_mock.SetCQDependencies(p[27], [p[26]])
+    self.patch_mock.SetCQDependencies(p[28], [p[27]])
+    self.patch_mock.SetCQDependencies(p[29], [p[42]])
+    self.patch_mock.SetCQDependencies(p[30], [p[10]])
+    self.patch_mock.SetCQDependencies(p[31], [p[15]])
+    self.patch_mock.SetCQDependencies(p[32], [p[31]])
+    self.patch_mock.SetCQDependencies(p[33], [p[32]])
+    self.patch_mock.SetCQDependencies(p[34], [p[33]])
+    self.patch_mock.SetCQDependencies(p[35], [p[34]])
+    self.patch_mock.SetCQDependencies(p[36], [])
+    self.patch_mock.SetCQDependencies(p[37], [])
+    self.patch_mock.SetCQDependencies(p[38], [])
+    self.patch_mock.SetCQDependencies(p[39], [p[12]])
+    self.patch_mock.SetCQDependencies(p[40], [p[46], p[12]])
+    self.patch_mock.SetCQDependencies(p[41], [p[40], p[14]])
+    self.patch_mock.SetCQDependencies(p[42], [p[28]])
+    self.patch_mock.SetCQDependencies(p[43], [p[49]])
+    self.patch_mock.SetCQDependencies(p[44], [p[43], p[35]])
+    self.patch_mock.SetCQDependencies(p[45], [p[44], p[18]])
+    self.patch_mock.SetCQDependencies(p[46], [p[45], p[13]])
+    self.patch_mock.SetCQDependencies(p[47], [p[41], p[11]])
+    self.patch_mock.SetCQDependencies(p[48], [p[47], p[17]])
+    self.patch_mock.SetCQDependencies(p[49], [p[35]])
+    self.patch_mock.SetCQDependencies(p[50], [])
+    self.patch_mock.SetCQDependencies(p[51], [])
+    self.patch_mock.SetCQDependencies(p[52], [p[37]])
+
+    m = pool.GetDependMapForChanges(p, patches)
+
+    self.assertEqual(None, m.get(p[0]))
+    self.assertEqual(set([p[2]]), m[p[1]])
+    self.assertEqual(set([p[1]]), m[p[2]])
+    self.assertEqual(set([p[1]]), m[p[2]])
+
+    loop = set([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+                23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 39, 40, 41,
+                42, 43, 44, 45, 46, 47, 48, 49])
+
+    # patch 39 links into the loop, but doesn't get depended on by anything.
+    self.assertEqual(None, m.get(p[39]))
+
+    # All the other patches are in a strongly connected component, so their
+    # transitive dependency set contains every other patch in the loop.
+    for i in loop - set([39]):
+      self.assertEqual(m[p[i]], set(p[j] for j in loop if j != i))
 
   def testHasPickedUpCLs(self):
     """Test HasPickedUpCLs."""

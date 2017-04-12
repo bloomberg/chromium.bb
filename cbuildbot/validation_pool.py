@@ -891,76 +891,57 @@ class ValidationPool(object):
       A dict mapping a change (patch.GerritPatch instance) to a set of changes
       (patch.GerritPatch instances) depending on this change.
     """
-    dependency_map = {}
-
+    # 1. We want the set of nodes S = {x : x has a path to n in G}.
+    # 2. There is a path from x to n in G if and only if there is a path from
+    #    n to x in flip(G).
+    # 3. So S = {x : x has a path to n in G}
+    #         = {x : n has a path to x in flip(G)}
+    flipped_graph = {}
     for change in changes:
       gerrit_deps, cq_deps = patches.GetDepChangesForChange(change)
-
       for dep in gerrit_deps + cq_deps:
         # Maps each change to the changes directly depending on it.
-        dependency_map.setdefault(dep, set()).add(change)
+        flipped_graph.setdefault(dep, set()).add(change)
 
-    visited = set()
-    visiting = set()
+    transitive_dependency_map = {}
     for change in changes:
       # Update dependency_map to map each change to all changes directly or
       # indirectly depending on it.
       logging.info('Update dependency_map for change %s', change.gerrit_number)
-      self._UpdateDependencyMap(dependency_map, change, visiting, visited)
+      visited = self._DepthFirstSearch(flipped_graph, change)
+      visited.remove(change)
+      if visited:
+        transitive_dependency_map[change] = visited
 
-    return dependency_map
+    return transitive_dependency_map
 
-  def _UpdateDependencyMap(self, dependency_map, change, visiting, visited):
-    """For a change, find all changes depending on it and update dependency map.
+  def _DepthFirstSearch(self, graph, node):
+    """Returns a set of nodes reachable from a node in a graph.
 
-    The value part of a change key in the dependency map is a set of changes
-    depending on it. Some other changes may indirectly depend on this change.
-    Given the change and the dependency map, search through the dependency map
-    to find all changes (directly and indirectly) depending on this change,
-    add all the changes to the value of this change key in the dependency map.
+    Performs depth-first-search, keeping track of a set of visited nodes to
+    avoid exponential blowup from diamond-shaped graphs, and to avoid infinite
+    loops from cycles. Returns the set of visited nodes, including the start
+    node.
 
     Args:
-      dependency_map: A dict mapping a change (patch.GerritPatch instance)
-        to a set of changes (patch.GerritPatch instances) depending on this
-        change.
-      change: The change (patch.GerritPatch instance) to update.
-      visiting: A set of changes (patch.GerritPatch instance) in visiting
-        status in this search.
-      visited: A set of changes (patch.GerritPatch instance) has been visited
-        and updated with all changes depending on them.
+      graph: The graph as an adjacency map. It maps nodes to a collection of
+             their neighbors.
+      node: The current node we are at.
 
     Returns:
-      A set of changes (patch.GerritPatch instance) depending on the change,
-         or None if no change depends on this change.
+      A set of nodes reachable from the start node.
     """
-    if change in visited:
-      return dependency_map.get(change)
+    visited = set()
+    visiting = [node]
+    while visiting:
+      node = visiting.pop()
+      visited.add(node)
+      children = graph.get(node, set())
+      # Don't re-visit nodes, or the algorithm becomes exponential-time.
+      visiting.extend(children - visited)
 
-    if change in visiting:
-      return {change}
+    return visited
 
-    visiting.add(change)
-
-    if change in dependency_map:
-      updated_deps = set()
-      for dep in dependency_map[change]:
-        dep_deps = self._UpdateDependencyMap(
-            dependency_map, dep, visiting, visited)
-
-        if dep_deps:
-          updated_deps.update(dep_deps)
-
-      updated_deps.discard(change)
-      dependency_map[change].update(updated_deps)
-
-    visiting.remove(change)
-
-    depends = dependency_map.get(change)
-
-    if not depends or not visiting.intersection(depends):
-      visited.add(change)
-
-    return depends
 
   @staticmethod
   def Load(filename, builder_run=None):
