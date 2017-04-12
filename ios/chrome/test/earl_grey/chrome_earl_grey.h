@@ -48,6 +48,17 @@ id ExecuteJavaScript(NSString* javascript,
 // a timeout.
 + (void)loadURL:(GURL)URL;
 
+// Reloads the page and waits for the loading to complete, or a timeout.
++ (void)reload;
+
+// Navigates back to the previous page and waits for the loading to complete, or
+// a timeout.
++ (void)goBack;
+
+// Navigates forward to the next page and waits for the loading to complete, or
+// a timeout.
++ (void)goForward;
+
 // Waits for the page to finish loading or a timeout.
 + (void)waitForPageToFinishLoading;
 

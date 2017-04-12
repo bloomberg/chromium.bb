@@ -8,9 +8,12 @@
 #import <WebKit/WebKit.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -110,6 +113,27 @@ id ExecuteJavaScript(NSString* javascript,
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML())
     web::WaitUntilWindowIdInjected(webState);
+}
+
++ (void)reload {
+  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
+      [[GenericChromeCommand alloc] initWithTag:IDC_RELOAD]);
+  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [ChromeEarlGrey waitForPageToFinishLoading];
+}
+
++ (void)goBack {
+  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
+      [[GenericChromeCommand alloc] initWithTag:IDC_BACK]);
+  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [ChromeEarlGrey waitForPageToFinishLoading];
+}
+
++ (void)goForward {
+  base::scoped_nsobject<GenericChromeCommand> reloadCommand(
+      [[GenericChromeCommand alloc] initWithTag:IDC_FORWARD]);
+  chrome_test_util::RunCommandWithActiveViewController(reloadCommand);
+  [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
 + (void)waitForPageToFinishLoading {
