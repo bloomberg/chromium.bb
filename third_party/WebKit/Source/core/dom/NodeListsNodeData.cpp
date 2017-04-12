@@ -30,6 +30,8 @@
 
 #include "core/dom/NodeListsNodeData.h"
 
+#include "core/dom/LiveNodeList.h"
+
 namespace blink {
 
 void NodeListsNodeData::InvalidateCaches(const QualifiedName* attr_name) {
@@ -51,6 +53,18 @@ DEFINE_TRACE(NodeListsNodeData) {
 
 DEFINE_TRACE_WRAPPERS(NodeListsNodeData) {
   visitor->TraceWrappersWithManualWriteBarrier(child_node_list_);
+  for (const auto list : atomic_name_caches_.Values()) {
+    if (IsHTMLCollectionType(list->GetType())) {
+      visitor->TraceWrappersWithManualWriteBarrier(
+          static_cast<const HTMLCollection*>(list.Get()));
+    } else {
+      visitor->TraceWrappersWithManualWriteBarrier(
+          static_cast<const LiveNodeList*>(list.Get()));
+    }
+  }
+  for (const auto list : tag_collection_cache_ns_.Values()) {
+    visitor->TraceWrappersWithManualWriteBarrier(list.Get());
+  }
 }
 
 }  // namespace blink
