@@ -41,6 +41,7 @@ class ArcVoiceInteractionFrameworkService
   // mojom::VoiceInteractionFrameworkHost overrides.
   void CaptureFocusedWindow(
       const CaptureFocusedWindowCallback& callback) override;
+  void CaptureFullscreen(const CaptureFullscreenCallback& callback) override;
 
   // Whether enable-voice-interaction switch is present.
   static bool IsVoiceInteractionEnabled();

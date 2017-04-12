@@ -122,4 +122,18 @@ void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
                                  base::Bind(&ScreenshotCallback, callback));
 }
 
+void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
+    const CaptureFullscreenCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Since ARC currently only runs in primary display, we restrict
+  // the screenshot to it.
+  aura::Window* window = ash::Shell::GetPrimaryRootWindow();
+  DCHECK(window);
+  ui::GrabWindowSnapshotAsyncPNG(window, gfx::Rect(window->bounds().size()),
+                                 base::CreateTaskRunnerWithTraits(
+                                     base::TaskTraits().MayBlock().WithPriority(
+                                         base::TaskPriority::USER_BLOCKING)),
+                                 base::Bind(&ScreenshotCallback, callback));
+}
+
 }  // namespace arc
