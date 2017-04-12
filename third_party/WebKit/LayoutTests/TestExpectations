@@ -1872,6 +1872,7 @@ crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 crbug.com/710226 [ Win Mac10.9 Mac10.10 Mac10.11 Mac10.12 ] external/wpt/cssom-view/MediaQueryList-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/selectors4/focus-within-shadow-006.html [ Failure ]
 crbug.com/626703 [ Android Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 external/wpt/cssom-view/matchMedia.xht [ Timeout ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-001.html [ Failure ]
