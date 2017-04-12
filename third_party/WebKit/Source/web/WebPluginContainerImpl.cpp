@@ -710,6 +710,8 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
   // in the call to HandleEvent. See http://b/issue?id=1362948
   FrameView* parent_view = ToFrameView(Parent());
 
+  // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
+  // in this class.
   WebMouseEventBuilder transformed_event(
       ToFrameView(Parent()), LayoutItem(element_->GetLayoutObject()), *event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
@@ -765,11 +767,17 @@ void WebPluginContainerImpl::HandleDragEvent(MouseEvent* event) {
 }
 
 void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
-  WebFloatPoint absolute_root_frame_location =
-      event->NativeEvent().PositionInRootFrame();
+  WebFloatPoint absolute_location = event->NativeEvent().PositionInRootFrame();
+
+  FrameView* view = ToFrameView(Parent());
+  // Translate the root frame position to content coordinates.
+  if (view) {
+    absolute_location = view->RootFrameToContents(absolute_location);
+  }
+
   IntPoint local_point =
       RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
-          absolute_root_frame_location, kUseTransforms));
+          absolute_location, kUseTransforms));
   WebMouseWheelEvent translated_event = event->NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
@@ -830,12 +838,19 @@ void WebPluginContainerImpl::HandleTouchEvent(TouchEvent* event) {
       WebTouchEvent transformed_event =
           event->NativeEvent()->FlattenTransform();
 
+      FrameView* view = ToFrameView(Parent());
+
       for (unsigned i = 0; i < transformed_event.touches_length; ++i) {
-        WebFloatPoint absolute_root_frame_location =
-            transformed_event.touches[i].position;
+        WebFloatPoint absolute_location = transformed_event.touches[i].position;
+
+        // Translate the root frame position to content coordinates.
+        if (view) {
+          absolute_location = view->RootFrameToContents(absolute_location);
+        }
+
         IntPoint local_point =
             RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
-                absolute_root_frame_location, kUseTransforms));
+                absolute_location, kUseTransforms));
         transformed_event.touches[i].position.x = local_point.X();
         transformed_event.touches[i].position.y = local_point.Y();
       }

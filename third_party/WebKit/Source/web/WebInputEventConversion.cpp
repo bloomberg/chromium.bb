@@ -195,9 +195,17 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameView* plugin_parent,
   if (event.NativeEvent()) {
     *static_cast<WebMouseEvent*>(this) =
         event.NativeEvent()->FlattenTransform();
-    WebFloatPoint absolute_root_frame_location = PositionInRootFrame();
-    IntPoint local_point = RoundedIntPoint(layout_item.AbsoluteToLocal(
-        absolute_root_frame_location, kUseTransforms));
+    WebFloatPoint absolute_location = PositionInRootFrame();
+
+    // TODO(dtapuska): |plugin_parent| should never be null. Remove this
+    // conditional code.
+    // Translate the root frame position to content coordinates.
+    if (plugin_parent) {
+      absolute_location = plugin_parent->RootFrameToContents(absolute_location);
+    }
+
+    IntPoint local_point = RoundedIntPoint(
+        layout_item.AbsoluteToLocal(absolute_location, kUseTransforms));
     SetPositionInWidget(local_point.X(), local_point.Y());
     return;
   }
