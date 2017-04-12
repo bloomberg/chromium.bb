@@ -31,6 +31,9 @@ extern const char kHistogramFromGWSAbortNewNavigationBeforeCommit[];
 extern const char kHistogramFromGWSAbortNewNavigationBeforePaint[];
 extern const char kHistogramFromGWSAbortNewNavigationBeforeInteraction[];
 extern const char kHistogramFromGWSAbortReloadBeforeInteraction[];
+extern const char kHistogramFromGWSForegroundDuration[];
+extern const char kHistogramFromGWSForegroundDurationAfterPaint[];
+extern const char kHistogramFromGWSForegroundDurationNoCommit[];
 
 }  // namespace internal
 
@@ -85,6 +88,9 @@ class FromGWSPageLoadMetricsLogger {
   void OnParseStop(const page_load_metrics::PageLoadTiming& timing,
                    const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnUserInput(const blink::WebInputEvent& event);
+  void FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   // The methods below are public only for testing.
   static bool IsGoogleSearchHostname(base::StringPiece host);
@@ -143,6 +149,10 @@ class FromGWSPageLoadMetricsObserver
                          const GURL& currently_committed_url,
                          bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
+
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   void OnDomContentLoadedEventStart(
       const page_load_metrics::PageLoadTiming& timing,

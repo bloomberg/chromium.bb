@@ -96,6 +96,14 @@ const char kHistogramFromGWSAbortBackgroundBeforeInteraction[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.Background."
     "AfterPaint.BeforeInteraction";
 
+const char kHistogramFromGWSForegroundDuration[] =
+    "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration";
+const char kHistogramFromGWSForegroundDurationAfterPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration."
+    "AfterPaint";
+const char kHistogramFromGWSForegroundDurationNoCommit[] =
+    "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration.NoCommit";
+
 }  // namespace internal
 
 namespace {
@@ -211,6 +219,29 @@ void LogProvisionalAborts(const page_load_metrics::PageAbortInfo& abort_info) {
     default:
       NOTREACHED();
       break;
+  }
+}
+
+void LogForegroundDurations(const page_load_metrics::PageLoadTiming& timing,
+                            const page_load_metrics::PageLoadExtraInfo& info,
+                            base::TimeTicks app_background_time) {
+  base::Optional<base::TimeDelta> foreground_duration =
+      GetInitialForegroundDuration(info, app_background_time);
+  if (!foreground_duration)
+    return;
+
+  if (info.did_commit) {
+    PAGE_LOAD_LONG_HISTOGRAM(internal::kHistogramFromGWSForegroundDuration,
+                             foreground_duration.value());
+    if (timing.first_paint && timing.first_paint < foreground_duration) {
+      PAGE_LOAD_LONG_HISTOGRAM(
+          internal::kHistogramFromGWSForegroundDurationAfterPaint,
+          foreground_duration.value() - timing.first_paint.value());
+    }
+  } else {
+    PAGE_LOAD_LONG_HISTOGRAM(
+        internal::kHistogramFromGWSForegroundDurationNoCommit,
+        foreground_duration.value());
   }
 }
 
@@ -455,6 +486,14 @@ FromGWSPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+FromGWSPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.FlushMetricsOnAppEnterBackground(timing, extra_info);
+  return STOP_OBSERVING;
+}
+
 void FromGWSPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -546,6 +585,8 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
                                          first_user_interaction_after_paint_)) {
     LogAbortsAfterPaintBeforeInteraction(abort_info);
   }
+
+  LogForegroundDurations(timing, extra_info, base::TimeTicks());
 }
 
 void FromGWSPageLoadMetricsLogger::OnFailedProvisionalLoad(
@@ -559,6 +600,9 @@ void FromGWSPageLoadMetricsLogger::OnFailedProvisionalLoad(
     return;
 
   LogProvisionalAborts(abort_info);
+
+  LogForegroundDurations(page_load_metrics::PageLoadTiming(), extra_info,
+                         base::TimeTicks());
 }
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogFailedProvisionalLoadMetrics() {
@@ -704,4 +748,10 @@ void FromGWSPageLoadMetricsLogger::OnUserInput(
     first_user_interaction_after_paint_ =
         base::TimeTicks::Now() - navigation_start_;
   }
+}
+
+void FromGWSPageLoadMetricsLogger::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  LogForegroundDurations(timing, extra_info, base::TimeTicks::Now());
 }
