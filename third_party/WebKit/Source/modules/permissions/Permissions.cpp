@@ -15,6 +15,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
@@ -108,7 +109,7 @@ ScriptPromise Permissions::query(ScriptState* script_state,
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(script_state->GetExecutionContext());
+  PermissionService* service = GetService(ExecutionContext::From(script_state));
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -126,7 +127,7 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->HasPermission(
       std::move(descriptor),
-      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ExecutionContext::From(script_state)->GetSecurityOrigin(),
       ConvertToBaseCallback(WTF::Bind(
           &Permissions::TaskComplete, WrapPersistent(this),
           WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
@@ -145,7 +146,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(script_state->GetExecutionContext());
+  PermissionService* service = GetService(ExecutionContext::From(script_state));
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
@@ -158,7 +159,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->RequestPermission(
       std::move(descriptor),
-      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ExecutionContext::From(script_state)->GetSecurityOrigin(),
       UserGestureIndicator::ProcessingUserGestureThreadSafe(),
       ConvertToBaseCallback(WTF::Bind(
           &Permissions::TaskComplete, WrapPersistent(this),
@@ -178,7 +179,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(script_state->GetExecutionContext());
+  PermissionService* service = GetService(ExecutionContext::From(script_state));
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
@@ -191,7 +192,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   service->RevokePermission(
       std::move(descriptor),
-      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ExecutionContext::From(script_state)->GetSecurityOrigin(),
       ConvertToBaseCallback(WTF::Bind(
           &Permissions::TaskComplete, WrapPersistent(this),
           WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
@@ -232,7 +233,7 @@ ScriptPromise Permissions::requestAll(
 
   // This must be called after `parsePermission` because the website might
   // be able to run code.
-  PermissionService* service = GetService(script_state->GetExecutionContext());
+  PermissionService* service = GetService(ExecutionContext::From(script_state));
   if (!service)
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
@@ -249,7 +250,7 @@ ScriptPromise Permissions::requestAll(
 
   service->RequestPermissions(
       std::move(internal_permissions),
-      script_state->GetExecutionContext()->GetSecurityOrigin(),
+      ExecutionContext::From(script_state)->GetSecurityOrigin(),
       UserGestureIndicator::ProcessingUserGestureThreadSafe(),
       ConvertToBaseCallback(
           WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),

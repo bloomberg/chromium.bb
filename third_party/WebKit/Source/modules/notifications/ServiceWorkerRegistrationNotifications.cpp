@@ -66,7 +66,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     const String& title,
     const NotificationOptions& options,
     ExceptionState& exception_state) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
   // If context object's active worker is null, reject the promise with a
   // TypeError exception.

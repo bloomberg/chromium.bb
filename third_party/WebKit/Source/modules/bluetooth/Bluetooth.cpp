@@ -151,7 +151,7 @@ void Bluetooth::RequestDeviceCallback(
 ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
                                        const RequestDeviceOptions& options,
                                        ExceptionState& exception_state) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   // If the Relevant settings object is not a secure context, reject promise
   // with a SecurityError and abort these steps.

@@ -63,7 +63,7 @@ mojom::blink::PermissionStatus NotificationManager::GetPermissionStatus(
 ScriptPromise NotificationManager::RequestPermission(
     ScriptState* script_state,
     NotificationPermissionCallback* deprecated_callback) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   if (!permission_service_) {
     ConnectToPermissionService(context,

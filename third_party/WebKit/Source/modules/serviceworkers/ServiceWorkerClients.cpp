@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLocation.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -103,7 +104,7 @@ ServiceWorkerClients::ServiceWorkerClients() {}
 
 ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
                                         const String& id) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // TODO(jungkees): May be null due to worker termination:
   // http://crbug.com/413518.
   if (!execution_context)
@@ -120,7 +121,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
 ScriptPromise ServiceWorkerClients::matchAll(
     ScriptState* script_state,
     const ClientQueryOptions& options) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
     return ScriptPromise();
@@ -140,7 +141,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
 }
 
 ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
@@ -161,7 +162,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
                                                const String& url) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
   if (!parsed_url.IsValid()) {

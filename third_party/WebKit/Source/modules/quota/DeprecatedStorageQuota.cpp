@@ -55,7 +55,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
     ScriptState* script_state,
     StorageUsageCallback* success_callback,
     StorageErrorCallback* error_callback) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
   WebStorageQuotaType storage_type = static_cast<WebStorageQuotaType>(type_);
@@ -89,7 +89,7 @@ void DeprecatedStorageQuota::requestQuota(
     unsigned long long new_quota_in_bytes,
     StorageQuotaCallback* success_callback,
     StorageErrorCallback* error_callback) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
   WebStorageQuotaType storage_type = static_cast<WebStorageQuotaType>(type_);

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -54,7 +55,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
     ScriptState* script_state,
     Navigator& navigator,
     ExceptionState& exception_state) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(!navigator.GetFrame() ||
          execution_context->GetSecurityOrigin()->CanAccess(
              navigator.GetFrame()->GetSecurityContext()->GetSecurityOrigin()));
@@ -66,7 +67,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
     ScriptState* script_state,
     Navigator& navigator,
     String& error_message) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(!navigator.GetFrame() ||
          execution_context->GetSecurityOrigin()->CanAccess(
              navigator.GetFrame()->GetSecurityContext()->GetSecurityOrigin()));

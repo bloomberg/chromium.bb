@@ -35,6 +35,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -365,7 +366,7 @@ MediaKeySession* MediaKeySession::Create(
 MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
-    : ContextLifecycleObserver(script_state->GetExecutionContext()),
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       async_event_queue_(GenericEventQueue::Create(this)),
       media_keys_(media_keys),
       session_type_(session_type),
@@ -374,7 +375,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       is_uninitialized_(true),
       is_callable_(false),
       is_closed_(false),
-      closed_promise_(new ClosedPromise(script_state->GetExecutionContext(),
+      closed_promise_(new ClosedPromise(ExecutionContext::From(script_state),
                                         this,
                                         ClosedPromise::kClosed)),
       action_timer_(

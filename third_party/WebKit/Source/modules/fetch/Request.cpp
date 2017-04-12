@@ -35,11 +35,12 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetUnsafeRequestFlag(true);
   // FIXME: Set client.
   DOMWrapperWorld& world = script_state->World();
-  if (world.IsIsolatedWorld())
+  if (world.IsIsolatedWorld()) {
     request->SetOrigin(world.IsolatedWorldSecurityOrigin());
-  else
+  } else {
     request->SetOrigin(
-        script_state->GetExecutionContext()->GetSecurityOrigin());
+        ExecutionContext::From(script_state)->GetSecurityOrigin());
+  }
   // FIXME: Set ForceOriginHeaderFlag.
   request->SetSameOriginDataURLFlag(true);
   request->SetReferrer(original->GetReferrer());
@@ -75,7 +76,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // and a new request otherwise."
 
   RefPtr<SecurityOrigin> origin =
-      script_state->GetExecutionContext()->GetSecurityOrigin();
+      ExecutionContext::From(script_state)->GetSecurityOrigin();
 
   // TODO(yhirano): Implement the following steps:
   // - "Let |window| be client."
@@ -109,7 +110,7 @@ Request* Request::CreateRequestWithRequestOrString(
   if (!input_request) {
     // "Let |parsedURL| be the result of parsing |input| with |baseURL|."
     KURL parsed_url =
-        script_state->GetExecutionContext()->CompleteURL(input_string);
+        ExecutionContext::From(script_state)->CompleteURL(input_string);
     // "If |parsedURL| is failure, throw a TypeError."
     if (!parsed_url.IsValid()) {
       exception_state.ThrowTypeError("Failed to parse URL from " +
@@ -178,8 +179,8 @@ Request* Request::CreateRequestWithRequestOrString(
     } else {
       // "Let |parsedReferrer| be the result of parsing |referrer| with
       // |baseURL|."
-      KURL parsed_referrer = script_state->GetExecutionContext()->CompleteURL(
-          init.referrer.referrer);
+      KURL parsed_referrer = ExecutionContext::From(script_state)
+                                 ->CompleteURL(init.referrer.referrer);
       if (!parsed_referrer.IsValid()) {
         // "If |parsedReferrer| is failure, throw a TypeError."
         exception_state.ThrowTypeError("Referrer '" + init.referrer.referrer +
@@ -452,7 +453,7 @@ Request* Request::Create(ScriptState* script_state,
                          const String& input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  RequestInit request_init(script_state->GetExecutionContext(), init,
+  RequestInit request_init(ExecutionContext::From(script_state), init,
                            exception_state);
   return CreateRequestWithRequestOrString(script_state, nullptr, input,
                                           request_init, exception_state);
@@ -468,7 +469,7 @@ Request* Request::Create(ScriptState* script_state,
                          Request* input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  RequestInit request_init(script_state->GetExecutionContext(), init,
+  RequestInit request_init(ExecutionContext::From(script_state), init,
                            exception_state);
   return CreateRequestWithRequestOrString(script_state, input, String(),
                                           request_init, exception_state);
@@ -488,7 +489,7 @@ Request* Request::Create(ScriptState* script_state,
 Request::Request(ScriptState* script_state,
                  FetchRequestData* request,
                  Headers* headers)
-    : Body(script_state->GetExecutionContext()),
+    : Body(ExecutionContext::From(script_state)),
       request_(request),
       headers_(headers) {
   RefreshBody(script_state);

@@ -13,6 +13,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -266,7 +267,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     const HeapVector<MediaKeySystemConfiguration>& supported_configurations) {
   DVLOG(3) << __func__;
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   Document* document = ToDocument(execution_context);
 
   // From https://w3c.github.io/encrypted-media/#common-key-systems

@@ -4,6 +4,7 @@
 
 #include "modules/battery/NavigatorBattery.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/battery/BatteryManager.h"
 
@@ -18,10 +19,10 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
-  if (!battery_manager_)
+  if (!battery_manager_) {
     battery_manager_ =
-        BatteryManager::Create(script_state->GetExecutionContext());
-
+        BatteryManager::Create(ExecutionContext::From(script_state));
+  }
   return battery_manager_->StartRequest(script_state);
 }
 

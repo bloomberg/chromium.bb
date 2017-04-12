@@ -66,7 +66,7 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
 IDBRequest::IDBRequest(ScriptState* script_state,
                        IDBAny* source,
                        IDBTransaction* transaction)
-    : SuspendableObject(script_state->GetExecutionContext()),
+    : SuspendableObject(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       source_(source) {}

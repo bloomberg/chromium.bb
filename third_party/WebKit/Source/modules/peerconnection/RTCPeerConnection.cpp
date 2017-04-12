@@ -400,7 +400,7 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
 
   ~WebRTCStatsReportCallbackResolver() override {
     DCHECK(
-        resolver_->GetScriptState()->GetExecutionContext()->IsContextThread());
+        ExecutionContext::From(resolver_->GetScriptState())->IsContextThread());
   }
 
  private:
@@ -409,7 +409,7 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
 
   void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport> report) override {
     DCHECK(
-        resolver_->GetScriptState()->GetExecutionContext()->IsContextThread());
+        ExecutionContext::From(resolver_->GetScriptState())->IsContextThread());
     resolver_->Resolve(new RTCStatsReport(std::move(report)));
   }
 
@@ -564,7 +564,7 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
   RTCSessionDescriptionRequest* request =
       RTCSessionDescriptionRequestPromiseImpl::Create(this, resolver);
   if (options.hasOfferToReceiveAudio() || options.hasOfferToReceiveVideo()) {
-    ExecutionContext* context = script_state->GetExecutionContext();
+    ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(
         context,
         UseCounter::kRTCPeerConnectionCreateOfferOptionsOfferToReceive);
@@ -581,7 +581,7 @@ ScriptPromise RTCPeerConnection::createOffer(
     ExceptionState& exception_state) {
   DCHECK(success_callback);
   DCHECK(error_callback);
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(
       context, UseCounter::kRTCPeerConnectionCreateOfferLegacyFailureCallback);
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))
@@ -654,7 +654,7 @@ ScriptPromise RTCPeerConnection::createAnswer(
     const Dictionary& media_constraints) {
   DCHECK(success_callback);
   DCHECK(error_callback);
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(
       context, UseCounter::kRTCPeerConnectionCreateAnswerLegacyFailureCallback);
   if (media_constraints.IsObject())
@@ -709,7 +709,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit& session_description_init,
     VoidCallback* success_callback,
     RTCPeerConnectionErrorCallback* error_callback) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,
@@ -769,7 +769,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit& session_description_init,
     VoidCallback* success_callback,
     RTCPeerConnectionErrorCallback* error_callback) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,
@@ -815,7 +815,7 @@ void RTCPeerConnection::setConfiguration(
     return;
 
   WebRTCConfiguration configuration = ParseConfiguration(
-      script_state->GetExecutionContext(), rtc_configuration, exception_state);
+      ExecutionContext::From(script_state), rtc_configuration, exception_state);
 
   if (exception_state.HadException())
     return;
@@ -982,7 +982,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
   WebRTCICECandidate web_candidate = ConvertToWebRTCIceCandidate(
-      script_state->GetExecutionContext(), candidate);
+      ExecutionContext::From(script_state), candidate);
   bool implemented = peer_handler_->AddICECandidate(request, web_candidate);
   if (!implemented)
     resolver->Reject(DOMException::Create(
@@ -1012,7 +1012,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
       GetExecutionContext(), this, success_callback, error_callback);
   WebRTCICECandidate web_candidate = ConvertToWebRTCIceCandidate(
-      script_state->GetExecutionContext(), candidate);
+      ExecutionContext::From(script_state), candidate);
   bool implemented = peer_handler_->AddICECandidate(request, web_candidate);
   if (!implemented)
     AsyncCallErrorCallback(
@@ -1098,7 +1098,7 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
 
   MediaErrorState media_error_state;
   WebMediaConstraints constraints =
-      MediaConstraintsImpl::Create(script_state->GetExecutionContext(),
+      MediaConstraintsImpl::Create(ExecutionContext::From(script_state),
                                    media_constraints, media_error_state);
   if (media_error_state.HadException()) {
     media_error_state.RaiseException(exception_state);
@@ -1161,7 +1161,7 @@ MediaStream* RTCPeerConnection::getStreamById(const String& stream_id) {
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
                                           RTCStatsCallback* success_callback,
                                           MediaStreamTrack* selector) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -1177,7 +1177,7 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   UseCounter::Count(context, UseCounter::kRTCPeerConnectionGetStats);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -1224,7 +1224,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   DictionaryHelper::Get(options, "negotiated", init.negotiated);
 
   unsigned short value = 0;
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   if (DictionaryHelper::Get(options, "id", value))
     init.id = value;
   if (DictionaryHelper::Get(options, "maxRetransmits", value)) {

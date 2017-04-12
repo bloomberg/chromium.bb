@@ -355,7 +355,7 @@ String Notification::PermissionString(
 }
 
 String Notification::permission(ScriptState* script_state) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   return PermissionString(
       NotificationManager::From(context)->GetPermissionStatus(context));
 }
@@ -363,7 +363,7 @@ String Notification::permission(ScriptState* script_state) {
 ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
     NotificationPermissionCallback* deprecated_callback) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsSecureContext()) {
     Deprecation::CountDeprecation(
         context, UseCounter::kNotificationPermissionRequestedInsecureOrigin);

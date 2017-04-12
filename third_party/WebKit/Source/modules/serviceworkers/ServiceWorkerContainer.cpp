@@ -279,7 +279,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     return promise;
   }
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
     return ScriptPromise();
@@ -316,7 +316,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
     return promise;
   }
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
     return ScriptPromise();
@@ -373,7 +373,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
     return promise;
   }
 
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   RefPtr<SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
   String error_message;

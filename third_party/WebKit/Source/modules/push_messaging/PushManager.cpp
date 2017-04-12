@@ -62,8 +62,8 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
   // The document context is the only reasonable context from which to ask the
   // user for permission to use the Push API. The embedder should persist the
   // permission so that later calls in different contexts can succeed.
-  if (script_state->GetExecutionContext()->IsDocument()) {
-    Document* document = ToDocument(script_state->GetExecutionContext());
+  if (ExecutionContext::From(script_state)->IsDocument()) {
+    Document* document = ToDocument(ExecutionContext::From(script_state));
     if (!document->domWindow() || !document->GetFrame())
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -96,8 +96,8 @@ ScriptPromise PushManager::permissionState(
     ScriptState* script_state,
     const PushSubscriptionOptionsInit& options,
     ExceptionState& exception_state) {
-  if (script_state->GetExecutionContext()->IsDocument()) {
-    Document* document = ToDocument(script_state->GetExecutionContext());
+  if (ExecutionContext::From(script_state)->IsDocument()) {
+    Document* document = ToDocument(ExecutionContext::From(script_state));
     if (!document->domWindow() || !document->GetFrame())
       return ScriptPromise::RejectWithDOMException(
           script_state,

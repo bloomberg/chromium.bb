@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
@@ -75,7 +76,7 @@ FetchEvent::FetchEvent(ScriptState* script_state,
     : ExtendableEvent(type, initializer, wait_until_observer),
       observer_(respond_with_observer),
       preload_response_property_(new PreloadResponseProperty(
-          script_state->GetExecutionContext(),
+          ExecutionContext::From(script_state),
           this,
           PreloadResponseProperty::kPreloadResponse)) {
   if (!navigation_preload_sent)
@@ -118,7 +119,7 @@ void FetchEvent::OnNavigationPreloadResponse(
       data_consume_handle
           ? FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
                 script_state, new BytesConsumerForDataConsumerHandle(
-                                  script_state->GetExecutionContext(),
+                                  ExecutionContext::From(script_state),
                                   std::move(data_consume_handle))))
           : FetchResponseData::Create();
   Vector<KURL> url_list(1);
@@ -137,7 +138,7 @@ void FetchEvent::OnNavigationPreloadResponse(
           ? response_data->CreateOpaqueRedirectFilteredResponse()
           : response_data->CreateBasicFilteredResponse();
   preload_response_property_->Resolve(
-      Response::Create(script_state->GetExecutionContext(), tainted_response));
+      Response::Create(ExecutionContext::From(script_state), tainted_response));
 }
 
 void FetchEvent::OnNavigationPreloadError(

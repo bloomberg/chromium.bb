@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -45,7 +46,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     ScriptState* script_state,
     Navigator& navigator) {
   // [SecureContext] from the IDL ensures this.
-  DCHECK(script_state->GetExecutionContext()->IsSecureContext());
+  DCHECK(ExecutionContext::From(script_state)->IsSecureContext());
   return NavigatorInstalledApp::From(navigator).getInstalledRelatedApps(
       script_state);
 }

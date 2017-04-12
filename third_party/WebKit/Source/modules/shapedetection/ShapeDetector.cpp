@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalFrame.h"
 #include "core/geometry/DOMRect.h"
@@ -77,7 +78,7 @@ ScriptPromise ShapeDetector::detect(
   }
 
   if (canvas_image_source->WouldTaintOrigin(
-          script_state->GetExecutionContext()->GetSecurityOrigin())) {
+          ExecutionContext::From(script_state)->GetSecurityOrigin())) {
     resolver->Reject(
         DOMException::Create(kSecurityError, "Source would taint origin."));
     return promise;

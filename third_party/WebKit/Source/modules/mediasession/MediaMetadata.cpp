@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "modules/mediasession/MediaImage.h"
 #include "modules/mediasession/MediaMetadataInit.h"
@@ -106,7 +107,7 @@ void MediaMetadata::SetArtworkInternal(ScriptState* script_state,
   HeapVector<MediaImage> processed_artwork(artwork);
 
   for (MediaImage& image : processed_artwork) {
-    KURL url = script_state->GetExecutionContext()->CompleteURL(image.src());
+    KURL url = ExecutionContext::From(script_state)->CompleteURL(image.src());
     if (!url.IsValid()) {
       exception_state.ThrowTypeError("'" + image.src() +
                                      "' can't be resolved to a valid URL.");

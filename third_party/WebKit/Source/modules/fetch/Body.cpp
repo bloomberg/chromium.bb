@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
@@ -119,7 +120,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state) {
   // first check the ExecutionContext and return immediately if it's already
   // gone (which means that the V8::TerminateExecution() signal has been sent
   // to this worker thread).
-  if (!script_state->GetExecutionContext())
+  if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -139,7 +140,7 @@ ScriptPromise Body::blob(ScriptState* script_state) {
     return promise;
 
   // See above comment.
-  if (!script_state->GetExecutionContext())
+  if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -163,7 +164,7 @@ ScriptPromise Body::json(ScriptState* script_state) {
     return promise;
 
   // See above comment.
-  if (!script_state->GetExecutionContext())
+  if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -184,7 +185,7 @@ ScriptPromise Body::text(ScriptState* script_state) {
     return promise;
 
   // See above comment.
-  if (!script_state->GetExecutionContext())
+  if (!ExecutionContext::From(script_state))
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);

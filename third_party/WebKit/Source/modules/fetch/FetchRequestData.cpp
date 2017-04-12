@@ -33,10 +33,12 @@ FetchRequestData* FetchRequestData::Create(
   for (HTTPHeaderMap::const_iterator it = web_request.Headers().begin();
        it != web_request.Headers().end(); ++it)
     request->header_list_->Append(it->key, it->value);
-  if (web_request.GetBlobDataHandle())
+  if (web_request.GetBlobDataHandle()) {
     request->SetBuffer(new BodyStreamBuffer(
-        script_state, new BlobBytesConsumer(script_state->GetExecutionContext(),
-                                            web_request.GetBlobDataHandle())));
+        script_state,
+        new BlobBytesConsumer(ExecutionContext::From(script_state),
+                              web_request.GetBlobDataHandle())));
+  }
   request->SetContext(web_request.GetRequestContext());
   request->SetReferrer(
       Referrer(web_request.ReferrerUrl().GetString(),

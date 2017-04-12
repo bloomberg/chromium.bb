@@ -36,6 +36,7 @@
 #include "public/platform/Platform.h"
 
 #include <array>
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
@@ -177,7 +178,7 @@ void ReportPresentationResult(PresentationResult result) {
 
 ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
                                         const HeapVector<VRLayer>& layers) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   UseCounter::Count(execution_context, UseCounter::kVRRequestPresent);
   if (!execution_context->IsSecureContext()) {
     UseCounter::Count(execution_context,
@@ -278,7 +279,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     pending_present_resolvers_.push_back(resolver);
   } else if (first_present) {
     bool secure_context =
-        script_state->GetExecutionContext()->IsSecureContext();
+        ExecutionContext::From(script_state)->IsSecureContext();
     if (!display_) {
       ForceExitPresent();
       DOMException* exception = DOMException::Create(

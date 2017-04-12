@@ -9,6 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/permissions/PermissionUtils.h"
@@ -107,7 +108,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
 }
 
 ExecutionContext* MIDIAccessInitializer::GetExecutionContext() const {
-  return GetScriptState()->GetExecutionContext();
+  return ExecutionContext::From(GetScriptState());
 }
 
 void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
