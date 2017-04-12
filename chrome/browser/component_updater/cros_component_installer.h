@@ -66,19 +66,12 @@ class CrOSComponent {
   //
   //  example:
   //  ...
-  //  void PerformOperations(chromeos::DBusMethodCallStatus call_status,
-  //                         const std::string& version){
-  //    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-  //      DVLOG(1) << "Call to imageloader service failed.";
+  //  void load_callback(const std::string& result){
+  //    if (result.empty) {
+  //      // component is not mounted.
   //      return;
   //    }
-  //    if (version.empty()) {
-  //      DVLOG(1) << "[PerformOperations] Component is not installed";
-  //      return;
-  //    }
-  //    // [mounted compnent path: /run/imageloader/[component name]/[version]]
-  //    //
-  //    // [component is ready to do your work]
+  //    // [component mount point: result]
   //  }
   //  void install_callback(update_client::Error error){
   //    // switch(error){
@@ -86,7 +79,7 @@ class CrOSComponent {
   //    //     // component is installed
   //    //     break;
   //    //   case update_client::Error::INVALID_ARGUMENT:
-  //    //     // your install failed due of your wrong parameters.
+  //    //     // your install failed due to your wrong parameters.
   //    //     break;
   //    //   default:
   //    //     // your install failed due to system failure.
@@ -95,13 +88,7 @@ class CrOSComponent {
   //    // Even when error code other than NONE returned (your install failed),
   //    // component might has already being installed previously.
   //    // Plus, if you want to know current version of component.
-  //    chromeos::ImageLoaderClient* loader =
-  //              chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
-  //    if (loader) {
-  //      loader->GetComponentVersion("escpr", base::Bind(&PerformOperations));
-  //    } else {
-  //      VLOG(0) << "Failed to get ImageLoaderClient object.";
-  //    }
+  //    component_updater:CrOSComponent::LoadCrOSComponent(name, load_callback);
   //  }
   //  ...
   //    component_updater::CrOSComponent::InstallCrOSComponent(
@@ -111,6 +98,10 @@ class CrOSComponent {
   static bool InstallCrOSComponent(
       const std::string& name,
       const update_client::Callback& install_callback);
+
+  static void LoadCrOSComponent(
+      const std::string& name,
+      const base::Callback<void(const std::string&)>& mount_callback);
 
  private:
   CrOSComponent() {}

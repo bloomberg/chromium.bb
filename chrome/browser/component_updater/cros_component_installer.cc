@@ -21,28 +21,6 @@ using content::BrowserThread;
 namespace component_updater {
 
 #if defined(OS_CHROMEOS)
-void LogLoadResult(chromeos::DBusMethodCallStatus call_status,
-                   const std::string& result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-    DVLOG(1) << "Call to imageloader service failed.";
-    return;
-  }
-  if (result.empty()) {
-    DVLOG(1) << "Component load failed";
-    return;
-  }
-}
-void ImageLoaderLoad(const std::string& name) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  chromeos::ImageLoaderClient* loader =
-      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
-  if (loader) {
-    loader->LoadComponent(name, base::Bind(&LogLoadResult));
-  } else {
-    DVLOG(1) << "Failed to get ImageLoaderClient object.";
-  }
-}
 void LogRegistrationResult(const std::string& name,
                            chromeos::DBusMethodCallStatus call_status,
                            bool result) {
@@ -55,8 +33,8 @@ void LogRegistrationResult(const std::string& name,
     DVLOG(1) << "Component registration failed";
     return;
   }
-  ImageLoaderLoad(name);
 }
+
 void ImageLoaderRegistration(const std::string& version,
                              const base::FilePath& install_dir,
                              const std::string& name) {
@@ -71,6 +49,7 @@ void ImageLoaderRegistration(const std::string& version,
     DVLOG(1) << "Failed to get ImageLoaderClient object.";
   }
 }
+
 ComponentConfig::ComponentConfig(const std::string& name,
                                  const std::string& dir,
                                  const std::string& sha2hashstr)
@@ -200,6 +179,34 @@ bool CrOSComponent::InstallCrOSComponent(
                      .substr(0, 32),
                  install_callback));
   return true;
+}
+
+void MountResult(const base::Callback<void(const std::string&)>& mount_callback,
+                 chromeos::DBusMethodCallStatus call_status,
+                 const std::string& result) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    DVLOG(1) << "Call to imageloader service failed.";
+    base::PostTask(FROM_HERE, base::Bind(mount_callback, ""));
+    return;
+  }
+  if (result.empty()) {
+    DVLOG(1) << "Component load failed";
+    base::PostTask(FROM_HERE, base::Bind(mount_callback, ""));
+    return;
+  }
+  base::PostTask(FROM_HERE, base::Bind(mount_callback, result));
+}
+
+void CrOSComponent::LoadCrOSComponent(
+    const std::string& name,
+    const base::Callback<void(const std::string&)>& mount_callback) {
+  chromeos::ImageLoaderClient* loader =
+      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+  if (loader) {
+    loader->LoadComponent(name, base::Bind(&MountResult, mount_callback));
+  } else {
+    DVLOG(1) << "Failed to get ImageLoaderClient object.";
+  }
 }
 #endif  // defined(OS_CHROMEOS
 
