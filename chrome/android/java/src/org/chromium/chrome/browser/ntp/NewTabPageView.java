@@ -29,6 +29,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
@@ -215,8 +216,14 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
             }
         });
 
-        mContextMenuManager =
-                new ContextMenuManager(mActivity, mManager.getNavigationDelegate(), mRecyclerView);
+        TouchEnabledDelegate touchEnabledDelegate = new TouchEnabledDelegate() {
+            @Override
+            public void setTouchEnabled(boolean enabled) {
+                mRecyclerView.setTouchEnabled(enabled);
+            }
+        };
+        mContextMenuManager = new ContextMenuManager(
+                mActivity, mManager.getNavigationDelegate(), touchEnabledDelegate);
         mActivity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         manager.addDestructionObserver(new DestructionObserver() {
             @Override

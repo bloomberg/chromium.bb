@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -60,7 +61,15 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.suggestions_bottom_sheet_content, null);
         mRecyclerView = (SuggestionsRecyclerView) mView.findViewById(R.id.recycler_view);
-        mContextMenuManager = new ContextMenuManager(activity, navigationDelegate, mRecyclerView);
+
+        TouchEnabledDelegate touchEnabledDelegate = new TouchEnabledDelegate() {
+            @Override
+            public void setTouchEnabled(boolean enabled) {
+                activity.getBottomSheet().setTouchEnabled(enabled);
+            }
+        };
+        mContextMenuManager =
+                new ContextMenuManager(activity, navigationDelegate, touchEnabledDelegate);
         activity.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         mSuggestionsManager.addDestructionObserver(new DestructionObserver() {
             @Override

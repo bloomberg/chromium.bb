@@ -187,6 +187,9 @@ public class BottomSheet
      */
     private View mDefaultToolbarView;
 
+    /** Whether the {@link BottomSheet} and its children should react to touch events. */
+    private boolean mIsTouchEnabled = true;
+
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
 
@@ -338,8 +341,19 @@ public class BottomSheet
         addObserver(mMetrics);
     }
 
+    /**
+     * Sets whether the {@link BottomSheet} and its children should react to touch events.
+     */
+    public void setTouchEnabled(boolean enabled) {
+        mIsTouchEnabled = enabled;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
+        // If touch is disabled, act like a black hole and consume touch events without doing
+        // anything with them.
+        if (!mIsTouchEnabled) return true;
+
         if (!canMoveSheet()) return false;
 
         // The incoming motion event may have been adjusted by the view sending it down. Create a
@@ -351,6 +365,10 @@ public class BottomSheet
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        // If touch is disabled, act like a black hole and consume touch events without doing
+        // anything with them.
+        if (!mIsTouchEnabled) return true;
+
         if (isToolbarAndroidViewHidden()) return false;
 
         // The down event is interpreted above in onInterceptTouchEvent, it does not need to be
@@ -1028,6 +1046,10 @@ public class BottomSheet
     @Override
     public void onFadingViewVisibilityChanged(boolean visible) {}
 
+    /**
+     * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
+     * mode, when "find in page" is visible, or when the toolbar is hidden.
+     */
     private boolean canMoveSheet() {
         boolean isInOverviewMode = mTabModelSelector != null
                 && (mTabModelSelector.getCurrentTab() == null

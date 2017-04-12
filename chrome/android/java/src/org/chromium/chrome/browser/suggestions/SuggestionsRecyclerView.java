@@ -31,7 +31,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchDisableableView;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -48,7 +47,7 @@ import java.util.Set;
  * Simple wrapper on top of a RecyclerView that will acquire focus when tapped.  Ensures the
  * New Tab page receives focus when clicked.
  */
-public class SuggestionsRecyclerView extends RecyclerView implements TouchDisableableView {
+public class SuggestionsRecyclerView extends RecyclerView {
     private static final Interpolator DISMISS_INTERPOLATOR = new FastOutLinearInInterpolator();
     private static final int DISMISS_ANIMATION_TIME_MS = 300;
     /**
@@ -74,7 +73,9 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
      */
     private final Map<ViewHolder, Integer> mCompensationHeightMap = new HashMap<>();
 
-    /** Whether the RecyclerView and its children should react to touch events. */
+    /**
+     * Whether the {@link SuggestionsRecyclerView} and its children should react to touch events.
+     */
     private boolean mTouchEnabled = true;
 
     /** The ui config for this view. */
@@ -119,16 +120,19 @@ public class SuggestionsRecyclerView extends RecyclerView implements TouchDisabl
         return mLayoutManager.findFirstVisibleItemPosition() == 0;
     }
 
+    /**
+     * Sets whether the {@link SuggestionsRecyclerView} and its children should react to touch
+     * events.
+     */
+    public void setTouchEnabled(boolean enabled) {
+        mTouchEnabled = enabled;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         mGestureDetector.onTouchEvent(ev);
         if (!mTouchEnabled) return true;
         return super.onInterceptTouchEvent(ev);
-    }
-
-    @Override
-    public void setTouchEnabled(boolean enabled) {
-        mTouchEnabled = enabled;
     }
 
     @Override
