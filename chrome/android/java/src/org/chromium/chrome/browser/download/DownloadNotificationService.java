@@ -1214,7 +1214,10 @@ public class DownloadNotificationService extends Service {
                         assert entry == null;
                         resumeAllPendingDownloads();
                 } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
-                    OfflinePageDownloadBridge.openDownloadedPage(getContentIdFromIntent(intent));
+                    ContentId id = getContentIdFromIntent(intent);
+                    if (LegacyHelpers.isLegacyOfflinePage(id)) {
+                        OfflinePageDownloadBridge.openDownloadedPage(id);
+                    }
                 } else {
                         Log.e(TAG, "Unrecognized intent action.", intent);
                 }

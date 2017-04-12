@@ -4,6 +4,7 @@
 
 package org.chromium.components.offline_items_collection;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 /**
@@ -34,8 +35,8 @@ public class LegacyHelpers {
      * @param id The {@link ContentId} to inspect.
      * @return   Whether or not {@code id} was built for a traditional download.
      */
-    public static boolean isLegacyDownload(ContentId id) {
-        return TextUtils.equals(LEGACY_DOWNLOAD_NAMESPACE, id.namespace);
+    public static boolean isLegacyDownload(@Nullable ContentId id) {
+        return id != null && TextUtils.equals(LEGACY_DOWNLOAD_NAMESPACE, id.namespace);
     }
 
     /**
@@ -45,8 +46,8 @@ public class LegacyHelpers {
      * @param id The {@link ContentId} to inspect.
      * @return   Whether or not {@code id} was built for a traditional offline page.
      */
-    public static boolean isLegacyOfflinePage(ContentId id) {
-        return TextUtils.equals(LEGACY_OFFLINE_PAGE_NAMESPACE, id.namespace);
+    public static boolean isLegacyOfflinePage(@Nullable ContentId id) {
+        return id != null && TextUtils.equals(LEGACY_OFFLINE_PAGE_NAMESPACE, id.namespace);
     }
 
     private LegacyHelpers() {}
