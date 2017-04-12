@@ -73,14 +73,14 @@ header {
   padding-top: 10px;
 }
 
-.right-column .radio input[type='radio'] {
-  height: 1.1em;
-  width: 1.1em;
-}
-
+.right-column .radio input[type='radio'],
 .right-column label input[type='checkbox'] {
-  height: 1.1em;
-  width: 1.1em;
+  --min-size: 13.19px;
+  --size: 1.1em;
+  height: var(--size);
+  min-height: var(--min-size);
+  min-width: var(--min-size);
+  width: var(--size);
 }
 
 .left-column {
