@@ -139,9 +139,6 @@ void ClearChannelIDsOnIOThread(
 
 }  // namespace
 
-BrowsingDataRemoverImpl::CompletionInhibitor*
-    BrowsingDataRemoverImpl::completion_inhibitor_ = nullptr;
-
 BrowsingDataRemoverImpl::SubTask::SubTask(const base::Closure& forward_callback)
     : is_pending_(false),
       forward_callback_(forward_callback),
@@ -184,6 +181,7 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       clear_channel_ids_(sub_task_forward_callback_),
       clear_http_auth_cache_(sub_task_forward_callback_),
       clear_storage_partition_data_(sub_task_forward_callback_),
+      storage_partition_for_testing_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
 }
@@ -565,6 +563,12 @@ void BrowsingDataRemoverImpl::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void BrowsingDataRemoverImpl::SetWouldCompleteCallbackForTesting(
+    const base::Callback<void(const base::Closure& continue_to_completion)>&
+        callback) {
+  would_complete_callback_ = callback;
+}
+
 void BrowsingDataRemoverImpl::OverrideStoragePartitionForTesting(
     content::StoragePartition* storage_partition) {
   storage_partition_for_testing_ = storage_partition;
@@ -655,9 +659,9 @@ void BrowsingDataRemoverImpl::NotifyIfDone() {
   if (!AllDone())
     return;
 
-  if (completion_inhibitor_) {
-    completion_inhibitor_->OnBrowsingDataRemoverWouldComplete(
-        this, base::Bind(&BrowsingDataRemoverImpl::Notify, GetWeakPtr()));
+  if (!would_complete_callback_.is_null()) {
+    would_complete_callback_.Run(
+        base::Bind(&BrowsingDataRemoverImpl::Notify, GetWeakPtr()));
     return;
   }
 

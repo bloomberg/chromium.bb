@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time/time.h"
@@ -33,22 +32,6 @@ class StoragePartition;
 
 class BrowsingDataRemoverImpl : public BrowsingDataRemover {
  public:
-  // The completion inhibitor can artificially delay completion of the browsing
-  // data removal process. It is used during testing to simulate scenarios in
-  // which the deletion stalls or takes a very long time.
-  class CompletionInhibitor {
-   public:
-    // Invoked when a |remover| is just about to complete clearing browser data,
-    // and will be prevented from completing until after the callback
-    // |continue_to_completion| is run.
-    virtual void OnBrowsingDataRemoverWouldComplete(
-        BrowsingDataRemoverImpl* remover,
-        const base::Closure& continue_to_completion) = 0;
-
-   protected:
-    virtual ~CompletionInhibitor() {}
-  };
-
   // Used to track the deletion of a single data storage backend.
   class SubTask {
    public:
@@ -77,15 +60,6 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
 
   // Is the BrowsingDataRemoverImpl currently in the process of removing data?
   bool is_removing() { return is_removing_; }
-
-  // Sets a CompletionInhibitor, which will be notified each time an instance is
-  // about to complete a browsing data removal process, and will be able to
-  // artificially delay the completion.
-  // TODO(crbug.com/483528): Make this non-static.
-  static void set_completion_inhibitor_for_testing(
-      CompletionInhibitor* inhibitor) {
-    completion_inhibitor_ = inhibitor;
-  }
 
   // BrowsingDataRemover implementation:
   void SetEmbedderDelegate(
@@ -121,6 +95,10 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
 
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+
+  void SetWouldCompleteCallbackForTesting(
+      const base::Callback<void(const base::Closure& continue_to_completion)>&
+          callback) override;
 
   const base::Time& GetLastUsedBeginTime() override;
   const base::Time& GetLastUsedEndTime() override;
@@ -205,7 +183,8 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // Returns true if we're all done.
   bool AllDone();
 
-  // Retrieve a UI thread-bound weak pointer to this BrowsingDataRemoverImpl.
+  // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
+  // for internal purposes.
   base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();
 
   // The browser context we're to remove from.
@@ -232,10 +211,11 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // Removal tasks to be processed.
   std::queue<RemovalTask> task_queue_;
 
-  // If non-NULL, the |completion_inhibitor_| is notified each time an instance
+  // If non-null, the |would_complete_callback_| is called each time an instance
   // is about to complete a browsing data removal process, and has the ability
   // to artificially delay completion. Used for testing.
-  static CompletionInhibitor* completion_inhibitor_;
+  base::Callback<void(const base::Closure& continue_to_completion)>
+      would_complete_callback_;
 
   // A callback to NotifyIfDone() used by SubTasks instances.
   const base::Closure sub_task_forward_callback_;
@@ -253,7 +233,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   base::ObserverList<Observer, true> observer_list_;
 
   // We do not own this.
-  content::StoragePartition* storage_partition_for_testing_ = nullptr;
+  content::StoragePartition* storage_partition_for_testing_;
 
   base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
 

@@ -22,14 +22,27 @@ void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
   message_loop_runner_->Quit();
 }
 
-BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor()
-    : message_loop_runner_(new content::MessageLoopRunner) {
-  BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(this);
+BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor(
+    BrowsingDataRemover* remover)
+    : remover_(remover), message_loop_runner_(new content::MessageLoopRunner) {
+  DCHECK(remover);
+  remover_->SetWouldCompleteCallbackForTesting(
+      base::Bind(&BrowsingDataRemoverCompletionInhibitor::
+                     OnBrowsingDataRemoverWouldComplete,
+                 base::Unretained(this)));
 }
 
 BrowsingDataRemoverCompletionInhibitor::
     ~BrowsingDataRemoverCompletionInhibitor() {
-  BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(nullptr);
+  Reset();
+}
+
+void BrowsingDataRemoverCompletionInhibitor::Reset() {
+  if (!remover_)
+    return;
+  remover_->SetWouldCompleteCallbackForTesting(
+      base::Callback<void(const base::Closure&)>());
+  remover_ = nullptr;
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
@@ -44,7 +57,6 @@ void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
 }
 
 void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
-    BrowsingDataRemoverImpl* remover,
     const base::Closure& continue_to_completion) {
   DCHECK(continue_to_completion_callback_.is_null());
   continue_to_completion_callback_ = continue_to_completion;

@@ -5,13 +5,15 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -68,23 +70,31 @@ void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
 // deleted. It also create ScopedKeepAlive object to prevent browser shutdown
 // started in case browser has become windowless.
 class MultipleProfileDeletionObserver
-    : public BrowsingDataRemoverImpl::CompletionInhibitor,
-      public ProfileAttributesStorage::Observer {
+    : public ProfileAttributesStorage::Observer {
  public:
   explicit MultipleProfileDeletionObserver(size_t expected_count)
       : expected_count_(expected_count),
         profiles_created_count_(0),
         profiles_data_removed_count_(0) {
     EXPECT_GT(expected_count_, 0u);
-    g_browser_process->profile_manager()->GetProfileAttributesStorage().
-        AddObserver(this);
-    BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(this);
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    profile_manager->GetProfileAttributesStorage().AddObserver(this);
+
+    base::Callback<void(const base::Closure&)> would_complete_callback =
+        base::Bind(&MultipleProfileDeletionObserver::
+                       OnBrowsingDataRemoverWouldComplete,
+                   base::Unretained(this));
+    for (Profile* profile : profile_manager->GetLoadedProfiles()) {
+      BrowsingDataRemoverFactory::GetForBrowserContext(profile)
+          ->SetWouldCompleteCallbackForTesting(would_complete_callback);
+    }
   }
+
   ~MultipleProfileDeletionObserver() override {
     g_browser_process->profile_manager()->GetProfileAttributesStorage().
         RemoveObserver(this);
-    BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(nullptr);
   }
+
   void Wait() {
     keep_alive_ = base::MakeUnique<ScopedKeepAlive>(
         KeepAliveOrigin::PROFILE_HELPER, KeepAliveRestartOption::DISABLED);
@@ -99,8 +109,7 @@ class MultipleProfileDeletionObserver
 
   // TODO(https://crbug.com/704601): remove this code when bug is fixed.
   void OnBrowsingDataRemoverWouldComplete(
-      BrowsingDataRemoverImpl* remover,
-      const base::Closure& continue_to_completion) override {
+      const base::Closure& continue_to_completion) {
     continue_to_completion.Run();
     profiles_data_removed_count_++;
     MaybeQuit();

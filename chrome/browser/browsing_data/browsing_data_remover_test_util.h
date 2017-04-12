@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/public/test/test_utils.h"
 
 // This class can be used to wait for a BrowsingDataRemover to complete
@@ -33,22 +32,32 @@ class BrowsingDataRemoverCompletionObserver
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionObserver);
 };
 
-class BrowsingDataRemoverCompletionInhibitor
-    : public BrowsingDataRemoverImpl::CompletionInhibitor {
+// The completion inhibitor can artificially delay completion of the browsing
+// data removal process. It is used during testing to simulate scenarios in
+// which the deletion stalls or takes a very long time.
+//
+// This class will detach itself from |remover| upon its destruction.
+// If |remover| is destroyed during a test (e.g. in profile shutdown tests),
+// users must call Reset() to detach it in advance.
+class BrowsingDataRemoverCompletionInhibitor {
  public:
-  BrowsingDataRemoverCompletionInhibitor();
-  ~BrowsingDataRemoverCompletionInhibitor() override;
+  explicit BrowsingDataRemoverCompletionInhibitor(BrowsingDataRemover* remover);
+  virtual ~BrowsingDataRemoverCompletionInhibitor();
+
+  void Reset();
 
   void BlockUntilNearCompletion();
   void ContinueToCompletion();
 
  protected:
-  // BrowsingDataRemoverImpl::CompletionInhibitor:
-  void OnBrowsingDataRemoverWouldComplete(
-      BrowsingDataRemoverImpl* remover,
-      const base::Closure& continue_to_completion) override;
+  virtual void OnBrowsingDataRemoverWouldComplete(
+      const base::Closure& continue_to_completion);
 
  private:
+  // Not owned by this class. If the pointer becomes invalid, the owner of
+  // this class is responsible for calling Reset().
+  BrowsingDataRemover* remover_;
+
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   base::Closure continue_to_completion_callback_;
 

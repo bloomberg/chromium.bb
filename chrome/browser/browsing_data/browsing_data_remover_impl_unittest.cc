@@ -1438,12 +1438,12 @@ class InspectableCompletionObserver
 };
 
 TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
-  // The |completion_inhibitor| on the stack should prevent removal sessions
-  // from completing until after ContinueToCompletion() is called.
-  BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
-
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
+
+  // The |completion_inhibitor| on the stack should prevent removal sessions
+  // from completing until after ContinueToCompletion() is called.
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
   InspectableCompletionObserver completion_observer(remover);
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_COOKIES,
@@ -1473,12 +1473,13 @@ TEST_F(BrowsingDataRemoverImplTest, EarlyShutdown) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowserContext()));
   InspectableCompletionObserver completion_observer(remover);
-  BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_COOKIES,
       BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &completion_observer);
 
   completion_inhibitor.BlockUntilNearCompletion();
+  completion_inhibitor.Reset();
 
   // Verify that the deletion has not yet been completed and the observer has
   // not been called.
@@ -1590,7 +1591,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   filter_builder_2->AddRegisterableDomain("example.com");
 
   MultipleTasksObserver observer(remover);
-  BrowsingDataRemoverCompletionInhibitor completion_inhibitor;
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
 
   // Test several tasks with various configuration of masks, filters, and target
   // observers.

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_delegate.h"
@@ -178,6 +179,14 @@ class BrowsingDataRemover : public KeyedService {
   // Observers.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // A |callback| that will be called just before a deletion task is completed
+  // and observers are notified. The receiver must respond by calling
+  // |continue_to_completion| to finish the task. Used in tests to artificially
+  // prolong execution.
+  virtual void SetWouldCompleteCallbackForTesting(
+      const base::Callback<void(const base::Closure& continue_to_completion)>&
+          callback) = 0;
 
   // Parameters of the last call are exposed to be used by tests. Removal and
   // origin type masks equal to -1 mean that no removal has ever been executed.

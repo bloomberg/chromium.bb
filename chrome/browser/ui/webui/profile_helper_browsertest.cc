@@ -6,7 +6,9 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/browsing_data_remover_impl.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -64,29 +66,6 @@ class ExpectBrowserActivationForProfile : public chrome::BrowserListObserver {
   Profile* profile_;
   base::RunLoop loop_;
   ScopedObserver<BrowserList, chrome::BrowserListObserver> scoped_observer_;
-};
-
-// TODO(bug 704601): remove it when bug is fixed.
-class BrowsingDataRemoverObserver
-    : public BrowsingDataRemoverImpl::CompletionInhibitor {
- public:
-  explicit BrowsingDataRemoverObserver(const base::Closure& callback)
-      : callback_(callback) {
-    BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(this);
-  }
-  ~BrowsingDataRemoverObserver() override {
-    BrowsingDataRemoverImpl::set_completion_inhibitor_for_testing(nullptr);
-  }
-
- private:
-  void OnBrowsingDataRemoverWouldComplete(
-      BrowsingDataRemoverImpl* remover,
-      const base::Closure& continue_to_completion) override {
-    continue_to_completion.Run();
-    callback_.Run();
-  }
-
-  const base::Closure callback_;
 };
 
 }  // namespace
@@ -205,11 +184,12 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteInactiveProfile) {
   Profile* additional_profile = CreateProfile();
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
 
-  base::RunLoop loop;
-  BrowsingDataRemoverObserver observer(loop.QuitClosure());
+  BrowsingDataRemoverCompletionInhibitor inhibitor(
+      BrowsingDataRemoverFactory::GetForBrowserContext(additional_profile));
   webui::DeleteProfileAtPath(additional_profile->GetPath(), &web_ui,
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
-  loop.Run();
+  inhibitor.BlockUntilNearCompletion();
+  inhibitor.ContinueToCompletion();
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_TRUE(base::ContainsValue(*browser_list, original_browser));
