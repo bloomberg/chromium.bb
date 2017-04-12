@@ -52,7 +52,7 @@ cr.define('sync.confirmation', function() {
     // on "enter" being pressed and the user hits "enter", perform the default
     // action of the dialog, which is "OK, Got It".
     if (e.key == 'Enter' &&
-        !/^(A|PAPER-BUTTON)$/.test(document.activeElement.tagName)) {
+        !/^(A|PAPER-(BUTTON|CHECKBOX))$/.test(document.activeElement.tagName)) {
       $('confirmButton').click();
       e.preventDefault();
     }
