@@ -172,6 +172,23 @@ class Bypass(IntegrationTest):
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
 
+  # Data Saver uses a HTTPS proxy by default, if that fails it will fall back to
+  # a HTTP proxy.
+  def testBadHTTPSFallback(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      # Set the primary (HTTPS) proxy to a bad one.  
+      # That will force Data Saver to the HTTP proxy for normal page requests.
+      test_driver.AddChromeArg('--spdy-proxy-auth-origin='
+                               'https://nonexistent.googlezip.net')          
+      test_driver.AddChromeArg('--data-reduction-proxy-http-proxies='
+                               'http://compress.googlezip.net')  
+          
+      test_driver.LoadURL('http://check.googlezip.net/fallback/')
+      responses = test_driver.GetHTTPResponses()      
+      self.assertNotEqual(0, len(responses))
+      for response in responses:        
+        self.assertEqual(80, response.port)        
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
