@@ -59,10 +59,12 @@ class ViewStack : public views::BoundsAnimatorObserver,
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
   void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
-  std::vector<std::unique_ptr<views::View>> stack_;
-
   std::unique_ptr<views::BoundsAnimator> slide_in_animator_;
   std::unique_ptr<views::BoundsAnimator> slide_out_animator_;
+
+  // Should be the last member, because views need to be destroyed before other
+  // members, and members are destroyed in reverse order of their creation.
+  std::vector<std::unique_ptr<views::View>> stack_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewStack);
 };

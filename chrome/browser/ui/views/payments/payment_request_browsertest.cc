@@ -81,6 +81,27 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
   WaitForObservedEvent();
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndClickCancel) {
+  InvokePaymentRequestUI();
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
+                           /*wait_for_animation=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
+                       OrderSummaryAndClickCancel) {
+  InvokePaymentRequestUI();
+
+  OpenOrderSummaryScreen();
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
+                           /*wait_for_animation=*/false);
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);

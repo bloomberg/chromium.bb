@@ -114,7 +114,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // a way of closing the dialog.
   void ShowProcessingSpinner();
 
-  ViewStack* view_stack_for_testing() { return &view_stack_; }
+  ViewStack* view_stack_for_testing() { return view_stack_.get(); }
 
  private:
   void ShowInitialPaymentSheet();
@@ -131,7 +131,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // between the two.
   PaymentRequest* request_;
   ControllerMap controller_map_;
-  ViewStack view_stack_;
+  std::unique_ptr<ViewStack> view_stack_;
 
   // A full dialog overlay that shows a spinner and the "processing" label. It's
   // hidden until ShowProcessingSpinner is called.

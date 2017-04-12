@@ -84,6 +84,19 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
             credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
+  InvokePaymentRequestUI();
+
+  OpenPaymentMethodScreen();
+
+  OpenCreditCardEditorScreen();
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+
+  ClickOnDialogViewAndWait(DialogViewID::CANCEL_BUTTON,
+                           /*wait_for_animation=*/false);
+}
+
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringExpiredCard) {
   autofill::TestAutofillClock test_clock;

@@ -67,8 +67,9 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     request->spec()->add_observer_for_testing(this);
   SetLayoutManager(new views::FillLayout());
 
-  view_stack_.set_owned_by_client();
-  AddChildView(&view_stack_);
+  view_stack_ = base::MakeUnique<ViewStack>();
+  view_stack_->set_owned_by_client();
+  AddChildView(view_stack_.get());
 
   SetupSpinnerOverlay();
 
@@ -84,10 +85,14 @@ ui::ModalType PaymentRequestDialogView::GetModalType() const {
 bool PaymentRequestDialogView::Cancel() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Called when the widget is about to close. We send a message to the
-  // PaymentRequest object to signal user cancellation. Before destroying the
-  // PaymentRequest object, we destroy all controllers so that they are not left
-  // alive with an invalid PaymentRequest pointer.
+  // PaymentRequest object to signal user cancellation.
+  //
+  // The order of destruction is important here. First destroy all the views
+  // because they may have pointers/delegates to their controllers. Then destroy
+  // all the controllers, because they may have pointers to PaymentRequestSpec/
+  // PaymentRequestState. Then send the signal to PaymentRequest to destroy.
   being_closed_ = true;
+  view_stack_.reset();
   controller_map_.clear();
   request_->UserCancelled();
   return true;
@@ -121,11 +126,11 @@ void PaymentRequestDialogView::CloseDialog() {
 }
 
 void PaymentRequestDialogView::ShowErrorMessage() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<ErrorMessageViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ false);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<ErrorMessageViewController>(
+                            request_->spec(), request_->state(), this),
+                        &controller_map_),
+                    /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnErrorMessageShown();
 }
@@ -141,14 +146,14 @@ void PaymentRequestDialogView::Pay() {
 }
 
 void PaymentRequestDialogView::GoBack() {
-  view_stack_.Pop();
+  view_stack_->Pop();
 
   if (observer_for_testing_)
     observer_for_testing_->OnBackNavigation();
 }
 
 void PaymentRequestDialogView::ShowContactProfileSheet() {
-  view_stack_.Push(
+  view_stack_->Push(
       CreateViewAndInstallController(
           ProfileListViewController::GetContactProfileViewController(
               request_->spec(), request_->state(), this),
@@ -159,27 +164,27 @@ void PaymentRequestDialogView::ShowContactProfileSheet() {
 }
 
 void PaymentRequestDialogView::ShowOrderSummary() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<OrderSummaryViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<OrderSummaryViewController>(
+                            request_->spec(), request_->state(), this),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnOrderSummaryOpened();
 }
 
 void PaymentRequestDialogView::ShowPaymentMethodSheet() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<PaymentMethodViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<PaymentMethodViewController>(
+                            request_->spec(), request_->state(), this),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnPaymentMethodOpened();
 }
 
 void PaymentRequestDialogView::ShowShippingProfileSheet() {
-  view_stack_.Push(
+  view_stack_->Push(
       CreateViewAndInstallController(
           ProfileListViewController::GetShippingProfileViewController(
               request_->spec(), request_->state(), this),
@@ -190,11 +195,11 @@ void PaymentRequestDialogView::ShowShippingProfileSheet() {
 }
 
 void PaymentRequestDialogView::ShowShippingOptionSheet() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<ShippingOptionViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<ShippingOptionViewController>(
+                            request_->spec(), request_->state(), this),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnShippingOptionSectionOpened();
 }
@@ -204,19 +209,19 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate,
     content::WebContents* web_contents) {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<CvcUnmaskViewController>(
-                           request_->spec(), request_->state(), this,
-                           credit_card, result_delegate, web_contents),
-                       &controller_map_),
-                   /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<CvcUnmaskViewController>(
+                            request_->spec(), request_->state(), this,
+                            credit_card, result_delegate, web_contents),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnCvcPromptShown();
 }
 
 void PaymentRequestDialogView::ShowCreditCardEditor(
     autofill::CreditCard* credit_card) {
-  view_stack_.Push(
+  view_stack_->Push(
       CreateViewAndInstallController(
           base::MakeUnique<CreditCardEditorViewController>(
               request_->spec(), request_->state(), this, credit_card),
@@ -228,11 +233,11 @@ void PaymentRequestDialogView::ShowCreditCardEditor(
 
 void PaymentRequestDialogView::ShowShippingAddressEditor(
     autofill::AutofillProfile* profile) {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<ShippingAddressEditorViewController>(
-                           request_->spec(), request_->state(), this, profile),
-                       &controller_map_),
-                   /* animate = */ true);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<ShippingAddressEditorViewController>(
+                            request_->spec(), request_->state(), this, profile),
+                        &controller_map_),
+                    /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnShippingAddressEditorOpened();
 }
@@ -248,11 +253,11 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
 }
 
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
-  view_stack_.Push(CreateViewAndInstallController(
-                       base::MakeUnique<PaymentSheetViewController>(
-                           request_->spec(), request_->state(), this),
-                       &controller_map_),
-                   /* animate = */ false);
+  view_stack_->Push(CreateViewAndInstallController(
+                        base::MakeUnique<PaymentSheetViewController>(
+                            request_->spec(), request_->state(), this),
+                        &controller_map_),
+                    /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnDialogOpened();
 }
