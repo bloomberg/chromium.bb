@@ -214,6 +214,9 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testAlertOnNewWindow',
         'ChromeDesiredCapabilityTest.testUnexpectedAlertBehaviour',
         'ChromeDriverTest.testAlertHandlingOnPageUnload',
+        'ChromeDriverTest.testClickElementAfterNavigation',
+        'ChromeDriverTest.testGetLogOnWindowWithAlert',
+        'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
     ]
 )
 
