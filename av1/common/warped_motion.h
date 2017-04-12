@@ -69,18 +69,18 @@ void project_points(WarpedMotionParams *wm_params, int *points, int *proj,
                     const int subsampling_x, const int subsampling_y);
 
 double av1_warp_erroradv(WarpedMotionParams *wm,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                          int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                          uint8_t *ref, int width, int height, int stride,
                          uint8_t *dst, int p_col, int p_row, int p_width,
                          int p_height, int p_stride, int subsampling_x,
                          int subsampling_y, int x_scale, int y_scale);
 
 void av1_warp_plane(WarpedMotionParams *wm,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                     int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                     uint8_t *ref, int width, int height, int stride,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,

@@ -55,7 +55,7 @@ typedef struct yv12_buffer_config {
   uint8_t *v_buffer;
   uint8_t *alpha_buffer;
 
-#if CONFIG_AOM_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
   // If the frame is stored in a 16-bit buffer, this stores an 8-bit version
   // for use in global motion detection. It is allocated on-demand.
   uint8_t *y_buffer_8bit;
@@ -81,7 +81,7 @@ typedef struct yv12_buffer_config {
 
 int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                            int ss_x, int ss_y,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                            int use_highbitdepth,
 #endif
                            int border, int byte_alignment);
@@ -95,7 +95,7 @@ int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 // on failure.
 int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                              int ss_x, int ss_y,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                              int use_highbitdepth,
 #endif
                              int border, int byte_alignment,

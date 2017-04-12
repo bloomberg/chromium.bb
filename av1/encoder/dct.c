@@ -1985,7 +1985,7 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                          int tx_type) {
   av1_fht4x4_c(input, output, stride, tx_type);
@@ -2055,7 +2055,7 @@ void av1_highbd_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
                            int tx_type) {
   av1_fht16x16_c(input, output, stride, tx_type);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
                     int tx_type) {
@@ -2212,7 +2212,7 @@ void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,
 }
 #endif  // CONFIG_EXT_TX
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
                            int tx_type) {
   av1_fht32x32_c(input, output, stride, tx_type);
@@ -2224,5 +2224,5 @@ void av1_highbd_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
   av1_fht64x64_c(input, output, stride, tx_type);
 }
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // !AV1_DCT_GTEST

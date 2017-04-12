@@ -592,7 +592,7 @@ void av1_highbd_convolve_init_c(void) {
 }
 
 void av1_convolve_init(AV1_COMMON *cm) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth)
     av1_highbd_convolve_init();
   else
@@ -604,7 +604,7 @@ void av1_convolve_init(AV1_COMMON *cm) {
   return;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_convolve_horiz_c(const uint16_t *src, int src_stride,
                                  uint16_t *dst, int dst_stride, int w, int h,
                                  const InterpFilterParams filter_params,
@@ -862,4 +862,4 @@ void av1_highbd_convolve(const uint8_t *src8, int src_stride, uint8_t *dst8,
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

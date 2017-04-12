@@ -46,7 +46,7 @@ void aom_ssim_parms_8x8_c(const uint8_t *s, int sp, const uint8_t *r, int rp,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp, const uint16_t *r,
                                  int rp, uint32_t *sum_s, uint32_t *sum_r,
                                  uint32_t *sum_sq_s, uint32_t *sum_sq_r,
@@ -62,7 +62,7 @@ void aom_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp, const uint16_t *r,
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 static const int64_t cc1 = 26634;        // (64^2*(.01*255)^2
 static const int64_t cc2 = 239708;       // (64^2*(.03*255)^2
@@ -108,7 +108,7 @@ static double ssim_8x8(const uint8_t *s, int sp, const uint8_t *r, int rp) {
   return similarity(sum_s, sum_r, sum_sq_s, sum_sq_r, sum_sxr, 64, 8);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static double highbd_ssim_8x8(const uint16_t *s, int sp, const uint16_t *r,
                               int rp, uint32_t bd, uint32_t shift) {
   uint32_t sum_s = 0, sum_r = 0, sum_sq_s = 0, sum_sq_r = 0, sum_sxr = 0;
@@ -117,7 +117,7 @@ static double highbd_ssim_8x8(const uint16_t *s, int sp, const uint16_t *r,
   return similarity(sum_s >> shift, sum_r >> shift, sum_sq_s >> (2 * shift),
                     sum_sq_r >> (2 * shift), sum_sxr >> (2 * shift), 64, bd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 // We are using a 8x8 moving window with starting location of each 8x8 window
 // on the 4x4 pixel grid. Such arrangement allows the windows to overlap
@@ -142,7 +142,7 @@ static double aom_ssim2(const uint8_t *img1, const uint8_t *img2,
   return ssim_total;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static double aom_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
                                int stride_img1, int stride_img2, int width,
                                int height, uint32_t bd, uint32_t shift) {
@@ -164,7 +164,7 @@ static double aom_highbd_ssim2(const uint8_t *img1, const uint8_t *img2,
   ssim_total /= samples;
   return ssim_total;
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
                      const YV12_BUFFER_CONFIG *dest, double *weight) {
@@ -429,7 +429,7 @@ double aom_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
   return inconsistency_total;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, double *weight,
                             uint32_t bd, uint32_t in_bd) {
@@ -459,4 +459,4 @@ double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
   return ssimv;
 }
 
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

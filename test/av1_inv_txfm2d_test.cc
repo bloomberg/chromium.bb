@@ -28,7 +28,7 @@ using libaom_test::Inv_Txfm2d_Func;
 
 namespace {
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 // AV1InvTxfm2dParam argument list:
 // tx_type_, tx_size_, max_error_, max_avg_error_
 typedef std::tr1::tuple<TX_TYPE, TX_SIZE, int, double> AV1InvTxfm2dParam;
@@ -153,6 +153,6 @@ const AV1InvTxfm2dParam av1_inv_txfm2d_param[] = {
 INSTANTIATE_TEST_CASE_P(C, AV1InvTxfm2d,
                         ::testing::ValuesIn(av1_inv_txfm2d_param));
 
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 }  // namespace

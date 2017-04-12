@@ -41,7 +41,7 @@ void aom_blend_a64_vmask_c(uint8_t *dst, uint32_t dst_stride,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_blend_a64_vmask_c(uint8_t *dst_8, uint32_t dst_stride,
                                   const uint8_t *src0_8, uint32_t src0_stride,
                                   const uint8_t *src1_8, uint32_t src1_stride,
@@ -70,4 +70,4 @@ void aom_highbd_blend_a64_vmask_c(uint8_t *dst_8, uint32_t dst_stride,
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

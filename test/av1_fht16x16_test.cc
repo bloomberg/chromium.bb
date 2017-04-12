@@ -39,7 +39,7 @@ void iht16x16_ref(const tran_low_t *in, uint8_t *dest, int stride,
   av1_iht16x16_256_add_c(in, dest, stride, tx_type);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 typedef void (*IHbdHtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                            int tx_type, int bd);
 typedef void (*HbdHtFunc)(const int16_t *input, int32_t *output, int stride,
@@ -52,7 +52,7 @@ void highbd_fht16x16_ref(const int16_t *in, int32_t *out, int stride,
                          int tx_type, int bd) {
   av1_fwd_txfm2d_16x16_c(in, out, stride, tx_type, bd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 class AV1Trans16x16HT : public libaom_test::TransformTestBase,
                         public ::testing::TestWithParam<Ht16x16Param> {
@@ -92,7 +92,7 @@ TEST_P(AV1Trans16x16HT, InvAccuracyCheck) { RunInvAccuracyCheck(1); }
 TEST_P(AV1Trans16x16HT, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(AV1Trans16x16HT, InvCoeffCheck) { RunInvCoeffCheck(); }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 class AV1HighbdTrans16x16HT
     : public ::testing::TestWithParam<HighbdHt16x16Param> {
  public:
@@ -159,7 +159,7 @@ void AV1HighbdTrans16x16HT::RunBitexactCheck() {
 }
 
 TEST_P(AV1HighbdTrans16x16HT, HighbdCoeffCheck) { RunBitexactCheck(); }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -245,7 +245,7 @@ INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans16x16HT,
                         ::testing::ValuesIn(kArrayHt16x16Param_avx2));
 #endif  // HAVE_AVX2 && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_SSE4_1 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, 0, 10),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, 0, 12),
@@ -270,6 +270,6 @@ const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
 };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans16x16HT,
                         ::testing::ValuesIn(kArrayHBDHt16x16Param_sse4_1));
-#endif  // HAVE_SSE4_1 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 }  // namespace

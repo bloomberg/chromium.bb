@@ -131,7 +131,7 @@ SECTION .text
 %endmacro
 
 %macro STORE_OUTPUT 2 ; index, result
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   ; const __m128i sign_bits = _mm_cmplt_epi16(*poutput, zero);
   ; __m128i out0 = _mm_unpacklo_epi16(*poutput, sign_bits);
   ; __m128i out1 = _mm_unpackhi_epi16(*poutput, sign_bits);

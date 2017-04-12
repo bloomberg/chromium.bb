@@ -23,7 +23,7 @@ extern "C" {
 
 #define EOSB_TOKEN 127  // Not signalled, encoder only
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 typedef int32_t EXTRABIT;
 #else
 typedef int16_t EXTRABIT;
@@ -98,7 +98,7 @@ extern const TOKENVALUE *av1_dct_value_tokens_ptr;
 extern const TOKENVALUE *av1_dct_cat_lt_10_value_tokens;
 extern const int *av1_dct_cat_lt_10_value_cost;
 extern const int16_t av1_cat6_low_cost[256];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 #define CAT6_HIGH_COST_ENTRIES 1024
 #else
 #define CAT6_HIGH_COST_ENTRIES 64

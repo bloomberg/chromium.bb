@@ -248,7 +248,7 @@ void aom_fdct32x32_1_sse2(const int16_t *input, tran_low_t *output,
 #undef FDCT32x32_HIGH_PRECISION
 #undef DCT_HIGH_BIT_DEPTH
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 #define DCT_HIGH_BIT_DEPTH 1
 #define FDCT4x4_2D aom_highbd_fdct4x4_sse2
 #define FDCT8x8_2D aom_highbd_fdct8x8_sse2
@@ -270,4 +270,4 @@ void aom_fdct32x32_1_sse2(const int16_t *input, tran_low_t *output,
 #undef FDCT32x32_2D
 #undef FDCT32x32_HIGH_PRECISION
 #undef DCT_HIGH_BIT_DEPTH
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

@@ -17,9 +17,9 @@
 #include <string.h>
 
 #include "./aom_config.h"
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 #include "aom_dsp/aom_dsp_common.h"
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"
 #include "av1/common/resize.h"
@@ -452,7 +452,7 @@ Error:
   free(arrbuf2);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void highbd_interpolate(const uint16_t *const input, int inlength,
                                uint16_t *output, int outlength, int bd) {
   const int64_t delta =
@@ -738,7 +738,7 @@ Error:
   free(arrbuf);
   free(arrbuf2);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_resize_frame420(const uint8_t *const y, int y_stride,
                          const uint8_t *const u, const uint8_t *const v,
@@ -776,7 +776,7 @@ void av1_resize_frame444(const uint8_t *const y, int y_stride,
                    ouv_stride);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_resize_frame420(const uint8_t *const y, int y_stride,
                                 const uint8_t *const u, const uint8_t *const v,
                                 int uv_stride, int height, int width,
@@ -818,4 +818,4 @@ void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
   av1_highbd_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
                           ouv_stride, bd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

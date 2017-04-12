@@ -117,7 +117,7 @@ void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
 void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
                  const uint8_t *src, int src_voffset, int src_hoffset,
                  int sstride, int vsize, int hsize) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     const uint16_t *base =
         &CONVERT_TO_SHORTPTR(src)[src_voffset * sstride + src_hoffset];
@@ -126,7 +126,7 @@ void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 #endif
     const uint8_t *base = &src[src_voffset * sstride + src_hoffset];
     copy_rect8_8bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   }
 #endif
 }
@@ -402,7 +402,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     vsize + 2 * OD_FILT_VBORDER, OD_FILT_HBORDER,
                     OD_DERING_VERY_LARGE);
         }
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           od_dering(
               (uint8_t *)&CONVERT_TO_SHORTPTR(
@@ -426,7 +426,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     dering_count, level, clpf_strength, clpf_damping,
                     coeff_shift, 0, 0);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         }
 #endif
       }

@@ -99,7 +99,7 @@ static const arg_def_t md5arg =
     ARG_DEF(NULL, "md5", 0, "Compute the MD5 sum of the decoded frame");
 static const arg_def_t framestatsarg =
     ARG_DEF(NULL, "framestats", 1, "Output per-frame stats (.csv format)");
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static const arg_def_t outbitdeptharg =
     ARG_DEF(NULL, "output-bit-depth", 1, "Output bit-depth for decoded frames");
 #endif
@@ -133,7 +133,7 @@ static const arg_def_t *all_args[] = { &codecarg,
                                        &framestatsarg,
                                        &error_concealment,
                                        &continuearg,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                                        &outbitdeptharg,
 #endif
 #if CONFIG_EXT_TILE
@@ -145,7 +145,7 @@ static const arg_def_t *all_args[] = { &codecarg,
 #if CONFIG_LIBYUV
 static INLINE int libyuv_scale(aom_image_t *src, aom_image_t *dst,
                                FilterModeEnum mode) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (src->fmt == AOM_IMG_FMT_I42016) {
     assert(dst->fmt == AOM_IMG_FMT_I42016);
     return I420Scale_16(
@@ -287,7 +287,7 @@ static void update_image_md5(const aom_image_t *img, const int planes[3],
 static void write_image_file(const aom_image_t *img, const int planes[3],
                              FILE *file) {
   int i, y;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const int bytes_per_sample = ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
 #else
   const int bytes_per_sample = 1;
@@ -488,7 +488,7 @@ static FILE *open_outfile(const char *name) {
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static int img_shifted_realloc_required(const aom_image_t *img,
                                         const aom_image_t *shifted,
                                         aom_img_fmt_t required_fmt) {
@@ -522,7 +522,7 @@ static int main_loop(int argc, const char **argv_) {
   int opt_yv12 = 0;
   int opt_i420 = 0;
   aom_codec_dec_cfg_t cfg = { 0, 0, 0 };
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   unsigned int output_bit_depth = 0;
 #endif
 #if CONFIG_EXT_TILE
@@ -533,7 +533,7 @@ static int main_loop(int argc, const char **argv_) {
   int dec_flags = 0;
   int do_scale = 0;
   aom_image_t *scaled_img = NULL;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   aom_image_t *img_shifted = NULL;
 #endif
   int frame_avail, got_data, flush_decoder = 0;
@@ -621,7 +621,7 @@ static int main_loop(int argc, const char **argv_) {
       num_external_frame_buffers = arg_parse_uint(&arg);
     else if (arg_match(&arg, &continuearg, argi))
       keep_going = 1;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     else if (arg_match(&arg, &outbitdeptharg, argi)) {
       output_bit_depth = arg_parse_uint(&arg);
     }
@@ -886,7 +886,7 @@ static int main_loop(int argc, const char **argv_) {
 #endif
         }
       }
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       // Default to codec bit depth if output bit depth not set
       if (!output_bit_depth && single_file && !do_md5) {
         output_bit_depth = img->bit_depth;
@@ -1031,7 +1031,7 @@ fail2:
   if (input.aom_input_ctx->file_type != FILE_TYPE_WEBM) free(buf);
 
   if (scaled_img) aom_img_free(scaled_img);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (img_shifted) aom_img_free(img_shifted);
 #endif
 

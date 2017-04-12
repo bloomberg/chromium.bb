@@ -745,7 +745,7 @@ void aom_d153_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,
   DST(1, 3) = AVG3(L, K, J);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_d207_predictor(uint16_t *dst, ptrdiff_t stride,
                                          int bs, const uint16_t *above,
                                          const uint16_t *left, int bd) {
@@ -1152,7 +1152,7 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
     dst += stride;
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 // This serves as a wrapper function, so that all the prediction functions
 // can be unified and accessed as a pointer array. Note that the boundary
@@ -1164,7 +1164,7 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
     type##_predictor(dst, stride, size, above, left);       \
   }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 #define intra_pred_highbd_sized(type, size)                        \
   void aom_highbd_##type##_predictor_##size##x##size##_c(          \
       uint16_t *dst, ptrdiff_t stride, const uint16_t *above,      \
@@ -1249,7 +1249,7 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bs,
   intra_pred_sized(type, 16) \
   intra_pred_sized(type, 32)
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 intra_pred_above_4x4(d207)
 intra_pred_above_4x4(d63)

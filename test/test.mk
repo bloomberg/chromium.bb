@@ -199,12 +199,12 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_variance_test.cc
 endif
 
-ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
+ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 ifeq ($(CONFIG_AV1_ENCODER),yes)
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_quantize_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += av1_highbd_iht_test.cc
 endif
-endif # CONFIG_AOM_HIGHBITDEPTH
+endif # CONFIG_HIGHBITDEPTH
 endif # AV1
 
 ## Multi-codec / unconditional whitebox tests.
@@ -213,7 +213,7 @@ ifeq ($(CONFIG_AV1_ENCODER),yes)
 LIBAOM_TEST_SRCS-yes += avg_test.cc
 endif
 ifeq ($(CONFIG_INTERNAL_STATS),yes)
-LIBAOM_TEST_SRCS-$(CONFIG_AOM_HIGHBITDEPTH) += hbd_metrics_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_HIGHBITDEPTH) += hbd_metrics_test.cc
 endif
 LIBAOM_TEST_SRCS-$(CONFIG_ENCODERS) += sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1) += av1_txfm_test.h

@@ -300,7 +300,7 @@ void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void highbd_variance64(const uint8_t *a8, int a_stride,
                               const uint8_t *b8, int b_stride, int w, int h,
                               uint64_t *sse, int64_t *sum) {
@@ -669,7 +669,7 @@ void aom_highbd_comp_avg_upsampled_pred_c(uint16_t *comp_pred,
     ref += stride;
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_AV1 && CONFIG_EXT_INTER
 void masked_variance(const uint8_t *a, int a_stride, const uint8_t *b,
@@ -772,7 +772,7 @@ MASK_VAR(128, 128)
 MASK_SUBPIX_VAR(128, 128)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void highbd_masked_variance64(const uint8_t *a8, int a_stride,
                               const uint8_t *b8, int b_stride, const uint8_t *m,
                               int m_stride, int w, int h, uint64_t *sse,
@@ -961,7 +961,7 @@ HIGHBD_MASK_SUBPIX_VAR(128, 64)
 HIGHBD_MASK_VAR(128, 128)
 HIGHBD_MASK_SUBPIX_VAR(128, 128)
 #endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1 && CONFIG_EXT_INTER
 
 #if CONFIG_AV1 && CONFIG_MOTION_VAR
@@ -1060,7 +1060,7 @@ OBMC_VAR(128, 128)
 OBMC_SUBPIX_VAR(128, 128)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_obmc_variance64(const uint8_t *pre8, int pre_stride,
                                           const int32_t *wsrc,
                                           const int32_t *mask, int w, int h,
@@ -1237,5 +1237,5 @@ HIGHBD_OBMC_SUBPIX_VAR(128, 64)
 HIGHBD_OBMC_VAR(128, 128)
 HIGHBD_OBMC_SUBPIX_VAR(128, 128)
 #endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_AV1 && CONFIG_MOTION_VAR

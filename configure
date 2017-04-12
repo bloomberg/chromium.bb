@@ -35,7 +35,7 @@ Advanced options:
   ${toggle_codec_srcs}            in/exclude codec library source code
   ${toggle_debug_libs}            in/exclude debug version of libraries
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
-  ${toggle_aom_highbitdepth}      enable 16-bit generic pixel pipeline (used by high bitdepth profiles)
+  ${toggle_highbitdepth}          enable 16-bit generic pixel pipeline (used by high bitdepth profiles)
   ${toggle_lowbitdepth}           enable 8-bit optimized pixel pipeline
   ${toggle_av1}                  AV1 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
@@ -362,7 +362,7 @@ CONFIG_LIST="
     encode_perf_tests
     coefficient_range_checking
     lowbitdepth
-    aom_highbitdepth
+    highbitdepth
     experimental
     size_limit
     aom_qm
@@ -421,6 +421,7 @@ CMDLINE_SELECT="
     coefficient_range_checking
     lowbitdepth
     aom_highbitdepth
+    highbitdepth
     experimental
     aom_qm
     tile_groups
@@ -481,6 +482,9 @@ post_process_cmdline() {
     soft_enable cdef
     soft_enable ec_adapt
     soft_enable new_tokenset
+
+    # Backwards/jenkins compatibility with --enable-aom-highbitdepth
+    enabled aom_highbitdepth && enable_feature highbitdepth
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth

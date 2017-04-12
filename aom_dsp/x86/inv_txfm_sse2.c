@@ -3548,7 +3548,7 @@ void idct32_8col(__m128i *in0, __m128i *in1) {
   in1[15] = _mm_sub_epi16(stp1_0, stp1_31);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE __m128i clamp_high_sse2(__m128i value, int bd) {
   __m128i ubounded, retval;
   const __m128i zero = _mm_set1_epi16(0);
@@ -4110,4 +4110,4 @@ void aom_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

@@ -28,7 +28,7 @@
 using libaom_test::ACMRandom;
 
 namespace {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 const int kNumIterations = 1000;
 
 typedef int64_t (*ErrorBlockFunc)(const tran_low_t *coeff,
@@ -169,5 +169,5 @@ INSTANTIATE_TEST_CASE_P(
                                  &av1_highbd_block_error_c, AOM_BITS_8)));
 #endif  // HAVE_SSE2
 
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

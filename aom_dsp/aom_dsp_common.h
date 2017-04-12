@@ -63,7 +63,7 @@ extern "C" {
 typedef uint16_t qm_val_t;
 #define AOM_QM_BITS 6
 #endif
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 // Note:
 // tran_low_t  is the datatype used for final transform coefficients.
 // tran_high_t is the datatype used for intermediate transform stages.
@@ -75,7 +75,7 @@ typedef int32_t tran_low_t;
 // tran_high_t is the datatype used for intermediate transform stages.
 typedef int32_t tran_high_t;
 typedef int16_t tran_low_t;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE uint8_t clip_pixel(int val) {
   return (val > 255) ? 255 : (val < 0) ? 0 : val;
@@ -89,7 +89,7 @@ static INLINE double fclamp(double value, double low, double high) {
   return value < low ? low : (value > high ? high : value);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE uint16_t clip_pixel_highbd(int val, int bd) {
   switch (bd) {
     case 8:
@@ -98,7 +98,7 @@ static INLINE uint16_t clip_pixel_highbd(int val, int bd) {
     case 12: return (uint16_t)clamp(val, 0, 4095);
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #ifdef __cplusplus
 }  // extern "C"

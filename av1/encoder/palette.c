@@ -164,7 +164,7 @@ int av1_count_colors(const uint8_t *src, int stride, int rows, int cols) {
   return n;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
                             int bit_depth) {
   int n = 0, r, c, i;
@@ -189,4 +189,4 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
 
   return n;
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

@@ -141,7 +141,7 @@ OBMCSADWXH(4, 4)
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE unsigned int hbd_obmc_sad_w4(const uint8_t *pre8,
                                            const int pre_stride,
                                            const int32_t *wsrc,
@@ -259,4 +259,4 @@ HBD_OBMCSADWXH(8, 8)
 HBD_OBMCSADWXH(8, 4)
 HBD_OBMCSADWXH(4, 8)
 HBD_OBMCSADWXH(4, 4)
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

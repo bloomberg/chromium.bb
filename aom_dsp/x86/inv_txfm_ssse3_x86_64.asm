@@ -223,7 +223,7 @@ cglobal idct8x8_64_add, 3, 5, 13, input, output, stride
   mova    m12, [pw_11585x2]
 
   lea      r3, [2 * strideq]
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   mova     m0, [inputq +   0]
   packssdw m0, [inputq +  16]
   mova     m1, [inputq +  32]
@@ -274,7 +274,7 @@ cglobal idct8x8_12_add, 3, 5, 13, input, output, stride
 
   lea        r3, [2 * strideq]
 
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   mova       m0, [inputq +   0]
   packssdw   m0, [inputq +  16]
   mova       m1, [inputq +  32]
@@ -796,7 +796,7 @@ idct32x32_34:
   lea             r4, [rsp + transposed_in]
 
 idct32x32_34_transpose:
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   mova            m0, [r3 +       0]
   packssdw        m0, [r3 +      16]
   mova            m1, [r3 + 32 *  4]
@@ -1226,7 +1226,7 @@ idct32x32_135:
   mov             r7, 2
 
 idct32x32_135_transpose:
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   mova            m0, [r3 +       0]
   packssdw        m0, [r3 +      16]
   mova            m1, [r3 + 32 *  4]
@@ -1264,7 +1264,7 @@ idct32x32_135_transpose:
   mova [r4 + 16 * 6], m6
   mova [r4 + 16 * 7], m7
 
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   add             r3, 32
 %else
   add             r3, 16
@@ -1275,7 +1275,7 @@ idct32x32_135_transpose:
 
   IDCT32X32_135 16*0, 16*32, 16*64, 16*96
   lea            stp, [stp + 16 * 8]
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   lea         inputq, [inputq + 32 * 32]
 %else
   lea         inputq, [inputq + 16 * 32]
@@ -1690,7 +1690,7 @@ idct32x32_1024:
   mov             r7, 4
 
 idct32x32_1024_transpose:
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   mova            m0, [r3 +       0]
   packssdw        m0, [r3 +      16]
   mova            m1, [r3 + 32 *  4]
@@ -1728,7 +1728,7 @@ idct32x32_1024_transpose:
   mova [r4 + 16 * 5], m5
   mova [r4 + 16 * 6], m6
   mova [r4 + 16 * 7], m7
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   add             r3, 32
 %else
   add             r3, 16
@@ -1740,7 +1740,7 @@ idct32x32_1024_transpose:
   IDCT32X32_1024 16*0, 16*32, 16*64, 16*96
 
   lea            stp, [stp + 16 * 8]
-%if CONFIG_AOM_HIGHBITDEPTH
+%if CONFIG_HIGHBITDEPTH
   lea         inputq, [inputq + 32 * 32]
 %else
   lea         inputq, [inputq + 16 * 32]

@@ -119,7 +119,7 @@ using ::std::tr1::tuple;
 // <width, height, bit_dpeth, subtract>
 typedef tuple<int, int, int, HBDSubtractFunc> Params;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
  public:
   virtual void SetUp() {
@@ -248,5 +248,5 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(128, 128, 12, &aom_highbd_subtract_block_sse2),
                       make_tuple(128, 128, 12, &aom_highbd_subtract_block_c)));
 #endif  // HAVE_SSE2
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

@@ -125,7 +125,7 @@ TEST_P(AV1IntraPredTest, IntraPredTests) {
 }
 
 #if HAVE_SSE2
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2_TO_C_8, AV1IntraPredTest,
     ::testing::Values(IntraPredFunc(&aom_highbd_dc_predictor_32x32_sse2,
@@ -226,6 +226,6 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // !CONFIG_ALT_INTRA
                           ));
 
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 }  // namespace

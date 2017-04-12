@@ -144,7 +144,7 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, AV1SelfguidedFilterTest,
                         ::testing::ValuesIn(params));
 #endif
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 
 typedef tuple<int> HighbdFilterTestParam;
 

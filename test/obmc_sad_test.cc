@@ -115,7 +115,7 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcSadTest,
 // High bit-depth
 ////////////////////////////////////////////////////////////////////////////////
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 class ObmcSadHBDTest : public FunctionEquivalenceTest<ObmcSadF> {};
 
 TEST_P(ObmcSadHBDTest, RandomValues) {
@@ -195,5 +195,5 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcSadHBDTest,
                         ::testing::ValuesIn(sse4_functions_hbd));
 #endif  // CONFIG_MOTION_VAR
 #endif  // HAVE_SSE4_1
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

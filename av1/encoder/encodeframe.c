@@ -64,11 +64,11 @@
 #include "av1/common/pvq.h"
 #include "av1/encoder/pvq_encoder.h"
 #endif
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 #define IF_HBD(...) __VA_ARGS__
 #else
 #define IF_HBD(...)
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                               TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
@@ -124,7 +124,7 @@ static const uint8_t AV1_VAR_OFFS[MAX_SB_SIZE] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static const uint16_t AV1_HIGH_VAR_OFFS_8[MAX_SB_SIZE] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -185,7 +185,7 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16
 #endif  // CONFIG_EXT_PARTITION
 };
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                            const struct buf_2d *ref,
@@ -196,7 +196,7 @@ unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd) {
@@ -221,7 +221,7 @@ unsigned int av1_high_get_sby_perpixel_variance(const AV1_COMP *cpi,
   }
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 static unsigned int get_sby_perpixel_diff_variance(const AV1_COMP *const cpi,
                                                    const struct buf_2d *ref,
@@ -607,7 +607,7 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q) {
 // Compute the minmax over the 8x8 subblocks.
 static int compute_minmax_8x8(const uint8_t *src, int src_stride,
                               const uint8_t *ref, int ref_stride,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                               int highbd,
 #endif
                               int pixels_wide, int pixels_high) {
@@ -623,7 +623,7 @@ static int compute_minmax_8x8(const uint8_t *src, int src_stride,
     if (x8_idx < pixels_wide && y8_idx < pixels_high) {
       const int src_offset = y8_idx * src_stride + x8_idx;
       const int ref_offset = y8_idx * ref_stride + x8_idx;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       if (highbd) {
         aom_highbd_minmax_8x8(src + src_offset, src_stride, ref + ref_offset,
                               ref_stride, &min, &max);
@@ -642,7 +642,7 @@ static int compute_minmax_8x8(const uint8_t *src, int src_stride,
   return (minmax_max - minmax_min);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE int avg_4x4(const uint8_t *const src, const int stride,
                           const int highbd) {
   if (highbd) {
@@ -657,7 +657,7 @@ static INLINE int avg_4x4(const uint8_t *const src, const int stride) {
 }
 #endif
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE int avg_8x8(const uint8_t *const src, const int stride,
                           const int highbd) {
   if (highbd) {
@@ -673,7 +673,7 @@ static INLINE int avg_8x8(const uint8_t *const src, const int stride) {
 #endif
 
 static void init_variance_tree(VAR_TREE *const vt,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                                const int highbd,
 #endif
                                BLOCK_SIZE bsize, BLOCK_SIZE leaf_size,
@@ -694,37 +694,37 @@ static void init_variance_tree(VAR_TREE *const vt,
   vt->width = width;
   vt->height = height;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   vt->highbd = highbd;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   if (bsize > leaf_size) {
     const BLOCK_SIZE subsize = get_subsize(bsize, PARTITION_SPLIT);
     const int px = block_size_wide[subsize];
 
     init_variance_tree(vt->split[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        highbd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        subsize, leaf_size, AOMMIN(px, width),
                        AOMMIN(px, height), src, src_stride, ref, ref_stride);
     init_variance_tree(vt->split[1],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        highbd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        subsize, leaf_size, width - px, AOMMIN(px, height),
                        src + px, src_stride, ref + px, ref_stride);
     init_variance_tree(vt->split[2],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        highbd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        subsize, leaf_size, AOMMIN(px, width), height - px,
                        src + px * src_stride, src_stride, ref + px * ref_stride,
                        ref_stride);
     init_variance_tree(vt->split[3],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        highbd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        subsize, leaf_size, width - px, height - px,
                        src + px * src_stride + px, src_stride,
                        ref + px * ref_stride + px, ref_stride);
@@ -811,7 +811,7 @@ static int check_split(AV1_COMP *const cpi, VAR_TREE *const vt,
       // force split to 8x8 block for this 16x16 block.
       int minmax =
           compute_minmax_8x8(vt->src, vt->src_stride, vt->ref, vt->ref_stride,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                              vt->highbd,
 #endif
                              vt->width, vt->height);
@@ -959,7 +959,7 @@ static void choose_partitioning(AV1_COMP *const cpi, ThreadData *const td,
   } else {
     ref = AV1_VAR_OFFS;
     ref_stride = 0;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       switch (xd->bd) {
         case 10: ref = CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_10); break;
@@ -968,14 +968,14 @@ static void choose_partitioning(AV1_COMP *const cpi, ThreadData *const td,
         default: ref = CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_8); break;
       }
     }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   }
 
   init_variance_tree(
       vt,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       cm->sb_size, (is_key_frame || low_res) ? BLOCK_4X4 : BLOCK_8X8,
       pixels_wide, pixels_high, src, src_stride, ref, ref_stride);
 
@@ -1893,7 +1893,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                            xd->plane[1].subsampling_y);
 #endif
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     x->source_variance = av1_high_get_sby_perpixel_variance(
         cpi, &x->plane[0].src, bsize, xd->bd);
@@ -1904,7 +1904,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #else
   x->source_variance =
       av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;
@@ -4899,11 +4899,11 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
     int segment_id = 0;
     int rdmult = set_segment_rdmult(cpi, &td->mb, segment_id);
     int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     const int quantizer_shift = td->mb.e_mbd.bd - 8;
 #else
     const int quantizer_shift = 0;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
     int64_t q_ac = OD_MAXI(
         1, av1_ac_quant(qindex, 0, cpi->common.bit_depth) >> quantizer_shift);
     int64_t q_dc = OD_MAXI(
@@ -5137,9 +5137,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
           compute_global_motion_feature_based(
               model, cpi->Source, ref_buf,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
               cpi->common.bit_depth,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
               inliers_by_motion, params_by_motion, RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
@@ -5151,9 +5151,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
             if (tmp_wm_params.wmtype != IDENTITY) {
               const double erroradv_this_motion = refine_integerized_param(
                   &tmp_wm_params, tmp_wm_params.wmtype,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                   ref_buf->y_buffer, ref_buf->y_width, ref_buf->y_height,
                   ref_buf->y_stride, cpi->Source->y_buffer,
                   cpi->Source->y_width, cpi->Source->y_height,
@@ -5874,9 +5874,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       for (i = 0; i < 3; ++i) {
         const struct macroblockd_plane *pd = &xd->plane[i];
         av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
                        pd->pre[0].stride, pd->dst.buf,
                        ((mi_col * MI_SIZE) >> pd->subsampling_x),
@@ -6453,7 +6453,7 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
@@ -6466,7 +6466,7 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
     dst_buf3[1] = CONVERT_TO_BYTEPTR(tmp_buf3 + MAX_TX_SQUARE * len);
     dst_buf3[2] = CONVERT_TO_BYTEPTR(tmp_buf3 + 2 * MAX_TX_SQUARE * len);
   } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
     dst_buf1[0] = tmp_buf1;
     dst_buf1[1] = tmp_buf1 + MAX_TX_SQUARE;
     dst_buf1[2] = tmp_buf1 + 2 * MAX_TX_SQUARE;
@@ -6476,9 +6476,9 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
     dst_buf3[0] = tmp_buf3;
     dst_buf3[1] = tmp_buf3 + MAX_TX_SQUARE;
     dst_buf3[2] = tmp_buf3 + 2 * MAX_TX_SQUARE;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   if (!dry_run && ctx >= 0 && bsize < top_bsize) {
     // Explicitly cast away const.

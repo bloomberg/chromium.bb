@@ -119,7 +119,7 @@ if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
       "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.c")
 endif ()
 
-if (CONFIG_AOM_HIGHBITDEPTH)
+if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
       ${AOM_DSP_COMMON_ASM_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm")
@@ -263,7 +263,7 @@ if (CONFIG_ENCODERS)
         ${AOM_DSP_ENCODER_AVX_ASM_X86_64}
         "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 
-    if (CONFIG_AOM_HIGHBITDEPTH)
+    if (CONFIG_HIGHBITDEPTH)
       set(AOM_DSP_ENCODER_INTRIN_SSE2
           ${AOM_DSP_ENCODER_INTRIN_SSE2}
           "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
@@ -271,7 +271,7 @@ if (CONFIG_ENCODERS)
     endif ()
   endif ()
 
-  if (CONFIG_AOM_HIGHBITDEPTH)
+  if (CONFIG_HIGHBITDEPTH)
     set(AOM_DSP_ENCODER_ASM_SSE2
         ${AOM_DSP_ENCODER_ASM_SSE2}
         "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"

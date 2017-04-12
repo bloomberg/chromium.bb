@@ -51,9 +51,9 @@ typedef struct VAR_TREE {
   int ref_stride;
   int width;
   int height;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   int highbd;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 } VAR_TREE;
 
 void av1_setup_var_tree(struct AV1Common *cm, struct ThreadData *td);

@@ -135,7 +135,7 @@ TEST_P(AV1HighbdInvHTNxN, InvTransResultCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE4_1 && CONFIG_AOM_HIGHBITDEPTH
+#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 #define PARAM_LIST_4X4                                   \
   &av1_fwd_txfm2d_4x4_c, &av1_inv_txfm2d_add_4x4_sse4_1, \
       &av1_inv_txfm2d_add_4x4_c, 16
@@ -216,9 +216,9 @@ const IHbdHtParam kArrayIhtParam[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvHTNxN,
                         ::testing::ValuesIn(kArrayIhtParam));
-#endif  // HAVE_SSE4_1 && CONFIG_AOM_HIGHBITDEPTH
+#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
 
-#if HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH
+#if HAVE_AVX2 && CONFIG_HIGHBITDEPTH
 #define PARAM_LIST_32X32                                   \
   &av1_fwd_txfm2d_32x32_c, &av1_inv_txfm2d_add_32x32_avx2, \
       &av1_inv_txfm2d_add_32x32_c, 1024
@@ -232,5 +232,5 @@ const IHbdHtParam kArrayIhtParam32x32[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdInvHTNxN,
                         ::testing::ValuesIn(kArrayIhtParam32x32));
 
-#endif  // HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH
+#endif  // HAVE_AVX2 && CONFIG_HIGHBITDEPTH
 }  // namespace

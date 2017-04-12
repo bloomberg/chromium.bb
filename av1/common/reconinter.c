@@ -409,7 +409,7 @@ void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
                                     const uint8_t *src0, int src0_stride,
                                     const uint8_t *src1, int src1_stride,
@@ -425,7 +425,7 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
     default: assert(0);
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #elif COMPOUND_SEGMENT_TYPE == 1
 #define DIFF_FACTOR 16
@@ -463,7 +463,7 @@ void build_compound_seg_mask(uint8_t *mask, SEG_MASK_TYPE mask_type,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void diffwtd_mask_highbd(uint8_t *mask, int which_inverse, int mask_base,
                                 const uint16_t *src0, int src0_stride,
                                 const uint16_t *src1, int src1_stride,
@@ -500,7 +500,7 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
     default: assert(0);
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // COMPOUND_SEGMENT_TYPE
 #endif  // CONFIG_COMPOUND_SEGMENT
 
@@ -629,7 +629,7 @@ static void build_masked_compound_wedge_extend(
                      mask, mask_stride, h, w, subh, subw);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void build_masked_compound_wedge_extend_highbd(
     uint8_t *dst_8, int dst_stride, const uint8_t *src0_8, int src0_stride,
     const uint8_t *src1_8, int src1_stride,
@@ -657,7 +657,7 @@ static void build_masked_compound_wedge_extend_highbd(
                             src1_stride, mask, mask_stride, h, w, subh, subw,
                             bd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #else
 static void build_masked_compound(
     uint8_t *dst, int dst_stride, const uint8_t *src0, int src0_stride,
@@ -673,7 +673,7 @@ static void build_masked_compound(
                      mask, block_size_wide[sb_type], h, w, subh, subw);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void build_masked_compound_highbd(
     uint8_t *dst_8, int dst_stride, const uint8_t *src0_8, int src0_stride,
     const uint8_t *src1_8, int src1_stride,
@@ -690,7 +690,7 @@ static void build_masked_compound_highbd(
                             src1_stride, mask, block_size_wide[sb_type], h, w,
                             subh, subw, bd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_SUPERTX
 
 void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
@@ -726,7 +726,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif  // CONFIG_DUAL_FILTER
   ConvolveParams conv_params = get_conv_params(0, plane);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
   uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
                          ? CONVERT_TO_BYTEPTR(tmp_dst_)
@@ -772,7 +772,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                           MAX_SB_SIZE, comp_data, mi->mbmi.sb_type, h, w);
 #endif  // CONFIG_SUPERTX
 
-#else  // CONFIG_AOM_HIGHBITDEPTH
+#else  // CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
                            subpel_y, sf, w, h, &conv_params, tmp_ipf,
@@ -797,7 +797,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
   build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE,
                         comp_data, mi->mbmi.sb_type, h, w);
 #endif  // CONFIG_SUPERTX
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_COMPOUND_SEGMENT
   (void)plane;
 #endif  // CONFIG_COMPOUND_SEGMENT
@@ -807,7 +807,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 // TODO(sarahparker) av1_highbd_build_inter_predictor and
 // av1_build_inter_predictor should be combined with
 // av1_make_inter_predictor
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
                                       uint8_t *dst, int dst_stride,
                                       const MV *src_mv,
@@ -843,7 +843,7 @@ void av1_highbd_build_inter_predictor(const uint8_t *src, int src_stride,
 #endif  // CONFIG_GLOBAL_MOTION
                            sf->x_step_q4, sf->y_step_q4, xd);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
@@ -1122,9 +1122,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 
 #if CONFIG_CONVOLVE_ROUND
 // TODO(angiebird): This part needs optimization
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (!(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH))
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
                             FILTER_BITS * 2 + is_compound -
                                 conv_params.round_0 - conv_params.round_1);
@@ -1156,7 +1156,7 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
     ConvolveParams conv_params = get_conv_params(ref, plane);
     const uint8_t *pre =
         &pd->pre[ref].buf[(ir * pd->pre[ref].stride + ic) << 2];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       av1_highbd_build_inter_predictor(
           pre, pd->pre[ref].stride, dst, pd->dst.stride,
@@ -1168,7 +1168,7 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
           plane, MV_PRECISION_Q3, mi_col * MI_SIZE + 4 * ic,
           mi_row * MI_SIZE + 4 * ir, xd);
     else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       av1_build_inter_predictor(pre, pd->pre[ref].stride, dst, pd->dst.stride,
                                 &mi->bmi[i].as_mv[ref].as_mv,
                                 &xd->block_refs[ref]->sf, width, height,
@@ -1396,9 +1396,9 @@ void av1_build_masked_inter_predictor_complex(
 
   int w_remain, h_remain;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const int is_hdb = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   assert(bsize <= BLOCK_32X32);
   assert(IMPLIES(plane == 0, ssx == 0));
@@ -1413,12 +1413,12 @@ void av1_build_masked_inter_predictor_complex(
       dst += h_offset * dst_stride;
       pre += h_offset * pre_stride;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       if (is_hdb)
         aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, pre,
                                    pre_stride, mask, h, top_w, xd->bd);
       else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
         aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, pre, pre_stride,
                             mask, h, top_w);
 
@@ -1434,12 +1434,12 @@ void av1_build_masked_inter_predictor_complex(
       dst += w_offset;
       pre += w_offset;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       if (is_hdb)
         aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, pre,
                                    pre_stride, mask, top_h, w, xd->bd);
       else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
         aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, pre, pre_stride,
                             mask, top_h, w);
 
@@ -1457,7 +1457,7 @@ void av1_build_masked_inter_predictor_complex(
     return;
   }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (is_hdb) {
     dst = (uint8_t *)CONVERT_TO_SHORTPTR(dst);
     pre = (const uint8_t *)CONVERT_TO_SHORTPTR(pre);
@@ -1465,7 +1465,7 @@ void av1_build_masked_inter_predictor_complex(
     pre_stride *= 2;
     w_remain *= 2;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   do {
     memcpy(dst, pre, w_remain * sizeof(uint8_t));
@@ -1698,9 +1698,9 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int left_stride[MAX_MB_PLANE]) {
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   int plane, i;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   // handle above row
   if (xd->up_available) {
@@ -1734,12 +1734,12 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
               &above[plane][(i * MI_SIZE) >> pd->subsampling_x];
           const uint8_t *const mask = av1_get_obmc_mask(bh);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
           if (is_hbd)
             aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
                                        tmp_stride, mask, bh, bw, xd->bd);
           else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
             aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
                                 tmp_stride, mask, bh, bw);
         }
@@ -1781,12 +1781,12 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
               &left[plane][(i * MI_SIZE * tmp_stride) >> pd->subsampling_y];
           const uint8_t *const mask = av1_get_obmc_mask(bw);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
           if (is_hbd)
             aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
                                        tmp_stride, mask, bh, bw, xd->bd);
           else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
             aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
                                 tmp_stride, mask, bh, bw);
         }
@@ -1886,9 +1886,9 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                  above_mi);
 
         av1_warp_plane(&above_mbmi->wm_params[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
                        pd->pre[0].stride, pd->dst.buf,
                        (((mi_col + i) * MI_SIZE) >> pd->subsampling_x),
@@ -1990,9 +1990,9 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                  left_mi);
 
         av1_warp_plane(&left_mbmi->wm_params[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                        xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                        pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
                        pd->pre[0].stride, pd->dst.buf,
                        ((mi_col * MI_SIZE) >> pd->subsampling_x),
@@ -2021,13 +2021,13 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int mi_row, int mi_col) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
 #else
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_SB_SQUARE]);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_stride2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -2036,7 +2036,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
@@ -2046,16 +2046,16 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     dst_buf2[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
     dst_buf2[2] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * 2 * len);
   } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
     dst_buf1[0] = tmp_buf1;
     dst_buf1[1] = tmp_buf1 + MAX_SB_SQUARE;
     dst_buf1[2] = tmp_buf1 + MAX_SB_SQUARE * 2;
     dst_buf2[0] = tmp_buf2;
     dst_buf2[1] = tmp_buf2 + MAX_SB_SQUARE;
     dst_buf2[2] = tmp_buf2 + MAX_SB_SQUARE * 2;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   av1_build_prediction_by_above_preds(cm, xd, mi_row, mi_col, dst_buf1,
                                       dst_width1, dst_height1, dst_stride1);
   av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col, dst_buf2,
@@ -2165,9 +2165,9 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    mi);
 
           av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                          xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                          pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
                          pd->pre[0].stride, pd->dst.buf,
                          (((mi_col + i) * MI_SIZE) >> pd->subsampling_x),
@@ -2296,9 +2296,9 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    mi);
 
           av1_warp_plane(&mbmi->wm_params[0],
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                          xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                          pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
                          pd->pre[0].stride, pd->dst.buf,
                          ((mi_col * MI_SIZE) >> pd->subsampling_x),
@@ -2344,9 +2344,9 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const int bottom_available = mi_row + xd->n8_h < tile->mi_row_end &&
                                (mi_row + xd->n8_h) % MI_SIZE != 0 &&
                                (mi_row + xd->n8_h) < cm->mi_rows;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   int is_hbd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   // handle bottom row
   for (i = 0; bottom_available && i < AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
@@ -2379,12 +2379,12 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           pd->subsampling_y)];
       const uint8_t *const mask = av1_get_obmc_mask_flipped(bh);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       if (is_hbd)
         aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp,
                                    tmp_stride, mask, bh, bw, xd->bd);
       else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
         aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
                             mask, bh, bw);
     }
@@ -2422,12 +2422,12 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                         ((xd->n8_w * MI_SIZE - overlap) >> pd->subsampling_x)];
       const uint8_t *const mask = av1_get_obmc_mask_flipped(bw);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       if (is_hbd)
         aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp,
                                    tmp_stride, mask, bh, bw, xd->bd);
       else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
         aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, tmp, tmp_stride,
                             mask, bh, bw);
     }
@@ -2442,13 +2442,13 @@ void av1_merge_dst_bottom_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 // preds, and then merge them and xd->plane[].dst.buf.
 void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           int mi_row, int mi_col) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
 #else
   DECLARE_ALIGNED(16, uint8_t, tmp_buf1[MAX_MB_PLANE * MAX_SB_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, tmp_buf2[MAX_MB_PLANE * MAX_SB_SQUARE]);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   uint8_t *dst_buf1[MAX_MB_PLANE], *dst_buf2[MAX_MB_PLANE];
   int dst_stride1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_stride2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
@@ -2457,7 +2457,7 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     int len = sizeof(uint16_t);
     dst_buf1[0] = CONVERT_TO_BYTEPTR(tmp_buf1);
@@ -2467,16 +2467,16 @@ void av1_build_ncobmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
     dst_buf2[1] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * len);
     dst_buf2[2] = CONVERT_TO_BYTEPTR(tmp_buf2 + MAX_SB_SQUARE * 2 * len);
   } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
     dst_buf1[0] = tmp_buf1;
     dst_buf1[1] = tmp_buf1 + MAX_SB_SQUARE;
     dst_buf1[2] = tmp_buf1 + MAX_SB_SQUARE * 2;
     dst_buf2[0] = tmp_buf2;
     dst_buf2[1] = tmp_buf2 + MAX_SB_SQUARE;
     dst_buf2[2] = tmp_buf2 + MAX_SB_SQUARE * 2;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   av1_build_prediction_by_bottom_preds(cm, xd, mi_row, mi_col, dst_buf1,
                                        dst_width1, dst_height1, dst_stride1);
@@ -2640,7 +2640,7 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void combine_interintra_highbd(
     INTERINTRA_MODE mode, int use_wedge_interintra, int wedge_index,
     int wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
@@ -2755,7 +2755,7 @@ static void combine_interintra_highbd(
       break;
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_build_intra_predictors_for_interintra(MACROBLOCKD *xd,
                                                BLOCK_SIZE bsize, int plane,
@@ -2775,7 +2775,7 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                             const uint8_t *inter_pred, int inter_stride,
                             const uint8_t *intra_pred, int intra_stride) {
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     combine_interintra_highbd(
         xd->mi[0]->mbmi.interintra_mode, xd->mi[0]->mbmi.use_wedge_interintra,
@@ -2785,7 +2785,7 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
         inter_stride, intra_pred, intra_stride, xd->bd);
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   combine_interintra(xd->mi[0]->mbmi.interintra_mode,
                      xd->mi[0]->mbmi.use_wedge_interintra,
                      xd->mi[0]->mbmi.interintra_wedge_index,
@@ -2797,7 +2797,7 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
 void av1_build_interintra_predictors_sby(MACROBLOCKD *xd, uint8_t *ypred,
                                          int ystride, BUFFER_SET *ctx,
                                          BLOCK_SIZE bsize) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     DECLARE_ALIGNED(16, uint16_t, intrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(
@@ -2806,7 +2806,7 @@ void av1_build_interintra_predictors_sby(MACROBLOCKD *xd, uint8_t *ypred,
                            CONVERT_TO_BYTEPTR(intrapredictor), MAX_SB_SIZE);
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   {
     DECLARE_ALIGNED(16, uint8_t, intrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(xd, bsize, 0, ctx, intrapredictor,
@@ -2819,7 +2819,7 @@ void av1_build_interintra_predictors_sby(MACROBLOCKD *xd, uint8_t *ypred,
 void av1_build_interintra_predictors_sbc(MACROBLOCKD *xd, uint8_t *upred,
                                          int ustride, BUFFER_SET *ctx,
                                          int plane, BLOCK_SIZE bsize) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     DECLARE_ALIGNED(16, uint16_t, uintrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(
@@ -2829,7 +2829,7 @@ void av1_build_interintra_predictors_sbc(MACROBLOCKD *xd, uint8_t *upred,
                            CONVERT_TO_BYTEPTR(uintrapredictor), MAX_SB_SIZE);
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   {
     DECLARE_ALIGNED(16, uint8_t, uintrapredictor[MAX_SB_SQUARE]);
     av1_build_intra_predictors_for_interintra(xd, bsize, plane, ctx,
@@ -2869,7 +2869,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
 
   const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
   struct buf_2d *const pre_buf = &pd->pre[ref];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   uint8_t *const dst =
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? CONVERT_TO_BYTEPTR(ext_dst)
                                                    : ext_dst) +
@@ -2976,7 +2976,7 @@ static void build_wedge_inter_predictor_from_buf(
   if (is_compound &&
       is_masked_compound_type(mbmi->interinter_compound_data.type)) {
 #if CONFIG_COMPOUND_SEGMENT
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (!plane && comp_data->type == COMPOUND_SEG) {
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
         build_compound_seg_mask_highbd(
@@ -2994,43 +2994,43 @@ static void build_wedge_inter_predictor_from_buf(
       build_compound_seg_mask(comp_data->seg_mask, comp_data->mask_type,
                               ext_dst0, ext_dst_stride0, ext_dst1,
                               ext_dst_stride1, mbmi->sb_type, h, w);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_SUPERTX
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_wedge_extend_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
           CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
           mbmi->sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
     else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       build_masked_compound_wedge_extend(
           dst, dst_buf->stride, ext_dst0, ext_dst_stride0, ext_dst1,
           ext_dst_stride1, comp_data, mbmi->sb_type, wedge_offset_x,
           wedge_offset_y, h, w);
 #else
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_highbd(
           dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
           CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, comp_data,
           mbmi->sb_type, h, w, xd->bd);
     else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
                             ext_dst1, ext_dst_stride1, comp_data, mbmi->sb_type,
                             h, w);
 #endif  // CONFIG_SUPERTX
   } else {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       aom_highbd_convolve_copy(CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
                                dst, dst_buf->stride, NULL, 0, NULL, 0, w, h,
                                xd->bd);
     else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
       aom_convolve_copy(ext_dst0, ext_dst_stride0, dst, dst_buf->stride, NULL,
                         0, NULL, 0, w, h);
   }

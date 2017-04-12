@@ -56,7 +56,7 @@ class TransformTestBase {
         aom_memalign(16, sizeof(uint8_t) * num_coeffs_));
     uint8_t *src = reinterpret_cast<uint8_t *>(
         aom_memalign(16, sizeof(uint8_t) * num_coeffs_));
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     uint16_t *dst16 = reinterpret_cast<uint16_t *>(
         aom_memalign(16, sizeof(uint16_t) * num_coeffs_));
     uint16_t *src16 = reinterpret_cast<uint16_t *>(
@@ -70,7 +70,7 @@ class TransformTestBase {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           test_input_block[j] = src[j] - dst[j];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand16() & mask_;
           dst16[j] = rnd.Rand16() & mask_;
@@ -83,7 +83,7 @@ class TransformTestBase {
           RunFwdTxfm(test_input_block, test_temp_block, pitch_));
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
@@ -91,7 +91,7 @@ class TransformTestBase {
       }
 
       for (int j = 0; j < num_coeffs_; ++j) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
@@ -118,7 +118,7 @@ class TransformTestBase {
     aom_free(test_temp_block);
     aom_free(dst);
     aom_free(src);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     aom_free(dst16);
     aom_free(src16);
 #endif
@@ -148,7 +148,7 @@ class TransformTestBase {
           input_block[in_idx] = (rnd.Rand16() & mask_) - (rnd.Rand16() & mask_);
           if (bit_depth_ == AOM_BITS_8) {
             output_block[out_idx] = output_ref_block[out_idx] = rnd.Rand8();
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
           } else {
             output_block[out_idx] = output_ref_block[out_idx] =
                 rnd.Rand16() & mask_;
@@ -280,7 +280,7 @@ class TransformTestBase {
     uint8_t *src = reinterpret_cast<uint8_t *>(
         aom_memalign(16, sizeof(uint8_t) * num_coeffs_));
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     uint16_t *dst16 = reinterpret_cast<uint16_t *>(
         aom_memalign(16, sizeof(uint16_t) * num_coeffs_));
     uint16_t *src16 = reinterpret_cast<uint16_t *>(
@@ -294,7 +294,7 @@ class TransformTestBase {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           in[j] = src[j] - dst[j];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         } else {
           src16[j] = rnd.Rand16() & mask_;
           dst16[j] = rnd.Rand16() & mask_;
@@ -307,7 +307,7 @@ class TransformTestBase {
 
       if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       } else {
         ASM_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
@@ -315,7 +315,7 @@ class TransformTestBase {
       }
 
       for (int j = 0; j < num_coeffs_; ++j) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         const int diff =
             bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
@@ -330,7 +330,7 @@ class TransformTestBase {
     aom_free(coeff);
     aom_free(dst);
     aom_free(src);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     aom_free(src16);
     aom_free(dst16);
 #endif

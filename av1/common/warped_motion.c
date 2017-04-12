@@ -698,7 +698,7 @@ int get_shear_params(WarpedMotionParams *wm) {
   return 1;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_get_subcolumn(int taps, uint16_t *ref, int32_t *col,
                                         int stride, int x, int y_start) {
   int i;
@@ -1049,7 +1049,7 @@ static double highbd_warp_erroradv(WarpedMotionParams *wm, uint8_t *ref8,
   aom_free(tmp);
   return (double)gm_sumerr / no_gm_sumerr;
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 static INLINE int error_measure(int err) {
   return error_measure_lut[255 + err];
@@ -1303,41 +1303,41 @@ static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
 }
 
 double av1_warp_erroradv(WarpedMotionParams *wm,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                          int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                          uint8_t *ref, int width, int height, int stride,
                          uint8_t *dst, int p_col, int p_row, int p_width,
                          int p_height, int p_stride, int subsampling_x,
                          int subsampling_y, int x_scale, int y_scale) {
   if (wm->wmtype <= AFFINE)
     if (!get_shear_params(wm)) return 1;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (use_hbd)
     return highbd_warp_erroradv(
         wm, ref, width, height, stride, dst, p_col, p_row, p_width, p_height,
         p_stride, subsampling_x, subsampling_y, x_scale, y_scale, bd);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   return warp_erroradv(wm, ref, width, height, stride, dst, p_col, p_row,
                        p_width, p_height, p_stride, subsampling_x,
                        subsampling_y, x_scale, y_scale);
 }
 
 void av1_warp_plane(WarpedMotionParams *wm,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                     int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                     uint8_t *ref, int width, int height, int stride,
                     uint8_t *pred, int p_col, int p_row, int p_width,
                     int p_height, int p_stride, int subsampling_x,
                     int subsampling_y, int x_scale, int y_scale, int ref_frm) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (use_hbd)
     highbd_warp_plane(wm, ref, width, height, stride, pred, p_col, p_row,
                       p_width, p_height, p_stride, subsampling_x, subsampling_y,
                       x_scale, y_scale, bd, ref_frm);
   else
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
     warp_plane(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
                p_height, p_stride, subsampling_x, subsampling_y, x_scale,
                y_scale, ref_frm);

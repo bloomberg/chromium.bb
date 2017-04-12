@@ -249,7 +249,7 @@ TEST_P(MaskedSubPixelVarianceTest, ExtremeValues) {
                           << " y_offset = " << first_failure_y;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 typedef std::tr1::tuple<MaskedVarianceFunc, MaskedVarianceFunc, aom_bit_depth_t>
     HighbdMaskedVarianceParam;
 
@@ -476,7 +476,7 @@ TEST_P(HighbdMaskedSubPixelVarianceTest, ExtremeValues) {
                           << " x_offset = " << first_failure_x
                           << " y_offset = " << first_failure_y;
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -551,7 +551,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_masked_sub_pixel_variance4x4_ssse3,
                    &aom_masked_sub_pixel_variance4x4_c)));
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSSE3_C_COMPARE, HighbdMaskedVarianceTest,
     ::testing::Values(
@@ -784,7 +784,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_highbd_12_masked_sub_pixel_variance4x4_ssse3,
                    &aom_highbd_12_masked_sub_pixel_variance4x4_c,
                    AOM_BITS_12)));
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #endif  // HAVE_SSSE3
 }  // namespace

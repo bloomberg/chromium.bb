@@ -15,7 +15,7 @@
 #include "./aom_config.h"
 
 static INLINE void storeu_output_avx2(const __m256i *coeff, tran_low_t *out) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const __m256i zero = _mm256_setzero_si256();
   const __m256i sign = _mm256_cmpgt_epi16(zero, *coeff);
 

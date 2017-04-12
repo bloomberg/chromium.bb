@@ -40,7 +40,7 @@ void aom_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs, int skip_block,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
                             int skip_block, const int16_t *round_ptr,
                             const int16_t quant, tran_low_t *qcoeff_ptr,
@@ -131,7 +131,7 @@ void aom_quantize_dc_64x64(const tran_low_t *coeff_ptr, int skip_block,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_dc_32x32(const tran_low_t *coeff_ptr, int skip_block,
                                   const int16_t *round_ptr, const int16_t quant,
                                   tran_low_t *qcoeff_ptr,
@@ -256,7 +256,7 @@ void aom_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              int skip_block, const int16_t *zbin_ptr,
                              const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -446,7 +446,7 @@ void aom_quantize_b_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_b_32x32_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -566,7 +566,7 @@ void aom_highbd_quantize_b_64x64_c(
   *eob_ptr = eob + 1;
 }
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #else
 
@@ -593,7 +593,7 @@ void aom_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs, int skip_block,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
                             int skip_block, const int16_t *round_ptr,
                             const int16_t quant, tran_low_t *qcoeff_ptr,
@@ -670,7 +670,7 @@ void aom_quantize_dc_64x64(const tran_low_t *coeff_ptr, int skip_block,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_dc_32x32(const tran_low_t *coeff_ptr, int skip_block,
                                   const int16_t *round_ptr, const int16_t quant,
                                   tran_low_t *qcoeff_ptr,
@@ -774,7 +774,7 @@ void aom_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              int skip_block, const int16_t *zbin_ptr,
                              const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -935,7 +935,7 @@ void aom_quantize_b_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void aom_highbd_quantize_b_32x32_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,

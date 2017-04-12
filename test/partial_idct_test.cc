@@ -190,7 +190,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_c, TX_4X4, 1)));
 
-#if HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_NEON && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     NEON, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -205,9 +205,9 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_1_add_neon, TX_8X8, 1),
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_neon, TX_4X4, 1)));
-#endif  // HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -226,7 +226,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct4x4_1_add_sse2, TX_4X4, 1)));
 #endif
 
-#if HAVE_SSSE3 && ARCH_X86_64 && !CONFIG_AOM_HIGHBITDEPTH && \
+#if HAVE_SSSE3 && ARCH_X86_64 && !CONFIG_HIGHBITDEPTH && \
     !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSSE3_64, PartialIDctTest,
@@ -234,7 +234,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_12_add_ssse3, TX_8X8, 12)));
 #endif
 
-#if HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     MSA, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -251,6 +251,6 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_1_add_msa, TX_8X8, 1),
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_msa, TX_4X4, 1)));
-#endif  // HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 }  // namespace

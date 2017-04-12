@@ -57,7 +57,7 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
                               int height, int extend_top, int extend_left,
                               int extend_bottom, int extend_right) {
@@ -109,7 +109,7 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
   assert(ybf->y_height - ybf->y_crop_height >= 0);
   assert(ybf->y_width - ybf->y_crop_width >= 0);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (ybf->flags & YV12_FLAG_HIGHBITDEPTH) {
     extend_plane_high(ybf->y_buffer, ybf->y_stride, ybf->y_crop_width,
                       ybf->y_crop_height, ybf->border, ybf->border,
@@ -160,7 +160,7 @@ static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
   assert(ybf->y_height - ybf->y_crop_height >= 0);
   assert(ybf->y_width - ybf->y_crop_width >= 0);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (ybf->flags & YV12_FLAG_HIGHBITDEPTH) {
     extend_plane_high(ybf->y_buffer, ybf->y_stride, ybf->y_crop_width,
                       ybf->y_crop_height, ext_size, ext_size,
@@ -201,7 +201,7 @@ void aom_extend_frame_borders_y_c(YV12_BUFFER_CONFIG *ybf) {
   assert(ybf->y_height - ybf->y_crop_height >= 0);
   assert(ybf->y_width - ybf->y_crop_width >= 0);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (ybf->flags & YV12_FLAG_HIGHBITDEPTH) {
     extend_plane_high(ybf->y_buffer, ybf->y_stride, ybf->y_crop_width,
                       ybf->y_crop_height, ext_size, ext_size,
@@ -217,13 +217,13 @@ void aom_extend_frame_borders_y_c(YV12_BUFFER_CONFIG *ybf) {
 }
 #endif  // CONFIG_AV1
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void memcpy_short_addr(uint8_t *dst8, const uint8_t *src8, int num) {
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
   memcpy(dst, src, num * sizeof(uint16_t));
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 // Copies the source image into the destination image and updates the
 // destination's UMV borders.
@@ -242,7 +242,7 @@ void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_bc,
   assert(src_bc->y_height == dst_bc->y_height);
 #endif
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
     assert(dst_bc->flags & YV12_FLAG_HIGHBITDEPTH);
     for (row = 0; row < src_bc->y_height; ++row) {
@@ -309,7 +309,7 @@ void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
   const uint8_t *src = src_ybc->y_buffer;
   uint8_t *dst = dst_ybc->y_buffer;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (src_ybc->flags & YV12_FLAG_HIGHBITDEPTH) {
     const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
     uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
@@ -320,7 +320,7 @@ void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
     }
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   for (row = 0; row < src_ybc->y_height; ++row) {
     memcpy(dst, src, src_ybc->y_width);
@@ -335,7 +335,7 @@ void aom_yv12_copy_u_c(const YV12_BUFFER_CONFIG *src_bc,
   const uint8_t *src = src_bc->u_buffer;
   uint8_t *dst = dst_bc->u_buffer;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
     const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
     uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
@@ -346,7 +346,7 @@ void aom_yv12_copy_u_c(const YV12_BUFFER_CONFIG *src_bc,
     }
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   for (row = 0; row < src_bc->uv_height; ++row) {
     memcpy(dst, src, src_bc->uv_width);
@@ -361,7 +361,7 @@ void aom_yv12_copy_v_c(const YV12_BUFFER_CONFIG *src_bc,
   const uint8_t *src = src_bc->v_buffer;
   uint8_t *dst = dst_bc->v_buffer;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   if (src_bc->flags & YV12_FLAG_HIGHBITDEPTH) {
     const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
     uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
@@ -372,7 +372,7 @@ void aom_yv12_copy_v_c(const YV12_BUFFER_CONFIG *src_bc,
     }
     return;
   }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
   for (row = 0; row < src_bc->uv_height; ++row) {
     memcpy(dst, src, src_bc->uv_width);

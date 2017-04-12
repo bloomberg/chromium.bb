@@ -205,7 +205,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         val = CAT5_MIN_VAL + READ_COEFF(av1_cat5_prob, av1_cat5_cdf, 5, r);
         break;
       case CATEGORY6_TOKEN: {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         const int skip_bits = (int)sizeof(av1_cat6_prob) -
                               av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
@@ -228,13 +228,13 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     v = (val * dqv) >> dq_shift;
 #endif
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     if (v)
       dqcoeff[scan[c]] =
           highbd_check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
 #else
     if (v) dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #else
     if (v) dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
@@ -303,7 +303,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         val = CAT5_MIN_VAL + READ_COEFF(av1_cat5_prob, av1_cat5_cdf, 5, r);
         break;
       case CATEGORY6_TOKEN: {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
         const int skip_bits = (int)sizeof(av1_cat6_prob) -
                               av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
@@ -343,7 +343,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
           val = CAT5_MIN_VAL + read_coeff(av1_cat5_prob, 5, r);
           break;
         case CATEGORY6_TOKEN: {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
           const int skip_bits = (int)sizeof(av1_cat6_prob) -
                                 av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
@@ -369,12 +369,12 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_NEW_QUANT
 
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     dqcoeff[scan[c]] =
         highbd_check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
 #else
     dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 #else
     dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING

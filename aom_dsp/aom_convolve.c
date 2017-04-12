@@ -448,7 +448,7 @@ void aom_convolve8_add_src_c(const uint8_t *src, ptrdiff_t src_stride,
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static void highbd_convolve_horiz(const uint8_t *src8, ptrdiff_t src_stride,
                                   uint8_t *dst8, ptrdiff_t dst_stride,
                                   const InterpKernel *x_filters, int x0_q4,
@@ -851,4 +851,4 @@ void aom_highbd_convolve8_add_src_c(const uint8_t *src, ptrdiff_t src_stride,
                           x_step_q4, filters_y, y0_q4, y_step_q4, w, h, bd);
 }
 #endif  // CONFIG_LOOP_RESTORATION
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

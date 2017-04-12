@@ -16,7 +16,7 @@
 #include "aom/aom_integer.h"
 
 static INLINE __m128i load_coefficients(const tran_low_t *coeff_ptr) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   return _mm_setr_epi16((int16_t)coeff_ptr[0], (int16_t)coeff_ptr[1],
                         (int16_t)coeff_ptr[2], (int16_t)coeff_ptr[3],
                         (int16_t)coeff_ptr[4], (int16_t)coeff_ptr[5],
@@ -28,7 +28,7 @@ static INLINE __m128i load_coefficients(const tran_low_t *coeff_ptr) {
 
 static INLINE void store_coefficients(__m128i coeff_vals,
                                       tran_low_t *coeff_ptr) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   __m128i one = _mm_set1_epi16(1);
   __m128i coeff_vals_hi = _mm_mulhi_epi16(coeff_vals, one);
   __m128i coeff_vals_lo = _mm_mullo_epi16(coeff_vals, one);

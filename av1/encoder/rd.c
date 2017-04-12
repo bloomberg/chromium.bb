@@ -187,7 +187,7 @@ void av1_fill_token_costs(av1_coeff_cost *c,
 static int sad_per_bit16lut_8[QINDEX_RANGE];
 static int sad_per_bit4lut_8[QINDEX_RANGE];
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 static int sad_per_bit16lut_10[QINDEX_RANGE];
 static int sad_per_bit4lut_10[QINDEX_RANGE];
 static int sad_per_bit16lut_12[QINDEX_RANGE];
@@ -210,7 +210,7 @@ static void init_me_luts_bd(int *bit16lut, int *bit4lut, int range,
 void av1_init_me_luts(void) {
   init_me_luts_bd(sad_per_bit16lut_8, sad_per_bit4lut_8, QINDEX_RANGE,
                   AOM_BITS_8);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   init_me_luts_bd(sad_per_bit16lut_10, sad_per_bit4lut_10, QINDEX_RANGE,
                   AOM_BITS_10);
   init_me_luts_bd(sad_per_bit16lut_12, sad_per_bit4lut_12, QINDEX_RANGE,
@@ -234,7 +234,7 @@ static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = {
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   const int64_t q = av1_dc_quant(qindex, 0, cpi->common.bit_depth);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   int64_t rdmult = 0;
   switch (cpi->common.bit_depth) {
     case AOM_BITS_8: rdmult = 88 * q * q / 24; break;
@@ -246,7 +246,7 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   }
 #else
   int64_t rdmult = 88 * q * q / 24;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   if (cpi->oxcf.pass == 2 && (cpi->common.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
@@ -261,7 +261,7 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
 
 static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   double q;
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: q = av1_dc_quant(qindex, 0, AOM_BITS_8) / 4.0; break;
     case AOM_BITS_10: q = av1_dc_quant(qindex, 0, AOM_BITS_10) / 16.0; break;
@@ -273,13 +273,13 @@ static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
 #else
   (void)bit_depth;
   q = av1_dc_quant(qindex, 0, AOM_BITS_8) / 4.0;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
   // TODO(debargha): Adjust the function below.
   return AOMMAX((int)(pow(q, RD_THRESH_POW) * 5.12), 8);
 }
 
 void av1_initialize_me_consts(const AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   switch (cpi->common.bit_depth) {
     case AOM_BITS_8:
       x->sadperbit16 = sad_per_bit16lut_8[qindex];
@@ -300,7 +300,7 @@ void av1_initialize_me_consts(const AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
   (void)cpi;
   x->sadperbit16 = sad_per_bit16lut_8[qindex];
   x->sadperbit4 = sad_per_bit4lut_8[qindex];
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }
 
 static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
@@ -1201,7 +1201,7 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
 int av1_get_intra_cost_penalty(int qindex, int qdelta,
                                aom_bit_depth_t bit_depth) {
   const int q = av1_dc_quant(qindex, qdelta, bit_depth);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: return 20 * q;
     case AOM_BITS_10: return 5 * q;
@@ -1212,5 +1212,5 @@ int av1_get_intra_cost_penalty(int qindex, int qdelta,
   }
 #else
   return 20 * q;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }

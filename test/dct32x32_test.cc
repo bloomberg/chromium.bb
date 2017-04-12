@@ -69,7 +69,7 @@ typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, int, aom_bit_depth_t>
     Trans32x32Param;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void idct32x32_10(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_idct32x32_1024_add_c(in, out, stride, 10);
 }
@@ -77,7 +77,7 @@ void idct32x32_10(const tran_low_t *in, uint8_t *out, int stride) {
 void idct32x32_12(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_idct32x32_1024_add_c(in, out, stride, 12);
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 class Trans32x32Test : public ::testing::TestWithParam<Trans32x32Param> {
  public:
@@ -110,7 +110,7 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
   DECLARE_ALIGNED(16, tran_low_t, test_temp_block[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
 #endif
@@ -122,7 +122,7 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
         src[j] = rnd.Rand8();
         dst[j] = rnd.Rand8();
         test_input_block[j] = src[j] - dst[j];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       } else {
         src16[j] = rnd.Rand16() & mask_;
         dst16[j] = rnd.Rand16() & mask_;
@@ -134,7 +134,7 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
     ASM_REGISTER_STATE_CHECK(fwd_txfm_(test_input_block, test_temp_block, 32));
     if (bit_depth_ == AOM_BITS_8) {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(test_temp_block, dst, 32));
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     } else {
       ASM_REGISTER_STATE_CHECK(
           inv_txfm_(test_temp_block, CONVERT_TO_BYTEPTR(dst16), 32));
@@ -142,7 +142,7 @@ TEST_P(Trans32x32Test, AccuracyCheck) {
     }
 
     for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       const int32_t diff =
           bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
@@ -243,7 +243,7 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
   DECLARE_ALIGNED(16, tran_low_t, coeff[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, dst[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint8_t, src[kNumCoeffs]);
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, dst16[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, src16[kNumCoeffs]);
 #endif
@@ -257,7 +257,7 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
         src[j] = rnd.Rand8();
         dst[j] = rnd.Rand8();
         in[j] = src[j] - dst[j];
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       } else {
         src16[j] = rnd.Rand16() & mask_;
         dst16[j] = rnd.Rand16() & mask_;
@@ -271,13 +271,13 @@ TEST_P(Trans32x32Test, InverseAccuracy) {
       coeff[j] = static_cast<tran_low_t>(round(out_r[j]));
     if (bit_depth_ == AOM_BITS_8) {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(coeff, dst, 32));
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     } else {
       ASM_REGISTER_STATE_CHECK(inv_txfm_(coeff, CONVERT_TO_BYTEPTR(dst16), 32));
 #endif
     }
     for (int j = 0; j < kNumCoeffs; ++j) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
       const int diff =
           bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
@@ -308,7 +308,7 @@ class PartialTrans32x32Test
 };
 
 TEST_P(PartialTrans32x32Test, Extremes) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
 #else
@@ -330,7 +330,7 @@ TEST_P(PartialTrans32x32Test, Extremes) {
 }
 
 TEST_P(PartialTrans32x32Test, Random) {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
   const int16_t maxval =
       static_cast<int16_t>(clip_pixel_highbd(1 << 30, bit_depth_));
 #else
@@ -353,7 +353,7 @@ TEST_P(PartialTrans32x32Test, Random) {
 
 using std::tr1::make_tuple;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans32x32Test,
     ::testing::Values(
@@ -379,18 +379,18 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(C, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_c,
                                                      AOM_BITS_8)));
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
-#if HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_NEON && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     NEON, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_neon,
                                  0, AOM_BITS_8),
                       make_tuple(&aom_fdct32x32_rd_c,
                                  &aom_idct32x32_1024_add_neon, 1, AOM_BITS_8)));
-#endif  // HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_sse2,
@@ -400,15 +400,15 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_sse2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_AVX2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(AVX2, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_avx2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_AVX2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans32x32Test,
     ::testing::Values(
@@ -425,27 +425,27 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_sse2,
                                                      AOM_BITS_8)));
-#endif  // HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_AVX2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     AVX2, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_avx2,
                                  &aom_idct32x32_1024_add_sse2, 0, AOM_BITS_8),
                       make_tuple(&aom_fdct32x32_rd_avx2,
                                  &aom_idct32x32_1024_add_sse2, 1, AOM_BITS_8)));
-#endif  // HAVE_AVX2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_AVX2 && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_AVX2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     AVX2, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_avx2,
                                  &aom_idct32x32_1024_add_sse2, 0, AOM_BITS_8),
                       make_tuple(&aom_fdct32x32_rd_avx2,
                                  &aom_idct32x32_1024_add_sse2, 1, AOM_BITS_8)));
-#endif  // HAVE_AVX2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_AVX2 && CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans32x32Test,
     ::testing::Values(make_tuple(&aom_fdct32x32_msa,
@@ -455,5 +455,5 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(MSA, PartialTrans32x32Test,
                         ::testing::Values(make_tuple(&aom_fdct32x32_1_msa,
                                                      AOM_BITS_8)));
-#endif  // HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 }  // namespace

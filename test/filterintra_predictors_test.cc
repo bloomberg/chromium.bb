@@ -33,7 +33,7 @@ typedef void (*Predictor)(uint8_t *dst, ptrdiff_t stride, int bs,
 typedef tuple<Predictor, Predictor, int> PredFuncMode;
 typedef tuple<PredFuncMode, int> PredParams;
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 typedef void (*HbdPredictor)(uint16_t *dst, ptrdiff_t stride, int bs,
                              const uint16_t *above, const uint16_t *left,
                              int bd);
@@ -150,7 +150,7 @@ class AV1FilterIntraPredOptimzTest
   uint8_t *predRef_;
 };
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 class AV1HbdFilterIntraPredOptimzTest
     : public ::testing::TestWithParam<HbdPredParams> {
  public:
@@ -245,7 +245,7 @@ class AV1HbdFilterIntraPredOptimzTest
   uint16_t *pred_;
   uint16_t *predRef_;
 };
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 TEST_P(AV1FilterIntraPredOptimzTest, BitExactCheck) { RunTest(); }
 
@@ -255,7 +255,7 @@ TEST_P(AV1FilterIntraPredOptimzTest, SpeedCheckC) { RunSpeedTestC(); }
 TEST_P(AV1FilterIntraPredOptimzTest, SpeedCheckSSE) { RunSpeedTestSSE(); }
 #endif
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 TEST_P(AV1HbdFilterIntraPredOptimzTest, BitExactCheck) { RunTest(); }
 
 #if PREDICTORS_SPEED_TEST
@@ -263,7 +263,7 @@ TEST_P(AV1HbdFilterIntraPredOptimzTest, SpeedCheckC) { RunSpeedTestC(); }
 
 TEST_P(AV1HbdFilterIntraPredOptimzTest, SpeedCheckSSE) { RunSpeedTestSSE(); }
 #endif  // PREDICTORS_SPEED_TEST
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 using std::tr1::make_tuple;
 
@@ -295,7 +295,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::ValuesIn(kPredFuncMdArray),
                        ::testing::ValuesIn(kBlkSize)));
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 const HbdPredFuncMode kHbdPredFuncMdArray[] = {
   make_tuple(av1_highbd_dc_filter_predictor_c,
              av1_highbd_dc_filter_predictor_sse4_1, DC_PRED),
@@ -326,6 +326,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::ValuesIn(kHbdPredFuncMdArray),
                        ::testing::ValuesIn(kBlkSize),
                        ::testing::ValuesIn(kBd)));
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 }  // namespace

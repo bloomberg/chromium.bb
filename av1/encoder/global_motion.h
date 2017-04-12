@@ -35,9 +35,9 @@ void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype);
 
 double refine_integerized_param(WarpedMotionParams *wm,
                                 TransformationType wmtype,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                                 int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
                                 uint8_t *ref, int r_width, int r_height,
                                 int r_stride, uint8_t *dst, int d_width,
                                 int d_height, int d_stride, int n_refinements);
@@ -57,7 +57,7 @@ double refine_integerized_param(WarpedMotionParams *wm,
 */
 int compute_global_motion_feature_based(
     TransformationType type, YV12_BUFFER_CONFIG *frm, YV12_BUFFER_CONFIG *ref,
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
     int bit_depth,
 #endif
     int *num_inliers_by_motion, double *params_by_motion, int num_motions);

@@ -191,7 +191,7 @@ void aom_minmax_8x8_c(const uint8_t *src, int src_stride, const uint8_t *ref,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 unsigned int aom_highbd_avg_8x8_c(const uint8_t *src, int stride) {
   int i, j;
   int sum = 0;
@@ -229,4 +229,4 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH

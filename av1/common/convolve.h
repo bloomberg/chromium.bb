@@ -96,7 +96,7 @@ void av1_convolve_c(const uint8_t *src, int src_stride, uint8_t *dst,
                     const int subpel_x, int xstep, const int subpel_y,
                     int ystep, ConvolveParams *conv_params);
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 void av1_highbd_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
                          int dst_stride, int w, int h,
 #if CONFIG_DUAL_FILTER
@@ -106,7 +106,7 @@ void av1_highbd_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
 #endif
                          const int subpel_x, int xstep, const int subpel_y,
                          int ystep, int avg, int bd);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #ifdef __cplusplus
 }  // extern "C"

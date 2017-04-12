@@ -27,7 +27,7 @@ using libaom_test::Fwd_Txfm2d_Func;
 using libaom_test::TYPE_TXFM;
 
 namespace {
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 // tx_type_, tx_size_, max_error_, max_avg_error_
 typedef std::tr1::tuple<TX_TYPE, TX_SIZE, double, double> AV1FwdTxfm2dParam;
 
@@ -175,5 +175,5 @@ const AV1FwdTxfm2dParam av1_fwd_txfm2d_param_c[] = {
 INSTANTIATE_TEST_CASE_P(C, AV1FwdTxfm2d,
                         ::testing::ValuesIn(av1_fwd_txfm2d_param_c));
 
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 }  // namespace

@@ -261,7 +261,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(filter_ls),
                        ::testing::ValuesIn(filter_ls)));
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
 TEST(AV1ConvolveTest, av1_highbd_convolve) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
 #if CONFIG_DUAL_FILTER
@@ -390,7 +390,7 @@ TEST(AV1ConvolveTest, av1_highbd_convolve_avg) {
     }
   }
 }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_HIGHBITDEPTH
 
 #define CONVOLVE_SPEED_TEST 0
 #if CONVOLVE_SPEED_TEST
