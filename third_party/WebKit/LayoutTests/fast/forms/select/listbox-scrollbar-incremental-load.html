@@ -15,8 +15,12 @@
     <script>
         document.body.offsetTop;
         testRunner.waitUntilDone();
+        // The selection is updated as a separate task, so wait for two frames
+        // to make sure it has run.
         window.requestAnimationFrame(function() {
-          testRunner.notifyDone();
+          window.requestAnimationFrame(function() {
+            testRunner.notifyDone();
+          });
         });
     </script>
     <option>Five</option>
