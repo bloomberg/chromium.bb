@@ -9401,7 +9401,8 @@ static void pick_filter_intra_interframe(
   rate2 = rate_y + intra_mode_cost[mbmi->mode] + rate_uv +
           cpi->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
 #if CONFIG_PALETTE
-  if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED)
+  if (cpi->common.allow_screen_content_tools && mbmi->mode == DC_PRED &&
+      bsize >= BLOCK_8X8)
     rate2 += av1_cost_bit(
         av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx], 0);
 #endif  // CONFIG_PALETTE
