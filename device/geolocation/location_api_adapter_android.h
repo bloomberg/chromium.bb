@@ -66,8 +66,8 @@ class LocationApiAdapterAndroid {
   LocationApiAdapterAndroid();
   ~LocationApiAdapterAndroid();
 
-  // Called on the JNI thread looper.
-  void OnNewGeopositionInternal(const Geoposition& geoposition);
+  // Calls |on_geoposition_callback_| with the new location.
+  void NotifyNewGeoposition(const Geoposition& geoposition);
 
   base::android::ScopedJavaGlobalRef<jobject> java_location_provider_adapter_;
 
@@ -76,7 +76,7 @@ class LocationApiAdapterAndroid {
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::ThreadChecker jni_thread_checker_;
+  base::ThreadChecker thread_checker_;
 };
 
 }  // namespace device

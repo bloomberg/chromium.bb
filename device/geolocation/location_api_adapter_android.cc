@@ -45,7 +45,7 @@ namespace device {
 
 bool LocationApiAdapterAndroid::Start(OnGeopositionCB on_geoposition_callback,
                                       bool high_accuracy) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(on_geoposition_callback);
 
   JNIEnv* env = AttachCurrentThread();
@@ -68,7 +68,7 @@ bool LocationApiAdapterAndroid::Start(OnGeopositionCB on_geoposition_callback,
 }
 
 void LocationApiAdapterAndroid::Stop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!on_geoposition_callback_)
     return;
 
@@ -108,7 +108,11 @@ void LocationApiAdapterAndroid::OnNewLocationAvailable(double latitude,
     position.heading = heading;
   if (has_speed)
     position.speed = speed;
-  GetInstance()->OnNewGeopositionInternal(position);
+
+  LocationApiAdapterAndroid* self = GetInstance();
+  self->task_runner_->PostTask(
+      FROM_HERE, base::Bind(&LocationApiAdapterAndroid::NotifyNewGeoposition,
+                            base::Unretained(self), position));
 }
 
 // static
@@ -118,7 +122,11 @@ void LocationApiAdapterAndroid::OnNewErrorAvailable(JNIEnv* env,
   position_error.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   position_error.error_message =
       base::android::ConvertJavaStringToUTF8(env, message);
-  GetInstance()->OnNewGeopositionInternal(position_error);
+
+  LocationApiAdapterAndroid* self = GetInstance();
+  self->task_runner_->PostTask(
+      FROM_HERE, base::Bind(&LocationApiAdapterAndroid::NotifyNewGeoposition,
+                            base::Unretained(self), position_error));
 }
 
 // static
@@ -127,19 +135,17 @@ LocationApiAdapterAndroid* LocationApiAdapterAndroid::GetInstance() {
 }
 
 LocationApiAdapterAndroid::LocationApiAdapterAndroid()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  jni_thread_checker_.DetachFromThread();
-}
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 LocationApiAdapterAndroid::~LocationApiAdapterAndroid() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void LocationApiAdapterAndroid::OnNewGeopositionInternal(
+void LocationApiAdapterAndroid::NotifyNewGeoposition(
     const Geoposition& geoposition) {
-  DCHECK(jni_thread_checker_.CalledOnValidThread());
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(on_geoposition_callback_, geoposition));
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (on_geoposition_callback_)
+    on_geoposition_callback_.Run(geoposition);
 }
 
 }  // namespace device
