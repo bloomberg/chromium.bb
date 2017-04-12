@@ -354,14 +354,18 @@ def GetChange(host, change):
   return FetchUrlJson(host, _GetChangePath(change))
 
 
-def GetChangeReview(host, change, revision='current'):
+def GetChangeReview(host, change, revision=None):
   """Get the current review information for a change."""
+  if revision is None:
+    revision = 'current'
   path = '%s/revisions/%s/review' % (_GetChangePath(change), revision)
   return FetchUrlJson(host, path)
 
 
-def GetChangeCommit(host, change, revision='current'):
+def GetChangeCommit(host, change, revision=None):
   """Get the current review information for a change."""
+  if revision is None:
+    revision = 'current'
   path = '%s/revisions/%s/commit' % (_GetChangePath(change), revision)
   return FetchUrlJson(host, path)
 
@@ -519,9 +523,10 @@ def RemoveReviewers(host, change, remove=None):
                  ' reviewer "%s" from change %s' % (r, change))
 
 
-def SetReview(host, change, revision='current', msg=None, labels=None,
-              notify=None):
+def SetReview(host, change, revision=None, msg=None, labels=None, notify=None):
   """Set labels and/or add a message to a code review."""
+  if revision is None:
+    revision = 'current'
   if not msg and not labels:
     return
   path = '%s/revisions/%s/review' % (_GetChangePath(change), revision)
@@ -568,9 +573,11 @@ def SetHashtags(host, change, add, remove):
                       ignore_404=False)
 
 
-def ResetReviewLabels(host, change, label, value='0', revision='current',
+def ResetReviewLabels(host, change, label, value='0', revision=None,
                       message=None, notify=None):
   """Reset the value of a given label for all reviewers on a change."""
+  if revision is None:
+    revision = 'current'
   # This is tricky when working on the "current" revision, because there's
   # always the risk that the "current" revision will change in between API
   # calls.  So, the code dereferences the "current" revision down to a literal
