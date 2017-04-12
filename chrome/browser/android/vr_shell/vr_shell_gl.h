@@ -23,10 +23,6 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace blink {
 class WebInputEvent;
 }
@@ -76,7 +72,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
             scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
             gvr_context* gvr_api,
             bool initially_web_vr,
-            bool reprojected_rendering);
+            bool reprojected_rendering,
+            UiScene* scene);
   ~VrShellGl() override;
 
   void Initialize();
@@ -101,8 +98,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
                                 const gfx::RectF& left_bounds,
                                 const gfx::RectF& right_bounds,
                                 const gfx::Size& source_size);
-
-  void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
   void UpdateVSyncInterval(int64_t timebase_nanos, double interval_seconds);
 
@@ -165,7 +160,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
-  std::unique_ptr<UiScene> scene_;
+  UiScene* scene_;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;

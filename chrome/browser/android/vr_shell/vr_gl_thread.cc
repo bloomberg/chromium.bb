@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "chrome/browser/android/vr_shell/ui_scene.h"
+#include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
@@ -30,10 +32,13 @@ VrGLThread::~VrGLThread() {
 }
 
 void VrGLThread::Init() {
-  vr_shell_gl_.reset(new VrShellGl(
+  scene_ = base::MakeUnique<UiScene>();
+  scene_manager_ = base::MakeUnique<UiSceneManager>(scene_.get());
+  vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       std::move(weak_vr_shell_), std::move(main_thread_task_runner_), gvr_api_,
-      initially_web_vr_, reprojected_rendering_));
+      initially_web_vr_, reprojected_rendering_, scene_.get());
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
+  weak_scene_manager_ = scene_manager_->GetWeakPtr();
   vr_shell_gl_->Initialize();
 }
 

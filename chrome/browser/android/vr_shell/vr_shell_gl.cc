@@ -157,8 +157,10 @@ VrShellGl::VrShellGl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
-    bool reprojected_rendering)
-    : web_vr_mode_(initially_web_vr),
+    bool reprojected_rendering,
+    UiScene* scene)
+    : scene_(scene),
+      web_vr_mode_(initially_web_vr),
       surfaceless_rendering_(reprojected_rendering),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
@@ -191,8 +193,6 @@ VrShellGl::~VrShellGl() {
 }
 
 void VrShellGl::Initialize() {
-  scene_ = base::MakeUnique<UiScene>();
-
   if (surfaceless_rendering_) {
     // If we're rendering surfaceless, we'll never get a java surface to render
     // into, so we can initialize GL right away.
@@ -1313,10 +1313,6 @@ void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
 void VrShellGl::ForceExitVr() {
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
-}
-
-void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
-  scene_->HandleCommands(std::move(commands), base::TimeTicks::Now());
 }
 
 void VrShellGl::SendVSync(base::TimeDelta time,

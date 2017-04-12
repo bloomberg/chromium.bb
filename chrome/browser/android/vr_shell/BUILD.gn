@@ -36,6 +36,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "ui_interface.h",
       "ui_scene.cc",
       "ui_scene.h",
+      "ui_scene_manager.cc",
+      "ui_scene_manager.h",
       "vr_compositor.cc",
       "vr_compositor.h",
       "vr_controller.cc",

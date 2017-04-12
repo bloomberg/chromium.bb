@@ -15,6 +15,8 @@
 
 namespace vr_shell {
 
+class UiScene;
+class UiSceneManager;
 class VrShell;
 class VrShellGl;
 
@@ -29,6 +31,9 @@ class VrGLThread : public base::Thread {
 
   ~VrGLThread() override;
   base::WeakPtr<VrShellGl> GetVrShellGl() { return weak_vr_shell_gl_; }
+  base::WeakPtr<UiSceneManager> GetSceneManager() {
+    return weak_scene_manager_;
+  }
 
  protected:
   void Init() override;
@@ -36,6 +41,9 @@ class VrGLThread : public base::Thread {
 
  private:
   // Created on GL thread.
+  std::unique_ptr<UiScene> scene_;
+  std::unique_ptr<UiSceneManager> scene_manager_;
+  base::WeakPtr<UiSceneManager> weak_scene_manager_;
   std::unique_ptr<VrShellGl> vr_shell_gl_;
   base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
 
