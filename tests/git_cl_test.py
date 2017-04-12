@@ -611,16 +611,13 @@ class TestGitCl(TestCase):
         raise
       # Sadly, has_failed() returns True if this OR any other tests before this
       # one have failed.
-      git_cl.logging.exception(
-          '\nIF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME!\n'
+      git_cl.logging.error(
+          '!!!!!!  IF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME  !!!!!\n'
           'There are un-consumed self.calls after this test has finished.\n'
           'If you don\'t know which test this is, run:\n'
           '   tests/git_cl_tests.py -v\n'
-          '\n'
-          'If you are already running just this single test, then **first** '
-          'fix the problem whose exception is emitted below by unittest '
-          'runner.\n'
-          '\n'
+          'If you are already running only this test, then **first** fix the '
+          'problem whose exception is emitted below by unittest runner.\n'
           'Else, to be sure what\'s going on, run this test **alone** with \n'
           '    tests/git_cl_tests.py TestGitCl.<name>\n'
           'and follow instructions above.\n' +
