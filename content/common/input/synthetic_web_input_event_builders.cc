@@ -38,7 +38,7 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
   result.SetPositionInWidget(window_x, window_y);
   result.SetModifiers(modifiers);
   result.pointer_type = pointer_type;
-  result.id = ui::PointerEvent::kMousePointerId;
+  result.id = ui::MouseEvent::kMousePointerId;
   return result;
 }
 

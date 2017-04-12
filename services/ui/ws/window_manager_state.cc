@@ -184,7 +184,7 @@ void WindowManagerState::SetDragDropSourceWindow(
     DragTargetConnection* source_connection,
     const std::unordered_map<std::string, std::vector<uint8_t>>& drag_data,
     uint32_t drag_operation) {
-  int32_t drag_pointer = PointerEvent::kMousePointerId;
+  int32_t drag_pointer = MouseEvent::kMousePointerId;
   if (in_flight_event_details_ &&
       in_flight_event_details_->event->IsPointerEvent()) {
     drag_pointer =

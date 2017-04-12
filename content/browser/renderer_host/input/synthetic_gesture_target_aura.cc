@@ -149,17 +149,16 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   ui::EventType event_type =
       WebMouseEventTypeToEventType(web_mouse_event.GetType());
   int flags = WebEventModifiersToEventFlags(web_mouse_event.GetModifiers());
+  ui::PointerDetails pointer_details(
+      WebMousePointerTypeToEventPointerType(web_mouse_event.pointer_type));
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), flags, flags);
+                             ui::EventTimeForNow(), flags, flags,
+                             pointer_details);
   gfx::PointF location(
       web_mouse_event.PositionInWidget().x * device_scale_factor_,
       web_mouse_event.PositionInWidget().y * device_scale_factor_);
   mouse_event.set_location_f(location);
   mouse_event.set_root_location_f(location);
-  ui::PointerDetails pointer_details = mouse_event.pointer_details();
-  pointer_details.pointer_type =
-      WebMousePointerTypeToEventPointerType(web_mouse_event.pointer_type);
-  mouse_event.set_pointer_details(pointer_details);
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());

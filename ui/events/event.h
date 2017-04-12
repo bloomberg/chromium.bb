@@ -481,6 +481,8 @@ struct EVENTS_EXPORT PointerDetails {
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
+  static const int32_t kMousePointerId;
+
   explicit MouseEvent(const base::NativeEvent& native_event);
 
   // |pointer_event.IsMousePointerEvent()| must be true.
@@ -519,7 +521,10 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              const gfx::Point& root_location,
              base::TimeTicks time_stamp,
              int flags,
-             int changed_button_flags);
+             int changed_button_flags,
+             const PointerDetails& pointer_details =
+                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                                kMousePointerId));
 
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
@@ -581,7 +586,6 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() const { return pointer_details_; }
-  void set_pointer_details(const PointerDetails& details);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
@@ -733,8 +737,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
 class EVENTS_EXPORT PointerEvent : public LocatedEvent {
  public:
-  static const int32_t kMousePointerId;
-
   // Returns true if a PointerEvent can be constructed from |event|. Currently,
   // only mouse and touch events can be converted to pointer events.
   static bool CanConvertFrom(const Event& event);

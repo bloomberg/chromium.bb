@@ -533,7 +533,7 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
       id(pointer_id) {
   if (pointer_id == PointerDetails::kUnknownPointerId) {
     id = pointer_type == EventPointerType::POINTER_TYPE_MOUSE
-             ? PointerEvent::kMousePointerId
+             ? MouseEvent::kMousePointerId
              : 0;
   }
 }
@@ -625,14 +625,15 @@ MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& root_location,
                        base::TimeTicks time_stamp,
                        int flags,
-                       int changed_button_flags)
+                       int changed_button_flags,
+                       const PointerDetails& pointer_details)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(root_location),
                    time_stamp,
                    flags),
       changed_button_flags_(changed_button_flags),
-      pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_MOUSE)) {
+      pointer_details_(pointer_details) {
   DCHECK_NE(ET_MOUSEWHEEL, type);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
@@ -757,14 +758,7 @@ void MouseEvent::SetClickCount(int click_count) {
   set_flags(f);
 }
 
-void MouseEvent::set_pointer_details(const PointerDetails& details) {
-  DCHECK_NE(EventPointerType::POINTER_TYPE_TOUCH,
-            pointer_details_.pointer_type);
-  DCHECK_NE(EventPointerType::POINTER_TYPE_TOUCH, details.pointer_type);
-  DCHECK(pointer_details_.id == PointerEvent::kMousePointerId ||
-         details.id != PointerEvent::kMousePointerId);
-  pointer_details_ = details;
-}
+const int MouseEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent
@@ -1085,8 +1079,6 @@ PointerEvent::PointerEvent(EventType type,
   else
     latency()->set_source_event_type(ui::SourceEventType::OTHER);
 }
-
-const int PointerEvent::kMousePointerId = std::numeric_limits<int32_t>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 // KeyEvent

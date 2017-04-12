@@ -1749,12 +1749,11 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
     default:
       NOTREACHED();
   }
-  ui::MouseEvent event(event_type, point, point, base::TimeTicks::Now(), flag,
-                       flag);
   ui::PointerDetails pointer_details(
       input_type, pointer_id, /* radius_x */ 0.0f, /* radius_y */ 0.0f,
       pressure, tilt_x, tilt_y, /* tangential_pressure */ 0.0f, rotation);
-  event.set_pointer_details(pointer_details);
+  ui::MouseEvent event(event_type, point, point, base::TimeTicks::Now(), flag,
+                       flag, pointer_details);
   event.SetClickCount(click_count);
 
   // There are cases where the code handling the message destroys the

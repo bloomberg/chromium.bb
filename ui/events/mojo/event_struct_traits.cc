@@ -295,9 +295,9 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
                             static_cast<int>(pointer_data->wheel_data->delta_x),
                             static_cast<int>(
                                 pointer_data->wheel_data->delta_y)),
-                        ui::PointerEvent::kMousePointerId)
+                        ui::MouseEvent::kMousePointerId)
                   : ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
-                                       ui::PointerEvent::kMousePointerId),
+                                       ui::MouseEvent::kMousePointerId),
               ui::EventTimeForNow()));
           break;
         }

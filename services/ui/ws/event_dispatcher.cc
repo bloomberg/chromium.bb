@@ -466,7 +466,7 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
         ui::ET_POINTER_EXITED, event.location(), event.root_location(),
         event.flags(), 0 /* changed_button_flags */,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
-                           ui::PointerEvent::kMousePointerId),
+                           ui::MouseEvent::kMousePointerId),
         event.time_stamp());
     DispatchToPointerTarget(pointer_targets_[pointer_id], exit_event);
   }

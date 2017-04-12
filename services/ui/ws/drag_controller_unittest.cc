@@ -155,7 +155,7 @@ class DragControllerTest : public testing::Test,
     window->PerformOnDragDropStart(
         std::unordered_map<std::string, std::vector<uint8_t>>());
     drag_operation_ = base::MakeUnique<DragController>(
-        this, this, window->window(), window, PointerEvent::kMousePointerId,
+        this, this, window->window(), window, MouseEvent::kMousePointerId,
         std::unordered_map<std::string, std::vector<uint8_t>>(),
         drag_operations);
 
@@ -627,7 +627,7 @@ TEST_F(DragControllerTest, CancelDrag) {
 
 TEST_F(DragControllerTest, IgnoreEventsFromOtherPointers) {
   std::unique_ptr<DragTestWindow> window = BuildWindow();
-  // This starts the operation with PointerEvent::kMousePointerId.
+  // This starts the operation with MouseEvent::kMousePointerId.
   StartDragOperation(window.get(), ui::mojom::kDropEffectMove);
 
   // Ignore events from pointer 5.

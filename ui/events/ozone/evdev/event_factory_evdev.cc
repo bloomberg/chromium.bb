@@ -218,11 +218,10 @@ void EventFactoryEvdev::DispatchMouseMoveEvent(
   MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                    params.timestamp,
                    modifiers_.GetModifierFlags() | params.flags,
-                   /* changed_button_flags */ 0);
+                   /* changed_button_flags */ 0, details);
   event.set_location_f(location);
   event.set_root_location_f(location);
   event.set_source_device_id(params.device_id);
-  event.set_pointer_details(details);
   DispatchUiEvent(&event);
 }
 
@@ -279,11 +278,10 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
                    gfx::Point(), gfx::Point(), params.timestamp,
                    modifiers_.GetModifierFlags() | flag | params.flags,
-                   /* changed_button_flags */ flag);
+                   /* changed_button_flags */ flag, details);
   event.set_location_f(location);
   event.set_root_location_f(location);
   event.set_source_device_id(params.device_id);
-  event.set_pointer_details(details);
   DispatchUiEvent(&event);
 }
 
@@ -341,7 +339,6 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   touch_event.set_location_f(location);
   touch_event.set_root_location_f(location);
   touch_event.set_source_device_id(params.device_id);
-  touch_event.set_pointer_details(details);
   DispatchUiEvent(&touch_event);
 
   if (params.type == ET_TOUCH_RELEASED || params.type == ET_TOUCH_CANCELLED) {

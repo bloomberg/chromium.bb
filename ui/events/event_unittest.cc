@@ -708,8 +708,6 @@ TEST(EventTest, PointerDetailsMouse) {
 }
 
 TEST(EventTest, PointerDetailsStylus) {
-  ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
-                              gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
   ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
                                      /* pointer_id*/ 0,
                                      /* radius_x */ 0.0f,
@@ -720,7 +718,9 @@ TEST(EventTest, PointerDetailsStylus) {
                                      /* tangential_pressure */ 0.7f,
                                      /* twist */ 196);
 
-  stylus_event.set_pointer_details(pointer_details);
+  ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
+                              gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0,
+                              pointer_details);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
             stylus_event.pointer_details().pointer_type);
   EXPECT_EQ(21.0f, stylus_event.pointer_details().force);
@@ -856,7 +856,7 @@ TEST(EventTest, PointerEventId) {
                                gfx::Point(0, 0), base::TimeTicks(), 0, 0);
     ui::PointerEvent pointer_event(mouse_event);
     EXPECT_EQ(pointer_event.pointer_details().id,
-              ui::PointerEvent::kMousePointerId);
+              ui::MouseEvent::kMousePointerId);
   }
 
   for (int touch_id = 0; touch_id < 8; touch_id++) {
