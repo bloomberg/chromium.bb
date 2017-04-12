@@ -15,8 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.util.ArrayList;
@@ -55,10 +53,6 @@ public final class PrefServiceBridge {
     // Constants related to the Contextual Search preference.
     private static final String CONTEXTUAL_SEARCH_DISABLED = "false";
     private static final String CONTEXTUAL_SEARCH_ENABLED = "true";
-
-    // The key to store whether the Location Permission was automatically added for the search
-    // engine set as default.
-    public static final String LOCATION_AUTO_ALLOWED = "search_engine_location_auto_allowed";
 
     /**
      * Structure that holds all the version information about the current Chrome browser.
@@ -127,28 +121,6 @@ public final class PrefServiceBridge {
         }
         // Steps 2,3,4 intentionally skipped.
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).apply();
-    }
-
-    /**
-     * Add a permission entry for Location for the default search engine.
-     * @param allowed Whether to create an Allowed permission or a Denied permission.
-     * @param context The current context to use.
-     */
-    public static void maybeCreatePermissionForDefaultSearchEngine(
-            boolean allowed, Context context) {
-        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
-                templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
-        if (allowed && !url.startsWith("https:")) return;
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
-        ContentSetting locationPermission = locationSettings.getContentSetting();
-        if (locationPermission == null || locationPermission == ContentSetting.ASK) {
-            WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(url, url,
-                    allowed ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt(), false);
-            SharedPreferences sharedPreferences =
-                    ContextUtils.getAppSharedPreferences();
-            sharedPreferences.edit().putBoolean(LOCATION_AUTO_ALLOWED, true).apply();
-        }
     }
 
     /**
