@@ -14,7 +14,11 @@ namespace views {
 
 class ResizeAreaDelegate;
 
+////////////////////////////////////////////////////////////////////////////////
+//
 // An invisible area that acts like a horizontal resizer.
+//
+////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT ResizeArea : public View {
  public:
   static const char kViewClassName[];
@@ -22,10 +26,9 @@ class VIEWS_EXPORT ResizeArea : public View {
   explicit ResizeArea(ResizeAreaDelegate* delegate);
   ~ResizeArea() override;
 
-  // views::View:
+  // Overridden from views::View:
   const char* GetClassName() const override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -37,16 +40,10 @@ class VIEWS_EXPORT ResizeArea : public View {
   // directionality.
   void ReportResizeAmount(int resize_amount, bool last_update);
 
-  // Converts |event_x| to screen coordinates and sets |initial_position_| to
-  // this value.
-  void SetInitialPosition(int event_x);
-
   // The delegate to notify when we have updates.
   ResizeAreaDelegate* delegate_;
 
-  // The event's x-position at the start of the resize operation. The resize
-  // area will move while being dragged, so |initial_position_| is represented
-  // in screen coordinates so that we don't lose our bearings.
+  // The mouse position at start (in screen coordinates).
   int initial_position_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeArea);

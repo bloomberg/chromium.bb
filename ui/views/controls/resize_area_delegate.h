@@ -16,7 +16,7 @@ class ResizeAreaDelegate {
   // positive (depending on direction of dragging and flips according to
   // locale directionality: dragging to the left in LTR locales gives negative
   // |resize_amount| but positive amount for RTL). |done_resizing| is true if
-  // the user has released the pointer (mouse, stylus, touch, etc.).
+  // the user has released the mouse.
   virtual void OnResize(int resize_amount, bool done_resizing) = 0;
 
  protected:
