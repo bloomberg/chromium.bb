@@ -1459,6 +1459,10 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       const int16_t *diff = &p->src_diff[diff_idx];
       tmp = sum_squares_visible(xd, plane, diff, diff_stride, blk_row, blk_col,
                                 plane_bsize, tx_bsize);
+#if CONFIG_AOM_HIGHBITDEPTH
+      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+        tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     *out_sse = (int64_t)tmp * 16;
 
