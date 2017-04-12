@@ -210,6 +210,10 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectFailure(spec, "'foo'");
     ExpectFailure(spec, "[1, 2]");
     ExpectFailure(spec, "['foo', 1]");
+    ExpectFailure(spec,
+                  "var x = ['a', 'b', 'c'];"
+                  "x[4] = 'd';"  // x[3] is undefined, violating the spec.
+                  "x;");
     ExpectThrow(
         spec,
         "var x = [];"
@@ -595,6 +599,46 @@ TEST_F(ArgumentSpecUnitTest, InstanceOfTest) {
                   "  function otherClass() {}\n"
                   "  return new otherClass();\n"
                   "})()");
+  }
+}
+
+TEST_F(ArgumentSpecUnitTest, MinAndMaxLengths) {
+  {
+    const char kMinLengthString[] = "{'type': 'string', 'minLength': 3}";
+    ArgumentSpec spec(*ValueFromString(kMinLengthString));
+    ExpectSuccess(spec, "'aaa'", "'aaa'");
+    ExpectSuccess(spec, "'aaaa'", "'aaaa'");
+    ExpectFailure(spec, "'aa'");
+    ExpectFailure(spec, "''");
+  }
+
+  {
+    const char kMaxLengthString[] = "{'type': 'string', 'maxLength': 3}";
+    ArgumentSpec spec(*ValueFromString(kMaxLengthString));
+    ExpectSuccess(spec, "'aaa'", "'aaa'");
+    ExpectSuccess(spec, "'aa'", "'aa'");
+    ExpectSuccess(spec, "''", "''");
+    ExpectFailure(spec, "'aaaa'");
+  }
+
+  {
+    const char kMinLengthArray[] =
+        "{'type': 'array', 'items': {'type': 'integer'}, 'minItems': 3}";
+    ArgumentSpec spec(*ValueFromString(kMinLengthArray));
+    ExpectSuccess(spec, "[1, 2, 3]", "[1,2,3]");
+    ExpectSuccess(spec, "[1, 2, 3, 4]", "[1,2,3,4]");
+    ExpectFailure(spec, "[1, 2]");
+    ExpectFailure(spec, "[]");
+  }
+
+  {
+    const char kMaxLengthArray[] =
+        "{'type': 'array', 'items': {'type': 'integer'}, 'maxItems': 3}";
+    ArgumentSpec spec(*ValueFromString(kMaxLengthArray));
+    ExpectSuccess(spec, "[1, 2, 3]", "[1,2,3]");
+    ExpectSuccess(spec, "[1, 2]", "[1,2]");
+    ExpectSuccess(spec, "[]", "[]");
+    ExpectFailure(spec, "[1, 2, 3, 4]");
   }
 }
 

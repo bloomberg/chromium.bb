@@ -134,6 +134,12 @@ class ArgumentSpec {
   // A minimum, if any.
   base::Optional<int> minimum_;
 
+  // A minimium length for strings or arrays.
+  base::Optional<size_t> min_length_;
+
+  // A maximum length for strings or arrays.
+  base::Optional<size_t> max_length_;
+
   // A map of required properties; present only for objects. Note that any
   // properties *not* defined in this map will be dropped during conversion.
   std::map<std::string, std::unique_ptr<ArgumentSpec>> properties_;

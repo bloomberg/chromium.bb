@@ -92,6 +92,20 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
   if (dict->GetInteger("minimum", &min))
     minimum_ = min;
 
+  int min_length = 0;
+  if (dict->GetInteger("minLength", &min_length) ||
+      dict->GetInteger("minItems", &min_length)) {
+    DCHECK_GE(min_length, 0);
+    min_length_ = min_length;
+  }
+
+  int max_length = 0;
+  if (dict->GetInteger("maxLength", &max_length) ||
+      dict->GetInteger("maxItems", &max_length)) {
+    DCHECK_GE(max_length, 0);
+    max_length_ = max_length;
+  }
+
   if (type_ == ArgumentType::OBJECT) {
     const base::DictionaryValue* properties_value = nullptr;
     if (dict->GetDictionary("properties", &properties_value)) {
@@ -234,6 +248,19 @@ bool ArgumentSpec::ParseArgumentToFundamental(
     case ArgumentType::STRING: {
       if (!value->IsString())
         return false;
+
+      v8::Local<v8::String> v8_string = value.As<v8::String>();
+      size_t length = static_cast<size_t>(v8_string->Length());
+      if (min_length_ && length < *min_length_) {
+        *error = "Less than min length";
+        return false;
+      }
+
+      if (max_length_ && length > *max_length_) {
+        *error = "Greater than max length";
+        return false;
+      }
+
       // If we don't need to match enum values and don't need to convert, we're
       // done...
       if (!out_value && enum_values_.empty())
@@ -392,11 +419,23 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
                                         std::unique_ptr<base::Value>* out_value,
                                         std::string* error) const {
   DCHECK_EQ(ArgumentType::LIST, type_);
+
+  uint32_t length = value->Length();
+  if (min_length_ && length < *min_length_) {
+    *error = "Less than min length";
+    return false;
+  }
+
+  if (max_length_ && length > *max_length_) {
+    *error = "Greater than max length";
+    return false;
+  }
+
   std::unique_ptr<base::ListValue> result;
   // Only construct the result if we have an |out_value| to populate.
   if (out_value)
     result = base::MakeUnique<base::ListValue>();
-  uint32_t length = value->Length();
+
   for (uint32_t i = 0; i < length; ++i) {
     v8::MaybeLocal<v8::Value> maybe_subvalue = value->Get(context, i);
     v8::Local<v8::Value> subvalue;
