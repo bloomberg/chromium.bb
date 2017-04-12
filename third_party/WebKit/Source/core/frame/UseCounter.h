@@ -1531,6 +1531,7 @@ class CORE_EXPORT UseCounter {
     kCanRequestURLHTTPContainingNewline = 1914,
     kCanRequestURLNonHTTPContainingNewline = 1915,
     kGetGamepads = 1916,
+    kV8SVGPathElement_GetPathSegAtLength_Method = 1917,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
