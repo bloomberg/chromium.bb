@@ -74,7 +74,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
                       patch_root=None, no_shallow=False,
-                      with_branch_heads=False, refs=None,
+                      with_branch_heads=False, with_tags=False, refs=None,
                       patch_oauth2=False, oauth2_json=False,
                       use_site_config_creds=True,
                       output_manifest=True, clobber=False,
@@ -236,6 +236,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--output_manifest')
     if with_branch_heads or cfg.with_branch_heads:
       cmd.append('--with_branch_heads')
+    if with_tags:
+      cmd.append('--with_tags')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
     if gerrit_no_rebase_patch_ref:

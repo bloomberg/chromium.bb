@@ -29,6 +29,7 @@ def RunSteps(api):
   no_shallow = True if api.properties.get('no_shallow') else False
   output_manifest = api.properties.get('output_manifest', False)
   with_branch_heads = api.properties.get('with_branch_heads', False)
+  with_tags = api.properties.get('with_tags', False)
   refs = api.properties.get('refs', [])
   oauth2 = api.properties.get('oauth2', False)
   oauth2_json = api.properties.get('oauth2_json', False)
@@ -48,6 +49,7 @@ def RunSteps(api):
         no_shallow=no_shallow,
         patch=patch,
         with_branch_heads=with_branch_heads,
+        with_tags=with_tags,
         output_manifest=output_manifest,
         refs=refs, patch_oauth2=oauth2,
         oauth2_json=oauth2_json,
@@ -77,6 +79,7 @@ def GenTests(api):
   yield api.test('basic_output_manifest') + api.properties(
       output_manifest=True,
   )
+  yield api.test('with_tags') + api.properties(with_tags=True)
   yield api.test('tryjob') + api.properties(
       issue=12345,
       patchset=654321,
