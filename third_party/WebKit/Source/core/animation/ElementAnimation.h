@@ -33,11 +33,11 @@
 
 #include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
-#include "core/animation/KeyframeEffectOptions.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
@@ -55,25 +55,7 @@ class ElementAnimation {
   static Animation* animate(ScriptState* script_state,
                             Element& element,
                             const DictionarySequenceOrDictionary& effect_input,
-                            double duration,
-                            ExceptionState& exception_state) {
-    EffectModel* effect = EffectInput::Convert(
-        &element, effect_input, ExecutionContext::From(script_state),
-        exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-
-    Timing timing;
-    if (!TimingInput::Convert(duration, timing, exception_state))
-      return nullptr;
-
-    return animate(element, effect, timing);
-  }
-
-  static Animation* animate(ScriptState* script_state,
-                            Element& element,
-                            const DictionarySequenceOrDictionary& effect_input,
-                            const KeyframeEffectOptions& options,
+                            UnrestrictedDoubleOrKeyframeEffectOptions options,
                             ExceptionState& exception_state) {
     EffectModel* effect = EffectInput::Convert(
         &element, effect_input, ExecutionContext::From(script_state),
@@ -86,9 +68,12 @@ class ElementAnimation {
                               exception_state))
       return nullptr;
 
-    Animation* animation = animate(element, effect, timing);
-    animation->setId(options.id());
-    return animation;
+    if (options.isKeyframeEffectOptions()) {
+      Animation* animation = animate(element, effect, timing);
+      animation->setId(options.getAsKeyframeEffectOptions().id());
+      return animation;
+    }
+    return animate(element, effect, timing);
   }
 
   static Animation* animate(ScriptState* script_state,

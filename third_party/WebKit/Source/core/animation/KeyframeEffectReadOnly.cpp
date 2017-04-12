@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/Animation.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/EffectInput.h"
@@ -38,28 +39,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
     ExecutionContext* execution_context,
     Element* element,
     const DictionarySequenceOrDictionary& effect_input,
-    double duration,
-    ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-  if (element) {
-    UseCounter::Count(
-        element->GetDocument(),
-        UseCounter::kAnimationConstructorKeyframeListEffectObjectTiming);
-  }
-  Timing timing;
-  if (!TimingInput::Convert(duration, timing, exception_state))
-    return nullptr;
-  return Create(element,
-                EffectInput::Convert(element, effect_input, execution_context,
-                                     exception_state),
-                timing);
-}
-
-KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
-    ExecutionContext* execution_context,
-    Element* element,
-    const DictionarySequenceOrDictionary& effect_input,
-    const KeyframeEffectOptions& timing_input,
+    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
     ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
   if (element) {
@@ -69,7 +49,7 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::Create(
   }
   Timing timing;
   Document* document = element ? &element->GetDocument() : nullptr;
-  if (!TimingInput::Convert(timing_input, timing, document, exception_state))
+  if (!TimingInput::Convert(options, timing, document, exception_state))
     return nullptr;
   return Create(element,
                 EffectInput::Convert(element, effect_input, execution_context,

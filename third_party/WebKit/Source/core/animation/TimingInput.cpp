@@ -5,6 +5,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectOptions.h"
 
@@ -116,6 +117,24 @@ bool TimingInput::SetTimingFunction(Timing& timing,
     timing.timing_function = timing_function;
     return true;
   }
+  return false;
+}
+
+bool TimingInput::Convert(
+    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
+    Timing& timing_output,
+    Document* document,
+    ExceptionState& exception_state) {
+  if (options.isKeyframeEffectOptions()) {
+    return Convert(options.getAsKeyframeEffectOptions(), timing_output,
+                   document, exception_state);
+  } else if (options.isUnrestrictedDouble()) {
+    return Convert(options.getAsUnrestrictedDouble(), timing_output,
+                   exception_state);
+  } else if (options.isNull()) {
+    return true;
+  }
+  NOTREACHED();
   return false;
 }
 

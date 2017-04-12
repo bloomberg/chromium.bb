@@ -15,9 +15,9 @@ class DictionarySequenceOrDictionary;
 class Element;
 class ExceptionState;
 class ExecutionContext;
-class KeyframeEffectOptions;
 class PropertyHandle;
 class SampledEffect;
+class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 // Represents the effect of an Animation on an Element's properties.
 // http://w3c.github.io/web-animations/#the-keyframeeffect-interfaces
@@ -37,13 +37,7 @@ class CORE_EXPORT KeyframeEffectReadOnly : public AnimationEffectReadOnly {
       ExecutionContext*,
       Element*,
       const DictionarySequenceOrDictionary& effect_input,
-      double duration,
-      ExceptionState&);
-  static KeyframeEffectReadOnly* Create(
-      ExecutionContext*,
-      Element*,
-      const DictionarySequenceOrDictionary& effect_input,
-      const KeyframeEffectOptions& timing_input,
+      const UnrestrictedDoubleOrKeyframeEffectOptions&,
       ExceptionState&);
   static KeyframeEffectReadOnly* Create(
       ExecutionContext*,

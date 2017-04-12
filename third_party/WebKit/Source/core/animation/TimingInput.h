@@ -15,11 +15,16 @@ class Document;
 class ExceptionState;
 class KeyframeEffectOptions;
 class UnrestrictedDoubleOrString;
+class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 class CORE_EXPORT TimingInput {
   STATIC_ONLY(TimingInput);
 
  public:
+  static bool Convert(const UnrestrictedDoubleOrKeyframeEffectOptions&,
+                      Timing& timing_output,
+                      Document*,
+                      ExceptionState&);
   static bool Convert(const KeyframeEffectOptions& timing_input,
                       Timing& timing_output,
                       Document*,

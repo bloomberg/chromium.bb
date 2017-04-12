@@ -228,6 +228,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/StringOrFloat.h",
   "$bindings_core_v8_output_dir/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.cpp",
   "$bindings_core_v8_output_dir/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h",
+  "$bindings_core_v8_output_dir/UnrestrictedDoubleOrKeyframeEffectOptions.cpp",
+  "$bindings_core_v8_output_dir/UnrestrictedDoubleOrKeyframeEffectOptions.h",
   "$bindings_core_v8_output_dir/UnrestrictedDoubleOrString.cpp",
   "$bindings_core_v8_output_dir/UnrestrictedDoubleOrString.h",
   "$bindings_core_v8_output_dir/Uint8ClampedArrayOrUint16ArrayOrFloat32Array.cpp",

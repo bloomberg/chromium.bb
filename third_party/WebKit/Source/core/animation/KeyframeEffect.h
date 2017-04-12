@@ -40,7 +40,7 @@ namespace blink {
 
 class Element;
 class ExceptionState;
-class KeyframeEffectOptions;
+class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 // Represents the effect of an Animation on an Element's properties.
 // http://w3c.github.io/web-animations/#keyframe-effect
@@ -59,13 +59,7 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
       ExecutionContext*,
       Element*,
       const DictionarySequenceOrDictionary& effect_input,
-      double duration,
-      ExceptionState&);
-  static KeyframeEffect* Create(
-      ExecutionContext*,
-      Element*,
-      const DictionarySequenceOrDictionary& effect_input,
-      const KeyframeEffectOptions& timing_input,
+      const UnrestrictedDoubleOrKeyframeEffectOptions&,
       ExceptionState&);
   static KeyframeEffect* Create(
       ExecutionContext*,

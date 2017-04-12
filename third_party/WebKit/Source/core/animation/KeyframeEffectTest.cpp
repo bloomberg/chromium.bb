@@ -8,6 +8,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DictionarySequenceOrDictionary.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
 #include "core/animation/AnimationClock.h"
@@ -42,17 +43,31 @@ class KeyframeEffectTest : public ::testing::Test {
 
 class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
  protected:
-  template <typename T>
   static KeyframeEffect* CreateAnimation(
       Element* element,
       Vector<Dictionary> keyframe_dictionary_vector,
-      T timing_input) {
+      double timing_input) {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         nullptr, element,
         DictionarySequenceOrDictionary::fromDictionarySequence(
             keyframe_dictionary_vector),
-        timing_input, exception_state);
+        UnrestrictedDoubleOrKeyframeEffectOptions::fromUnrestrictedDouble(
+            timing_input),
+        exception_state);
+  }
+  static KeyframeEffect* CreateAnimation(
+      Element* element,
+      Vector<Dictionary> keyframe_dictionary_vector,
+      const KeyframeEffectOptions& timing_input) {
+    NonThrowableExceptionState exception_state;
+    return KeyframeEffect::Create(
+        nullptr, element,
+        DictionarySequenceOrDictionary::fromDictionarySequence(
+            keyframe_dictionary_vector),
+        UnrestrictedDoubleOrKeyframeEffectOptions::fromKeyframeEffectOptions(
+            timing_input),
+        exception_state);
   }
   static KeyframeEffect* CreateAnimation(
       Element* element,

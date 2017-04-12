@@ -36,9 +36,6 @@
 // https://w3c.github.io/web-animations/#the-animatable-interface
 
 partial interface Element {
-    // FIXME: Union types with dictionary type members doesn't work (yet).
-    // Animation animate((sequence<Dictionary> or Dictionary)? effect, optional (double or KeyframeEffectOptions) timing);
-    [CallWith=ScriptState, Measure, RaisesException] Animation animate((sequence<Dictionary> or Dictionary)? effect, optional double timing);
-    [CallWith=ScriptState, Measure, RaisesException] Animation animate((sequence<Dictionary> or Dictionary)? effect, KeyframeEffectOptions timing);
+    [CallWith=ScriptState, Measure, RaisesException] Animation animate((sequence<Dictionary> or Dictionary)? effect, optional (unrestricted double or KeyframeEffectOptions) options);
     [RuntimeEnabled=WebAnimationsAPI] sequence<Animation> getAnimations();
 };
