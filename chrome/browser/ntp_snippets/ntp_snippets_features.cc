@@ -11,7 +11,10 @@ const base::Feature kNotificationsFeature = {"ContentSuggestionsNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kNotificationsPriorityParam[] = "priority";
-const char kNotificationsUseSnippetAsTextParam[] = "use_snippet_as_text";
+const char kNotificationsTextParam[] = "text";
+const char kNotificationsTextValuePublisher[] = "publisher";
+const char kNotificationsTextValueSnippet[] = "snippet";
+const char kNotificationsTextValueAndMore[] = "and_more";
 const char kNotificationsKeepWhenFrontmostParam[] =
     "keep_notification_when_frontmost";
 const char kNotificationsOpenToNTPParam[] = "open_to_ntp";

@@ -8,6 +8,7 @@
 
 #include "base/android/application_status_listener.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
@@ -15,10 +16,13 @@
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -36,7 +40,9 @@ using params::ntp_snippets::kNotificationsFeature;
 using params::ntp_snippets::kNotificationsKeepWhenFrontmostParam;
 using params::ntp_snippets::kNotificationsOpenToNTPParam;
 using params::ntp_snippets::kNotificationsPriorityParam;
-using params::ntp_snippets::kNotificationsUseSnippetAsTextParam;
+using params::ntp_snippets::kNotificationsTextParam;
+using params::ntp_snippets::kNotificationsTextValueAndMore;
+using params::ntp_snippets::kNotificationsTextValueSnippet;
 
 namespace {
 
@@ -130,19 +136,31 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     base::Time timeout_at = suggestion->notification_extra()
                                 ? suggestion->notification_extra()->deadline
                                 : base::Time::Max();
-    bool use_snippet = variations::GetVariationParamByFeatureAsBool(
-        kNotificationsFeature, kNotificationsUseSnippetAsTextParam, false);
+
+    const std::string text_param = variations::GetVariationParamValueByFeature(
+        kNotificationsFeature, kNotificationsTextParam);
+    base::string16 text;
+    if (text_param == kNotificationsTextValueSnippet) {
+      text = suggestion->snippet_text();
+    } else if (text_param == kNotificationsTextValueAndMore) {
+      int extra_count =
+          service_->GetSuggestionsForCategory(category).size() - 1;
+      text = l10n_util::GetStringFUTF16(
+          IDS_NTP_NOTIFICATIONS_READ_THIS_STORY_AND_MORE,
+          suggestion->publisher_name(), base::IntToString16(extra_count));
+    } else {
+      text = suggestion->publisher_name();
+    }
+
     bool open_to_ntp = variations::GetVariationParamByFeatureAsBool(
         kNotificationsFeature, kNotificationsOpenToNTPParam, false);
     service_->FetchSuggestionImage(
         suggestion->id(),
-        base::Bind(&NotifyingObserver::ImageFetched,
-                   weak_ptr_factory_.GetWeakPtr(), suggestion->id(),
-                   open_to_ntp ? GURL("chrome://newtab") : suggestion->url(),
-                   suggestion->title(),
-                   use_snippet ? suggestion->snippet_text()
-                               : suggestion->publisher_name(),
-                   timeout_at));
+        base::Bind(
+            &NotifyingObserver::ImageFetched, weak_ptr_factory_.GetWeakPtr(),
+            suggestion->id(),
+            open_to_ntp ? GURL(chrome::kChromeUINewTabURL) : suggestion->url(),
+            suggestion->title(), text, timeout_at));
   }
 
   void OnCategoryStatusChanged(Category category,

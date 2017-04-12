@@ -18,9 +18,13 @@ extern const base::Feature kNotificationsFeature;
 extern const char kNotificationsPriorityParam[];
 constexpr int kNotificationsDefaultPriority = -1;
 
-// "true": use article's snippet as notification's text
-// "false": use article's publisher as notification's text
-extern const char kNotificationsUseSnippetAsTextParam[];
+// "publisher": use article's publisher as notification's text (default).
+// "snippet": use article's snippet as notification's text.
+// "and_more": use "From $1. Read this article and $2 more." as text.
+extern const char kNotificationsTextParam[];
+extern const char kNotificationsTextValuePublisher[];
+extern const char kNotificationsTextValueSnippet[];
+extern const char kNotificationsTextValueAndMore[];
 
 // "true": when Chrome becomes frontmost, leave notifications open.
 // "false": automatically dismiss notification when Chrome becomes frontmost.
