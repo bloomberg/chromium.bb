@@ -49,6 +49,8 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       "http://get.adobe.com/flashplayer",
       "http://macromedia.com/go/getflashplayer",
       "http://adobe.com/go/getflashplayer",
+      "http://adobe.com/go/CA-H-GET-FLASH",
+      "http://adobe.com/go/DE_CH-H-M-A2",
       "http://adobe.com/go/gntray_dl_getflashplayer_jp",
   };
 
@@ -58,14 +60,18 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   }
 
   const char* flash_no_intercept_urls[] = {
-      "https://www.example.com",
-      "http://example.com/get.adobe.com/flashplayer",
+      "https://www.example.com", "http://example.com/get.adobe.com/flashplayer",
       "http://ww.macromedia.com/go/getflashplayer",
       "http://wwwxmacromedia.com/go/getflashplayer",
       "http://www.adobe.com/software/flash/about/",
       "http://www.adobe.com/products/flashplayer.html",
       "http://www.adobe.com/products/flashruntimes.html",
       "http://www.adobe.com/go/flash",
+      // Don't intercept URLs containing just "fp" without a matching prefix.
+      "http://www.adobe.com/go/non-matching-prefix-fp",
+      // Don't match text within the query or fragment.
+      "http://www.adobe.com/go/non-matching?foo=flashplayer",
+      "http://www.adobe.com/go/non-matching#!foo=flashplayer",
   };
 
   for (auto* url : flash_no_intercept_urls) {

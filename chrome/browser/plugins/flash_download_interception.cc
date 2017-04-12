@@ -32,9 +32,11 @@ namespace {
 // Regexes matching
 const char kGetFlashURLCanonicalRegex[] = "(?i)get\\.adobe\\.com/.*flash.*";
 const char kGetFlashURLSecondaryRegex[] =
-    "(?i)(www\\.)?(adobe|macromedia)\\.com/go.*"
-    "(get[-_]?flash|fl(ash)?.?pl(ayer)?|flash_completion|flashpm|flashdownload|"
-    "fp|h-m-a-?2|chrome|download_player|gnav_fl|pdcredirect).*";
+    "(?i)(www\\.)?(adobe|macromedia)\\.com/go/"
+    "((?i).*get[-_]?flash|getfp10android|.*fl(ash)player|.*flashpl|"
+    ".*flash_player|flash_completion|flashpm|.*flashdownload|d65_flplayer|"
+    "fp_jp|runtimes_fp|[a-z_-]{3,6}h-m-a-?2|chrome|download_player|"
+    "gnav_fl|pdcredirect).*";
 
 void DoNothing(ContentSetting result) {}
 
@@ -89,12 +91,21 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   if (!has_user_gesture)
     return false;
 
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  replacements.ClearRef();
+  replacements.ClearUsername();
+  replacements.ClearPassword();
+
   // If the navigation source is already the Flash download page, don't
   // intercept the download. The user may be trying to download Flash.
-  if (RE2::PartialMatch(source_url.GetContent(), kGetFlashURLCanonicalRegex))
+  std::string source_url_str =
+      source_url.ReplaceComponents(replacements).GetContent();
+  if (RE2::PartialMatch(source_url_str, kGetFlashURLCanonicalRegex))
     return false;
 
-  std::string target_url_str = target_url.GetContent();
+  std::string target_url_str =
+      target_url.ReplaceComponents(replacements).GetContent();
   if (RE2::FullMatch(target_url_str, kGetFlashURLCanonicalRegex) ||
       RE2::FullMatch(target_url_str, kGetFlashURLSecondaryRegex)) {
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
