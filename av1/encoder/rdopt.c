@@ -1375,7 +1375,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #endif  // CONFIG_DAALA_DIST
 
   if (cpi->sf.use_transform_domain_distortion && !CONFIG_DAALA_DIST) {
-    // Transform domain distortion computation is more accurate as it does
+    // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = tx_size_2d[tx_size];
     int64_t this_sse;
