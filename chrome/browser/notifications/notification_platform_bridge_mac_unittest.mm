@@ -6,8 +6,10 @@
 #import <objc/runtime.h>
 
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac.h"
@@ -239,6 +241,29 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayOneButton) {
   EXPECT_NSEQ(@"https://gmail.com", [delivered_notification subtitle]);
   EXPECT_NSEQ(@"Close", [delivered_notification otherButtonTitle]);
   EXPECT_NSEQ(@"More", [delivered_notification actionButtonTitle]);
+}
+
+TEST_F(NotificationPlatformBridgeMacTest, TestDisplayProgress) {
+  std::unique_ptr<Notification> notification =
+      CreateBanner("Title", "Context", "https://gmail.com", nullptr, nullptr);
+  const int kSamplePercent = 10;
+
+  notification->set_progress(kSamplePercent);
+
+  std::unique_ptr<NotificationPlatformBridgeMac> bridge(
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
+  bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
+                  "profile_id", false, *notification);
+  NSArray* notifications = [notification_center() deliveredNotifications];
+
+  EXPECT_EQ(1u, [notifications count]);
+
+  NSUserNotification* delivered_notification = [notifications objectAtIndex:0];
+  base::string16 expected =
+      base::FormatPercent(kSamplePercent) + base::UTF8ToUTF16(" - Title");
+  EXPECT_NSEQ(base::SysUTF16ToNSString(expected),
+              [delivered_notification title]);
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestCloseNotification) {

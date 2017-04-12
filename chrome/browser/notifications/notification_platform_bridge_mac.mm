@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/i18n/number_formatting.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -115,6 +116,16 @@ void RecordXPCEvent(XPCConnectionEvent event) {
                             XPC_CONNECTION_EVENT_COUNT);
 }
 
+base::string16 CreateNotificationTitle(const Notification& notification) {
+  base::string16 title;
+  if (notification.progress() > 0) {
+    title += base::FormatPercent(notification.progress());
+    title += base::UTF8ToUTF16(" - ");
+  }
+  title += notification.title();
+  return title;
+}
+
 }  // namespace
 
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
@@ -169,7 +180,8 @@ void NotificationPlatformBridgeMac::Display(
            settingsLabel:l10n_util::GetNSString(
                              IDS_NOTIFICATION_BUTTON_SETTINGS)]);
 
-  [builder setTitle:base::SysUTF16ToNSString(notification.title())];
+  [builder
+      setTitle:base::SysUTF16ToNSString(CreateNotificationTitle(notification))];
   [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
 
   bool requires_attribution =
