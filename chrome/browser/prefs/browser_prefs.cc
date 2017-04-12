@@ -226,6 +226,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/components/tether/initializer.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/invalidation/impl/invalidator_storage.h"
@@ -237,6 +239,10 @@
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#endif
+
+#if defined(OS_CHROMEOS) || BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/cryptauth/cryptauth_service.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -514,6 +520,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   certificate_transparency::CTPolicyManager::RegisterPrefs(registry);
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
+  cryptauth::CryptAuthService::RegisterProfilePrefs(registry);
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterProfilePrefs(registry);
   ExtensionWebUI::RegisterProfilePrefs(registry);
@@ -607,6 +617,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableTether)) {
+    chromeos::tether::Initializer::RegisterProfilePrefs(registry);
+  }
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);

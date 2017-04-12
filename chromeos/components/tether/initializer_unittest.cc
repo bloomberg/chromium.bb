@@ -96,8 +96,7 @@ class InitializerTest : public NetworkStateTest {
     NetworkStateTest::SetUp();
 
     test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    HostScanDevicePrioritizer::RegisterPrefs(test_pref_service_->registry());
-    ActiveHost::RegisterPrefs(test_pref_service_->registry());
+    Initializer::RegisterProfilePrefs(test_pref_service_->registry());
   }
 
   void TearDown() override {

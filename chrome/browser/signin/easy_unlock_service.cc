@@ -264,10 +264,6 @@ void EasyUnlockService::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  cryptauth::CryptAuthGCMManager::RegisterPrefs(registry);
-  cryptauth::CryptAuthDeviceManager::RegisterPrefs(registry);
-  cryptauth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
     proximity_auth::ProximityAuthPrefManager::RegisterPrefs(registry);

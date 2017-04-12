@@ -78,6 +78,12 @@ void Initializer::Shutdown() {
   }
 }
 
+// static
+void Initializer::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  ActiveHost::RegisterPrefs(registry);
+  HostScanDevicePrioritizer::RegisterPrefs(registry);
+}
+
 Initializer::Initializer(
     cryptauth::CryptAuthService* cryptauth_service,
     std::unique_ptr<NotificationPresenter> notification_presenter,

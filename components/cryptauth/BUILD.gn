@@ -36,6 +36,7 @@ static_library("cryptauth") {
     "cryptauth_gcm_manager.h",
     "cryptauth_gcm_manager_impl.cc",
     "cryptauth_gcm_manager_impl.h",
+    "cryptauth_service.cc",
     "cryptauth_service.h",
     "device_to_device_authenticator.cc",
     "device_to_device_authenticator.h",

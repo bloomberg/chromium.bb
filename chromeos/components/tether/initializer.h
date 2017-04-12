@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -56,6 +57,8 @@ class Initializer : public OAuth2TokenService::Observer {
   // Shuts down the tether feature, destroying all internal classes. This should
   // be called before the dependencies passed to Init() are destroyed.
   static void Shutdown();
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   friend class InitializerTest;
