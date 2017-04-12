@@ -514,7 +514,7 @@ IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
       PixelSnappedIntRect(
           Box().OverflowClipRect(Box().Location(),
                                  kIgnorePlatformAndCSSOverlayScrollbarSize))
-          .size();
+          .Size();
 
   Page* page = GetLayoutBox()->GetDocument().GetPage();
   DCHECK(page);
@@ -708,7 +708,7 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
 }
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {
-  if (overflow_rect_.size() != Box().LayoutOverflowRect().size())
+  if (overflow_rect_.Size() != Box().LayoutOverflowRect().Size())
     ContentsResized();
   overflow_rect_ = Box().LayoutOverflowRect();
   Box().FlipForWritingMode(overflow_rect_);
@@ -960,7 +960,7 @@ static bool CanHaveOverflowScrollbars(const LayoutBox& box) {
 void PaintLayerScrollableArea::UpdateAfterStyleChange(
     const ComputedStyle* old_style) {
   // Don't do this on first style recalc, before layout has ever happened.
-  if (!OverflowRect().size().IsZero()) {
+  if (!OverflowRect().Size().IsZero()) {
     UpdateScrollableAreaSet(HasScrollableHorizontalOverflow() ||
                             HasScrollableVerticalOverflow());
   }
@@ -1127,14 +1127,14 @@ int PaintLayerScrollableArea::HorizontalScrollbarStart(int min_x) const {
 IntSize PaintLayerScrollableArea::ScrollbarOffset(
     const Scrollbar& scrollbar) const {
   if (&scrollbar == VerticalScrollbar()) {
-    return IntSize(VerticalScrollbarStart(0, Box().size().Width().ToInt()),
+    return IntSize(VerticalScrollbarStart(0, Box().Size().Width().ToInt()),
                    Box().BorderTop().ToInt());
   }
 
   if (&scrollbar == HorizontalScrollbar())
     return IntSize(
         HorizontalScrollbarStart(0),
-        (Box().size().Height() - Box().BorderBottom() - scrollbar.Height())
+        (Box().Size().Height() - Box().BorderBottom() - scrollbar.Height())
             .ToInt());
 
   ASSERT_NOT_REACHED();
@@ -1426,9 +1426,9 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
     LayoutRect v_bar_rect(
-        VerticalScrollbarStart(0, Box().size().Width().ToInt()),
+        VerticalScrollbarStart(0, Box().Size().Width().ToInt()),
         Box().BorderTop().ToInt(), VerticalScrollbar()->ScrollbarThickness(),
-        Box().size().Height().ToInt() -
+        Box().Size().Height().ToInt() -
             (Box().BorderTop() + Box().BorderBottom()).ToInt() -
             (HasHorizontalScrollbar()
                  ? HorizontalScrollbar()->ScrollbarThickness()
@@ -1445,10 +1445,10 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
     // TODO(crbug.com/638981): Are the conversions to int intentional?
     LayoutRect h_bar_rect(
         HorizontalScrollbarStart(0),
-        (Box().size().Height() - Box().BorderBottom() -
+        (Box().Size().Height() - Box().BorderBottom() -
          HorizontalScrollbar()->ScrollbarThickness())
             .ToInt(),
-        (Box().size().Width() - (Box().BorderLeft() + Box().BorderRight()) -
+        (Box().Size().Width() - (Box().BorderLeft() + Box().BorderRight()) -
          (HasVerticalScrollbar() ? VerticalScrollbar()->ScrollbarThickness()
                                  : resize_control_size))
             .ToInt(),
@@ -1622,7 +1622,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   new_offset.SetWidth(new_offset.Width() / zoom_factor);
   new_offset.SetHeight(new_offset.Height() / zoom_factor);
 
-  LayoutSize current_size = Box().size();
+  LayoutSize current_size = Box().Size();
   current_size.Scale(1 / zoom_factor);
   LayoutSize minimum_size =
       element->MinimumSizeForResizing().ShrunkTo(current_size);
@@ -1655,7 +1655,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
                                       CSSPrimitiveValue::UnitType::kPixels);
     }
     LayoutUnit base_width =
-        Box().size().Width() -
+        Box().Size().Width() -
         (is_box_sizing_border ? LayoutUnit() : Box().BorderAndPaddingWidth());
     base_width = LayoutUnit(base_width / zoom_factor);
     element->SetInlineStyleProperty(CSSPropertyWidth,
@@ -1675,7 +1675,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
                                       CSSPrimitiveValue::UnitType::kPixels);
     }
     LayoutUnit base_height =
-        Box().size().Height() -
+        Box().Size().Height() -
         (is_box_sizing_border ? LayoutUnit() : Box().BorderAndPaddingHeight());
     base_height = LayoutUnit(base_height / zoom_factor);
     element->SetInlineStyleProperty(

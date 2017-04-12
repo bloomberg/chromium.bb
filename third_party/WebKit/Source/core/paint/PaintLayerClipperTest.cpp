@@ -272,8 +272,8 @@ TEST_P(PaintLayerClipperTest, ContainPaintClip) {
     option = PaintLayer::kUseGeometryMapper;
   layer->Clipper(option).CalculateRects(context, infinite_rect, layer_bounds,
                                         background_rect, foreground_rect);
-  EXPECT_GE(background_rect.Rect().size().Width().ToInt(), 33554422);
-  EXPECT_GE(background_rect.Rect().size().Height().ToInt(), 33554422);
+  EXPECT_GE(background_rect.Rect().Size().Width().ToInt(), 33554422);
+  EXPECT_GE(background_rect.Rect().Size().Height().ToInt(), 33554422);
   EXPECT_EQ(background_rect.Rect(), foreground_rect.Rect());
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), layer_bounds);
 

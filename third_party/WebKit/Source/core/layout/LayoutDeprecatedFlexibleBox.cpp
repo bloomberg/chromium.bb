@@ -172,7 +172,7 @@ static int GetHeightForLineCount(const LayoutBlockFlow* block_flow,
   }
   if (normal_flow_child_without_lines && line_count == 0)
     return (normal_flow_child_without_lines->Location().Y() +
-            normal_flow_child_without_lines->size().Height())
+            normal_flow_child_without_lines->Size().Height())
         .ToInt();
 
   return -1;
@@ -370,14 +370,14 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     // LayoutState needs this deliberate scope to pop before paint invalidation.
     LayoutState state(*this);
 
-    LayoutSize previous_size = size();
+    LayoutSize previous_size = Size();
 
     UpdateLogicalWidth();
     UpdateLogicalHeight();
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
 
-    if (previous_size != size() ||
+    if (previous_size != Size() ||
         (Parent()->IsDeprecatedFlexibleBox() &&
          Parent()->Style()->BoxOrient() == HORIZONTAL &&
          Parent()->Style()->BoxAlign() == BSTRETCH))
@@ -395,7 +395,7 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
     UpdateLogicalHeight();
 
-    if (previous_size.Height() != size().Height())
+    if (previous_size.Height() != Size().Height())
       relayout_children = true;
 
     LayoutPositionedObjects(relayout_children || IsDocumentElement());
@@ -496,10 +496,10 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
       if (Style()->BoxAlign() == BBASELINE) {
         LayoutUnit ascent(child->FirstLineBoxBaseline());
         if (ascent == -1)
-          ascent = child->size().Height() + child->MarginBottom();
+          ascent = child->Size().Height() + child->MarginBottom();
         ascent += child->MarginTop();
         LayoutUnit descent =
-            (child->size().Height() + child->MarginHeight()) - ascent;
+            (child->Size().Height() + child->MarginHeight()) - ascent;
 
         // Update our maximum ascent.
         max_ascent = std::max(max_ascent, ascent);
@@ -508,9 +508,9 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
         max_descent = std::max(max_descent, descent);
 
         // Now update our height.
-        SetHeight(std::max(y_pos + max_ascent + max_descent, size().Height()));
+        SetHeight(std::max(y_pos + max_ascent + max_descent, Size().Height()));
       } else {
-        SetHeight(std::max(size().Height(), y_pos + child->size().Height() +
+        SetHeight(std::max(Size().Height(), y_pos + child->Size().Height() +
                                                 child->MarginHeight()));
       }
 
@@ -519,19 +519,19 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
     }
 
     if (!iterator.First() && HasLineIfEmpty())
-      SetHeight(size().Height() + LineHeight(true,
+      SetHeight(Size().Height() + LineHeight(true,
                                              Style()->IsHorizontalWritingMode()
                                                  ? kHorizontalLine
                                                  : kVerticalLine,
                                              kPositionOfInteriorLineBoxes));
 
-    SetHeight(size().Height() + to_add);
+    SetHeight(Size().Height() + to_add);
 
-    old_height = size().Height();
+    old_height = Size().Height();
     UpdateLogicalHeight();
 
     relayout_children = false;
-    if (old_height != size().Height())
+    if (old_height != Size().Height())
       height_specified = true;
 
     // Now that our height is actually known, we can place our boxes.
@@ -584,21 +584,21 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
         case BCENTER:
           child_y += child->MarginTop() +
                      ((ContentHeight() -
-                       (child->size().Height() + child->MarginHeight())) /
+                       (child->Size().Height() + child->MarginHeight())) /
                       2)
                          .ClampNegativeToZero();
           break;
         case BBASELINE: {
           LayoutUnit ascent(child->FirstLineBoxBaseline());
           if (ascent == -1)
-            ascent = child->size().Height() + child->MarginBottom();
+            ascent = child->Size().Height() + child->MarginBottom();
           ascent += child->MarginTop();
           child_y += child->MarginTop() + (max_ascent - ascent);
           break;
         }
         case BEND:
           child_y +=
-              ContentHeight() - child->MarginBottom() - child->size().Height();
+              ContentHeight() - child->MarginBottom() - child->Size().Height();
           break;
         default:  // BSTART
           child_y += child->MarginTop();
@@ -607,10 +607,10 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
 
       PlaceChild(child, LayoutPoint(x_pos, child_y));
 
-      x_pos += child->size().Width() + child->MarginRight();
+      x_pos += child->Size().Width() + child->MarginRight();
     }
 
-    remaining_space = size().Width() - BorderRight() - PaddingRight() -
+    remaining_space = Size().Width() - BorderRight() - PaddingRight() -
                       VerticalScrollbarWidth() - x_pos;
 
     stretching_children_ = false;
@@ -816,15 +816,15 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
   // out within the box.
   do {
     SetHeight(BorderTop() + PaddingTop());
-    LayoutUnit min_height = size().Height() + to_add;
+    LayoutUnit min_height = Size().Height() + to_add;
 
     for (LayoutBox* child = iterator.First(); child; child = iterator.Next()) {
       if (child->IsOutOfFlowPositioned()) {
         child->ContainingBlock()->InsertPositionedObject(child);
         PaintLayer* child_layer = child->Layer();
         child_layer->SetStaticInlinePosition(BorderStart() + PaddingStart());
-        if (child_layer->StaticBlockPosition() != size().Height()) {
-          child_layer->SetStaticBlockPosition(size().Height());
+        if (child_layer->StaticBlockPosition() != Size().Height()) {
+          child_layer->SetStaticBlockPosition(Size().Height());
           if (child->Style()->HasStaticBlockPosition(
                   Style()->IsHorizontalWritingMode()))
             child->SetChildNeedsLayout(kMarkOnlyThis);
@@ -850,7 +850,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
       child->ComputeAndSetBlockDirectionMargins(this);
 
       // Add in the child's marginTop to our height.
-      SetHeight(size().Height() + child->MarginTop());
+      SetHeight(Size().Height() + child->MarginTop());
 
       if (!child->NeedsLayout())
         MarkChildForPaginationRelayoutIfNeeded(*child, layout_scope);
@@ -865,60 +865,62 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
         case BBASELINE:  // Baseline just maps to center for vertical boxes
           child_x += child->MarginLeft() +
                      ((ContentWidth() -
-                       (child->size().Width() + child->MarginWidth())) /
+                       (child->Size().Width() + child->MarginWidth())) /
                       2)
                          .ClampNegativeToZero();
           break;
         case BEND:
-          if (!Style()->IsLeftToRightDirection())
+          if (!Style()->IsLeftToRightDirection()) {
             child_x += child->MarginLeft();
-          else
+          } else {
             child_x +=
-                ContentWidth() - child->MarginRight() - child->size().Width();
+                ContentWidth() - child->MarginRight() - child->Size().Width();
+          }
           break;
         default:  // BSTART/BSTRETCH
-          if (Style()->IsLeftToRightDirection())
+          if (Style()->IsLeftToRightDirection()) {
             child_x += child->MarginLeft();
-          else
+          } else {
             child_x +=
-                ContentWidth() - child->MarginRight() - child->size().Width();
+                ContentWidth() - child->MarginRight() - child->Size().Width();
+          }
           break;
       }
 
       // Place the child.
-      PlaceChild(child, LayoutPoint(child_x, size().Height()));
-      SetHeight(size().Height() + child->size().Height() +
+      PlaceChild(child, LayoutPoint(child_x, Size().Height()));
+      SetHeight(Size().Height() + child->Size().Height() +
                 child->MarginBottom());
 
       if (paginated)
         UpdateFragmentationInfoForChild(*child);
     }
 
-    y_pos = size().Height();
+    y_pos = Size().Height();
 
     if (!iterator.First() && HasLineIfEmpty())
-      SetHeight(size().Height() + LineHeight(true,
+      SetHeight(Size().Height() + LineHeight(true,
                                              Style()->IsHorizontalWritingMode()
                                                  ? kHorizontalLine
                                                  : kVerticalLine,
                                              kPositionOfInteriorLineBoxes));
 
-    SetHeight(size().Height() + to_add);
+    SetHeight(Size().Height() + to_add);
 
     // Negative margins can cause our height to shrink below our minimal height
     // (border/padding).  If this happens, ensure that the computed height is
     // increased to the minimal height.
-    if (size().Height() < min_height)
+    if (Size().Height() < min_height)
       SetHeight(min_height);
 
     // Now we have to calc our height, so we know how much space we have
     // remaining.
-    old_height = size().Height();
+    old_height = Size().Height();
     UpdateLogicalHeight();
-    if (old_height != size().Height())
+    if (old_height != Size().Height())
       height_specified = true;
 
-    remaining_space = size().Height() - BorderBottom() - PaddingBottom() -
+    remaining_space = Size().Height() - BorderBottom() - PaddingBottom() -
                       HorizontalScrollbarHeight() - y_pos;
 
     if (flexing_children) {
@@ -1138,7 +1140,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     int dummy_count = 0;
     LayoutUnit new_height(GetHeightForLineCount(block_child, num_visible_lines,
                                                 true, dummy_count));
-    if (new_height == child->size().Height())
+    if (new_height == child->Size().Height())
       continue;
 
     child->SetOverrideLogicalContentHeight(new_height -

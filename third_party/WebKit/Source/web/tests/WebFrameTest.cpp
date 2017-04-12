@@ -1795,8 +1795,8 @@ TEST_P(ParameterizedWebFrameTest,
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(0.0, scroll_container->size().Width());
-  EXPECT_EQ(0.0, scroll_container->size().Height());
+  EXPECT_EQ(0.0, scroll_container->Size().Width());
+  EXPECT_EQ(0.0, scroll_container->Size().Height());
 
   web_view_helper.Resize(WebSize(viewport_width, 0));
   EXPECT_EQ(viewport_width, web_view_helper.WebView()
@@ -1809,8 +1809,8 @@ TEST_P(ParameterizedWebFrameTest,
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(viewport_width, scroll_container->size().Width());
-  EXPECT_EQ(0.0, scroll_container->size().Height());
+  EXPECT_EQ(viewport_width, scroll_container->Size().Width());
+  EXPECT_EQ(0.0, scroll_container->Size().Height());
 
   // The flag ForceZeroLayoutHeight will cause the following resize of viewport
   // height to be ignored by the outer viewport (the container layer of
@@ -1831,12 +1831,12 @@ TEST_P(ParameterizedWebFrameTest,
                    ->GetFrameView()
                    ->GetLayoutSize()
                    .Height());
-  EXPECT_EQ(viewport_width, scroll_container->size().Width());
-  EXPECT_EQ(viewport_height, scroll_container->size().Height());
+  EXPECT_EQ(viewport_width, scroll_container->Size().Width());
+  EXPECT_EQ(viewport_height, scroll_container->Size().Height());
 
   LocalFrame* frame = web_view_helper.WebView()->MainFrameImpl()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->size().Height());
+  EXPECT_EQ(viewport_height, visual_viewport.ContainerLayer()->Size().Height());
   EXPECT_TRUE(
       visual_viewport.ContainerLayer()->PlatformLayer()->MasksToBounds());
   EXPECT_FALSE(scroll_container->PlatformLayer()->MasksToBounds());
@@ -2529,7 +2529,7 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView) {
   EXPECT_EQ(viewport_height_minus_scrollbar,
             unscaled_size_minus_scrollbar.Height());
 
-  IntSize frame_view_size = view->VisibleContentRect().size();
+  IntSize frame_view_size = view->VisibleContentRect().Size();
   EXPECT_EQ(viewport_width_minus_scrollbar, frame_view_size.Width());
   EXPECT_EQ(viewport_height_minus_scrollbar, frame_view_size.Height());
 }
@@ -10836,8 +10836,8 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   EXPECT_EQ(kViewportHeight,
             compositor->RootLayer()->BoundingBoxForCompositing().Height());
   EXPECT_EQ(kViewportHeight,
-            compositor->RootLayer()->GraphicsLayerBacking()->size().Height());
-  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->size().Height());
+            compositor->RootLayer()->GraphicsLayerBacking()->Size().Height());
+  EXPECT_EQ(kViewportHeight, compositor->RootGraphicsLayer()->Size().Height());
 
   const RasterInvalidationTracking* invalidation_tracking =
       document->GetLayoutView()

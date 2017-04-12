@@ -205,7 +205,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::AsPaintRecord(
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
     content_transform = tile_transform;
 
-  FloatRect bounds(FloatPoint(), tile_bounds.size());
+  FloatRect bounds(FloatPoint(), tile_bounds.Size());
   const LayoutSVGResourceContainer* pattern_layout_object =
       ResolveContentElement();
   DCHECK(pattern_layout_object);

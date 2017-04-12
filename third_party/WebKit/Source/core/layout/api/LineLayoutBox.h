@@ -30,7 +30,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   LayoutPoint Location() const { return ToBox()->Location(); }
 
-  LayoutSize size() const { return ToBox()->size(); }
+  LayoutSize Size() const { return ToBox()->Size(); }
 
   void SetLogicalHeight(LayoutUnit size) { ToBox()->SetLogicalHeight(size); }
 

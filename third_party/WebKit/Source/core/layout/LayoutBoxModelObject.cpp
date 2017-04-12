@@ -871,7 +871,7 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
 }
 
 void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
-  const FloatSize constraining_size = ComputeStickyConstrainingRect().size();
+  const FloatSize constraining_size = ComputeStickyConstrainingRect().Size();
 
   PaintLayerScrollableArea* scrollable_area =
       Layer()->AncestorOverflowLayer()->GetScrollableArea();
@@ -984,7 +984,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   constraints.SetScrollContainerRelativeStickyBoxRect(
       FloatRect(scroll_container_relative_padding_box_rect.Location() +
                     ToFloatSize(sticky_location),
-                flipped_sticky_box_rect.size()));
+                flipped_sticky_box_rect.Size()));
 
   // To correctly compute the offsets, the constraints need to know about any
   // nested position:sticky elements between themselves and their

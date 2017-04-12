@@ -190,7 +190,7 @@ void SVGPreserveAspectRatio::TransformRect(FloatRect& dest_rect,
   if (align_ == kSvgPreserveaspectratioNone)
     return;
 
-  FloatSize image_size = src_rect.size();
+  FloatSize image_size = src_rect.Size();
   float orig_dest_width = dest_rect.Width();
   float orig_dest_height = dest_rect.Height();
   switch (meet_or_slice_) {

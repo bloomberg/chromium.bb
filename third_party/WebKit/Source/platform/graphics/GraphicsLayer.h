@@ -141,7 +141,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetTransformOrigin(const FloatPoint3D&);
 
   // The size of the layer.
-  const FloatSize& size() const { return size_; }
+  const FloatSize& Size() const { return size_; }
   void SetSize(const FloatSize&);
 
   const TransformationMatrix& Transform() const { return transform_; }

@@ -29,7 +29,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     IntRect clip_rect = EnclosingIntRect(LayoutRect(
         LayoutPoint(paint_offset.X() + layout_file_upload_control_.BorderLeft(),
                     paint_offset.Y() + layout_file_upload_control_.BorderTop()),
-        layout_file_upload_control_.size() +
+        layout_file_upload_control_.Size() +
             LayoutSize(LayoutUnit(),
                        -layout_file_upload_control_.BorderWidth() +
                            kButtonShadowHeight)));

@@ -56,10 +56,10 @@ void IntersectionObservation::ComputeIntersectionObservations(
       new_visible_ratio = 1;
     } else {
       float intersection_area =
-          geometry.IntersectionRect().size().Width().ToFloat() *
-          geometry.IntersectionRect().size().Height().ToFloat();
-      float target_area = geometry.TargetRect().size().Width().ToFloat() *
-                          geometry.TargetRect().size().Height().ToFloat();
+          geometry.IntersectionRect().Size().Width().ToFloat() *
+          geometry.IntersectionRect().Size().Height().ToFloat();
+      float target_area = geometry.TargetRect().Size().Width().ToFloat() *
+                          geometry.TargetRect().Size().Height().ToFloat();
       new_visible_ratio = intersection_area / target_area;
     }
     new_threshold_index =

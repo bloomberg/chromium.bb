@@ -53,7 +53,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
       RecordForeignLayer(
           context, layout_video_, DisplayItem::kForeignLayerVideo, layer,
-          pixel_snapped_rect.Location(), pixel_snapped_rect.size());
+          pixel_snapped_rect.Location(), pixel_snapped_rect.Size());
       return;
     }
   }

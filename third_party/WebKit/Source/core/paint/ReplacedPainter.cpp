@@ -31,7 +31,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
   if (!ShouldPaint(paint_info, adjusted_paint_offset))
     return;
 
-  LayoutRect border_rect(adjusted_paint_offset, layout_replaced_.size());
+  LayoutRect border_rect(adjusted_paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintSelfBlockBackground(paint_info.phase)) {
     if (layout_replaced_.Style()->Visibility() == EVisibility::kVisible &&

@@ -143,11 +143,12 @@ LayoutObject* FEImage::ReferencedLayoutObject() const {
 
 TextStream& FEImage::ExternalRepresentation(TextStream& ts, int indent) const {
   IntSize image_size;
-  if (image_)
+  if (image_) {
     image_size = image_->size();
-  else if (LayoutObject* layout_object = ReferencedLayoutObject())
+  } else if (LayoutObject* layout_object = ReferencedLayoutObject()) {
     image_size =
-        EnclosingIntRect(GetLayoutObjectRepaintRect(layout_object)).size();
+        EnclosingIntRect(GetLayoutObjectRepaintRect(layout_object)).Size();
+  }
   WriteIndent(ts, indent);
   ts << "[feImage";
   FilterEffect::ExternalRepresentation(ts);

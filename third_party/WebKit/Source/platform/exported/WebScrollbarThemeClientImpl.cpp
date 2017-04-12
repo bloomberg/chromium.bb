@@ -48,14 +48,14 @@ int WebScrollbarThemeClientImpl::Y() const {
 }
 
 int WebScrollbarThemeClientImpl::Width() const {
-  return size().Width();
+  return Size().Width();
 }
 
 int WebScrollbarThemeClientImpl::Height() const {
-  return size().Height();
+  return Size().Height();
 }
 
-IntSize WebScrollbarThemeClientImpl::size() const {
+IntSize WebScrollbarThemeClientImpl::Size() const {
   return scrollbar_.size();
 }
 
@@ -81,7 +81,7 @@ void WebScrollbarThemeClientImpl::SetFrameRect(const IntRect&) {
 }
 
 IntRect WebScrollbarThemeClientImpl::FrameRect() const {
-  return IntRect(Location(), size());
+  return IntRect(Location(), Size());
 }
 
 void WebScrollbarThemeClientImpl::Invalidate() {

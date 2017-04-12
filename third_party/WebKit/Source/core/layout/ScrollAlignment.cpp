@@ -171,7 +171,7 @@ LayoutRect ScrollAlignment::GetRectToExpose(const LayoutRect& visible_rect,
   else
     y = expose_rect.Y();
 
-  return LayoutRect(LayoutPoint(x, y), non_zero_visible_rect.size());
+  return LayoutRect(LayoutPoint(x, y), non_zero_visible_rect.Size());
 }
 
 }  // namespace blink

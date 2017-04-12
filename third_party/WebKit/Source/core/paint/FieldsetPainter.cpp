@@ -16,7 +16,7 @@ namespace blink {
 void FieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  LayoutRect paint_rect(paint_offset, layout_fieldset_.size());
+  LayoutRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend)
     return BoxPainter(layout_fieldset_)
@@ -33,14 +33,14 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     LayoutUnit y_off =
         (legend->Location().Y() > 0)
             ? LayoutUnit()
-            : (legend->size().Height() - layout_fieldset_.BorderTop()) / 2;
+            : (legend->Size().Height() - layout_fieldset_.BorderTop()) / 2;
     paint_rect.SetHeight(paint_rect.Height() - y_off);
     paint_rect.SetY(paint_rect.Y() + y_off);
   } else {
     LayoutUnit x_off =
         (legend->Location().X() > 0)
             ? LayoutUnit()
-            : (legend->size().Width() - layout_fieldset_.BorderLeft()) / 2;
+            : (legend->Size().Width() - layout_fieldset_.BorderLeft()) / 2;
     paint_rect.SetWidth(paint_rect.Width() - x_off);
     paint_rect.SetX(paint_rect.X() + x_off);
   }
@@ -74,19 +74,19 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     LayoutUnit clip_top = paint_rect.Y();
     LayoutUnit clip_height =
         max(static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderTopWidth()),
-            legend->size().Height() -
-                ((legend->size().Height() - layout_fieldset_.BorderTop()) / 2));
+            legend->Size().Height() -
+                ((legend->Size().Height() - layout_fieldset_.BorderTop()) / 2));
     graphics_context.ClipOut(
         PixelSnappedIntRect(paint_rect.X() + legend->Location().X(), clip_top,
-                            legend->size().Width(), clip_height));
+                            legend->Size().Width(), clip_height));
   } else {
     LayoutUnit clip_left = paint_rect.X();
     LayoutUnit clip_width = max(
         static_cast<LayoutUnit>(layout_fieldset_.Style()->BorderLeftWidth()),
-        legend->size().Width());
+        legend->Size().Width());
     graphics_context.ClipOut(
         PixelSnappedIntRect(clip_left, paint_rect.Y() + legend->Location().Y(),
-                            clip_width, legend->size().Height()));
+                            clip_width, legend->Size().Height()));
   }
 
   BoxPainter::PaintBorder(layout_fieldset_, paint_info, paint_rect,
@@ -99,7 +99,7 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
       paint_info.phase != kPaintPhaseMask)
     return;
 
-  LayoutRect paint_rect = LayoutRect(paint_offset, layout_fieldset_.size());
+  LayoutRect paint_rect = LayoutRect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend)
     return BoxPainter(layout_fieldset_).PaintMask(paint_info, paint_offset);
@@ -115,14 +115,14 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
     LayoutUnit y_off =
         (legend->Location().Y() > LayoutUnit())
             ? LayoutUnit()
-            : (legend->size().Height() - layout_fieldset_.BorderTop()) / 2;
+            : (legend->Size().Height() - layout_fieldset_.BorderTop()) / 2;
     paint_rect.Expand(LayoutUnit(), -y_off);
     paint_rect.Move(LayoutUnit(), y_off);
   } else {
     LayoutUnit x_off =
         (legend->Location().X() > LayoutUnit())
             ? LayoutUnit()
-            : (legend->size().Width() - layout_fieldset_.BorderLeft()) / 2;
+            : (legend->Size().Width() - layout_fieldset_.BorderLeft()) / 2;
     paint_rect.Expand(-x_off, LayoutUnit());
     paint_rect.Move(x_off, LayoutUnit());
   }

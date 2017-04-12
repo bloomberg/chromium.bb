@@ -437,7 +437,7 @@ void LayoutListItem::PositionListMarker() {
     if (adjust_overflow) {
       LayoutRect marker_rect(
           LayoutPoint(marker_logical_left + line_offset, block_offset),
-          marker_->size());
+          marker_->Size());
       if (!Style()->IsHorizontalWritingMode())
         marker_rect = marker_rect.TransposedRect();
       LayoutBox* o = marker_;

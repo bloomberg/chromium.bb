@@ -95,7 +95,7 @@ LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
   // 10. Vertical Growing Left: Decrease position by the width of the
   // bounding box of the boxes in boxes, then increase position by step.
   if (IsFlippedBlocksWritingMode(writing_mode)) {
-    position -= cue_box_.size().Width();
+    position -= cue_box_.Size().Width();
     position += step;
   }
 
@@ -185,8 +185,8 @@ void SnapToLinesLayouter::UpdateLayout() {
   WritingMode writing_mode = cue_box_.Style()->GetWritingMode();
   LayoutBlock* parent_block = cue_box_.ContainingBlock();
   LayoutUnit full_dimension = blink::IsHorizontalWritingMode(writing_mode)
-                                  ? parent_block->size().Height()
-                                  : parent_block->size().Width();
+                                  ? parent_block->Size().Height()
+                                  : parent_block->Size().Width();
   LayoutUnit margin(full_dimension * margin_);
 
   // 3. Let max dimension be full dimension - (2 * margin)

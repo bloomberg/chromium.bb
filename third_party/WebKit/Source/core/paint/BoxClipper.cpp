@@ -62,9 +62,10 @@ BoxClipper::BoxClipper(const LayoutBox& box,
   LayoutRect clip_rect = box_.OverflowClipRect(accumulated_offset);
   FloatRoundedRect clip_rounded_rect(0, 0, 0, 0);
   bool has_border_radius = box_.Style()->HasBorderRadius();
-  if (has_border_radius)
+  if (has_border_radius) {
     clip_rounded_rect = box_.Style()->GetRoundedInnerBorderFor(
-        LayoutRect(accumulated_offset, box_.size()));
+        LayoutRect(accumulated_offset, box_.Size()));
+  }
 
   // Selection may extend beyond visual overflow, so this optimization is
   // invalid if selection is present.

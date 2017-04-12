@@ -119,7 +119,7 @@ TEST_F(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_TRUE(block->ShouldPaintCursorCaret());
 
   LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
-  EXPECT_EQ(caret_visual_rect.size(), new_caret_visual_rect.size());
+  EXPECT_EQ(caret_visual_rect.Size(), new_caret_visual_rect.Size());
   EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
@@ -326,7 +326,7 @@ TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   UpdateAllLifecyclePhases();
 
   LayoutRect new_caret_visual_rect = GetCaretDisplayItemClient().VisualRect();
-  EXPECT_EQ(caret_visual_rect.size(), new_caret_visual_rect.size());
+  EXPECT_EQ(caret_visual_rect.Size(), new_caret_visual_rect.Size());
   EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 

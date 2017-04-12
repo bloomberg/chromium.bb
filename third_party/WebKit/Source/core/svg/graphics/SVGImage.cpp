@@ -265,7 +265,7 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
     scaled_src.Scale(1 / zoom);
 
     // Compensate for the container size rounding by adjusting the source rect.
-    FloatSize adjusted_src_size = scaled_src.size();
+    FloatSize adjusted_src_size = scaled_src.Size();
     adjusted_src_size.Scale(residual_scale.Width(), residual_scale.Height());
     scaled_src.SetSize(adjusted_src_size);
 
@@ -340,7 +340,7 @@ sk_sp<SkImage> SVGImage::ImageForCurrentFrameForContainer(
 
   PaintRecorder recorder;
   PaintCanvas* canvas = recorder.beginRecording(container_rect);
-  DrawForContainer(canvas, PaintFlags(), container_rect.size(), 1,
+  DrawForContainer(canvas, PaintFlags(), container_rect.Size(), 1,
                    container_rect, container_rect, url);
 
   return SkImage::MakeFromPicture(

@@ -660,7 +660,7 @@ TEST_P(ScrollAnchorTest, DescendsIntoContainerWithFloat) {
   EXPECT_EQ(
       0,
       ToLayoutBox(GetDocument().GetElementById("zeroheight")->GetLayoutObject())
-          ->size()
+          ->Size()
           .Height());
 
   ScrollableArea* viewport = LayoutViewport();

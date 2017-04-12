@@ -224,7 +224,7 @@ bool ThemePainterMac::PaintProgressBar(const LayoutObject& layout_object,
                           ? kThemeMediumIndeterminateBar
                           : kThemeMediumProgressBar;
 
-  track_info.bounds = IntRect(IntPoint(), rect.size());
+  track_info.bounds = IntRect(IntPoint(), rect.Size());
   track_info.min = 0;
   track_info.max = std::numeric_limits<SInt32>::max();
   track_info.value =
@@ -239,11 +239,11 @@ bool ThemePainterMac::PaintProgressBar(const LayoutObject& layout_object,
   track_info.reserved = 0;
   track_info.filler1 = 0;
 
-  std::unique_ptr<ImageBuffer> image_buffer = ImageBuffer::Create(rect.size());
+  std::unique_ptr<ImageBuffer> image_buffer = ImageBuffer::Create(rect.Size());
   if (!image_buffer)
     return true;
 
-  IntRect clip_rect = IntRect(IntPoint(), rect.size());
+  IntRect clip_rect = IntRect(IntPoint(), rect.Size());
   LocalCurrentGraphicsContext local_context(image_buffer->Canvas(), 1,
                                             clip_rect);
   CGContextRef cg_context = local_context.CgContext();
@@ -788,7 +788,7 @@ bool ThemePainterMac::PaintInnerSpinButton(const LayoutObject& object,
       ConvertControlStatesToThemeDrawState(kThemeIncDecButton, states);
   draw_info.adornment = kThemeAdornmentDefault;
   ControlSize control_size = ThemeMac::ControlSizeFromPixelSize(
-      ThemeMac::StepperSizes(), zoomed_rect.size(), zoom_factor);
+      ThemeMac::StepperSizes(), zoomed_rect.Size(), zoom_factor);
   if (control_size == NSSmallControlSize)
     draw_info.kind = kThemeIncDecButtonSmall;
   else if (control_size == NSMiniControlSize)

@@ -88,7 +88,7 @@ void CrossfadeGeneratedImage::Draw(PaintCanvas* canvas,
   PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(dst_rect);
   canvas->translate(dst_rect.X(), dst_rect.Y());
-  if (dst_rect.size() != src_rect.size())
+  if (dst_rect.Size() != src_rect.Size())
     canvas->scale(dst_rect.Width() / src_rect.Width(),
                   dst_rect.Height() / src_rect.Height());
   canvas->translate(-src_rect.X(), -src_rect.Y());

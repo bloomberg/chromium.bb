@@ -92,7 +92,7 @@ static Vector<FloatPoint> LocalToContainerSnapCoordinates(
       snap_area.Style()->ScrollSnapCoordinate();
   for (auto& coordinate : snap_coordinates) {
     FloatPoint local_point =
-        FloatPointForLengthPoint(coordinate, FloatSize(snap_area.size()));
+        FloatPointForLengthPoint(coordinate, FloatSize(snap_area.Size()));
     FloatPoint container_point =
         snap_area.LocalToAncestorPoint(local_point, &container_box);
     container_point.MoveBy(scroll_offset);

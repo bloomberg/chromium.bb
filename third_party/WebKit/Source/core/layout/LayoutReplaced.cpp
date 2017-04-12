@@ -606,7 +606,7 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
     case kObjectFitContain:
     case kObjectFitScaleDown:
     case kObjectFitCover:
-      final_rect.SetSize(final_rect.size().FitToAspectRatio(
+      final_rect.SetSize(final_rect.Size().FitToAspectRatio(
           intrinsic_size, object_fit == kObjectFitCover
                               ? kAspectRatioFitGrow
                               : kAspectRatioFitShrink));
@@ -680,7 +680,7 @@ LayoutUnit LayoutReplaced::ComputeConstrainedLogicalWidth(
   LayoutUnit margin_end =
       MinimumValueForLength(Style()->MarginEnd(), logical_width);
   logical_width = (logical_width - (margin_start + margin_end +
-                                    (size().Width() - ClientWidth())))
+                                    (Size().Width() - ClientWidth())))
                       .ClampNegativeToZero();
   return ComputeReplacedLogicalWidthRespectingMinMaxWidth(
       logical_width, should_compute_preferred);
@@ -921,7 +921,7 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
 
   if (!InlineBoxWrapper()) {
     // We're a block-level replaced element.  Just return our own dimensions.
-    return LayoutRect(LayoutPoint(), size());
+    return LayoutRect(LayoutPoint(), Size());
   }
 
   RootInlineBox& root = InlineBoxWrapper()->Root();
@@ -930,10 +930,10 @@ LayoutRect LayoutReplaced::LocalSelectionRect() const {
           ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
           : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
   if (root.Block().Style()->IsHorizontalWritingMode())
-    return LayoutRect(LayoutUnit(), new_logical_top, size().Width(),
+    return LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
                       root.SelectionHeight());
   return LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),
-                    size().Height());
+                    Size().Height());
 }
 
 void LayoutReplaced::SetSelectionState(SelectionState state) {

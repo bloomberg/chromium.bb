@@ -251,7 +251,7 @@ NSButtonCell* ThemeMac::Checkbox(ControlStates states,
   }
 
   // Set the control size based off the rectangle we're painting into.
-  SetControlSize(checkbox_cell, CheckboxSizes(), zoomed_rect.size(),
+  SetControlSize(checkbox_cell, CheckboxSizes(), zoomed_rect.Size(),
                  zoom_factor);
 
   // Update the various states we respond to.
@@ -297,7 +297,7 @@ NSButtonCell* ThemeMac::Radio(ControlStates states,
   }
 
   // Set the control size based off the rectangle we're painting into.
-  SetControlSize(radio_cell, RadioSizes(), zoomed_rect.size(), zoom_factor);
+  SetControlSize(radio_cell, RadioSizes(), zoomed_rect.Size(), zoom_factor);
 
   // Update the various states we respond to.
   // Cocoa draws NSMixedState NSRadioButton as NSOnState so we don't want that.
@@ -338,7 +338,7 @@ static void SetUpButtonCell(NSButtonCell* cell,
   } else if ([cell bezelStyle] != NSRoundedBezelStyle)
     [cell setBezelStyle:NSRoundedBezelStyle];
 
-  SetControlSize(cell, sizes, zoomed_rect.size(), zoom_factor);
+  SetControlSize(cell, sizes, zoomed_rect.Size(), zoom_factor);
 
   // Update the various states we respond to.
   UpdateStates(cell, states);
@@ -538,7 +538,7 @@ void ThemeMac::AddVisualOverflow(ControlPart part,
     case kInnerSpinButtonPart: {
       static const int kStepperMargin[4] = {0, 0, 0, 0};
       ControlSize control_size = ControlSizeFromPixelSize(
-          StepperSizes(), zoomed_rect.size(), zoom_factor);
+          StepperSizes(), zoomed_rect.Size(), zoom_factor);
       IntSize zoomed_size = StepperSizes()[control_size];
       zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
       zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);

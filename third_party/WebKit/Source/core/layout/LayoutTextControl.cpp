@@ -324,7 +324,7 @@ void LayoutTextControl::ComputePreferredLogicalWidths() {
 void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
                                         const LayoutPoint& additional_offset,
                                         IncludeBlockVisualOverflowOrNot) const {
-  rects.push_back(LayoutRect(additional_offset, size()));
+  rects.push_back(LayoutRect(additional_offset, Size()));
 }
 
 LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(

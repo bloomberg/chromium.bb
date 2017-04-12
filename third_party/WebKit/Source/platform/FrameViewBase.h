@@ -56,7 +56,7 @@ class PLATFORM_EXPORT FrameViewBase
   int Y() const { return FrameRect().Y(); }
   int Width() const { return FrameRect().Width(); }
   int Height() const { return FrameRect().Height(); }
-  IntSize size() const { return FrameRect().size(); }
+  IntSize Size() const { return FrameRect().Size(); }
   IntPoint Location() const { return FrameRect().Location(); }
 
   virtual void SetFrameRect(const IntRect& frame_rect) {

@@ -67,10 +67,10 @@ void LayoutHTMLCanvas::CanvasSizeChanged() {
   if (!PreferredLogicalWidthsDirty())
     SetPreferredLogicalWidthsDirty();
 
-  LayoutSize old_size = size();
+  LayoutSize old_size = Size();
   UpdateLogicalWidth();
   UpdateLogicalHeight();
-  if (old_size == size() && !HasOverrideLogicalContentWidth() &&
+  if (old_size == Size() && !HasOverrideLogicalContentWidth() &&
       !HasOverrideLogicalContentHeight()) {
     // If we have an override size, then we're probably a flex item, and the
     // check above is insufficient because updateLogical{Width,Height} just

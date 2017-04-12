@@ -1008,7 +1008,7 @@ HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
   // append the placeholder to make sure it follows
   // any unrendered blocks
   LayoutBlockFlow* block = ToLayoutBlockFlow(layout_object);
-  if (block->size().Height() == 0 ||
+  if (block->Size().Height() == 0 ||
       (block->IsListItem() && ToLayoutListItem(block)->IsEmpty()))
     return AppendBlockPlaceholder(container, editing_state);
 

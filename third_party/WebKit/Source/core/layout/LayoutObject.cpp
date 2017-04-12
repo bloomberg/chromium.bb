@@ -3176,7 +3176,7 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
     return;
 
   LayoutBox* box = ToLayoutBox(this);
-  FloatRect local_bounds(FloatPoint(), FloatSize(box->size()));
+  FloatRect local_bounds(FloatPoint(), FloatSize(box->Size()));
   FloatRect abs_bounds = LocalToAbsoluteQuad(local_bounds).BoundingBox();
 
   AnnotatedRegionValue region;

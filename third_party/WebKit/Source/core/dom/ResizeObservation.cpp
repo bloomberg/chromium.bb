@@ -41,7 +41,7 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
     if (target_->IsSVGElement() &&
         ToSVGElement(target_)->IsSVGGraphicsElement()) {
       SVGGraphicsElement& svg = ToSVGGraphicsElement(*target_);
-      return LayoutSize(svg.GetBBox().size());
+      return LayoutSize(svg.GetBBox().Size());
     }
     LayoutBox* layout = target_->GetLayoutBox();
     if (layout)

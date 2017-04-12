@@ -43,7 +43,7 @@ class PLATFORM_EXPORT ScrollbarThemeClient {
   virtual int Y() const = 0;
   virtual int Width() const = 0;
   virtual int Height() const = 0;
-  virtual IntSize size() const = 0;
+  virtual IntSize Size() const = 0;
   virtual IntPoint Location() const = 0;
 
   virtual FrameViewBase* Parent() const = 0;

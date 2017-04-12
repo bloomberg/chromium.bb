@@ -729,7 +729,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     if (CanvasHasFallbackContent())
       return false;
     LayoutHTMLCanvas* canvas = ToLayoutHTMLCanvas(layout_object_);
-    if (canvas->size().Height() <= 1 || canvas->size().Width() <= 1) {
+    if (canvas->Size().Height() <= 1 || canvas->Size().Width() <= 1) {
       if (ignored_reasons)
         ignored_reasons->push_back(IgnoredReason(kAXProbablyPresentational));
       return true;

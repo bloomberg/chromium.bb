@@ -30,7 +30,7 @@ class PLATFORM_EXPORT DoubleRect {
   DoubleRect(const LayoutRect&);
 
   DoublePoint Location() const { return location_; }
-  DoubleSize size() const { return size_; }
+  DoubleSize Size() const { return size_; }
 
   void SetLocation(const DoublePoint& location) { location_ = location; }
   void SetSize(const DoubleSize& size) { size_ = size; }

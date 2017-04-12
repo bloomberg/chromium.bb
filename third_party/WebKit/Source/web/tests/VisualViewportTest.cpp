@@ -353,13 +353,13 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 300), visualViewport.GetScrollOffset());
 
   // Verify the initial size of the visual viewport in the CSS pixels
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), visualViewport.VisibleRect().size());
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), visualViewport.VisibleRect().Size());
 
   // Perform the resizing
   webViewImpl()->Resize(IntSize(200, 100));
 
   // After resizing the scale changes 2.0 -> 4.0
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), visualViewport.VisibleRect().size());
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), visualViewport.VisibleRect().Size());
 
   EXPECT_SIZE_EQ(
       ScrollOffset(0, 625),
@@ -413,12 +413,12 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visualViewport.GetScrollOffset());
 
   // Verify the initial size of the visual viewport in the CSS pixels
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), visualViewport.VisibleRect().size());
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100), visualViewport.VisibleRect().Size());
 
   webViewImpl()->Resize(IntSize(200, 100));
 
   // After resizing the scale changes 2.0 -> 4.0
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), visualViewport.VisibleRect().size());
+  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), visualViewport.VisibleRect().Size());
 
   EXPECT_SIZE_EQ(ScrollOffset(0, 0), frame()->View()->GetScrollOffset());
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visualViewport.GetScrollOffset());
@@ -444,7 +444,7 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
 
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
   EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240),
-                       visualViewport.ContainerLayer()->size());
+                       visualViewport.ContainerLayer()->Size());
 }
 
 // Make sure that the visibleRect method acurately reflects the scale and scroll
@@ -710,7 +710,7 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResizeAndScale) {
   webViewImpl()->UpdateAllLifecyclePhases();
   EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), visualViewport.size());
   EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()),
-                 frame()->View()->FrameRect().size());
+                 frame()->View()->FrameRect().Size());
   visualViewport.SetLocation(FloatPoint(1000, 1000));
   EXPECT_FLOAT_POINT_EQ(FloatPoint(320, 240),
                         visualViewport.VisibleRect().Location());
@@ -741,7 +741,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToContent) {
   // LayerImpl::bounds().
   EXPECT_SIZE_EQ(
       IntSize(200, 267),
-      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().size());
+      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().Size());
 }
 
 // The main FrameView's size should be set such that its the size of the visual
@@ -759,7 +759,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToMinimumScale) {
 
   EXPECT_SIZE_EQ(
       IntSize(100, 160),
-      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().size());
+      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().Size());
 }
 
 // Test that attaching a new frame view resets the size of the inner viewport
@@ -787,7 +787,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   navigateTo(m_baseURL + "viewport-device-width.html");
 
   // Ensure the scroll layer matches the frame view's size.
-  EXPECT_SIZE_EQ(FloatSize(320, 240), visualViewport.ScrollLayer()->size());
+  EXPECT_SIZE_EQ(FloatSize(320, 240), visualViewport.ScrollLayer()->Size());
 
   EXPECT_EQ(static_cast<int>(CompositorSubElementId::kViewport),
             visualViewport.ScrollLayer()->GetElementId().secondaryId);
@@ -812,7 +812,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
 
   EXPECT_SIZE_EQ(
       IntSize(50, 80),
-      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().size());
+      webViewImpl()->MainFrameImpl()->GetFrameView()->FrameRect().Size());
 }
 
 // Test that the visual viewport still gets sized in AutoSize/AutoResize mode.
@@ -974,7 +974,7 @@ TEST_P(VisualViewportTest,
   frameView->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 1000), kProgrammaticScroll);
 
-  EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->FrameRect().size());
+  EXPECT_SIZE_EQ(IntSize(1000, 1000), frameView->FrameRect().Size());
 
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
   visualViewport.SetScale(2);
@@ -1000,7 +1000,7 @@ TEST_P(VisualViewportTest,
                            ->Loader()
                            .GetDocumentLoader()
                            ->GetHistoryItem());
-  EXPECT_LT(frameView->FrameRect().size().Width(), 1000);
+  EXPECT_LT(frameView->FrameRect().Size().Width(), 1000);
   EXPECT_SIZE_EQ(ScrollOffset(0, 1000), firstItem->GetScrollOffset());
 }
 
@@ -1305,13 +1305,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   FrameView& frameView = *webViewImpl()->MainFrameImpl()->GetFrameView();
 
   visualViewport.SetScale(1);
-  EXPECT_SIZE_EQ(IntSize(500, 450), visualViewport.VisibleRect().size());
-  EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.FrameRect().size());
+  EXPECT_SIZE_EQ(IntSize(500, 450), visualViewport.VisibleRect().Size());
+  EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.FrameRect().Size());
 
   // Simulate bringing down the browser controls by 20px.
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
-  EXPECT_SIZE_EQ(IntSize(500, 430), visualViewport.VisibleRect().size());
+  EXPECT_SIZE_EQ(IntSize(500, 430), visualViewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately: the visual viewport
   // should be shrunk by 20px to 430px. The outer viewport was shrunk to
@@ -1330,7 +1330,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, -10.5f / 20);
   EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 440.5f),
-                       visualViewport.VisibleRect().size());
+                       visualViewport.VisibleRect().Size());
 
   // maximumScrollPosition |ceil|s the browser controls adjustment.
   visualViewport.Move(ScrollOffset(10000, 10000));
@@ -1355,15 +1355,15 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   FrameView& frameView = *webViewImpl()->MainFrameImpl()->GetFrameView();
 
   visualViewport.SetScale(2);
-  EXPECT_SIZE_EQ(IntSize(250, 225), visualViewport.VisibleRect().size());
-  EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.FrameRect().size());
+  EXPECT_SIZE_EQ(IntSize(250, 225), visualViewport.VisibleRect().Size());
+  EXPECT_SIZE_EQ(IntSize(1000, 900), frameView.FrameRect().Size());
 
   // Simulate bringing down the browser controls by 20px. Since we're zoomed in,
   // the browser controls take up half as much space (in document-space) than
   // they do at an unzoomed level.
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
-  EXPECT_SIZE_EQ(IntSize(250, 215), visualViewport.VisibleRect().size());
+  EXPECT_SIZE_EQ(IntSize(250, 215), visualViewport.VisibleRect().Size());
 
   // Test that the scroll bounds are adjusted appropriately.
   visualViewport.Move(ScrollOffset(10000, 10000));
@@ -1396,12 +1396,12 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   // Scale out, use a scale that causes fractional rects.
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 0.8f, -1);
-  EXPECT_SIZE_EQ(FloatSize(625, 562.5), visualViewport.VisibleRect().size());
+  EXPECT_SIZE_EQ(FloatSize(625, 562.5), visualViewport.VisibleRect().Size());
 
   // Bring out the browser controls by 11
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 11 / 20.f);
-  EXPECT_SIZE_EQ(FloatSize(625, 548.75), visualViewport.VisibleRect().size());
+  EXPECT_SIZE_EQ(FloatSize(625, 548.75), visualViewport.VisibleRect().Size());
 
   // Ensure max scroll offsets are updated properly.
   visualViewport.Move(ScrollOffset(10000, 10000));
@@ -1440,10 +1440,10 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   visualViewport.SetScale(pageScale);
   EXPECT_SIZE_EQ(
       IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
-      visualViewport.VisibleRect().size());
+      visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight -
                                    browserControlsHeight / minPageScale),
-                 frameView.FrameRect().size());
+                 frameView.FrameRect().Size());
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - browserControlsHeight),
                  visualViewport.size());
 
@@ -1455,7 +1455,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   webViewImpl()->GetBrowserControls().SetShownRatio(0);
 
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
-                 visualViewport.VisibleRect().size());
+                 visualViewport.VisibleRect().Size());
 
   ScrollOffset frameViewExpected =
       expectedMaxFrameViewScrollOffset(visualViewport, frameView);
@@ -1476,9 +1476,9 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
 
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
-                 visualViewport.VisibleRect().size());
+                 visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight),
-                 frameView.FrameRect().size());
+                 frameView.FrameRect().Size());
   EXPECT_SIZE_EQ(
       totalExpected,
       visualViewport.GetScrollOffset() +
@@ -1511,9 +1511,9 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 
   visualViewport.SetScale(pageScale);
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
-                 visualViewport.VisibleRect().size());
+                 visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight),
-                 frameView.FrameRect().size());
+                 frameView.FrameRect().Size());
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
 
   // Scroll all the way to the bottom, showing the the browser controls in the
@@ -1526,7 +1526,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 
   EXPECT_SIZE_EQ(
       IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
-      visualViewport.VisibleRect().size());
+      visualViewport.VisibleRect().Size());
 
   ScrollOffset frameViewExpected(
       0, contentHeight -
@@ -1551,10 +1551,10 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
                  visualViewport.size());
   EXPECT_SIZE_EQ(
       IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
-      visualViewport.VisibleRect().size());
+      visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight -
                                    browserControlsHeight / minPageScale),
-                 frameView.FrameRect().size());
+                 frameView.FrameRect().Size());
   EXPECT_SIZE_EQ(
       totalExpected,
       visualViewport.GetScrollOffset() +
@@ -1693,7 +1693,7 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
 
   EXPECT_POINT_EQ(IntPoint(expectedBounds.Location() - expectedScrollDelta),
                   boundsInViewport.Location());
-  EXPECT_SIZE_EQ(expectedBounds.size(), boundsInViewport.size());
+  EXPECT_SIZE_EQ(expectedBounds.Size(), boundsInViewport.Size());
 }
 
 TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
@@ -1806,7 +1806,7 @@ TEST_P(VisualViewportTest, TestMainFrameInitializationSizing) {
   localFrame->CreateFrameView();
 
   FrameView& frameView = *localFrame->GetFrameView();
-  EXPECT_SIZE_EQ(IntSize(200, 400), frameView.FrameRect().size());
+  EXPECT_SIZE_EQ(IntSize(200, 400), frameView.FrameRect().Size());
   frameView.Dispose();
 }
 
@@ -2152,9 +2152,9 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
       document->GetLayoutView()->Layer()));
   ASSERT_TRUE(compositor->FixedRootBackgroundLayer());
 
-  ASSERT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->size().Width());
+  ASSERT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->Size().Width());
   ASSERT_EQ(pageHeight,
-            compositor->FixedRootBackgroundLayer()->size().Height());
+            compositor->FixedRootBackgroundLayer()->Size().Height());
   ASSERT_EQ(pageWidth, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(smallestHeight, document->View()->GetLayoutSize().Height());
 
@@ -2166,17 +2166,17 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   ASSERT_EQ(smallestHeight, document->View()->GetLayoutSize().Height());
 
   // The background layer's size should have changed though.
-  EXPECT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->size().Width());
+  EXPECT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->Size().Width());
   EXPECT_EQ(smallestHeight,
-            compositor->FixedRootBackgroundLayer()->size().Height());
+            compositor->FixedRootBackgroundLayer()->Size().Height());
 
   webViewImpl->ResizeWithBrowserControls(WebSize(pageWidth, pageHeight),
                                          browserControlsHeight, true);
 
   // The background layer's size should change again.
-  EXPECT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->size().Width());
+  EXPECT_EQ(pageWidth, compositor->FixedRootBackgroundLayer()->Size().Width());
   EXPECT_EQ(pageHeight,
-            compositor->FixedRootBackgroundLayer()->size().Height());
+            compositor->FixedRootBackgroundLayer()->Size().Height());
 
   RuntimeEnabledFeatures::setInertTopControlsEnabled(originalInertTopControls);
 }

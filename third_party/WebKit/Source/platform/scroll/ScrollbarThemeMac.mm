@@ -263,7 +263,7 @@ void ScrollbarThemeMac::PaintTrackBackground(GraphicsContext& context,
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
   LocalCurrentGraphicsContext local_context(context,
-                                            IntRect(IntPoint(), rect.size()));
+                                            IntRect(IntPoint(), rect.Size()));
 
   CGRect frame_rect = scrollbar.FrameRect();
   ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
@@ -291,7 +291,7 @@ void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
   LocalCurrentGraphicsContext local_context(context,
-                                            IntRect(IntPoint(), rect.size()));
+                                            IntRect(IntPoint(), rect.Size()));
 
   ScrollbarPainter scrollbar_painter = PainterForScrollbar(scrollbar);
   [scrollbar_painter setEnabled:scrollbar.Enabled()];
@@ -303,7 +303,7 @@ void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
     int thumb_width = [scrollbar_painter trackWidth];
     draw_rect.SetWidth(thumb_width);
   }
-  [scrollbar_painter setBoundsSize:NSSizeFromCGSize(draw_rect.size())];
+  [scrollbar_painter setBoundsSize:NSSizeFromCGSize(draw_rect.Size())];
 
   [scrollbar_painter setDoubleValue:0];
   [scrollbar_painter setKnobProportion:1];
@@ -318,7 +318,7 @@ void ScrollbarThemeMac::PaintThumb(GraphicsContext& context,
   // will only cause the scrollbar to engorge when moved over the top of the
   // scrollbar area.
   [scrollbar_painter
-      setBoundsSize:NSSizeFromCGSize(scrollbar.FrameRect().size())];
+      setBoundsSize:NSSizeFromCGSize(scrollbar.FrameRect().Size())];
   [scrollbar_painter setKnobAlpha:old_knob_alpha];
 }
 

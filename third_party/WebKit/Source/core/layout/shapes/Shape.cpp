@@ -241,7 +241,7 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
   std::unique_ptr<RasterShapeIntervals> intervals = WTF::WrapUnique(
       new RasterShapeIntervals(margin_rect.Height(), -margin_rect.Y()));
   std::unique_ptr<ImageBuffer> image_buffer =
-      ImageBuffer::Create(image_rect.size());
+      ImageBuffer::Create(image_rect.Size());
 
   if (image && image_buffer) {
     // FIXME: This is not totally correct but it is needed to prevent shapes
@@ -250,7 +250,7 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
     ImageObserverDisabler disabler(image);
     PaintFlags flags;
     IntRect image_source_rect(IntPoint(), image->size());
-    IntRect image_dest_rect(IntPoint(), image_rect.size());
+    IntRect image_dest_rect(IntPoint(), image_rect.Size());
     // TODO(ccameron): No color conversion is required here.
     image->Draw(image_buffer->Canvas(), flags, image_dest_rect,
                 image_source_rect, kDoNotRespectImageOrientation,
@@ -258,7 +258,7 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
 
     WTF::ArrayBufferContents contents;
     image_buffer->GetImageData(
-        kUnmultiplied, IntRect(IntPoint(), image_rect.size()), contents);
+        kUnmultiplied, IntRect(IntPoint(), image_rect.Size()), contents);
     DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
     DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
         array_buffer, 0, array_buffer->ByteLength());
@@ -293,7 +293,7 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
   }
 
   std::unique_ptr<RasterShape> raster_shape = WTF::WrapUnique(
-      new RasterShape(std::move(intervals), margin_rect.size()));
+      new RasterShape(std::move(intervals), margin_rect.Size()));
   raster_shape->writing_mode_ = writing_mode;
   raster_shape->margin_ = margin;
   return std::move(raster_shape);

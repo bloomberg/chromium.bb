@@ -84,7 +84,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
       !inline_flow_box_.Parent()) {
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer, rect,
                                kBackgroundBleedNone, &inline_flow_box_,
-                               rect.size(), op);
+                               rect.Size(), op);
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == kBoxDecorationBreakClone) {
@@ -92,7 +92,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer, rect,
                                kBackgroundBleedNone, &inline_flow_box_,
-                               rect.size(), op);
+                               rect.Size(), op);
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -105,7 +105,7 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     BoxPainter::PaintFillLayer(*box_model, paint_info, c, fill_layer,
                                image_strip_paint_rect, kBackgroundBleedNone,
-                               &inline_flow_box_, rect.size(), op);
+                               &inline_flow_box_, rect.Size(), op);
   }
 }
 
@@ -286,7 +286,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
 
   LayoutRect adjusted_frame_rect =
-      LayoutRect(adjusted_paint_offset, frame_rect.size());
+      LayoutRect(adjusted_paint_offset, frame_rect.Size());
 
   IntRect adjusted_clip_rect;
   BorderPaintingType border_painting_type =
@@ -319,7 +319,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
       // obviously not right, but it isn't even clear how this should work at
       // all.
       LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-          adjusted_paint_offset, frame_rect.size(), TextDirection::kLtr);
+          adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
       GraphicsContextStateSaver state_saver(paint_info.context);
       paint_info.context.Clip(adjusted_clip_rect);
       BoxPainter::PaintBorder(
@@ -381,7 +381,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     }
   }
 
-  LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.size());
+  LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   PaintFillLayers(paint_info, Color::kTransparent,
                   inline_flow_box_.GetLineLayoutItem().Style()->MaskLayers(),
                   paint_rect, composite_op);
@@ -407,7 +407,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     // FIXME: What the heck do we do with RTL here? The math we're using is
     // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-        adjusted_paint_offset, frame_rect.size(), TextDirection::kLtr);
+        adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
     FloatRect clip_rect(ClipRectForNinePieceImageStrip(
         inline_flow_box_, mask_nine_piece_image, paint_rect));
     GraphicsContextStateSaver state_saver(paint_info.context);

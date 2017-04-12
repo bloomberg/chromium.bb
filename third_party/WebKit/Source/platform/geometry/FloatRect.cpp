@@ -36,10 +36,10 @@
 namespace blink {
 
 FloatRect::FloatRect(const IntRect& r)
-    : location_(r.Location()), size_(r.size()) {}
+    : location_(r.Location()), size_(r.Size()) {}
 
 FloatRect::FloatRect(const LayoutRect& r)
-    : location_(r.Location()), size_(r.size()) {}
+    : location_(r.Location()), size_(r.Size()) {}
 
 FloatRect::FloatRect(const SkRect& r)
     : location_(r.fLeft, r.fTop), size_(r.width(), r.height()) {}
@@ -194,7 +194,7 @@ IntRect EnclosedIntRect(const FloatRect& rect) {
 }
 
 IntRect RoundedIntRect(const FloatRect& rect) {
-  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.size()));
+  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.Size()));
 }
 
 FloatRect MapRect(const FloatRect& r,
@@ -212,7 +212,7 @@ FloatRect MapRect(const FloatRect& r,
 
 String FloatRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().Data(),
-                        size().ToString().Ascii().Data());
+                        Size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

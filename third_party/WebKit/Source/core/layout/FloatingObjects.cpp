@@ -106,7 +106,7 @@ std::unique_ptr<FloatingObject> FloatingObject::CopyToNewContainer(
     bool is_descendant) const {
   return WTF::WrapUnique(new FloatingObject(
       GetLayoutObject(), GetType(),
-      LayoutRect(FrameRect().Location() - offset, FrameRect().size()),
+      LayoutRect(FrameRect().Location() - offset, FrameRect().Size()),
       should_paint, is_descendant, IsLowestNonOverhangingFloatInChild()));
 }
 

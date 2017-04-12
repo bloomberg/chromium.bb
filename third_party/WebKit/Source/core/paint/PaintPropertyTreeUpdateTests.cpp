@@ -723,7 +723,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
 
   auto* container = GetLayoutObjectByElementId("container");
   auto* overflow_clip = container->PaintProperties()->OverflowClip();
-  EXPECT_EQ(FloatSize(80, 80), overflow_clip->ClipRect().Rect().size());
+  EXPECT_EQ(FloatSize(80, 80), overflow_clip->ClipRect().Rect().Size());
 
   auto* new_style = GetDocument().createElement("style");
   new_style->setTextContent("::-webkit-scrollbar {width: 40px; height: 40px}");
@@ -731,7 +731,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(overflow_clip, container->PaintProperties()->OverflowClip());
-  EXPECT_EQ(FloatSize(60, 60), overflow_clip->ClipRect().Rect().size());
+  EXPECT_EQ(FloatSize(60, 60), overflow_clip->ClipRect().Rect().Size());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {

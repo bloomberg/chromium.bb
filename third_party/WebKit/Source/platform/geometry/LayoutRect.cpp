@@ -40,10 +40,10 @@
 namespace blink {
 
 LayoutRect::LayoutRect(const FloatRect& r)
-    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.size())) {}
+    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.Size())) {}
 
 LayoutRect::LayoutRect(const DoubleRect& r)
-    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.size())) {}
+    : location_(LayoutPoint(r.Location())), size_(LayoutSize(r.Size())) {}
 
 bool LayoutRect::Intersects(const LayoutRect& other) const {
   // Checking emptiness handles negative widths as well as zero.
@@ -161,7 +161,7 @@ LayoutRect EnclosingLayoutRect(const FloatRect& rect) {
 
 String LayoutRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().Data(),
-                        size().ToString().Ascii().Data());
+                        Size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

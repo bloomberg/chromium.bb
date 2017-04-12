@@ -34,7 +34,7 @@ void ViewPaintInvalidator::InvalidateBackgroundIfNeeded() {
 
   const LayoutBox& background_box = ToLayoutBox(*background_object);
   LayoutSize old_size = background_box.PreviousSize();
-  LayoutSize new_size = background_box.size();
+  LayoutSize new_size = background_box.Size();
   const auto& background_layers = view_.StyleRef().BackgroundLayers();
   if ((old_size.Width() != new_size.Width() &&
        LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(

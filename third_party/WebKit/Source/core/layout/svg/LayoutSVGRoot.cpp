@@ -76,7 +76,7 @@ void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
   if (!intrinsic_sizing_info.size.IsEmpty()) {
     intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   } else {
-    FloatSize view_box_size = svg->viewBox()->CurrentValue()->Value().size();
+    FloatSize view_box_size = svg->viewBox()->CurrentValue()->Value().Size();
     if (!view_box_size.IsEmpty()) {
       // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
       intrinsic_sizing_info.aspect_ratio = view_box_size;
@@ -141,7 +141,7 @@ void LayoutSVGRoot::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  LayoutSize old_size = size();
+  LayoutSize old_size = Size();
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
@@ -169,7 +169,7 @@ void LayoutSVGRoot::UpdateLayout() {
   // selfNeedsLayout() will cover changes to one (or more) of viewBox,
   // current{Scale,Translate}, decorations and 'overflow'.
   const bool viewport_may_have_changed =
-      SelfNeedsLayout() || old_size != size();
+      SelfNeedsLayout() || old_size != Size();
 
   // The scale of one or more of the SVG elements may have changed, content
   // (the entire SVG) could have moved or new content may have been exposed, so
@@ -486,7 +486,7 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
     // detect hits on the background of a <div> element.
     // If we'd return true here in the 'Foreground' phase, we are not able to
     // detect these hits anymore.
-    LayoutRect bounds_rect(accumulated_offset + Location(), size());
+    LayoutRect bounds_rect(accumulated_offset + Location(), Size());
     if (location_in_container.Intersects(bounds_rect)) {
       UpdateHitTestResult(result, point_in_border_box);
       if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,

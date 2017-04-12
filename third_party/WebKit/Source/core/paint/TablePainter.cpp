@@ -76,7 +76,7 @@ void TablePainter::PaintBoxDecorationBackground(
       layout_table_.Style()->Visibility() != EVisibility::kVisible)
     return;
 
-  LayoutRect rect(paint_offset, layout_table_.size());
+  LayoutRect rect(paint_offset, layout_table_.Size());
   layout_table_.SubtractCaptionRect(rect);
   BoxPainter(layout_table_)
       .PaintBoxDecorationBackgroundWithRect(paint_info, paint_offset, rect);
@@ -92,7 +92,7 @@ void TablePainter::PaintMask(const PaintInfo& paint_info,
           paint_info.context, layout_table_, paint_info.phase))
     return;
 
-  LayoutRect rect(paint_offset, layout_table_.size());
+  LayoutRect rect(paint_offset, layout_table_.Size());
   layout_table_.SubtractCaptionRect(rect);
 
   LayoutObjectDrawingRecorder recorder(paint_info.context, layout_table_,

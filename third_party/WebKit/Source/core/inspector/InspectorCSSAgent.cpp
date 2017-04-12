@@ -2258,7 +2258,7 @@ Response InspectorCSSAgent::getBackgroundColors(
       continue;
     text_bounds.Unite(LayoutRect(child->AbsoluteBoundingBoxRect()));
   }
-  if (text_bounds.size().IsEmpty())
+  if (text_bounds.Size().IsEmpty())
     return Response::OK();
 
   Vector<Color> colors;

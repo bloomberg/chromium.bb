@@ -458,18 +458,18 @@ void VisualViewport::SetupScrollbar(WebScrollbar::Orientation orientation) {
 
   int x_position = is_horizontal
                        ? 0
-                       : inner_viewport_container_layer_->size().Width() -
+                       : inner_viewport_container_layer_->Size().Width() -
                              scrollbar_thickness;
   int y_position = is_horizontal
-                       ? inner_viewport_container_layer_->size().Height() -
+                       ? inner_viewport_container_layer_->Size().Height() -
                              scrollbar_thickness
                        : 0;
-  int width = is_horizontal ? inner_viewport_container_layer_->size().Width() -
+  int width = is_horizontal ? inner_viewport_container_layer_->Size().Width() -
                                   scrollbar_thickness
                             : scrollbar_thickness;
   int height = is_horizontal
                    ? scrollbar_thickness
-                   : inner_viewport_container_layer_->size().Height() -
+                   : inner_viewport_container_layer_->Size().Height() -
                          scrollbar_thickness;
 
   // Use the GraphicsLayer to position the scrollbars.
@@ -613,7 +613,7 @@ IntSize VisualViewport::ContentsSize() const {
     return IntSize();
 
   // TODO(bokan): This should be the layout viewport rather than main FrameView.
-  return frame->View()->VisibleContentRect(kIncludeScrollbars).size();
+  return frame->View()->VisibleContentRect(kIncludeScrollbars).Size();
 }
 
 IntRect VisualViewport::VisibleContentRect(

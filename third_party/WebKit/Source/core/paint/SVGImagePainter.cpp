@@ -76,7 +76,7 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   interpolation_quality = ImageQualityController::GetImageQualityController()
                               ->ChooseInterpolationQuality(
                                   layout_svg_image_, image.Get(), image.Get(),
-                                  LayoutSize(dest_rect.size()));
+                                  LayoutSize(dest_rect.Size()));
 
   InterpolationQuality previous_interpolation_quality =
       paint_info.context.ImageInterpolationQuality();
@@ -93,7 +93,7 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
           ->preserveAspectRatio()
           ->CurrentValue()
           ->Align() != SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
-    return layout_svg_image_.ObjectBoundingBox().size();
+    return layout_svg_image_.ObjectBoundingBox().Size();
 
   ImageResourceContent* cached_image =
       layout_svg_image_.ImageResource()->CachedImage();
@@ -108,9 +108,10 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
   if (cached_image->ErrorOccurred())
     return FloatSize();
 
-  if (cached_image->GetImage()->IsSVGImage())
+  if (cached_image->GetImage()->IsSVGImage()) {
     return ToSVGImage(cached_image->GetImage())
-        ->ConcreteObjectSize(layout_svg_image_.ObjectBoundingBox().size());
+        ->ConcreteObjectSize(layout_svg_image_.ObjectBoundingBox().Size());
+  }
 
   return FloatSize(cached_image->GetImage()->size());
 }

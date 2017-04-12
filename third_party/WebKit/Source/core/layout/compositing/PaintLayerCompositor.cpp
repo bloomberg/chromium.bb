@@ -829,7 +829,7 @@ void PaintLayerCompositor::UpdateRootLayerPosition() {
         IntRect(document_rect.Location(),
                 layout_view_.GetFrameView()->VisibleContentSize()));
 
-    root_content_layer_->SetSize(FloatSize(document_rect.size()));
+    root_content_layer_->SetSize(FloatSize(document_rect.Size()));
     root_content_layer_->SetPosition(document_rect.Location());
   }
   if (container_layer_)
@@ -898,7 +898,7 @@ static void PaintScrollbar(const GraphicsLayer* graphics_layer,
 IntRect PaintLayerCompositor::ComputeInterestRect(
     const GraphicsLayer* graphics_layer,
     const IntRect&) const {
-  return EnclosingIntRect(FloatRect(FloatPoint(), graphics_layer->size()));
+  return EnclosingIntRect(FloatRect(FloatPoint(), graphics_layer->Size()));
 }
 
 void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
@@ -917,7 +917,7 @@ void PaintLayerCompositor::PaintContents(const GraphicsLayer* graphics_layer,
           context, *graphics_layer, DisplayItem::kScrollbarCompositedScrollbar))
     return;
 
-  FloatRect layer_bounds(FloatPoint(), graphics_layer->size());
+  FloatRect layer_bounds(FloatPoint(), graphics_layer->Size());
   PaintRecordBuilder builder(layer_bounds, nullptr, &context);
 
   if (scrollbar) {

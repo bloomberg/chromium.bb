@@ -171,7 +171,7 @@ IntRect UnionRectEvenIfEmpty(const Vector<IntRect>& rects) {
 
 String IntRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().Data(),
-                        size().ToString().Ascii().Data());
+                        Size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

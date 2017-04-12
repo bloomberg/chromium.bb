@@ -32,11 +32,12 @@ void BeginCompositingDisplayItem::DumpPropertiesAsDebugString(
   DisplayItem::DumpPropertiesAsDebugString(string_builder);
   string_builder.Append(WTF::String::Format(
       ", xferMode: %d, opacity: %f", static_cast<int>(xfer_mode_), opacity_));
-  if (has_bounds_)
+  if (has_bounds_) {
     string_builder.Append(
         WTF::String::Format(", bounds: [%f, %f, %f, %f]",
                             bounds_.Location().X(), bounds_.Location().Y(),
-                            bounds_.size().Width(), bounds_.size().Height()));
+                            bounds_.Size().Width(), bounds_.Size().Height()));
+  }
 }
 #endif
 

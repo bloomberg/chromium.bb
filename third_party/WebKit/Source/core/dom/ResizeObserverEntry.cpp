@@ -14,7 +14,7 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target,
                                          const LayoutRect& content_rect)
     : target_(target) {
   content_rect_ = ClientRect::Create(FloatRect(
-      FloatPoint(content_rect.Location()), FloatSize(content_rect.size())));
+      FloatPoint(content_rect.Location()), FloatSize(content_rect.Size())));
 }
 
 DEFINE_TRACE(ResizeObserverEntry) {

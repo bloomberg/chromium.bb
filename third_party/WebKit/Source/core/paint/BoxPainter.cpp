@@ -561,7 +561,7 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
 
   const FloatSize intrinsic_tile_size =
       image_context.GetImage()->HasRelativeSize()
-          ? image_tile.size()
+          ? image_tile.Size()
           : FloatSize(image_context.GetImage()->size());
   const FloatRect src_rect = Image::ComputeSubsetForTile(
       image_tile, border.Rect(), intrinsic_tile_size);
@@ -784,7 +784,7 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
 
   LayoutObjectDrawingRecorder recorder(paint_info.context, layout_box_,
                                        paint_info.phase, visual_overflow_rect);
-  LayoutRect paint_rect = LayoutRect(paint_offset, layout_box_.size());
+  LayoutRect paint_rect = LayoutRect(paint_offset, layout_box_.Size());
   PaintMaskImages(paint_info, paint_rect);
 }
 
@@ -843,7 +843,7 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
     return;
 
   IntRect paint_rect =
-      PixelSnappedIntRect(LayoutRect(paint_offset, layout_box_.size()));
+      PixelSnappedIntRect(LayoutRect(paint_offset, layout_box_.Size()));
   LayoutObjectDrawingRecorder drawing_recorder(paint_info.context, layout_box_,
                                                paint_info.phase, paint_rect);
   paint_info.context.FillRect(paint_rect, Color::kBlack);

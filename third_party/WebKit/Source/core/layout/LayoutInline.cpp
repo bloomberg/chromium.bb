@@ -667,14 +667,14 @@ void LayoutInline::GenerateCulledLineBoxRects(
         if (is_horizontal) {
           yield(LayoutRect(
               curr_box->InlineBoxWrapper()->X() - curr_box->MarginLeft(),
-              logical_top, curr_box->size().Width() + curr_box->MarginWidth(),
+              logical_top, curr_box->Size().Width() + curr_box->MarginWidth(),
               logical_height));
         } else {
           yield(LayoutRect(
               logical_top,
               curr_box->InlineBoxWrapper()->Y() - curr_box->MarginTop(),
               logical_height,
-              curr_box->size().Height() + curr_box->MarginHeight()));
+              curr_box->Size().Height() + curr_box->MarginHeight()));
         }
       }
     } else if (curr->IsLayoutInline()) {

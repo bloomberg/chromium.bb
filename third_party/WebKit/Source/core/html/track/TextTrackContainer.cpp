@@ -103,7 +103,7 @@ void TextTrackContainer::UpdateDefaultFontSize(
   // for cue rendering. This is inconsistent. See also the somewhat related
   // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
   LayoutSize video_size =
-      ToLayoutVideo(*media_layout_object).ReplacedContentRect().size();
+      ToLayoutVideo(*media_layout_object).ReplacedContentRect().Size();
   LayoutUnit smallest_dimension =
       std::min(video_size.Height(), video_size.Width());
   float font_size = smallest_dimension * 0.05f;

@@ -140,7 +140,7 @@ GraphicsLayer::~GraphicsLayer() {
 }
 
 LayoutRect GraphicsLayer::VisualRect() const {
-  LayoutRect bounds = LayoutRect(FloatPoint(), size());
+  LayoutRect bounds = LayoutRect(FloatPoint(), Size());
   bounds.Move(OffsetFromLayoutObjectWithSubpixelAccumulation());
   return bounds;
 }
@@ -372,8 +372,8 @@ void GraphicsLayer::UpdateContentsRect() {
       IntSize(contents_rect_.Width(), contents_rect_.Height()));
 
   if (contents_clipping_mask_layer_) {
-    if (contents_clipping_mask_layer_->size() != contents_rect_.size()) {
-      contents_clipping_mask_layer_->SetSize(FloatSize(contents_rect_.size()));
+    if (contents_clipping_mask_layer_->Size() != contents_rect_.Size()) {
+      contents_clipping_mask_layer_->SetSize(FloatSize(contents_rect_.Size()));
       contents_clipping_mask_layer_->SetNeedsDisplay();
     }
     contents_clipping_mask_layer_->SetPosition(FloatPoint());
@@ -1184,7 +1184,7 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   if (!DrawsContent())
     return nullptr;
 
-  FloatRect bounds(IntRect(IntPoint(0, 0), ExpandedIntSize(size())));
+  FloatRect bounds(IntRect(IntPoint(0, 0), ExpandedIntSize(Size())));
   GraphicsContext graphics_context(GetPaintController(),
                                    GraphicsContext::kNothingDisabled, nullptr);
   graphics_context.BeginRecording(bounds);

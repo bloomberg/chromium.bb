@@ -34,7 +34,7 @@ void FramePainter::Paint(GraphicsContext& context,
 
   IntRect document_dirty_rect = rect.rect_;
   IntRect visible_area_without_scrollbars(
-      GetFrameView().Location(), GetFrameView().VisibleContentRect().size());
+      GetFrameView().Location(), GetFrameView().VisibleContentRect().Size());
   document_dirty_rect.Intersect(visible_area_without_scrollbars);
   document_dirty_rect.MoveBy(-GetFrameView().Location() +
                              GetFrameView().ScrollOffsetInt());
@@ -86,7 +86,7 @@ void FramePainter::Paint(GraphicsContext& context,
     IntRect scroll_view_dirty_rect = rect.rect_;
     IntRect visible_area_with_scrollbars(
         GetFrameView().Location(),
-        GetFrameView().VisibleContentRect(kIncludeScrollbars).size());
+        GetFrameView().VisibleContentRect(kIncludeScrollbars).Size());
     scroll_view_dirty_rect.Intersect(visible_area_with_scrollbars);
     scroll_view_dirty_rect.MoveBy(-GetFrameView().Location());
 
@@ -117,7 +117,7 @@ void FramePainter::Paint(GraphicsContext& context,
     ClipRecorder recorder(
         context, *GetFrameView().GetLayoutView(),
         DisplayItem::kClipFrameScrollbars,
-        IntRect(IntPoint(), visible_area_with_scrollbars.size()));
+        IntRect(IntPoint(), visible_area_with_scrollbars.Size()));
 
     PaintScrollbars(context, scroll_view_dirty_rect);
   }

@@ -3036,7 +3036,7 @@ WebFloatPoint WebViewImpl::VisualViewportOffset() const {
 
 WebFloatSize WebViewImpl::VisualViewportSize() const {
   DCHECK(GetPage());
-  return GetPage()->GetVisualViewport().VisibleRect().size();
+  return GetPage()->GetVisualViewport().VisibleRect().Size();
 }
 
 void WebViewImpl::ScrollAndRescaleViewports(
@@ -3316,7 +3316,7 @@ IntSize WebViewImpl::ContentsSize() const {
       GetPage()->DeprecatedLocalMainFrame()->ContentLayoutItem();
   if (root.IsNull())
     return IntSize();
-  return root.DocumentRect().size();
+  return root.DocumentRect().Size();
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
@@ -3720,7 +3720,7 @@ void WebViewImpl::PostLayoutResize(WebLocalFrameImpl* webframe) {
   if (webframe == MainFrame())
     resize_viewport_anchor_->ResizeFrameView(MainFrameSize());
   else
-    view->Resize(webframe->GetFrameView()->size());
+    view->Resize(webframe->GetFrameView()->Size());
 }
 
 void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
@@ -3729,7 +3729,7 @@ void WebViewImpl::LayoutUpdated(WebLocalFrameImpl* webframe) {
     return;
 
   if (should_auto_resize_) {
-    WebSize frame_size = frame->View()->FrameRect().size();
+    WebSize frame_size = frame->View()->FrameRect().Size();
     if (frame_size != size_) {
       size_ = frame_size;
 

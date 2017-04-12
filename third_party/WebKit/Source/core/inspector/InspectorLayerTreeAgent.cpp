@@ -368,7 +368,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   if (!layer->DrawsContent())
     return Response::Error("Layer does not draw content");
 
-  IntSize size = ExpandedIntSize(layer->size());
+  IntSize size = ExpandedIntSize(layer->Size());
 
   IntRect interest_rect(IntPoint(0, 0), size);
   suppress_layer_paint_events_ = true;

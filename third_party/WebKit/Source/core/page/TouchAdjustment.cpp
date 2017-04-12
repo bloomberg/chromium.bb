@@ -374,7 +374,7 @@ float ZoomableIntersectionQuotient(const IntPoint& touch_hotspot,
   intersection.Intersect(touch_area);
 
   // Return the quotient of the intersection.
-  return rect.size().Area() / (float)intersection.size().Area();
+  return rect.Size().Area() / (float)intersection.Size().Area();
 }
 
 // Uses a hybrid of distance to adjust and intersect ratio, normalizing each
@@ -390,7 +390,7 @@ float HybridDistanceFunction(const IntPoint& touch_hotspot,
   IntRect rect = subtarget.GetNode()->GetDocument().View()->ContentsToRootFrame(
       subtarget.BoundingBox());
 
-  float radius_squared = 0.25f * (touch_rect.size().DiagonalLengthSquared());
+  float radius_squared = 0.25f * (touch_rect.Size().DiagonalLengthSquared());
   float distance_to_adjust_score =
       rect.DistanceSquaredToPoint(touch_hotspot) / radius_squared;
 
@@ -398,7 +398,7 @@ float HybridDistanceFunction(const IntPoint& touch_hotspot,
   int max_overlap_height = std::min(touch_rect.Height(), rect.Height());
   float max_overlap_area = std::max(max_overlap_width * max_overlap_height, 1);
   rect.Intersect(touch_rect);
-  float intersect_area = rect.size().Area();
+  float intersect_area = rect.Size().Area();
   float intersection_score = 1 - intersect_area / max_overlap_area;
 
   float hybrid_score = intersection_score + distance_to_adjust_score;

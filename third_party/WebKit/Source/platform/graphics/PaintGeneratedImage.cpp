@@ -19,7 +19,7 @@ void PaintGeneratedImage::Draw(PaintCanvas* canvas,
   PaintCanvasAutoRestore ar(canvas, true);
   canvas->clipRect(dest_rect);
   canvas->translate(dest_rect.X(), dest_rect.Y());
-  if (dest_rect.size() != src_rect.size())
+  if (dest_rect.Size() != src_rect.Size())
     canvas->scale(dest_rect.Width() / src_rect.Width(),
                   dest_rect.Height() / src_rect.Height());
   canvas->translate(-src_rect.X(), -src_rect.Y());

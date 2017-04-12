@@ -259,7 +259,7 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
   bool path_has_changed = !(new_path == path_);
   if (path_has_changed) {
     path_ = new_path;
-    content_layer_->Layer()->SetBounds(EnclosingIntRect(bounding_rect).size());
+    content_layer_->Layer()->SetBounds(EnclosingIntRect(bounding_rect).Size());
   }
 
   content_layer_->Layer()->SetPosition(bounding_rect.Location());

@@ -12,13 +12,13 @@
 namespace blink {
 
 DoubleRect::DoubleRect(const IntRect& r)
-    : location_(r.Location()), size_(r.size()) {}
+    : location_(r.Location()), size_(r.Size()) {}
 
 DoubleRect::DoubleRect(const FloatRect& r)
-    : location_(r.Location()), size_(r.size()) {}
+    : location_(r.Location()), size_(r.Size()) {}
 
 DoubleRect::DoubleRect(const LayoutRect& r)
-    : location_(r.Location()), size_(r.size()) {}
+    : location_(r.Location()), size_(r.Size()) {}
 
 IntRect EnclosingIntRect(const DoubleRect& rect) {
   IntPoint location = FlooredIntPoint(rect.MinXMinYCorner());
@@ -37,7 +37,7 @@ IntRect EnclosedIntRect(const DoubleRect& rect) {
 }
 
 IntRect RoundedIntRect(const DoubleRect& rect) {
-  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.size()));
+  return IntRect(RoundedIntPoint(rect.Location()), RoundedIntSize(rect.Size()));
 }
 
 void DoubleRect::Scale(float sx, float sy) {
@@ -49,7 +49,7 @@ void DoubleRect::Scale(float sx, float sy) {
 
 String DoubleRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().Data(),
-                        size().ToString().Ascii().Data());
+                        Size().ToString().Ascii().Data());
 }
 
 }  // namespace blink

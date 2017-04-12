@@ -451,9 +451,9 @@ LayoutRect LayoutTableCell::LocalVisualRect() const {
       std::max(LayoutUnit(left), -self_visual_overflow_rect.X()),
       std::max(LayoutUnit(top), -self_visual_overflow_rect.Y()));
   return LayoutRect(-location.X(), -location.Y(),
-                    location.X() + std::max(size().Width() + right,
+                    location.X() + std::max(Size().Width() + right,
                                             self_visual_overflow_rect.MaxX()),
-                    location.Y() + std::max(size().Height() + bottom,
+                    location.Y() + std::max(Size().Height() + bottom,
                                             self_visual_overflow_rect.MaxY()));
 }
 
@@ -1466,8 +1466,8 @@ void LayoutTableCell::InvalidateDisplayItemClients(
 // are captured by the results.
 LayoutRect LayoutTableCell::DebugRect() const {
   LayoutRect rect = LayoutRect(
-      Location().X(), Location().Y() + IntrinsicPaddingBefore(), size().Width(),
-      size().Height() - IntrinsicPaddingBefore() - IntrinsicPaddingAfter());
+      Location().X(), Location().Y() + IntrinsicPaddingBefore(), Size().Width(),
+      Size().Height() - IntrinsicPaddingBefore() - IntrinsicPaddingAfter());
 
   LayoutBlock* cb = ContainingBlock();
   if (cb)

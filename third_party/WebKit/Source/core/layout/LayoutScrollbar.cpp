@@ -64,7 +64,7 @@ LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollable_area,
   UpdateScrollbarPart(kScrollbarBGPart);
   if (LayoutScrollbarPart* part = parts_.at(kScrollbarBGPart)) {
     part->UpdateLayout();
-    rect.SetSize(FlooredIntSize(part->size()));
+    rect.SetSize(FlooredIntSize(part->Size()));
   } else if (this->Orientation() == kHorizontalScrollbar) {
     rect.SetWidth(this->Width());
   } else {
@@ -176,7 +176,7 @@ void LayoutScrollbar::UpdateScrollbarParts(bool destroy) {
   if (part) {
     part->UpdateLayout();
     new_thickness =
-        (is_horizontal ? part->size().Height() : part->size().Width()).ToInt();
+        (is_horizontal ? part->Size().Height() : part->Size().Width()).ToInt();
   }
 
   if (new_thickness != old_thickness) {
@@ -378,8 +378,8 @@ int LayoutScrollbar::MinimumThumbLength() const {
     return 0;
   part_layout_object->UpdateLayout();
   return (Orientation() == kHorizontalScrollbar
-              ? part_layout_object->size().Width()
-              : part_layout_object->size().Height())
+              ? part_layout_object->Size().Width()
+              : part_layout_object->Size().Height())
       .ToInt();
 }
 

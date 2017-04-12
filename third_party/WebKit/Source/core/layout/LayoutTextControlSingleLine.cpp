@@ -80,9 +80,9 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
 
     // Center in the block progression direction.
     if (IsHorizontalWritingMode())
-      contents_rect.SetY((size().Height() - contents_rect.Height()) / 2);
+      contents_rect.SetY((Size().Height() - contents_rect.Height()) / 2);
     else
-      contents_rect.SetX((size().Width() - contents_rect.Width()) / 2);
+      contents_rect.SetX((Size().Width() - contents_rect.Width()) / 2);
 
     // Convert the rect into the coords used for painting the content
     contents_rect.MoveBy(paint_offset + Location());
@@ -106,14 +106,14 @@ void LayoutTextControlSingleLine::UpdateLayout() {
   // Center the child block in the block progression direction (vertical
   // centering for horizontal text fields).
   if (!container && inner_editor_layout_object &&
-      inner_editor_layout_object->size().Height() != ContentLogicalHeight()) {
+      inner_editor_layout_object->Size().Height() != ContentLogicalHeight()) {
     LayoutUnit logical_height_diff =
         inner_editor_layout_object->LogicalHeight() - ContentLogicalHeight();
     inner_editor_layout_object->SetLogicalTop(
         inner_editor_layout_object->LogicalTop() -
         (logical_height_diff / 2 + LayoutMod(logical_height_diff, 2)));
   } else if (container && container_layout_object &&
-             container_layout_object->size().Height() !=
+             container_layout_object->Size().Height() !=
                  ContentLogicalHeight()) {
     LayoutUnit logical_height_diff =
         container_layout_object->LogicalHeight() - ContentLogicalHeight();
@@ -128,7 +128,7 @@ void LayoutTextControlSingleLine::UpdateLayout() {
     LayoutSize inner_editor_size;
 
     if (inner_editor_layout_object)
-      inner_editor_size = inner_editor_layout_object->size();
+      inner_editor_size = inner_editor_layout_object->Size();
     placeholder_box->MutableStyleRef().SetWidth(Length(
         inner_editor_size.Width() - placeholder_box->BorderAndPaddingWidth(),
         kFixed));

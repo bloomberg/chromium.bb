@@ -137,7 +137,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     // inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
                        DisplayItem::kForeignLayerPlugin, web_layer_, Location(),
-                       size());
+                       Size());
     return;
   }
 

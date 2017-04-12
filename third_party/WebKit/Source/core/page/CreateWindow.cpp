@@ -95,7 +95,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   // for the difference between the window size and the viewport size.
 
   IntRect window_rect = page->GetChromeClient().RootWindowRect();
-  IntSize viewport_size = page->GetChromeClient().PageRect().size();
+  IntSize viewport_size = page->GetChromeClient().PageRect().Size();
 
   if (features.x_set)
     window_rect.SetX(features.x);

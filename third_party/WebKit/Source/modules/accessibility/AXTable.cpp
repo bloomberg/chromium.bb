@@ -213,7 +213,7 @@ bool AXTable::IsDataTable() const {
       if (!cell_node)
         continue;
 
-      if (cell->size().Width() < 1 || cell->size().Height() < 1)
+      if (cell->Size().Width() < 1 || cell->Size().Height() < 1)
         continue;
 
       valid_cell_count++;

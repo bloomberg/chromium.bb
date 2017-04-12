@@ -87,7 +87,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
   LayoutObjectDrawingRecorder recorder(paint_info.context, layout_table_row_,
                                        DisplayItem::kBoxDecorationBackground,
                                        bounds);
-  LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.size());
+  LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.Size());
 
   if (has_box_shadow) {
     BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,

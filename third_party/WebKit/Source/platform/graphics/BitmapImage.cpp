@@ -286,7 +286,7 @@ void BitmapImage::Draw(
     adjusted_dst_rect.SetLocation(FloatPoint());
 
     canvas->concat(AffineTransformToSkMatrix(
-        orientation.TransformFromDefault(adjusted_dst_rect.size())));
+        orientation.TransformFromDefault(adjusted_dst_rect.Size())));
 
     if (orientation.UsesWidthAsHeight()) {
       // The destination rect will have its width and height already reversed

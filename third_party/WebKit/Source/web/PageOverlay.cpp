@@ -97,7 +97,7 @@ void PageOverlay::Update() {
   }
 
   FloatSize size(frame->GetPage()->GetVisualViewport().size());
-  if (size != layer_->size())
+  if (size != layer_->Size())
     layer_->SetSize(size);
 
   layer_->SetNeedsDisplay();
@@ -105,12 +105,12 @@ void PageOverlay::Update() {
 
 LayoutRect PageOverlay::VisualRect() const {
   DCHECK(layer_.get());
-  return LayoutRect(FloatPoint(), layer_->size());
+  return LayoutRect(FloatPoint(), layer_->Size());
 }
 
 IntRect PageOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
                                          const IntRect&) const {
-  return IntRect(IntPoint(), ExpandedIntSize(layer_->size()));
+  return IntRect(IntPoint(), ExpandedIntSize(layer_->Size()));
 }
 
 void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,
@@ -118,7 +118,7 @@ void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,
                                 GraphicsLayerPaintingPhase phase,
                                 const IntRect& interest_rect) const {
   DCHECK(layer_);
-  delegate_->PaintPageOverlay(*this, gc, interest_rect.size());
+  delegate_->PaintPageOverlay(*this, gc, interest_rect.Size());
 }
 
 String PageOverlay::DebugName(const GraphicsLayer*) const {

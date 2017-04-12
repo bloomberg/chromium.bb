@@ -64,7 +64,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
                                        paint_info.phase,
                                        pixel_snapped_overflow_rect);
 
-  LayoutRect box(box_origin, layout_list_marker_.size());
+  LayoutRect box(box_origin, layout_list_marker_.Size());
 
   IntRect marker = layout_list_marker_.GetRelativeMarkerRect();
   marker.MoveBy(RoundedIntPoint(box_origin));
@@ -74,7 +74,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   if (layout_list_marker_.IsImage()) {
     context.DrawImage(
         layout_list_marker_.GetImage()
-            ->GetImage(layout_list_marker_, marker.size(),
+            ->GetImage(layout_list_marker_, marker.Size(),
                        layout_list_marker_.StyleRef().EffectiveZoom())
             .Get(),
         marker);

@@ -144,7 +144,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     return;
 
   RefPtr<Image> image = layout_image_.ImageResource()->GetImage(
-      pixel_snapped_dest_rect.size(), layout_image_.Style()->EffectiveZoom());
+      pixel_snapped_dest_rect.Size(), layout_image_.Style()->EffectiveZoom());
   if (!image || image->IsNull())
     return;
 
@@ -153,7 +153,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   InterpolationQuality interpolation_quality =
       BoxPainter::ChooseInterpolationQuality(
           layout_image_, image.Get(), image.Get(),
-          LayoutSize(pixel_snapped_dest_rect.size()));
+          LayoutSize(pixel_snapped_dest_rect.Size()));
 
   FloatRect src_rect = image->Rect();
   // If the content rect requires clipping, adjust |srcRect| and

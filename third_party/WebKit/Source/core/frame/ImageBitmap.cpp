@@ -897,7 +897,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   }
 
   std::unique_ptr<ImageBuffer> buffer =
-      ImageBuffer::Create(parsed_options.crop_rect.size(), kNonOpaque,
+      ImageBuffer::Create(parsed_options.crop_rect.Size(), kNonOpaque,
                           kDoNotInitializeImagePixels, data->GetSkColorSpace());
   if (!buffer)
     return;

@@ -383,7 +383,7 @@ void PaintLayer::UpdateTransformationMatrix() {
     DCHECK(box);
     transform->MakeIdentity();
     box->Style()->ApplyTransform(
-        *transform, box->size(), ComputedStyle::kIncludeTransformOrigin,
+        *transform, box->Size(), ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
     MakeMatrixRenderable(*transform, Compositor()->HasAcceleratedCompositing());
@@ -787,9 +787,9 @@ void PaintLayer::UpdateLayerPosition() {
   if (GetLayoutObject().IsInline() && GetLayoutObject().IsLayoutInline()) {
     LayoutInline& inline_flow = ToLayoutInline(GetLayoutObject());
     IntRect line_box = EnclosingIntRect(inline_flow.LinesBoundingBox());
-    size_ = line_box.size();
+    size_ = line_box.Size();
   } else if (LayoutBox* box = GetLayoutBox()) {
-    IntSize new_size = PixelSnappedIntSize(box->size(), box->Location());
+    IntSize new_size = PixelSnappedIntSize(box->Size(), box->Location());
     did_resize = new_size != size_;
     size_ = new_size;
     local_point.MoveBy(box->PhysicalLocation());
@@ -2430,7 +2430,7 @@ LayoutRect PaintLayer::LogicalBoundingBox() const {
 
   if (IsRootLayer()) {
     rect.Unite(LayoutRect(rect.Location(),
-                          GetLayoutObject().View()->ViewRect().size()));
+                          GetLayoutObject().View()->ViewRect().Size()));
   }
 
   return rect;
@@ -2881,8 +2881,8 @@ bool PaintLayer::HasNonEmptyChildLayoutObjects() const {
       if (child->IsLayoutInline() || !child->IsBox())
         return true;
 
-      if (ToLayoutBox(child)->size().Width() > 0 ||
-          ToLayoutBox(child)->size().Height() > 0)
+      if (ToLayoutBox(child)->Size().Width() > 0 ||
+          ToLayoutBox(child)->Size().Height() > 0)
         return true;
     }
   }

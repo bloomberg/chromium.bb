@@ -56,7 +56,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     frame_view_->Resize(frame_view_->FrameRect().Width(),
                         min_auto_size_.Height());
 
-  IntSize size = frame_view_->FrameRect().size();
+  IntSize size = frame_view_->FrameRect().Size();
 
   // Do the resizing twice. The first time is basically a rough calculation
   // using the preferred width which may result in a height change during the

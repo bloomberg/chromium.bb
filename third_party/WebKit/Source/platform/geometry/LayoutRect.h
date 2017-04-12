@@ -62,7 +62,7 @@ class PLATFORM_EXPORT LayoutRect {
   LayoutRect(const IntPoint& location, const IntSize& size)
       : location_(location), size_(size) {}
   explicit LayoutRect(const IntRect& rect)
-      : location_(rect.Location()), size_(rect.size()) {}
+      : location_(rect.Location()), size_(rect.Size()) {}
 
   explicit LayoutRect(
       const FloatRect&);  // don't do this implicitly since it's lossy
@@ -70,7 +70,7 @@ class PLATFORM_EXPORT LayoutRect {
       const DoubleRect&);  // don't do this implicitly since it's lossy
 
   LayoutPoint Location() const { return location_; }
-  LayoutSize size() const { return size_; }
+  LayoutSize Size() const { return size_; }
 
   IntPoint PixelSnappedLocation() const { return RoundedIntPoint(location_); }
   IntSize PixelSnappedSize() const {
@@ -263,11 +263,11 @@ inline LayoutRect UnionRectEvenIfEmpty(const LayoutRect& a,
 PLATFORM_EXPORT LayoutRect UnionRectEvenIfEmpty(const Vector<LayoutRect>&);
 
 ALWAYS_INLINE bool operator==(const LayoutRect& a, const LayoutRect& b) {
-  return a.Location() == b.Location() && a.size() == b.size();
+  return a.Location() == b.Location() && a.Size() == b.Size();
 }
 
 inline bool operator!=(const LayoutRect& a, const LayoutRect& b) {
-  return a.Location() != b.Location() || a.size() != b.size();
+  return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
 inline IntRect PixelSnappedIntRect(const LayoutRect& rect) {

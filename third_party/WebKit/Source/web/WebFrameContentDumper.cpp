@@ -65,13 +65,13 @@ static void FrameContentAsPlainText(size_t max_chars,
     // Ignore the text of non-visible frames.
     LayoutViewItem content_layout_item = cur_local_child->ContentLayoutItem();
     LayoutPartItem owner_layout_item = cur_local_child->OwnerLayoutItem();
-    if (content_layout_item.IsNull() || !content_layout_item.size().Width() ||
-        !content_layout_item.size().Height() ||
+    if (content_layout_item.IsNull() || !content_layout_item.Size().Width() ||
+        !content_layout_item.Size().Height() ||
         (content_layout_item.Location().X() +
-             content_layout_item.size().Width() <=
+             content_layout_item.Size().Width() <=
          0) ||
         (content_layout_item.Location().Y() +
-             content_layout_item.size().Height() <=
+             content_layout_item.Size().Height() <=
          0) ||
         (!owner_layout_item.IsNull() && owner_layout_item.Style() &&
          owner_layout_item.Style()->Visibility() != EVisibility::kVisible)) {

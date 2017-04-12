@@ -886,8 +886,8 @@ static inline void ClipRectsToImageRect(const FloatRect& image_rect,
     return;
 
   // Compute the src to dst transform
-  FloatSize scale(dst_rect->size().Width() / src_rect->size().Width(),
-                  dst_rect->size().Height() / src_rect->size().Height());
+  FloatSize scale(dst_rect->Size().Width() / src_rect->Size().Width(),
+                  dst_rect->Size().Height() / src_rect->Size().Height());
   FloatPoint scaled_src_location = src_rect->Location();
   scaled_src_location.Scale(scale.Width(), scale.Height());
   FloatSize offset = dst_rect->Location() - scaled_src_location;
@@ -1598,7 +1598,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   IntRect image_data_rect(sx, sy, sw, sh);
   ImageBuffer* buffer = GetImageBuffer();
   if (!buffer || isContextLost()) {
-    ImageData* result = ImageData::Create(image_data_rect.size());
+    ImageData* result = ImageData::Create(image_data_rect.Size());
     if (!result)
       exception_state.ThrowRangeError("Out of memory at ImageData creation");
     return result;
@@ -1614,7 +1614,7 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
   return ImageData::Create(
-      image_data_rect.size(),
+      image_data_rect.Size(),
       NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
           array_buffer, 0, array_buffer->ByteLength())));
 }

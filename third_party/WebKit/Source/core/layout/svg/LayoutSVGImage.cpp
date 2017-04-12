@@ -71,7 +71,7 @@ FloatSize LayoutSVGImage::CalculateObjectSize() const {
   ImageResourceContent* cached_image = image_resource_->CachedImage();
   if (!cached_image || cached_image->ErrorOccurred() ||
       !cached_image->IsSizeAvailable())
-    return object_bounding_box_.size();
+    return object_bounding_box_.Size();
 
   FloatSize intrinsic_size = FloatSize(cached_image->GetImage()->size());
   if (StyleRef().Width().IsAuto() && StyleRef().Height().IsAuto())
@@ -113,7 +113,7 @@ bool LayoutSVGImage::UpdateBoundingBox() {
   if (GetElement())
     GetElement()->SetNeedsResizeObserverUpdate();
 
-  return old_object_bounding_box.size() != object_bounding_box_.size();
+  return old_object_bounding_box.Size() != object_bounding_box_.Size();
 }
 
 void LayoutSVGImage::UpdateLayout() {

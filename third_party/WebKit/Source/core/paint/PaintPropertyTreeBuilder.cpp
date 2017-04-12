@@ -340,7 +340,7 @@ static FloatPoint3D TransformOrigin(const LayoutBox& box) {
   // Transform origin has no effect without a transform or motion path.
   if (!style.HasTransform())
     return FloatPoint3D();
-  FloatSize border_box_size(box.size());
+  FloatSize border_box_size(box.Size());
   return FloatPoint3D(
       FloatValueForLength(style.TransformOriginX(), border_box_size.Width()),
       FloatValueForLength(style.TransformOriginY(), border_box_size.Height()),
@@ -373,7 +373,7 @@ void PaintPropertyTreeBuilder::UpdateTransform(
           compositing_reasons != kCompositingReasonNone) {
         TransformationMatrix matrix;
         style.ApplyTransform(
-            matrix, box.size(), ComputedStyle::kExcludeTransformOrigin,
+            matrix, box.Size(), ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kIncludeMotionPath,
             ComputedStyle::kIncludeIndependentTransformProperties);
 
@@ -762,7 +762,7 @@ void PaintPropertyTreeBuilder::UpdateOverflowClip(
     const auto* current_clip = context.current.clip;
     if (box.StyleRef().HasBorderRadius()) {
       auto inner_border = box.StyleRef().GetRoundedInnerBorderFor(
-          LayoutRect(context.current.paint_offset, box.size()));
+          LayoutRect(context.current.paint_offset, box.Size()));
       context.force_subtree_update |= properties.UpdateInnerBorderRadiusClip(
           context.current.clip, context.current.transform, inner_border);
       current_clip = properties.InnerBorderRadiusClip();
@@ -784,7 +784,7 @@ static FloatPoint PerspectiveOrigin(const LayoutBox& box) {
   const ComputedStyle& style = box.StyleRef();
   // Perspective origin has no effect without perspective.
   DCHECK(style.HasPerspective());
-  FloatSize border_box_size(box.size());
+  FloatSize border_box_size(box.Size());
   return FloatPoint(
       FloatValueForLength(style.PerspectiveOriginX(), border_box_size.Width()),
       FloatValueForLength(style.PerspectiveOriginY(),
@@ -891,7 +891,7 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
         auto& properties =
             object.GetMutableForPainting().EnsurePaintProperties();
 
-        IntSize scroll_clip = scrollable_area->VisibleContentRect().size();
+        IntSize scroll_clip = scrollable_area->VisibleContentRect().Size();
         IntSize scroll_bounds = scrollable_area->ContentsSize();
         bool user_scrollable_horizontal =
             scrollable_area->UserInputScrollable(kHorizontalScrollbar);
@@ -1087,7 +1087,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   if (!object.IsBox())
     return;
   const LayoutBox& box = ToLayoutBox(object);
-  if (box.size() == box.PreviousSize())
+  if (box.Size() == box.PreviousSize())
     return;
 
   // CSS mask and clip-path comes with an implicit clip to the border box.

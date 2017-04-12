@@ -339,7 +339,7 @@ LayoutRect LayoutView::LocalVisualRect() const {
   // it is also correct but unnecessary with rootLayerScrolls) because of the
   // special LayoutView overflow model.
   LayoutRect rect = VisualOverflowRect();
-  rect.Unite(LayoutRect(rect.Location(), ViewRect().size()));
+  rect.Unite(LayoutRect(rect.Location(), ViewRect().Size()));
   return rect;
 }
 
@@ -914,7 +914,7 @@ bool LayoutView::ShouldUsePrintingLayout() const {
 
 LayoutRect LayoutView::ViewRect() const {
   if (ShouldUsePrintingLayout())
-    return LayoutRect(LayoutPoint(), size());
+    return LayoutRect(LayoutPoint(), Size());
   if (frame_view_)
     return LayoutRect(frame_view_->VisibleContentRect());
   return LayoutRect();
@@ -949,7 +949,7 @@ bool LayoutView::RootBackgroundIsEntirelyFixed() const {
 IntSize LayoutView::GetLayoutSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   if (ShouldUsePrintingLayout())
-    return IntSize(size().Width().ToInt(), PageLogicalHeight().ToInt());
+    return IntSize(Size().Width().ToInt(), PageLogicalHeight().ToInt());
 
   if (!frame_view_)
     return IntSize();

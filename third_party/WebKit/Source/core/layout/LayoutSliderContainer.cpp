@@ -135,16 +135,17 @@ void LayoutSliderContainer::UpdateLayout() {
   LayoutUnit available_extent =
       is_vertical ? track->ContentHeight() : track->ContentWidth();
   available_extent -=
-      is_vertical ? thumb->size().Height() : thumb->size().Width();
+      is_vertical ? thumb->Size().Height() : thumb->Size().Width();
   LayoutUnit offset(percentage_offset * available_extent);
   LayoutPoint thumb_location = thumb->Location();
-  if (is_vertical)
+  if (is_vertical) {
     thumb_location.SetY(thumb_location.Y() + track->ContentHeight() -
-                        thumb->size().Height() - offset);
-  else if (Style()->IsLeftToRightDirection())
+                        thumb->Size().Height() - offset);
+  } else if (Style()->IsLeftToRightDirection()) {
     thumb_location.SetX(thumb_location.X() + offset);
-  else
+  } else {
     thumb_location.SetX(thumb_location.X() - offset);
+  }
   thumb->SetLocation(thumb_location);
 
   // We need one-off invalidation code here because painting of the timeline

@@ -89,7 +89,7 @@ LayoutUnit LayoutListBox::ItemHeight() const {
     LayoutObject* layout_object = element->GetLayoutObject();
     LayoutUnit item_height;
     if (layout_object && layout_object->IsBox())
-      item_height = ToLayoutBox(layout_object)->size().Height();
+      item_height = ToLayoutBox(layout_object)->Size().Height();
     else
       item_height = DefaultItemHeight();
     max_height = std::max(max_height, item_height);

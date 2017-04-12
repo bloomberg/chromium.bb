@@ -54,7 +54,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
   IntSize image_size = RoundedIntSize(
-      style_image->ImageSize(layout_object_, 1, border_image_rect.size()));
+      style_image->ImageSize(layout_object_, 1, border_image_rect.Size()));
 
   IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
                                style.BorderBottomWidth(),
@@ -68,7 +68,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
 
   InterpolationQuality interpolation_quality =
       BoxPainter::ChooseInterpolationQuality(layout_object_, image.Get(), 0,
-                                             rect_with_outsets.size());
+                                             rect_with_outsets.Size());
   InterpolationQuality previous_interpolation_quality =
       graphics_context.ImageInterpolationQuality();
   graphics_context.SetImageInterpolationQuality(interpolation_quality);

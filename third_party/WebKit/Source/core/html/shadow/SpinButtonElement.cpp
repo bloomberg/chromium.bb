@@ -126,7 +126,7 @@ void SpinButtonElement::DefaultEventHandler(Event* event) {
         }
       }
       UpDownState old_up_down_state = up_down_state_;
-      up_down_state_ = (local.Y() < box->size().Height() / 2) ? kUp : kDown;
+      up_down_state_ = (local.Y() < box->Size().Height() / 2) ? kUp : kDown;
       if (up_down_state_ != old_up_down_state)
         GetLayoutObject()->SetShouldDoFullPaintInvalidation();
     } else {

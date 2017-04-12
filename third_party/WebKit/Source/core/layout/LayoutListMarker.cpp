@@ -116,7 +116,7 @@ bool LayoutListMarker::IsImage() const {
 LayoutRect LayoutListMarker::LocalSelectionRect() const {
   InlineBox* box = InlineBoxWrapper();
   if (!box)
-    return LayoutRect(LayoutPoint(), size());
+    return LayoutRect(LayoutPoint(), Size());
   RootInlineBox& root = InlineBoxWrapper()->Root();
   const ComputedStyle* block_style = root.Block().Style();
   LayoutUnit new_logical_top =
@@ -124,10 +124,10 @@ LayoutRect LayoutListMarker::LocalSelectionRect() const {
           ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
           : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
   return block_style->IsHorizontalWritingMode()
-             ? LayoutRect(LayoutUnit(), new_logical_top, size().Width(),
+             ? LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
                           root.SelectionHeight())
              : LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),
-                          size().Height());
+                          Size().Height());
 }
 
 void LayoutListMarker::Paint(const PaintInfo& paint_info,
@@ -183,7 +183,7 @@ void LayoutListMarker::ImageChanged(WrappedImagePtr o, const IntRect*) {
     return;
 
   LayoutSize image_size = IsImage() ? ImageBulletSize() : LayoutSize();
-  if (size() != image_size || image_->ErrorOccurred())
+  if (Size() != image_size || image_->ErrorOccurred())
     SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         LayoutInvalidationReason::kImageChanged);
   else
@@ -473,7 +473,7 @@ IntRect LayoutListMarker::GetRelativeMarkerRect() const {
   if (!Style()->IsHorizontalWritingMode()) {
     relative_rect = relative_rect.TransposedRect();
     relative_rect.SetX(
-        (size().Width() - relative_rect.X() - relative_rect.Width()).ToInt());
+        (Size().Width() - relative_rect.X() - relative_rect.Width()).ToInt());
   }
 
   return relative_rect;

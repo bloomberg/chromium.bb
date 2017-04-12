@@ -988,8 +988,8 @@ FloatSize LocalDOMWindow::GetViewportSize(
 
   return GetFrame()->IsMainFrame() &&
                  !page->GetSettings().GetInertVisualViewport()
-             ? FloatSize(page->GetVisualViewport().VisibleRect().size())
-             : FloatSize(view->VisibleContentRect(scrollbar_inclusion).size());
+             ? FloatSize(page->GetVisualViewport().VisibleRect().Size())
+             : FloatSize(view->VisibleContentRect(scrollbar_inclusion).Size());
 }
 
 int LocalDOMWindow::innerHeight() const {
@@ -1346,7 +1346,7 @@ void LocalDOMWindow::resizeBy(int x, int y) const {
     return;
 
   IntRect fr = page->GetChromeClient().RootWindowRect();
-  IntSize dest = fr.size() + IntSize(x, y);
+  IntSize dest = fr.Size() + IntSize(x, y);
   IntRect update(fr.Location(), dest);
   page->GetChromeClient().SetWindowRectWithAdjustment(update, *GetFrame());
 }

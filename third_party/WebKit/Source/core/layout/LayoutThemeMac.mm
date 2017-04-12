@@ -814,7 +814,7 @@ void LayoutThemeMac::SetPopupButtonCellState(const LayoutObject& object,
   NSPopUpButtonCell* popup_button = this->PopupButton();
 
   // Set the control size based off the rectangle we're painting into.
-  SetControlSize(popup_button, PopupButtonSizes(), rect.size(),
+  SetControlSize(popup_button, PopupButtonSizes(), rect.Size(),
                  object.StyleRef().EffectiveZoom());
 
   // Update the various states we respond to.

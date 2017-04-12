@@ -548,7 +548,7 @@ void FrameView::SetFrameRect(const IntRect& new_rect) {
 
   FrameViewBase::SetFrameRect(new_rect);
 
-  const bool frame_size_changed = old_rect.size() != new_rect.size();
+  const bool frame_size_changed = old_rect.Size() != new_rect.Size();
 
   needs_scrollbars_update_ = frame_size_changed;
   // TODO(wjmaclean): find out why scrollbars fail to resize for complex
@@ -735,7 +735,7 @@ void FrameView::AdjustViewSize() {
   ASSERT(frame_->View() == this);
 
   const IntRect rect = layout_view_item.DocumentRect();
-  const IntSize& size = rect.size();
+  const IntSize& size = rect.Size();
 
   const IntPoint origin(-rect.X(), -rect.Y());
   if (ScrollOrigin() != origin) {
@@ -849,7 +849,7 @@ void FrameView::RecalcOverflowAfterStyleChange() {
 
   IntRect document_rect = layout_view_item.DocumentRect();
   if (ScrollOrigin() == -document_rect.Location() &&
-      ContentsSize() == document_rect.size())
+      ContentsSize() == document_rect.Size())
     return;
 
   if (NeedsLayout())
@@ -870,7 +870,7 @@ void FrameView::RecalcOverflowAfterStyleChange() {
   bool should_have_vertical_scrollbar = false;
   ComputeScrollbarExistence(should_have_horizontal_scrollbar,
                             should_have_vertical_scrollbar,
-                            document_rect.size());
+                            document_rect.Size());
 
   bool has_horizontal_scrollbar = HorizontalScrollbar();
   bool has_vertical_scrollbar = VerticalScrollbar();
@@ -2694,7 +2694,7 @@ FrameView::ScrollingReasons FrameView::GetScrollingReasons() const {
 
   // Covers #1
   IntSize contents_size = this->ContentsSize();
-  IntSize visible_content_size = VisibleContentRect().size();
+  IntSize visible_content_size = VisibleContentRect().Size();
   if ((contents_size.Height() <= visible_content_size.Height() &&
        contents_size.Width() <= visible_content_size.Width()))
     return kNotScrollableNoOverflow;
@@ -3866,7 +3866,7 @@ void FrameView::SetCursor(const Cursor& cursor) {
 void FrameView::FrameRectsChanged() {
   TRACE_EVENT0("blink", "FrameView::frameRectsChanged");
   if (LayoutSizeFixedToFrameSize())
-    SetLayoutSizeInternal(FrameRect().size());
+    SetLayoutSizeInternal(FrameRect().Size());
 
   for (const auto& child : children_)
     child->FrameRectsChanged();
@@ -3979,8 +3979,8 @@ void FrameView::SetScrollbarModes(ScrollbarMode horizontal_mode,
 IntSize FrameView::VisibleContentSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   return scrollbar_inclusion == kExcludeScrollbars
-             ? ExcludeScrollbars(FrameRect().size())
-             : FrameRect().size();
+             ? ExcludeScrollbars(FrameRect().Size())
+             : FrameRect().Size();
 }
 
 IntRect FrameView::VisibleContentRect(
@@ -4026,7 +4026,7 @@ int FrameView::ScrollSize(ScrollbarOrientation orientation) const {
 
   // If no scrollbars are present, the content may still be scrollable.
   if (!scrollbar) {
-    IntSize scroll_size = contents_size_ - VisibleContentRect().size();
+    IntSize scroll_size = contents_size_ - VisibleContentRect().Size();
     scroll_size.ClampNegativeToZero();
     return orientation == kHorizontalScrollbar ? scroll_size.Width()
                                                : scroll_size.Height();
@@ -4151,7 +4151,7 @@ void FrameView::ComputeScrollbarExistence(
   if (HasOverlayScrollbars())
     return;
 
-  IntSize full_visible_size = VisibleContentRect(kIncludeScrollbars).size();
+  IntSize full_visible_size = VisibleContentRect(kIncludeScrollbars).Size();
 
   bool attempt_to_remove_scrollbars =
       (option == kFirstPass && doc_size.Width() <= full_visible_size.Width() &&
@@ -4389,7 +4389,7 @@ IntPoint FrameView::ContentsToFrame(
 
 IntRect FrameView::ContentsToFrame(const IntRect& rect_in_content_space) const {
   return IntRect(ContentsToFrame(rect_in_content_space.Location()),
-                 rect_in_content_space.size());
+                 rect_in_content_space.Size());
 }
 
 FloatPoint FrameView::FrameToContents(const FloatPoint& point_in_frame) const {
@@ -4402,7 +4402,7 @@ IntPoint FrameView::FrameToContents(const IntPoint& point_in_frame) const {
 
 IntRect FrameView::FrameToContents(const IntRect& rect_in_frame) const {
   return IntRect(FrameToContents(rect_in_frame.Location()),
-                 rect_in_frame.size());
+                 rect_in_frame.Size());
 }
 
 IntPoint FrameView::RootFrameToContents(
@@ -4413,7 +4413,7 @@ IntPoint FrameView::RootFrameToContents(
 
 IntRect FrameView::RootFrameToContents(const IntRect& root_frame_rect) const {
   return IntRect(RootFrameToContents(root_frame_rect.Location()),
-                 root_frame_rect.size());
+                 root_frame_rect.Size());
 }
 
 IntPoint FrameView::ContentsToRootFrame(const IntPoint& contents_point) const {
@@ -4500,10 +4500,10 @@ static void PositionScrollbarLayer(GraphicsLayer* graphics_layer,
   IntRect scrollbar_rect = scrollbar->FrameRect();
   graphics_layer->SetPosition(scrollbar_rect.Location());
 
-  if (scrollbar_rect.size() == graphics_layer->size())
+  if (scrollbar_rect.Size() == graphics_layer->Size())
     return;
 
-  graphics_layer->SetSize(FloatSize(scrollbar_rect.size()));
+  graphics_layer->SetSize(FloatSize(scrollbar_rect.Size()));
 
   if (graphics_layer->HasContentsLayer()) {
     graphics_layer->SetContentsRect(
@@ -4521,9 +4521,9 @@ static void PositionScrollCornerLayer(GraphicsLayer* graphics_layer,
     return;
   graphics_layer->SetDrawsContent(!corner_rect.IsEmpty());
   graphics_layer->SetPosition(corner_rect.Location());
-  if (corner_rect.size() != graphics_layer->size())
+  if (corner_rect.Size() != graphics_layer->Size())
     graphics_layer->SetNeedsDisplay();
-  graphics_layer->SetSize(FloatSize(corner_rect.size()));
+  graphics_layer->SetSize(FloatSize(corner_rect.Size()));
 }
 
 void FrameView::PositionScrollbarLayers() {

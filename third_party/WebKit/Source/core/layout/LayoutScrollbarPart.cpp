@@ -140,7 +140,7 @@ void LayoutScrollbarPart::ComputeScrollbarWidth() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = scrollbar_->StyleSource()->size().Width() -
+  int visible_size = scrollbar_->StyleSource()->Size().Width() -
                      scrollbar_->StyleSource()->Style()->BorderLeftWidth() -
                      scrollbar_->StyleSource()->Style()->BorderRightWidth();
   int w = CalcScrollbarThicknessUsing(kMainOrPreferredSize, Style()->Width(),
@@ -168,7 +168,7 @@ void LayoutScrollbarPart::ComputeScrollbarHeight() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = scrollbar_->StyleSource()->size().Height() -
+  int visible_size = scrollbar_->StyleSource()->Size().Height() -
                      scrollbar_->StyleSource()->Style()->BorderTopWidth() -
                      scrollbar_->StyleSource()->Style()->BorderBottomWidth();
   int h = CalcScrollbarThicknessUsing(kMainOrPreferredSize, Style()->Height(),

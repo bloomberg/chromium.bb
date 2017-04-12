@@ -1141,7 +1141,7 @@ bool DragController::StartDrag(LocalFrame* src,
     DCHECK(!image->FilenameExtension().IsEmpty());
     if (!drag_image) {
       const IntRect& image_rect = hit_test_result.ImageRect();
-      IntSize image_size_in_pixels = image_rect.size();
+      IntSize image_size_in_pixels = image_rect.Size();
       // TODO(oshima): Remove this scaling and simply pass imageRect to
       // dragImageForImage once all platforms are migrated to use zoom for dsf.
       image_size_in_pixels.Scale(src->GetPage()->DeviceScaleFactorDeprecated());

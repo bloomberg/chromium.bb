@@ -168,7 +168,7 @@ FloatRect SVGLengthContext::ResolveRectangle(const SVGElement* context,
                                              const SVGLength& height) {
   DCHECK_NE(SVGUnitTypes::kSvgUnitTypeUnknown, type);
   if (type != SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
-    const FloatSize& viewport_size = viewport.size();
+    const FloatSize& viewport_size = viewport.Size();
     return FloatRect(
         ConvertValueFromPercentageToUserUnits(x, viewport_size) + viewport.X(),
         ConvertValueFromPercentageToUserUnits(y, viewport_size) + viewport.Y(),
@@ -443,7 +443,7 @@ bool SVGLengthContext::DetermineViewport(FloatSize& viewport_size) const {
     return false;
 
   const SVGSVGElement& svg = toSVGSVGElement(*viewport_element);
-  viewport_size = svg.CurrentViewBoxRect().size();
+  viewport_size = svg.CurrentViewBoxRect().Size();
   if (viewport_size.IsEmpty())
     viewport_size = svg.CurrentViewportSize();
 

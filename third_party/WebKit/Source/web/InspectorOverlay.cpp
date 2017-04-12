@@ -604,7 +604,7 @@ void InspectorOverlay::Reset(const IntSize& viewport_size,
       frame_impl_->GetFrame()->GetPage()->GetChromeClient().ViewportToScreen(
           IntRect(IntPoint(), viewport_size), frame_impl_->GetFrame()->View());
   reset_data->setObject("viewportSize",
-                        BuildObjectForSize(viewport_in_screen.size()));
+                        BuildObjectForSize(viewport_in_screen.Size()));
 
   // The zoom factor in the overlay frame already has been multiplied by the
   // window to viewport scale (aka device scale factor), so cancel it.

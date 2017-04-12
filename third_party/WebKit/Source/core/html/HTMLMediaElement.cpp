@@ -4252,8 +4252,8 @@ void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
   // scrolling around in the document, the document is changing layout, etc.
   viewport_fill_debouncer_timer_.Stop();
   bool is_mostly_filling_viewport =
-      (current_intersect_rect_.size().Area() >
-       kMostlyFillViewportThreshold * geometry.RootIntRect().size().Area());
+      (current_intersect_rect_.Size().Area() >
+       kMostlyFillViewportThreshold * geometry.RootIntRect().Size().Area());
   if (mostly_filling_viewport_ == is_mostly_filling_viewport)
     return;
 

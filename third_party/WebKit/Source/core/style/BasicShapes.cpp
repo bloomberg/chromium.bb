@@ -99,8 +99,8 @@ float BasicShapeCircle::FloatValueForRadiusInBox(FloatSize box_size) const {
 void BasicShapeCircle::GetPath(Path& path, const FloatRect& bounding_box) {
   DCHECK(path.IsEmpty());
   FloatPoint center =
-      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.size());
-  float radius = FloatValueForRadiusInBox(bounding_box.size());
+      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.Size());
+  float radius = FloatValueForRadiusInBox(bounding_box.Size());
   path.AddEllipse(FloatRect(center.X() - radius + bounding_box.X(),
                             center.Y() - radius + bounding_box.Y(), radius * 2,
                             radius * 2));
@@ -144,7 +144,7 @@ float BasicShapeEllipse::FloatValueForRadiusInBox(
 void BasicShapeEllipse::GetPath(Path& path, const FloatRect& bounding_box) {
   DCHECK(path.IsEmpty());
   FloatPoint center =
-      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.size());
+      FloatPointForCenterCoordinate(center_x_, center_y_, bounding_box.Size());
   float radius_x =
       FloatValueForRadiusInBox(radius_x_, center.X(), bounding_box.Width());
   float radius_y =

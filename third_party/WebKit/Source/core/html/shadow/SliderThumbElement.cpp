@@ -132,16 +132,16 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
       input->GetLayoutObject()->AbsoluteBoundingBoxRectIgnoringTransforms();
   if (is_vertical) {
     track_size = track_element->GetLayoutBox()->ContentHeight() -
-                 GetLayoutBox()->size().Height();
-    position = offset.Y() - GetLayoutBox()->size().Height() / 2 -
+                 GetLayoutBox()->Size().Height();
+    position = offset.Y() - GetLayoutBox()->Size().Height() / 2 -
                track_bounding_box.Y() + input_bounding_box.Y() -
                GetLayoutBox()->MarginBottom();
     current_position =
         absolute_thumb_origin.Y() - absolute_slider_content_origin.Y();
   } else {
     track_size = track_element->GetLayoutBox()->ContentWidth() -
-                 GetLayoutBox()->size().Width();
-    position = offset.X() - GetLayoutBox()->size().Width() / 2 -
+                 GetLayoutBox()->Size().Width();
+    position = offset.X() - GetLayoutBox()->Size().Width() / 2 -
                track_bounding_box.X() + input_bounding_box.X();
     position -= is_left_to_right_direction ? GetLayoutBox()->MarginLeft()
                                            : GetLayoutBox()->MarginRight();

@@ -50,7 +50,7 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
 
   // We only want to consider pages where we going to paint a row, so exclude
   // captions and border spacing from the table.
-  LayoutRect sections_rect(LayoutPoint(), table->size());
+  LayoutRect sections_rect(LayoutPoint(), table->Size());
   table->SubtractCaptionRect(sections_rect);
   LayoutUnit total_height_of_rows =
       sections_rect.Height() - table->VBorderSpacing();
@@ -326,7 +326,7 @@ void TableSectionPainter::PaintBoxDecorationBackground(
   LayoutObjectDrawingRecorder recorder(
       paint_info.context, layout_table_section_,
       DisplayItem::kBoxDecorationBackground, bounds);
-  LayoutRect paint_rect(paint_offset, layout_table_section_.size());
+  LayoutRect paint_rect(paint_offset, layout_table_section_.Size());
 
   if (has_box_shadow) {
     BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,

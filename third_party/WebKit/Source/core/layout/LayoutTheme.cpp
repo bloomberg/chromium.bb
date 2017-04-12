@@ -378,11 +378,11 @@ int LayoutTheme::BaselinePosition(const LayoutObject* o) const {
   const LayoutBox* box = ToLayoutBox(o);
 
   if (platform_theme_)
-    return box->size().Height() + box->MarginTop() +
+    return box->Size().Height() + box->MarginTop() +
            platform_theme_->BaselinePositionAdjustment(
                o->Style()->Appearance()) *
                o->Style()->EffectiveZoom();
-  return (box->size().Height() + box->MarginTop()).ToInt();
+  return (box->Size().Height() + box->MarginTop()).ToInt();
 }
 
 bool LayoutTheme::IsControlContainer(ControlPart appearance) const {

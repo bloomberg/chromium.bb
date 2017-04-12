@@ -54,7 +54,7 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
   sk_sp<PaintRecord> mask;
   const NinePieceImage& mask_nine_piece = reflect_style->Mask();
   if (mask_nine_piece.HasImage()) {
-    LayoutRect mask_rect(LayoutPoint(), frame_layout_rect.size());
+    LayoutRect mask_rect(LayoutPoint(), frame_layout_rect.Size());
     LayoutRect mask_bounding_rect(mask_rect);
     mask_bounding_rect.Expand(style.ImageOutsets(mask_nine_piece));
     FloatRect mask_bounding_float_rect(mask_bounding_rect);

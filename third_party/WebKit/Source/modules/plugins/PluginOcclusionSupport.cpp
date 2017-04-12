@@ -127,7 +127,7 @@ static bool IntersectsRect(const LayoutObject* renderer, const IntRect& rect) {
 static void AddToOcclusions(const LayoutBox* renderer,
                             Vector<IntRect>& occlusions) {
   occlusions.push_back(IntRect(RoundedIntPoint(renderer->LocalToAbsolute()),
-                               FlooredIntSize(renderer->size())));
+                               FlooredIntSize(renderer->Size())));
 }
 
 static void AddTreeToOcclusions(const LayoutObject* renderer,

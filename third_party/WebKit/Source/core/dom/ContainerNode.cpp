@@ -918,7 +918,7 @@ bool ContainerNode::GetLowerRightCorner(FloatPoint& point) const {
   LayoutObject* o = GetLayoutObject();
   if (!o->IsInline() || o->IsAtomicInlineLevel()) {
     LayoutBox* box = ToLayoutBox(o);
-    point = o->LocalToAbsolute(FloatPoint(box->size()), kUseTransforms);
+    point = o->LocalToAbsolute(FloatPoint(box->Size()), kUseTransforms);
     return true;
   }
 

@@ -371,9 +371,9 @@ void LayoutFrameSet::UpdateLayout() {
 
   LayoutUnit border_thickness(FrameSet()->Border());
   LayOutAxis(rows_, FrameSet()->RowLengths(),
-             (size().Height() - (rows - 1) * border_thickness).ToInt());
+             (Size().Height() - (rows - 1) * border_thickness).ToInt());
   LayOutAxis(cols_, FrameSet()->ColLengths(),
-             (size().Width() - (cols - 1) * border_thickness).ToInt());
+             (Size().Width() - (cols - 1) * border_thickness).ToInt());
 
   PositionFrames();
 
@@ -418,7 +418,7 @@ void LayoutFrameSet::PositionFrames() {
       // dealing with a child frameset that wasn't previously initialized
       // properly, because it was previously hidden, but no longer is, because
       // rows * cols may have increased.
-      if (size != child->size() || size.IsEmpty()) {
+      if (size != child->Size() || size.IsEmpty()) {
         child->SetSize(size);
         child->SetNeedsLayoutAndFullPaintInvalidation(
             LayoutInvalidationReason::kSizeChanged);

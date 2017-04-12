@@ -125,10 +125,10 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
       *context.paint_invalidation_container;
   LayoutSize new_scrollbar_used_space_in_box;
   if (!is_overlay)
-    new_scrollbar_used_space_in_box = new_visual_rect.size();
+    new_scrollbar_used_space_in_box = new_visual_rect.Size();
   LayoutSize previous_scrollbar_used_space_in_box;
   if (!previously_was_overlay)
-    previous_scrollbar_used_space_in_box = previous_visual_rect.size();
+    previous_scrollbar_used_space_in_box = previous_visual_rect.Size();
   if (new_scrollbar_used_space_in_box != previous_scrollbar_used_space_in_box) {
     context.painting_layer->SetNeedsRepaint();
     ObjectPaintInvalidator(box).InvalidateDisplayItemClient(

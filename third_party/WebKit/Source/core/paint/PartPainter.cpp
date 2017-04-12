@@ -50,7 +50,7 @@ void PartPainter::Paint(const PaintInfo& paint_info,
            .ShouldPaint(paint_info, adjusted_paint_offset))
     return;
 
-  LayoutRect border_rect(adjusted_paint_offset, layout_part_.size());
+  LayoutRect border_rect(adjusted_paint_offset, layout_part_.Size());
 
   if (layout_part_.HasBoxDecorationBackground() &&
       (paint_info.phase == kPaintPhaseForeground ||

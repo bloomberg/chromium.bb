@@ -2856,7 +2856,7 @@ static bool IsVisuallyEmpty(const LayoutObject* layout) {
        child = child->NextSibling()) {
     // TODO(xiaochengh): Replace type-based conditioning by virtual function.
     if (child->IsBox()) {
-      if (!ToLayoutBox(child)->size().IsEmpty())
+      if (!ToLayoutBox(child)->Size().IsEmpty())
         return false;
     } else if (child->IsLayoutInline()) {
       if (ToLayoutInline(child)->FirstLineBoxIncludingCulling())
@@ -2891,7 +2891,7 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
   // There is a VisiblePosition inside an empty inline-block container.
   return node->GetLayoutObject()->IsAtomicInlineLevel() &&
          CanHaveChildrenForEditing(node) &&
-         !ToLayoutBox(node->GetLayoutObject())->size().IsEmpty() &&
+         !ToLayoutBox(node->GetLayoutObject())->Size().IsEmpty() &&
          IsVisuallyEmpty(node->GetLayoutObject());
 }
 

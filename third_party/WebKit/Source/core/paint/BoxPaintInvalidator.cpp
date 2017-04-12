@@ -55,11 +55,11 @@ bool BoxPaintInvalidator::IncrementallyInvalidatePaint(
     const LayoutRect& new_rect) {
   DCHECK(old_rect.Location() == new_rect.Location());
   LayoutRect right_delta = ComputeRightDelta(
-      new_rect.Location(), old_rect.size(), new_rect.size(),
+      new_rect.Location(), old_rect.Size(), new_rect.Size(),
       reason == kPaintInvalidationIncremental ? box_.BorderRight()
                                               : LayoutUnit());
   LayoutRect bottom_delta = ComputeBottomDelta(
-      new_rect.Location(), old_rect.size(), new_rect.size(),
+      new_rect.Location(), old_rect.Size(), new_rect.Size(),
       reason == kPaintInvalidationIncremental ? box_.BorderBottom()
                                               : LayoutUnit());
 
@@ -99,11 +99,11 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.PreviousContentBoxSize() != box_.ContentBoxRect().size())
+      box_.PreviousContentBoxSize() != box_.ContentBoxRect().Size())
     return kPaintInvalidationContentBoxChange;
 
   LayoutSize old_border_box_size = box_.PreviousSize();
-  LayoutSize new_border_box_size = box_.size();
+  LayoutSize new_border_box_size = box_.Size();
   bool border_box_changed = old_border_box_size != new_border_box_size;
   if (!border_box_changed && context_.old_visual_rect == box_.VisualRect())
     return kPaintInvalidationNone;
@@ -258,7 +258,7 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaintIfNeeded() {
     } else {
       invalidated = IncrementallyInvalidatePaint(
           reason, LayoutRect(context_.old_location, box_.PreviousSize()),
-          LayoutRect(context_.new_location, box_.size()));
+          LayoutRect(context_.new_location, box_.Size()));
     }
     if (invalidated) {
       context_.painting_layer->SetNeedsRepaint();
@@ -303,7 +303,7 @@ bool BoxPaintInvalidator::
   // crbug.com/490533
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.ContentBoxRect().size() != box_.size())
+      box_.ContentBoxRect().Size() != box_.Size())
     return true;
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
        BackgroundPaintsOntoScrollingContentsLayer()) &&

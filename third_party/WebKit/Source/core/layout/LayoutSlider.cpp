@@ -45,7 +45,7 @@ int LayoutSlider::BaselinePosition(FontBaseline,
                                    LinePositionMode line_position_mode) const {
   DCHECK_EQ(line_position_mode, kPositionOnContainingLine);
   // FIXME: Patch this function for writing-mode.
-  return (size().Height() + MarginTop()).ToInt();
+  return (Size().Height() + MarginTop()).ToInt();
 }
 
 void LayoutSlider::ComputeIntrinsicLogicalWidths(

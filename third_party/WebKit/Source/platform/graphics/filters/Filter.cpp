@@ -91,7 +91,7 @@ FloatPoint3D Filter::Resolve3dPoint(const FloatPoint3D& point) const {
   return FloatPoint3D(
       point.X() * ReferenceBox().Width() + ReferenceBox().X(),
       point.Y() * ReferenceBox().Height() + ReferenceBox().Y(),
-      point.Z() * sqrtf(ReferenceBox().size().DiagonalLengthSquared() / 2));
+      point.Z() * sqrtf(ReferenceBox().Size().DiagonalLengthSquared() / 2));
 }
 
 void Filter::SetLastEffect(FilterEffect* effect) {

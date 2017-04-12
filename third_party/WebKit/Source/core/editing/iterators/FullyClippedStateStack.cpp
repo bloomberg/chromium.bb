@@ -19,7 +19,7 @@ inline bool FullyClipsContents(Node* node) {
   if (!layout_object || !layout_object->IsBox() ||
       !layout_object->HasOverflowClip() || layout_object->IsLayoutView())
     return false;
-  return ToLayoutBox(layout_object)->size().IsEmpty();
+  return ToLayoutBox(layout_object)->Size().IsEmpty();
 }
 
 inline bool IgnoresContainerClip(Node* node) {

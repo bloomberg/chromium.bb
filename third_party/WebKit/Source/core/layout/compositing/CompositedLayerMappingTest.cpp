@@ -654,7 +654,7 @@ TEST_P(CompositedLayerMappingTest,
                 .GetElementById("inside")
                 ->GetLayoutBox()
                 ->VisualOverflowRect()
-                .size()
+                .Size()
                 .Height(),
             100);
 

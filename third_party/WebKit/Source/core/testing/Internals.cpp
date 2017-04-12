@@ -3135,7 +3135,7 @@ int Internals::visualViewportHeight() {
     return 0;
 
   return ExpandedIntSize(
-             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().size())
+             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().Size())
       .Height();
 }
 
@@ -3144,7 +3144,7 @@ int Internals::visualViewportWidth() {
     return 0;
 
   return ExpandedIntSize(
-             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().size())
+             GetFrame()->GetPage()->GetVisualViewport().VisibleRect().Size())
       .Width();
 }
 

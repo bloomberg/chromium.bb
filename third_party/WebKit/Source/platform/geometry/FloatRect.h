@@ -74,7 +74,7 @@ class PLATFORM_EXPORT FloatRect {
                                    double height);
 
   FloatPoint Location() const { return location_; }
-  FloatSize size() const { return size_; }
+  FloatSize Size() const { return size_; }
 
   void SetLocation(const FloatPoint& location) { location_ = location; }
   void SetSize(const FloatSize& size) { size_ = size; }
@@ -247,11 +247,11 @@ inline FloatRect operator+(const FloatRect& a, const FloatRect& b) {
 }
 
 inline bool operator==(const FloatRect& a, const FloatRect& b) {
-  return a.Location() == b.Location() && a.size() == b.size();
+  return a.Location() == b.Location() && a.Size() == b.Size();
 }
 
 inline bool operator!=(const FloatRect& a, const FloatRect& b) {
-  return a.Location() != b.Location() || a.size() != b.size();
+  return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
 inline IntRect EnclosingIntRect(const FloatRect& rect) {

@@ -232,18 +232,18 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // Accessors for logical width/height and margins in the containing block's
   // block-flow direction.
   LayoutUnit LogicalWidthForChild(const LayoutBox& child) const {
-    return LogicalWidthForChildSize(child.size());
+    return LogicalWidthForChildSize(child.Size());
   }
   LayoutUnit LogicalWidthForChildSize(LayoutSize child_size) const {
     return IsHorizontalWritingMode() ? child_size.Width() : child_size.Height();
   }
   LayoutUnit LogicalHeightForChild(const LayoutBox& child) const {
-    return IsHorizontalWritingMode() ? child.size().Height()
-                                     : child.size().Width();
+    return IsHorizontalWritingMode() ? child.Size().Height()
+                                     : child.Size().Width();
   }
   LayoutSize LogicalSizeForChild(const LayoutBox& child) const {
-    return IsHorizontalWritingMode() ? child.size()
-                                     : child.size().TransposedSize();
+    return IsHorizontalWritingMode() ? child.Size()
+                                     : child.Size().TransposedSize();
   }
   LayoutUnit LogicalTopForChild(const LayoutBox& child) const {
     return IsHorizontalWritingMode() ? child.Location().Y()

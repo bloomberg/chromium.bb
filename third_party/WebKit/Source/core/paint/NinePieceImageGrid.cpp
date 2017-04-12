@@ -187,7 +187,7 @@ void NinePieceImageGrid::SetDrawInfoEdge(NinePieceDrawInfo& draw_info,
   IntSize edge_source_size = image_size_ - IntSize(left_.slice + right_.slice,
                                                    top_.slice + bottom_.slice);
   IntSize edge_destination_size =
-      border_image_area_.size() -
+      border_image_area_.Size() -
       IntSize(left_.width + right_.width, top_.width + bottom_.width);
 
   switch (piece) {
@@ -233,7 +233,7 @@ void NinePieceImageGrid::SetDrawInfoMiddle(NinePieceDrawInfo& draw_info) const {
   IntSize source_size = image_size_ - IntSize(left_.slice + right_.slice,
                                               top_.slice + bottom_.slice);
   IntSize destination_size =
-      border_image_area_.size() -
+      border_image_area_.Size() -
       IntSize(left_.width + right_.width, top_.width + bottom_.width);
 
   draw_info.is_drawable =

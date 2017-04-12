@@ -215,7 +215,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
                        layout_table_cell_.Table()->CollapseBorders();
     GraphicsContextStateSaver state_saver(paint_info.context, should_clip);
     if (should_clip) {
-      LayoutRect clip_rect(paint_rect.Location(), layout_table_cell_.size());
+      LayoutRect clip_rect(paint_rect.Location(), layout_table_cell_.Size());
       clip_rect.Expand(layout_table_cell_.BorderInsets());
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
     }

@@ -69,7 +69,7 @@ class PLATFORM_EXPORT IntRect {
       const LayoutRect&);  // don't do this implicitly since it's lossy
 
   IntPoint Location() const { return location_; }
-  IntSize size() const { return size_; }
+  IntSize Size() const { return size_; }
 
   void SetLocation(const IntPoint& location) { location_ = location; }
   void SetSize(const IntSize& size) { size_ = size; }
@@ -230,11 +230,11 @@ inline IntRect UnionRectEvenIfEmpty(const IntRect& a, const IntRect& b) {
 PLATFORM_EXPORT IntRect UnionRectEvenIfEmpty(const Vector<IntRect>&);
 
 inline bool operator==(const IntRect& a, const IntRect& b) {
-  return a.Location() == b.Location() && a.size() == b.size();
+  return a.Location() == b.Location() && a.Size() == b.Size();
 }
 
 inline bool operator!=(const IntRect& a, const IntRect& b) {
-  return a.Location() != b.Location() || a.size() != b.size();
+  return a.Location() != b.Location() || a.Size() != b.Size();
 }
 
 #if OS(MACOSX)

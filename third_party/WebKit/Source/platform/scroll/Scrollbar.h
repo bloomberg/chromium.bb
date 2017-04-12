@@ -71,7 +71,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   int Y() const override { return FrameViewBase::Y(); }
   int Width() const override { return FrameViewBase::Width(); }
   int Height() const override { return FrameViewBase::Height(); }
-  IntSize size() const override { return FrameViewBase::size(); }
+  IntSize Size() const override { return FrameViewBase::Size(); }
   IntPoint Location() const override { return FrameViewBase::Location(); }
 
   FrameViewBase* Parent() const override { return FrameViewBase::Parent(); }

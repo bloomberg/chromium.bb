@@ -79,7 +79,7 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject& child,
 LayoutRect LayoutButton::ControlClipRect(
     const LayoutPoint& additional_offset) const {
   // Clip to the padding box to at least give content the extra padding space.
-  LayoutRect rect(additional_offset, size());
+  LayoutRect rect(additional_offset, Size());
   rect.Expand(BorderInsets());
   return rect;
 }
@@ -97,11 +97,11 @@ int LayoutButton::BaselinePosition(FontBaseline baseline,
     // even when we have the anonymous LayoutBlock child, we calculate the
     // baseline for the empty case manually here.
     if (direction == kHorizontalLine) {
-      return (MarginTop() + size().Height() - BorderBottom() - PaddingBottom() -
+      return (MarginTop() + Size().Height() - BorderBottom() - PaddingBottom() -
               HorizontalScrollbarHeight())
           .ToInt();
     }
-    return (MarginRight() + size().Width() - BorderLeft() - PaddingLeft() -
+    return (MarginRight() + Size().Width() - BorderLeft() - PaddingLeft() -
             VerticalScrollbarWidth())
         .ToInt();
   }

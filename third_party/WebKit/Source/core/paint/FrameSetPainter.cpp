@@ -88,7 +88,7 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
     return;
 
   LayoutRect adjusted_frame_rect(adjusted_paint_offset,
-                                 layout_frame_set_.size());
+                                 layout_frame_set_.Size());
   LayoutObjectDrawingRecorder recorder(paint_info.context, layout_frame_set_,
                                        paint_info.phase, adjusted_frame_rect);
 
@@ -109,7 +109,7 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
             paint_info, PixelSnappedIntRect(LayoutRect(
                             adjusted_paint_offset.X() + x_pos,
                             adjusted_paint_offset.Y() + y_pos, border_thickness,
-                            layout_frame_set_.size().Height() - y_pos)));
+                            layout_frame_set_.Size().Height() - y_pos)));
         x_pos += border_thickness;
       }
       child = child->NextSibling();
@@ -122,7 +122,7 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
           paint_info,
           PixelSnappedIntRect(LayoutRect(
               adjusted_paint_offset.X(), adjusted_paint_offset.Y() + y_pos,
-              layout_frame_set_.size().Width(), border_thickness)));
+              layout_frame_set_.Size().Width(), border_thickness)));
       y_pos += border_thickness;
     }
   }

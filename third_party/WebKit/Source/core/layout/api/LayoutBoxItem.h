@@ -35,7 +35,7 @@ class LayoutBoxItem : public LayoutBoxModel {
     return ToBox()->Scroll(granularity, delta);
   }
 
-  LayoutSize size() const { return ToBox()->size(); }
+  LayoutSize Size() const { return ToBox()->Size(); }
 
   LayoutPoint Location() const { return ToBox()->Location(); }
 

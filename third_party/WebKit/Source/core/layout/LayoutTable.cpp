@@ -815,10 +815,10 @@ void LayoutTable::AddOverflowFromChildren() {
   // works out fine.
   if (CollapseBorders()) {
     LayoutUnit right_border_overflow =
-        size().Width() + OuterBorderRight() - BorderRight();
+        Size().Width() + OuterBorderRight() - BorderRight();
     LayoutUnit left_border_overflow = BorderLeft() - OuterBorderLeft();
     LayoutUnit bottom_border_overflow =
-        size().Height() + OuterBorderBottom() - BorderBottom();
+        Size().Height() + OuterBorderBottom() - BorderBottom();
     LayoutUnit top_border_overflow = BorderTop() - OuterBorderTop();
     IntRect border_overflow_rect(
         left_border_overflow.ToInt(), top_border_overflow.ToInt(),
@@ -1608,10 +1608,10 @@ LayoutRect LayoutTable::OverflowClipRect(
   // (depending on what order we do these bug fixes in).
   if (!captions_.IsEmpty()) {
     if (Style()->IsHorizontalWritingMode()) {
-      rect.SetHeight(size().Height());
+      rect.SetHeight(Size().Height());
       rect.SetY(location.Y());
     } else {
-      rect.SetWidth(size().Width());
+      rect.SetWidth(Size().Width());
       rect.SetX(location.X());
     }
   }
@@ -1646,7 +1646,7 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   }
 
   // Check our bounds next.
-  LayoutRect bounds_rect(adjusted_location, size());
+  LayoutRect bounds_rect(adjusted_location, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       (action == kHitTestBlockBackground ||
        action == kHitTestChildBlockBackground) &&

@@ -1304,7 +1304,7 @@ void ComputedStyle::ApplyTransform(
   float origin_y = 0;
   float origin_z = 0;
 
-  const FloatSize& box_size = bounding_box.size();
+  const FloatSize& box_size = bounding_box.Size();
   if (apply_transform_origin ||
       // We need to calculate originX and originY for applying motion path.
       apply_motion_path == kIncludeMotionPath) {
@@ -1466,7 +1466,7 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
   FloatRoundedRect rounded_rect(PixelSnappedIntRect(border_rect));
   if (HasBorderRadius()) {
     FloatRoundedRect::Radii radii =
-        CalcRadiiFor(surround_->border_, border_rect.size());
+        CalcRadiiFor(surround_->border_, border_rect.Size());
     rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(),
                                      include_logical_left_edge,
                                      include_logical_right_edge);
@@ -1506,7 +1506,7 @@ FloatRoundedRect ComputedStyle::GetRoundedInnerBorderFor(
     bool include_logical_right_edge) const {
   LayoutRect inner_rect(border_rect);
   inner_rect.Expand(insets);
-  LayoutSize inner_rect_size = inner_rect.size();
+  LayoutSize inner_rect_size = inner_rect.Size();
   inner_rect_size.ClampNegativeToZero();
   inner_rect.SetSize(inner_rect_size);
 
