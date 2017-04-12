@@ -845,6 +845,21 @@ base::string16 ShellSurface::GetWindowTitle() const {
   return title_;
 }
 
+void ShellSurface::SaveWindowPlacement(const gfx::Rect& bounds,
+                                       ui::WindowShowState show_state) {
+  if (bounds_mode_ != BoundsMode::CLIENT)
+    WidgetDelegate::SaveWindowPlacement(bounds, show_state);
+}
+
+bool ShellSurface::GetSavedWindowPlacement(
+    const views::Widget* widget,
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  if (bounds_mode_ != BoundsMode::CLIENT)
+    return WidgetDelegate::GetSavedWindowPlacement(widget, bounds, show_state);
+  return false;
+}
+
 void ShellSurface::WindowClosing() {
   if (resizer_)
     EndDrag(true /* revert */);

@@ -225,6 +225,11 @@ class ShellSurface : public SurfaceDelegate,
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
+  void SaveWindowPlacement(const gfx::Rect& bounds,
+                           ui::WindowShowState show_state) override;
+  bool GetSavedWindowPlacement(const views::Widget* widget,
+                               gfx::Rect* bounds,
+                               ui::WindowShowState* show_state) const override;
   void WindowClosing() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
