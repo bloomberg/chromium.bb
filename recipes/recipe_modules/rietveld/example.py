@@ -12,12 +12,19 @@ DEPS = [
 
 def RunSteps(api):
   api.path['checkout'] = api.path['start_dir']
-  api.rietveld.apply_issue('foo', 'bar', authentication='oauth2')
+  api.rietveld.apply_issue(
+      'foo', 'bar', authentication=api.properties.get('authentication'))
   api.rietveld.calculate_issue_root({'project': ['']})
 
 
 def GenTests(api):
   yield api.test('basic') + api.properties(
+      issue=1,
+      patchset=1,
+      rietveld='http://review_tool.url',
+      authentication='oauth2',
+  )
+  yield api.test('no_auth') + api.properties(
       issue=1,
       patchset=1,
       rietveld='http://review_tool.url',
@@ -27,4 +34,5 @@ def GenTests(api):
       issue=1,
       patchset=1,
       rietveld='http://review_tool.url',
+      authentication='oauth2',
   )
