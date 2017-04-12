@@ -113,13 +113,6 @@ void LinkStyle::SetCSSStyleSheet(
   CSSParserContext* parser_context = CSSParserContext::Create(
       owner_->GetDocument(), base_url, referrer_policy, charset);
 
-  DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                      restored_cached_style_sheet_histogram,
-                      ("Blink.RestoredCachedStyleSheet", 2));
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, restored_cached_style_sheet2_histogram,
-      ("Blink.RestoredCachedStyleSheet2", kStyleSheetCacheStatusCount));
-
   if (StyleSheetContents* restored_sheet =
           const_cast<CSSStyleSheetResource*>(cached_style_sheet)
               ->RestoreParsedStyleSheet(parser_context)) {
@@ -137,15 +130,8 @@ void LinkStyle::SetCSSStyleSheet(
     loading_ = false;
     restored_sheet->CheckLoaded();
 
-    restored_cached_style_sheet_histogram.Count(true);
-    restored_cached_style_sheet2_histogram.Count(kStyleSheetInMemoryCache);
     return;
   }
-  restored_cached_style_sheet_histogram.Count(false);
-  StyleSheetCacheStatus cache_status =
-      cached_style_sheet->GetResponse().WasCached() ? kStyleSheetInDiskCache
-                                                    : kStyleSheetNewEntry;
-  restored_cached_style_sheet2_histogram.Count(cache_status);
 
   StyleSheetContents* style_sheet =
       StyleSheetContents::Create(href, parser_context);
