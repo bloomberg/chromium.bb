@@ -505,7 +505,9 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
           // suffix, then this is not a match.
           base::StringPiece search_term =
               base::StringPiece(source).substr(value.begin, value.len);
-          if (!search_term.starts_with(search_term_value_prefix_) ||
+          if (search_term.size() < (search_term_value_prefix_.size() +
+                                    search_term_value_suffix_.size()) ||
+              !search_term.starts_with(search_term_value_prefix_) ||
               !search_term.ends_with(search_term_value_suffix_))
             continue;
 

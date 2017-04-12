@@ -1267,6 +1267,14 @@ TEST_F(TemplateURLTest, ExtractSearchTermsWithPrefixAndSuffix) {
   // Don't match if the prefix and suffix aren't there.
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
       GURL("http://www.example.com/?q=invalid"), search_terms_data_, &result));
+
+  // Don't match if the prefix and suffix overlap.
+  TemplateURLData data_with_overlap;
+  data.alternate_urls.push_back(
+      "http://www.example.com/?q=goo{searchTerms}oogle");
+  TemplateURL url_with_overlap(data);
+  EXPECT_FALSE(url_with_overlap.ExtractSearchTermsFromURL(
+      GURL("http://www.example.com/?q=google"), search_terms_data_, &result));
 }
 
 TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
