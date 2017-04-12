@@ -4,6 +4,7 @@
 
 #include "core/paint/BoxBorderPainter.h"
 
+#include <algorithm>
 #include "core/paint/BoxPainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -12,8 +13,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "wtf/Vector.h"
-#include <algorithm>
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

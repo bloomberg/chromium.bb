@@ -15,8 +15,6 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/style/BorderEdge.h"
-#include "core/style/ShadowList.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxBorderPainter.h"
 #include "core/paint/BoxDecorationData.h"
@@ -28,12 +26,14 @@
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ThemePainter.h"
+#include "core/style/BorderEdge.h"
+#include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

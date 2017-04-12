@@ -9,7 +9,7 @@
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintResult.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

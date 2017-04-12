@@ -5,7 +5,7 @@
 #ifndef FrameSetPainter_h
 #define FrameSetPainter_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

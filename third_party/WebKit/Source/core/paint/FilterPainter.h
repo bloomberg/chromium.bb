@@ -5,9 +5,9 @@
 #ifndef FilterPainter_h
 #define FilterPainter_h
 
-#include "core/paint/PaintLayerPaintingInfo.h"
-#include "wtf/Allocator.h"
 #include <memory>
+#include "core/paint/PaintLayerPaintingInfo.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

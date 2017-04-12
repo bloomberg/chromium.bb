@@ -7,7 +7,7 @@
 
 #include "core/style/CollapsedBorderValue.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

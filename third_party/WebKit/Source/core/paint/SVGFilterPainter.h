@@ -5,10 +5,10 @@
 #ifndef SVGFilterPainter_h
 #define SVGFilterPainter_h
 
+#include <memory>
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

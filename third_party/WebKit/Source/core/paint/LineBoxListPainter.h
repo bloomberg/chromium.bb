@@ -6,7 +6,7 @@
 #define LineBoxListPainter_h
 
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef MultiColumnSetPainter_h
 #define MultiColumnSetPainter_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

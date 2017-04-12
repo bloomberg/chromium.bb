@@ -6,7 +6,7 @@
 #define SVGImagePainter_h
 
 #include "platform/geometry/FloatSize.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

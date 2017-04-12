@@ -5,7 +5,7 @@
 #ifndef SVGTextPainter_h
 #define SVGTextPainter_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

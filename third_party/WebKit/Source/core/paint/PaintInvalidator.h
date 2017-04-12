@@ -8,7 +8,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 #define SVGShapePainter_h
 
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

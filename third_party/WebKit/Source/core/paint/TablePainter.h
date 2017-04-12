@@ -5,7 +5,7 @@
 #ifndef TablePainter_h
 #define TablePainter_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

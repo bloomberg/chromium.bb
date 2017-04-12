@@ -6,8 +6,8 @@
 #define InlinePainter_h
 
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/FloatClipRect.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

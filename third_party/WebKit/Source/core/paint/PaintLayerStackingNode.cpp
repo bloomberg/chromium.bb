@@ -44,14 +44,14 @@
 
 #include "core/paint/PaintLayerStackingNode.h"
 
+#include <algorithm>
+#include <memory>
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

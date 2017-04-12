@@ -47,7 +47,7 @@
 
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

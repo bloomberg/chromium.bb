@@ -6,8 +6,8 @@
 #define LayerHitTestRects_h
 
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

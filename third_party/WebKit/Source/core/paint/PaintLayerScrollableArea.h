@@ -44,6 +44,7 @@
 #ifndef PaintLayerScrollableArea_h
 #define PaintLayerScrollableArea_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
@@ -51,8 +52,7 @@
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/ScrollbarManager.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

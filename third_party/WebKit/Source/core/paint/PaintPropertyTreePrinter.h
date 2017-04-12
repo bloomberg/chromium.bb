@@ -6,7 +6,7 @@
 #define PaintPropertyTreePrinter_h
 
 #include "core/CoreExport.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #if DCHECK_IS_ON()
 

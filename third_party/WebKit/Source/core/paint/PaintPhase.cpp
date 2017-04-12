@@ -5,7 +5,7 @@
 #include "core/paint/PaintPhase.h"
 
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

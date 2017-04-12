@@ -5,7 +5,7 @@
 #ifndef ImagePainter_h
 #define ImagePainter_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

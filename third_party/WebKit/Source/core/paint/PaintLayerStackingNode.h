@@ -45,11 +45,11 @@
 #ifndef PaintLayerStackingNode_h
 #define PaintLayerStackingNode_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

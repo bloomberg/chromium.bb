@@ -26,6 +26,7 @@
 
 #include "core/paint/FilterEffectBuilder.h"
 
+#include <algorithm>
 #include "core/style/FilterOperations.h"
 #include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGFilterElement.h"
@@ -43,9 +44,8 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/WebPoint.h"
-#include "wtf/MathExtras.h"
-#include <algorithm>
 
 namespace blink {
 

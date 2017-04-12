@@ -9,8 +9,8 @@
 #include "core/style/ShadowData.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

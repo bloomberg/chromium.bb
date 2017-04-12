@@ -5,9 +5,9 @@
 #ifndef SVGInlineTextBoxPainter_h
 #define SVGInlineTextBoxPainter_h
 
-#include "core/style/ComputedStyleConstants.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "wtf/Allocator.h"
+#include "core/style/ComputedStyleConstants.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

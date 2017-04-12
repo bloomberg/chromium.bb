@@ -8,7 +8,7 @@
 #include "core/style/ShadowData.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

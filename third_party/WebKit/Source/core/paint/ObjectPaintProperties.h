@@ -5,6 +5,7 @@
 #ifndef ObjectPaintProperties_h
 #define ObjectPaintProperties_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -13,10 +14,9 @@
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
