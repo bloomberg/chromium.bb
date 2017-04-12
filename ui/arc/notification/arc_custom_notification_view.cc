@@ -345,8 +345,15 @@ void ArcCustomNotificationView::UpdatePreferredSize() {
 }
 
 void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
-  if (!surface_ || !floating_control_buttons_widget_)
+  if (!surface_)
     return;
+
+  if (!floating_control_buttons_widget_) {
+    if (GetWidget())
+      CreateFloatingControlButtons();
+    else
+      return;
+  }
 
   const bool target_visiblity =
       IsMouseHovered() || (close_button_ && close_button_->HasFocus()) ||
