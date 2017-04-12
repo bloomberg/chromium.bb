@@ -34,6 +34,7 @@
 #include "base/trace_event/memory_dump_scheduler.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/memory_peak_detector.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -133,6 +134,16 @@ struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
   scoped_refptr<MemoryDumpSessionState> session_state;
   GetterFunctPtr const getter_function;
 };
+
+void OnPeakDetected(MemoryDumpLevelOfDetail level_of_detail) {
+  MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      MemoryDumpType::PEAK_MEMORY_USAGE, level_of_detail);
+}
+
+void OnPeriodicSchedulerTick(MemoryDumpLevelOfDetail level_of_detail) {
+  MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      MemoryDumpType::PERIODIC_INTERVAL, level_of_detail);
+}
 
 }  // namespace
 
@@ -344,15 +355,8 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     if (already_registered)
       return;
 
-    // The list of polling MDPs is populated OnTraceLogEnabled(). This code
-    // deals with the case of a MDP capable of fast polling that is registered
-    // after the OnTraceLogEnabled()
-    if (options.is_fast_polling_supported && dump_thread_) {
-      dump_thread_->task_runner()->PostTask(
-          FROM_HERE,
-          BindOnce(&MemoryDumpManager::RegisterPollingMDPOnDumpThread,
-                   Unretained(this), mdpinfo));
-    }
+    if (options.is_fast_polling_supported)
+      MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
   }
 
   if (heap_profiling_enabled_)
@@ -391,7 +395,7 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
     // - At the end of this function, if no dump is in progress.
     // - Either in SetupNextMemoryDump() or InvokeOnMemoryDump() when MDPInfo is
     //   removed from |pending_dump_providers|.
-    // - When the provider is removed from |dump_providers_for_polling_|.
+    // - When the provider is removed from other clients (MemoryPeakDetector).
     DCHECK(!(*mdp_iter)->owned_dump_provider);
     (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
   } else if (strict_thread_check_blacklist_.count((*mdp_iter)->name) == 0 ||
@@ -418,12 +422,9 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
         << "unregister itself in a racy way. Please file a crbug.";
   }
 
-  if ((*mdp_iter)->options.is_fast_polling_supported && dump_thread_) {
+  if ((*mdp_iter)->options.is_fast_polling_supported) {
     DCHECK(take_mdp_ownership_and_delete_async);
-    dump_thread_->task_runner()->PostTask(
-        FROM_HERE,
-        BindOnce(&MemoryDumpManager::UnregisterPollingMDPOnDumpThread,
-                 Unretained(this), *mdp_iter));
+    MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
   }
 
   // The MDPInfo instance can still be referenced by the
@@ -433,28 +434,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   // destroyed by the caller soon after this method returns.
   (*mdp_iter)->disabled = true;
   dump_providers_.erase(mdp_iter);
-}
-
-void MemoryDumpManager::RegisterPollingMDPOnDumpThread(
-    scoped_refptr<MemoryDumpProviderInfo> mdpinfo) {
-  AutoLock lock(lock_);
-  dump_providers_for_polling_.insert(mdpinfo);
-
-  // Notify ready for polling when first polling supported provider is
-  // registered. This handles the case where OnTraceLogEnabled() did not notify
-  // ready since no polling supported mdp has yet been registered.
-  if (dump_providers_for_polling_.size() == 1)
-    MemoryDumpScheduler::GetInstance()->EnablePollingIfNeeded();
-}
-
-void MemoryDumpManager::UnregisterPollingMDPOnDumpThread(
-    scoped_refptr<MemoryDumpProviderInfo> mdpinfo) {
-  mdpinfo->dump_provider->SuspendFastMemoryPolling();
-
-  AutoLock lock(lock_);
-  dump_providers_for_polling_.erase(mdpinfo);
-  DCHECK(!dump_providers_for_polling_.empty())
-      << "All polling MDPs cannot be unregistered.";
 }
 
 void MemoryDumpManager::RequestGlobalDump(
@@ -489,6 +468,16 @@ void MemoryDumpManager::RequestGlobalDump(
   // CreateProcessDump() to get a dump for the current process.
   MemoryDumpRequestArgs args = {guid, dump_type, level_of_detail};
   delegate_->RequestGlobalMemoryDump(args, wrapped_callback);
+}
+
+void MemoryDumpManager::GetDumpProvidersForPolling(
+    std::vector<scoped_refptr<MemoryDumpProviderInfo>>* providers) {
+  DCHECK(providers->empty());
+  AutoLock lock(lock_);
+  for (const scoped_refptr<MemoryDumpProviderInfo>& mdp : dump_providers_) {
+    if (mdp->options.is_fast_polling_supported)
+      providers->push_back(mdp);
+  }
 }
 
 void MemoryDumpManager::RequestGlobalDump(
@@ -543,7 +532,8 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
     CHECK(!session_state_ ||
           session_state_->IsDumpModeAllowed(args.level_of_detail));
 
-    MemoryDumpScheduler::GetInstance()->NotifyDumpTriggered();
+    // If enabled, holds back the peak detector resetting its estimation window.
+    MemoryPeakDetector::GetInstance()->Throttle();
   }
 
   // Start the process dump. This involves task runner hops as specified by the
@@ -719,28 +709,6 @@ void MemoryDumpManager::InvokeOnMemoryDump(
   SetupNextMemoryDump(std::move(pmd_async_state));
 }
 
-bool MemoryDumpManager::PollFastMemoryTotal(uint64_t* memory_total) {
-#if DCHECK_IS_ON()
-  {
-    AutoLock lock(lock_);
-    if (dump_thread_)
-      DCHECK(dump_thread_->task_runner()->BelongsToCurrentThread());
-  }
-#endif
-  if (dump_providers_for_polling_.empty())
-    return false;
-
-  *memory_total = 0;
-  // Note that we call PollFastMemoryTotal() even if the dump provider is
-  // disabled (unregistered). This is to avoid taking lock while polling.
-  for (const auto& mdpinfo : dump_providers_for_polling_) {
-    uint64_t value = 0;
-    mdpinfo->dump_provider->PollFastMemoryTotal(&value);
-    *memory_total += value;
-  }
-  return true;
-}
-
 // static
 uint32_t MemoryDumpManager::GetDumpsSumKb(const std::string& pattern,
                                           const ProcessMemoryDump* pmd) {
@@ -891,46 +859,60 @@ void MemoryDumpManager::OnTraceLogEnabled() {
             session_state, &MemoryDumpSessionState::type_name_deduplicator));
   }
 
-  {
-    AutoLock lock(lock_);
+  AutoLock lock(lock_);
 
-    DCHECK(delegate_);  // At this point we must have a delegate.
-    session_state_ = session_state;
+  DCHECK(delegate_);  // At this point we must have a delegate.
+  session_state_ = session_state;
 
-    DCHECK(!dump_thread_);
-    dump_thread_ = std::move(dump_thread);
+  DCHECK(!dump_thread_);
+  dump_thread_ = std::move(dump_thread);
 
-    subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
+  subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
-    dump_providers_for_polling_.clear();
-    for (const auto& mdpinfo : dump_providers_) {
-      if (mdpinfo->options.is_fast_polling_supported)
-        dump_providers_for_polling_.insert(mdpinfo);
+  MemoryDumpScheduler::Config periodic_config;
+  bool peak_detector_configured = false;
+  for (const auto& trigger : memory_dump_config.triggers) {
+    if (!session_state_->IsDumpModeAllowed(trigger.level_of_detail)) {
+      NOTREACHED();
+      continue;
     }
-
-    MemoryDumpScheduler* dump_scheduler = MemoryDumpScheduler::GetInstance();
-    dump_scheduler->Setup(this, dump_thread_->task_runner());
-    DCHECK_LE(memory_dump_config.triggers.size(), 3u);
-    for (const auto& trigger : memory_dump_config.triggers) {
-      if (!session_state_->IsDumpModeAllowed(trigger.level_of_detail)) {
-        NOTREACHED();
-        continue;
+    if (trigger.trigger_type == MemoryDumpType::PERIODIC_INTERVAL) {
+      if (periodic_config.triggers.empty()) {
+        periodic_config.callback = BindRepeating(&OnPeriodicSchedulerTick);
       }
-      dump_scheduler->AddTrigger(trigger.trigger_type, trigger.level_of_detail,
-                                 trigger.min_time_between_dumps_ms);
+      periodic_config.triggers.push_back(
+          {trigger.level_of_detail, trigger.min_time_between_dumps_ms});
+    } else if (trigger.trigger_type == MemoryDumpType::PEAK_MEMORY_USAGE) {
+      // At most one peak trigger is allowed.
+      CHECK(!peak_detector_configured);
+      peak_detector_configured = true;
+      MemoryPeakDetector::GetInstance()->Setup(
+          BindRepeating(&MemoryDumpManager::GetDumpProvidersForPolling,
+                        Unretained(this)),
+          dump_thread_->task_runner(),
+          BindRepeating(&OnPeakDetected, trigger.level_of_detail));
+
+      MemoryPeakDetector::Config peak_config;
+      peak_config.polling_interval_ms = 10;
+      peak_config.min_time_between_peaks_ms = trigger.min_time_between_dumps_ms;
+      peak_config.enable_verbose_poll_tracing =
+          trigger.level_of_detail == MemoryDumpLevelOfDetail::DETAILED;
+      MemoryPeakDetector::GetInstance()->Start(peak_config);
+
+      // When peak detection is enabled, trigger a dump straight away as it
+      // gives a good reference point for analyzing the trace.
+      if (delegate_->IsCoordinator()) {
+        dump_thread_->task_runner()->PostTask(
+            FROM_HERE, BindRepeating(&OnPeakDetected, trigger.level_of_detail));
+      }
     }
-
-    // Notify polling supported only if some polling supported provider was
-    // registered, else RegisterPollingMDPOnDumpThread() will notify when first
-    // polling MDP registers.
-    if (!dump_providers_for_polling_.empty())
-      dump_scheduler->EnablePollingIfNeeded();
-
-    // Only coordinator process triggers periodic global memory dumps.
-    if (delegate_->IsCoordinator())
-      dump_scheduler->EnablePeriodicTriggerIfNeeded();
   }
 
+  // Only coordinator process triggers periodic global memory dumps.
+  if (delegate_->IsCoordinator() && !periodic_config.triggers.empty()) {
+    MemoryDumpScheduler::GetInstance()->Start(periodic_config,
+                                              dump_thread_->task_runner());
+  }
 }
 
 void MemoryDumpManager::OnTraceLogDisabled() {
@@ -943,24 +925,16 @@ void MemoryDumpManager::OnTraceLogDisabled() {
   std::unique_ptr<Thread> dump_thread;
   {
     AutoLock lock(lock_);
+    MemoryDumpScheduler::GetInstance()->Stop();
+    MemoryPeakDetector::GetInstance()->TearDown();
     dump_thread = std::move(dump_thread_);
     session_state_ = nullptr;
-    MemoryDumpScheduler::GetInstance()->DisableAllTriggers();
   }
 
   // Thread stops are blocking and must be performed outside of the |lock_|
   // or will deadlock (e.g., if SetupNextMemoryDump() tries to acquire it).
   if (dump_thread)
     dump_thread->Stop();
-
-  // |dump_providers_for_polling_| must be cleared only after the dump thread is
-  // stopped (polling tasks are done).
-  {
-    AutoLock lock(lock_);
-    for (const auto& mdpinfo : dump_providers_for_polling_)
-      mdpinfo->dump_provider->SuspendFastMemoryPolling();
-    dump_providers_for_polling_.clear();
-  }
 }
 
 bool MemoryDumpManager::IsDumpModeAllowed(MemoryDumpLevelOfDetail dump_mode) {

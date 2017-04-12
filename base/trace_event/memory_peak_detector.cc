@@ -68,7 +68,7 @@ void MemoryPeakDetector::TearDown() {
   if (task_runner_) {
     task_runner_->PostTask(
         FROM_HERE,
-        Bind(&MemoryPeakDetector::TearDownInternal, Unretained(this)));
+        BindOnce(&MemoryPeakDetector::TearDownInternal, Unretained(this)));
   }
   task_runner_ = nullptr;
 }
@@ -78,21 +78,21 @@ void MemoryPeakDetector::Start(MemoryPeakDetector::Config config) {
     NOTREACHED();
     return;
   }
-  task_runner_->PostTask(FROM_HERE, Bind(&MemoryPeakDetector::StartInternal,
-                                         Unretained(this), config));
+  task_runner_->PostTask(FROM_HERE, BindOnce(&MemoryPeakDetector::StartInternal,
+                                             Unretained(this), config));
 }
 
 void MemoryPeakDetector::Stop() {
   task_runner_->PostTask(
-      FROM_HERE, Bind(&MemoryPeakDetector::StopInternal, Unretained(this)));
+      FROM_HERE, BindOnce(&MemoryPeakDetector::StopInternal, Unretained(this)));
 }
 
 void MemoryPeakDetector::Throttle() {
   if (!task_runner_)
     return;  // Can be called before Setup().
   task_runner_->PostTask(
-      FROM_HERE, Bind(&MemoryPeakDetector::ResetPollHistory, Unretained(this),
-                      true /* keep_last_sample */));
+      FROM_HERE, BindOnce(&MemoryPeakDetector::ResetPollHistory,
+                          Unretained(this), true /* keep_last_sample */));
 }
 
 void MemoryPeakDetector::NotifyMemoryDumpProvidersChanged() {
@@ -100,8 +100,8 @@ void MemoryPeakDetector::NotifyMemoryDumpProvidersChanged() {
     return;  // Can be called before Setup().
   task_runner_->PostTask(
       FROM_HERE,
-      Bind(&MemoryPeakDetector::ReloadDumpProvidersAndStartPollingIfNeeded,
-           Unretained(this)));
+      BindOnce(&MemoryPeakDetector::ReloadDumpProvidersAndStartPollingIfNeeded,
+               Unretained(this)));
 }
 
 void MemoryPeakDetector::StartInternal(MemoryPeakDetector::Config config) {
@@ -124,6 +124,8 @@ void MemoryPeakDetector::StopInternal() {
   DCHECK_NE(NOT_INITIALIZED, state_);
   state_ = DISABLED;
   ++generation_;
+  for (const scoped_refptr<MemoryDumpProviderInfo>& mdp_info : dump_providers_)
+    mdp_info->dump_provider->SuspendFastMemoryPolling();
   dump_providers_.clear();
 }
 
@@ -149,9 +151,9 @@ void MemoryPeakDetector::ReloadDumpProvidersAndStartPollingIfNeeded() {
   if (state_ == ENABLED && !dump_providers_.empty()) {
     // It's now time to start polling for realz.
     state_ = RUNNING;
-    task_runner_->PostTask(FROM_HERE,
-                           Bind(&MemoryPeakDetector::PollMemoryAndDetectPeak,
-                                Unretained(this), ++generation_));
+    task_runner_->PostTask(
+        FROM_HERE, BindOnce(&MemoryPeakDetector::PollMemoryAndDetectPeak,
+                            Unretained(this), ++generation_));
   } else if (state_ == RUNNING && dump_providers_.empty()) {
     // Will cause the next PollMemoryAndDetectPeak() task to early return.
     state_ = ENABLED;
@@ -201,8 +203,8 @@ void MemoryPeakDetector::PollMemoryAndDetectPeak(uint32_t expected_generation) {
   DCHECK_GT(config_.polling_interval_ms, 0u);
   SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      Bind(&MemoryPeakDetector::PollMemoryAndDetectPeak, Unretained(this),
-           expected_generation),
+      BindOnce(&MemoryPeakDetector::PollMemoryAndDetectPeak, Unretained(this),
+               expected_generation),
       TimeDelta::FromMilliseconds(config_.polling_interval_ms));
 
   if (!is_peak)
@@ -270,6 +272,17 @@ void MemoryPeakDetector::SetStaticThresholdForTesting(
   DCHECK_EQ(DISABLED, state_);
   static_threshold_bytes_ = static_threshold_bytes;
 }
+
+MemoryPeakDetector::MemoryPeakDetector::Config::Config()
+    : Config(0, 0, false) {}
+
+MemoryPeakDetector::MemoryPeakDetector::Config::Config(
+    uint32_t polling_interval_ms,
+    uint32_t min_time_between_peaks_ms,
+    bool enable_verbose_poll_tracing)
+    : polling_interval_ms(polling_interval_ms),
+      min_time_between_peaks_ms(min_time_between_peaks_ms),
+      enable_verbose_poll_tracing(enable_verbose_poll_tracing) {}
 
 }  // namespace trace_event
 }  // namespace base

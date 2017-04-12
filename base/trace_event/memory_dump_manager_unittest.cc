@@ -244,10 +244,6 @@ class MemoryDumpManagerTest : public testing::Test {
     task_runner->PostTask(FROM_HERE, closure);
   }
 
-  void PollFastMemoryTotal(uint64_t* memory_total) {
-    mdm_->PollFastMemoryTotal(memory_total);
-  }
-
  protected:
   void InitializeMemoryDumpManager(bool is_coordinator) {
     mdm_->set_dumper_registrations_ignored_for_testing(true);
@@ -278,8 +274,7 @@ class MemoryDumpManagerTest : public testing::Test {
   void DisableTracing() { TraceLog::GetInstance()->SetDisabled(); }
 
   bool IsPeriodicDumpingEnabled() const {
-    return MemoryDumpScheduler::GetInstance()
-        ->IsPeriodicTimerRunningForTesting();
+    return MemoryDumpScheduler::GetInstance()->is_enabled_for_testing();
   }
 
   int GetMaxConsecutiveFailuresCount() const {
@@ -766,9 +761,6 @@ TEST_F(MemoryDumpManagerTest, TestPollingOnDumpThread) {
   std::unique_ptr<MockMemoryDumpProvider> mdp2(new MockMemoryDumpProvider());
   mdp1->enable_mock_destructor = true;
   mdp2->enable_mock_destructor = true;
-
-  EXPECT_CALL(*mdp1, SuspendFastMemoryPolling()).Times(1);
-  EXPECT_CALL(*mdp2, SuspendFastMemoryPolling()).Times(1);
   EXPECT_CALL(*mdp1, Destructor());
   EXPECT_CALL(*mdp2, Destructor());
 
@@ -777,53 +769,37 @@ TEST_F(MemoryDumpManagerTest, TestPollingOnDumpThread) {
   RegisterDumpProvider(mdp1.get(), nullptr, options);
 
   RunLoop run_loop;
-  scoped_refptr<SingleThreadTaskRunner> test_task_runner =
-      ThreadTaskRunnerHandle::Get();
+  auto test_task_runner = ThreadTaskRunnerHandle::Get();
   auto quit_closure = run_loop.QuitClosure();
-
-  const int kPollsToQuit = 10;
-  int call_count = 0;
   MemoryDumpManager* mdm = mdm_.get();
-  const auto poll_function1 = [&call_count, &test_task_runner, quit_closure,
-                               &mdp2, mdm, &options, kPollsToQuit,
-                               this](uint64_t* total) -> void {
-    ++call_count;
-    if (call_count == 1)
-      RegisterDumpProvider(mdp2.get(), nullptr, options, kMDPName);
-    else if (call_count == 4)
-      mdm->UnregisterAndDeleteDumpProviderSoon(std::move(mdp2));
-    else if (call_count == kPollsToQuit)
-      test_task_runner->PostTask(FROM_HERE, quit_closure);
 
-    // Record increase of 1 GiB of memory at each call.
-    *total = static_cast<uint64_t>(call_count) * 1024 * 1024 * 1024;
-  };
   EXPECT_CALL(*mdp1, PollFastMemoryTotal(_))
-      .Times(testing::AtLeast(kPollsToQuit))
-      .WillRepeatedly(Invoke(poll_function1));
-
-  // Depending on the order of PostTask calls the mdp2 might be registered after
-  // all polls or in between polls.
-  EXPECT_CALL(*mdp2, PollFastMemoryTotal(_))
-      .Times(Between(0, kPollsToQuit - 1))
+      .WillOnce(Invoke([&mdp2, options, this](uint64_t*) {
+        RegisterDumpProvider(mdp2.get(), nullptr, options);
+      }))
+      .WillOnce(Return())
+      .WillOnce(Invoke([mdm, &mdp2](uint64_t*) {
+        mdm->UnregisterAndDeleteDumpProviderSoon(std::move(mdp2));
+      }))
+      .WillOnce(Invoke([test_task_runner, quit_closure](uint64_t*) {
+        test_task_runner->PostTask(FROM_HERE, quit_closure);
+      }))
       .WillRepeatedly(Return());
 
-  MemoryDumpScheduler::SetPollingIntervalForTesting(1);
+  // We expect a call to |mdp1| because it is still registered at the time the
+  // Peak detector is Stop()-ed (upon OnTraceLogDisabled(). We do NOT expect
+  // instead a call for |mdp2|, because that gets unregisterd before the Stop().
+  EXPECT_CALL(*mdp1, SuspendFastMemoryPolling()).Times(1);
+  EXPECT_CALL(*mdp2, SuspendFastMemoryPolling()).Times(0);
+
+  // |mdp2| should invoke exactly twice:
+  // - once after the registrarion, when |mdp1| hits the first Return()
+  // - the 2nd time when |mdp1| unregisters |mdp1|. The unregistration is
+  //   posted and will necessarily happen after the polling task.
+  EXPECT_CALL(*mdp2, PollFastMemoryTotal(_)).Times(2).WillRepeatedly(Return());
+
   EnableTracingWithTraceConfig(
-      TraceConfigMemoryTestUtil::GetTraceConfig_PeakDetectionTrigger(3));
-
-  int last_poll_to_request_dump = -2;
-  EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(Invoke([&last_poll_to_request_dump, &call_count](
-                                 const MemoryDumpRequestArgs& args,
-                                 const MemoryDumpCallback& callback) -> void {
-        // Minimum number of polls between dumps must be 3 (polling interval is
-        // 1ms).
-        EXPECT_GE(call_count - last_poll_to_request_dump, 3);
-        last_poll_to_request_dump = call_count;
-      }));
-
+      TraceConfigMemoryTestUtil::GetTraceConfig_PeakDetectionTrigger(1));
   run_loop.Run();
   DisableTracing();
   mdm_->UnregisterAndDeleteDumpProviderSoon(std::move(mdp1));
@@ -989,6 +965,7 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   // process with a fully defined trigger config should cause periodic dumps to
   // be performed in the correct order.
   RunLoop run_loop;
+  auto test_task_runner = ThreadTaskRunnerHandle::Get();
   auto quit_closure = run_loop.QuitClosure();
 
   const int kHeavyDumpRate = 5;
@@ -1003,10 +980,11 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
       .Times(kHeavyDumpRate - 2);
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
-      .WillOnce(Invoke([quit_closure](const MemoryDumpRequestArgs& args,
-                                      const MemoryDumpCallback& callback) {
-        ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
-      }));
+      .WillOnce(Invoke(
+          [test_task_runner, quit_closure](const MemoryDumpRequestArgs& args,
+                                           const MemoryDumpCallback& callback) {
+            test_task_runner->PostTask(FROM_HERE, quit_closure);
+          }));
 
   // Swallow all the final spurious calls until tracing gets disabled.
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
@@ -1259,16 +1237,18 @@ TEST_F(MemoryDumpManagerTest, TestBackgroundTracingSetup) {
   InitializeMemoryDumpManager(true /* is_coordinator */);
 
   RunLoop run_loop;
+  auto test_task_runner = ThreadTaskRunnerHandle::Get();
   auto quit_closure = run_loop.QuitClosure();
 
   testing::InSequence sequence;
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(IsBackgroundDump(), _))
       .Times(5);
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(IsBackgroundDump(), _))
-      .WillOnce(Invoke([quit_closure](const MemoryDumpRequestArgs& args,
-                                      const MemoryDumpCallback& callback) {
-        ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
-      }));
+      .WillOnce(Invoke(
+          [test_task_runner, quit_closure](const MemoryDumpRequestArgs& args,
+                                           const MemoryDumpCallback& callback) {
+            test_task_runner->PostTask(FROM_HERE, quit_closure);
+          }));
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
 
   EnableTracingWithTraceConfig(

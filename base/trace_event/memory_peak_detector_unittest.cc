@@ -28,10 +28,11 @@ namespace trace_event {
 namespace {
 
 const TimeDelta kMs = TimeDelta::FromMilliseconds(1);
-const MemoryPeakDetector::Config kConfigNoCallbacks = {
-    1 /* polling_interval_ms */, 60000 /* min_time_between_peaks_ms */,
+const MemoryPeakDetector::Config kConfigNoCallbacks(
+    1 /* polling_interval_ms */,
+    60000 /* min_time_between_peaks_ms */,
     false /* enable_verbose_poll_tracing */
-};
+    );
 
 class MockMemoryDumpProvider : public MemoryDumpProvider {
  public:
@@ -84,6 +85,7 @@ class MemoryPeakDetectorTest : public testing::Test {
     peak_detector_->TearDown();
     bg_thread_->FlushForTesting();
     EXPECT_EQ(MemoryPeakDetector::NOT_INITIALIZED, GetPeakDetectorState());
+    bg_thread_.reset();
     dump_providers_.clear();
   }
 
@@ -448,10 +450,10 @@ TEST_F(MemoryPeakDetectorTest, StaticThreshold) {
   constexpr uint32_t kNumSamplesPerStep = 10;
   constexpr uint64_t kThreshold = 1000000;
   peak_detector_->SetStaticThresholdForTesting(kThreshold);
-  const MemoryPeakDetector::Config kConfig = {
+  const MemoryPeakDetector::Config kConfig(
       1 /* polling_interval_ms */, 0 /* min_time_between_peaks_ms */,
       false /* enable_verbose_poll_tracing */
-  };
+      );
 
   // The mocked PollFastMemoryTotal() will return a step function,
   // e.g. (1, 1, 1, 5, 5, 5, ...) where the steps are 2x threshold, in order to
@@ -471,10 +473,10 @@ TEST_F(MemoryPeakDetectorTest, PeakCallbackThrottling) {
   const size_t kNumSamples = 2 * kSlidingWindowNumSamples;
   constexpr uint64_t kThreshold = 1000000;
   peak_detector_->SetStaticThresholdForTesting(kThreshold);
-  const MemoryPeakDetector::Config kConfig = {
+  const MemoryPeakDetector::Config kConfig(
       1 /* polling_interval_ms */, 4 /* min_time_between_peaks_ms */,
       false /* enable_verbose_poll_tracing */
-  };
+      );
 
   // Each mock value returned is N * 2 * threshold, so all of them would be
   // eligible to be a peak if throttling wasn't enabled.
@@ -495,10 +497,10 @@ TEST_F(MemoryPeakDetectorTest, StdDev) {
   constexpr uint64_t kThreshold = 1024 * 1024 * 1024;
   peak_detector_->SetStaticThresholdForTesting(kThreshold);
   const size_t kNumSamples = 3 * kSlidingWindowNumSamples;
-  const MemoryPeakDetector::Config kConfig = {
+  const MemoryPeakDetector::Config kConfig(
       1 /* polling_interval_ms */, 0 /* min_time_between_peaks_ms */,
       false /* enable_verbose_poll_tracing */
-  };
+      );
 
   auto poll_fn = Bind(&PollFunctionThatCausesPeakViaStdDev);
   uint32_t num_peaks = RunWithCustomPollFunction(kConfig, kNumSamples, poll_fn);
@@ -510,10 +512,10 @@ TEST_F(MemoryPeakDetectorTest, Throttle) {
   constexpr uint64_t kThreshold = 1024 * 1024 * 1024;
   const uint32_t kNumSamples = 3 * kSlidingWindowNumSamples;
   peak_detector_->SetStaticThresholdForTesting(kThreshold);
-  const MemoryPeakDetector::Config kConfig = {
+  const MemoryPeakDetector::Config kConfig(
       1 /* polling_interval_ms */, 0 /* min_time_between_peaks_ms */,
       false /* enable_verbose_poll_tracing */
-  };
+      );
 
   auto poll_fn = Bind(
       [](MemoryPeakDetector* peak_detector, uint32_t sample_idx) -> uint64_t {
@@ -532,10 +534,10 @@ TEST_F(MemoryPeakDetectorTest, RestartClearsState) {
   constexpr uint64_t kThreshold = 1024 * 1024 * 1024;
   peak_detector_->SetStaticThresholdForTesting(kThreshold);
   const size_t kNumSamples = 3 * kSlidingWindowNumSamples;
-  const MemoryPeakDetector::Config kConfig = {
+  const MemoryPeakDetector::Config kConfig(
       1 /* polling_interval_ms */, 0 /* min_time_between_peaks_ms */,
       false /* enable_verbose_poll_tracing */
-  };
+      );
   auto poll_fn = Bind(
       [](MemoryPeakDetector* peak_detector,
          const uint32_t kSlidingWindowNumSamples,

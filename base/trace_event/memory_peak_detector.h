@@ -47,7 +47,12 @@ class BASE_EXPORT MemoryPeakDetector {
   };
 
   // Peak detector configuration, passed to Start().
-  struct Config {
+  struct BASE_EXPORT Config {
+    Config();
+    Config(uint32_t polling_interval_ms,
+           uint32_t min_time_between_peaks_ms,
+           bool enable_verbose_poll_tracing);
+
     // The rate at which memory will be polled. Polls will happen on the task
     // runner passed to Setup().
     uint32_t polling_interval_ms;
