@@ -68,9 +68,9 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
     DCHECK(owner_document_);
     return *owner_document_.Get();
   }
-  Node* startContainer() const { return start_.Container(); }
+  Node* startContainer() const { return &start_.Container(); }
   unsigned startOffset() const { return start_.Offset(); }
-  Node* endContainer() const { return end_.Container(); }
+  Node* endContainer() const { return &end_.Container(); }
   unsigned endOffset() const { return end_.Offset(); }
 
   bool collapsed() const { return start_ == end_; }

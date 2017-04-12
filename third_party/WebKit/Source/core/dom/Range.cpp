@@ -115,8 +115,8 @@ Range* RangeUpdateScope::current_range_;
 
 inline Range::Range(Document& owner_document)
     : owner_document_(&owner_document),
-      start_(owner_document_),
-      end_(owner_document_) {
+      start_(*owner_document_),
+      end_(*owner_document_) {
   owner_document_->AttachRange(this);
 }
 
@@ -130,8 +130,8 @@ inline Range::Range(Document& owner_document,
                     Node* end_container,
                     unsigned end_offset)
     : owner_document_(&owner_document),
-      start_(owner_document_),
-      end_(owner_document_) {
+      start_(*owner_document_),
+      end_(*owner_document_) {
   owner_document_->AttachRange(this);
 
   // Simply setting the containers and offsets directly would not do any of the
@@ -195,7 +195,7 @@ void Range::SetDocument(Document& document) {
 }
 
 Node* Range::commonAncestorContainer() const {
-  return commonAncestorContainer(start_.Container(), end_.Container());
+  return commonAncestorContainer(&start_.Container(), &end_.Container());
 }
 
 Node* Range::commonAncestorContainer(const Node* container_a,
@@ -208,10 +208,10 @@ Node* Range::commonAncestorContainer(const Node* container_a,
 static inline bool CheckForDifferentRootContainer(
     const RangeBoundaryPoint& start,
     const RangeBoundaryPoint& end) {
-  Node* end_root_container = end.Container();
+  Node* end_root_container = &end.Container();
   while (end_root_container->parentNode())
     end_root_container = end_root_container->parentNode();
-  Node* start_root_container = start.Container();
+  Node* start_root_container = &start.Container();
   while (start_root_container->parentNode())
     start_root_container = start_root_container->parentNode();
 
@@ -240,7 +240,7 @@ void Range::setStart(Node* ref_node,
   if (exception_state.HadException())
     return;
 
-  start_.Set(ref_node, offset, child_node);
+  start_.Set(*ref_node, offset, child_node);
 
   if (did_move_document || CheckForDifferentRootContainer(start_, end_))
     collapse(true);
@@ -267,7 +267,7 @@ void Range::setEnd(Node* ref_node,
   if (exception_state.HadException())
     return;
 
-  end_.Set(ref_node, offset, child_node);
+  end_.Set(*ref_node, offset, child_node);
 
   if (did_move_document || CheckForDifferentRootContainer(start_, end_))
     collapse(false);
@@ -298,10 +298,10 @@ bool Range::HasSameRoot(const Node& node) const {
     return false;
   // commonAncestorContainer() is O(depth). We should avoid to call it in common
   // cases.
-  if (node.IsInTreeScope() && start_.Container()->IsInTreeScope() &&
-      &node.GetTreeScope() == &start_.Container()->GetTreeScope())
+  if (node.IsInTreeScope() && start_.Container().IsInTreeScope() &&
+      &node.GetTreeScope() == &start_.Container().GetTreeScope())
     return true;
-  return node.CommonAncestor(*start_.Container(), NodeTraversal::Parent);
+  return node.CommonAncestor(start_.Container(), NodeTraversal::Parent);
 }
 
 bool Range::isPointInRange(Node* ref_node,
@@ -320,10 +320,10 @@ bool Range::isPointInRange(Node* ref_node,
   if (exception_state.HadException())
     return false;
 
-  return compareBoundaryPoints(ref_node, offset, start_.Container(),
+  return compareBoundaryPoints(ref_node, offset, &start_.Container(),
                                start_.Offset(), exception_state) >= 0 &&
          !exception_state.HadException() &&
-         compareBoundaryPoints(ref_node, offset, end_.Container(),
+         compareBoundaryPoints(ref_node, offset, &end_.Container(),
                                end_.Offset(), exception_state) <= 0 &&
          !exception_state.HadException();
 }
@@ -348,7 +348,7 @@ short Range::comparePoint(Node* ref_node,
     return 0;
 
   // compare to start, and point comes before
-  if (compareBoundaryPoints(ref_node, offset, start_.Container(),
+  if (compareBoundaryPoints(ref_node, offset, &start_.Container(),
                             start_.Offset(), exception_state) < 0)
     return -1;
 
@@ -356,7 +356,7 @@ short Range::comparePoint(Node* ref_node,
     return 0;
 
   // compare to end, and point comes after
-  if (compareBoundaryPoints(ref_node, offset, end_.Container(), end_.Offset(),
+  if (compareBoundaryPoints(ref_node, offset, &end_.Container(), end_.Offset(),
                             exception_state) > 0 &&
       !exception_state.HadException())
     return 1;
@@ -435,8 +435,8 @@ short Range::compareBoundaryPoints(Node* container_a,
 short Range::compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
                                    const RangeBoundaryPoint& boundary_b,
                                    ExceptionState& exception_state) {
-  return compareBoundaryPoints(boundary_a.Container(), boundary_a.Offset(),
-                               boundary_b.Container(), boundary_b.Offset(),
+  return compareBoundaryPoints(&boundary_a.Container(), boundary_a.Offset(),
+                               &boundary_b.Container(), boundary_b.Offset(),
                                exception_state);
 }
 
@@ -560,7 +560,7 @@ DocumentFragment* Range::ProcessContents(ActionType action,
   DCHECK(common_root);
 
   if (start_.Container() == end_.Container()) {
-    ProcessContentsBetweenOffsets(action, fragment, start_.Container(),
+    ProcessContentsBetweenOffsets(action, fragment, &start_.Container(),
                                   start_.Offset(), end_.Offset(),
                                   exception_state);
     return fragment;
@@ -574,9 +574,9 @@ DocumentFragment* Range::ProcessContents(ActionType action,
   // what is the highest node that partially selects the start / end of the
   // range?
   Node* partial_start =
-      HighestAncestorUnderCommonRoot(original_start.Container(), common_root);
+      HighestAncestorUnderCommonRoot(&original_start.Container(), common_root);
   Node* partial_end =
-      HighestAncestorUnderCommonRoot(original_end.Container(), common_root);
+      HighestAncestorUnderCommonRoot(&original_end.Container(), common_root);
 
   // Start and end containers are different.
   // There are three possibilities here:
@@ -601,35 +601,35 @@ DocumentFragment* Range::ProcessContents(ActionType action,
 
   Node* left_contents = nullptr;
   if (original_start.Container() != common_root &&
-      common_root->contains(original_start.Container())) {
+      common_root->contains(&original_start.Container())) {
     left_contents = ProcessContentsBetweenOffsets(
-        action, nullptr, original_start.Container(), original_start.Offset(),
-        LengthOfContents(original_start.Container()), exception_state);
+        action, nullptr, &original_start.Container(), original_start.Offset(),
+        LengthOfContents(&original_start.Container()), exception_state);
     left_contents = ProcessAncestorsAndTheirSiblings(
-        action, original_start.Container(), kProcessContentsForward,
+        action, &original_start.Container(), kProcessContentsForward,
         left_contents, common_root, exception_state);
   }
 
   Node* right_contents = nullptr;
   if (end_.Container() != common_root &&
-      common_root->contains(original_end.Container())) {
+      common_root->contains(&original_end.Container())) {
     right_contents = ProcessContentsBetweenOffsets(
-        action, nullptr, original_end.Container(), 0, original_end.Offset(),
+        action, nullptr, &original_end.Container(), 0, original_end.Offset(),
         exception_state);
     right_contents = ProcessAncestorsAndTheirSiblings(
-        action, original_end.Container(), kProcessContentsBackward,
+        action, &original_end.Container(), kProcessContentsBackward,
         right_contents, common_root, exception_state);
   }
 
   // delete all children of commonRoot between the start and end container
   Node* process_start = ChildOfCommonRootBeforeOffset(
-      original_start.Container(), original_start.Offset(), common_root);
+      &original_start.Container(), original_start.Offset(), common_root);
   if (process_start &&
       original_start.Container() !=
           common_root)  // processStart contains nodes before m_start.
     process_start = process_start->nextSibling();
   Node* process_end = ChildOfCommonRootBeforeOffset(
-      original_end.Container(), original_end.Offset(), common_root);
+      &original_end.Container(), original_end.Offset(), common_root);
 
   // Collapse the range, making sure that the result is not within a node that
   // was partially selected.
@@ -866,8 +866,8 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
 
   // an extra one here - if a text node is going to split, it must have a parent
   // to insert into
-  bool start_is_text = start_.Container()->IsTextNode();
-  if (start_is_text && !start_.Container()->parentNode()) {
+  bool start_is_text = start_.Container().IsTextNode();
+  if (start_is_text && !start_.Container().parentNode()) {
     exception_state.ThrowDOMException(kHierarchyRequestError,
                                       "This operation would split a text node, "
                                       "but there's no parent into which to "
@@ -879,9 +879,9 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
   // container's parent, because text nodes get split up upon insertion.
   Node* check_against;
   if (start_is_text)
-    check_against = start_.Container()->parentNode();
+    check_against = start_.Container().parentNode();
   else
-    check_against = start_.Container();
+    check_against = &start_.Container();
 
   Node::NodeType new_node_type = new_node->getNodeType();
   int num_new_children;
@@ -911,7 +911,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
     }
   }
 
-  for (Node& node : NodeTraversal::InclusiveAncestorsOf(*start_.Container())) {
+  for (Node& node : NodeTraversal::InclusiveAncestorsOf(start_.Container())) {
     if (node == new_node) {
       exception_state.ThrowDOMException(kHierarchyRequestError,
                                         "The node to be inserted contains the "
@@ -946,13 +946,13 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
   bool collapsed = start_ == end_;
   Node* container = nullptr;
   if (start_is_text) {
-    container = start_.Container();
+    container = &start_.Container();
     Text* new_text =
         ToText(container)->splitText(start_.Offset(), exception_state);
     if (exception_state.HadException())
       return;
 
-    container = start_.Container();
+    container = &start_.Container();
     container->parentNode()->InsertBefore(new_node, new_text, exception_state);
     if (exception_state.HadException())
       return;
@@ -985,7 +985,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
       return;
     }
 
-    container = start_.Container();
+    container = &start_.Container();
     Node* reference_node = NodeTraversal::ChildAt(*container, start_.Offset());
     // TODO(tkent): The following check must be unnecessary if we follow the
     // algorithm defined in the specification.
@@ -1040,7 +1040,7 @@ DocumentFragment* Range::createContextualFragment(
   // Algorithm:
   // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
 
-  Node* node = start_.Container();
+  Node* node = &start_.Container();
 
   // Step 1.
   Element* element;
@@ -1203,8 +1203,8 @@ void Range::CheckNodeBA(Node* n, ExceptionState& exception_state) const {
 }
 
 Range* Range::cloneRange() const {
-  return Range::Create(*owner_document_.Get(), start_.Container(),
-                       start_.Offset(), end_.Container(), end_.Offset());
+  return Range::Create(*owner_document_.Get(), &start_.Container(),
+                       start_.Offset(), &end_.Container(), end_.Offset());
 }
 
 void Range::setStartAfter(Node* ref_node, ExceptionState& exception_state) {
@@ -1327,10 +1327,10 @@ bool Range::selectNodeContents(Node* ref_node, Position& start, Position& end) {
     }
   }
 
-  RangeBoundaryPoint start_boundary_point(ref_node);
+  RangeBoundaryPoint start_boundary_point(*ref_node);
   start_boundary_point.SetToStartOfNode(*ref_node);
   start = start_boundary_point.ToPosition();
-  RangeBoundaryPoint end_boundary_point(ref_node);
+  RangeBoundaryPoint end_boundary_point(*ref_node);
   end_boundary_point.SetToEndOfNode(*ref_node);
   end = end_boundary_point.ToPosition();
   return true;
@@ -1348,10 +1348,10 @@ void Range::surroundContents(Node* new_parent,
 
   // 1. If a non-Text node is partially contained in the context object, then
   // throw an InvalidStateError.
-  Node* start_non_text_container = start_.Container();
+  Node* start_non_text_container = &start_.Container();
   if (start_non_text_container->getNodeType() == Node::kTextNode)
     start_non_text_container = start_non_text_container->parentNode();
-  Node* end_non_text_container = end_.Container();
+  Node* end_non_text_container = &end_.Container();
   if (end_non_text_container->getNodeType() == Node::kTextNode)
     end_non_text_container = end_non_text_container->parentNode();
   if (start_non_text_container != end_non_text_container) {
@@ -1433,22 +1433,21 @@ void Range::CheckExtractPrecondition(ExceptionState& exception_state) {
 }
 
 Node* Range::FirstNode() const {
-  if (start_.Container()->IsCharacterDataNode())
-    return start_.Container();
-  if (Node* child =
-          NodeTraversal::ChildAt(*start_.Container(), start_.Offset()))
+  if (start_.Container().IsCharacterDataNode())
+    return &start_.Container();
+  if (Node* child = NodeTraversal::ChildAt(start_.Container(), start_.Offset()))
     return child;
   if (!start_.Offset())
-    return start_.Container();
-  return NodeTraversal::NextSkippingChildren(*start_.Container());
+    return &start_.Container();
+  return NodeTraversal::NextSkippingChildren(start_.Container());
 }
 
 Node* Range::PastLastNode() const {
-  if (end_.Container()->IsCharacterDataNode())
-    return NodeTraversal::NextSkippingChildren(*end_.Container());
-  if (Node* child = NodeTraversal::ChildAt(*end_.Container(), end_.Offset()))
+  if (end_.Container().IsCharacterDataNode())
+    return NodeTraversal::NextSkippingChildren(end_.Container());
+  if (Node* child = NodeTraversal::ChildAt(end_.Container(), end_.Offset()))
     return child;
-  return NodeTraversal::NextSkippingChildren(*end_.Container());
+  return NodeTraversal::NextSkippingChildren(end_.Container());
 }
 
 IntRect Range::BoundingBox() const {
@@ -1461,9 +1460,9 @@ IntRect Range::BoundingBox() const {
 }
 
 void Range::TextRects(Vector<IntRect>& rects, bool use_selection_height) const {
-  Node* start_container = start_.Container();
+  Node* start_container = &start_.Container();
   DCHECK(start_container);
-  Node* end_container = end_.Container();
+  Node* end_container = &end_.Container();
   DCHECK(end_container);
 
   Node* stop_node = PastLastNode();
@@ -1484,9 +1483,9 @@ void Range::TextRects(Vector<IntRect>& rects, bool use_selection_height) const {
 
 void Range::TextQuads(Vector<FloatQuad>& quads,
                       bool use_selection_height) const {
-  Node* start_container = start_.Container();
+  Node* start_container = &start_.Container();
   DCHECK(start_container);
-  Node* end_container = end_.Container();
+  Node* end_container = &end_.Container();
   DCHECK(end_container);
 
   Node* stop_node = PastLastNode();
@@ -1524,7 +1523,7 @@ static inline void BoundaryNodeChildrenWillBeRemoved(
       return;
     }
 
-    for (Node* n = boundary.Container(); n; n = n->parentNode()) {
+    for (Node* n = &boundary.Container(); n; n = n->parentNode()) {
       if (n == node_to_be_removed) {
         boundary.SetToStartOfNode(container);
         return;
@@ -1546,7 +1545,7 @@ static inline void BoundaryNodeWillBeRemoved(RangeBoundaryPoint& boundary,
     return;
   }
 
-  for (Node* n = boundary.Container(); n; n = n->parentNode()) {
+  for (Node* n = &boundary.Container(); n; n = n->parentNode()) {
     if (n == node_to_be_removed) {
       boundary.SetToBeforeChild(node_to_be_removed);
       return;
@@ -1612,12 +1611,16 @@ void Range::DidRemoveText(Node* text, unsigned offset, unsigned length) {
 static inline void BoundaryTextNodesMerged(RangeBoundaryPoint& boundary,
                                            const NodeWithIndex& old_node,
                                            unsigned offset) {
-  if (boundary.Container() == old_node.GetNode())
-    boundary.Set(old_node.GetNode().previousSibling(),
-                 boundary.Offset() + offset, 0);
-  else if (boundary.Container() == old_node.GetNode().parentNode() &&
-           boundary.Offset() == static_cast<unsigned>(old_node.Index()))
-    boundary.Set(old_node.GetNode().previousSibling(), offset, 0);
+  if (boundary.Container() == old_node.GetNode()) {
+    Node* const previous_sibling = old_node.GetNode().previousSibling();
+    DCHECK(previous_sibling);
+    boundary.Set(*previous_sibling, boundary.Offset() + offset, 0);
+  } else if (boundary.Container() == old_node.GetNode().parentNode() &&
+             boundary.Offset() == static_cast<unsigned>(old_node.Index())) {
+    Node* const previous_sibling = old_node.GetNode().previousSibling();
+    DCHECK(previous_sibling);
+    boundary.Set(*previous_sibling, offset, 0);
+  }
 }
 
 void Range::DidMergeTextNodes(const NodeWithIndex& old_node, unsigned offset) {
@@ -1631,10 +1634,8 @@ void Range::DidMergeTextNodes(const NodeWithIndex& old_node, unsigned offset) {
 }
 
 void Range::UpdateOwnerDocumentIfNeeded() {
-  DCHECK(start_.Container());
-  DCHECK(end_.Container());
-  Document& new_document = start_.Container()->GetDocument();
-  DCHECK_EQ(new_document, end_.Container()->GetDocument());
+  Document& new_document = start_.Container().GetDocument();
+  DCHECK_EQ(new_document, end_.Container().GetDocument());
   if (new_document == owner_document_)
     return;
   owner_document_->DetachRange(this);
@@ -1644,15 +1645,16 @@ void Range::UpdateOwnerDocumentIfNeeded() {
 
 static inline void BoundaryTextNodeSplit(RangeBoundaryPoint& boundary,
                                          const Text& old_node) {
-  Node* boundary_container = boundary.Container();
   unsigned boundary_offset = boundary.Offset();
-  if (boundary.ChildBefore() == &old_node)
-    boundary.Set(boundary_container, boundary_offset + 1,
+  if (boundary.ChildBefore() == &old_node) {
+    boundary.Set(boundary.Container(), boundary_offset + 1,
                  old_node.nextSibling());
-  else if (boundary.Container() == &old_node &&
-           boundary_offset > old_node.length())
-    boundary.Set(old_node.nextSibling(), boundary_offset - old_node.length(),
-                 0);
+  } else if (boundary.Container() == &old_node &&
+             boundary_offset > old_node.length()) {
+    Node* const next_sibling = old_node.nextSibling();
+    DCHECK(next_sibling);
+    boundary.Set(*next_sibling, boundary_offset - old_node.length(), 0);
+  }
 }
 
 void Range::DidSplitTextNode(const Text& old_node) {
@@ -1707,8 +1709,8 @@ ClientRect* Range::getBoundingClientRect() const {
 }
 
 void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
-  Node* start_container = start_.Container();
-  Node* end_container = end_.Container();
+  Node* start_container = &start_.Container();
+  Node* end_container = &end_.Container();
   Node* stop_node = PastLastNode();
 
   HeapHashSet<Member<Node>> node_set;

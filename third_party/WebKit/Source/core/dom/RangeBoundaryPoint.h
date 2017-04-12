@@ -36,18 +36,18 @@ class RangeBoundaryPoint {
   DISALLOW_NEW();
 
  public:
-  explicit RangeBoundaryPoint(Node* container);
+  explicit RangeBoundaryPoint(Node& container);
 
   explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
   bool IsConnected() const;
   const Position ToPosition() const;
 
-  Node* Container() const;
+  Node& Container() const;
   unsigned Offset() const;
   Node* ChildBefore() const;
 
-  void Set(Node* container, unsigned offset, Node* child_before);
+  void Set(Node& container, unsigned offset, Node* child_before);
   void SetOffset(unsigned);
 
   void SetToBeforeChild(Node&);
@@ -76,7 +76,7 @@ class RangeBoundaryPoint {
   mutable unsigned offset_in_container_;
 };
 
-inline RangeBoundaryPoint::RangeBoundaryPoint(Node* container)
+inline RangeBoundaryPoint::RangeBoundaryPoint(Node& container)
     : container_node_(container),
       child_before_boundary_(nullptr),
       dom_tree_version_(DomTreeVersion()),
@@ -88,8 +88,8 @@ inline RangeBoundaryPoint::RangeBoundaryPoint(const RangeBoundaryPoint& other)
       dom_tree_version_(other.dom_tree_version_),
       offset_in_container_(other.Offset()) {}
 
-inline Node* RangeBoundaryPoint::Container() const {
-  return container_node_.Get();
+inline Node& RangeBoundaryPoint::Container() const {
+  return *container_node_;
 }
 
 inline Node* RangeBoundaryPoint::ChildBefore() const {
@@ -137,13 +137,12 @@ inline unsigned RangeBoundaryPoint::Offset() const {
   return offset_in_container_;
 }
 
-inline void RangeBoundaryPoint::Set(Node* container,
+inline void RangeBoundaryPoint::Set(Node& container,
                                     unsigned offset,
                                     Node* child_before) {
-  DCHECK(container);
   DCHECK_GE(offset, 0u);
   DCHECK_EQ(child_before,
-            offset ? NodeTraversal::ChildAt(*container, offset - 1) : 0);
+            offset ? NodeTraversal::ChildAt(container, offset - 1) : 0);
   container_node_ = container;
   offset_in_container_ = offset;
   child_before_boundary_ = child_before;
