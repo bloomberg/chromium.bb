@@ -242,79 +242,42 @@ void InMemoryURLIndexTest::SetUp() {
   history::HistoryBackend* backend = history_service_->history_backend_.get();
   history_database_ = backend->db();
 
-  // Create and populate a working copy of the URL history database.
-  base::FilePath history_proto_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &history_proto_path);
-  history_proto_path = history_proto_path.AppendASCII("components");
-  history_proto_path = history_proto_path.AppendASCII("test");
-  history_proto_path = history_proto_path.AppendASCII("data");
-  history_proto_path = history_proto_path.AppendASCII("omnibox");
-  history_proto_path = history_proto_path.Append(TestDBName());
-  ASSERT_TRUE(base::PathExists(history_proto_path));
+  // TODO(shess): If/when this code gets refactored, consider including the
+  // schema in the golden file (as sqlite3 .dump would generate) and using
+  // sql::test::CreateDatabaseFromSQL() to load it.  The code above which
+  // creates the database can change in ways which may not reliably represent
+  // user databases on disks in the fleet.
 
-  std::ifstream proto_file(history_proto_path.value().c_str());
-  static const size_t kCommandBufferMaxSize = 2048;
-  char sql_cmd_line[kCommandBufferMaxSize];
-
+  // Execute the contents of a golden file to populate the [urls] and [visits]
+  // tables.
+  base::FilePath golden_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &golden_path);
+  golden_path = golden_path.AppendASCII("components/test/data/omnibox");
+  golden_path = golden_path.Append(TestDBName());
+  ASSERT_TRUE(base::PathExists(golden_path));
+  std::string sql;
+  ASSERT_TRUE(base::ReadFileToString(golden_path, &sql));
   sql::Connection& db(GetDB());
   ASSERT_TRUE(db.is_open());
-  {
-    sql::Transaction transaction(&db);
-    transaction.Begin();
-    while (!proto_file.eof()) {
-      proto_file.getline(sql_cmd_line, kCommandBufferMaxSize);
-      if (!proto_file.eof()) {
-        // We only process lines which begin with a upper-case letter.
-        if (base::IsAsciiUpper(sql_cmd_line[0])) {
-          std::string sql_cmd(sql_cmd_line);
-          sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line));
-          EXPECT_TRUE(sql_stmt.Run());
-        }
-      }
-    }
-    transaction.Commit();
-  }
+  ASSERT_TRUE(db.Execute(sql.c_str()));
 
-  // Update the last_visit_time table column in the "urls" table
-  // such that it represents a time relative to 'now'.
-  sql::Statement statement(db.GetUniqueStatement(
-      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls;"));
-  ASSERT_TRUE(statement.is_valid());
+  // Update [urls.last_visit_time] and [visits.visit_time] to represent a time
+  // relative to 'now'.
   base::Time time_right_now = base::Time::NowFromSystemTime();
   base::TimeDelta day_delta = base::TimeDelta::FromDays(1);
   {
-    sql::Transaction transaction(&db);
-    transaction.Begin();
-    while (statement.Step()) {
-      history::URLRow row;
-      history_database_->FillURLRow(statement, &row);
-      base::Time last_visit = time_right_now;
-      for (int64_t i = row.last_visit().ToInternalValue(); i > 0; --i)
-        last_visit -= day_delta;
-      row.set_last_visit(last_visit);
-      history_database_->UpdateURLRow(row.id(), row);
-    }
-    transaction.Commit();
+    sql::Statement s(db.GetUniqueStatement(
+        "UPDATE urls SET last_visit_time = ? - ? * last_visit_time"));
+    s.BindInt64(0, time_right_now.ToInternalValue());
+    s.BindInt64(1, day_delta.ToInternalValue());
+    ASSERT_TRUE(s.Run());
   }
-
-  // Update the visit_time table column in the "visits" table
-  // such that it represents a time relative to 'now'.
-  statement.Assign(db.GetUniqueStatement(
-      "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits;"));
-  ASSERT_TRUE(statement.is_valid());
   {
-    sql::Transaction transaction(&db);
-    transaction.Begin();
-    while (statement.Step()) {
-      history::VisitRow row;
-      history_database_->FillVisitRow(statement, &row);
-      base::Time last_visit = time_right_now;
-      for (int64_t i = row.visit_time.ToInternalValue(); i > 0; --i)
-        last_visit -= day_delta;
-      row.visit_time = last_visit;
-      history_database_->UpdateVisitRow(row);
-    }
-    transaction.Commit();
+    sql::Statement s(db.GetUniqueStatement(
+        "UPDATE visits SET visit_time = ? - ? * visit_time"));
+    s.BindInt64(0, time_right_now.ToInternalValue());
+    s.BindInt64(1, day_delta.ToInternalValue());
+    ASSERT_TRUE(s.Run());
   }
 
   // Set up a simple template URL service with a default search engine.
@@ -336,7 +299,7 @@ void InMemoryURLIndexTest::TearDown() {
 }
 
 base::FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
-    return FILE_PATH_LITERAL("in_memory_url_index_test.db.txt");
+  return FILE_PATH_LITERAL("in_memory_url_index_test.sql");
 }
 
 bool InMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
@@ -494,7 +457,7 @@ class LimitedInMemoryURLIndexTest : public InMemoryURLIndexTest {
 };
 
 base::FilePath::StringType LimitedInMemoryURLIndexTest::TestDBName() const {
-  return FILE_PATH_LITERAL("in_memory_url_index_test_limited.db.txt");
+  return FILE_PATH_LITERAL("in_memory_url_index_test_limited.sql");
 }
 
 bool LimitedInMemoryURLIndexTest::InitializeInMemoryURLIndexInSetUp() const {
