@@ -66,6 +66,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
+  scoped_refptr<ResourceResponse> response_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };

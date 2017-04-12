@@ -105,6 +105,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/accessibility/ax_tree.h"
@@ -2642,8 +2643,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */);
   if (IsBrowserSideNavigationEnabled()) {
-    CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
-                     false);
+    CommitNavigation(nullptr, nullptr, mojo::ScopedDataPipeConsumerHandle(),
+                     common_params, RequestNavigationParams(), false);
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
@@ -2802,11 +2803,12 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 void RenderFrameHostImpl::CommitNavigation(
     ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
+    mojo::ScopedDataPipeConsumerHandle handle,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool is_view_source) {
   DCHECK(
-      (response && body.get()) ||
+      (response && (body.get() || handle.is_valid())) ||
       common_params.url.SchemeIs(url::kDataScheme) ||
       !ShouldMakeNetworkRequestForURL(common_params.url) ||
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
@@ -2828,7 +2830,8 @@ void RenderFrameHostImpl::CommitNavigation(
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
-  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
+  Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url,
+                                     handle.release(), common_params,
                                      request_params));
 
   // If a network request was made, update the Previews state.

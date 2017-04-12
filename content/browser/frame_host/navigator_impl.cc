@@ -1160,11 +1160,11 @@ void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* render_frame_host =
         frame_tree_node->render_manager()->GetFrameHostForNavigation(
             *scoped_request.get());
-    render_frame_host->CommitNavigation(nullptr,  // response
-                                        nullptr,  // body
-                                        scoped_request->common_params(),
-                                        scoped_request->request_params(),
-                                        scoped_request->is_view_source());
+    render_frame_host->CommitNavigation(
+        nullptr,  // response
+        nullptr,  // body
+        mojo::ScopedDataPipeConsumerHandle(), scoped_request->common_params(),
+        scoped_request->request_params(), scoped_request->is_view_source());
     return;
   }
 

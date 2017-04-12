@@ -30,7 +30,8 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
   // PlzNavigate
   if (IsBrowserSideNavigationEnabled()) {
-    OnCommitNavigation(ResourceResponseHead(), GURL(), common_params,
+    OnCommitNavigation(ResourceResponseHead(), GURL(),
+                       mojo::DataPipeConsumerHandle(), common_params,
                        request_params);
   } else {
     OnNavigate(common_params, start_params, request_params);

@@ -508,6 +508,7 @@ void NavigationRequest::OnRequestRedirected(
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
@@ -580,6 +581,7 @@ void NavigationRequest::OnResponseStarted(
   // Store the response and the StreamHandle until checks have been processed.
   response_ = response;
   body_ = std::move(body);
+  handle_ = std::move(consumer_handle);
 
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
@@ -840,8 +842,8 @@ void NavigationRequest::CommitNavigation() {
   DCHECK_EQ(request_params_.has_user_gesture, begin_params_.has_user_gesture);
 
   render_frame_host->CommitNavigation(response_.get(), std::move(body_),
-                                      common_params_, request_params_,
-                                      is_view_source_);
+                                      std::move(handle_), common_params_,
+                                      request_params_, is_view_source_);
 
   frame_tree_node_->ResetNavigationRequest(true, true);
 }

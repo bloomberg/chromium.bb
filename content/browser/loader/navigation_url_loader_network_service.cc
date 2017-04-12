@@ -8,7 +8,11 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/ssl_status.h"
+#include "content/public/browser/stream_handle.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/url_request/url_request_context.h"
@@ -62,8 +66,11 @@ void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
 void NavigationURLLoaderNetworkService::OnReceiveResponse(
     const ResourceResponseHead& head,
     mojom::DownloadedTempFilePtr downloaded_file) {
-  // TODO(scottmg): This should mirror code in
-  // NavigationResourceHandler::OnReponseStarted().
+  // TODO(scottmg): This needs to do more of what
+  // NavigationResourceHandler::OnReponseStarted() does. Or maybe in
+  // OnStartLoadingResponseBody().
+  response_ = base::MakeShared<ResourceResponse>();
+  response_->head = head;
 }
 
 void NavigationURLLoaderNetworkService::OnReceiveRedirect(
@@ -91,7 +98,16 @@ void NavigationURLLoaderNetworkService::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {}
 
 void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {}
+    mojo::ScopedDataPipeConsumerHandle body) {
+  DCHECK(response_);
+  // Temporarily, we pass both a stream (null) and the data pipe to the
+  // delegate until PlzNavigate has shipped and we can be comfortable fully
+  // switching to the data pipe.
+  delegate_->OnResponseStarted(response_, nullptr, std::move(body), SSLStatus(),
+                               std::unique_ptr<NavigationData>(),
+                               GlobalRequestID() /* request_id? */,
+                               false /* is_download? */, false /* is_stream */);
+}
 
 void NavigationURLLoaderNetworkService::OnComplete(
     const ResourceRequestCompletionStatus& completion_status) {}

@@ -907,12 +907,14 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
 // PlzNavigate
 // Tells the renderer that a navigation is ready to commit.  The renderer should
 // request |stream_url| to get access to the stream containing the body of the
-// response.
-IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
-                    content::ResourceResponseHead,    /* response */
-                    GURL,                             /* stream_url */
-                    content::CommonNavigationParams,  /* common_params */
-                    content::RequestNavigationParams  /* request_params */)
+// response. When --enable-network-service is in effect, |stream_url| is not
+// used, and instead the data is passed to the renderer in |handle|.
+IPC_MESSAGE_ROUTED5(FrameMsg_CommitNavigation,
+                    content::ResourceResponseHead,   /* response */
+                    GURL,                            /* stream_url */
+                    mojo::DataPipeConsumerHandle,    /* handle */
+                    content::CommonNavigationParams, /* common_params */
+                    content::RequestNavigationParams /* request_params */)
 
 // PlzNavigate
 // Tells the renderer that a navigation failed with the error code |error_code|

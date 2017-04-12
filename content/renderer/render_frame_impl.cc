@@ -5197,6 +5197,7 @@ void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {
 void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
+    mojo::DataPipeConsumerHandle handle,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
   CHECK(IsBrowserSideNavigationEnabled());
@@ -5205,6 +5206,7 @@ void RenderFrameImpl::OnCommitNavigation(
   std::unique_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
+  stream_override->consumer_handle = mojo::ScopedDataPipeConsumerHandle(handle);
   stream_override->response = response;
   stream_override->redirects = request_params.redirects;
   stream_override->redirect_responses = request_params.redirect_response;

@@ -56,9 +56,9 @@ void TestNavigationURLLoader::CallOnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     std::unique_ptr<NavigationData> navigation_data) {
-  delegate_->OnResponseStarted(response, std::move(body), SSLStatus(),
-                               std::move(navigation_data), GlobalRequestID(),
-                               false, false);
+  delegate_->OnResponseStarted(
+      response, std::move(body), mojo::ScopedDataPipeConsumerHandle(),
+      SSLStatus(), std::move(navigation_data), GlobalRequestID(), false, false);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace net {
 struct RedirectInfo;
@@ -35,9 +36,12 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // Called when the request receives its response. No further calls will be
   // made to the delegate. The response body is returned as a stream in
   // |body_stream|. |navigation_data| is passed to the NavigationHandle.
+  // If --enable-network-service, then |consumer_handle| will be used,
+  // otherwise |body_stream|. Only one of these will ever be non-null.
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body_stream,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,

@@ -16,6 +16,7 @@
 
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/cursors/webcursor.h"
+#include "ipc/ipc_mojo_param_traits.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {

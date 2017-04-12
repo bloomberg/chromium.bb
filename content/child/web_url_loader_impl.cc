@@ -602,11 +602,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // PlzNavigate: during navigation, the renderer should request a stream which
   // contains the body of the response. The network request has already been
   // made by the browser.
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (stream_override_.get()) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::kFrameTypeNone, request.GetFrameType());
-    resource_request->resource_body_stream_url = stream_override_->stream_url;
+    if (stream_override_->consumer_handle.is_valid()) {
+      consumer_handle = std::move(stream_override_->consumer_handle);
+    } else {
+      resource_request->resource_body_stream_url = stream_override_->stream_url;
+    }
   }
 
   // PlzNavigate: Invalid renderer main resource requests are rejected by the
@@ -641,7 +646,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       std::move(resource_request), request.RequestorID(), task_runner_,
       extra_data->frame_origin(),
       base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
-      request.GetLoadingIPCType(), url_loader_factory_);
+      request.GetLoadingIPCType(), url_loader_factory_,
+      std::move(consumer_handle));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -808,6 +814,13 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   if (!client_)
     return;
 
+  if (stream_override_ && stream_override_->stream_url.is_empty()) {
+    // Since ResourceDispatcher::ContinueForNavigation called OnComplete
+    // immediately, it didn't have the size of the resource immediately. So as
+    // data is read off the data pipe, keep track of how much we're reading.
+    stream_override_->total_transferred += data_length;
+  }
+
   TRACE_EVENT_WITH_FLOW0(
       "loading", "WebURLLoaderImpl::Context::OnReceivedData",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -850,6 +863,12 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
     int64_t encoded_body_size) {
+  if (stream_override_ && stream_override_->stream_url.is_empty()) {
+    // TODO(kinuko|scottmg|jam): This is wrong. https://crbug.com/705744.
+    total_transfer_size = stream_override_->total_transferred;
+    encoded_body_size = stream_override_->total_transferred;
+  }
+
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);

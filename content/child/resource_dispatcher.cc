@@ -620,7 +620,8 @@ int ResourceDispatcher::StartAsync(
     const url::Origin& frame_origin,
     std::unique_ptr<RequestPeer> peer,
     blink::WebURLRequest::LoadingIPCType ipc_type,
-    mojom::URLLoaderFactory* url_loader_factory) {
+    mojom::URLLoaderFactory* url_loader_factory,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle) {
   CheckSchemeForReferrerPolicy(*request);
 
   // Compute a unique request_id for this renderer process.
@@ -632,6 +633,21 @@ int ResourceDispatcher::StartAsync(
   if (resource_scheduling_filter_.get() && loading_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(request_id,
                                                         loading_task_runner);
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      loading_task_runner ? loading_task_runner : main_thread_task_runner_;
+
+  if (consumer_handle.is_valid()) {
+    pending_requests_[request_id]->url_loader_client =
+        base::MakeUnique<URLLoaderClientImpl>(request_id, this, task_runner);
+
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&ResourceDispatcher::ContinueForNavigation,
+                                     weak_factory_.GetWeakPtr(), request_id,
+                                     base::Passed(std::move(consumer_handle))));
+
+    return request_id;
   }
 
   if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
@@ -733,6 +749,36 @@ base::TimeTicks ResourceDispatcher::ConsumeIOTimestamp() {
   base::TimeTicks result = io_timestamp_;
   io_timestamp_ = base::TimeTicks();
   return result;
+}
+
+void ResourceDispatcher::ContinueForNavigation(
+    int request_id,
+    mojo::ScopedDataPipeConsumerHandle consumer_handle) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info)
+    return;
+
+  URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
+
+  // Short circuiting call to OnReceivedResponse to immediately start
+  // the request. ResourceResponseHead can be empty here because we
+  // pull the StreamOverride's one in
+  // WebURLLoaderImpl::Context::OnReceivedResponse.
+  client_ptr->OnReceiveResponse(ResourceResponseHead(),
+                                mojom::DownloadedTempFilePtr());
+  // Start streaming now.
+  client_ptr->OnStartLoadingResponseBody(std::move(consumer_handle));
+
+  // Call OnComplete now too, as it won't get called on the client.
+  // TODO(kinuko): Fill this properly.
+  ResourceRequestCompletionStatus completion_status;
+  completion_status.error_code = net::OK;
+  completion_status.was_ignored_by_handler = false;
+  completion_status.exists_in_cache = false;
+  completion_status.completion_time = base::TimeTicks::Now();
+  completion_status.encoded_data_length = -1;
+  completion_status.encoded_body_length = -1;
+  client_ptr->OnComplete(completion_status);
 }
 
 // static

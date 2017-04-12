@@ -137,7 +137,8 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
     return dispatcher_->StartAsync(
         std::move(request), 0, nullptr, url::Origin(),
         base::MakeUnique<TestRequestPeer>(context, message_loop_.task_runner()),
-        blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr);
+        blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
+        mojo::ScopedDataPipeConsumerHandle());
   }
 
   void Run(TestRequestPeer::Context* context) {

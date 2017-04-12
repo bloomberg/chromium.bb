@@ -52,6 +52,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/service_info.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -892,6 +893,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
+                          mojo::DataPipeConsumerHandle handle,
                           const CommonNavigationParams& common_params,
                           const RequestNavigationParams& request_params);
   void OnFailedNavigation(const CommonNavigationParams& common_params,

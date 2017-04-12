@@ -17,6 +17,7 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace content {
 
@@ -182,6 +183,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const scoped_refptr<ResourceResponse>& response) override;
   void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                          std::unique_ptr<StreamHandle> body,
+                         mojo::ScopedDataPipeConsumerHandle consumer_handle,
                          const SSLStatus& ssl_status,
                          std::unique_ptr<NavigationData> navigation_data,
                          const GlobalRequestID& request_id,
@@ -248,10 +250,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
-  // Holds the ResourceResponse and the StreamHandle for the navigation while
-  // the WillProcessResponse checks are performed by the NavigationHandle.
+  // Holds the ResourceResponse and the StreamHandle (or
+  // DataPipeConsumerHandle) for the navigation while the WillProcessResponse
+  // checks are performed by the NavigationHandle.
   scoped_refptr<ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
+  mojo::ScopedDataPipeConsumerHandle handle_;
 
   base::Closure on_start_checks_complete_closure_;
 

@@ -43,6 +43,7 @@
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -539,6 +540,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // handled by this RenderFrame.
   void CommitNavigation(ResourceResponse* response,
                         std::unique_ptr<StreamHandle> body,
+                        mojo::ScopedDataPipeConsumerHandle handle,
                         const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params,
                         bool is_view_source);

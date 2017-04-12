@@ -82,7 +82,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const url::Origin& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
-      mojom::URLLoaderFactory* url_loader_factory) override {
+      mojom::URLLoaderFactory* url_loader_factory,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle) override {
     EXPECT_FALSE(peer_);
     peer_ = std::move(peer);
     url_ = request->url;

@@ -26,6 +26,7 @@
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
@@ -98,7 +99,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const url::Origin& frame_origin,
       std::unique_ptr<RequestPeer> peer,
       blink::WebURLRequest::LoadingIPCType ipc_type,
-      mojom::URLLoaderFactory* url_loader_factory);
+      mojom::URLLoaderFactory* url_loader_factory,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
@@ -239,6 +241,10 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // then current time is returned. Saved timestamp is reset, so following
   // invocations will return current time until set_io_timestamp is called.
   base::TimeTicks ConsumeIOTimestamp();
+
+  void ContinueForNavigation(
+      int request_id,
+      mojo::ScopedDataPipeConsumerHandle consumer_handle);
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherMessage(const IPC::Message& message);

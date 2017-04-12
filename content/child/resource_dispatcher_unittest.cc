@@ -229,7 +229,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
         new TestRequestPeer(dispatcher(), peer_context));
     int request_id = dispatcher()->StartAsync(
         std::move(request), 0, nullptr, url::Origin(), std::move(peer),
-        blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr);
+        blink::WebURLRequest::LoadingIPCType::kChromeIPC, nullptr,
+        mojo::ScopedDataPipeConsumerHandle());
     peer_context->request_id = request_id;
     return request_id;
   }
