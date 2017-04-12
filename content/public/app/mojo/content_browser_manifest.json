@@ -60,6 +60,7 @@
         "device": [ "device:wake_lock" ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
+        "network": [ "url_loader" ],
         "ui": [ "display_output_protection" ],
         "service_manager": [
           "service_manager:client_process",
