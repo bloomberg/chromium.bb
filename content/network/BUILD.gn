@@ -34,6 +34,8 @@ source_set("network_sources") {
     "network_context.h",
     "network_service.cc",
     "network_service.h",
+    "network_service_url_loader_factory_impl.cc",
+    "network_service_url_loader_factory_impl.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
   ]
@@ -48,8 +50,8 @@ source_set("network_sources") {
     "//content/public/common:common_sources",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/service_manager/public/interfaces",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
   ]
 }
 

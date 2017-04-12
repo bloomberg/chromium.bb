@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "content/network/network_context.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -35,6 +37,12 @@ class NetworkService
               mojom::URLLoaderFactoryRequest request) override;
 
   service_manager::BinderRegistry registry_;
+
+  NetworkContext context_;
+
+  // Put it below |context_| so that |context_| outlives all the
+  // NetworkServiceURLLoaderFactoryImpl instances.
+  mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/url_request/url_request.h"
 
@@ -25,7 +25,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
                                      public net::URLRequest::Delegate {
  public:
   URLLoaderImpl(NetworkContext* context,
-                mojom::URLLoaderRequest url_loader_request,
+                mojom::URLLoaderAssociatedRequest url_loader_request,
                 const ResourceRequest& request,
                 mojom::URLLoaderClientPtr url_loader_client);
   ~URLLoaderImpl() override;
@@ -58,7 +58,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   NetworkContext* context_;
   bool connected_;
   std::unique_ptr<net::URLRequest> url_request_;
-  mojo::Binding<mojom::URLLoader> binding_;
+  mojo::AssociatedBinding<mojom::URLLoader> binding_;
   mojom::URLLoaderClientPtr url_loader_client_;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;

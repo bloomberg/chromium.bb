@@ -146,10 +146,11 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 
 }  // namespace
 
-URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
-                             mojom::URLLoaderRequest url_loader_request,
-                             const ResourceRequest& request,
-                             mojom::URLLoaderClientPtr url_loader_client)
+URLLoaderImpl::URLLoaderImpl(
+    NetworkContext* context,
+    mojom::URLLoaderAssociatedRequest url_loader_request,
+    const ResourceRequest& request,
+    mojom::URLLoaderClientPtr url_loader_client)
     : context_(context),
       connected_(true),
       binding_(this, std::move(url_loader_request)),

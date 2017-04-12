@@ -2,6 +2,7 @@
 include_rules = [
   "-content",
   "+content/common/content_export.h",
+  "+content/common/resource_request.h",
   "+content/common/url_loader.mojom.h",
   "+content/common/url_loader_factory.mojom.h",
   "+content/network",

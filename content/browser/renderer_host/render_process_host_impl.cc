@@ -1755,6 +1755,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLCDText,
     switches::kEnableLogging,
     switches::kEnableNetworkInformation,
+    switches::kEnableNetworkService,
     switches::kEnableOverlayScrollbar,
     switches::kEnableNewVp9CodecString,
     switches::kEnablePinch,

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "content/network/network_service_url_loader_factory_impl.h"
 #include "services/service_manager/public/cpp/service_info.h"
 
 namespace content {
@@ -32,8 +33,9 @@ void NetworkService::OnBindInterface(
 
 void NetworkService::Create(const service_manager::Identity& remote_identity,
                             mojom::URLLoaderFactoryRequest request) {
-  // TODO(yzshen): Create URLLoaderFactoryImpl.
-  NOTIMPLEMENTED();
+  loader_factory_bindings_.AddBinding(
+      base::MakeUnique<NetworkServiceURLLoaderFactoryImpl>(&context_),
+      std::move(request));
 }
 
 }  // namespace content

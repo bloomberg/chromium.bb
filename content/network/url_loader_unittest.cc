@@ -71,14 +71,14 @@ class URLLoaderImplTest : public testing::Test {
 
   void LoadAndCompareFile(const std::string& path) {
     TestURLLoaderClient client;
-    mojom::URLLoaderPtr loader;
+    mojom::URLLoaderAssociatedPtr loader;
 
     ResourceRequest request =
         CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
                               test_server()->GetURL(std::string("/") + path));
 
-    URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), request,
-                              client.CreateInterfacePtr());
+    URLLoaderImpl loader_impl(context(), mojo::MakeIsolatedRequest(&loader),
+                              request, client.CreateInterfacePtr());
 
     client.RunUntilComplete();
 
