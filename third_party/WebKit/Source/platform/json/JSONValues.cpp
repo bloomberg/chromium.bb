@@ -30,11 +30,11 @@
 
 #include "platform/json/JSONValues.h"
 
-#include "platform/Decimal.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <cmath>
+#include "platform/Decimal.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

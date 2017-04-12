@@ -6,8 +6,8 @@
 
 #include "platform/Decimal.h"
 #include "platform/json/JSONValues.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
 
