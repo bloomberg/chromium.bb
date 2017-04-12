@@ -1860,12 +1860,12 @@ const char kWebMidiDescription[] = "Enable Web MIDI API experimental support.";
 
 //  Site per process mode
 
-const char kSitePerProcessName[] = "Out of process iframes";
+const char kSitePerProcessName[] = "Strict site isolation";
 
 const char kSitePerProcessDescription[] =
-    "Highly experimental support for rendering cross-site iframes in "
-    "separate processes. In this mode, documents will share a renderer "
-    "process only if they are from the same web site.";
+    "Highly experimental security mode that ensures each renderer process "
+    "contains pages from at most one site. In this mode, out-of-process "
+    "iframes will be used whenever an iframe is cross-site.";
 
 //  Top document isolation mode
 
