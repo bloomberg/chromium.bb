@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser_web_state_list_delegate.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"

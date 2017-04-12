@@ -31,6 +31,11 @@
 // width of the tab.
 @property(nonatomic, strong) UIViewController* tabStripViewController;
 
+// View controller showing the find bar.  The location of this controller's view
+// is determined by size class and device type.  May be nil if the find bar is
+// currently closed.
+@property(nonatomic, strong) UIViewController* findBarViewController;
+
 @end
 
 // Tab container which positions the toolbar at the top.

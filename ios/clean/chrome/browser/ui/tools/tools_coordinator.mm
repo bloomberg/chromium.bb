@@ -31,7 +31,6 @@
   self.viewController.transitioningDelegate = self;
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator = [[ToolsMediator alloc] initWithConsumer:self.viewController];
-
   [super start];
 }
 

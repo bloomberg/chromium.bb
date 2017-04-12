@@ -8,9 +8,11 @@
 #import "base/logging.h"
 #import "base/macros.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/clean/chrome/browser/ui/commands/find_in_page_visibility_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
+#import "ios/clean/chrome/browser/ui/tools/tools_actions.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -23,16 +25,16 @@ const CGFloat kMenuWidth = 250;
 const CGFloat kMenuItemHeight = 48;
 }
 
-@interface MenuViewController ()
+@interface MenuViewController ()<ToolsActions>
 @property(nonatomic, strong) NSArray<ToolsMenuItem*>* menuItems;
 @property(nonatomic, strong)
     MenuOverflowControlsStackView* toolbarOverflowStackView;
 @end
 
 @implementation MenuViewController
+@synthesize dispatcher = _dispatcher;
 @synthesize menuItems = _menuItems;
 @synthesize toolbarOverflowStackView = _toolbarOverflowStackView;
-@synthesize dispatcher = _dispatcher;
 
 - (void)loadView {
   CGRect frame;
@@ -60,7 +62,8 @@ const CGFloat kMenuItemHeight = 48;
                    action:@selector(closeToolsMenu:)
          forControlEvents:UIControlEventTouchUpInside];
     if (item.action) {
-      [menuButton addTarget:nil
+      id target = (item.action == @selector(showFindInPage)) ? self : nil;
+      [menuButton addTarget:target
                      action:item.action
            forControlEvents:UIControlEventTouchUpInside];
     }
@@ -107,6 +110,10 @@ const CGFloat kMenuItemHeight = 48;
 
 - (void)closeToolsMenu:(id)sender {
   [self.dispatcher closeToolsMenu];
+}
+
+- (void)showFindInPage {
+  [self.dispatcher showFindInPage];
 }
 
 #pragma mark - Tools Consumer

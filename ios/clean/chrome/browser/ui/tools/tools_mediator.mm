@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
+#import "ios/clean/chrome/browser/ui/tools/tools_actions.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 
@@ -57,6 +58,7 @@
   menuItems[6].title = @"Report an Issue";
 
   menuItems[7].title = @"Find in Page…";
+  menuItems[7].action = @selector(showFindInPage);
 
   menuItems[8].title = @"Request Desktop Site";
 

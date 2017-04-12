@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
@@ -74,6 +75,12 @@ const BOOL kUseBottomToolbar = NO;
   [self addChildCoordinator:toolbarCoordinator];
   [toolbarCoordinator start];
 
+  // Create the FindInPage coordinator but do not start it.  It will be started
+  // when a find in page operation is invoked.
+  FindInPageCoordinator* findInPageCoordinator =
+      [[FindInPageCoordinator alloc] init];
+  [self addChildCoordinator:findInPageCoordinator];
+
   TabStripCoordinator* tabStripCoordinator = [[TabStripCoordinator alloc] init];
   [self addChildCoordinator:tabStripCoordinator];
   [tabStripCoordinator start];
@@ -110,11 +117,18 @@ const BOOL kUseBottomToolbar = NO;
   } else if ([childCoordinator isKindOfClass:[TabStripCoordinator class]]) {
     self.viewController.tabStripViewController =
         childCoordinator.viewController;
+  } else if ([childCoordinator isKindOfClass:[FindInPageCoordinator class]]) {
+    self.viewController.findBarViewController = childCoordinator.viewController;
   }
 }
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
-  self.viewController.contentViewController = nil;
+  if ([childCoordinator isKindOfClass:[FindInPageCoordinator class]]) {
+    self.viewController.findBarViewController = nil;
+  } else if ([childCoordinator isKindOfClass:[WebCoordinator class]] ||
+             [childCoordinator isKindOfClass:[NTPCoordinator class]]) {
+    self.viewController.contentViewController = nil;
+  }
 }
 
 - (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {

@@ -29,6 +29,7 @@ source_set("tools_ui") {
     "menu_overflow_controls_stackview.mm",
     "menu_view_controller.h",
     "menu_view_controller.mm",
+    "tools_actions.h",
     "tools_consumer.h",
     "tools_menu_item.h",
     "tools_menu_item.mm",
