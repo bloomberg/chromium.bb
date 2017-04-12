@@ -67,6 +67,9 @@ public class AwAutofillClient {
                 }
                 @Override
                 public void deleteSuggestion(int listIndex) {}
+
+                @Override
+                public void accessibilityFocusCleared() {}
             });
         }
         mAutofillPopup.filterAndShow(suggestions, isRtl, Color.TRANSPARENT /* backgroundColor */,

@@ -123,6 +123,10 @@ AccessibilityMatchPredicate PredicateForSearchKey(
 // The element in the document for which we may be displaying an autofill popup.
 int32_t g_element_hosting_autofill_popup_unique_id = -1;
 
+// The element in the document that is the next element after
+// |g_element_hosting_autofill_popup_unique_id|.
+int32_t g_element_after_element_hosting_autofill_popup_unique_id = -1;
+
 // Autofill popup will not be part of the |AXTree| that is sent by renderer.
 // Hence, we need a proxy |AXNode| to represent the autofill popup.
 BrowserAccessibility* g_autofill_popup_proxy_node = nullptr;
@@ -765,14 +769,6 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
     jint start_id,
     const JavaParamRef<jstring>& element_type_str,
     jboolean forwards) {
-  // Navigate forwards to the autofill popup's proxy node if focus is currently
-  // on the element hosting the autofill popup. Once within the popup, a back
-  // press will navigate back to the element hosting the popup.
-  if (forwards && start_id == g_element_hosting_autofill_popup_unique_id &&
-      g_autofill_popup_proxy_node) {
-    return g_autofill_popup_proxy_node->unique_id();
-  }
-
   BrowserAccessibilityAndroid* start_node = GetFromUniqueID(start_id);
   if (!start_node)
     return 0;
@@ -802,7 +798,21 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
   if (tree_search.CountMatches() == 0)
     return 0;
 
-  return tree_search.GetMatchAtIndex(0)->unique_id();
+  int32_t element_id = tree_search.GetMatchAtIndex(0)->unique_id();
+
+  // Navigate forwards to the autofill popup's proxy node if focus is currently
+  // on the element hosting the autofill popup. Once within the popup, a back
+  // press will navigate back to the element hosting the popup. If user swipes
+  // past last suggestion in the popup, or swipes left from the first suggestion
+  // in the popup, we will navigate to the element that is the next element in
+  // the document after the element hosting the popup.
+  if (forwards && start_id == g_element_hosting_autofill_popup_unique_id &&
+      g_autofill_popup_proxy_node) {
+    g_element_after_element_hosting_autofill_popup_unique_id = element_id;
+    return g_autofill_popup_proxy_node->unique_id();
+  }
+
+  return element_id;
 }
 
 jboolean BrowserAccessibilityManagerAndroid::NextAtGranularity(
@@ -994,7 +1004,21 @@ void BrowserAccessibilityManagerAndroid::OnAutofillPopupDismissed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   g_element_hosting_autofill_popup_unique_id = -1;
+  g_element_after_element_hosting_autofill_popup_unique_id = -1;
   DeleteAutofillPopupProxy();
+}
+
+jint BrowserAccessibilityManagerAndroid::
+    GetIdForElementAfterElementHostingAutofillPopup(
+        JNIEnv* env,
+        const JavaParamRef<jobject>& obj) {
+  if (!base::FeatureList::IsEnabled(features::kAndroidAutofillAccessibility) ||
+      g_element_after_element_hosting_autofill_popup_unique_id == -1 ||
+      GetFromUniqueID(
+          g_element_after_element_hosting_autofill_popup_unique_id) == nullptr)
+    return 0;
+
+  return g_element_after_element_hosting_autofill_popup_unique_id;
 }
 
 jboolean BrowserAccessibilityManagerAndroid::IsAutofillPopupNode(

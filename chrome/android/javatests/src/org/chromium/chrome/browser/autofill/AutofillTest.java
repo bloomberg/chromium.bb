@@ -106,6 +106,10 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         @Override
         public void dismissed() {
         }
+
+        @Override
+        public void accessibilityFocusCleared() {
+        }
     }
 
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {

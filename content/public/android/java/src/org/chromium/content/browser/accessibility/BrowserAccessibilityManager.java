@@ -368,6 +368,16 @@ public class BrowserAccessibilityManager {
         }
     }
 
+    public void onAutofillPopupAccessibilityFocusCleared() {
+        if (mAccessibilityManager.isEnabled() && mNativeObj != 0) {
+            int id = nativeGetIdForElementAfterElementHostingAutofillPopup(mNativeObj);
+            if (id == 0) return;
+
+            moveAccessibilityFocusToId(id);
+            nativeScrollToMakeNodeVisible(mNativeObj, mAccessibilityFocusId);
+        }
+    }
+
     /**
      * @see View#onHoverEvent(MotionEvent)
      */
@@ -431,8 +441,7 @@ public class BrowserAccessibilityManager {
         if (id == 0) return false;
 
         moveAccessibilityFocusToId(id);
-        nativeScrollToMakeNodeVisible(
-                mNativeObj, mAccessibilityFocusId);
+        nativeScrollToMakeNodeVisible(mNativeObj, mAccessibilityFocusId);
         return true;
     }
 
@@ -1177,6 +1186,8 @@ public class BrowserAccessibilityManager {
     private native void nativeOnAutofillPopupDisplayed(
             long nativeBrowserAccessibilityManagerAndroid);
     private native void nativeOnAutofillPopupDismissed(
+            long nativeBrowserAccessibilityManagerAndroid);
+    private native int nativeGetIdForElementAfterElementHostingAutofillPopup(
             long nativeBrowserAccessibilityManagerAndroid);
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
     private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);

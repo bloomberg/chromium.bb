@@ -230,6 +230,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void OnAutofillPopupDismissed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  jint GetIdForElementAfterElementHostingAutofillPopup(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jboolean IsAutofillPopupNode(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

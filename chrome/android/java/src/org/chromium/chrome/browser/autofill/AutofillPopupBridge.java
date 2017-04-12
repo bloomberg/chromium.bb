@@ -81,6 +81,13 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
     }
 
     @Override
+    public void accessibilityFocusCleared() {
+        if (mBrowserAccessibilityManager != null) {
+            mBrowserAccessibilityManager.onAutofillPopupAccessibilityFocusCleared();
+        }
+    }
+
+    @Override
     public void onClick(DialogInterface dialog, int which) {
         assert which == DialogInterface.BUTTON_POSITIVE;
         nativeDeletionConfirmed(mNativeAutofillPopup);
