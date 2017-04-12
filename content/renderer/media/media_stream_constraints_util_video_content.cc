@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 #include <vector>
@@ -16,14 +17,27 @@
 
 namespace content {
 
+const int kMinScreenCastDimension = 1;
+// Use kMaxDimension/2 as maximum to ensure selected resolutions have area less
+// than media::limits::kMaxCanvas.
+const int kMaxScreenCastDimension = media::limits::kMaxDimension / 2;
+static_assert(kMaxScreenCastDimension * kMaxScreenCastDimension <
+                  media::limits::kMaxCanvas,
+              "Invalid kMaxScreenCastDimension");
+
 const int kDefaultScreenCastWidth = 2880;
 const int kDefaultScreenCastHeight = 1800;
 const double kDefaultScreenCastAspectRatio =
     static_cast<double>(kDefaultScreenCastWidth) / kDefaultScreenCastHeight;
+static_assert(kDefaultScreenCastWidth <= kMaxScreenCastDimension,
+              "Invalid kDefaultScreenCastWidth");
+static_assert(kDefaultScreenCastHeight <= kMaxScreenCastDimension,
+              "Invalid kDefaultScreenCastHeight");
+
+const double kMinScreenCastFrameRate = 1.0 / 60.0;
+const double kMaxScreenCastFrameRate = 120.0;
 const double kDefaultScreenCastFrameRate =
     MediaStreamVideoSource::kDefaultFrameRate;
-const int kMinScreenCastDimension = 1;
-const int kMaxScreenCastDimension = media::limits::kMaxDimension - 1;
 
 namespace {
 
@@ -31,9 +45,6 @@ using Point = ResolutionSet::Point;
 using StringSet = DiscreteSet<std::string>;
 using BoolSet = DiscreteSet<bool>;
 
-// Hard upper and lower bound frame rates for tab/desktop capture.
-const double kMaxScreenCastFrameRate = 120.0;
-const double kMinScreenCastFrameRate = 1.0 / 60.0;
 
 constexpr double kMinScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension) /
@@ -65,15 +76,28 @@ using DoubleRangeSet = NumericRangeSet<double>;
 class VideoContentCaptureCandidates {
  public:
   VideoContentCaptureCandidates()
-      : device_id_set(StringSet::UniversalSet()),
-        noise_reduction_set(BoolSet::UniversalSet()) {}
+      : has_explicit_max_height_(false),
+        has_explicit_max_width_(false),
+        has_explicit_max_frame_rate_(false),
+        device_id_set_(StringSet::UniversalSet()),
+        noise_reduction_set_(BoolSet::UniversalSet()) {}
   explicit VideoContentCaptureCandidates(
       const blink::WebMediaTrackConstraintSet& constraint_set)
-      : resolution_set(ResolutionSet::FromConstraintSet(constraint_set)),
-        frame_rate_set(
+      : resolution_set_(ResolutionSet::FromConstraintSet(constraint_set)),
+        has_explicit_max_height_(ConstraintHasMax(constraint_set.height) &&
+                                 ConstraintMax(constraint_set.height) <=
+                                     kMaxScreenCastDimension),
+        has_explicit_max_width_(ConstraintHasMax(constraint_set.width) &&
+                                ConstraintMax(constraint_set.width) <=
+                                    kMaxScreenCastDimension),
+        frame_rate_set_(
             DoubleRangeSet::FromConstraint(constraint_set.frame_rate)),
-        device_id_set(StringSetFromConstraint(constraint_set.device_id)),
-        noise_reduction_set(
+        has_explicit_max_frame_rate_(
+            ConstraintHasMax(constraint_set.frame_rate) &&
+            ConstraintMax(constraint_set.frame_rate) <=
+                kMaxScreenCastFrameRate),
+        device_id_set_(StringSetFromConstraint(constraint_set.device_id)),
+        noise_reduction_set_(
             BoolSetFromConstraint(constraint_set.goog_noise_reduction)) {}
 
   VideoContentCaptureCandidates(VideoContentCaptureCandidates&& other) =
@@ -82,28 +106,50 @@ class VideoContentCaptureCandidates {
       VideoContentCaptureCandidates&& other) = default;
 
   bool IsEmpty() const {
-    return resolution_set.IsEmpty() || frame_rate_set.IsEmpty() ||
-           device_id_set.IsEmpty() || noise_reduction_set.IsEmpty();
+    return resolution_set_.IsEmpty() || frame_rate_set_.IsEmpty() ||
+           device_id_set_.IsEmpty() || noise_reduction_set_.IsEmpty();
   }
 
   VideoContentCaptureCandidates Intersection(
       const VideoContentCaptureCandidates& other) {
     VideoContentCaptureCandidates intersection;
-    intersection.resolution_set =
-        resolution_set.Intersection(other.resolution_set);
-    intersection.frame_rate_set =
-        frame_rate_set.Intersection(other.frame_rate_set);
-    intersection.device_id_set =
-        device_id_set.Intersection(other.device_id_set);
-    intersection.noise_reduction_set =
-        noise_reduction_set.Intersection(other.noise_reduction_set);
+    intersection.resolution_set_ =
+        resolution_set_.Intersection(other.resolution_set_);
+    intersection.has_explicit_max_height_ =
+        has_explicit_max_height_ || other.has_explicit_max_height_;
+    intersection.has_explicit_max_width_ =
+        has_explicit_max_width_ || other.has_explicit_max_width_;
+    intersection.frame_rate_set_ =
+        frame_rate_set_.Intersection(other.frame_rate_set_);
+    intersection.has_explicit_max_frame_rate_ =
+        has_explicit_max_frame_rate_ || other.has_explicit_max_frame_rate_;
+    intersection.device_id_set_ =
+        device_id_set_.Intersection(other.device_id_set_);
+    intersection.noise_reduction_set_ =
+        noise_reduction_set_.Intersection(other.noise_reduction_set_);
     return intersection;
   }
 
-  ResolutionSet resolution_set;
-  DoubleRangeSet frame_rate_set;
-  StringSet device_id_set;
-  BoolSet noise_reduction_set;
+  const ResolutionSet& resolution_set() const { return resolution_set_; }
+  bool has_explicit_max_height() const { return has_explicit_max_height_; }
+  bool has_explicit_max_width() const { return has_explicit_max_width_; }
+  const DoubleRangeSet& frame_rate_set() const { return frame_rate_set_; }
+  bool has_explicit_max_frame_rate() const {
+    return has_explicit_max_frame_rate_;
+  }
+  const StringSet& device_id_set() const { return device_id_set_; }
+  const BoolSet& noise_reduction_set() const { return noise_reduction_set_; }
+  void set_resolution_set(const ResolutionSet& set) { resolution_set_ = set; }
+  void set_frame_rate_set(const DoubleRangeSet& set) { frame_rate_set_ = set; }
+
+ private:
+  ResolutionSet resolution_set_;
+  bool has_explicit_max_height_;
+  bool has_explicit_max_width_;
+  DoubleRangeSet frame_rate_set_;
+  bool has_explicit_max_frame_rate_;
+  StringSet device_id_set_;
+  BoolSet noise_reduction_set_;
 };
 
 ResolutionSet ScreenCastResolutionCapabilities() {
@@ -173,16 +219,16 @@ media::VideoCaptureParams SelectVideoCaptureParamsFromCandidates(
     int default_width,
     double default_frame_rate) {
   double requested_frame_rate = SelectFrameRateFromCandidates(
-      candidates.frame_rate_set, basic_constraint_set, default_frame_rate);
+      candidates.frame_rate_set(), basic_constraint_set, default_frame_rate);
   Point requested_resolution =
-      candidates.resolution_set.SelectClosestPointToIdeal(
+      candidates.resolution_set().SelectClosestPointToIdeal(
           basic_constraint_set, default_height, default_width);
   media::VideoCaptureParams params;
   params.requested_format = media::VideoCaptureFormat(
       ToGfxSize(requested_resolution), static_cast<float>(requested_frame_rate),
       media::PIXEL_FORMAT_I420);
   params.resolution_change_policy =
-      SelectResolutionPolicyFromCandidates(candidates.resolution_set);
+      SelectResolutionPolicyFromCandidates(candidates.resolution_set());
   // Content capture always uses default power-line frequency.
   DCHECK(params.IsValid());
 
@@ -232,11 +278,19 @@ base::Optional<bool> SelectNoiseReductionFromCandidates(
   return base::Optional<bool>(candidates.FirstElement());
 }
 
+int ClampToValidDimension(int value) {
+  if (value > kMaxScreenCastDimension)
+    return kMaxScreenCastDimension;
+  else if (value < kMinScreenCastDimension)
+    return kMinScreenCastDimension;
+  return value;
+}
+
 VideoCaptureSettings SelectResultFromCandidates(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
-  std::string device_id = SelectDeviceIDFromCandidates(candidates.device_id_set,
-                                                       basic_constraint_set);
+  std::string device_id = SelectDeviceIDFromCandidates(
+      candidates.device_id_set(), basic_constraint_set);
   // If a maximum width or height is explicitly given, use them as default.
   // If only one of them is given, use the default aspect ratio to determine the
   // other default value.
@@ -244,55 +298,65 @@ VideoCaptureSettings SelectResultFromCandidates(
   // http://crbug.com/257097
   int default_height = kDefaultScreenCastHeight;
   int default_width = kDefaultScreenCastWidth;
-  bool has_explicit_max_height =
-      candidates.resolution_set.max_height() < kMaxScreenCastDimension;
-  bool has_explicit_max_width =
-      candidates.resolution_set.max_width() < kMaxScreenCastDimension;
-  if (has_explicit_max_height && has_explicit_max_width) {
-    default_height = candidates.resolution_set.max_height();
-    default_width = candidates.resolution_set.max_width();
-  } else if (has_explicit_max_height) {
-    default_height = candidates.resolution_set.max_height();
+  if (candidates.has_explicit_max_height() &&
+      candidates.has_explicit_max_width()) {
+    default_height = candidates.resolution_set().max_height();
+    default_width = candidates.resolution_set().max_width();
+  } else if (candidates.has_explicit_max_height()) {
+    default_height = candidates.resolution_set().max_height();
     default_width = static_cast<int>(
         std::round(default_height * kDefaultScreenCastAspectRatio));
-  } else if (has_explicit_max_width) {
-    default_width = candidates.resolution_set.max_width();
+  } else if (candidates.has_explicit_max_width()) {
+    default_width = candidates.resolution_set().max_width();
     default_height = static_cast<int>(
         std::round(default_width / kDefaultScreenCastAspectRatio));
   }
+  // When the given maximum values are large, the computed values using default
+  // aspect ratio may fall out of range. Ensure the defaults are in the valid
+  // range.
+  default_height = ClampToValidDimension(default_height);
+  default_width = ClampToValidDimension(default_width);
+
+  // If a maximum frame rate is explicitly given, use it as default for
+  // better compatibility with the old constraints algorithm.
+  // TODO(guidou): Use the actual default when applications migrate to the new
+  // constraint syntax.  http://crbug.com/710800
+  double default_frame_rate = candidates.has_explicit_max_frame_rate()
+                                  ? candidates.frame_rate_set().Max()
+                                  : kDefaultScreenCastFrameRate;
   media::VideoCaptureParams capture_params =
       SelectVideoCaptureParamsFromCandidates(candidates, basic_constraint_set,
                                              default_height, default_width,
-                                             kDefaultScreenCastFrameRate);
+                                             default_frame_rate);
 
   base::Optional<bool> noise_reduction = SelectNoiseReductionFromCandidates(
-      candidates.noise_reduction_set, basic_constraint_set);
+      candidates.noise_reduction_set(), basic_constraint_set);
 
   auto track_adapter_settings = SelectVideoTrackAdapterSettings(
-      basic_constraint_set, candidates.resolution_set,
-      candidates.frame_rate_set, capture_params.requested_format);
+      basic_constraint_set, candidates.resolution_set(),
+      candidates.frame_rate_set(), capture_params.requested_format);
 
   return VideoCaptureSettings(std::move(device_id), capture_params,
                               noise_reduction, track_adapter_settings,
-                              candidates.frame_rate_set.Min());
+                              candidates.frame_rate_set().Min());
 }
 
 VideoCaptureSettings UnsatisfiedConstraintsResult(
     const VideoContentCaptureCandidates& candidates,
     const blink::WebMediaTrackConstraintSet& constraint_set) {
   DCHECK(candidates.IsEmpty());
-  if (candidates.resolution_set.IsHeightEmpty()) {
+  if (candidates.resolution_set().IsHeightEmpty()) {
     return VideoCaptureSettings(constraint_set.height.GetName());
-  } else if (candidates.resolution_set.IsWidthEmpty()) {
+  } else if (candidates.resolution_set().IsWidthEmpty()) {
     return VideoCaptureSettings(constraint_set.width.GetName());
-  } else if (candidates.resolution_set.IsAspectRatioEmpty()) {
+  } else if (candidates.resolution_set().IsAspectRatioEmpty()) {
     return VideoCaptureSettings(constraint_set.aspect_ratio.GetName());
-  } else if (candidates.frame_rate_set.IsEmpty()) {
+  } else if (candidates.frame_rate_set().IsEmpty()) {
     return VideoCaptureSettings(constraint_set.frame_rate.GetName());
-  } else if (candidates.noise_reduction_set.IsEmpty()) {
+  } else if (candidates.noise_reduction_set().IsEmpty()) {
     return VideoCaptureSettings(constraint_set.goog_noise_reduction.GetName());
   } else {
-    DCHECK(candidates.device_id_set.IsEmpty());
+    DCHECK(candidates.device_id_set().IsEmpty());
     return VideoCaptureSettings(constraint_set.device_id.GetName());
   }
 }
@@ -302,9 +366,9 @@ VideoCaptureSettings UnsatisfiedConstraintsResult(
 VideoCaptureSettings SelectSettingsVideoContentCapture(
     const blink::WebMediaConstraints& constraints) {
   VideoContentCaptureCandidates candidates;
-  candidates.resolution_set = ScreenCastResolutionCapabilities();
-  candidates.frame_rate_set =
-      DoubleRangeSet(kMinScreenCastFrameRate, kMaxScreenCastFrameRate);
+  candidates.set_resolution_set(ScreenCastResolutionCapabilities());
+  candidates.set_frame_rate_set(
+      DoubleRangeSet(kMinScreenCastFrameRate, kMaxScreenCastFrameRate));
   // candidates.device_id_set and candidates.noise_reduction_set are
   // automatically initialized with the universal set.
 

@@ -17,12 +17,15 @@ class WebMediaConstraints;
 
 namespace content {
 
+CONTENT_EXPORT extern const int kMinScreenCastDimension;
+CONTENT_EXPORT extern const int kMaxScreenCastDimension;
 CONTENT_EXPORT extern const int kDefaultScreenCastWidth;
 CONTENT_EXPORT extern const int kDefaultScreenCastHeight;
 CONTENT_EXPORT extern const double kDefaultScreenCastAspectRatio;
+
+CONTENT_EXPORT extern const double kMinScreenCastFrameRate;
+CONTENT_EXPORT extern const double kMaxScreenCastFrameRate;
 CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
-CONTENT_EXPORT extern const int kMinScreenCastDimension;
-CONTENT_EXPORT extern const int kMaxScreenCastDimension;
 
 // This function performs source, source-settings and track-settings selection
 // for content video capture based on the given |constraints|.
