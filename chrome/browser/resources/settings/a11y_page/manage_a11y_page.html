@@ -155,7 +155,7 @@
       </settings-toggle-button>
       <div class="list-item settings-toggle-button-spacer">
         <div>$i18n{delayBeforeClickLabel}</div>
-        <settings-dropdown-menu
+        <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
             pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
             menu-options="[[autoClickDelayOptions_]]"
             disabled="[[!prefs.settings.a11y.autoclick.value]]">

@@ -57,6 +57,9 @@ Polymer({
       value: 'SETTINGS_DROPDOWN_NOT_FOUND_ITEM',
       readOnly: true,
     },
+
+    /** Label for a11y purposes */
+    label: String,
   },
 
   observers: [
