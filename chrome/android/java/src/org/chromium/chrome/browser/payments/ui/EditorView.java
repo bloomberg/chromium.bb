@@ -333,7 +333,7 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
                                    == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN);
             }
 
-            if (useFullLine) {
+            if (useFullLine || isLastField) {
                 addFieldViewToEditor(mDataView, fieldModel);
             } else {
                 // Create a LinearLayout to put it and the next view side by side.
@@ -390,8 +390,8 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
                     if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
                 }
             };
-            EditorDropdownField dropdownView =
-                    new EditorDropdownField(mContext, parent, fieldModel, prepareEditorRunnable);
+            EditorDropdownField dropdownView = new EditorDropdownField(
+                    mContext, parent, fieldModel, prepareEditorRunnable, mObserverForTest);
             mFieldViews.add(dropdownView);
             mDropdownFields.add(dropdownView.getDropdown());
 
