@@ -24,6 +24,10 @@
 #define WARP_NEIGHBORS_WITH_OBMC 0
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
+#if CONFIG_MOTION_VAR && CONFIG_GLOBAL_MOTION
+#define WARP_NEIGHBORS_WITH_GM 0
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -281,7 +285,11 @@ static INLINE void av1_make_inter_predictor(
     int xs, int ys, const MACROBLOCKD *xd) {
   (void)xd;
 #if CONFIG_GLOBAL_MOTION
-  if (is_global) {
+  if (is_global
+#if CONFIG_MOTION_VAR
+      && (WARP_NEIGHBORS_WITH_GM || (mi_col_offset == 0 && mi_row_offset == 0))
+#endif  // CONFIG_MOTION_VAR
+          ) {
 #if CONFIG_MOTION_VAR
     const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
 #else
