@@ -41,7 +41,8 @@ class Nigori {
 
   // Initialize the client by importing the given keys instead of deriving new
   // ones.
-  bool InitByImport(const std::string& encryption_key,
+  bool InitByImport(const std::string& user_key,
+                    const std::string& encryption_key,
                     const std::string& mac_key);
 
   // Derives a secure lookup name from |type| and |name|. If |hostname|,
@@ -59,7 +60,9 @@ class Nigori {
   bool Decrypt(const std::string& value, std::string* decrypted) const;
 
   // Exports the raw derived keys.
-  bool ExportKeys(std::string* encryption_key, std::string* mac_key) const;
+  bool ExportKeys(std::string* user_key,
+                  std::string* encryption_key,
+                  std::string* mac_key) const;
 
   static const char kSaltSalt[];  // The salt used to derive the user salt.
   static const size_t kSaltKeySizeInBits = 128;
@@ -68,10 +71,16 @@ class Nigori {
   static const size_t kHashSize = 32;
 
   static const size_t kSaltIterations = 1001;
+  static const size_t kUserIterations = 1002;
   static const size_t kEncryptionIterations = 1003;
   static const size_t kSigningIterations = 1004;
 
  private:
+  // user_key isn't used any more, but legacy clients will fail to import a
+  // nigori node without one. We preserve it for the sake of those clients, but
+  // it should be removed once enough clients have upgraded to code that doesn't
+  // enforce its presence.
+  std::unique_ptr<crypto::SymmetricKey> user_key_;
   std::unique_ptr<crypto::SymmetricKey> encryption_key_;
   std::unique_ptr<crypto::SymmetricKey> mac_key_;
 };

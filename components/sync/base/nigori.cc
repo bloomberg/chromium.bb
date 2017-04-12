@@ -79,6 +79,12 @@ bool Nigori::InitByDerivation(const std::string& hostname,
   if (!user_salt->GetRawKey(&raw_user_salt))
     return false;
 
+  // Kuser = PBKDF2(P, Suser, Nuser, 16)
+  user_key_ = SymmetricKey::DeriveKeyFromPassword(
+      SymmetricKey::AES, password, raw_user_salt, kUserIterations,
+      kDerivedKeySizeInBits);
+  DCHECK(user_key_);
+
   // Kenc = PBKDF2(P, Suser, Nenc, 16)
   encryption_key_ = SymmetricKey::DeriveKeyFromPassword(
       SymmetricKey::AES, password, raw_user_salt, kEncryptionIterations,
@@ -91,11 +97,14 @@ bool Nigori::InitByDerivation(const std::string& hostname,
       kDerivedKeySizeInBits);
   DCHECK(mac_key_);
 
-  return encryption_key_ && mac_key_;
+  return user_key_ && encryption_key_ && mac_key_;
 }
 
-bool Nigori::InitByImport(const std::string& encryption_key,
+bool Nigori::InitByImport(const std::string& user_key,
+                          const std::string& encryption_key,
                           const std::string& mac_key) {
+  user_key_ = SymmetricKey::Import(SymmetricKey::AES, user_key);
+
   encryption_key_ = SymmetricKey::Import(SymmetricKey::AES, encryption_key);
   DCHECK(encryption_key_);
 
@@ -223,10 +232,14 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
   return true;
 }
 
-bool Nigori::ExportKeys(std::string* encryption_key,
+bool Nigori::ExportKeys(std::string* user_key,
+                        std::string* encryption_key,
                         std::string* mac_key) const {
   DCHECK(encryption_key);
   DCHECK(mac_key);
+
+  if (user_key_)
+    user_key_->GetRawKey(user_key);
 
   return encryption_key_->GetRawKey(encryption_key) &&
          mac_key_->GetRawKey(mac_key);
