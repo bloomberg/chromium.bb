@@ -65,7 +65,7 @@ int RunAsCrashpadHandler(const base::CommandLine& command_line,
   argv_as_utf8[argv.size()] = nullptr;
   argv.clear();
   return crashpad::HandlerMain(static_cast<int>(storage.size()),
-                               argv_as_utf8.get());
+                               argv_as_utf8.get(), nullptr);
 }
 
 }  // namespace crash_reporter

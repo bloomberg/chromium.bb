@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "minidump/minidump_user_extension_stream_data_source.h"
+#ifndef CRASHPAD_COMPAT_ANDROID_LINUX_PRCTL_H_
+#define CRASHPAD_COMPAT_ANDROID_LINUX_PRCTL_H_
 
-namespace crashpad {
+#include_next <linux/prctl.h>
 
-MinidumpUserExtensionStreamDataSource::MinidumpUserExtensionStreamDataSource(
-    uint32_t stream_type)
-    : stream_type_(static_cast<MinidumpStreamType>(stream_type)) {}
+// Android 5.0.0 (API 21) NDK
+#if !defined(PR_SET_PTRACER)
+#define PR_SET_PTRACER 0x59616d61
+#endif
 
-MinidumpUserExtensionStreamDataSource::
-    ~MinidumpUserExtensionStreamDataSource() {}
-
-}  // namespace crashpad
+#endif  // CRASHPAD_COMPAT_ANDROID_LINUX_PRCTL_H_

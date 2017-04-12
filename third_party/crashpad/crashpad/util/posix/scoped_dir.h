@@ -12,15 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "minidump/minidump_user_extension_stream_data_source.h"
+#ifndef CRASHPAD_UTIL_POSIX_SCOPED_DIR_H_
+#define CRASHPAD_UTIL_POSIX_SCOPED_DIR_H_
+
+#include <dirent.h>
+
+#include <memory>
 
 namespace crashpad {
+namespace internal {
 
-MinidumpUserExtensionStreamDataSource::MinidumpUserExtensionStreamDataSource(
-    uint32_t stream_type)
-    : stream_type_(static_cast<MinidumpStreamType>(stream_type)) {}
+struct ScopedDIRCloser {
+  void operator()(DIR* dir) const;
+};
 
-MinidumpUserExtensionStreamDataSource::
-    ~MinidumpUserExtensionStreamDataSource() {}
+}  // namespace internal
+
+//! \brief Maintains a directory opened by `opendir`.
+//!
+//! On destruction, the directory will be closed by calling `closedir`.
+using ScopedDIR = std::unique_ptr<DIR, internal::ScopedDIRCloser>;
 
 }  // namespace crashpad
+
+#endif  // CRASHPAD_UTIL_POSIX_SCOPED_DIR_H_

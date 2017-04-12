@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "minidump/minidump_user_extension_stream_data_source.h"
+#include "util/posix/scoped_dir.h"
+
+#include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 
 namespace crashpad {
+namespace internal {
 
-MinidumpUserExtensionStreamDataSource::MinidumpUserExtensionStreamDataSource(
-    uint32_t stream_type)
-    : stream_type_(static_cast<MinidumpStreamType>(stream_type)) {}
+void ScopedDIRCloser::operator()(DIR* dir) const {
+  if (dir && IGNORE_EINTR(closedir(dir)) != 0) {
+    PLOG(ERROR) << "closedir";
+  }
+}
 
-MinidumpUserExtensionStreamDataSource::
-    ~MinidumpUserExtensionStreamDataSource() {}
-
+}  // namespace internal
 }  // namespace crashpad
