@@ -122,7 +122,8 @@ void CoordinatorImpl::UnregisterProcessLocalDumpManager(
     DCHECK(!queued_memory_dump_requests_.empty());
     OnProcessMemoryDumpResponse(
         process_manager, queued_memory_dump_requests_.front().args.dump_guid,
-        false /* success */);
+        false /* success */,
+        base::Optional<base::trace_event::MemoryDumpCallbackResult>());
   }
 }
 
@@ -138,9 +139,9 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   failed_memory_dump_count_ = 0;
   for (const auto& key_value : process_managers_) {
     pending_process_managers_.insert(key_value.first);
-    key_value.second->RequestProcessMemoryDump(
-        args, base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
-                         base::Unretained(this), key_value.first));
+    auto callback = base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
+                               base::Unretained(this), key_value.first);
+    key_value.second->RequestProcessMemoryDump(args, callback);
   }
   // Run the callback in case there are no process-local managers.
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -149,7 +150,8 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
 void CoordinatorImpl::OnProcessMemoryDumpResponse(
     mojom::ProcessLocalDumpManager* process_manager,
     uint64_t dump_guid,
-    bool success) {
+    bool success,
+    const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
   auto it = pending_process_managers_.find(process_manager);
 
   DCHECK(!queued_memory_dump_requests_.empty());

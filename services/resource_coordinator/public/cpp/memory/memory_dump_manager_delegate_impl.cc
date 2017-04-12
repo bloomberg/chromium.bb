@@ -50,7 +50,7 @@ void MemoryDumpManagerDelegateImpl::RequestProcessMemoryDump(
 
 void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
-    const base::trace_event::MemoryDumpCallback& callback) {
+    const base::trace_event::GlobalMemoryDumpCallback& callback) {
   // Note: This condition is here to match the old behavior. If the delegate is
   // in the browser process, we do not drop parallel requests in the delegate
   // and so they will be queued by the Coordinator service (see
@@ -81,7 +81,7 @@ void MemoryDumpManagerDelegateImpl::RequestGlobalMemoryDump(
 }
 
 void MemoryDumpManagerDelegateImpl::MemoryDumpCallbackProxy(
-    const base::trace_event::MemoryDumpCallback& callback,
+    const base::trace_event::GlobalMemoryDumpCallback& callback,
     uint64_t dump_guid,
     bool success) {
   DCHECK_NE(0U, pending_memory_dump_guid_);

@@ -113,7 +113,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // successful).
   void RequestGlobalDump(MemoryDumpType dump_type,
                          MemoryDumpLevelOfDetail level_of_detail,
-                         const MemoryDumpCallback& callback);
+                         const GlobalMemoryDumpCallback& callback);
 
   // Same as above (still asynchronous), but without callback.
   void RequestGlobalDump(MemoryDumpType dump_type,
@@ -178,7 +178,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
         MemoryDumpRequestArgs req_args,
         const MemoryDumpProviderInfo::OrderedSet& dump_providers,
         scoped_refptr<MemoryDumpSessionState> session_state,
-        MemoryDumpCallback callback,
+        ProcessMemoryDumpCallback callback,
         scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
 
@@ -205,7 +205,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     scoped_refptr<MemoryDumpSessionState> session_state;
 
     // Callback passed to the initial call to CreateProcessDump().
-    MemoryDumpCallback callback;
+    ProcessMemoryDumpCallback callback;
 
     // The |success| field that will be passed as argument to the |callback|.
     bool dump_successful;
@@ -242,7 +242,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // |callback| will be invoked asynchronously upon completion on the same
   // thread on which CreateProcessDump() was called.
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
-                         const MemoryDumpCallback& callback);
+                         const ProcessMemoryDumpCallback& callback);
 
   // Calls InvokeOnMemoryDump() for the next MDP on the task runner specified by
   // the MDP while registration. On failure to do so, skips and continues to
@@ -317,14 +317,15 @@ class BASE_EXPORT MemoryDumpManagerDelegate {
   MemoryDumpManagerDelegate() {}
   virtual ~MemoryDumpManagerDelegate() {}
 
-  virtual void RequestGlobalMemoryDump(const MemoryDumpRequestArgs& args,
-                                       const MemoryDumpCallback& callback) = 0;
+  virtual void RequestGlobalMemoryDump(
+      const MemoryDumpRequestArgs& args,
+      const GlobalMemoryDumpCallback& callback) = 0;
 
   virtual bool IsCoordinator() const = 0;
 
  protected:
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
-                         const MemoryDumpCallback& callback) {
+                         const ProcessMemoryDumpCallback& callback) {
     MemoryDumpManager::GetInstance()->CreateProcessDump(args, callback);
   }
 

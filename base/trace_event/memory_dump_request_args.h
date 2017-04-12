@@ -14,6 +14,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 
 namespace base {
@@ -78,7 +79,7 @@ struct MemoryDumpArgs {
 // Summarises information about memory use as seen by a single process.
 // This information will eventually be passed to a service to be colated
 // and reported.
-struct MemoryDumpCallbackResult {
+struct BASE_EXPORT MemoryDumpCallbackResult {
   struct OSMemDump {
     uint32_t resident_set_kb = 0;
   };
@@ -98,10 +99,17 @@ struct MemoryDumpCallbackResult {
   std::map<ProcessId, OSMemDump> extra_processes_dump;
 
   MemoryDumpCallbackResult();
+  MemoryDumpCallbackResult(const MemoryDumpCallbackResult&);
   ~MemoryDumpCallbackResult();
 };
 
-using MemoryDumpCallback = Callback<void(uint64_t dump_guid, bool success)>;
+using GlobalMemoryDumpCallback =
+    Callback<void(uint64_t dump_guid, bool success)>;
+
+using ProcessMemoryDumpCallback =
+    Callback<void(uint64_t dump_guid,
+                  bool success,
+                  const Optional<MemoryDumpCallbackResult>& result)>;
 
 BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);
 

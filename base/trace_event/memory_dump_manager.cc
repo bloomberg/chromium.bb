@@ -20,6 +20,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/debug/thread_heap_usage_tracker.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
@@ -83,7 +84,7 @@ const char* const kStrictThreadCheckBlacklist[] = {
 
 // Callback wrapper to hook upon the completion of RequestGlobalDump() and
 // inject trace markers.
-void OnGlobalDumpDone(MemoryDumpCallback wrapped_callback,
+void OnGlobalDumpDone(GlobalMemoryDumpCallback wrapped_callback,
                       uint64_t dump_guid,
                       bool success) {
   char guid_str[20];
@@ -439,7 +440,7 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
 void MemoryDumpManager::RequestGlobalDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
-    const MemoryDumpCallback& callback) {
+    const GlobalMemoryDumpCallback& callback) {
   // Bail out immediately if tracing is not enabled at all or if the dump mode
   // is not allowed.
   if (!UNLIKELY(subtle::NoBarrier_Load(&memory_tracing_enabled_)) ||
@@ -462,7 +463,7 @@ void MemoryDumpManager::RequestGlobalDump(
       kTraceCategory, "GlobalMemoryDump", TRACE_ID_LOCAL(guid), "dump_type",
       MemoryDumpTypeToString(dump_type), "level_of_detail",
       MemoryDumpLevelOfDetailToString(level_of_detail));
-  MemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
+  GlobalMemoryDumpCallback wrapped_callback = Bind(&OnGlobalDumpDone, callback);
 
   // The delegate will coordinate the IPC broadcast and at some point invoke
   // CreateProcessDump() to get a dump for the current process.
@@ -483,7 +484,7 @@ void MemoryDumpManager::GetDumpProvidersForPolling(
 void MemoryDumpManager::RequestGlobalDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail) {
-  RequestGlobalDump(dump_type, level_of_detail, MemoryDumpCallback());
+  RequestGlobalDump(dump_type, level_of_detail, GlobalMemoryDumpCallback());
 }
 
 bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
@@ -497,8 +498,9 @@ bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
   return false;
 }
 
-void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
-                                          const MemoryDumpCallback& callback) {
+void MemoryDumpManager::CreateProcessDump(
+    const MemoryDumpRequestArgs& args,
+    const ProcessMemoryDumpCallback& callback) {
   char guid_str[20];
   sprintf(guid_str, "0x%" PRIx64, args.dump_guid);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTraceCategory, "ProcessMemoryDump",
@@ -740,7 +742,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   // The results struct to fill.
   // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
-  MemoryDumpCallbackResult result;
+  base::Optional<MemoryDumpCallbackResult> result_opt;
 
   for (const auto& kv : pmd_async_state->process_dumps) {
     ProcessId pid = kv.first;  // kNullProcessId for the current process.
@@ -769,7 +771,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     if (pmd_async_state->req_args.level_of_detail ==
         MemoryDumpLevelOfDetail::DETAILED)
       continue;
-
+    MemoryDumpCallbackResult result;
     // TODO(hjd): Transitional until we send the full PMD. See crbug.com/704203
     if (pid == kNullProcessId) {
       result.chrome_dump.malloc_total_kb =
@@ -790,6 +792,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
       auto& os_dump = result.extra_processes_dump[pid];
       FillOsDumpFromProcessMemoryDump(process_memory_dump, &os_dump);
     }
+    result_opt = result;
   }
 
   bool tracing_still_enabled;
@@ -801,7 +804,8 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   }
 
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(dump_guid, pmd_async_state->dump_successful);
+    pmd_async_state->callback.Run(dump_guid, pmd_async_state->dump_successful,
+                                  result_opt);
     pmd_async_state->callback.Reset();
   }
 
@@ -948,7 +952,7 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     MemoryDumpRequestArgs req_args,
     const MemoryDumpProviderInfo::OrderedSet& dump_providers,
     scoped_refptr<MemoryDumpSessionState> session_state,
-    MemoryDumpCallback callback,
+    ProcessMemoryDumpCallback callback,
     scoped_refptr<SingleThreadTaskRunner> dump_thread_task_runner)
     : req_args(req_args),
       session_state(std::move(session_state)),

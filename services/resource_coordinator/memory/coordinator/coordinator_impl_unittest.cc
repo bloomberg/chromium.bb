@@ -82,7 +82,8 @@ class MockDumpManager : public mojom::ProcessLocalDumpManager {
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestProcessMemoryDumpCallback& callback) override {
     expected_calls_--;
-    callback.Run(args.dump_guid, true);
+    base::trace_event::MemoryDumpCallbackResult result;
+    callback.Run(args.dump_guid, true, result);
   }
 
  private:

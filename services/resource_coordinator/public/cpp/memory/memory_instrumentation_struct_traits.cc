@@ -104,4 +104,38 @@ bool StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
   return true;
 }
 
+// static
+bool StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
+                  base::trace_event::MemoryDumpCallbackResult::ChromeMemDump>::
+    Read(memory_instrumentation::mojom::ChromeMemDumpDataView input,
+         base::trace_event::MemoryDumpCallbackResult::ChromeMemDump* out) {
+  out->malloc_total_kb = input.malloc_total_kb();
+  out->partition_alloc_total_kb = input.partition_alloc_total_kb();
+  out->blink_gc_total_kb = input.blink_gc_total_kb();
+  out->v8_total_kb = input.v8_total_kb();
+  return true;
+}
+
+// static
+bool StructTraits<memory_instrumentation::mojom::OSMemDumpDataView,
+                  base::trace_event::MemoryDumpCallbackResult::OSMemDump>::
+    Read(memory_instrumentation::mojom::OSMemDumpDataView input,
+         base::trace_event::MemoryDumpCallbackResult::OSMemDump* out) {
+  out->resident_set_kb = input.resident_set_kb();
+  return true;
+}
+
+// static
+bool StructTraits<
+    memory_instrumentation::mojom::MemoryDumpCallbackResultDataView,
+    base::trace_event::MemoryDumpCallbackResult>::
+    Read(memory_instrumentation::mojom::MemoryDumpCallbackResultDataView input,
+         base::trace_event::MemoryDumpCallbackResult* out) {
+  if (!input.ReadChromeDump(&out->chrome_dump))
+    return false;
+  if (!input.ReadOsDump(&out->os_dump))
+    return false;
+  return true;
+}
+
 }  // namespace mojo

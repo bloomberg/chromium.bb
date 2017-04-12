@@ -60,7 +60,7 @@ class MemoryDumpManagerDelegateImpl
   // The base::trace_event::MemoryDumpManager calls this.
   void RequestGlobalMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
-      const base::trace_event::MemoryDumpCallback& callback) override;
+      const base::trace_event::GlobalMemoryDumpCallback& callback) override;
 
   Config config() { return config_; }
   void SetAsNonCoordinatorForTesting();
@@ -76,7 +76,7 @@ class MemoryDumpManagerDelegateImpl
 
   // A proxy callback for updating |pending_memory_dump_guid_|.
   void MemoryDumpCallbackProxy(
-      const base::trace_event::MemoryDumpCallback& callback,
+      const base::trace_event::GlobalMemoryDumpCallback& callback,
       uint64_t dump_guid,
       bool success);
 

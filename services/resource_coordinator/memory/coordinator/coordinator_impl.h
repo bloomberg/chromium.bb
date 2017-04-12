@@ -66,7 +66,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void OnProcessMemoryDumpResponse(
       mojom::ProcessLocalDumpManager* process_manager,
       uint64_t dump_guid,
-      bool success);
+      bool success,
+      const base::Optional<base::trace_event::MemoryDumpCallbackResult>&
+          result);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();

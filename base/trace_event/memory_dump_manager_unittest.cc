@@ -116,6 +116,18 @@ void PostTaskAndWait(const tracked_objects::Location& from_here,
   event.Wait();
 }
 
+// Adapts a ProcessMemoryDumpCallback into a GlobalMemoryDumpCallback by
+// trimming off the result argument and calling the global callback.
+// TODO (fmeawad): we should keep the results for verification, but currently
+// all results are empty.
+void ProcessDumpCallbackAdapter(
+    GlobalMemoryDumpCallback callback,
+    uint64_t dump_guid,
+    bool success,
+    const base::Optional<base::trace_event::MemoryDumpCallbackResult>&) {
+  callback.Run(dump_guid, success);
+}
+
 // Testing MemoryDumpManagerDelegate which, by default, short-circuits dump
 // requests locally to the MemoryDumpManager instead of performing IPC dances.
 class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
@@ -123,13 +135,17 @@ class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
   MemoryDumpManagerDelegateForTesting(bool is_coordinator)
       : is_coordinator_(is_coordinator) {
     ON_CALL(*this, RequestGlobalMemoryDump(_, _))
-        .WillByDefault(Invoke(
-            this, &MemoryDumpManagerDelegateForTesting::CreateProcessDump));
+        .WillByDefault(Invoke([this](const MemoryDumpRequestArgs& args,
+                                     const GlobalMemoryDumpCallback& callback) {
+          ProcessMemoryDumpCallback process_callback =
+              Bind(&ProcessDumpCallbackAdapter, callback);
+          CreateProcessDump(args, process_callback);
+        }));
   }
 
   MOCK_METHOD2(RequestGlobalMemoryDump,
                void(const MemoryDumpRequestArgs& args,
-                    const MemoryDumpCallback& callback));
+                    const GlobalMemoryDumpCallback& callback));
 
   bool IsCoordinator() const override { return is_coordinator_; }
 
@@ -234,12 +250,14 @@ class MemoryDumpManagerTest : public testing::Test {
     TraceLog::DeleteForTesting();
   }
 
-  // Turns a Closure into a MemoryDumpCallback, keeping track of the callback
-  // result and taking care of posting the closure on the correct task runner.
-  void DumpCallbackAdapter(scoped_refptr<SingleThreadTaskRunner> task_runner,
-                           Closure closure,
-                           uint64_t dump_guid,
-                           bool success) {
+  // Turns a Closure into a GlobalMemoryDumpCallback, keeping track of the
+  // callback result and taking care of posting the closure on the correct task
+  // runner.
+  void GlobalDumpCallbackAdapter(
+      scoped_refptr<SingleThreadTaskRunner> task_runner,
+      Closure closure,
+      uint64_t dump_guid,
+      bool success) {
     last_callback_success_ = success;
     task_runner->PostTask(FROM_HERE, closure);
   }
@@ -254,9 +272,9 @@ class MemoryDumpManagerTest : public testing::Test {
   void RequestGlobalDumpAndWait(MemoryDumpType dump_type,
                                 MemoryDumpLevelOfDetail level_of_detail) {
     RunLoop run_loop;
-    MemoryDumpCallback callback =
-        Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
-             ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure());
+    GlobalMemoryDumpCallback callback = Bind(
+        &MemoryDumpManagerTest::GlobalDumpCallbackAdapter, Unretained(this),
+        ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure());
     mdm_->RequestGlobalDump(dump_type, level_of_detail, callback);
     run_loop.Run();
   }
@@ -313,9 +331,10 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(3);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                              MemoryDumpLevelOfDetail::DETAILED);
+  }
   DisableTracing();
 
   mdm_->UnregisterDumpProvider(&mdp);
@@ -980,11 +999,11 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
       .Times(kHeavyDumpRate - 2);
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(IsLightDump(), _))
-      .WillOnce(Invoke(
-          [test_task_runner, quit_closure](const MemoryDumpRequestArgs& args,
-                                           const MemoryDumpCallback& callback) {
-            test_task_runner->PostTask(FROM_HERE, quit_closure);
-          }));
+      .WillOnce(Invoke([test_task_runner, quit_closure](
+                           const MemoryDumpRequestArgs& args,
+                           const GlobalMemoryDumpCallback& callback) {
+        test_task_runner->PostTask(FROM_HERE, quit_closure);
+      }));
 
   // Swallow all the final spurious calls until tracing gets disabled.
   EXPECT_CALL(delegate, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
@@ -1042,8 +1061,8 @@ TEST_F(MemoryDumpManagerTest, MAYBE_DisableTracingWhileDumping) {
 
   last_callback_success_ = true;
   RunLoop run_loop;
-  MemoryDumpCallback callback =
-      Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+  GlobalMemoryDumpCallback callback =
+      Bind(&MemoryDumpManagerTest::GlobalDumpCallbackAdapter, Unretained(this),
            ThreadTaskRunnerHandle::Get(), run_loop.QuitClosure());
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                           MemoryDumpLevelOfDetail::DETAILED, callback);
@@ -1074,9 +1093,11 @@ TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
 
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _))
       .WillOnce(Invoke([this](const MemoryDumpRequestArgs& args,
-                              const MemoryDumpCallback& callback) {
+                              const GlobalMemoryDumpCallback& callback) {
         DisableTracing();
-        delegate_->CreateProcessDump(args, callback);
+        ProcessMemoryDumpCallback process_callback =
+            Bind(&ProcessDumpCallbackAdapter, callback);
+        delegate_->CreateProcessDump(args, process_callback);
       }));
 
   // If tracing is disabled for current session CreateProcessDump() should NOT
@@ -1244,11 +1265,11 @@ TEST_F(MemoryDumpManagerTest, TestBackgroundTracingSetup) {
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(IsBackgroundDump(), _))
       .Times(5);
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(IsBackgroundDump(), _))
-      .WillOnce(Invoke(
-          [test_task_runner, quit_closure](const MemoryDumpRequestArgs& args,
-                                           const MemoryDumpCallback& callback) {
-            test_task_runner->PostTask(FROM_HERE, quit_closure);
-          }));
+      .WillOnce(Invoke([test_task_runner, quit_closure](
+                           const MemoryDumpRequestArgs& args,
+                           const GlobalMemoryDumpCallback& callback) {
+        test_task_runner->PostTask(FROM_HERE, quit_closure);
+      }));
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _)).Times(AnyNumber());
 
   EnableTracingWithTraceConfig(

@@ -62,6 +62,9 @@ MemoryDumpLevelOfDetail StringToMemoryDumpLevelOfDetail(
 
 MemoryDumpCallbackResult::MemoryDumpCallbackResult() {}
 
+MemoryDumpCallbackResult::MemoryDumpCallbackResult(
+    const MemoryDumpCallbackResult&) = default;
+
 MemoryDumpCallbackResult::~MemoryDumpCallbackResult() {}
 
 }  // namespace trace_event

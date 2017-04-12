@@ -22,12 +22,29 @@ struct RequestArgs {
   LevelOfDetail level_of_detail;
 };
 
+struct OSMemDump {
+  uint32 resident_set_kb = 0;
+};
+
+struct ChromeMemDump {
+  uint32 malloc_total_kb = 0;
+  uint32 partition_alloc_total_kb = 0;
+  uint32 blink_gc_total_kb = 0;
+  uint32 v8_total_kb = 0;
+};
+
+struct MemoryDumpCallbackResult {
+  OSMemDump os_dump;
+  ChromeMemDump chrome_dump;
+}; 
+
 // There should be at most one implementation of this interface per process.
 interface ProcessLocalDumpManager {
   // When successful, the dump is appended in the process-local trace buffer of
-  // the target process and only an ACK is returned.
+  // the target process and an ACK. A summary of the dump is also returned in
+  // case of success.
   RequestProcessMemoryDump(RequestArgs args) =>
-      (uint64 dump_guid, bool success);
+      (uint64 dump_guid, bool success, MemoryDumpCallbackResult? result);
 };
 
 // Memory Infra service implements this interface. ProcessLocalDumpManagers
