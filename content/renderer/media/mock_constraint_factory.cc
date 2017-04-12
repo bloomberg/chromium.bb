@@ -42,6 +42,10 @@ void MockConstraintFactory::DisableDefaultAudioConstraints() {
   basic_.goog_beamforming.SetExact(false);
 }
 
+void MockConstraintFactory::DisableAecAudioConstraints() {
+  basic_.goog_echo_cancellation.SetExact(false);
+}
+
 void MockConstraintFactory::Reset() {
   basic_ = blink::WebMediaTrackConstraintSet();
   advanced_.clear();

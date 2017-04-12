@@ -23,6 +23,7 @@ class MockConstraintFactory {
   blink::WebMediaTrackConstraintSet& AddAdvanced();
 
   void DisableDefaultAudioConstraints();
+  void DisableAecAudioConstraints();
   void Reset();
 
  private:

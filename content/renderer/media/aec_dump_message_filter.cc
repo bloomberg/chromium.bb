@@ -48,6 +48,10 @@ void AecDumpMessageFilter::AddDelegate(
   int id = delegate_id_counter_++;
   delegates_[id] = delegate;
 
+  if (override_aec3_) {
+    delegate->OnAec3Enable(*override_aec3_);
+  }
+
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AecDumpMessageFilter::RegisterAecDumpConsumer, this, id));
@@ -89,6 +93,7 @@ bool AecDumpMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AecDumpMessageFilter, message)
     IPC_MESSAGE_HANDLER(AecDumpMsg_EnableAecDump, OnEnableAecDump)
     IPC_MESSAGE_HANDLER(AecDumpMsg_DisableAecDump, OnDisableAecDump)
+    IPC_MESSAGE_HANDLER(AudioProcessingMsg_EnableAec3, OnEnableAec3)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -128,6 +133,13 @@ void AecDumpMessageFilter::OnDisableAecDump() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AecDumpMessageFilter::DoDisableAecDump, this));
+}
+
+void AecDumpMessageFilter::OnEnableAec3(int id, bool enable) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&AecDumpMessageFilter::DoEnableAec3, this, id, enable));
 }
 
 void AecDumpMessageFilter::DoEnableAecDump(
@@ -171,6 +183,15 @@ int AecDumpMessageFilter::GetIdForDelegate(
       return it->first;
   }
   return kInvalidDelegateId;
+}
+
+void AecDumpMessageFilter::DoEnableAec3(int id, bool enable) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DelegateMap::iterator it = delegates_.find(id);
+  if (it != delegates_.end()) {
+    it->second->OnAec3Enable(enable);
+  }
+  override_aec3_ = enable;
 }
 
 }  // namespace content

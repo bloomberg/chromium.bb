@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -215,6 +217,43 @@ void WebrtcAudioPrivateFunction::InitDeviceIDSalt() {
 
 std::string WebrtcAudioPrivateFunction::device_id_salt() const {
   return device_id_salt_;
+}
+
+// TODO(hlundin): Stolen from WebrtcLoggingPrivateFunction.
+// Consolidate and improve. http://crbug.com/710371
+content::RenderProcessHost*
+WebrtcAudioPrivateFunction::GetRenderProcessHostFromRequest(
+    const RequestInfo& request,
+    const std::string& security_origin) {
+  // If |guest_process_id| is defined, directly use this id to find the
+  // corresponding RenderProcessHost.
+  if (request.guest_process_id)
+    return content::RenderProcessHost::FromID(*request.guest_process_id);
+
+  // Otherwise, use the |tab_id|. If there's no |tab_id| and no
+  // |guest_process_id|, we can't look up the RenderProcessHost.
+  if (!request.tab_id) {
+    error_ = "No tab ID or guest process ID specified.";
+    return nullptr;
+  }
+
+  int tab_id = *request.tab_id;
+  content::WebContents* contents = nullptr;
+  if (!ExtensionTabUtil::GetTabById(tab_id, GetProfile(), true, nullptr,
+                                    nullptr, &contents, nullptr)) {
+    error_ = extensions::ErrorUtils::FormatErrorMessage(
+        extensions::tabs_constants::kTabNotFoundError,
+        base::IntToString(tab_id));
+    return nullptr;
+  }
+  GURL expected_origin = contents->GetLastCommittedURL().GetOrigin();
+  if (expected_origin.spec() != security_origin) {
+    error_ = base::StringPrintf(
+        "Invalid security origin. Expected=%s, actual=%s",
+        expected_origin.spec().c_str(), security_origin.c_str());
+    return nullptr;
+  }
+  return contents->GetRenderProcessHost();
 }
 
 bool WebrtcAudioPrivateGetSinksFunction::RunAsync() {
@@ -502,6 +541,33 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnHMACCalculated(
   }
 
   SendResponse(true);
+}
+
+WebrtcAudioPrivateSetAudioExperimentsFunction::
+    WebrtcAudioPrivateSetAudioExperimentsFunction() {}
+
+WebrtcAudioPrivateSetAudioExperimentsFunction::
+    ~WebrtcAudioPrivateSetAudioExperimentsFunction() {}
+
+bool WebrtcAudioPrivateSetAudioExperimentsFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<wap::SetAudioExperiments::Params> params(
+      wap::SetAudioExperiments::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params->audio_experiments.enable_aec3.get()) {
+    content::RenderProcessHost* host = GetRenderProcessHostFromRequest(
+        params->request, params->security_origin);
+    if (!host) {
+      SendResponse(false);
+      return false;
+    }
+
+    host->SetEchoCanceller3(*params->audio_experiments.enable_aec3);
+  }
+
+  SendResponse(true);
+  return true;
 }
 
 }  // namespace extensions

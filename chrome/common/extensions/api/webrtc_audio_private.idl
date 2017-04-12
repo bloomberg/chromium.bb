@@ -50,6 +50,11 @@ namespace webrtcAudioPrivate {
     long? guestProcessId;
   };
 
+  dictionary AudioExperiments {
+    // Enables or disables the new acoustic echo canceller (AEC3) in WebRTC.
+    boolean? enableAec3;
+  };
+
   interface Functions {
     // Retrieves a list of available audio sink devices.
     static void getSinks(GetSinksCallback callback);
@@ -75,6 +80,14 @@ namespace webrtcAudioPrivate {
     static void getAssociatedSink(DOMString securityOrigin,
                                   DOMString sourceIdInOrigin,
                                   SinkIdCallback cb);
+
+    // Sets the active audio experiments.
+    // |request|: Information about the requesting process.
+    // |securityOrigin|: The origin to restrict the settings to.
+    // |audioExperiments|: The experiments to enable or disable.
+    static void setAudioExperiments(RequestInfo request,
+                                    DOMString securityOrigin,
+                                    AudioExperiments audioExperiments);
   };
 
   interface Events {

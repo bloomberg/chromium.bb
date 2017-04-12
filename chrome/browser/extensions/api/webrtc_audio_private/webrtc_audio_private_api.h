@@ -101,6 +101,13 @@ class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
   // |InitDeviceIDSalt()|.
   std::string device_id_salt() const;
 
+  // Returns the RenderProcessHost associated with the given |request|
+  // authorized by the |security_origin|. Returns null if unauthorized or
+  // the RPH does not exist.
+  content::RenderProcessHost* GetRenderProcessHostFromRequest(
+      const api::webrtc_audio_private::RequestInfo& request,
+      const std::string& security_origin);
+
  private:
   std::string device_id_salt_;
 
@@ -225,6 +232,21 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
 
   // Audio sources (input devices). Filled in by DoWorkOnDeviceThread.
   media::AudioDeviceDescriptions source_devices_;
+};
+
+class WebrtcAudioPrivateSetAudioExperimentsFunction
+    : public WebrtcAudioPrivateFunction {
+ public:
+  WebrtcAudioPrivateSetAudioExperimentsFunction();
+
+ protected:
+  ~WebrtcAudioPrivateSetAudioExperimentsFunction() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.setAudioExperiments",
+                             WEBRTC_AUDIO_PRIVATE_SET_AUDIO_EXPERIMENTS);
+
+  bool RunAsync() override;
 };
 
 }  // namespace extensions

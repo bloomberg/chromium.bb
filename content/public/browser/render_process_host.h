@@ -245,6 +245,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // process. If no recording was in progress, this call will return false.
   virtual bool StopWebRTCEventLog() = 0;
 
+  // Enables or disables WebRTC's echo canceller AEC3. Disabled implies
+  // selecting the older AEC2.
+  // Note: This will be removed once the AEC3 is fully rolled out and the old
+  // AEC is deprecated.
+  virtual void SetEchoCanceller3(bool enable) = 0;
+
   // When set, |callback| receives log messages regarding, for example, media
   // devices (webcams, mics, etc) that were initially requested in the render
   // process associated with this RenderProcessHost.

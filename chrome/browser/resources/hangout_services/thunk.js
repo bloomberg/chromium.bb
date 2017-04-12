@@ -202,6 +202,12 @@ chrome.runtime.onMessageExternal.addListener(
           chrome.webrtcLoggingPrivate.stopWebRtcEventLogging(
               requestInfo, origin, doSendResponse);
           return true;
+        } else if (method == 'setAudioExperiments') {
+          var experiments = message['experiments'];
+          chrome.webrtcAudioPrivate.setAudioExperiments(
+              requestInfo, origin, experiments);
+          doSendResponse();
+          return false;
         }
 
         throw new Error('Unknown method: ' + method);

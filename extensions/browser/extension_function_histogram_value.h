@@ -1228,6 +1228,9 @@ enum HistogramValue {
   NETWORKINGCASTPRIVATE_SETWIFITDLSENABLEDSTATE,
   NETWORKINGCASTPRIVATE_GETWIFITDLSSTATUS,
   ACCESSIBILITY_PRIVATE_DARKENSCREEN,
+  // This does not follow the naming convesion, but follows the other APIs in
+  // webrtcAudioPrivate.
+  WEBRTC_AUDIO_PRIVATE_SET_AUDIO_EXPERIMENTS,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

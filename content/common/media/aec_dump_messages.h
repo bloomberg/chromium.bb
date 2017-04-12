@@ -34,3 +34,8 @@ IPC_MESSAGE_CONTROL1(AecDumpMsg_RegisterAecDumpConsumer,
 // Unregisters a consumer with the browser.
 IPC_MESSAGE_CONTROL1(AecDumpMsg_UnregisterAecDumpConsumer,
                      int /* id */)
+
+// TODO(hlundin): Rename file to reflect expanded use; http://crbug.com/709919.
+IPC_MESSAGE_CONTROL2(AudioProcessingMsg_EnableAec3,
+                     int /* id */,
+                     bool /* enable */)

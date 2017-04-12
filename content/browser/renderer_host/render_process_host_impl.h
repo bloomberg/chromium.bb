@@ -157,6 +157,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DisableAudioDebugRecordings() override;
   bool StartWebRTCEventLog(const base::FilePath& file_path) override;
   bool StopWebRTCEventLog() override;
+  void SetEchoCanceller3(bool enable) override;
   void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) override;
   void ClearWebRtcLogMessageCallback() override;

@@ -2353,6 +2353,18 @@ bool RenderProcessHostImpl::StopWebRTCEventLog() {
   return webrtc_eventlog_host_.StopWebRTCEventLog();
 }
 
+void RenderProcessHostImpl::SetEchoCanceller3(bool enable) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Piggybacking on AEC dumps.
+  // TODO(hlundin): Change name for aec_dump_consumers_;
+  // http://crbug.com/709919.
+  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
+       it != aec_dump_consumers_.end(); ++it) {
+    Send(new AudioProcessingMsg_EnableAec3(*it, enable));
+  }
+}
+
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
 #if BUILDFLAG(ENABLE_WEBRTC)

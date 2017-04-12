@@ -323,6 +323,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const MediaStreamDevice::AudioDeviceParameters& input_params,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
+      has_echo_cancellation_(false),
       playout_data_source_(playout_data_source),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
@@ -486,6 +487,25 @@ void MediaStreamAudioProcessor::OnDisableAecDump() {
     StopEchoCancellationDump(audio_processing_.get());
 }
 
+void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {
+  DCHECK(main_thread_runner_->BelongsToCurrentThread());
+  if (override_aec3_ == enable)
+    return;
+
+  override_aec3_ = enable;
+  if (!has_echo_cancellation_)
+    return;
+
+  auto apm_config = audio_processing_->GetConfig();
+  if (apm_config.echo_canceller3.enabled == enable)
+    return;
+
+  apm_config.echo_canceller3.enabled = enable;
+  audio_processing_->ApplyConfig(apm_config);
+  DCHECK(echo_information_);
+  echo_information_.reset(new EchoInformation());
+}
+
 void MediaStreamAudioProcessor::OnIpcClosing() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   aec_dump_message_filter_ = NULL;
@@ -596,6 +616,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   const bool echo_cancellation =
       audio_constraints.GetEchoCancellationProperty();
+  has_echo_cancellation_ = echo_cancellation;
   const bool goog_agc = audio_constraints.GetGoogAutoGainControl();
 
 #if defined(OS_ANDROID)
@@ -679,8 +700,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // |echo_information_| we simply discard it.
     echo_information_.reset(new EchoInformation());
 
-    apm_config.echo_canceller3.enabled =
-        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3);
+    apm_config.echo_canceller3.enabled = override_aec3_.value_or(
+        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
   } else {
     apm_config.echo_canceller3.enabled = false;
   }

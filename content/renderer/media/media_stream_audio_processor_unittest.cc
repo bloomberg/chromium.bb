@@ -199,6 +199,16 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #endif
   }
 
+  bool GetAec3ConfigState(MediaStreamAudioProcessor* audio_processor) {
+    DCHECK(audio_processor);
+    if (!audio_processor->audio_processing_) {
+      ADD_FAILURE() << "AudioProcessing object missing where it shouldn't be";
+      return false;
+    }
+    return audio_processor->audio_processing_->GetConfig()
+        .echo_canceller3.enabled;
+  }
+
   base::MessageLoop main_thread_message_loop_;
   media::AudioParameters params_;
   MediaStreamDevice::AudioDeviceParameters input_device_params_;
@@ -586,6 +596,53 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
                              kAudioProcessingSampleRate,
                              kAudioProcessingNumberOfChannel,
                              kAudioProcessingSampleRate / 100);
+
+  // Stop |audio_processor| so that it removes itself from
+  // |webrtc_audio_device| and clears its pointer to it.
+  audio_processor->Stop();
+}
+
+// Test that the OnAec3Enable method has the desired effect on the APM config.
+TEST_F(MediaStreamAudioProcessorTest, TestAec3Switch) {
+  MockConstraintFactory constraint_factory;
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), input_device_params_,
+          webrtc_audio_device.get()));
+
+  audio_processor->OnAec3Enable(true);
+  EXPECT_TRUE(GetAec3ConfigState(audio_processor.get()));
+
+  audio_processor->OnAec3Enable(false);
+  EXPECT_FALSE(GetAec3ConfigState(audio_processor.get()));
+
+  // Stop |audio_processor| so that it removes itself from
+  // |webrtc_audio_device| and clears its pointer to it.
+  audio_processor->Stop();
+}
+
+// Same test as above, but when AEC is disabled in the constrants. The expected
+// outcome is that AEC3 should be disabled in all cases.
+TEST_F(MediaStreamAudioProcessorTest, TestAec3Switch_AecOff) {
+  MockConstraintFactory constraint_factory;
+  // Disable the AEC.
+  constraint_factory.DisableAecAudioConstraints();
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
+      new WebRtcAudioDeviceImpl());
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor(
+      new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+          constraint_factory.CreateWebMediaConstraints(), input_device_params_,
+          webrtc_audio_device.get()));
+
+  EXPECT_FALSE(GetAec3ConfigState(audio_processor.get()));
+
+  audio_processor->OnAec3Enable(true);
+  EXPECT_FALSE(GetAec3ConfigState(audio_processor.get()));
+
+  audio_processor->OnAec3Enable(false);
+  EXPECT_FALSE(GetAec3ConfigState(audio_processor.get()));
 
   // Stop |audio_processor| so that it removes itself from
   // |webrtc_audio_device| and clears its pointer to it.
