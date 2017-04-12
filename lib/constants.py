@@ -708,6 +708,10 @@ SUBSYSTEM_PASS = 'subsystem_pass'
 SUBSYSTEM_FAIL = 'subsystem_fail'
 SUBSYSTEM_UNUSED = 'subsystem_unused'
 
+# Build messages
+MESSAGE_TYPE_IGNORED_REASON = 'ignored_reason'
+MESSAGE_SUBTYPE_SELF_DESTRUCTION = 'self_destruction'
+
 # Define HWTEST job_keyvals
 DATASTORE_PARENT_KEY = 'datastore_parent_key'
 
