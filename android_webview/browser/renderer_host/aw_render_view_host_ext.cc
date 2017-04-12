@@ -5,7 +5,6 @@
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"

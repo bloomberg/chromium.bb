@@ -12,7 +12,10 @@
 class BrowserProcessImpl;
 class HistogramSynchronizer;
 class NativeBackendKWallet;
-class ScopedAllowWaitForLegacyWebViewApi;
+
+namespace android_webview {
+class CookieManager;
+}
 
 namespace cc {
 class CompletionEvent;
@@ -37,6 +40,9 @@ class NestedMessagePumpAndroid;
 class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
 class SoftwareOutputDeviceMus;
+class SynchronousCompositor;
+class SynchronousCompositorBrowserFilter;
+class SynchronousCompositorHost;
 class TextInputClientMac;
 class CategorizedWorkerPool;
 }  // namespace content
@@ -174,15 +180,18 @@ class BASE_EXPORT ThreadRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
   // BEGIN ALLOWED USAGE.
+  friend class android_webview::CookieManager;
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserSurfaceViewManager;
   friend class content::BrowserTestBase;
   friend class content::NestedMessagePumpAndroid;
   friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class content::ScopedAllowWaitForDebugURL;
+  friend class content::SynchronousCompositor;
+  friend class content::SynchronousCompositorBrowserFilter;
+  friend class content::SynchronousCompositorHost;
   friend class ::HistogramSynchronizer;
   friend class internal::TaskTracker;
-  friend class ::ScopedAllowWaitForLegacyWebViewApi;
   friend class cc::CompletionEvent;
   friend class cc::SingleThreadTaskGraphRunner;
   friend class content::CategorizedWorkerPool;

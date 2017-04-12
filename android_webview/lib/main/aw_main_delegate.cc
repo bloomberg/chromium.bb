@@ -11,7 +11,6 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/command_line_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
-#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_switches.h"
@@ -54,14 +53,6 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace android_webview {
-
-namespace {
-
-// TODO(boliu): Remove this global Allow once the underlying issues are
-// resolved - http://crbug.com/240453. See AwMainDelegate::RunProcess below.
-base::LazyInstance<std::unique_ptr<ScopedAllowWaitForLegacyWebViewApi>>::
-    DestructorAtExit g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
-}
 
 AwMainDelegate::AwMainDelegate() {
 }
@@ -237,9 +228,6 @@ int AwMainDelegate::RunProcess(
     // crash handler on the same thread as the crash handler was initialized.
     crash_reporter::AddGpuFingerprintToMicrodumpCrashHandler(
         content_client_.gpu_fingerprint());
-
-    g_allow_wait_in_ui_thread.Get().reset(
-        new ScopedAllowWaitForLegacyWebViewApi);
 
     // Return 0 so that we do NOT trigger the default behavior. On Android, the
     // UI message loop is managed by the Java application.

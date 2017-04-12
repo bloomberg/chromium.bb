@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
-#include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
@@ -148,6 +147,8 @@ void GetUserDataDir(FilePath* user_data_dir) {
   }
 }
 
+}  // namespace
+
 // CookieManager creates and owns Webview's CookieStore, in addition to handling
 // calls into the CookieStore from Java.
 //
@@ -232,9 +233,9 @@ class CookieManager {
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
+namespace {
 base::LazyInstance<CookieManager>::Leaky g_lazy_instance;
-
-}  // namespace
+}
 
 // static
 CookieManager* CookieManager::GetInstance() {
@@ -271,7 +272,7 @@ void CookieManager::ExecCookieTaskSync(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(
       base::Bind(task, BoolCallbackAdapter(SignalEventClosure(&completion))));
-  ScopedAllowWaitForLegacyWebViewApi wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
@@ -282,7 +283,7 @@ void CookieManager::ExecCookieTaskSync(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(
       base::Bind(task, IntCallbackAdapter(SignalEventClosure(&completion))));
-  ScopedAllowWaitForLegacyWebViewApi wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
@@ -293,7 +294,7 @@ void CookieManager::ExecCookieTaskSync(
   WaitableEvent completion(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::Bind(task, SignalEventClosure(&completion)));
-  ScopedAllowWaitForLegacyWebViewApi wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 

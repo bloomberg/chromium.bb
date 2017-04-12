@@ -191,11 +191,14 @@ void SynchronousCompositorBrowserFilter::VSyncComplete() {
   std::vector<SyncCompositorCommonRendererParams> params;
   params.reserve(compositor_host_pending_renderer_state_.size());
 
-  if (!render_process_host_->Send(
-          new SyncCompositorMsg_SynchronizeRendererState(routing_ids,
-                                                         &params))) {
-    compositor_host_pending_renderer_state_.clear();
-    return;
+  {
+    base::ThreadRestrictions::ScopedAllowWait wait;
+    if (!render_process_host_->Send(
+            new SyncCompositorMsg_SynchronizeRendererState(routing_ids,
+                                                           &params))) {
+      compositor_host_pending_renderer_state_.clear();
+      return;
+    }
   }
 
   if (compositor_host_pending_renderer_state_.size() != params.size()) {
