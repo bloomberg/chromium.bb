@@ -11,20 +11,13 @@
 <dom-module id="settings-users-page">
   <template>
     <style include="settings-shared action-link">
-      .users {
-        /* The users box must line up with the checkbox text. */
-        -webkit-margin-start: var(--settings-indent-width);
-      }
-
       .settings-box:first-of-type {
         border-top: none;
       }
 
       #add-user-button {
         /* Add user button must be lined up with the start of users' names. */
-        /* TODO(dschuyler): Should this be var(--settings-box-row-indent) rather
-           than 56px? */
-        -webkit-margin-start: 56px;
+        -webkit-margin-start: var(--settings-box-row-indent);
       }
     </style>
     <template is="dom-if" if="[[isWhitelistManaged_]]">
@@ -58,18 +51,18 @@
           disabled="[[isEditingDisabled_(isOwner_, isWhitelistManaged_)]]"
           inverted>
       </settings-toggle-button>
-      <div class="users">
-        <settings-user-list prefs="[[prefs]]"
-            disabled="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
-                prefs.cros.accounts.allowGuest.value)]]">
-        </settings-user-list>
-        <div id="add-user-button" class="list-item"
-            hidden="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
-                prefs.cros.accounts.allowGuest.value)]]">
-          <a is="action-link" class="list-button" on-tap="openAddUserDialog_">
-            $i18n{addUsers}
-          </a>
-        </div>
+    </div>
+    <div class="list-frame">
+      <settings-user-list prefs="[[prefs]]"
+          disabled="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
+              prefs.cros.accounts.allowGuest.value)]]">
+      </settings-user-list>
+      <div id="add-user-button" class="list-item"
+          hidden="[[isEditingUsersDisabled_(isOwner_, isWhitelistManaged_,
+              prefs.cros.accounts.allowGuest.value)]]">
+        <a is="action-link" class="list-button" on-tap="openAddUserDialog_">
+          $i18n{addUsers}
+        </a>
       </div>
     </div>
     <settings-users-add-user-dialog id="addUserDialog"
