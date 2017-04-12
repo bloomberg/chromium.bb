@@ -12,11 +12,19 @@ symbol information parsed from a linker .map file.
 ### Example Usage:
 
     # Android:
-    gn gen out/Release --args='target_os="android" is_official_build=true'
+    # Googlers:
+    gn gen out/Release --args='is_official_build=true symbol_level=1 is_chrome_branded=true target_os="android"'
+    # Non-Googlers:
+    gn gen out/Release --args='is_official_build=true symbol_level=1 exclude_unwind_tables=true ffmpeg_branding="Chrome" proprietary_codecs=true target_os="android"'
     ninja -C out/Release -j 1000 libchrome.so
     tools/binary_size/supersize archive chrome.size --elf-file out/Release/lib.unstripped/libchrome.so -v
+
     # Linux:
-    gn gen out/Release --args='is_official_build=true'
+    LLVM_DOWNLOAD_GOLD_PLUGIN=1 gclient runhooks  # One-time download.
+    # Googlers:
+    gn gen out/Release --args='is_official_build=true symbol_level=1 is_chrome_branded=true'
+    # Non-Googlers:
+    gn gen out/Release --args='is_official_build=true symbol_level=1 exclude_unwind_tables=true ffmpeg_branding="Chrome" proprietary_codecs=true'
     ninja -C out/Release -j 1000 chrome
     tools/binary_size/supersize archive chrome.size --elf-file out/Release/chrome -v
 

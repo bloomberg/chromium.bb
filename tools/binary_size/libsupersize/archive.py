@@ -135,23 +135,23 @@ def _ExtractSourcePaths(symbols, output_directory):
 
   Returns True if source paths were found.
   """
-  all_found = True
   mapper = ninja_parser.SourceFileMapper(output_directory)
+  not_found_paths = set()
 
   for symbol in symbols:
     object_path = symbol.object_path
     if symbol.source_path or not object_path:
       continue
     # We don't have source info for prebuilt .a files.
-    if not object_path.startswith('..'):
+    if not os.path.isabs(object_path) and not object_path.startswith('..'):
       source_path = mapper.FindSourceForPath(object_path)
       if source_path:
         symbol.source_path = _NormalizeSourcePath(source_path)
-      else:
-        all_found = False
+      elif object_path not in not_found_paths:
+        not_found_paths.add(object_path)
         logging.warning('Could not find source path for %s', object_path)
   logging.debug('Parsed %d .ninja files.', mapper.GetParsedFileCount())
-  return all_found
+  return len(not_found_paths) == 0
 
 
 def _CalculatePadding(symbols):
