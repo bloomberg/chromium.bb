@@ -29,24 +29,24 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
     // or provide a mechanism that web pages can opt-out it if throttling is not
     // desirable.
+    case TaskType::kDOMManipulation:
     case TaskType::kDatabaseAccess:
+    case TaskType::kFileReading:
+    case TaskType::kHistoryTraversal:
+    case TaskType::kPerformanceTimeline:
+    case TaskType::kPostedMessage:
+    case TaskType::kRemoteEvent:
+    case TaskType::kSensor:
+    case TaskType::kUnshippedPortMessage:
+    case TaskType::kWebSocket:
       return frame ? frame->FrameScheduler()->SuspendableTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
-    case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
-    case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
     case TaskType::kMediaElementEvent:
     case TaskType::kCanvasBlobSerialization:
-    case TaskType::kRemoteEvent:
-    case TaskType::kWebSocket:
     case TaskType::kMicrotask:
-    case TaskType::kPostedMessage:
-    case TaskType::kUnshippedPortMessage:
-    case TaskType::kFileReading:
     case TaskType::kPresentation:
-    case TaskType::kSensor:
-    case TaskType::kPerformanceTimeline:
     case TaskType::kWebGL:
     case TaskType::kUnspecedTimer:
     case TaskType::kMiscPlatformAPI:
