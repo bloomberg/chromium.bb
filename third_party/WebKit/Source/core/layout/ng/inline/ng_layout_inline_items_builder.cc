@@ -31,7 +31,7 @@ String NGLayoutInlineItemsBuilder::ToString() {
 // Unicode East Asian Width
 // http://unicode.org/reports/tr11/
 static bool IsAmbiguosEastAsianWidthWide(const ComputedStyle* style) {
-  UScriptCode script = style->GetFontDescription().Script();
+  UScriptCode script = style->GetFontDescription().GetScript();
   return script == USCRIPT_KATAKANA_OR_HIRAGANA ||
          script == USCRIPT_SIMPLIFIED_HAN || script == USCRIPT_TRADITIONAL_HAN;
 }

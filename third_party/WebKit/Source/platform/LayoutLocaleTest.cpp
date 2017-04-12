@@ -101,15 +101,17 @@ TEST(LayoutLocaleTest, ScriptTest) {
 
   for (const auto& test : tests) {
     RefPtr<LayoutLocale> locale = LayoutLocale::CreateForTesting(test.locale);
-    EXPECT_EQ(test.script, locale->Script()) << test.locale;
+    EXPECT_EQ(test.script, locale->GetScript()) << test.locale;
     EXPECT_EQ(test.has_script_for_han, locale->HasScriptForHan())
         << test.locale;
-    if (!test.has_script_for_han)
-      EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN, locale->ScriptForHan()) << test.locale;
-    else if (test.script_for_han)
-      EXPECT_EQ(test.script_for_han, locale->ScriptForHan()) << test.locale;
-    else
-      EXPECT_EQ(test.script, locale->ScriptForHan()) << test.locale;
+    if (!test.has_script_for_han) {
+      EXPECT_EQ(USCRIPT_SIMPLIFIED_HAN, locale->GetScriptForHan())
+          << test.locale;
+    } else if (test.script_for_han) {
+      EXPECT_EQ(test.script_for_han, locale->GetScriptForHan()) << test.locale;
+    } else {
+      EXPECT_EQ(test.script, locale->GetScriptForHan()) << test.locale;
+    }
   }
 }
 

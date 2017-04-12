@@ -193,7 +193,7 @@ class PLATFORM_EXPORT FontDescription {
   const LayoutLocale& LocaleOrDefault() const {
     return LayoutLocale::ValueOrDefault(locale_.Get());
   }
-  UScriptCode Script() const { return LocaleOrDefault().Script(); }
+  UScriptCode GetScript() const { return LocaleOrDefault().GetScript(); }
   bool IsSyntheticBold() const { return fields_.synthetic_bold_; }
   bool IsSyntheticItalic() const { return fields_.synthetic_italic_; }
   bool UseSubpixelPositioning() const {

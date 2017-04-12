@@ -113,7 +113,7 @@ AtomicString FontCache::GetGenericFamilyNameForScript(
   // or locale. We need an API that honors both to find appropriate
   // fonts. crbug.com/642340
   UChar32 exampler_char;
-  switch (content_locale->Script()) {
+  switch (content_locale->GetScript()) {
     case USCRIPT_SIMPLIFIED_HAN:
     case USCRIPT_TRADITIONAL_HAN:
     case USCRIPT_KATAKANA_OR_HIRAGANA:

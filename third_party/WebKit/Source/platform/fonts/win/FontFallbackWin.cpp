@@ -298,7 +298,7 @@ void InitializeScriptFontMap(ScriptToFontMap& script_font_map) {
   }
 
   // Initialize the locale-dependent mapping from system locale.
-  UScriptCode han_script = LayoutLocale::GetSystem().ScriptForHan();
+  UScriptCode han_script = LayoutLocale::GetSystem().GetScriptForHan();
   DCHECK(han_script != USCRIPT_HAN);
   if (script_font_map[han_script].candidate_family_names) {
     script_font_map[USCRIPT_HAN].candidate_family_names =
@@ -505,7 +505,7 @@ const UChar* GetFallbackFamily(UChar32 character,
   if (script == USCRIPT_HAN) {
     if (const LayoutLocale* locale_for_han =
             LayoutLocale::LocaleForHan(content_locale))
-      script = locale_for_han->ScriptForHan();
+      script = locale_for_han->GetScriptForHan();
     // If still unknown, USCRIPT_HAN uses UI locale.
     // See initializeScriptFontMap().
   }

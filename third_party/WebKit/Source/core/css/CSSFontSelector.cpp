@@ -99,7 +99,7 @@ static AtomicString FamilyNameFromSettings(
     return FontCache::GetGenericFamilyNameForScript(generic_family_name,
                                                     font_description);
 #else
-  UScriptCode script = font_description.Script();
+  UScriptCode script = font_description.GetScript();
   if (font_description.GenericFamily() == FontDescription::kStandardFamily)
     return settings.Standard(script);
   if (generic_family_name == FontFamilyNames::webkit_serif)

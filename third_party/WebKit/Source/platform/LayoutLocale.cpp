@@ -69,7 +69,7 @@ void LayoutLocale::ComputeScriptForHan() const {
   DCHECK(IsUnambiguousHanScript(script_for_han_));
 }
 
-UScriptCode LayoutLocale::ScriptForHan() const {
+UScriptCode LayoutLocale::GetScriptForHan() const {
   if (script_for_han_ == USCRIPT_COMMON)
     ComputeScriptForHan();
   return script_for_han_;
@@ -103,7 +103,7 @@ void LayoutLocale::ComputeLocaleForHan() {
 }
 
 const char* LayoutLocale::LocaleForHanForSkFontMgr() const {
-  const char* locale = ToSkFontMgrLocale(ScriptForHan());
+  const char* locale = ToSkFontMgrLocale(GetScriptForHan());
   DCHECK(locale);
   return locale;
 }

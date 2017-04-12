@@ -19,7 +19,7 @@ class CachingWordShaperTest : public ::testing::Test {
   void SetUp() override {
     font_description.SetComputedSize(12.0);
     font_description.SetLocale(LayoutLocale::Get("en"));
-    ASSERT_EQ(USCRIPT_LATIN, font_description.Script());
+    ASSERT_EQ(USCRIPT_LATIN, font_description.GetScript());
     font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
     font = Font(font_description);

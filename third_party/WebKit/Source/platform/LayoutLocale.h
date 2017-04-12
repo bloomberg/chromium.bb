@@ -48,10 +48,10 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
     return harfbuzz_language_;
   }
   const char* LocaleForSkFontMgr() const;
-  UScriptCode Script() const { return script_; }
+  UScriptCode GetScript() const { return script_; }
 
   // Disambiguation of the Unified Han Ideographs.
-  UScriptCode ScriptForHan() const;
+  UScriptCode GetScriptForHan() const;
   bool HasScriptForHan() const;
   static const LayoutLocale* LocaleForHan(const LayoutLocale*);
   static void InvalidateLocaleForHan() { default_for_han_computed_ = false; }

@@ -16,7 +16,7 @@ TEST(FontCacheAndroid, fallbackFontForCharacter) {
 
   FontDescription font_description;
   font_description.SetLocale(LayoutLocale::Get("zh"));
-  ASSERT_EQ(USCRIPT_SIMPLIFIED_HAN, font_description.Script());
+  ASSERT_EQ(USCRIPT_SIMPLIFIED_HAN, font_description.GetScript());
   font_description.SetGenericFamily(FontDescription::kStandardFamily);
 
   FontCache* font_cache = FontCache::GetFontCache();

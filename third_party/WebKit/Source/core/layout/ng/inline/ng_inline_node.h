@@ -148,7 +148,7 @@ class NGLayoutInlineItem {
     return bidi_level_ & 1 ? TextDirection::kRtl : TextDirection::kLtr;
   }
   UBiDiLevel BidiLevel() const { return bidi_level_; }
-  UScriptCode Script() const { return script_; }
+  UScriptCode GetScript() const { return script_; }
   const ComputedStyle* Style() const { return style_; }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 

@@ -56,7 +56,7 @@ TEST(AcceptLanguagesResolverTest, AcceptLanguagesChanged) {
     }
 
     ASSERT_NE(nullptr, locale) << test.accept_languages;
-    EXPECT_EQ(test.script, locale->ScriptForHan()) << test.accept_languages;
+    EXPECT_EQ(test.script, locale->GetScriptForHan()) << test.accept_languages;
     EXPECT_STRCASEEQ(test.locale, locale->LocaleForHanForSkFontMgr())
         << test.accept_languages;
   }
