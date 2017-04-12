@@ -315,6 +315,7 @@ EXPERIMENT_LIST="
     mv_compress
     frame_superres
     new_multisymbol
+    compound_singleref
 "
 CONFIG_LIST="
     dependency_tracking
