@@ -40,6 +40,8 @@ public class CrashReceiverService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        ContextUtils.initApplicationContext(this.getApplicationContext());
     }
 
     private final ICrashReceiverService.Stub mBinder = new ICrashReceiverService.Stub() {
