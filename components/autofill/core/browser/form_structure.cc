@@ -694,6 +694,13 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
   size_t num_edited_autofilled_fields = 0;
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
+
+  // Determine the correct suffix for the metric, depending on whether or
+  // not a submission was observed.
+  const AutofillMetrics::QualityMetricType metric_type =
+      observed_submission ? AutofillMetrics::TYPE_SUBMISSION
+                          : AutofillMetrics::TYPE_NO_SUBMISSION;
+
   for (size_t i = 0; i < field_count(); ++i) {
     auto* const field = this->field(i);
 
@@ -712,12 +719,42 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
     if (field->previously_autofilled())
       num_edited_autofilled_fields++;
 
-    // No further logging for empty fields nor for fields where the entered data
-    // does not appear to already exist in the user's stored Autofill data.
+    // Aliases for the field types predicted by heuristics, server and overall.
+    ServerFieldType heuristic_type =
+        AutofillType(field->heuristic_type()).GetStorableType();
+    ServerFieldType server_type =
+        AutofillType(field->server_type()).GetStorableType();
+    ServerFieldType predicted_type = field->Type().GetStorableType();
+
     const ServerFieldTypeSet& field_types = field->possible_types();
     DCHECK(!field_types.empty());
-    if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
+
+    // If the field data is empty, or unrecognized, log whether or not autofill
+    // predicted that it would be populated with an autofillable data type.
+    bool has_empty_data = field_types.count(EMPTY_TYPE) != 0;
+    bool has_unrecognized_data = field_types.count(UNKNOWN_TYPE) != 0;
+    if (has_empty_data || has_unrecognized_data) {
+      AutofillMetrics::FieldTypeQualityMetric match_empty_or_unknown =
+          has_empty_data ? AutofillMetrics::TYPE_MATCH_EMPTY
+                         : AutofillMetrics::TYPE_MATCH_UNKNOWN;
+      AutofillMetrics::FieldTypeQualityMetric mismatch_empty_or_unknown =
+          has_empty_data ? AutofillMetrics::TYPE_MISMATCH_EMPTY
+                         : AutofillMetrics::TYPE_MISMATCH_UNKNOWN;
+      ServerFieldType field_type = has_empty_data ? EMPTY_TYPE : UNKNOWN_TYPE;
+      AutofillMetrics::LogHeuristicTypePrediction(
+          (heuristic_type == UNKNOWN_TYPE ? match_empty_or_unknown
+                                          : mismatch_empty_or_unknown),
+          field_type, metric_type);
+      AutofillMetrics::LogServerTypePrediction(
+          (server_type == NO_SERVER_DATA ? match_empty_or_unknown
+                                         : mismatch_empty_or_unknown),
+          field_type, metric_type);
+      AutofillMetrics::LogOverallTypePrediction(
+          (predicted_type == UNKNOWN_TYPE ? match_empty_or_unknown
+                                          : mismatch_empty_or_unknown),
+          field_type, metric_type);
       continue;
+    }
 
     ++num_detected_field_types;
     if (field->is_autofilled)
@@ -744,17 +781,7 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
     if (collapsed_field_types.size() == 1)
       field_type = *collapsed_field_types.begin();
 
-    ServerFieldType heuristic_type =
-        AutofillType(field->heuristic_type()).GetStorableType();
-    ServerFieldType server_type =
-        AutofillType(field->server_type()).GetStorableType();
-    ServerFieldType predicted_type = field->Type().GetStorableType();
-
-    // Log heuristic, server, and overall type quality metrics, independently of
-    // whether the field was autofilled.
-    const AutofillMetrics::QualityMetricType metric_type =
-        observed_submission ? AutofillMetrics::TYPE_SUBMISSION
-                            : AutofillMetrics::TYPE_NO_SUBMISSION;
+    // Log heuristic, server, and overall type quality metrics.
     if (heuristic_type == UNKNOWN_TYPE) {
       AutofillMetrics::LogHeuristicTypePrediction(AutofillMetrics::TYPE_UNKNOWN,
                                                   field_type, metric_type);

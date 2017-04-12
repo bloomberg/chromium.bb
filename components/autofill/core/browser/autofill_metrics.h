@@ -262,6 +262,7 @@ class AutofillMetrics {
     SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE,
     // The prompt was dismissed because the user clicked a legal message link.
     SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
+
     NUM_SAVE_CARD_PROMPT_METRICS,
   };
 
@@ -270,9 +271,27 @@ class AutofillMetrics {
   // the heuristic prediction, for the crowd-sourced prediction, and for the
   // overall prediction.
   enum FieldTypeQualityMetric {
-    TYPE_UNKNOWN = 0,  // Offered no prediction.
-    TYPE_MATCH,        // Predicted correctly.
-    TYPE_MISMATCH,     // Predicted incorrectly.
+    // The field was found to be of type T, but autofill made no prediction.
+    TYPE_UNKNOWN = 0,
+    // The field was found to be of type T, which matches the predicted type.
+    TYPE_MATCH,
+    // The field was found to be of type T, autofill predicted some other type.
+    TYPE_MISMATCH,
+    // The field was left empty and autofil predicted that the field type would
+    // be UNKNOWN.
+    TYPE_MATCH_EMPTY,
+    // The field was populated with data that did not match any part of the
+    // user's profile (it's type could not be determined). Autofill predicted
+    // the field's type would be UNKNOWN.
+    TYPE_MATCH_UNKNOWN,
+    // The field was left empty, autofill predicted the user would populate it
+    // with autofillable data.
+    TYPE_MISMATCH_EMPTY,
+    // The field was populated with data that did not match any part of the
+    // user's profile (it's type could not be determined). Autofill predicted
+    // the user would populate it with autofillable data.
+    TYPE_MISMATCH_UNKNOWN,
+    // This must be the last value.
     NUM_FIELD_TYPE_QUALITY_METRICS,
   };
 

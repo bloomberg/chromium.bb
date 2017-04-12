@@ -543,6 +543,129 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Tests the true negatives (empty + no prediction and unknown + no prediction)
+// and false positives (empty + bad prediction and unknown + bad prediction)
+// are counted correctly.
+
+struct UnrecognizedOrEmptyFieldsCase {
+  const ServerFieldType actual_field_type;
+  const bool make_prediction;
+  const AutofillMetrics::FieldTypeQualityMetric metric_to_test;
+};
+
+class UnrecognizedOrEmptyFieldsTest
+    : public AutofillMetricsTest,
+      public testing::WithParamInterface<UnrecognizedOrEmptyFieldsCase> {};
+
+TEST_P(UnrecognizedOrEmptyFieldsTest, QualityMetrics) {
+  // Setup the test parameters.
+  const ServerFieldType actual_field_type = GetParam().actual_field_type;
+  const ServerFieldType heuristic_type =
+      GetParam().make_prediction ? EMAIL_ADDRESS : UNKNOWN_TYPE;
+  const ServerFieldType server_type =
+      GetParam().make_prediction ? EMAIL_ADDRESS : NO_SERVER_DATA;
+  const AutofillMetrics::FieldTypeQualityMetric metric_to_test =
+      GetParam().metric_to_test;
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  AutofillField field;
+
+  // Add a first name field, that is predicted correctly.
+  test::CreateTestFormField("first", "first", "Elvis", "text", &field);
+  field.set_possible_types({NAME_FIRST});
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FIRST);
+  server_types.push_back(NAME_FIRST);
+
+  // Add a last name field, that is predicted correctly.
+  test::CreateTestFormField("last", "last", "Presley", "test", &field);
+  field.set_possible_types({NAME_LAST});
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_LAST);
+  server_types.push_back(NAME_LAST);
+
+  // Add an empty or unknown field, that is predicted as per the test params.
+  test::CreateTestFormField("Unknown", "Unknown",
+                            (actual_field_type == EMPTY_TYPE ? "" : "unknown"),
+                            "text", &field);
+  field.set_possible_types({actual_field_type});
+  form.fields.push_back(field);
+  heuristic_types.push_back(heuristic_type);
+  server_types.push_back(server_type);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Run the form submission code while tracking the histograms.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  // Validate the histogram counter values.
+  for (int i = 0; i < AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS; ++i) {
+    // The metric enum value we're currently examining.
+    auto metric = static_cast<AutofillMetrics::FieldTypeQualityMetric>(i);
+
+    // For the overall metric counts...
+    // If the current metric is the metric we're testing, then we expect its
+    // count to be 1. Otherwise, the metric's count should be zero (0) except
+    // for the TYPE_MATCH metric which should be 2 (because of the matching
+    // first and last name fields)
+    int overall_expected_count =
+        (metric == metric_to_test)
+            ? 1
+            : ((metric == AutofillMetrics::TYPE_MATCH) ? 2 : 0);
+
+    histogram_tester.ExpectBucketCount("Autofill.Quality.HeuristicType", metric,
+                                       overall_expected_count);
+    histogram_tester.ExpectBucketCount("Autofill.Quality.ServerType", metric,
+                                       overall_expected_count);
+    histogram_tester.ExpectBucketCount("Autofill.Quality.PredictedType", metric,
+                                       overall_expected_count);
+
+    // For the ByFieldType metric counts...
+    // We only examine the counter for the field_type being tested. If the
+    // current metric is the metric we're testing, then we expect its
+    // count to be 1 otherwise it should be 0.
+    int field_type_expected_count = (metric == metric_to_test) ? 1 : 0;
+
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.HeuristicType.ByFieldType",
+        GetFieldTypeGroupMetric(actual_field_type, metric),
+        field_type_expected_count);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.ServerType.ByFieldType",
+        GetFieldTypeGroupMetric(actual_field_type, metric),
+        field_type_expected_count);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.Quality.PredictedType.ByFieldType",
+        GetFieldTypeGroupMetric(actual_field_type, metric),
+        field_type_expected_count);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AutofillMetricsTest,
+    UnrecognizedOrEmptyFieldsTest,
+    testing::Values(
+        UnrecognizedOrEmptyFieldsCase{EMPTY_TYPE,
+                                      /* make_prediction = */ false,
+                                      AutofillMetrics::TYPE_MATCH_EMPTY},
+        UnrecognizedOrEmptyFieldsCase{UNKNOWN_TYPE,
+                                      /* make_prediction = */ false,
+                                      AutofillMetrics::TYPE_MATCH_UNKNOWN},
+        UnrecognizedOrEmptyFieldsCase{EMPTY_TYPE,
+                                      /* make_prediction = */ true,
+                                      AutofillMetrics::TYPE_MISMATCH_EMPTY},
+        UnrecognizedOrEmptyFieldsCase{UNKNOWN_TYPE,
+                                      /* make_prediction = */ true,
+                                      AutofillMetrics::TYPE_MISMATCH_UNKNOWN}));
+
 // Ensures that metrics that measure timing some important Autofill functions
 // actually are recorded and retrieved.
 TEST_F(AutofillMetricsTest, TimingMetrics) {
