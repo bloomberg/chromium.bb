@@ -419,7 +419,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceCreation() {
   InitializePictureBufferManager();
 }
 
-void AndroidVideoDecodeAccelerator::OnOverlayReady() {
+void AndroidVideoDecodeAccelerator::OnOverlayReady(AndroidOverlay* overlay) {
   DCHECK(!defer_surface_creation_);
   DCHECK_EQ(state_, WAITING_FOR_SURFACE);
   DCHECK(incoming_bundle_);
@@ -427,7 +427,7 @@ void AndroidVideoDecodeAccelerator::OnOverlayReady() {
   InitializePictureBufferManager();
 }
 
-void AndroidVideoDecodeAccelerator::OnOverlayFailed() {
+void AndroidVideoDecodeAccelerator::OnOverlayFailed(AndroidOverlay* overlay) {
   NOTIFY_ERROR(PLATFORM_FAILURE, "Surface is not available");
 }
 
@@ -1292,7 +1292,8 @@ AndroidVideoDecodeAccelerator::GetGlDecoder() const {
   return get_gles2_decoder_cb_.Run();
 }
 
-void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
+void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed(
+    AndroidOverlay* overlay) {
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "AVDA::OnSurfaceDestroyed");
   DCHECK(thread_checker_.CalledOnValidThread());

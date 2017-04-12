@@ -37,15 +37,15 @@ namespace media {
 class MEDIA_EXPORT AndroidOverlay {
  public:
   // Called when the overlay is ready for use, via |GetJavaSurface()|.
-  using ReadyCB = base::Callback<void()>;
+  using ReadyCB = base::Callback<void(AndroidOverlay*)>;
 
   // Called when overlay has failed before |ReadyCB| is called.  Will not be
   // called after ReadyCB.  It will be the last callback for the overlay.
-  using FailedCB = base::Callback<void()>;
+  using FailedCB = base::Callback<void(AndroidOverlay*)>;
 
   // Called when the overlay has been destroyed.  This will not be called unless
   // ReadyCB has been called.  It will be the last callback for the overlay.
-  using DestroyedCB = base::Callback<void()>;
+  using DestroyedCB = base::Callback<void(AndroidOverlay*)>;
 
   // Configuration used to create an overlay.
   struct Config {

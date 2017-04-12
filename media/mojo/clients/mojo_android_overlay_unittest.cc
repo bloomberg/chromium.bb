@@ -22,72 +22,73 @@ using ::testing::StrictMock;
 
 namespace media {
 
-class MockAndroidOverlay : public StrictMock<mojom::AndroidOverlay> {
- public:
-  MOCK_METHOD1(ScheduleLayout, void(const gfx::Rect& rect));
-};
-
-// Handy class with client-level callback mocks.
-class ClientCallbacks {
- public:
-  virtual void OnReady() = 0;
-  virtual void OnFailed() = 0;
-  virtual void OnDestroyed() = 0;
-};
-
-class MockClientCallbacks : public StrictMock<ClientCallbacks> {
- public:
-  MOCK_METHOD0(OnReady, void());
-  MOCK_METHOD0(OnFailed, void());
-  MOCK_METHOD0(OnDestroyed, void());
-};
-
-class MockAndroidOverlayProvider
-    : public StrictMock<mojom::AndroidOverlayProvider> {
- public:
-  // These argument types lack default constructors, so gmock can't mock them.
-  void CreateOverlay(mojom::AndroidOverlayRequest overlay_request,
-                     mojom::AndroidOverlayClientPtr client,
-                     mojom::AndroidOverlayConfigPtr config) override {
-    overlay_request_ = std::move(overlay_request);
-    client_ = std::move(client);
-    config_ = std::move(config);
-    OverlayCreated();
-  }
-
-  MOCK_METHOD0(OverlayCreated, void(void));
-
-  mojom::AndroidOverlayRequest overlay_request_;
-  mojom::AndroidOverlayClientPtr client_;
-  mojom::AndroidOverlayConfigPtr config_;
-};
-
-// When the overlay client needs the provider interface, it'll ask us.
-class MockInterfaceProvider
-    : public StrictMock<service_manager::mojom::InterfaceProvider> {
- public:
-  // |provider| is the provider that we'll provide, provided that we're only
-  // asked to provide it once.  Savvy?
-  MockInterfaceProvider(mojom::AndroidOverlayProvider& provider)
-      : provider_binding_(&provider) {}
-
-  // We can't mock GetInterface directly because of |handle|'s deleted ctor.
-  MOCK_METHOD1(InterfaceGotten, void(const std::string&));
-
-  void GetInterface(const std::string& name,
-                    mojo::ScopedMessagePipeHandle handle) override {
-    // Let the mock know.
-    InterfaceGotten(name);
-
-    // Actually do the work.
-    provider_binding_.Bind(
-        mojo::MakeRequest<mojom::AndroidOverlayProvider>(std::move(handle)));
-  }
-
-  mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;
-};
-
 class MojoAndroidOverlayTest : public ::testing::Test {
+ public:
+  class MockAndroidOverlay : public StrictMock<mojom::AndroidOverlay> {
+   public:
+    MOCK_METHOD1(ScheduleLayout, void(const gfx::Rect& rect));
+  };
+
+  // Handy class with client-level callback mocks.
+  class ClientCallbacks {
+   public:
+    virtual void OnReady(AndroidOverlay*) = 0;
+    virtual void OnFailed(AndroidOverlay*) = 0;
+    virtual void OnDestroyed(AndroidOverlay*) = 0;
+  };
+
+  class MockClientCallbacks : public StrictMock<ClientCallbacks> {
+   public:
+    MOCK_METHOD1(OnReady, void(AndroidOverlay*));
+    MOCK_METHOD1(OnFailed, void(AndroidOverlay*));
+    MOCK_METHOD1(OnDestroyed, void(AndroidOverlay*));
+  };
+
+  class MockAndroidOverlayProvider
+      : public StrictMock<mojom::AndroidOverlayProvider> {
+   public:
+    // These argument types lack default constructors, so gmock can't mock them.
+    void CreateOverlay(mojom::AndroidOverlayRequest overlay_request,
+                       mojom::AndroidOverlayClientPtr client,
+                       mojom::AndroidOverlayConfigPtr config) override {
+      overlay_request_ = std::move(overlay_request);
+      client_ = std::move(client);
+      config_ = std::move(config);
+      OverlayCreated();
+    }
+
+    MOCK_METHOD0(OverlayCreated, void(void));
+
+    mojom::AndroidOverlayRequest overlay_request_;
+    mojom::AndroidOverlayClientPtr client_;
+    mojom::AndroidOverlayConfigPtr config_;
+  };
+
+  // When the overlay client needs the provider interface, it'll ask us.
+  class MockInterfaceProvider
+      : public StrictMock<service_manager::mojom::InterfaceProvider> {
+   public:
+    // |provider| is the provider that we'll provide, provided that we're only
+    // asked to provide it once.  Savvy?
+    MockInterfaceProvider(mojom::AndroidOverlayProvider& provider)
+        : provider_binding_(&provider) {}
+
+    // We can't mock GetInterface directly because of |handle|'s deleted ctor.
+    MOCK_METHOD1(InterfaceGotten, void(const std::string&));
+
+    void GetInterface(const std::string& name,
+                      mojo::ScopedMessagePipeHandle handle) override {
+      // Let the mock know.
+      InterfaceGotten(name);
+
+      // Actually do the work.
+      provider_binding_.Bind(
+          mojo::MakeRequest<mojom::AndroidOverlayProvider>(std::move(handle)));
+    }
+
+    mojo::Binding<mojom::AndroidOverlayProvider> provider_binding_;
+  };
+
  public:
   MojoAndroidOverlayTest()
       : overlay_binding_(&mock_overlay_), interface_provider_(mock_provider_) {}
@@ -135,7 +136,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
   // Notify |overlay_client_| that the surface is ready.
   void CreateSurface() {
-    EXPECT_CALL(callbacks_, OnReady());
+    EXPECT_CALL(callbacks_, OnReady(overlay_client_.get()));
     const int surface_key = 123;
     mock_provider_.client_->OnSurfaceReady(surface_key);
     base::RunLoop().RunUntilIdle();
@@ -175,21 +176,21 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 TEST_F(MojoAndroidOverlayTest, CreateInitReadyDestroy) {
   CreateAndInitializeOverlay();
   CreateSurface();
-  EXPECT_CALL(callbacks_, OnDestroyed());
+  EXPECT_CALL(callbacks_, OnDestroyed(overlay_client_.get()));
   DestroyOverlay();
 }
 
 // Verify that initialization failure results in an onDestroyed callback.
 TEST_F(MojoAndroidOverlayTest, InitFailure) {
   CreateOverlay();
-  EXPECT_CALL(callbacks_, OnFailed());
+  EXPECT_CALL(callbacks_, OnFailed(overlay_client_.get()));
   DestroyOverlay();
 }
 
 // Verify that we can destroy the overlay before providing a surface.
 TEST_F(MojoAndroidOverlayTest, CreateInitDestroy) {
   CreateAndInitializeOverlay();
-  EXPECT_CALL(callbacks_, OnFailed());
+  EXPECT_CALL(callbacks_, OnFailed(overlay_client_.get()));
   DestroyOverlay();
 }
 

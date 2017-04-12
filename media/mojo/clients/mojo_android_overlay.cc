@@ -56,7 +56,7 @@ const base::android::JavaRef<jobject>& MojoAndroidOverlay::GetJavaSurface()
 void MojoAndroidOverlay::OnSurfaceReady(uint64_t surface_key) {
   // TODO(liberato): ask binder for the surface here, and fill in |surface_|.
   received_surface_ = true;
-  config_.ready_cb.Run();
+  config_.ready_cb.Run(this);
 }
 
 void MojoAndroidOverlay::OnDestroyed() {
@@ -64,9 +64,9 @@ void MojoAndroidOverlay::OnDestroyed() {
   // gotten a surface.  Regardless, the overlay cannot be used.
 
   if (!received_surface_)
-    config_.failed_cb.Run();
+    config_.failed_cb.Run(this);
   else
-    config_.destroyed_cb.Run();
+    config_.destroyed_cb.Run(this);
 
   // Note: we do not delete |overlay_ptr_| here.  Our client must delete us to
   // signal that we should do that, since it still might be in use.

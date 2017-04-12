@@ -118,13 +118,13 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void StartSurfaceCreation();
 
   // Called by AndroidOverlay when a surface becomes available.
-  void OnOverlayReady();
+  void OnOverlayReady(AndroidOverlay* overlay);
 
   // Called by AndroidOverlay when the overlay will not call OnOverlayReady.
-  void OnOverlayFailed();
+  void OnOverlayFailed(AndroidOverlay* overlay);
 
   // Called by AndroidOverlay when a surface is lost.
-  void OnSurfaceDestroyed();
+  void OnSurfaceDestroyed(AndroidOverlay* overlay);
 
   // Initializes the picture buffer manager to use the current surface, once
   // it is available.  This is not normally called directly, but rather via

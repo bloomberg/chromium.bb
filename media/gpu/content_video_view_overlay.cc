@@ -41,7 +41,7 @@ const base::android::JavaRef<jobject>& ContentVideoViewOverlay::GetJavaSurface()
 void ContentVideoViewOverlay::OnSurfaceAvailable(bool success) {
   if (!success) {
     // Notify that the surface won't be available.
-    config_.failed_cb.Run();
+    config_.failed_cb.Run(this);
     // |this| may be deleted.
     return;
   }
@@ -52,16 +52,16 @@ void ContentVideoViewOverlay::OnSurfaceAvailable(bool success) {
 
   // If no surface was returned, then fail instead.
   if (surface_.IsEmpty()) {
-    config_.failed_cb.Run();
+    config_.failed_cb.Run(this);
     // |this| may be deleted.
     return;
   }
 
-  config_.ready_cb.Run();
+  config_.ready_cb.Run(this);
 }
 
 void ContentVideoViewOverlay::OnSurfaceDestroyed() {
-  config_.destroyed_cb.Run();
+  config_.destroyed_cb.Run(this);
   // |this| may be deleted, or deletion might be posted elsewhere.
 }
 
