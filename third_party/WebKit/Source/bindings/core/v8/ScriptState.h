@@ -17,7 +17,6 @@
 namespace blink {
 
 class DOMWrapperWorld;
-class ExecutionContext;
 class ScriptValue;
 
 // ScriptState is an abstraction class that holds all information about script
@@ -136,8 +135,6 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   DOMWrapperWorld& World() const { return *world_; }
-  // DEPRECATED: Use ExecutionContext::From instead
-  virtual ExecutionContext* GetExecutionContext() const;
 
   // This can return an empty handle if the v8::Context is gone.
   v8::Local<v8::Context> GetContext() const {

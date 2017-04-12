@@ -50,7 +50,7 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context) {
   blink::ScriptState* scriptState = blink::ScriptState::From(context);
   v8::Local<v8::Object> global = scriptState->GetContext()->Global();
   blink::ExecutionContext* executionContext =
-      scriptState->GetExecutionContext();
+      blink::ExecutionContext::From(scriptState);
   if (executionContext->IsDocument()) {
     return blink::ToV8(blink::Internals::Create(executionContext), global,
                        scriptState->GetIsolate());
@@ -89,7 +89,7 @@ void installConditionalFeaturesForTesting(
       type, scriptState, prototypeObject, interfaceObject);
 
   blink::ExecutionContext* executionContext =
-      scriptState->GetExecutionContext();
+      blink::ExecutionContext::From(scriptState);
   blink::OriginTrialContext* originTrialContext =
       blink::OriginTrialContext::From(
           executionContext, blink::OriginTrialContext::kDontCreateIfNotExists);
@@ -110,7 +110,8 @@ void resetInternalsObject(v8::Local<v8::Context> context) {
 
   blink::ScriptState* scriptState = blink::ScriptState::From(context);
   blink::ScriptState::Scope scope(scriptState);
-  blink::Document* document = ToDocument(scriptState->GetExecutionContext());
+  blink::Document* document =
+      ToDocument(blink::ExecutionContext::From(scriptState));
   DCHECK(document);
   blink::LocalFrame* frame = document->GetFrame();
   // Should the document have been detached, the page is assumed being destroyed

@@ -54,6 +54,7 @@ class Document;
 class DocumentMarker;
 class Element;
 class ExceptionState;
+class ExecutionContext;
 class GCObservation;
 class HTMLInputElement;
 class HTMLMediaElement;

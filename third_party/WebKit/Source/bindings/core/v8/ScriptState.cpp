@@ -5,7 +5,6 @@
 #include "bindings/core/v8/ScriptState.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
@@ -63,10 +62,6 @@ ScriptValue ScriptState::GetFromExtrasExports(const char* name) {
            .ToLocal(&v8_value))
     return ScriptValue();
   return ScriptValue(this, v8_value);
-}
-
-ExecutionContext* ScriptState::GetExecutionContext() const {
-  return ExecutionContext::From(this);
 }
 
 }  // namespace blink

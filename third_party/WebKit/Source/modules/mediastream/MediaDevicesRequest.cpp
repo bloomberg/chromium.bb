@@ -41,7 +41,7 @@ MediaDevicesRequest* MediaDevicesRequest::Create(
 
 MediaDevicesRequest::MediaDevicesRequest(ScriptState* state,
                                          UserMediaController* controller)
-    : ContextLifecycleObserver(state->GetExecutionContext()),
+    : ContextLifecycleObserver(ExecutionContext::From(state)),
       controller_(controller),
       resolver_(ScriptPromiseResolver::Create(state)) {}
 

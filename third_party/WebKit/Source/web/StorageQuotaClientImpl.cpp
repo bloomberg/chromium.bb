@@ -52,7 +52,7 @@ void StorageQuotaClientImpl::RequestQuota(
     unsigned long long new_quota_in_bytes,
     StorageQuotaCallback* success_callback,
     StorageErrorCallback* error_callback) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
   DCHECK(execution_context->IsDocument())
       << "Quota requests are not supported in workers";

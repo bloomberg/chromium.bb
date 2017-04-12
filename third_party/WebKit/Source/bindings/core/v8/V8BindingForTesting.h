@@ -24,11 +24,8 @@ class ScriptStateForTesting : public ScriptState {
  public:
   static PassRefPtr<ScriptStateForTesting> Create(v8::Local<v8::Context>,
                                                   PassRefPtr<DOMWrapperWorld>);
-  ExecutionContext* GetExecutionContext() const override;
-
  private:
   ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-  Persistent<ExecutionContext> execution_context_;
 };
 
 class V8TestingScope {

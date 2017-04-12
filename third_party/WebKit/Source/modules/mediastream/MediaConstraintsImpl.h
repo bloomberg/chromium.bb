@@ -39,6 +39,7 @@
 namespace blink {
 
 class Dictionary;
+class ExecutionContext;
 class MediaTrackConstraints;
 
 namespace MediaConstraintsImpl {

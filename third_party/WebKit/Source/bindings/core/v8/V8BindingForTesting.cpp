@@ -26,10 +26,6 @@ ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context,
                                              PassRefPtr<DOMWrapperWorld> world)
     : ScriptState(context, std::move(world)) {}
 
-ExecutionContext* ScriptStateForTesting::GetExecutionContext() const {
-  return execution_context_;
-}
-
 V8TestingScope::V8TestingScope()
     : holder_(DummyPageHolder::Create()),
       handle_scope_(GetIsolate()),

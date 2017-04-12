@@ -13,6 +13,7 @@
 namespace blink {
 
 class Dictionary;
+class ExecutionContext;
 class ScriptPromiseResolver;
 class ScriptState;
 
