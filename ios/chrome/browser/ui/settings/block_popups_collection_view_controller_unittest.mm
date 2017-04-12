@@ -19,6 +19,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SettingsRootCollectionViewController (ExposedForTesting)
 - (void)editButtonPressed;
 @end
@@ -37,7 +41,7 @@ class BlockPopupsCollectionViewControllerTest
     chrome_browser_state_ = test_cbs_builder.Build();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[BlockPopupsCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

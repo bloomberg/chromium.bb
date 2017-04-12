@@ -6,12 +6,15 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface TestSettingsRootCollectionViewController
     : SettingsRootCollectionViewController
@@ -20,18 +23,18 @@
 @end
 
 @implementation TestSettingsRootCollectionViewController {
-  base::scoped_nsobject<NSMutableArray> _items;
+  NSMutableArray* _items;
 }
 
 - (NSMutableArray*)items {
   if (!_items) {
-    _items.reset([[NSMutableArray alloc] init]);
+    _items = [[NSMutableArray alloc] init];
   }
-  return _items.get();
+  return _items;
 }
 
 - (void)reset {
-  _items.reset();
+  _items = nil;
 }
 
 - (void)loadModel {
@@ -55,9 +58,8 @@ class SettingsRootCollectionViewControllerTest : public PlatformTest {
   SettingsRootCollectionViewControllerTest()
       : controller_([[TestSettingsRootCollectionViewController alloc]
             initWithStyle:CollectionViewControllerStyleDefault]) {
-    item1_.reset([[CollectionViewItem alloc] initWithType:kItemTypeEnumZero]);
-    item2_.reset(
-        [[CollectionViewItem alloc] initWithType:kItemTypeEnumZero + 10]);
+    item1_ = [[CollectionViewItem alloc] initWithType:kItemTypeEnumZero];
+    item2_ = [[CollectionViewItem alloc] initWithType:kItemTypeEnumZero + 10];
   }
 
  protected:
@@ -83,9 +85,9 @@ class SettingsRootCollectionViewControllerTest : public PlatformTest {
     return [controller().collectionViewModel numberOfItemsInSection:section];
   }
 
-  base::scoped_nsobject<TestSettingsRootCollectionViewController> controller_;
-  base::scoped_nsobject<CollectionViewItem> item1_;
-  base::scoped_nsobject<CollectionViewItem> item2_;
+  TestSettingsRootCollectionViewController* controller_;
+  CollectionViewItem* item1_;
+  CollectionViewItem* item2_;
 };
 
 TEST_F(SettingsRootCollectionViewControllerTest, Empty) {

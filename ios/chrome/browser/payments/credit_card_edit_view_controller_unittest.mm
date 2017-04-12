@@ -59,7 +59,7 @@ NSArray<EditorField*>* editorFields() {
 class PaymentRequestCreditCardEditViewControllerTest
     : public CollectionViewControllerTest {
  protected:
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     payment_request_ = base::MakeUnique<PaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);

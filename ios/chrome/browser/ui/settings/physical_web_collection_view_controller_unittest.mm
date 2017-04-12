@@ -21,6 +21,10 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface PhysicalWebCollectionViewController (ExposedForTesting)
 - (void)updatePhysicalWebEnabled:(BOOL)enabled;
 @end
@@ -36,10 +40,10 @@ class PhysicalWebCollectionViewControllerTest
     CreateController();
   }
 
-  CollectionViewController* NewController() override {
-    physicalWebController_.reset([[PhysicalWebCollectionViewController alloc]
-        initWithPrefs:pref_service_.get()]);
-    return [physicalWebController_ retain];
+  CollectionViewController* InstantiateController() override {
+    physicalWebController_ = [[PhysicalWebCollectionViewController alloc]
+        initWithPrefs:pref_service_.get()];
+    return physicalWebController_;
   }
 
   std::unique_ptr<PrefService> CreateLocalState() {
@@ -55,8 +59,7 @@ class PhysicalWebCollectionViewControllerTest
 
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<PrefService> pref_service_;
-  base::scoped_nsobject<PhysicalWebCollectionViewController>
-      physicalWebController_;
+  PhysicalWebCollectionViewController* physicalWebController_;
 };
 
 // Tests PhysicalWebCollectionViewController is set up with all appropriate

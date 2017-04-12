@@ -16,6 +16,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface ImportDataControllerTestDelegate
     : NSObject<ImportDataControllerDelegate>
 @property(nonatomic, readonly) BOOL didChooseClearDataPolicyCalled;
@@ -48,8 +52,8 @@ class ImportDataCollectionViewControllerTest
     is_signed_in_ = true;
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    delegate_.reset([[ImportDataControllerTestDelegate alloc] init]);
+  CollectionViewController* InstantiateController() override {
+    delegate_ = [[ImportDataControllerTestDelegate alloc] init];
     return [[ImportDataCollectionViewController alloc]
         initWithDelegate:delegate_
                fromEmail:@"fromEmail@gmail.com"
@@ -60,7 +64,7 @@ class ImportDataCollectionViewControllerTest
   void set_is_signed_in(bool is_signed_in) { is_signed_in_ = is_signed_in; }
 
   bool is_signed_in_;
-  base::scoped_nsobject<ImportDataControllerTestDelegate> delegate_;
+  ImportDataControllerTestDelegate* delegate_;
 };
 
 TEST_F(ImportDataCollectionViewControllerTest, TestModelSignedIn) {
@@ -153,7 +157,10 @@ TEST_F(ImportDataCollectionViewControllerTest, TestDefaultChoiceSignedIn) {
   EXPECT_FALSE(delegate().didChooseClearDataPolicyCalled);
   UIBarButtonItem* item = controller().navigationItem.rightBarButtonItem;
   ASSERT_TRUE(item);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [item.target performSelector:item.action];
+#pragma clang diagnostic pop
 
   EXPECT_TRUE(delegate().didChooseClearDataPolicyCalled);
   EXPECT_EQ(SHOULD_CLEAR_DATA_CLEAR_DATA, delegate().shouldClearData);
@@ -169,7 +176,10 @@ TEST_F(ImportDataCollectionViewControllerTest, TestDefaultChoiceSignedOut) {
   EXPECT_FALSE(delegate().didChooseClearDataPolicyCalled);
   UIBarButtonItem* item = controller().navigationItem.rightBarButtonItem;
   ASSERT_TRUE(item);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [item.target performSelector:item.action];
+#pragma clang diagnostic pop
 
   EXPECT_TRUE(delegate().didChooseClearDataPolicyCalled);
   EXPECT_EQ(SHOULD_CLEAR_DATA_MERGE_DATA, delegate().shouldClearData);

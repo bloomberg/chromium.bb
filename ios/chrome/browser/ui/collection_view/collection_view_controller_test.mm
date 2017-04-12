@@ -34,7 +34,7 @@ void CollectionViewControllerTest::TearDown() {
 
 void CollectionViewControllerTest::CreateController() {
   DCHECK(!controller_);
-  controller_.reset(NewController());
+  controller_.reset(InstantiateController());
   // Force the model to be loaded.
   [controller_ loadModel];
   // Force the collectionView to be built.

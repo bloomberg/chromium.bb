@@ -30,6 +30,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 NSString* const kSpdyProxyEnabled = @"SpdyProxyEnabled";
@@ -44,8 +48,8 @@ class PrivacyCollectionViewControllerTest
     chrome_browser_state_ = test_cbs_builder.Build();
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    initialValueForSpdyProxyEnabled_.reset(
-        [[defaults valueForKey:kSpdyProxyEnabled] copy]);
+    initialValueForSpdyProxyEnabled_ =
+        [[defaults valueForKey:kSpdyProxyEnabled] copy];
     [defaults setValue:@"Disabled" forKey:kSpdyProxyEnabled];
     CreateController();
   }
@@ -53,7 +57,7 @@ class PrivacyCollectionViewControllerTest
   void TearDown() override {
     if (initialValueForSpdyProxyEnabled_) {
       [[NSUserDefaults standardUserDefaults]
-          setObject:initialValueForSpdyProxyEnabled_.get()
+          setObject:initialValueForSpdyProxyEnabled_
              forKey:kSpdyProxyEnabled];
     } else {
       [[NSUserDefaults standardUserDefaults]
@@ -71,7 +75,7 @@ class PrivacyCollectionViewControllerTest
     return factory.CreateSyncable(registry.get());
   }
 
-  CollectionViewController* NewController() override {
+  CollectionViewController* InstantiateController() override {
     return [[PrivacyCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
@@ -79,7 +83,7 @@ class PrivacyCollectionViewControllerTest
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<NSString> initialValueForSpdyProxyEnabled_;
+  NSString* initialValueForSpdyProxyEnabled_;
 };
 
 // Tests PrivacyCollectionViewController is set up with all appropriate items
@@ -111,9 +115,9 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   EXPECT_EQ(expectedRows, NumberOfItemsInSection(sectionIndex));
 
   CheckSectionHeaderWithId(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL, sectionIndex);
-  base::scoped_nsobject<TouchToSearchPermissionsMediator>
-      touchToSearchPermissions([[TouchToSearchPermissionsMediator alloc]
-          initWithBrowserState:chrome_browser_state_.get()]);
+  TouchToSearchPermissionsMediator* touchToSearchPermissions =
+      [[TouchToSearchPermissionsMediator alloc]
+          initWithBrowserState:chrome_browser_state_.get()];
   NSString* contextualSearchSubtitle =
       ([touchToSearchPermissions preferenceState] == TouchToSearch::DISABLED)
           ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)

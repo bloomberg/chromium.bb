@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/compiler_specific.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/test/ios/wait_util.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/strings/grit/components_strings.h"
@@ -21,6 +20,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -39,7 +42,7 @@ class SyncCreatePassphraseCollectionViewControllerTest
     PassphraseCollectionViewControllerTest::TearDown();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[SyncCreatePassphraseCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
@@ -200,11 +203,11 @@ TEST_F(SyncCreatePassphraseCollectionViewControllerTest,
   EXPECT_EQ([nav_controller_ topViewController], sync_controller);
   EXPECT_NE(nil, sync_controller.title);
   // Install a fake left button item, to check it's not removed.
-  base::scoped_nsobject<UIBarButtonItem> leftBarButtonItem(
+  UIBarButtonItem* leftBarButtonItem =
       [[UIBarButtonItem alloc] initWithTitle:@"Left"
                                        style:UIBarButtonItemStylePlain
                                       target:nil
-                                      action:nil]);
+                                      action:nil];
   sync_controller.navigationItem.leftBarButtonItem = leftBarButtonItem;
 
   // Set up the fake sync service to be in a passphrase creation state.
@@ -215,7 +218,7 @@ TEST_F(SyncCreatePassphraseCollectionViewControllerTest,
   [sync_controller onSyncStateChanged];
   EXPECT_EQ([nav_controller_ topViewController], sync_controller);
   EXPECT_NE(nil, sync_controller.title);
-  EXPECT_EQ(leftBarButtonItem.get(),
+  EXPECT_EQ(leftBarButtonItem,
             sync_controller.navigationItem.leftBarButtonItem);
 }
 

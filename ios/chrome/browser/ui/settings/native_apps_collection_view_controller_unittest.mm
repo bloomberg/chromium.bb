@@ -22,6 +22,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface NativeAppsCollectionViewController (Testing)
 @property(nonatomic, retain) NSArray* appsInSettings;
 @property(nonatomic, assign) id<StoreKitLauncher> storeKitLauncher;
@@ -42,26 +46,22 @@
 - (id)init {
   self = [super init];
   if (self) {
-    base::scoped_nsobject<FakeNativeAppMetadata> app1(
-        [[FakeNativeAppMetadata alloc] init]);
+    FakeNativeAppMetadata* app1 = [[FakeNativeAppMetadata alloc] init];
     [app1 setAppName:@"App1"];
     [app1 setAppId:@"1"];
     [app1 setGoogleOwnedApp:YES];
 
-    base::scoped_nsobject<FakeNativeAppMetadata> app2(
-        [[FakeNativeAppMetadata alloc] init]);
+    FakeNativeAppMetadata* app2 = [[FakeNativeAppMetadata alloc] init];
     [app2 setAppName:@"App2"];
     [app2 setAppId:@"2"];
     [app2 setGoogleOwnedApp:YES];
 
-    base::scoped_nsobject<FakeNativeAppMetadata> app3(
-        [[FakeNativeAppMetadata alloc] init]);
+    FakeNativeAppMetadata* app3 = [[FakeNativeAppMetadata alloc] init];
     [app3 setAppName:@"App3"];
     [app3 setAppId:@"3"];
     [app3 setGoogleOwnedApp:YES];
 
-    base::scoped_nsobject<FakeNativeAppMetadata> notOwnedApp(
-        [[FakeNativeAppMetadata alloc] init]);
+    FakeNativeAppMetadata* notOwnedApp = [[FakeNativeAppMetadata alloc] init];
     [notOwnedApp setAppName:@"NotOwnedApp"];
     [notOwnedApp setAppId:@"999"];
     [notOwnedApp setGoogleOwnedApp:NO];
@@ -95,12 +95,12 @@ class NativeAppsCollectionViewControllerTest
     NativeAppsCollectionViewController* native_apps_controller =
         static_cast<NativeAppsCollectionViewController*>(controller());
 
-    mock_whitelist_manager_.reset([[MockNativeAppWhitelistManager alloc] init]);
+    mock_whitelist_manager_ = [[MockNativeAppWhitelistManager alloc] init];
     [native_apps_controller
         configureWithNativeAppWhiteListManager:mock_whitelist_manager_];
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     DCHECK(request_context_getter_.get());
     return [[NativeAppsCollectionViewController alloc]
         initWithURLRequestContextGetter:request_context_getter_.get()];
@@ -126,8 +126,7 @@ class NativeAppsCollectionViewControllerTest
     NSMutableArray* apps =
         [NSMutableArray arrayWithArray:[native_apps_controller appsInSettings]];
     ASSERT_GT([apps count], 0U);
-    base::scoped_nsobject<FakeNativeAppMetadata> installed_app(
-        [[FakeNativeAppMetadata alloc] init]);
+    FakeNativeAppMetadata* installed_app = [[FakeNativeAppMetadata alloc] init];
     [installed_app setAppName:@"App4"];
     [installed_app setAppId:@"4"];
     [installed_app setGoogleOwnedApp:YES];
@@ -160,7 +159,7 @@ class NativeAppsCollectionViewControllerTest
 
   web::TestWebThreadBundle thread_bundle_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  base::scoped_nsobject<MockNativeAppWhitelistManager> mock_whitelist_manager_;
+  MockNativeAppWhitelistManager* mock_whitelist_manager_;
 };
 
 // Tests the integrity of the loaded model: section titles, sections and rows,
@@ -193,7 +192,7 @@ TEST_F(NativeAppsCollectionViewControllerTest, AutoOpenInAppChanged) {
   ASSERT_TRUE([last_app isInstalled]);
 
   EXPECT_FALSE([last_app shouldAutoOpenLinks]);
-  UISwitch* switch_from_cell = [[[UISwitch alloc] init] autorelease];
+  UISwitch* switch_from_cell = [[UISwitch alloc] init];
   switch_from_cell.on = YES;
   switch_from_cell.tag = kTagShift + last_index;
 
@@ -216,8 +215,8 @@ TEST_F(NativeAppsCollectionViewControllerTest, InstallApp) {
   NativeAppsCollectionViewController* native_apps_controller =
       static_cast<NativeAppsCollectionViewController*>(controller());
   id<StoreKitLauncher> real_opener = [native_apps_controller storeKitLauncher];
-  [native_apps_controller
-      setStoreKitLauncher:[[[MockStoreKitLauncher alloc] init] autorelease]];
+  id<StoreKitLauncher> mockLauncher = [[MockStoreKitLauncher alloc] init];
+  [native_apps_controller setStoreKitLauncher:mockLauncher];
   UIButton* button_from_cell = [UIButton buttonWithType:UIButtonTypeCustom];
   button_from_cell.tag = kTagShift;
   id mock_button = [OCMockObject partialMockForObject:button_from_cell];

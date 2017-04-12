@@ -24,7 +24,7 @@ class CollectionViewControllerTest : public BlockCleanupTest {
   void TearDown() override;
 
   // Derived classes allocate their controller here.
-  virtual CollectionViewController* NewController() NS_RETURNS_RETAINED = 0;
+  virtual CollectionViewController* InstantiateController() = 0;
 
   // Tests should call this function to create their controller for testing.
   void CreateController();

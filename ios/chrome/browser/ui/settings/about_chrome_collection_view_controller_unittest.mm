@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -15,6 +14,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // An AboutChromeTableViewController that intercepts calls to
 // |chromeExecuteCommand:| in order to test the commands.
@@ -27,12 +30,12 @@
 @end
 
 @implementation TestAboutChromeCollectionViewController {
-  base::scoped_nsobject<OpenUrlCommand> command_;
+  OpenUrlCommand* command_;
 }
 
 - (IBAction)chromeExecuteCommand:(id)sender {
   DCHECK([sender isKindOfClass:[OpenUrlCommand class]]);
-  command_.reset([static_cast<OpenUrlCommand*>(sender) retain]);
+  command_ = static_cast<OpenUrlCommand*>(sender);
 }
 
 - (OpenUrlCommand*)command {
@@ -46,7 +49,7 @@ namespace {
 class AboutChromeCollectionViewControllerTest
     : public CollectionViewControllerTest {
  public:
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[TestAboutChromeCollectionViewController alloc] init];
   }
 };

@@ -16,6 +16,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class ContextualSearchCollectionViewControllerTest
@@ -24,18 +28,18 @@ class ContextualSearchCollectionViewControllerTest
   ContextualSearchCollectionViewControllerTest() {
     TestChromeBrowserState::Builder browserStateBuilder;
     browser_state_ = browserStateBuilder.Build();
-    tts_permissions_.reset([[TouchToSearchPermissionsMediator alloc]
-        initWithBrowserState:browser_state_.get()]);
+    tts_permissions_ = [[TouchToSearchPermissionsMediator alloc]
+        initWithBrowserState:browser_state_.get()];
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[ContextualSearchCollectionViewController alloc]
         initWithPermissions:tts_permissions_];
   }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  base::scoped_nsobject<TouchToSearchPermissionsMediator> tts_permissions_;
+  TouchToSearchPermissionsMediator* tts_permissions_;
 };
 
 TEST_F(ContextualSearchCollectionViewControllerTest,

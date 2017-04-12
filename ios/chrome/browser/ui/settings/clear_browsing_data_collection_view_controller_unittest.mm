@@ -38,6 +38,10 @@
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using testing::Return;
 
 @interface ClearBrowsingDataCollectionViewController (ExposedForTesting)
@@ -89,7 +93,7 @@ class ClearBrowsingDataCollectionViewControllerTest
     return prefs;
   }
 
-  CollectionViewController* NewController() override {
+  CollectionViewController* InstantiateController() override {
     return [[ClearBrowsingDataCollectionViewController alloc]
         initWithBrowserState:browser_state_.get()];
   }

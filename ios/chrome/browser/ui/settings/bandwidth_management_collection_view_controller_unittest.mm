@@ -26,6 +26,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class BandwidthManagementCollectionViewControllerTest
@@ -58,7 +62,7 @@ class BandwidthManagementCollectionViewControllerTest
     CollectionViewControllerTest::TearDown();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[BandwidthManagementCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

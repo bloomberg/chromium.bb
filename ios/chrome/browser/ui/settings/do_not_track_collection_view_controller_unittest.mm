@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -22,6 +21,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class DoNotTrackCollectionViewControllerTest
@@ -32,7 +35,7 @@ class DoNotTrackCollectionViewControllerTest
     pref_service_ = CreateLocalState();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[DoNotTrackCollectionViewController alloc]
         initWithPrefs:pref_service_.get()];
   }

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/guid.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,10 @@
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -71,16 +74,16 @@ class AutofillProfileEditCollectionViewControllerTest : public PlatformTest {
     personal_data_manager_->SaveImportedProfile(autofill_profile);
     observer.Wait();  // Wait for the completion of the asynchronous operation.
 
-    autofill_profile_edit_controller_.reset(
-        [[AutofillProfileEditCollectionViewController
+    autofill_profile_edit_controller_ =
+        [AutofillProfileEditCollectionViewController
             controllerWithProfile:autofill_profile
-              personalDataManager:personal_data_manager_] retain]);
+              personalDataManager:personal_data_manager_];
   }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   autofill::PersonalDataManager* personal_data_manager_;
-  base::scoped_nsobject<AutofillProfileEditCollectionViewController>
+  AutofillProfileEditCollectionViewController*
       autofill_profile_edit_controller_;
 };
 

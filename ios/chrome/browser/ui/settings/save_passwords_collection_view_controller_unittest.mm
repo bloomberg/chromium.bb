@@ -18,6 +18,10 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SavePasswordsCollectionViewController (InternalMethods)
 - (void)onGetPasswordStoreResults:
     (const std::vector<autofill::PasswordForm*>&)result;
@@ -42,7 +46,7 @@ class SavePasswordsCollectionViewControllerTest
     CreateController();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[SavePasswordsCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

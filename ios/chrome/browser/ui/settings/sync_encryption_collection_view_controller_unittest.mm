@@ -22,6 +22,10 @@
 #import "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 using testing::NiceMock;
@@ -59,7 +63,7 @@ class SyncEncryptionCollectionViewControllerTest
     CreateController();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[SyncEncryptionCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

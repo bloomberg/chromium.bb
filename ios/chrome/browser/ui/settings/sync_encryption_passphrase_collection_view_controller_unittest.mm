@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -29,6 +28,10 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -85,7 +88,7 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
     PassphraseCollectionViewControllerTest::TearDown();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[SyncEncryptionPassphraseCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

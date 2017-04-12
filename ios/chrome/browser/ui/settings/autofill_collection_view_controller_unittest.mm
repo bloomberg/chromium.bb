@@ -18,6 +18,10 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SettingsRootCollectionViewController (ExposedForTesting)
 - (void)editButtonPressed;
 @end
@@ -36,7 +40,7 @@ class AutofillCollectionViewControllerTest
     chrome_browser_state_->CreateWebDataService();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
+  CollectionViewController* InstantiateController() override {
     return [[AutofillCollectionViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }

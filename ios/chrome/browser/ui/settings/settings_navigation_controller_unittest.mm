@@ -8,8 +8,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsautorelease_pool.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -28,6 +26,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -49,9 +51,8 @@ class SettingsNavigationControllerTest : public PlatformTest {
         ios::TemplateURLServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    mockDelegate_.reset([[OCMockObject
-        niceMockForProtocol:@protocol(SettingsNavigationControllerDelegate)]
-        retain]);
+    mockDelegate_ = [OCMockObject
+        niceMockForProtocol:@protocol(SettingsNavigationControllerDelegate)];
 
     TemplateURLService* template_url_service =
         ios::TemplateURLServiceFactory::GetForBrowserState(
@@ -59,15 +60,15 @@ class SettingsNavigationControllerTest : public PlatformTest {
     template_url_service->Load();
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    initialValueForSpdyProxyEnabled_.reset(
-        [[defaults stringForKey:kSpdyProxyEnabled] copy]);
+    initialValueForSpdyProxyEnabled_ =
+        [[defaults stringForKey:kSpdyProxyEnabled] copy];
     [defaults setObject:@"Disabled" forKey:kSpdyProxyEnabled];
   };
 
   ~SettingsNavigationControllerTest() override {
     if (initialValueForSpdyProxyEnabled_) {
       [[NSUserDefaults standardUserDefaults]
-          setObject:initialValueForSpdyProxyEnabled_.get()
+          setObject:initialValueForSpdyProxyEnabled_
              forKey:kSpdyProxyEnabled];
     } else {
       [[NSUserDefaults standardUserDefaults]
@@ -78,45 +79,48 @@ class SettingsNavigationControllerTest : public PlatformTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::mac::ScopedNSAutoreleasePool pool_;
-  base::scoped_nsprotocol<id> mockDelegate_;
-  base::scoped_nsobject<NSString> initialValueForSpdyProxyEnabled_;
+  id mockDelegate_;
+  NSString* initialValueForSpdyProxyEnabled_;
 };
 
 // When navigation stack has more than one view controller,
 // -popViewControllerAnimated: successfully removes the top view controller.
 TEST_F(SettingsNavigationControllerTest, PopController) {
-  base::scoped_nsobject<SettingsNavigationController> settingsController(
-      [SettingsNavigationController
-          newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                            .get()
-                                    currentBrowserState:chrome_browser_state_
-                                                            .get()
-                                               delegate:nil]);
-  base::scoped_nsobject<UIViewController> viewController(
-      [[UIViewController alloc] initWithNibName:nil bundle:nil]);
-  [settingsController pushViewController:viewController animated:NO];
-  EXPECT_EQ(2U, [[settingsController viewControllers] count]);
+  @autoreleasepool {
+    SettingsNavigationController* settingsController =
+        [SettingsNavigationController
+            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
+                                                              .get()
+                                      currentBrowserState:chrome_browser_state_
+                                                              .get()
+                                                 delegate:nil];
+    UIViewController* viewController =
+        [[UIViewController alloc] initWithNibName:nil bundle:nil];
+    [settingsController pushViewController:viewController animated:NO];
+    EXPECT_EQ(2U, [[settingsController viewControllers] count]);
 
-  UIViewController* poppedViewController =
-      [settingsController popViewControllerAnimated:NO];
-  EXPECT_NSEQ(viewController, poppedViewController);
-  EXPECT_EQ(1U, [[settingsController viewControllers] count]);
+    UIViewController* poppedViewController =
+        [settingsController popViewControllerAnimated:NO];
+    EXPECT_NSEQ(viewController, poppedViewController);
+    EXPECT_EQ(1U, [[settingsController viewControllers] count]);
+  }
 }
 
 // When the navigation stack has only one view controller,
 // -popViewControllerAnimated: returns false.
 TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
-  base::scoped_nsobject<SettingsNavigationController> settingsController(
-      [SettingsNavigationController
-          newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                            .get()
-                                    currentBrowserState:chrome_browser_state_
-                                                            .get()
-                                               delegate:nil]);
-  EXPECT_EQ(1U, [[settingsController viewControllers] count]);
+  @autoreleasepool {
+    SettingsNavigationController* settingsController =
+        [SettingsNavigationController
+            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
+                                                              .get()
+                                      currentBrowserState:chrome_browser_state_
+                                                              .get()
+                                                 delegate:nil];
+    EXPECT_EQ(1U, [[settingsController viewControllers] count]);
 
-  EXPECT_FALSE([settingsController popViewControllerAnimated:NO]);
+    EXPECT_FALSE([settingsController popViewControllerAnimated:NO]);
+  }
 }
 
 // When the settings navigation stack has more than one view controller, calling
@@ -124,21 +128,23 @@ TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
 // reveal the view controller underneath.
 TEST_F(SettingsNavigationControllerTest,
        PopWhenNavigationStackSizeIsGreaterThanOne) {
-  base::scoped_nsobject<SettingsNavigationController> settingsController(
-      [SettingsNavigationController
-          newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                            .get()
-                                    currentBrowserState:chrome_browser_state_
-                                                            .get()
-                                               delegate:mockDelegate_]);
-  base::scoped_nsobject<UIViewController> viewController(
-      [[UIViewController alloc] initWithNibName:nil bundle:nil]);
-  [settingsController pushViewController:viewController animated:NO];
-  EXPECT_EQ(2U, [[settingsController viewControllers] count]);
-  [[mockDelegate_ reject] closeSettings];
-  [settingsController popViewControllerOrCloseSettingsAnimated:NO];
-  EXPECT_EQ(1U, [[settingsController viewControllers] count]);
-  EXPECT_OCMOCK_VERIFY(mockDelegate_);
+  @autoreleasepool {
+    SettingsNavigationController* settingsController =
+        [SettingsNavigationController
+            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
+                                                              .get()
+                                      currentBrowserState:chrome_browser_state_
+                                                              .get()
+                                                 delegate:mockDelegate_];
+    UIViewController* viewController =
+        [[UIViewController alloc] initWithNibName:nil bundle:nil];
+    [settingsController pushViewController:viewController animated:NO];
+    EXPECT_EQ(2U, [[settingsController viewControllers] count]);
+    [[mockDelegate_ reject] closeSettings];
+    [settingsController popViewControllerOrCloseSettingsAnimated:NO];
+    EXPECT_EQ(1U, [[settingsController viewControllers] count]);
+    EXPECT_OCMOCK_VERIFY(mockDelegate_);
+  }
 }
 
 // When the settings navigation stack only has one view controller, calling
@@ -146,17 +152,19 @@ TEST_F(SettingsNavigationControllerTest,
 // delegate.
 TEST_F(SettingsNavigationControllerTest,
        CloseSettingsWhenNavigationStackSizeIsOne) {
-  base::scoped_nsobject<SettingsNavigationController> settingsController(
-      [SettingsNavigationController
-          newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                            .get()
-                                    currentBrowserState:chrome_browser_state_
-                                                            .get()
-                                               delegate:mockDelegate_]);
-  EXPECT_EQ(1U, [[settingsController viewControllers] count]);
-  [[mockDelegate_ expect] closeSettings];
-  [settingsController popViewControllerOrCloseSettingsAnimated:NO];
-  EXPECT_OCMOCK_VERIFY(mockDelegate_);
+  @autoreleasepool {
+    SettingsNavigationController* settingsController =
+        [SettingsNavigationController
+            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
+                                                              .get()
+                                      currentBrowserState:chrome_browser_state_
+                                                              .get()
+                                                 delegate:mockDelegate_];
+    EXPECT_EQ(1U, [[settingsController viewControllers] count]);
+    [[mockDelegate_ expect] closeSettings];
+    [settingsController popViewControllerOrCloseSettingsAnimated:NO];
+    EXPECT_OCMOCK_VERIFY(mockDelegate_);
+  }
 }
 
 }  // namespace

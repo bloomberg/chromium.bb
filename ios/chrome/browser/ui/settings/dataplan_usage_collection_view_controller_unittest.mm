@@ -19,6 +19,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface DataplanUsageCollectionViewController (ExposedForTesting)
 - (void)updateBasePref:(BOOL)basePref wifiPref:(BOOL)wifiPref;
 @end
@@ -37,13 +41,13 @@ class DataplanUsageCollectionViewControllerTest
     CreateController();
   }
 
-  CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    dataplanController_.reset([[DataplanUsageCollectionViewController alloc]
+  CollectionViewController* InstantiateController() override {
+    dataplanController_ = [[DataplanUsageCollectionViewController alloc]
         initWithPrefs:pref_service_.get()
              basePref:kBasePref
              wifiPref:kWifiPref
-                title:@"CollectionTitle"]);
-    return [dataplanController_ retain];
+                title:@"CollectionTitle"];
+    return dataplanController_;
   }
 
   std::unique_ptr<PrefService> CreateLocalState() {
@@ -66,8 +70,7 @@ class DataplanUsageCollectionViewControllerTest
 
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<PrefService> pref_service_;
-  base::scoped_nsobject<DataplanUsageCollectionViewController>
-      dataplanController_;
+  DataplanUsageCollectionViewController* dataplanController_;
 };
 
 TEST_F(DataplanUsageCollectionViewControllerTest, TestModel) {
