@@ -80,10 +80,6 @@ NSString* kCancelMessage = @"The payment request was canceled.";
   // up).
   BOOL _webStateEnabled;
 
-  // Boolean to track if the script has been injected in the current page. This
-  // is a faster check than asking the JS controller.
-  BOOL _isScriptInjected;
-
   // True when close has been called and the PaymentRequest coordinator has
   // been destroyed.
   BOOL _closed;
@@ -113,9 +109,6 @@ NSString* kCancelMessage = @"The payment request was canceled.";
 // Invokes the callback once the request has been terminated.
 - (void)terminateRequestWithErrorMessage:(NSString*)errorMessage
                                 callback:(ProceduralBlockWithBool)callback;
-
-// Initialize the PaymentRequest JavaScript.
-- (void)initializeWebViewForPaymentRequest;
 
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
@@ -286,15 +279,6 @@ NSString* kCancelMessage = @"The payment request was canceled.";
     _paymentRequestJsManager = nil;
     _webStateObserver.reset();
     [self disableCurrentWebState];
-  }
-}
-
-- (void)initializeWebViewForPaymentRequest {
-  if (_enabled) {
-    DCHECK(_webStateEnabled);
-
-    [_paymentRequestJsManager inject];
-    _isScriptInjected = YES;
   }
 }
 
@@ -568,9 +552,7 @@ NSString* kCancelMessage = @"The payment request was canceled.";
     didCommitNavigationWithDetails:
         (const web::LoadCommittedDetails&)load_details {
   [self dismissUI];
-  _isScriptInjected = NO;
   [self enableCurrentWebState];
-  [self initializeWebViewForPaymentRequest];
 }
 
 @end

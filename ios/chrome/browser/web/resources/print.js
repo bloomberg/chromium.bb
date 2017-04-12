@@ -10,6 +10,8 @@
 
 // Intercept window.print calls.
 
+goog.provide('__crWeb.print');
+
 /**
  * Namespace for this module.
  */

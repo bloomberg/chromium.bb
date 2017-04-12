@@ -157,7 +157,7 @@ void ChromeWebClient::PostBrowserURLRewriterCreation(
 
 NSString* ChromeWebClient::GetEarlyPageScript(
     web::BrowserState* browser_state) const {
-  return GetPageScript(@"print");
+  return GetPageScript(@"chrome_bundle");
 }
 
 void ChromeWebClient::AllowCertificateError(

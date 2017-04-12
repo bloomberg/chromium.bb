@@ -114,10 +114,6 @@ NSString* JSONEscape(NSString* JSON) {
 
 #pragma mark - Protected methods
 
-- (NSString*)scriptPath {
-  return @"payment_request_manager";
-}
-
 - (NSString*)presenceBeacon {
   return @"__gCrWeb.paymentRequestManager";
 }

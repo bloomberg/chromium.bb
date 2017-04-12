@@ -145,8 +145,11 @@ bundle_data("resources") {
   ]
 }
 
-js_compile_unchecked("injected_js") {
+js_compile_bundle("chrome_bundle") {
+  closure_entry_point = "__crWeb.chromeBundle"
   sources = [
+    "resources/chrome_bundle.js",
+    "resources/payment_request.js",
     "resources/print.js",
   ]
 }
@@ -172,7 +175,7 @@ source_set("web_internal") {
     "print_observer.mm",
   ]
   deps = [
-    ":injected_js",
+    ":chrome_bundle",
     ":resources",
     "//base",
     "//components/content_settings/core/browser",

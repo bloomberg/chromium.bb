@@ -4,12 +4,6 @@
 
 import("//ios/web/js_compile.gni")
 
-js_compile_checked("injected_js") {
-  sources = [
-    "resources/payment_request_manager.js",
-  ]
-}
-
 source_set("payments") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -57,7 +51,6 @@ source_set("payments") {
     "shipping_option_selection_view_controller_actions.h",
   ]
   deps = [
-    ":injected_js",
     ":payments_ui",
     "//base",
     "//components/autofill/core/browser",

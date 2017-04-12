@@ -80,8 +80,8 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScript) {
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
-  EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
-                                web_view, @"typeof __gCrWeb.windowOpenFix"));
+  EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
+                               web_view, @"typeof window.PaymentRequest"));
 }
 
 }  // namespace
