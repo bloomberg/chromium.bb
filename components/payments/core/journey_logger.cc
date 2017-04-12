@@ -8,8 +8,18 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/ukm/ukm_entry_builder.h"
+#include "components/ukm/ukm_service.h"
 
 namespace payments {
+
+namespace internal {
+extern const char kUKMCheckoutEventsEntryName[] =
+    "PaymentRequest.CheckoutEvents";
+extern const char kUKMCompletionStatusMetricName[] = "CompletionStatus";
+extern const char kUKMEventsMetricName[] = "Events";
+}  // namespace internal
 
 namespace {
 
@@ -54,11 +64,16 @@ std::string GetHistogramNameSuffix(
 
 }  // namespace
 
-JourneyLogger::JourneyLogger(bool is_incognito)
+JourneyLogger::JourneyLogger(bool is_incognito,
+                             const GURL& url,
+                             ukm::UkmService* ukm_service)
     : was_can_make_payments_used_(false),
       could_make_payment_(false),
       was_show_called_(false),
-      is_incognito_(is_incognito) {}
+      is_incognito_(is_incognito),
+      events_(EVENT_INITIATED),
+      url_(url),
+      ukm_service_(ukm_service) {}
 
 JourneyLogger::~JourneyLogger() {}
 
@@ -92,6 +107,10 @@ void JourneyLogger::SetShowCalled() {
   was_show_called_ = true;
 }
 
+void JourneyLogger::SetEventOccurred(Event event) {
+  events_ |= event;
+}
+
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
   RecordSectionSpecificStats(completion_status);
@@ -99,6 +118,8 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   // Record the CanMakePayment metrics based on whether the transaction was
   // completed or aborted by the user (UserAborted) or otherwise (OtherAborted).
   RecordCanMakePaymentStats(completion_status);
+
+  RecordUrlKeyedMetrics(completion_status);
 }
 
 void JourneyLogger::RecordSectionSpecificStats(
@@ -197,6 +218,20 @@ void JourneyLogger::RecordCanMakePaymentEffectOnCompletion(
 
   base::UmaHistogramEnumeration(histogram_name, completion_status,
                                 COMPLETION_STATUS_MAX);
+}
+
+void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {
+  if (!autofill::IsUkmLoggingEnabled() || !ukm_service_ || !url_.is_valid())
+    return;
+
+  // Record the Checkout Funnel UKM.
+  int32_t source_id = ukm_service_->GetNewSourceID();
+  ukm_service_->UpdateSourceURL(source_id, url_);
+  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_service_->GetEntryBuilder(
+      source_id, internal::kUKMCheckoutEventsEntryName);
+  builder->AddMetric(internal::kUKMCompletionStatusMetricName,
+                     completion_status);
+  builder->AddMetric(internal::kUKMEventsMetricName, events_);
 }
 
 }  // namespace payments

@@ -13,7 +13,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.components.payments.JourneyLogger;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;

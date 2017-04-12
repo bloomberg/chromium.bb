@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/android/journey_logger_android.h"
+#include "chrome/browser/payments/android/journey_logger_android.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/browser/browser_process.h"
 #include "jni/JourneyLogger_jni.h"
+#include "url/gurl.h"
 
 namespace payments {
 namespace {
@@ -20,8 +22,11 @@ bool JourneyLoggerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito)
-    : journey_logger_(is_incognito) {}
+JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito,
+                                           const std::string& url)
+    : journey_logger_(is_incognito,
+                      GURL(url),
+                      g_browser_process->ukm_service()) {}
 
 JourneyLoggerAndroid::~JourneyLoggerAndroid() {}
 
@@ -84,6 +89,15 @@ void JourneyLoggerAndroid::SetShowCalled(
   journey_logger_.SetShowCalled();
 }
 
+void JourneyLoggerAndroid::SetEventOccurred(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint jevent) {
+  DCHECK_GE(jevent, 0);
+  DCHECK_LT(jevent, JourneyLogger::Event::EVENT_MAX);
+  journey_logger_.SetEventOccurred(static_cast<JourneyLogger::Event>(jevent));
+}
+
 void JourneyLoggerAndroid::RecordJourneyStatsHistograms(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
@@ -95,10 +109,13 @@ void JourneyLoggerAndroid::RecordJourneyStatsHistograms(
       static_cast<JourneyLogger::CompletionStatus>(jcompletion_status));
 }
 
-static jlong InitJourneyLoggerAndroid(JNIEnv* env,
-                                      const JavaParamRef<jobject>& jcaller,
-                                      jboolean jis_incognito) {
-  return reinterpret_cast<jlong>(new JourneyLoggerAndroid(jis_incognito));
+static jlong InitJourneyLoggerAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    jboolean jis_incognito,
+    const base::android::JavaParamRef<jstring>& jurl) {
+  return reinterpret_cast<jlong>(new JourneyLoggerAndroid(
+      jis_incognito, ConvertJavaStringToUTF8(env, jurl)));
 }
 
 }  // namespace payments

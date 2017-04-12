@@ -34,7 +34,9 @@ static_library("core") {
     "//base",
     "//components/autofill/core/browser",
     "//components/strings:components_strings_grit",
+    "//components/ukm",
     "//ui/base",
+    "//url",
   ]
 
   public_deps = [
@@ -63,6 +65,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
+    "//components/metrics/proto",
+    "//components/ukm",
+    "//components/ukm:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",

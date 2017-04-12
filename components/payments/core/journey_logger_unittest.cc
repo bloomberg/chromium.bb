@@ -4,7 +4,14 @@
 
 #include "components/payments/core/journey_logger.h"
 
+#include "base/metrics/metrics_hashes.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/metrics/proto/ukm/entry.pb.h"
+#include "components/ukm/test_ukm_service.h"
+#include "components/ukm/ukm_entry.h"
+#include "components/ukm/ukm_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,12 +19,26 @@ using testing::ContainerEq;
 
 namespace payments {
 
+namespace {
+// Finds the specified UKM metric by |name| in the specified UKM |metrics|.
+const ukm::Entry_Metric* FindMetric(
+    const char* name,
+    const google::protobuf::RepeatedPtrField<ukm::Entry_Metric>& metrics) {
+  for (const auto& metric : metrics) {
+    if (metric.metric_hash() == base::HashMetricName(name))
+      return &metric;
+  }
+  return nullptr;
+}
+}  // namespace
+
 // Tests the canMakePayment stats for the case where the merchant does not use
 // it and does not show the PaymentRequest to the user.
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_NoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   logger.RecordJourneyStatsHistograms(
       JourneyLogger::COMPLETION_STATUS_COMPLETED);
@@ -38,7 +59,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -67,7 +89,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -96,7 +119,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -125,7 +149,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseAndNoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -158,7 +183,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueAndNoShow) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -191,7 +217,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -224,7 +251,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -257,7 +285,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -291,7 +320,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndUserAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -326,7 +356,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndOtherAbort) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -361,7 +392,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndComplete) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -396,7 +428,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CanMakePayment_IncognitoTab) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true);
+  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Expect no log for CanMakePayment.
   EXPECT_THAT(
@@ -420,7 +453,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_Completed) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
@@ -444,7 +478,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_UserAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
@@ -468,7 +503,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
@@ -493,7 +529,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_SuggestionsForEverything_Incognito) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true);
+  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 1);
@@ -517,7 +554,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_Completed) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
@@ -542,7 +580,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_UserAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
@@ -567,7 +606,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_OtherAborted) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/false);
+  JourneyLogger logger(/*is_incognito=*/false, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
@@ -593,7 +633,8 @@ TEST(JourneyLoggerTest,
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_NoSuggestionsForEverything_Incognito) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger(/*is_incognito=*/true);
+  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(""),
+                       /*ukm_service=*/nullptr);
 
   // Simulate that the user had suggestions for all the requested sections.
   logger.SetNumberOfSuggestionsShown(JourneyLogger::SECTION_CREDIT_CARDS, 0);
@@ -617,8 +658,10 @@ TEST(JourneyLoggerTest,
 // Requests.
 TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   base::HistogramTester histogram_tester;
-  JourneyLogger logger1(/*is_incognito=*/false);
-  JourneyLogger logger2(/*is_incognito=*/false);
+  JourneyLogger logger1(/*is_incognito=*/false, /*url=*/GURL(""),
+                        /*ukm_service=*/nullptr);
+  JourneyLogger logger2(/*is_incognito=*/false, /*url=*/GURL(""),
+                        /*ukm_service=*/nullptr);
 
   // Make the two loggers have different data.
   logger1.SetShowCalled();
@@ -656,6 +699,55 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
   histogram_tester.ExpectBucketCount(
       "PaymentRequest.CanMakePayment.NotUsed.WithShowEffectOnCompletion",
       JourneyLogger::COMPLETION_STATUS_USER_ABORTED, 1);
+}
+
+// Tests that the Payment Request UKMs are logged correctly.
+TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_CheckoutFunnelUkm) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(autofill::kAutofillUkmLogging);
+
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  ukm::TestUkmService* ukm_service =
+      ukm_service_test_harness.test_ukm_service();
+  char test_url[] = "http://www.google.com/";
+
+  base::HistogramTester histogram_tester;
+  JourneyLogger logger(/*is_incognito=*/true, /*url=*/GURL(test_url),
+                       /*ukm_service=*/ukm_service);
+
+  // Simulate that the user aborts after being shown the Payment Request and
+  // clicking pay.
+  logger.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
+  logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
+  logger.RecordJourneyStatsHistograms(
+      JourneyLogger::COMPLETION_STATUS_USER_ABORTED);
+
+  // Make sure the UKM was logged correctly.
+  ASSERT_EQ(1U, ukm_service->sources_count());
+  const ukm::UkmSource* source = ukm_service->GetSourceForUrl(test_url);
+  ASSERT_NE(nullptr, source);
+
+  ASSERT_EQ(1U, ukm_service->entries_count());
+  const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+  EXPECT_EQ(source->id(), entry->source_id());
+
+  ukm::Entry entry_proto;
+  entry->PopulateProto(&entry_proto);
+  EXPECT_EQ(source->id(), entry_proto.source_id());
+  EXPECT_EQ(base::HashMetricName(internal::kUKMCheckoutEventsEntryName),
+            entry_proto.event_hash());
+
+  const ukm::Entry_Metric* status_metric = FindMetric(
+      internal::kUKMCompletionStatusMetricName, entry_proto.metrics());
+  ASSERT_NE(nullptr, status_metric);
+  EXPECT_EQ(JourneyLogger::COMPLETION_STATUS_USER_ABORTED,
+            status_metric->value());
+
+  const ukm::Entry_Metric* step_metric =
+      FindMetric(internal::kUKMEventsMetricName, entry_proto.metrics());
+  ASSERT_NE(nullptr, step_metric);
+  EXPECT_EQ(JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_PAY_CLICKED,
+            step_metric->value());
 }
 
 }  // namespace payments

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_
-#define COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_
+#ifndef CHROME_BROWSER_PAYMENTS_ANDROID_JOURNEY_LOGGER_ANDROID_H_
+#define CHROME_BROWSER_PAYMENTS_ANDROID_JOURNEY_LOGGER_ANDROID_H_
 
 #include <jni.h>
 
@@ -19,7 +19,7 @@ class JourneyLoggerAndroid {
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
-  explicit JourneyLoggerAndroid(bool is_incognito);
+  JourneyLoggerAndroid(bool is_incognito, const std::string& url);
   ~JourneyLoggerAndroid();
 
   // Message from Java to destroy this object.
@@ -49,6 +49,9 @@ class JourneyLoggerAndroid {
       jboolean jvalue);
   void SetShowCalled(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& jcaller);
+  void SetEventOccurred(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& jcaller,
+                        jint jevent);
   void RecordJourneyStatsHistograms(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -62,4 +65,4 @@ class JourneyLoggerAndroid {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_ANDROID_JOURNEY_LOGGER_ANDROID_H_
+#endif  // CHROME_BROWSER_PAYMENTS_ANDROID_JOURNEY_LOGGER_ANDROID_H_

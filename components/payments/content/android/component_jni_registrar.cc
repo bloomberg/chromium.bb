@@ -8,7 +8,6 @@
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
 #include "components/payments/content/android/currency_formatter_android.h"
-#include "components/payments/content/android/journey_logger_android.h"
 #include "components/payments/content/android/payment_details_validation_android.h"
 #include "components/payments/content/android/payment_manifest_downloader_android.h"
 #include "components/payments/content/android/payment_manifest_parser_android.h"
@@ -18,7 +17,6 @@ namespace android {
 
 static base::android::RegistrationMethod kPaymentsRegisteredMethods[] = {
     {"CurrencyFormatter", CurrencyFormatterAndroid::Register},
-    {"JourneyLogger", JourneyLoggerAndroid::Register},
     {"PaymentManifestDownloader", RegisterPaymentManifestDownloader},
     {"PaymentManifestParser", RegisterPaymentManifestParser},
     {"PaymentValidator", RegisterPaymentValidator},

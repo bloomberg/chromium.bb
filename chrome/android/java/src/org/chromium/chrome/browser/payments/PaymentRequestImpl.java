@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.payments.CurrencyFormatter;
-import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -381,7 +380,7 @@ public class PaymentRequestImpl
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
                 && activity.getCurrentTabModel().isIncognito();
 
-        mJourneyLogger = new JourneyLogger(mIsIncognito);
+        mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents.getLastCommittedUrl());
 
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 
@@ -600,6 +599,7 @@ public class PaymentRequestImpl
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
             recordSuccessFunnelHistograms("Shown");
+            mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_SHOWN);
             mJourneyLogger.setShowCalled();
 
             onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
@@ -1199,6 +1199,7 @@ public class PaymentRequestImpl
                 Collections.unmodifiableMap(modifiers), this);
 
         recordSuccessFunnelHistograms("PayClicked");
+        mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_PAY_CLICKED);
         return !(instrument instanceof AutofillPaymentInstrument);
     }
 
@@ -1512,6 +1513,7 @@ public class PaymentRequestImpl
         if (mShouldSkipShowingPaymentRequestUi) mUI.showProcessingMessageAfterUiSkip();
 
         recordSuccessFunnelHistograms("ReceivedInstrumentDetails");
+        mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_RECEIVED_INSTRUMENT_DETAILS);
 
         mPaymentResponseHelper.onInstrumentDetailsReceived(methodName, stringifiedDetails);
     }

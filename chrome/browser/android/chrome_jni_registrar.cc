@@ -129,6 +129,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
+#include "chrome/browser/payments/android/chrome_payments_jni_registrar.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_android.h"
@@ -273,6 +274,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ChromeMediaRouterDialogController",
      media_router::MediaRouterDialogControllerAndroid::Register},
 #endif
+    {"ChromePayments", payments::android::RegisterChromePayments},
     {"ChromeWebApkHost", ChromeWebApkHost::Register},
     {"CompositorView", RegisterCompositorView},
     {"ConnectionInfoPopupAndroid",

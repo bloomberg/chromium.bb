@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.payments;
+package org.chromium.chrome.browser.payments;
 
 import org.chromium.base.annotations.JNINamespace;
 
@@ -37,6 +37,13 @@ public class JourneyLogger {
     public static final int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
     public static final int CMP_SHOW_MAX = 4;
 
+    // The events that can occur during a Payment Request.
+    public static final int EVENT_INITIATED = 0;
+    public static final int EVENT_SHOWN = 1 << 0;
+    public static final int EVENT_PAY_CLICKED = 1 << 1;
+    public static final int EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2;
+    public static final int EVENT_MAX = 8;
+
     // The minimum expected value of CustomCountHistograms is always set to 1. It is still possible
     // to log the value 0 to that type of histogram.
     private static final int MIN_EXPECTED_SAMPLE = 1;
@@ -48,10 +55,10 @@ public class JourneyLogger {
      */
     private long mJourneyLoggerAndroid;
 
-    public JourneyLogger(boolean isIncognito) {
+    public JourneyLogger(boolean isIncognito, String url) {
         // Note that this pointer could leak the native object. The called must call destroy() to
         // ensure that the native object is destroyed.
-        mJourneyLoggerAndroid = nativeInitJourneyLoggerAndroid(isIncognito);
+        mJourneyLoggerAndroid = nativeInitJourneyLoggerAndroid(isIncognito, url);
     }
 
     /** Will destroy the native object. This class shouldn't be used afterwards. */
@@ -119,6 +126,14 @@ public class JourneyLogger {
         nativeSetShowCalled(mJourneyLoggerAndroid);
     }
 
+    /**
+     * Records that an event occurred.
+     */
+    public void setEventOccurred(int event) {
+        assert event < EVENT_MAX;
+        nativeSetEventOccurred(mJourneyLoggerAndroid, event);
+    }
+
     /*
      * Records the histograms for all the sections that were requested by the merchant and for the
      * usage of the CanMakePayment method and its effect on the transaction. This method should be
@@ -130,7 +145,7 @@ public class JourneyLogger {
         nativeRecordJourneyStatsHistograms(mJourneyLoggerAndroid, completionStatus);
     }
 
-    private native long nativeInitJourneyLoggerAndroid(boolean isIncognito);
+    private native long nativeInitJourneyLoggerAndroid(boolean isIncognito, String url);
     private native void nativeDestroy(long nativeJourneyLoggerAndroid);
     private native void nativeSetNumberOfSuggestionsShown(
             long nativeJourneyLoggerAndroid, int section, int number);
@@ -141,6 +156,7 @@ public class JourneyLogger {
     private native void nativeSetCanMakePaymentValue(
             long nativeJourneyLoggerAndroid, boolean value);
     private native void nativeSetShowCalled(long nativeJourneyLoggerAndroid);
+    private native void nativeSetEventOccurred(long nativeJourneyLoggerAndroid, int event);
     private native void nativeRecordJourneyStatsHistograms(
             long nativeJourneyLoggerAndroid, int completionStatus);
 }

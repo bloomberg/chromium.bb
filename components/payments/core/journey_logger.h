@@ -8,8 +8,20 @@
 #include <string>
 
 #include "base/macros.h"
+#include "url/gurl.h"
+
+namespace ukm {
+class UkmService;
+}
 
 namespace payments {
+
+namespace internal {
+// Name constants are exposed here so they can be referenced from tests.
+extern const char kUKMCheckoutEventsEntryName[];
+extern const char kUKMCompletionStatusMetricName[];
+extern const char kUKMEventsMetricName[];
+}  // namespace internal
 
 // A class to keep track of different stats during a Payment Request journey. It
 // collects different metrics during the course of the checkout flow, like the
@@ -46,6 +58,16 @@ class JourneyLogger {
     COMPLETION_STATUS_MAX,
   };
 
+  // Used to record the different events that happened during the Payment
+  // Request.
+  enum Event {
+    EVENT_INITIATED = 0,
+    EVENT_SHOWN = 1 << 0,
+    EVENT_PAY_CLICKED = 1 << 1,
+    EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2,
+    EVENT_MAX = 8,
+  };
+
   // Used to mesure the impact of the CanMakePayment return value on whether the
   // Payment Request is shown to the user.
   static const int CMP_SHOW_COULD_NOT_MAKE_PAYMENT_AND_DID_NOT_SHOW = 0;
@@ -53,7 +75,9 @@ class JourneyLogger {
   static const int CMP_SHOW_COULD_MAKE_PAYMENT = 1 << 1;
   static const int CMP_SHOW_MAX = 4;
 
-  explicit JourneyLogger(bool is_incognito);
+  JourneyLogger(bool is_incognito,
+                const GURL& url,
+                ukm::UkmService* ukm_service);
   ~JourneyLogger();
 
   // Increments the number of selection adds for the specified section.
@@ -74,6 +98,9 @@ class JourneyLogger {
 
   // Records the fact that the Payment Request was shown to the user.
   void SetShowCalled();
+
+  // Records that an event occurred.
+  void SetEventOccurred(Event event);
 
   // Records the histograms for all the sections that were requested by the
   // merchant and for the usage of the CanMakePayment method and its effect on
@@ -125,11 +152,22 @@ class JourneyLogger {
   void RecordCanMakePaymentEffectOnCompletion(
       CompletionStatus completion_status);
 
+  // Records the Payment Request Url Keyed Metrics.
+  void RecordUrlKeyedMetrics(CompletionStatus completion_status);
+
   SectionStats sections_[NUMBER_OF_SECTIONS];
   bool was_can_make_payments_used_;
   bool could_make_payment_;
   bool was_show_called_;
   bool is_incognito_;
+
+  // Accumulates the many events that have happened during the Payment Request.
+  int events_;
+
+  const GURL url_;
+
+  // Not owned, will outlive this object.
+  ukm::UkmService* ukm_service_;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLogger);
 };

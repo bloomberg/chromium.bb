@@ -33,6 +33,10 @@ namespace translate {
 class TranslateRankerImpl;
 }
 
+namespace payments {
+class JourneyLogger;
+}  // namespace payments
+
 namespace metrics {
 class MetricsServiceClient;
 }
@@ -114,6 +118,7 @@ class UkmService {
 
  private:
   friend autofill::AutofillMetrics;
+  friend payments::JourneyLogger;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;
   friend translate::TranslateRankerImpl;

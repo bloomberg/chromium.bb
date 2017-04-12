@@ -189,6 +189,7 @@ static_library("browser") {
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/resources",
+    "//skia",
   ]
   deps = [
     "//base",
@@ -211,7 +212,6 @@ static_library("browser") {
     "//components/webdata/common",
     "//google_apis",
     "//net",
-    "//skia",
     "//sql",
     "//third_party/fips181",
     "//third_party/icu",

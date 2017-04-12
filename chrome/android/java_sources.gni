@@ -725,6 +725,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/CardEditor.java",
   "java/src/org/chromium/chrome/browser/payments/ContactEditor.java",
   "java/src/org/chromium/chrome/browser/payments/EditorBase.java",
+  "java/src/org/chromium/chrome/browser/payments/JourneyLogger.java",
   "java/src/org/chromium/chrome/browser/payments/PackageManagerDelegate.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentApp.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentAppFactory.java",
