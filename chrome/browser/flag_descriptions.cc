@@ -2804,6 +2804,10 @@ const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging "
     "Ash.";
 
+const char kMemoryAblationName[] = "Memory ablation experiment";
+const char kMemoryAblationDescription[] =
+    "Allocates extra memory in the browser process.";
+
 #if defined(OS_ANDROID)
 
 const char kEnableCustomContextMenuName[] = "Enable custom context menu";

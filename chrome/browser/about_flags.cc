@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_features.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
@@ -838,6 +839,21 @@ const FeatureEntry::FeatureVariation kUseNewDoodleApiVariations[] = {
     {"(force test doodle 8)", kUseNewDoodleApiTest8,
      arraysize(kUseNewDoodleApiTest8), nullptr}};
 #endif  // OS_ANDROID
+
+const FeatureEntry::FeatureParam kMemoryAblation1MiB[] = {
+    {kMemoryAblationFeatureSizeParam, "1048576"}};
+const FeatureEntry::FeatureParam kMemoryAblation5MiB[] = {
+    {kMemoryAblationFeatureSizeParam, "5242880"}};
+const FeatureEntry::FeatureParam kMemoryAblation10MiB[] = {
+    {kMemoryAblationFeatureSizeParam, "10485760"}};
+const FeatureEntry::FeatureParam kMemoryAblation50MiB[] = {
+    {kMemoryAblationFeatureSizeParam, "52428800"}};
+
+const FeatureEntry::FeatureVariation kMemoryAblationFeatureVariations[] = {
+    {"1 MiB", kMemoryAblation1MiB, arraysize(kMemoryAblation1MiB), nullptr},
+    {"5 MiB", kMemoryAblation5MiB, arraysize(kMemoryAblation5MiB), nullptr},
+    {"10 MiB", kMemoryAblation10MiB, arraysize(kMemoryAblation10MiB), nullptr},
+    {"50 MiB", kMemoryAblation50MiB, arraysize(kMemoryAblation50MiB), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
@@ -2606,6 +2622,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kUseNewDoodleApiVariations,
                                     chrome::android::kUseNewDoodleApi.name)},
 #endif  // OS_ANDROID
+
+    {"memory-ablation", flag_descriptions::kMemoryAblationName,
+     flag_descriptions::kMemoryAblationDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kMemoryAblationFeature,
+                                    kMemoryAblationFeatureVariations,
+                                    "MemoryAblation")},
 
 #if defined(OS_ANDROID)
     {"enable-custom-context-menu",

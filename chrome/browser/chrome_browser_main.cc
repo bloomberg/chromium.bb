@@ -60,6 +60,7 @@
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/gpu/gpu_profile_cache.h"
@@ -1428,6 +1429,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
   // blocking pool, which is disabled until the CreateThreads phase of startup.
   SetupMetrics();
+
+  // Can't be in SetupFieldTrials() because it needs a task runner.
+  MemoryAblationExperiment::MaybeStart(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
 #if defined(OS_WIN)
   // Windows parental controls calls can be slow, so we do an early init here

@@ -3033,6 +3033,9 @@ extern const char kDelayNavigationDescription[];
 // Description of the 'Debugging keyboard shortcuts' lab.
 extern const char kDebugShortcutsDescription[];
 
+extern const char kMemoryAblationName[];
+extern const char kMemoryAblationDescription[];
+
 #if defined(OS_ANDROID)
 
 // Name for the flag to enable the custom context menu.
