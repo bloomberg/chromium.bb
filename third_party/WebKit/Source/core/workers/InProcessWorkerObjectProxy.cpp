@@ -30,6 +30,7 @@
 
 #include "core/workers/InProcessWorkerObjectProxy.h"
 
+#include <memory>
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
@@ -43,10 +44,9 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

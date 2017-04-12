@@ -6,9 +6,9 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

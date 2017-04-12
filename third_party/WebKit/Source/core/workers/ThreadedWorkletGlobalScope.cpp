@@ -11,9 +11,9 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

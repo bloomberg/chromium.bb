@@ -31,6 +31,7 @@
 #ifndef WorkerThreadStartupData_h
 #define WorkerThreadStartupData_h
 
+#include <memory>
 #include "bindings/core/v8/WorkerV8Settings.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -39,11 +40,10 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAddressSpace.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

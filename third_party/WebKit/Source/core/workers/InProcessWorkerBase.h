@@ -12,9 +12,9 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

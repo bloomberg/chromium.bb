@@ -50,11 +50,11 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

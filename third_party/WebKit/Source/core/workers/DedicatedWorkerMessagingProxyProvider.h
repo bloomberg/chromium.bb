@@ -34,8 +34,8 @@
 #include "core/CoreExport.h"
 #include "core/page/Page.h"
 #include "platform/Supplementable.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

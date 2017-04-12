@@ -30,6 +30,7 @@
 
 #include "core/workers/SharedWorkerGlobalScope.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -38,8 +39,7 @@
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
-#include "wtf/CurrentTime.h"
-#include <memory>
+#include "platform/wtf/CurrentTime.h"
 
 namespace blink {
 

@@ -35,13 +35,13 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

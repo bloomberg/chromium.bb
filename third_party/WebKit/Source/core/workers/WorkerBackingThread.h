@@ -9,10 +9,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/ThreadState.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

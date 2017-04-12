@@ -9,9 +9,9 @@
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 
 using testing::_;
 using testing::AtMost;

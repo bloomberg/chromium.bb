@@ -11,7 +11,7 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/CrossThreadFunctional.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
 #define WorkerEventQueue_h
 
 #include "core/events/EventQueue.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

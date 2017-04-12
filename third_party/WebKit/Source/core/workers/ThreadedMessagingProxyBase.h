@@ -10,7 +10,7 @@
 #include "core/inspector/ConsoleTypes.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -27,6 +27,7 @@
 #ifndef WorkerGlobalScope_h
 #define WorkerGlobalScope_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
@@ -42,8 +43,7 @@
 #include "core/workers/WorkerSettings.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
-#include "wtf/ListHashSet.h"
-#include <memory>
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

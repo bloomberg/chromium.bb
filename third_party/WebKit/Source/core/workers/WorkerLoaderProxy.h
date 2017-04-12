@@ -32,12 +32,12 @@
 #define WorkerLoaderProxy_h
 
 #include "core/CoreExport.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

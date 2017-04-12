@@ -27,6 +27,7 @@
 
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
@@ -44,8 +45,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
-#include "wtf/WTF.h"
-#include <memory>
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 

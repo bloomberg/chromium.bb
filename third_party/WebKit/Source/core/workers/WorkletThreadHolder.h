@@ -9,7 +9,7 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

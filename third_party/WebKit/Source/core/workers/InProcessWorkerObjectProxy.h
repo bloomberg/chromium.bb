@@ -31,15 +31,15 @@
 #ifndef InProcessWorkerObjectProxy_h
 #define InProcessWorkerObjectProxy_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/WeakPtr.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

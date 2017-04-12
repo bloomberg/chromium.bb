@@ -25,13 +25,13 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebAddressSpace.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "v8/include/v8.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

@@ -27,16 +27,16 @@
 #ifndef InProcessWorkerMessagingProxy_h
 #define InProcessWorkerMessagingProxy_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/WeakPtr.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

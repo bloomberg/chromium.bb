@@ -40,10 +40,10 @@
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

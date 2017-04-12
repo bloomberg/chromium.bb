@@ -37,11 +37,11 @@
 #include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebThread.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

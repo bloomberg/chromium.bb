@@ -11,7 +11,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
-#include "wtf/WTF.h"
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 

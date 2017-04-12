@@ -4,15 +4,15 @@
 
 #include "core/workers/ThreadedObjectProxyBase.h"
 
+#include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

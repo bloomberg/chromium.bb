@@ -5,8 +5,8 @@
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 
 #include "core/workers/WorkerThread.h"
-#include "wtf/Assertions.h"
-#include "wtf/WTF.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 

@@ -4,6 +4,7 @@
 
 #include "core/workers/WorkerBackingThread.h"
 
+#include <memory>
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
@@ -13,10 +14,9 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

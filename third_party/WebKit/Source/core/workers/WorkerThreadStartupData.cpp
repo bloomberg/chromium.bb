@@ -30,9 +30,9 @@
 
 #include "core/workers/WorkerThreadStartupData.h"
 
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

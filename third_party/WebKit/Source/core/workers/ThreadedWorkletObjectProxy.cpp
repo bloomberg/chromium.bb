@@ -4,13 +4,13 @@
 
 #include "core/workers/ThreadedWorkletObjectProxy.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

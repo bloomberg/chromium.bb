@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/Supplementable.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
