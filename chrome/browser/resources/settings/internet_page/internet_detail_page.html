@@ -12,6 +12,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="internet_shared_css.html">
@@ -112,7 +113,7 @@
         <paper-button class="primary-button" on-tap="onConnectTap_"
             hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
             disabled="[[!enableConnect_(networkProperties, defaultNetwork,
-                      globalPolicy)]]">
+                globalPolicy)]]">
           $i18n{networkButtonConnect}
         </paper-button>
         <paper-button class="primary-button" on-tap="onDisconnectTap_"
@@ -156,7 +157,7 @@
             </cr-policy-network-indicator>
             <paper-toggle-button checked="{{preferNetwork_}}"
                 disabled="[[isNetworkPolicyEnforced(
-                    networkProperties.Priority)]]"
+                          networkProperties.Priority)]]"
                 aria-labelledby="preferNetworkToggleLabel">
             </paper-toggle-button>
           </div>
@@ -175,6 +176,16 @@
                           globalPolicy)]]"
                 aria-labelledby="autoConnectToggleLabel">
             </paper-toggle-button>
+          </div>
+        </template>
+        <!-- Data roaming (Cellular only). -->
+        <template is="dom-if"
+            if="[[isType_(NetworkType_.CELLULAR, networkProperties)]]">
+          <div class="settings-box">
+            <settings-toggle-button id="allowDataRoaming" class="start"
+                pref="{{prefs.cros.signed.data_roaming_enabled}}"
+                label="$i18n{networkAllowDataRoaming}">
+            </settings-toggle-button>
           </div>
         </template>
         <!-- SIM Info (Cellular only). -->
