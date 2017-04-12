@@ -9,9 +9,9 @@ PASS RightToLeft on first word of "hello world"
 PASS Natural on second and third words of "<b>hello world</b> webkit"
 PASS LeftToRight on second and third words of "<b>hello world</b> webkit"
 PASS RightToLeft on second and third words of "<b>hello world</b> webkit"
-FAIL (due to the bug 44359) Natural on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span></span><span><span> webkit</span></span><span dir="rtl"><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span></span> webkit<span dir="rtl"><span dir="ltr"> rocks</span></span>
-FAIL (due to the bug 44359) LeftToRight on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span></span><span><span style="unicode-bidi: isolate;"> webkit</span></span><span dir="rtl"><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span></span><span style="unicode-bidi: isolate;"> webkit</span><span dir="rtl"><span dir="ltr"> rocks</span></span>
-FAIL (due to the bug 44359) RightToLeft on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span><span> webkit</span><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span> webkit<span dir="ltr"> rocks</span></span>
+FAIL Natural on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span></span><span><span> webkit</span></span><span dir="rtl"><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span></span> webkit<span dir="rtl"><span dir="ltr"> rocks</span></span>
+FAIL LeftToRight on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span></span><span><span style="unicode-bidi: isolate;"> webkit</span></span><span dir="rtl"><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span></span><span style="unicode-bidi: isolate;"> webkit</span><span dir="rtl"><span dir="ltr"> rocks</span></span>
+FAIL RightToLeft on third word of "<span dir="rtl">hello <span dir="ltr">world webkit rocks</span></span>" yielded <span dir="rtl">hello <span dir="ltr">world</span><span> webkit</span><span dir="ltr"> rocks</span></span> but expected <span dir="rtl">hello <span dir="ltr">world</span> webkit<span dir="ltr"> rocks</span></span>
 PASS Natural on first word of "هنا يكتب النص العربي"
 PASS LeftToRight on first word of "هنا يكتب النص العربي"
 PASS RightToLeft on first word of "هنا يكتب النص العربي"
@@ -24,7 +24,7 @@ PASS RightToLeft on first word of "<div dir="rtl">هنا يكتب النص ال�
 PASS Natural on second and third words of "<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>"
 PASS LeftToRight on second and third words of "<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>"
 PASS RightToLeft on second and third words of "<div dir="rtl"><b>هنا يكتب</b> النص العربي</div>"
-FAIL (due to the bug 44359) Natural on third word of "<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>" yielded <div dir="rtl">هنا <span dir="ltr">يكتب</span><span> النص</span><span dir="ltr"> العربي</span></div> but expected <div dir="rtl">هنا <span dir="ltr">يكتب</span> النص<span dir="ltr"> العربي</span></div>
+FAIL Natural on third word of "<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>" yielded <div dir="rtl">هنا <span dir="ltr">يكتب</span><span> النص</span><span dir="ltr"> العربي</span></div> but expected <div dir="rtl">هنا <span dir="ltr">يكتب</span> النص<span dir="ltr"> العربي</span></div>
 PASS LeftToRight on third word of "<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>"
 PASS RightToLeft on third word of "<div dir="rtl">هنا <span dir="ltr">يكتب النص العربي</span></div>"
 PASS Natural on first word of "写中文"

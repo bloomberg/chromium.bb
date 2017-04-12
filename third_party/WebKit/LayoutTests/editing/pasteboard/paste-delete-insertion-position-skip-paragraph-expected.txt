@@ -5,14 +5,12 @@ Initial markup:
 | "
 "
 | <font>
-|   class="Apple-style-span"
 |   face="'courier new', monospace"
 |   <div>
 |     style="font-family: arial;"
 |     "
 "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       "hello"
 |   "
@@ -20,7 +18,6 @@ Initial markup:
 |   <div>
 |     style="font-family: arial; "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       " WebKit"
 | "
@@ -30,14 +27,12 @@ After inserting " world":
 | "
 "
 | <font>
-|   class="Apple-style-span"
 |   face="'courier new', monospace"
 |   <div>
 |     style="font-family: arial;"
 |     "
 "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       "hello"
 |   "
@@ -45,7 +40,6 @@ After inserting " world":
 |   <div>
 |     style="font-family: arial; "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       " WebKit"
 | "
@@ -55,14 +49,12 @@ After deleting line break before " WebKit":
 | "
 "
 | <font>
-|   class="Apple-style-span"
 |   face="'courier new', monospace"
 |   <div>
 |     style="font-family: arial;"
 |     "
 "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       "hello"
 |   "
@@ -70,7 +62,6 @@ After deleting line break before " WebKit":
 |   <div>
 |     style="font-family: arial; "
 |     <span>
-|       class="Apple-style-span"
 |       style="font-family: 'courier new', monospace;"
 |       " WebKit"
 | "

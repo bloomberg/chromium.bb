@@ -29,15 +29,14 @@ function modifyWritingDirection(content, selector, command, expected)
     var selected = selector(testContainer);
     window.testRunner.execCommand('MakeTextWritingDirection' + command);
 
-    // Remove Apple-style-span because it does not need to be tested here.
-    var actual = testContainer.innerHTML.replace(/ class="Apple-style-span"/g, '');
+    var actual = testContainer.innerHTML;
     var action = command + ' on ' + selected + ' of "' + content + '"';
     if (actual == expected)
         testPassed(action);
     else {
         error = ' yielded ' + actual + ' but expected ' + expected;
         recursivelyRemoveExtraenousSpan(testContainer);
-        if (testContainer.innerHTML.replace(/ class="Apple-style-span"/g, '') == expected)
+        if (testContainer.innerHTML == expected)
             testFailed('(due to the bug 44359) ' + action + error);
         else
             testFailed(action + error);

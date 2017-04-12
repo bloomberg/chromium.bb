@@ -3,7 +3,6 @@ This tests deleting a line break between paragraphs with the same inline style. 
 "
 | <div>
 |   <font>
-|     class="Apple-style-span"
 |     face="monospace"
 |     "hello world<#selection-caret>"
 |   <span>
