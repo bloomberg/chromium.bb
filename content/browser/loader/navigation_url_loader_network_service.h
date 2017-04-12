@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_LOADER_NAVIGATION_URL_LOADER_NETWORK_SERVICE_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
@@ -23,10 +22,8 @@ class ResourceContext;
 
 // This is an implementation of NavigationURLLoader used when
 // --enable-network-service is used.
-class NavigationURLLoaderNetworkService
-    : public base::RefCountedThreadSafe<NavigationURLLoaderNetworkService>,
-      public NavigationURLLoader,
-      public mojom::URLLoaderClient {
+class NavigationURLLoaderNetworkService : public NavigationURLLoader,
+                                          public mojom::URLLoaderClient {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
   NavigationURLLoaderNetworkService(
@@ -37,6 +34,7 @@ class NavigationURLLoaderNetworkService
       ServiceWorkerNavigationHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
       NavigationURLLoaderDelegate* delegate);
+  ~NavigationURLLoaderNetworkService() override;
 
   // NavigationURLLoader implementation:
   void FollowRedirect() override;
@@ -59,9 +57,6 @@ class NavigationURLLoaderNetworkService
       const ResourceRequestCompletionStatus& completion_status) override;
 
  private:
-  friend class base::RefCountedThreadSafe<NavigationURLLoaderNetworkService>;
-  ~NavigationURLLoaderNetworkService() override;
-
   void ConnectURLLoaderFactory(
       std::unique_ptr<service_manager::Connector> connector);
 
@@ -70,6 +65,7 @@ class NavigationURLLoaderNetworkService
   mojom::URLLoaderFactoryRequest url_loader_factory_request_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
+  mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };
