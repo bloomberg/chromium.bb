@@ -73,7 +73,7 @@ inline unsigned CountGraphemesInCluster(const UChar* str,
     end_index = temp_index;
   }
   uint16_t length = end_index - start_index;
-  ASSERT(static_cast<unsigned>(start_index + length) <= str_length);
+  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
   TextBreakIterator* cursor_pos_iterator =
       CursorMovementIterator(&str[start_index], length);
 
@@ -468,7 +468,7 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
         continue;
       int offset_for_word =
           word_result->OffsetForPosition(target_x, include_partial_glyphs);
-      ASSERT(offset_for_word >= 0);
+      DCHECK_GE(offset_for_word, 0);
       total_offset += offset_for_word;
       if (target_x >= 0 && target_x <= word_result->Width())
         return total_offset;

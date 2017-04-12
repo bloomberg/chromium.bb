@@ -162,7 +162,8 @@ bool Font::DrawBidiText(PaintCanvas* canvas,
 
   // sub-run painting is not supported for Bidi text.
   const TextRun& run = run_info.run;
-  ASSERT((run_info.from == 0) && (run_info.to == run.length()));
+  DCHECK_EQ(run_info.from, 0u);
+  DCHECK_EQ(run_info.to, run.length());
   BidiResolver<TextRunIterator, BidiCharacterRun> bidi_resolver;
   bidi_resolver.SetStatus(
       BidiStatus(run.Direction(), run.DirectionalOverride()));

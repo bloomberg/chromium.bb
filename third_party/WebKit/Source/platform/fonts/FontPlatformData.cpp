@@ -223,7 +223,7 @@ SkFontID FontPlatformData::UniqueID() const {
 }
 
 String FontPlatformData::FontFamilyName() const {
-  ASSERT(this->Typeface());
+  DCHECK(this->Typeface());
   SkTypeface::LocalizedStrings* font_family_iterator =
       this->Typeface()->createFamilyNameIterator();
   SkTypeface::LocalizedString localized_string;
@@ -266,9 +266,9 @@ bool FontPlatformData::HasSpaceInLigaturesOrKerning(
     return false;
 
   hb_font_t* font = hb_face->GetScaledFont();
-  ASSERT(font);
+  DCHECK(font);
   hb_face_t* face = hb_font_get_face(font);
-  ASSERT(face);
+  DCHECK(face);
 
   hb_codepoint_t space;
   // If the space glyph isn't present in the font then each space character

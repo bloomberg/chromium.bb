@@ -9,7 +9,7 @@ namespace blink {
 
 struct CharacterRange {
   CharacterRange(float from, float to) : start(from), end(to) {
-    ASSERT(start <= end);
+    DCHECK_LE(start, end);
   }
 
   float Width() const { return end - start; }

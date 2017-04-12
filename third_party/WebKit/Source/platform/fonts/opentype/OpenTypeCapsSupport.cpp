@@ -155,7 +155,7 @@ void OpenTypeCapsSupport::DetermineFontSupport(hb_script_t script) {
       }
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

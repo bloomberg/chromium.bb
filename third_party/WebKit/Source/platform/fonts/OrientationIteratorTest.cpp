@@ -66,7 +66,7 @@ TEST_F(OrientationIteratorTest, Empty) {
   unsigned limit = 0;
   OrientationIterator::RenderOrientation orientation =
       OrientationIterator::kOrientationInvalid;
-  ASSERT(!orientation_iterator.Consume(&limit, &orientation));
+  DCHECK(!orientation_iterator.Consume(&limit, &orientation));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(orientation, OrientationIterator::kOrientationInvalid);
 }

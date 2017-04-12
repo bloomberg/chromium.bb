@@ -96,7 +96,7 @@ TEST_F(RunSegmenterTest, Empty) {
       0, 0, USCRIPT_INVALID_CODE, OrientationIterator::kOrientationKeep};
   RunSegmenter run_segmenter(empty.Characters16(), empty.length(),
                              FontOrientation::kVerticalMixed);
-  ASSERT(!run_segmenter.Consume(&segmenter_range));
+  DCHECK(!run_segmenter.Consume(&segmenter_range));
   ASSERT_EQ(segmenter_range.start, 0u);
   ASSERT_EQ(segmenter_range.end, 0u);
   ASSERT_EQ(segmenter_range.script, USCRIPT_INVALID_CODE);

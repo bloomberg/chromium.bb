@@ -223,7 +223,7 @@ ShapeCache* FontCache::GetShapeCache(const FallbackListCompositeKey& key) {
     result = it->value.get();
   }
 
-  ASSERT(result);
+  DCHECK(result);
   return result;
 }
 
@@ -293,7 +293,7 @@ PassRefPtr<SimpleFontData> FontCache::FontDataFromFontPlatformData(
 
 #if DCHECK_IS_ON()
   if (should_retain == kDoNotRetain)
-    ASSERT(purge_prevent_count_);
+    DCHECK(purge_prevent_count_);
 #endif
 
   return g_font_data_cache->Get(platform_data, should_retain,
@@ -332,7 +332,7 @@ SimpleFontData* FontCache::GetNonRetainedLastResortFallbackFont(
 }
 
 void FontCache::ReleaseFontData(const SimpleFontData* font_data) {
-  ASSERT(g_font_data_cache);
+  DCHECK(g_font_data_cache);
 
   g_font_data_cache->Release(font_data);
 }
@@ -431,7 +431,7 @@ HeapHashSet<WeakMember<FontCacheClient>>& FontCacheClients() {
 
 void FontCache::AddClient(FontCacheClient* client) {
   CHECK(client);
-  ASSERT(!FontCacheClients().Contains(client));
+  DCHECK(!FontCacheClients().Contains(client));
   FontCacheClients().insert(client);
 }
 
@@ -443,7 +443,7 @@ unsigned short FontCache::Generation() {
 
 void FontCache::Invalidate() {
   if (!g_invalidate_font_cache) {
-    ASSERT(!g_font_platform_data_cache);
+    DCHECK(!g_font_platform_data_cache);
     return;
   }
 
@@ -484,7 +484,7 @@ void FontCache::CrashWithFontInfo(const FontDescription* font_description) {
 
 void FontCache::DumpFontPlatformDataCache(
     base::trace_event::ProcessMemoryDump* memory_dump) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   if (!g_font_platform_data_cache)
     return;
   base::trace_event::MemoryAllocatorDump* dump =
@@ -498,7 +498,7 @@ void FontCache::DumpFontPlatformDataCache(
 
 void FontCache::DumpShapeResultCache(
     base::trace_event::ProcessMemoryDump* memory_dump) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   if (!g_fallback_list_shaper_cache) {
     return;
   }

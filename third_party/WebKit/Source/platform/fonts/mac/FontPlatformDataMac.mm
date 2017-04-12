@@ -82,7 +82,7 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
     // This function should only be called in response to an error loading a
     // font due to being blocked by the sandbox.
     // This by definition shouldn't happen if there is no sandbox support.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
 

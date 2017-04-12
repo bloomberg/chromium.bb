@@ -96,7 +96,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint_.getFontMetrics(&metrics);
   SkTypeface* face = paint_.getTypeface();
-  ASSERT(face);
+  DCHECK(face);
 
   int vdmx_ascent = 0, vdmx_descent = 0;
   bool is_vdmx_valid = false;
@@ -290,7 +290,7 @@ const SimpleFontData* SimpleFontData::FontDataForCharacter(UChar32) const {
 Glyph SimpleFontData::GlyphForCharacter(UChar32 codepoint) const {
   uint16_t glyph;
   SkTypeface* typeface = PlatformData().Typeface();
-  RELEASE_ASSERT(typeface);
+  CHECK(typeface);
   typeface->charsToGlyphs(&codepoint, SkTypeface::kUTF32_Encoding, &glyph, 1);
   return glyph;
 }

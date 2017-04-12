@@ -451,7 +451,7 @@ const UChar* GetFontFamilyForScript(UScriptCode script,
 
   if (script == USCRIPT_INVALID_CODE)
     return 0;
-  ASSERT(script < USCRIPT_CODE_LIMIT);
+  DCHECK_LT(script, USCRIPT_CODE_LIMIT);
   if (generic == FontDescription::kMonospaceFamily) {
     const UChar* monospace_family = FindMonospaceFontForScript(script);
     if (monospace_family)
@@ -476,8 +476,8 @@ const UChar* GetFallbackFamily(UChar32 character,
                                UScriptCode* script_checked,
                                FontFallbackPriority fallback_priority,
                                SkFontMgr* font_manager) {
-  ASSERT(character);
-  ASSERT(font_manager);
+  DCHECK(character);
+  DCHECK(font_manager);
   UBlockCode block = fallback_priority == FontFallbackPriority::kEmojiEmoji
                          ? UBLOCK_EMOTICONS
                          : ublock_getCode(character);

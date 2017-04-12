@@ -112,7 +112,7 @@ typename GlyphMetricsMap<T>::GlyphMetricsPage*
 GlyphMetricsMap<T>::LocatePageSlowCase(unsigned page_number) {
   GlyphMetricsPage* page;
   if (!page_number) {
-    ASSERT(!filled_primary_page_);
+    DCHECK(!filled_primary_page_);
     page = &primary_page_;
     filled_primary_page_ = true;
   } else {

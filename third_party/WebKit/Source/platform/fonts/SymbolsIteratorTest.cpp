@@ -67,7 +67,7 @@ TEST_F(SymbolsIteratorTest, Empty) {
   SymbolsIterator symbols_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
   FontFallbackPriority symbols_font = FontFallbackPriority::kInvalid;
-  ASSERT(!symbols_iterator.Consume(&limit, &symbols_font));
+  DCHECK(!symbols_iterator.Consume(&limit, &symbols_font));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(symbols_font, FontFallbackPriority::kInvalid);
 }

@@ -17,7 +17,7 @@ FontCacheMemoryDumpProvider* FontCacheMemoryDumpProvider::Instance() {
 bool FontCacheMemoryDumpProvider::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs&,
     base::trace_event::ProcessMemoryDump* memory_dump) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   FontCache::GetFontCache()->DumpFontPlatformDataCache(memory_dump);
   FontCache::GetFontCache()->DumpShapeResultCache(memory_dump);
   return true;

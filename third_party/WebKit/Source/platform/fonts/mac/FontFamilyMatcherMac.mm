@@ -57,7 +57,8 @@ static CGFloat toYosemiteFontWeight(blink::FontWeight fontWeight) {
       0x3fe1eb8520000000,  // NSFontWeightHeavy
       0x3fe3d70a40000000,  // NSFontWeightBlack
   };
-  ASSERT(fontWeight >= 0 && fontWeight <= 8);
+  DCHECK_GE(fontWeight, 0);
+  DCHECK_LE(fontWeight, 8);
   CGFloat* weight = reinterpret_cast<CGFloat*>(&nsFontWeights[fontWeight]);
   return *weight;
 }

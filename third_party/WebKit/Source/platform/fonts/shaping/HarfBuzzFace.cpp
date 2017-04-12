@@ -114,7 +114,7 @@ struct HarfBuzzFontData {
 class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  public:
   static PassRefPtr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
-    ASSERT(hb_font);
+    DCHECK(hb_font);
     return AdoptRef(new HbFontCacheEntry(hb_font));
   }
 
@@ -159,7 +159,7 @@ HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
 HarfBuzzFace::~HarfBuzzFace() {
   HarfBuzzFontCache::iterator result = GetHarfBuzzFontCache()->Find(unique_id_);
   SECURITY_DCHECK(result != GetHarfBuzzFontCache()->end());
-  ASSERT(result.Get()->value->RefCount() > 1);
+  DCHECK_GT(result.Get()->value->RefCount(), 1);
   result.Get()->value->Deref();
   if (result.Get()->value->RefCount() == 1)
     GetHarfBuzzFontCache()->erase(unique_id_);
@@ -180,7 +180,7 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
 
-  RELEASE_ASSERT(hb_font_data);
+  CHECK(hb_font_data);
   if (hb_font_data->range_set_ && !hb_font_data->range_set_->Contains(unicode))
     return false;
 
@@ -372,7 +372,7 @@ hb_face_t* HarfBuzzFace::CreateFace() {
     zero_copy_success_histogram.Count(true);
   }
 #endif
-  ASSERT(face);
+  DCHECK(face);
   return face;
 }
 
@@ -407,7 +407,7 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   harf_buzz_font_data_->range_set_ = std::move(range_set);
   harf_buzz_font_data_->UpdateSimpleFontData(platform_data_);
 
-  ASSERT(harf_buzz_font_data_->simple_font_data_);
+  DCHECK(harf_buzz_font_data_->simple_font_data_);
   int scale = SkiaScalarToHarfBuzzPosition(platform_data_->size());
   hb_font_set_scale(unscaled_font_, scale, scale);
 

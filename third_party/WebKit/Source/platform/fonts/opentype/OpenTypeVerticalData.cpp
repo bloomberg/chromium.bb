@@ -245,7 +245,7 @@ void OpenTypeVerticalData::GetVerticalTranslationsForGlyphs(
     size_t count,
     float* out_xy_array) const {
   size_t count_widths = advance_widths_.size();
-  ASSERT(count_widths > 0);
+  DCHECK_GT(count_widths, 0u);
   const FontMetrics& metrics = font->GetFontMetrics();
   float size_per_unit = font->SizePerUnit();
   float ascent = metrics.Ascent();

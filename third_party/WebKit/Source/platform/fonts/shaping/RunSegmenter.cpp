@@ -37,7 +37,7 @@ RunSegmenter::RunSegmenter(const UChar* buffer,
       at_end_(false) {}
 
 void RunSegmenter::ConsumeScriptIteratorPastLastSplit() {
-  ASSERT(script_run_iterator_);
+  DCHECK(script_run_iterator_);
   if (script_run_iterator_position_ <= last_split_ &&
       script_run_iterator_position_ < buffer_size_) {
     while (script_run_iterator_->Consume(script_run_iterator_position_,
@@ -61,7 +61,7 @@ void RunSegmenter::ConsumeOrientationIteratorPastLastSplit() {
 }
 
 void RunSegmenter::ConsumeSymbolsIteratorPastLastSplit() {
-  ASSERT(symbols_iterator_);
+  DCHECK(symbols_iterator_);
   if (symbols_iterator_position_ <= last_split_ &&
       symbols_iterator_position_ < buffer_size_) {
     while (

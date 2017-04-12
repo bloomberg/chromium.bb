@@ -50,7 +50,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
         spacing_(run, font->GetFontDescription()),
         width_so_far_(0),
         start_index_(0) {
-    ASSERT(font);
+    DCHECK(font);
 
     // Shaping word by word is faster as each word is cached. If we cannot
     // use the cache or if the font doesn't support word by word shaping
@@ -155,7 +155,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
     if (!start_index_ && end_index == length) {
       *result = ShapeWord(text_run_, font_);
     } else {
-      ASSERT(end_index <= length);
+      DCHECK_LE(end_index, length);
       TextRun sub_run =
           text_run_.SubRun(start_index_, end_index - start_index_);
       *result = ShapeWord(sub_run, font_);
@@ -166,7 +166,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
 
   unsigned EndIndexUntil(UChar ch) const {
     unsigned length = text_run_.length();
-    ASSERT(start_index_ < length);
+    DCHECK_LT(start_index_, length);
     for (unsigned i = start_index_ + 1;; i++) {
       if (i == length || text_run_[i] == ch)
         return i;
@@ -194,7 +194,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       if (!NextWord(word_result))
         return false;
     }
-    ASSERT(*word_result);
+    DCHECK(*word_result);
     width_so_far_ += (*word_result)->Width();
     return true;
   }

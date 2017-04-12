@@ -63,7 +63,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
       shape_cache_ =
           FontCache::GetFontCache()->GetShapeCache(key)->GetWeakPtr();
     }
-    ASSERT(shape_cache_);
+    DCHECK(shape_cache_);
     if (GetFontSelector())
       shape_cache_->ClearIfVersionChanged(GetFontSelector()->Version());
     return shape_cache_.get();
@@ -71,11 +71,11 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   const SimpleFontData* PrimarySimpleFontData(
       const FontDescription& font_description) {
-    ASSERT(IsMainThread());
+    DCHECK(IsMainThread());
     if (!cached_primary_simple_font_data_) {
       cached_primary_simple_font_data_ =
           DeterminePrimarySimpleFontData(font_description);
-      ASSERT(cached_primary_simple_font_data_);
+      DCHECK(cached_primary_simple_font_data_);
     }
     return cached_primary_simple_font_data_;
   }

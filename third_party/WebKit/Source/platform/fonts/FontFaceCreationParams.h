@@ -82,19 +82,19 @@ class FontFaceCreationParams {
 
   FontFaceCreationType CreationType() const { return creation_type_; }
   AtomicString Family() const {
-    ASSERT(creation_type_ == kCreateFontByFamily);
+    DCHECK_EQ(creation_type_, kCreateFontByFamily);
     return family_;
   }
   CString Filename() const {
-    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    DCHECK_EQ(creation_type_, kCreateFontByFciIdAndTtcIndex);
     return filename_;
   }
   int FontconfigInterfaceId() const {
-    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    DCHECK_EQ(creation_type_, kCreateFontByFciIdAndTtcIndex);
     return fontconfig_interface_id_;
   }
   int TtcIndex() const {
-    ASSERT(creation_type_ == kCreateFontByFciIdAndTtcIndex);
+    DCHECK_EQ(creation_type_, kCreateFontByFciIdAndTtcIndex);
     return ttc_index_;
   }
 

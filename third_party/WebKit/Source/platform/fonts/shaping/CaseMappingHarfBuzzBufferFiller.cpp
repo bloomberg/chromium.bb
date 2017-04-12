@@ -43,8 +43,8 @@ CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
       return;
     }
 
-    ASSERT(case_mapped_text.length() == buffer_length);
-    ASSERT(!case_mapped_text.Is8Bit());
+    DCHECK_EQ(case_mapped_text.length(), buffer_length);
+    DCHECK(!case_mapped_text.Is8Bit());
     hb_buffer_add_utf16(harf_buzz_buffer_,
                         ToUint16(case_mapped_text.Characters16()),
                         buffer_length, start_index, num_characters);

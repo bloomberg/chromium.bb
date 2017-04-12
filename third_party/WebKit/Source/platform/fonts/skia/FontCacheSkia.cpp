@@ -84,7 +84,7 @@ AtomicString FontCache::GetFamilyNameForCharacter(
     UChar32 c,
     const FontDescription& font_description,
     FontFallbackPriority fallback_priority) {
-  ASSERT(fm);
+  DCHECK(fm);
 
   const size_t kMaxLocales = 4;
   const char* bcp47_locales[kMaxLocales];
@@ -211,7 +211,7 @@ PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   }
 #endif
 
-  ASSERT(font_platform_data);
+  DCHECK(font_platform_data);
   return FontDataFromFontPlatformData(font_platform_data, should_retain);
 }
 

@@ -123,7 +123,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     return AdoptRef(new FontDataForRangeSetFromCache(last_resort));
   }
 
-  ASSERT(fallback_stage_ == kFontGroupFonts ||
+  DCHECK(fallback_stage_ == kFontGroupFonts ||
          fallback_stage_ == kSegmentedFace);
   const FontData* font_data = font_fallback_list_->FontDataAt(
       font_description_, current_font_data_index_);
@@ -163,7 +163,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     fallback_stage_ = kSegmentedFace;
   }
 
-  ASSERT(segmented_face_index_ < segmented->NumFaces());
+  DCHECK_LT(segmented_face_index_, segmented->NumFaces());
   RefPtr<FontDataForRangeSet> current_segmented_face =
       segmented->FaceAt(segmented_face_index_);
   segmented_face_index_++;

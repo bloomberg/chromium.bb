@@ -42,7 +42,7 @@ ShapeResultSpacing::ShapeResultSpacing(const TextRun& run,
   expansion_opportunity_count_ =
       Character::ExpansionOpportunityCount(run, is_after_expansion);
   if (is_after_expansion && !run.AllowsTrailingExpansion()) {
-    ASSERT(expansion_opportunity_count_ > 0);
+    DCHECK_GT(expansion_opportunity_count_, 0u);
     --expansion_opportunity_count_;
   }
 
@@ -52,7 +52,7 @@ ShapeResultSpacing::ShapeResultSpacing(const TextRun& run,
 
 float ShapeResultSpacing::NextExpansion() {
   if (!expansion_opportunity_count_) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 

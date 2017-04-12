@@ -63,7 +63,7 @@ void FontFallbackList::ReleaseFontData() {
   unsigned num_fonts = font_list_.size();
   for (unsigned i = 0; i < num_fonts; ++i) {
     if (!font_list_[i]->IsCustomFont()) {
-      ASSERT(!font_list_[i]->IsSegmented());
+      DCHECK(!font_list_[i]->IsSegmented());
       FontCache::GetFontCache()->ReleaseFontData(
           ToSimpleFontData(font_list_[i]));
     }
@@ -111,7 +111,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
           FontCache::GetFontCache()
               ->GetLastResortFallbackFont(font_description)
               .Get();
-      ASSERT(last_resort_fallback);
+      DCHECK(last_resort_fallback);
       return last_resort_fallback;
     }
 
@@ -121,7 +121,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
 
     const SimpleFontData* font_data_for_space =
         font_data->FontDataForCharacter(kSpaceCharacter);
-    ASSERT(font_data_for_space);
+    DCHECK(font_data_for_space);
 
     // When a custom font is loading, we should use the correct fallback font to
     // layout the text.  Here skip the temporary font for the loading custom
@@ -222,7 +222,7 @@ const FontData* FontFallbackList::FontDataAt(
         .Get();  // This fallback font is already in our list.
 
   // Make sure we're not passing in some crazy value here.
-  ASSERT(realized_font_index == font_list_.size());
+  DCHECK_EQ(realized_font_index, font_list_.size());
 
   if (family_index_ == kCAllFamiliesScanned)
     return 0;
@@ -232,7 +232,7 @@ const FontData* FontFallbackList::FontDataAt(
   // families we've looked at before in |m_familyIndex|, so that we never scan
   // the same spot in the list twice.  getFontData will adjust our
   // |m_familyIndex| as it scans for the right font to make.
-  ASSERT(FontCache::GetFontCache()->Generation() == generation_);
+  DCHECK_EQ(FontCache::GetFontCache()->Generation(), generation_);
   RefPtr<FontData> result = GetFontData(font_description, family_index_);
   if (result) {
     font_list_.push_back(result);

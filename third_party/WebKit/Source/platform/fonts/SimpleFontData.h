@@ -95,7 +95,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
       case kNormalVariant:
         break;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return const_cast<SimpleFontData*>(this);
   }
 

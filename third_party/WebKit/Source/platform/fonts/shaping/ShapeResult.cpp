@@ -43,7 +43,7 @@ namespace blink {
 float ShapeResult::RunInfo::XPositionForVisualOffset(
     unsigned offset,
     AdjustMidCluster adjust_mid_cluster) const {
-  ASSERT(offset < num_characters_);
+  DCHECK_LT(offset, num_characters_);
   if (Rtl())
     offset = num_characters_ - offset - 1;
   return XPositionForOffset(offset, adjust_mid_cluster);
@@ -52,7 +52,7 @@ float ShapeResult::RunInfo::XPositionForVisualOffset(
 float ShapeResult::RunInfo::XPositionForOffset(
     unsigned offset,
     AdjustMidCluster adjust_mid_cluster) const {
-  ASSERT(offset <= num_characters_);
+  DCHECK_LE(offset, num_characters_);
   const unsigned num_glyphs = glyph_data_.size();
   unsigned glyph_index = 0;
   float position = 0;
@@ -268,8 +268,8 @@ float ShapeResult::PositionForOffset(unsigned absolute_offset) const {
 
 void ShapeResult::FallbackFonts(
     HashSet<const SimpleFontData*>* fallback) const {
-  ASSERT(fallback);
-  ASSERT(primary_font_);
+  DCHECK(fallback);
+  DCHECK(primary_font_);
   for (unsigned i = 0; i < runs_.size(); ++i) {
     if (runs_[i] && runs_[i]->font_data_ &&
         runs_[i]->font_data_ != primary_font_ &&
@@ -342,9 +342,9 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
                             unsigned start_glyph,
                             unsigned num_glyphs,
                             hb_buffer_t* harf_buzz_buffer) {
-  ASSERT(num_glyphs > 0);
+  DCHECK_GT(num_glyphs, 0u);
   std::unique_ptr<ShapeResult::RunInfo> run(std::move(run_to_insert));
-  ASSERT(num_glyphs == run->glyph_data_.size());
+  DCHECK_EQ(num_glyphs, run->glyph_data_.size());
 
   const SimpleFontData* current_font_data = run->font_data_.Get();
   const hb_glyph_info_t* glyph_infos =
@@ -393,7 +393,7 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run_to_insert,
   run->width_ = std::max(0.0f, total_advance);
   width_ += run->width_;
   num_glyphs_ += num_glyphs;
-  ASSERT(num_glyphs_ >= num_glyphs);
+  DCHECK_GE(num_glyphs_, num_glyphs);
   has_vertical_offsets_ |= has_vertical_offsets;
 
   // The runs are stored in result->m_runs in visual order. For LTR, we place

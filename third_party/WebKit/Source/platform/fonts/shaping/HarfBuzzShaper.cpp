@@ -72,7 +72,7 @@ class HarfBuzzScopedPtr {
 
   HarfBuzzScopedPtr(T* ptr, DestroyFunction destroy)
       : ptr_(ptr), destroy_(destroy) {
-    ASSERT(destroy_);
+    DCHECK(destroy_);
   }
   ~HarfBuzzScopedPtr() {
     if (ptr_)
@@ -259,7 +259,7 @@ bool HarfBuzzShaper::ExtractShapeResults(
       }
 
       // Here we need to put character positions.
-      ASSERT(num_characters);
+      DCHECK(num_characters);
       range_data->holes_queue.push_back(
           HolesQueueItem(kHolesQueueRange, start_index, num_characters));
     }
@@ -315,7 +315,7 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
       break;
 
     UChar32 hint_char;
-    RELEASE_ASSERT(it->start_index_ + it->num_characters_ <= text_length_);
+    CHECK_LE((it->start_index_ + it->num_characters_), text_length_);
     UTF16TextIterator iterator(text_ + it->start_index_, it->num_characters_);
     while (iterator.Consume(hint_char)) {
       hint.push_back(hint_char);

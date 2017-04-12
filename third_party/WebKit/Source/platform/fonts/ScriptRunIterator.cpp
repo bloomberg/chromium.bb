@@ -124,8 +124,8 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text,
       ahead_pos_(0),
       common_preferred_(USCRIPT_COMMON),
       script_data_(data) {
-  ASSERT(text);
-  ASSERT(data);
+  DCHECK(text);
+  DCHECK(data);
 
   if (ahead_pos_ < length_) {
     current_set_.Clear();

@@ -67,7 +67,7 @@ TEST_F(SmallCapsIteratorTest, Empty) {
   unsigned limit = 0;
   SmallCapsIterator::SmallCapsBehavior small_caps_behavior =
       SmallCapsIterator::kSmallCapsInvalid;
-  ASSERT(!small_caps_iterator.Consume(&limit, &small_caps_behavior));
+  DCHECK(!small_caps_iterator.Consume(&limit, &small_caps_behavior));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(small_caps_behavior, SmallCapsIterator::kSmallCapsInvalid);
 }

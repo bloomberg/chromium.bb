@@ -37,8 +37,8 @@ class MockScriptData : public ScriptData {
   }
 
   void GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const override {
-    ASSERT(ch >= kMockCharMin);
-    ASSERT(ch < kMockCharLimit);
+    DCHECK_GE(ch, kMockCharMin);
+    DCHECK_LT(ch, kMockCharLimit);
 
     int code = ch - kMockCharMin;
     dst.Clear();
@@ -87,7 +87,8 @@ class MockScriptData : public ScriptData {
   }
 
   PairedBracketType GetPairedBracketType(UChar32 ch) const override {
-    ASSERT(ch >= kMockCharMin && ch < kMockCharLimit);
+    DCHECK_GE(ch, kMockCharMin);
+    DCHECK_LT(ch, kMockCharLimit);
     int code = ch - kMockCharMin;
     if ((code & kCodeBracketBit) == 0) {
       return PairedBracketType::kBracketTypeNone;
@@ -119,56 +120,56 @@ class MockScriptData : public ScriptData {
       if (in_set) {
         switch (c) {
           case '(':
-            ASSERT(seen == 0);
+            DCHECK_EQ(seen, 0);
             seen |= kSawBracket;
             code |= kCodeBracketBit;
             break;
           case '[':
-            ASSERT(seen == 0);
+            DCHECK_EQ(seen, 0);
             seen |= kSawBracket;
             code |= kCodeBracketBit | kCodeSquareBracketBit;
             break;
           case ')':
-            ASSERT(seen == 0);
+            DCHECK_EQ(seen, 0);
             seen |= kSawBracket;
             code |= kCodeBracketBit | kCodeBracketCloseBit;
             break;
           case ']':
-            ASSERT(seen == 0);
+            DCHECK_EQ(seen, 0);
             seen |= kSawBracket;
             code |=
                 kCodeBracketBit | kCodeSquareBracketBit | kCodeBracketCloseBit;
             break;
           case 'i':
-            ASSERT(seen == 0);  // brackets can't be inherited
+            DCHECK_EQ(seen, 0);  // brackets can't be inherited
             seen |= kSawSpecial;
             code |= kCodeSpecialInherited;
             break;
           case 'c':
-            ASSERT((seen & ~kSawBracket) == 0);
+            DCHECK_EQ((seen & ~kSawBracket), 0);
             seen |= kSawSpecial;
             code |= kCodeSpecialCommon;
             break;
           case 'l':
-            ASSERT((seen & kSawLatin) == 0);
-            ASSERT(current_shift < 3);
+            DCHECK_EQ((seen & kSawLatin), 0);
+            DCHECK_LT(current_shift, 3);
             seen |= kSawLatin;
             list |= kLatin << (2 * current_shift++);
             break;
           case 'h':
-            ASSERT((seen & kSawHan) == 0);
-            ASSERT(current_shift < 3);
+            DCHECK_EQ((seen & kSawHan), 0);
+            DCHECK_LT(current_shift, 3);
             seen |= kSawHan;
             list |= kHan << (2 * current_shift++);
             break;
           case 'g':
-            ASSERT((seen & kSawGreek) == 0);
-            ASSERT(current_shift < 3);
+            DCHECK_EQ((seen & kSawGreek), 0);
+            DCHECK_LT(current_shift, 3);
             seen |= kSawGreek;
             list |= kGreek << (2 * current_shift++);
             break;
           case '>':
-            ASSERT(seen != 0);
+            DCHECK_NE(seen, 0);
             code |= TableLookup(list);
             result.Append(static_cast<UChar>(kMockCharMin + code));
             in_set = false;
@@ -333,7 +334,7 @@ TEST_F(ScriptRunIteratorTest, Empty) {
   ScriptRunIterator script_run_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
   UScriptCode code = USCRIPT_INVALID_CODE;
-  ASSERT(!script_run_iterator.Consume(limit, code));
+  DCHECK(!script_run_iterator.Consume(limit, code));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(code, USCRIPT_INVALID_CODE);
 }

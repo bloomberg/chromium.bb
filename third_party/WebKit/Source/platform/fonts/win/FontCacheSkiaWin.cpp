@@ -105,7 +105,7 @@ FontCache::FontCache() : purge_prevent_count_(0) {
   font_manager_ = sk_ref_sp(static_font_manager_);
   if (!font_manager_)
     font_manager_ = SkFontMgr_New_DirectWrite();
-  ASSERT(font_manager_.get());
+  DCHECK(font_manager_.get());
 }
 
 // Given the desired base font, this will create a SimpleFontData for a specific
@@ -336,7 +336,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     const FontFaceCreationParams& creation_params,
     float font_size,
     AlternateFontName alternate_font_name) {
-  ASSERT(creation_params.CreationType() == kCreateFontByFamily);
+  DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
 
   CString name;
   sk_sp<SkTypeface> tf =

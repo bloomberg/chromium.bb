@@ -126,7 +126,7 @@ FontWeight FontDescription::LighterWeight(FontWeight weight) {
     case kFontWeight900:
       return kFontWeight700;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kFontWeightNormal;
 }
 
@@ -147,7 +147,7 @@ FontWeight FontDescription::BolderWeight(FontWeight weight) {
     case kFontWeight900:
       return kFontWeight900;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return kFontWeightNormal;
 }
 

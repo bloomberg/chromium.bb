@@ -77,7 +77,7 @@ PassRefPtr<SimpleFontData> FontDataCache::Get(
   }
 
   if (!result.Get()->value.second) {
-    ASSERT(inactive_font_data_.Contains(result.Get()->value.first));
+    DCHECK(inactive_font_data_.Contains(result.Get()->value.first));
     inactive_font_data_.erase(result.Get()->value.first);
   }
 
@@ -98,14 +98,14 @@ bool FontDataCache::Contains(const FontPlatformData* font_platform_data) const {
 }
 
 void FontDataCache::Release(const SimpleFontData* font_data) {
-  ASSERT(!font_data->IsCustomFont());
+  DCHECK(!font_data->IsCustomFont());
 
   Cache::iterator it = cache_.Find(&(font_data->PlatformData()));
-  ASSERT(it != cache_.end());
+  DCHECK_NE(it, cache_.end());
   if (it == cache_.end())
     return;
 
-  ASSERT(it->value.second);
+  DCHECK(it->value.second);
   if (!--it->value.second)
     inactive_font_data_.insert(it->value.first);
 }

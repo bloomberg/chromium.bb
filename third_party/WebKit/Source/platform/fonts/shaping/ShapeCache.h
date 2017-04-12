@@ -70,7 +70,7 @@ class ShapeCache {
                    unsigned short length,
                    TextDirection direction)
         : length_(length), direction_(static_cast<unsigned>(direction)) {
-      ASSERT(length <= kCapacity);
+      DCHECK(length <= kCapacity);
 
       StringHasher hasher;
 

@@ -205,12 +205,12 @@ class PLATFORM_EXPORT Font {
 inline Font::~Font() {}
 
 inline const SimpleFontData* Font::PrimaryFont() const {
-  ASSERT(font_fallback_list_);
+  DCHECK(font_fallback_list_);
   return font_fallback_list_->PrimarySimpleFontData(font_description_);
 }
 
 inline const FontData* Font::FontDataAt(unsigned index) const {
-  ASSERT(font_fallback_list_);
+  DCHECK(font_fallback_list_);
   return font_fallback_list_->FontDataAt(font_description_, index);
 }
 

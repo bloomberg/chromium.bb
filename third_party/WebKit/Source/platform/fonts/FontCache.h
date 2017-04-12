@@ -228,7 +228,7 @@ class PLATFORM_EXPORT FontCache {
 
   void DisablePurging() { purge_prevent_count_++; }
   void EnablePurging() {
-    ASSERT(purge_prevent_count_);
+    DCHECK(purge_prevent_count_);
     if (!--purge_prevent_count_)
       Purge(kPurgeIfNeeded);
   }
