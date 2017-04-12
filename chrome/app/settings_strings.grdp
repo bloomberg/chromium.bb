@@ -2488,10 +2488,7 @@
     Open Tabs
   </message>
   <message name="IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE" desc="Title for the link to manage Chrome Sync data via Google Dashboard.">
-    Manage synced data
-  </message>
-  <message name="IDS_SETTINGS_MANAGE_SYNCED_DATA_DESCRIPTION" desc="Subtitle for the link to manage Chrome Sync data via Google Dashboard.">
-    Opens Google Dashboard
+    Manage synced data on Google Dashboard
   </message>
   <message name="IDS_SETTINGS_ENCRYPTION_OPTIONS" desc="Title for the section which includes options for encrypting sync settings.">
     Encryption options

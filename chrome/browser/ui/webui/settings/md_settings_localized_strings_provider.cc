@@ -1317,8 +1317,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
     {"enablePaymentsIntegrationCheckboxLabel",
      IDS_SETTINGS_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
     {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
-    {"manageSyncedDataDescription",
-     IDS_SETTINGS_MANAGE_SYNCED_DATA_DESCRIPTION},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"encryptWithGoogleCredentialsLabel",
