@@ -2,4 +2,7 @@ skyostil@chromium.org
 tedchoc@chromium.org
 yfriedman@chromium.org
 
+# ContentViewCore related
+per-file content_view_*=jinsukkim@chromium.org
+
 # COMPONENT: Content>WebApps
