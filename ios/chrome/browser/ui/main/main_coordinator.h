@@ -5,13 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_MAIN_MAIN_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_MAIN_MAIN_COORDINATOR_H_
 
-#import "ios/chrome/browser/root_coordinator.h"
+#import "ios/chrome/browser/chrome_root_coordinator.h"
 
 #import <Foundation/Foundation.h>
 
 @class MainViewController;
 
-@interface MainCoordinator : RootCoordinator
+@interface MainCoordinator : ChromeRootCoordinator
 
 // The view controller this coordinator creates and manages.
 // (This is only public while the view controller architecture is being

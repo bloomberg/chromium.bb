@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_ROOT_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_ROOT_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_CHROME_ROOT_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_CHROME_ROOT_COORDINATOR_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,7 +12,7 @@
 // A coordinator specialization for the case where the coordinator is
 // creating and managing the root view controller for a UIWindow.
 
-@interface RootCoordinator : ChromeCoordinator
+@interface ChromeRootCoordinator : ChromeCoordinator
 
 - (nullable instancetype)initWithWindow:(nullable UIWindow*)window
     NS_DESIGNATED_INITIALIZER;
@@ -24,4 +24,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_ROOT_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_CHROME_ROOT_COORDINATOR_H_

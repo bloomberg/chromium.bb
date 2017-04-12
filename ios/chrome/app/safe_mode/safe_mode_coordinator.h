@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_APP_SAFE_MODE_SAFE_MODE_COORDINATOR_H_
 #define IOS_CHROME_APP_SAFE_MODE_SAFE_MODE_COORDINATOR_H_
 
-#import "ios/chrome/browser/root_coordinator.h"
+#import "ios/chrome/browser/chrome_root_coordinator.h"
 
 #import <UIKit/UIKit.h>
 
@@ -18,7 +18,7 @@
 // Coordinator to manage the Safe Mode UI. This should be self-contained.
 // While this is a ChromeCoordinator, it doesn't support (and will DCHECK) using
 // child coordinators.
-@interface SafeModeCoordinator : RootCoordinator
+@interface SafeModeCoordinator : ChromeRootCoordinator
 
 // Delegate for this coordinator.
 @property(nonatomic, nullable, assign) id<SafeModeCoordinatorDelegate> delegate;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/root_coordinator.h"
+#import "ios/chrome/browser/chrome_root_coordinator.h"
 
 #include "base/logging.h"
 
@@ -10,7 +10,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation RootCoordinator
+@implementation ChromeRootCoordinator
 @synthesize window = _window;
 
 - (instancetype)initWithWindow:(UIWindow*)window {
@@ -18,11 +18,6 @@
     _window = window;
   }
   return self;
-}
-
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  NOTREACHED();
-  return nil;
 }
 
 @end
