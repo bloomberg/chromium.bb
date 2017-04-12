@@ -19,6 +19,10 @@
 class PrefChangeRegistrar;
 class Profile;
 
+namespace ash {
+class ScreenshotDelegate;
+}
+
 namespace chromeos {
 
 // A class which allows the Ash palette to perform chrome actions.
@@ -64,6 +68,9 @@ class PaletteDelegateChromeOS
   std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
       session_state_observer_;
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<ash::ScreenshotDelegate>
+      voice_interaction_screenshot_delegate_;
 
   base::WeakPtrFactory<PaletteDelegateChromeOS> weak_factory_;
 

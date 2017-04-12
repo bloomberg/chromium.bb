@@ -12,11 +12,16 @@
 #include "ash/utility/screenshot_controller.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/voice_interaction_framework.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -24,6 +29,37 @@
 #include "content/public/browser/notification_source.h"
 
 namespace chromeos {
+
+class VoiceInteractionScreenshotDelegate : public ash::ScreenshotDelegate {
+ public:
+  VoiceInteractionScreenshotDelegate() {}
+  ~VoiceInteractionScreenshotDelegate() override {}
+
+ private:
+  void HandleTakeScreenshotForAllRootWindows() override { NOTIMPLEMENTED(); }
+
+  void HandleTakePartialScreenshot(aura::Window* window,
+                                   const gfx::Rect& rect) override {
+    arc::mojom::VoiceInteractionFrameworkInstance* framework =
+        ARC_GET_INSTANCE_FOR_METHOD(arc::ArcServiceManager::Get()
+                                        ->arc_bridge_service()
+                                        ->voice_interaction_framework(),
+                                    StartVoiceInteractionSessionForRegion);
+    if (!framework)
+      return;
+    double device_scale_factor = window->layer()->device_scale_factor();
+    framework->StartVoiceInteractionSessionForRegion(
+        gfx::ScaleToEnclosingRect(rect, device_scale_factor));
+  }
+
+  void HandleTakeWindowScreenshot(aura::Window* window) override {
+    NOTIMPLEMENTED();
+  }
+
+  bool CanTakeScreenshot() override { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionScreenshotDelegate);
+};
 
 PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
@@ -141,9 +177,22 @@ void PaletteDelegateChromeOS::TakeScreenshot() {
 
 void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
   auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
-  auto* screenshot_delegate = ash::ShellPortClassic::Get()
-                                  ->accelerator_controller_delegate()
-                                  ->screenshot_delegate();
+
+  ash::ScreenshotDelegate* screenshot_delegate;
+  if (arc::ArcVoiceInteractionFrameworkService::IsVoiceInteractionEnabled() &&
+      arc::IsArcAllowedForProfile(profile_)) {
+    // This is an experimental mode. It will be either taken out or grow
+    // into a separate tool next to "Capture region".
+    if (!voice_interaction_screenshot_delegate_) {
+      voice_interaction_screenshot_delegate_ =
+          base::MakeUnique<VoiceInteractionScreenshotDelegate>();
+    }
+    screenshot_delegate = voice_interaction_screenshot_delegate_.get();
+  } else {
+    screenshot_delegate = ash::ShellPortClassic::Get()
+                              ->accelerator_controller_delegate()
+                              ->screenshot_delegate();
+  }
 
   screenshot_controller->set_pen_events_only(true);
   screenshot_controller->StartPartialScreenshotSession(

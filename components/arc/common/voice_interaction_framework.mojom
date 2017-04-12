@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
+
+import "screen_rect.mojom";
 
 // Handles voice interaction queries from Android.
 // Next method ID: 1
@@ -15,10 +17,17 @@ interface VoiceInteractionFrameworkHost {
 };
 
 // Connects with Android system server.
-// Next method ID:2
+// Next method ID:4
 interface VoiceInteractionFrameworkInstance {
   Init@0(VoiceInteractionFrameworkHost host_ptr);
 
   // Starts the voice interaction session in container.
   StartVoiceInteractionSession@1();
+
+  // Starts the voice interaction session in container, with a screen region
+  // selected.
+  [MinVersion=1] StartVoiceInteractionSessionForRegion@2(ScreenRect region);
+
+  // Toggles the metalayer.
+  [MinVersion=1] ToggleMetalayer@3();
 };

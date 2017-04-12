@@ -66,6 +66,10 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
 
   ash::Shell::Get()->accelerator_controller()->Register(
       {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN)}, this);
+  // Temporary shortcut added to enable the metalayer experiment.
+  ash::Shell::Get()->accelerator_controller()->Register(
+      {ui::Accelerator(ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)},
+      this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
@@ -76,12 +80,23 @@ void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
 bool ArcVoiceInteractionFrameworkService::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojom::VoiceInteractionFrameworkInstance* framework_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_bridge_service()->voice_interaction_framework(),
-          StartVoiceInteractionSession);
-  DCHECK(framework_instance);
-  framework_instance->StartVoiceInteractionSession();
+
+  if (accelerator.IsShiftDown()) {
+    mojom::VoiceInteractionFrameworkInstance* framework_instance =
+        ARC_GET_INSTANCE_FOR_METHOD(
+            arc_bridge_service()->voice_interaction_framework(),
+            ToggleMetalayer);
+    DCHECK(framework_instance);
+    framework_instance->ToggleMetalayer();
+  } else {
+    mojom::VoiceInteractionFrameworkInstance* framework_instance =
+        ARC_GET_INSTANCE_FOR_METHOD(
+            arc_bridge_service()->voice_interaction_framework(),
+            StartVoiceInteractionSession);
+    DCHECK(framework_instance);
+    framework_instance->StartVoiceInteractionSession();
+  }
+
   return true;
 }
 
