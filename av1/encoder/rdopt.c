@@ -4913,8 +4913,10 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     *mode_uv = DC_PRED;
     return;
   }
+  BLOCK_SIZE bs = scale_chroma_bsize(bsize, x->e_mbd.plane[1].subsampling_x,
+                                     x->e_mbd.plane[1].subsampling_y);
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
-                          bsize < BLOCK_8X8 ? BLOCK_8X8 : bsize, max_tx_size);
+                          bs, max_tx_size);
 #endif  // CONFIG_CHROMA_2X2
 #else
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
