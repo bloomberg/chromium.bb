@@ -707,13 +707,6 @@ void av1_write_txb_probs(AV1_COMP *cpi, aom_writer *w) {
   for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size)
     write_txb_probs(w, cpi, tx_size);
 }
-static INLINE int allow_txk_type(MACROBLOCKD *xd, TX_SIZE tx_size, int plane) {
-  if (plane != 0 || tx_size == TX_32X32 ||
-      xd->lossless[xd->mi[0]->mbmi.segment_id])
-    return 0;
-
-  return 1;
-}
 
 int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                             int block, int blk_row, int blk_col,
@@ -729,12 +722,18 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int64_t best_rd = INT64_MAX;
   int best_eob = tx_size_2d[tx_size];
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
-  if (!allow_txk_type(xd, tx_size, plane)) txk_end = DCT_DCT;
   TX_TYPE tx_type;
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
+    if (plane == 0) mbmi->txk_type[block] = tx_type;
+    TX_TYPE ref_tx_type =
+        get_tx_type(get_plane_type(plane), xd, block, tx_size);
+    if (tx_type != ref_tx_type) {
+      // use get_tx_type() to check if the tx_type is valid for the current mode
+      // if it's not, we skip it here.
+      continue;
+    }
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
-    if (plane == 0) mbmi->txk_type[block] = tx_type;
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
     if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
