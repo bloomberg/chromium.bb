@@ -386,6 +386,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
       // TODO(zmo): Other features might also be OK to ignore here.
       feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
       feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL2);
+      feature_diffs.erase(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
     }
     if (feature_diffs.size()) {
       if (reason) {
@@ -1266,12 +1267,33 @@ void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
           switches::kDisableSoftwareRasterizer)) {
     use_swiftshader_ = true;
 
-    // Remove all previously recorded GPU info
-    gpu_info_ = gpu::GPUInfo();
-    // Set some basic info to identify the GPU as SwiftShader
+    // Adjust GPU info for SwiftShader. Most of this data only affects the
+    // chrome://gpu page, so it doesn't require querying the implementation.
+    // It is important to reset the video and image decode/encode capabilities,
+    // to prevent attempts to use them (crbug.com/702417).
+    gpu_info_.driver_vendor = "Google Inc.";
+    gpu_info_.driver_version = "3.3.0.2";
+    gpu_info_.driver_date = "2017/04/07";
+    gpu_info_.pixel_shader_version = "3.0";
+    gpu_info_.vertex_shader_version = "3.0";
+    gpu_info_.max_msaa_samples = "4";
+    gpu_info_.gl_version = "OpenGL ES 2.0 SwiftShader";
     gpu_info_.gl_vendor = "Google Inc.";
     gpu_info_.gl_renderer = "Google SwiftShader";
+    gpu_info_.gl_extensions = "";
+    gpu_info_.gl_reset_notification_strategy = 0;
     gpu_info_.software_rendering = true;
+    gpu_info_.passthrough_cmd_decoder = false;
+    gpu_info_.supports_overlays = false;
+    gpu_info_.basic_info_state = gpu::kCollectInfoSuccess;
+    gpu_info_.context_info_state = gpu::kCollectInfoSuccess;
+    gpu_info_.video_decode_accelerator_capabilities = {};
+    gpu_info_.video_encode_accelerator_supported_profiles = {};
+    gpu_info_.jpeg_decode_accelerator_supported = false;
+
+    gpu_info_.gpu.active = false;
+    for (auto& secondary_gpu : gpu_info_.secondary_gpus)
+      secondary_gpu.active = false;
 
     for (auto& status : gpu_feature_info_.status_values)
       status = gpu::kGpuFeatureStatusBlacklisted;

@@ -469,7 +469,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-device-id=0x040a',
       '--gpu-testing-secondary-vendor-ids=0x10de',
       '--gpu-testing-secondary-device-ids=0x0de1',
-      '--gpu-testing-gl-vendor=nouveau'])
+      '--gpu-testing-gl-vendor=nouveau',
+      '--disable-software-rasterizer'])
     self._Navigate(test_path)
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*'],
@@ -481,7 +482,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-device-id=0x040a',
       '--gpu-testing-secondary-vendor-ids=0x10de',
       '--gpu-testing-secondary-device-ids=0x0de1',
-      '--gpu-testing-gl-vendor=Intel'])
+      '--gpu-testing-gl-vendor=Intel',
+      '--disable-software-rasterizer'])
     self._Navigate(test_path)
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x8086, DEVICE= 0x040a *ACTIVE*'],
@@ -494,7 +496,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-secondary-vendor-ids=0x10de;0x1002',
       '--gpu-testing-secondary-device-ids=0x0de1;0x6779',
       '--gpu-testing-gl-vendor=X.Org',
-      '--gpu-testing-gl-renderer=AMD R600'])
+      '--gpu-testing-gl-renderer=AMD R600',
+      '--disable-software-rasterizer'])
     self._Navigate(test_path)
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x1002, DEVICE= 0x6779 *ACTIVE*'],
@@ -507,7 +510,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-testing-device-id=0x0de1',
       '--gpu-testing-secondary-vendor-ids=',
       '--gpu-testing-secondary-device-ids=',
-      '--gpu-testing-gl-vendor=nouveau'])
+      '--gpu-testing-gl-vendor=nouveau',
+      '--disable-software-rasterizer'])
     self._Navigate(test_path)
     self._VerifyActiveAndInactiveGPUs(
       ['VENDOR = 0x10de, DEVICE= 0x0de1 *ACTIVE*'],
@@ -561,10 +565,6 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     device = gpu.devices[0]
     if not device:
       self.fail("System Info doesn't have a device")
-    if device.vendor_id != 0:
-      self.fail("Wrong vendor ID. Expected 0, got " + hex(device.vendor_id))
-    if device.device_id != 0:
-      self.fail("Wrong device ID. Expected 0, got " + hex(device.device_id))
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
