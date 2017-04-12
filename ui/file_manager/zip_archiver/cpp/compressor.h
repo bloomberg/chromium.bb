@@ -44,7 +44,7 @@ class Compressor {
   // Receives a write chunk response from JavaScript.
   void WriteChunkDone(const pp::VarDictionary& dictionary);
 
-  // Releases all resources obtained by libarchive.
+  // Releases all resources obtained by minizip.
   void CloseArchive(const pp::VarDictionary& dictionary);
 
   // A getter function for the message sender.
@@ -82,7 +82,7 @@ class Compressor {
   // A requestor for making calls to JavaScript.
   JavaScriptCompressorRequestorInterface* requestor_;
 
-  // Libarchive wrapper instance per compressor, shared across all operations.
+  // Minizip wrapper instance per compressor, shared across all operations.
   CompressorArchive* compressor_archive_;
 
   // An instance that takes care of all IO operations.

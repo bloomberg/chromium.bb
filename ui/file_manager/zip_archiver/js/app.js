@@ -479,7 +479,7 @@ unpacker.app = {
         unpacker.app.mountProcessCounter === 0) {
       unpacker.app.unloadNaclModule();
     } else {
-      // Request libarchive to abort any ongoing process and release resources.
+      // Request minizip to abort any ongoing process and release resources.
       // The argument indicates whether an error occurred or not.
       if (hasError)
         compressor.sendCloseArchiveRequest(hasError);

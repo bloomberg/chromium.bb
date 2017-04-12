@@ -17,7 +17,7 @@
 #include "compressor_stream.h"
 #include "javascript_compressor_requestor_interface.h"
 
-// A namespace with constants used by CompressorArchiveLibarchive.
+// A namespace with constants used by CompressorArchiveMinizip.
 namespace compressor_stream_constants {
 // We need at least 256KB for MiniZip.
 const int64_t kMaximumDataChunkSize = 512 * 1024;

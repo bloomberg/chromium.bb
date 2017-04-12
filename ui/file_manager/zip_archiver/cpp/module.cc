@@ -405,7 +405,7 @@ class NaclArchiveInstance : public pp::Instance {
     iterator->second->ReadFile(request_id, var_dict);
   }
 
-  // Requests libarchive to create an archive object for the given compressor_id.
+  // Requests minizip to create an archive object for the given compressor_id.
   void CreateArchive(int compressor_id) {
     Compressor* compressor =
         new Compressor(instance_handle_, compressor_id, &message_sender_);

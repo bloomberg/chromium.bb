@@ -49,7 +49,7 @@ Compressor::Compressor(const pp::InstanceHandle& instance_handle,
   compressor_stream_ =
       new CompressorIOJavaScriptStream(requestor_);
   compressor_archive_ =
-      new CompressorArchiveLibarchive(compressor_stream_);
+      new CompressorArchiveMinizip(compressor_stream_);
 }
 
 Compressor::~Compressor() {

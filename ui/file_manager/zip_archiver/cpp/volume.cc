@@ -26,7 +26,7 @@ typedef std::map<std::string, VolumeArchive*>::const_iterator
 const char kPathDelimiter[] = "/";
 
 // size is int64_t and modification_time is time_t because this is how
-// libarchive is going to pass them to us.
+// minizip is going to pass them to us.
 pp::VarDictionary CreateEntry(int64_t index,
                               const std::string& name,
                               bool is_directory,
@@ -144,7 +144,7 @@ class JavaScriptRequestor : public JavaScriptRequestorInterface {
 class VolumeArchiveFactory : public VolumeArchiveFactoryInterface {
  public:
   virtual VolumeArchive* Create(VolumeReader* reader) {
-    return new VolumeArchiveLibarchive(reader);
+    return new VolumeArchiveMinizip(reader);
   }
 };
 

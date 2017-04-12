@@ -104,7 +104,7 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   int64_t last_read_chunk_offset_;  // The offset reached after last call to
                                     // VolumeReaderJavaScriptStream::Read.
 
-  // Two buffers used to store the actual data used by libarchive and the data
+  // Two buffers used to store the actual data used by minizip and the data
   // read ahead.
   pp::VarArrayBuffer first_array_buffer_;
   pp::VarArrayBuffer second_array_buffer_;

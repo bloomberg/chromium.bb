@@ -138,7 +138,7 @@ unpacker.Compressor.prototype.getArchiveName_ = function() {
 
 /**
  * Starts actual compressing process.
- * Creates an archive file and requests libarchive to create an archive object.
+ * Creates an archive file and requests minizip to create an archive object.
  * @param {function(!unpacker.types.CompressorId)} onSuccess
  * @param {function(!unpacker.types.CompressorId)} onError
  */
@@ -265,7 +265,7 @@ unpacker.Compressor.prototype.getDirectoryEntryMetadata_ = function(dir) {
  * Pops an entry from the queue and adds it to the archive.
  * If another entry is in progress, this function does nothing. If there is no
  * entry in the queue, it shifts to close archive process. Otherwise, this sends
- * an add to archive request for a popped entry with its metadata to libarchive.
+ * an add to archive request for a popped entry with its metadata to minizip.
  * @private
  */
 unpacker.Compressor.prototype.sendAddToArchiveRequest_ = function() {
@@ -301,7 +301,7 @@ unpacker.Compressor.prototype.sendAddToArchiveRequest_ = function() {
 }
 
 /**
- * Sends a close archive request to libarchive. libarchive writes metadata of
+ * Sends a close archive request to minizip. minizip writes metadata of
  * the archive itself on the archive and releases objects obtainted in the
  * packing process.
  */

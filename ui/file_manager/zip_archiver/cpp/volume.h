@@ -60,7 +60,7 @@ class Volume {
   // Initializes the volume.
   bool Init();
 
-  // Reads archive metadata using libarchive.
+  // Reads archive metadata using minizip.
   void ReadMetadata(const std::string& request_id,
                     const std::string& encoding,
                     int64_t archive_size);
@@ -137,7 +137,7 @@ class Volume {
   // Clears job.
   void ClearJob();
 
-  // Libarchive wrapper instance per volume, shared across all operations.
+  // Minizip wrapper instance per volume, shared across all operations.
   VolumeArchive* volume_archive_;
 
   // The file system id for this volume.

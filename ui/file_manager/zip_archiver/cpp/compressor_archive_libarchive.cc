@@ -32,28 +32,28 @@ uLong CustomArchiveWrite(void* compressor,
                          void* /*stream*/,
                          const void* zip_buffer,
                          uLong zip_length) {
-  CompressorArchiveLibarchive* compressor_libarchive =
-      static_cast<CompressorArchiveLibarchive*>(compressor);
+  CompressorArchiveMinizip* compressor_minizip =
+      static_cast<CompressorArchiveMinizip*>(compressor);
 
-  int64_t written_bytes = compressor_libarchive->compressor_stream()->Write(
-      compressor_libarchive->offset_, zip_length,
+  int64_t written_bytes = compressor_minizip->compressor_stream()->Write(
+      compressor_minizip->offset_, zip_length,
       static_cast<const char*>(zip_buffer));
 
   if (written_bytes != zip_length)
     return 0 /* Error */;
 
   // Update offset_ and length_.
-  compressor_libarchive->offset_ += written_bytes;
-  if (compressor_libarchive->offset_ > compressor_libarchive->length_)
-    compressor_libarchive->length_ = compressor_libarchive->offset_;
+  compressor_minizip->offset_ += written_bytes;
+  if (compressor_minizip->offset_ > compressor_minizip->length_)
+    compressor_minizip->length_ = compressor_minizip->offset_;
   return static_cast<uLong>(written_bytes);
 }
 
 // Returns the offset from the beginning of the data.
 long CustomArchiveTell(void* compressor, void* /*stream*/) {
-  CompressorArchiveLibarchive* compressor_libarchive =
-      static_cast<CompressorArchiveLibarchive*>(compressor);
-  return static_cast<long>(compressor_libarchive->offset_);
+  CompressorArchiveMinizip* compressor_minizip =
+      static_cast<CompressorArchiveMinizip*>(compressor);
+  return static_cast<long>(compressor_minizip->offset_);
 }
 
 // Moves the current offset to the specified position.
@@ -61,30 +61,30 @@ long CustomArchiveSeek(void* compressor,
                        void* /*stream*/,
                        uLong offset,
                        int origin) {
-  CompressorArchiveLibarchive* compressor_libarchive =
-      static_cast<CompressorArchiveLibarchive*>(compressor);
+  CompressorArchiveMinizip* compressor_minizip =
+      static_cast<CompressorArchiveMinizip*>(compressor);
 
   if (origin == ZLIB_FILEFUNC_SEEK_CUR) {
-    compressor_libarchive->offset_ =
-        std::min(compressor_libarchive->offset_ + static_cast<int64_t>(offset),
-                 compressor_libarchive->length_);
+    compressor_minizip->offset_ =
+        std::min(compressor_minizip->offset_ + static_cast<int64_t>(offset),
+                 compressor_minizip->length_);
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_END) {
-    compressor_libarchive->offset_ =
-        std::max(compressor_libarchive->length_ - static_cast<int64_t>(offset),
+    compressor_minizip->offset_ =
+        std::max(compressor_minizip->length_ - static_cast<int64_t>(offset),
                  0LL);
     return 0 /* Success */;
   }
   if (origin == ZLIB_FILEFUNC_SEEK_SET) {
-    compressor_libarchive->offset_ =
-        std::min(static_cast<int64_t>(offset), compressor_libarchive->length_);
+    compressor_minizip->offset_ =
+        std::min(static_cast<int64_t>(offset), compressor_minizip->length_);
     return 0 /* Success */;
   }
   return -1 /* Error */;
 }
 
-// Releases all used resources. compressor points to compressor_libarchive and
+// Releases all used resources. compressor points to compressor_minizip and
 // it is deleted in the destructor of Compressor, so we don't need to delete
 // it here.
 int CustomArchiveClose(void* /*compressor*/, void* /*stream*/) {
@@ -99,7 +99,7 @@ int CustomArchiveError(void* /*compressor*/, void* /*stream*/) {
 
 } // compressor_archive_functions
 
-CompressorArchiveLibarchive::CompressorArchiveLibarchive(
+CompressorArchiveMinizip::CompressorArchiveMinizip(
     CompressorStream* compressor_stream)
     : CompressorArchive(compressor_stream),
       compressor_stream_(compressor_stream),
@@ -110,11 +110,11 @@ CompressorArchiveLibarchive::CompressorArchiveLibarchive(
       new char[compressor_stream_constants::kMaximumDataChunkSize];
 }
 
-CompressorArchiveLibarchive::~CompressorArchiveLibarchive() {
+CompressorArchiveMinizip::~CompressorArchiveMinizip() {
   delete destination_buffer_;
 }
 
-bool CompressorArchiveLibarchive::CreateArchive() {
+bool CompressorArchiveMinizip::CreateArchive() {
   // Set up archive object.
   zlib_filefunc_def zip_funcs;
   zip_funcs.zopen_file = compressor_archive_functions::CustomArchiveOpen;
@@ -137,7 +137,7 @@ bool CompressorArchiveLibarchive::CreateArchive() {
   return true /* Success */;
 }
 
-bool CompressorArchiveLibarchive::AddToArchive(const std::string& filename,
+bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
                                                int64_t file_size,
                                                int64_t modification_time,
                                                bool is_directory) {
@@ -228,7 +228,7 @@ bool CompressorArchiveLibarchive::AddToArchive(const std::string& filename,
   return true /* Success */;
 }
 
-bool CompressorArchiveLibarchive::CloseArchive(bool has_error) {
+bool CompressorArchiveMinizip::CloseArchive(bool has_error) {
   if (zipClose(zip_file_, nullptr /* global_comment */) != ZIP_OK) {
     set_error_message(compressor_archive_constants::kCloseArchiveError);
     return false /* Error */;

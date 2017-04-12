@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VOLUME_ARCHIVE_LIBARCHIVE_H_
-#define VOLUME_ARCHIVE_LIBARCHIVE_H_
+#ifndef VOLUME_ARCHIVE_MINIZIP_H_
+#define VOLUME_ARCHIVE_MINIZIP_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 
 #include "volume_archive.h"
 
-// A namespace with constants used by VolumeArchiveLibarchive.
+// A namespace with constants used by VolumeArchiveMinizip.
 namespace volume_archive_constants {
 
 const char kArchiveReadNewError[] = "Could not allocate archive.";
@@ -49,12 +49,12 @@ const int64_t kStaticCacheSize = 128 * 1024;
 
 }  // namespace volume_archive_constants
 
-class VolumeArchiveLibarchive;
+class VolumeArchiveMinizip;
 
 // A namespace with custom functions passed to minizip.
 namespace volume_archive_functions {
 
-  int64_t DynamicCache(VolumeArchiveLibarchive* archive, int64_t unz_size);
+  int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unz_size);
 
   uLong CustomArchiveRead(void* archive, void* stream, void* buf, uLong size);
 
@@ -70,15 +70,15 @@ namespace volume_archive_functions {
 }  // compressor_archive_functions
 
 
-class VolumeArchiveLibarchive;
+class VolumeArchiveMinizip;
 
-// Defines an implementation of VolumeArchive that wraps all libarchive
+// Defines an implementation of VolumeArchive that wraps all minizip
 // operations.
-class VolumeArchiveLibarchive : public VolumeArchive {
+class VolumeArchiveMinizip : public VolumeArchive {
  public:
-  explicit VolumeArchiveLibarchive(VolumeReader* reader);
+  explicit VolumeArchiveMinizip(VolumeReader* reader);
 
-  virtual ~VolumeArchiveLibarchive();
+  virtual ~VolumeArchiveMinizip();
 
   // See volume_archive_interface.h.
   virtual bool Init(const std::string& encoding);
@@ -106,9 +106,9 @@ class VolumeArchiveLibarchive : public VolumeArchive {
   int64_t reader_data_size() const { return reader_data_size_; }
 
   // Custom functions need to access private variables of
-  // CompressorArchiveLibarchive frequently.
+  // CompressorArchiveMinizip frequently.
   friend int64_t volume_archive_functions::DynamicCache(
-      VolumeArchiveLibarchive* va, int64_t unz_size);
+      VolumeArchiveMinizip* va, int64_t unz_size);
 
   friend uLong volume_archive_functions::CustomArchiveRead(
       void* archive, void* stream, void* buf, uLong size);
@@ -162,25 +162,25 @@ class VolumeArchiveLibarchive : public VolumeArchive {
 
   // The data offset, which will be offset + length after last read
   // operation, where offset and length are method parameters for
-  // VolumeArchiveLibarchive::ReadData. Data offset is used to improve
-  // performance for consecutive calls to VolumeArchiveLibarchive::ReadData.
+  // VolumeArchiveMinizip::ReadData. Data offset is used to improve
+  // performance for consecutive calls to VolumeArchiveMinizip::ReadData.
   //
   // Intead of starting the read from the beginning for every
-  // VolumeArchiveLibarchive::ReadData, the next call will start
+  // VolumeArchiveMinizip::ReadData, the next call will start
   // from last_read_data_offset_ in case the offset parameter of
-  // VolumeArchiveLibarchive::ReadData has the same value as
+  // VolumeArchiveMinizip::ReadData has the same value as
   // last_read_data_offset_. This avoids decompressing again the bytes at
   // the begninning of the file, which is the average case scenario.
   // But in case the offset parameter is different than last_read_data_offset_,
   // then dummy_buffer_ will be used to ignore unused bytes.
   int64_t last_read_data_offset_;
 
-  // The length of the last VolumeArchiveLibarchive::ReadData. Used for
+  // The length of the last VolumeArchiveMinizip::ReadData. Used for
   // decompress ahead.
   int64_t last_read_data_length_;
 
-  // Dummy buffer for unused data read using VolumeArchiveLibarchive::ReadData.
-  // Sometimes VolumeArchiveLibarchive::ReadData can require reading from
+  // Dummy buffer for unused data read using VolumeArchiveMinizip::ReadData.
+  // Sometimes VolumeArchiveMinizip::ReadData can require reading from
   // offsets different from last_read_data_offset_. In this case some bytes
   // must be skipped. Because seeking is not possible inside compressed files,
   // the bytes will be discarded using this buffer.
@@ -201,8 +201,8 @@ class VolumeArchiveLibarchive : public VolumeArchive {
   // inside decompressed_data_buffer_.
   int64_t decompressed_data_size_;
 
-  // True if VolumeArchiveLibarchive::DecompressData failed.
+  // True if VolumeArchiveMinizip::DecompressData failed.
   bool decompressed_error_;
 };
 
-#endif  // VOLUME_ARCHIVE_LIBARCHIVE_H_
+#endif  // VOLUME_ARCHIVE_MINIZIP_H_

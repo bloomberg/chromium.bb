@@ -21,7 +21,7 @@ void* CustomArchiveOpen(void* archive,
   return archive;
 }
 
-int64_t DynamicCache(VolumeArchiveLibarchive* archive, int64_t unzip_size) {
+int64_t DynamicCache(VolumeArchiveMinizip* archive, int64_t unzip_size) {
   int64_t offset = archive->reader()->offset();
   if (archive->reader()->Seek(static_cast<int64_t>(offset),
                               ZLIB_FILEFUNC_SEEK_SET) < 0) {
@@ -63,8 +63,8 @@ uLong CustomArchiveRead(void* archive,
                         void* /* stream */,
                         void* buffer,
                         uLong size) {
-  VolumeArchiveLibarchive* archive_minizip =
-      static_cast<VolumeArchiveLibarchive*>(archive);
+  VolumeArchiveMinizip* archive_minizip =
+      static_cast<VolumeArchiveMinizip*>(archive);
   int64_t offset = archive_minizip->reader()->offset();
 
   // When minizip requests a chunk in static_cache_.
@@ -121,8 +121,8 @@ uLong CustomArchiveWrite(void* /*archive*/,
 }
 
 long CustomArchiveTell(void* archive, void* /*stream*/) {
-  VolumeArchiveLibarchive* archive_minizip =
-      static_cast<VolumeArchiveLibarchive*>(archive);
+  VolumeArchiveMinizip* archive_minizip =
+      static_cast<VolumeArchiveMinizip*>(archive);
   return static_cast<long>(archive_minizip->reader()->offset());
 }
 
@@ -130,8 +130,8 @@ long CustomArchiveSeek(void* archive,
                        void* /*stream*/,
                        uLong offset,
                        int origin) {
-  VolumeArchiveLibarchive* archive_minizip =
-      static_cast<VolumeArchiveLibarchive*>(archive);
+  VolumeArchiveMinizip* archive_minizip =
+      static_cast<VolumeArchiveMinizip*>(archive);
 
   long return_value = static_cast<long>(archive_minizip->reader()->Seek(
       static_cast<int64_t>(offset), static_cast<int64_t>(origin)));
@@ -148,14 +148,14 @@ int CustomArchiveError(void* /*opaque*/, void* /*stream*/) {
   return 0;
 }
 
-const char* GetPassphrase(VolumeArchiveLibarchive* archive_minizip) {
+const char* GetPassphrase(VolumeArchiveMinizip* archive_minizip) {
   const char* password = archive_minizip->reader()->Passphrase();
   return password;
 }
 
 }  // volume_archive_functions
 
-VolumeArchiveLibarchive::VolumeArchiveLibarchive(VolumeReader* reader)
+VolumeArchiveMinizip::VolumeArchiveMinizip(VolumeReader* reader)
     : VolumeArchive(reader),
       reader_data_size_(volume_archive_constants::kMinimumDataChunkSize),
       zip_file_(nullptr),
@@ -169,11 +169,11 @@ VolumeArchiveLibarchive::VolumeArchiveLibarchive(VolumeReader* reader)
       decompressed_data_size_(0),
       decompressed_error_(false) {}
 
-VolumeArchiveLibarchive::~VolumeArchiveLibarchive() {
+VolumeArchiveMinizip::~VolumeArchiveMinizip() {
   Cleanup();
 }
 
-bool VolumeArchiveLibarchive::Init(const std::string& encoding) {
+bool VolumeArchiveMinizip::Init(const std::string& encoding) {
   // Set up minizip object.
   zlib_filefunc_def zip_funcs;
   zip_funcs.zopen_file = volume_archive_functions::CustomArchiveOpen;
@@ -222,7 +222,7 @@ bool VolumeArchiveLibarchive::Init(const std::string& encoding) {
   return true;
 }
 
-VolumeArchive::Result VolumeArchiveLibarchive::GetCurrentFileInfo(
+VolumeArchive::Result VolumeArchiveMinizip::GetCurrentFileInfo(
     std::string* pathname,
     int64_t* size,
     bool* is_directory,
@@ -288,7 +288,7 @@ VolumeArchive::Result VolumeArchiveLibarchive::GetCurrentFileInfo(
   return VolumeArchive::RESULT_SUCCESS;
 }
 
-VolumeArchive::Result VolumeArchiveLibarchive::GoToNextFile() {
+VolumeArchive::Result VolumeArchiveMinizip::GoToNextFile() {
   int return_value = unzGoToNextFile(zip_file_);
   if (return_value == UNZ_END_OF_LIST_OF_FILE) {
     return VolumeArchive::RESULT_EOF;
@@ -300,7 +300,7 @@ VolumeArchive::Result VolumeArchiveLibarchive::GoToNextFile() {
   return VolumeArchive::RESULT_FAIL;
 }
 
-bool VolumeArchiveLibarchive::SeekHeader(const std::string& path_name) {
+bool VolumeArchiveMinizip::SeekHeader(const std::string& path_name) {
   // Reset to 0 for new VolumeArchive::ReadData operation.
   last_read_data_offset_ = 0;
   decompressed_data_size_ = 0;
@@ -352,7 +352,7 @@ bool VolumeArchiveLibarchive::SeekHeader(const std::string& path_name) {
   return true;
 }
 
-void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
+void VolumeArchiveMinizip::DecompressData(int64_t offset, int64_t length) {
   // TODO(cmihail): As an optimization consider using archive_read_data_block
   // which avoids extra copying in case offset != last_read_data_offset_.
   // The logic will be more complicated because archive_read_data_block offset
@@ -432,15 +432,15 @@ void VolumeArchiveLibarchive::DecompressData(int64_t offset, int64_t length) {
     left_length -= size;
   } while (left_length > 0 && size != 0);  // There is still data to read.
 
-  // VolumeArchiveLibarchive::DecompressData always stores the data from
-  // beginning of the buffer. VolumeArchiveLibarchive::ConsumeData is used
+  // VolumeArchiveMinizip::DecompressData always stores the data from
+  // beginning of the buffer. VolumeArchiveMinizip::ConsumeData is used
   // to preserve the bytes that are decompressed but not required by
-  // VolumeArchiveLibarchive::ReadData.
+  // VolumeArchiveMinizip::ReadData.
   decompressed_data_ = decompressed_data_buffer_;
   decompressed_data_size_ = bytes_read;
 }
 
-bool VolumeArchiveLibarchive::Cleanup() {
+bool VolumeArchiveMinizip::Cleanup() {
   bool returnValue = true;
   if (zip_file_) {
     if (unzClose(zip_file_) != UNZ_OK) {
@@ -455,7 +455,7 @@ bool VolumeArchiveLibarchive::Cleanup() {
   return returnValue;
 }
 
-int64_t VolumeArchiveLibarchive::ReadData(int64_t offset,
+int64_t VolumeArchiveMinizip::ReadData(int64_t offset,
                                           int64_t length,
                                           const char** buffer) {
   PP_DCHECK(length > 0);              // Length must be at least 1.
@@ -464,7 +464,7 @@ int64_t VolumeArchiveLibarchive::ReadData(int64_t offset,
                                       // a programmer error.
   // In case of first read or no more available data in the internal buffer or
   // offset is different from the last_read_data_offset_, then force
-  // VolumeArchiveLibarchive::DecompressData as the decompressed data is
+  // VolumeArchiveMinizip::DecompressData as the decompressed data is
   // invalid.
   if (!decompressed_data_ || last_read_data_offset_ != offset ||
       decompressed_data_size_ == 0)
@@ -494,7 +494,7 @@ int64_t VolumeArchiveLibarchive::ReadData(int64_t offset,
   return read_bytes;
 }
 
-void VolumeArchiveLibarchive::MaybeDecompressAhead() {
+void VolumeArchiveMinizip::MaybeDecompressAhead() {
   if (decompressed_data_size_ == 0)
     DecompressData(last_read_data_offset_, last_read_data_length_);
 }

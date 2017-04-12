@@ -71,7 +71,7 @@ void VolumeReaderJavaScriptStream::SetBufferAndSignal(
   pthread_mutex_lock(&shared_state_lock_);
   if (read_offset == offset_ && !available_data_ && !read_error_) {
     // Signal VolumeReaderJavaScriptStream::Read to continue execution. Copies
-    // buffer locally so libarchive has the buffer in memory when working with
+    // buffer locally so minizip has the buffer in memory when working with
     // it. Though we acquire a lock here this call is blocking only for a few
     // moments as VolumeReaderJavaScriptStream::Read will release the lock with
     // pthread_cond_wait. So we cannot arrive at a deadlock that will block the
@@ -141,7 +141,7 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
     return -1;
   }
 
-  // Make data available for libarchive custom read. No need to lock this part.
+  // Make data available for minizip custom read. No need to lock this part.
   // The reason is that VolumeReaderJavaScriptStream::RequestChunk is the only
   // function that can set available_data_ back to false and let
   // VolumeReaderJavaScriptStream::SetBufferAndSignal overwrite the buffer. But
@@ -156,7 +156,7 @@ int64_t VolumeReaderJavaScriptStream::Read(int64_t bytes_to_read,
   last_read_chunk_offset_ = offset_;
 
   // Ask for more data from JavaScript in the other buffer. This is the only
-  // time when we switch buffers. The reason is that libarchive must
+  // time when we switch buffers. The reason is that minizip must
   // always work on valid data and that data must be available until next
   // VolumeReaderJavaScriptStream::Read call, and as the data can be received
   // at any time from JavaScript, we need a buffer to store it in case of

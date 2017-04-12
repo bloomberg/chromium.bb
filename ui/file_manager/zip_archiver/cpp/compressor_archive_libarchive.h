@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPRESSOR_ARCHIVE_LIBARCHIVE_H_
-#define COMPRESSOR_ARCHIVE_LIBARCHIVE_H_
+#ifndef COMPRESSOR_ARCHIVE_MINIZIP_H_
+#define COMPRESSOR_ARCHIVE_MINIZIP_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "compressor_archive.h"
 #include "compressor_stream.h"
 
-// A namespace with constants used by CompressorArchiveLibarchive.
+// A namespace with constants used by CompressorArchiveMinizip.
 namespace compressor_archive_constants {
 
 const char kCreateArchiveError[] = "Failed to create archive.";
@@ -39,16 +39,16 @@ namespace compressor_archive_functions {
 
 }  // compressor_archive_functions
 
-class CompressorArchiveLibarchive : public CompressorArchive {
+class CompressorArchiveMinizip : public CompressorArchive {
  public:
-  explicit CompressorArchiveLibarchive(CompressorStream* compressor_stream);
+  explicit CompressorArchiveMinizip(CompressorStream* compressor_stream);
 
-  virtual ~CompressorArchiveLibarchive();
+  virtual ~CompressorArchiveMinizip();
 
   // Creates an archive object.
   virtual bool CreateArchive();
 
-  // Releases all resources obtained by libarchive.
+  // Releases all resources obtained by minizip.
   virtual bool CloseArchive(bool has_error);
 
   // Adds an entry to the archive.
@@ -64,7 +64,7 @@ class CompressorArchiveLibarchive : public CompressorArchive {
   CompressorStream* compressor_stream() const { return compressor_stream_; }
 
   // Custom functions need to access private variables of
-  // CompressorArchiveLibarchive frequently.
+  // CompressorArchiveMinizip frequently.
   friend uLong compressor_archive_functions::CustomArchiveWrite(
       void* compressor, void* stream, const void* buffer, uLong length);
 
@@ -90,4 +90,4 @@ class CompressorArchiveLibarchive : public CompressorArchive {
   int64_t length_;
 };
 
-#endif  // COMPRESSOR_ARCHIVE_LIBARCHIVE_H_
+#endif  // COMPRESSOR_ARCHIVE_MINIZIP_H_

@@ -7,8 +7,8 @@
 
 #include <string>
 
-// Defines a reader for archive volumes. This class is used by libarchive
-// for custom reads: https://github.com/libarchive/libarchive/wiki/Examples
+// Defines a reader for archive volumes. This class is used by minizip
+// for custom reads.
 class VolumeReader {
  public:
   virtual ~VolumeReader() {}
@@ -18,7 +18,7 @@ class VolumeReader {
   // VolumeReaderJavaScriptStream. *destination_buffer must be available until
   // the next VolumeReader:Read call or until VolumeReader is destructed.
   //
-  // The operation must be synchronous (libarchive requirement), so it
+  // The operation must be synchronous (minizip requirement), so it
   // should NOT be done on the main thread. bytes_to_read should be > 0.
   //
   // Returns the actual number of read bytes or -1 in case of failure.
