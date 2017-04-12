@@ -13,7 +13,8 @@ namespace native_app_launcher {
 
 // Returns whether the current state is arrived at via a "link navigation" in
 // the sense of Native App Launcher, i.e. a navigation caused by an explicit
-// user action in the rectangle of the web content area.
+// user action in the rectangle of the web content area. |web_state| must not
+// be nullptr.
 bool IsLinkNavigation(web::WebState* web_state);
 
 }  // namespace native_app_launcher

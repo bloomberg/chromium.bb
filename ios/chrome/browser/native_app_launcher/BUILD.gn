@@ -68,6 +68,7 @@ source_set("native_app_launcher_internal") {
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/web:web",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/native_app_launcher",
     "//ios/public/provider/chrome/browser/signin",

@@ -72,15 +72,15 @@ TEST_F(NativeAppNavigationUtilsTest, TestHasTypedUrlWithRedirect) {
 // the first non-redirect entry.
 TEST_F(NativeAppNavigationUtilsTest, TestHasLinkClickedWithRedirect) {
   AddItem("http://foo.com/page0", ui::PAGE_TRANSITION_LINK);
-  AddItem("http://bar.com/page1", ui::PAGE_TRANSITION_SERVER_REDIRECT);
-  AddItem("http://zap.com/page2", ui::PAGE_TRANSITION_SERVER_REDIRECT);
+  AddItem("http://bar.com/page1", ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  AddItem("http://zap.com/page2", ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   EXPECT_TRUE(native_app_launcher::IsLinkNavigation(web_state()));
 }
 
 // The first non-redirect entry is tested. Earlier redirects do not matter.
 TEST_F(NativeAppNavigationUtilsTest, TestTypedUrlWithRedirectEarlier) {
   AddItem("http://foo.com/page0", ui::PAGE_TRANSITION_LINK);
-  AddItem("http://bar.com/page1", ui::PAGE_TRANSITION_SERVER_REDIRECT);
+  AddItem("http://bar.com/page1", ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   AddItem("http://blah.com/page2", ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(native_app_launcher::IsLinkNavigation(web_state()));
 }
