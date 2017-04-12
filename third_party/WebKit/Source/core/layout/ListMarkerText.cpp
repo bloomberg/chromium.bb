@@ -119,25 +119,6 @@ static inline String ToAlphabeticOrNumeric(numberType number,
 }
 
 template <typename CharacterType>
-static String ToSymbolic(int number,
-                         const CharacterType* symbols,
-                         unsigned symbols_size) {
-  DCHECK_GT(number, 0);
-  DCHECK_GE(symbols_size, 1u);
-  unsigned number_shadow = number;
-  --number_shadow;
-
-  // The asterisks list-style-type is the worst case; we show |numberShadow|
-  // asterisks.
-  StringBuilder letters;
-  letters.Append(symbols[number_shadow % symbols_size]);
-  unsigned num_symbols = number_shadow / symbols_size;
-  while (num_symbols--)
-    letters.Append(symbols[number_shadow % symbols_size]);
-  return letters.ToString();
-}
-
-template <typename CharacterType>
 static String ToAlphabetic(int number,
                            const CharacterType* alphabet,
                            unsigned alphabet_size) {
@@ -163,12 +144,6 @@ template <typename CharacterType, size_t size>
 static inline String ToNumeric(int number,
                                const CharacterType (&alphabet)[size]) {
   return ToNumeric(number, alphabet, size);
-}
-
-template <typename CharacterType, size_t size>
-static inline String ToSymbolic(int number,
-                                const CharacterType (&alphabet)[size]) {
-  return ToSymbolic(number, alphabet, size);
 }
 
 static void ToHebrewUnder1000(int number, Vector<UChar>& letters) {
