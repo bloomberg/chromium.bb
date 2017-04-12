@@ -206,15 +206,13 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
     name = base::UTF16ToUTF8(entry->GetName());
-
-    if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
-      constexpr int kAvatarIconSize = 40;
-      gfx::Image icon = profiles::GetSizedAvatarIcon(
-          entry->GetAvatarIcon(), true, kAvatarIconSize, kAvatarIconSize);
-      icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
-    } else {
-      icon_url = profiles::GetDefaultAvatarIconUrl(entry->GetAvatarIconIndex());
-    }
+    // TODO(crbug.com/710660): return chrome://theme/IDR_PROFILE_AVATAR_*
+    // and update theme_source.cc to get high res avatar icons. This does less
+    // work here, sends less over IPC, and is more stable with returned results.
+    constexpr int kAvatarIconSize = 40;
+    gfx::Image icon = profiles::GetSizedAvatarIcon(
+        entry->GetAvatarIcon(), true, kAvatarIconSize, kAvatarIconSize);
+    icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
   }
 #endif  // defined(OS_CHROMEOS)
 

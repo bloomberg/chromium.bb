@@ -14,7 +14,11 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
+#include "net/base/data_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -78,7 +82,15 @@ class ProfileInfoHandlerTest : public testing::Test {
     EXPECT_FALSE(icon_url.empty());
 #else
     EXPECT_EQ("Profile 1", name);
-    EXPECT_EQ("chrome://theme/IDR_PROFILE_AVATAR_0", icon_url);
+
+    std::string mime, charset, data;
+    EXPECT_TRUE(net::DataURL::Parse(GURL(icon_url), &mime, &charset, &data));
+
+    EXPECT_EQ("image/png", mime);
+    SkBitmap bitmap;
+    EXPECT_TRUE(gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(data.data()), data.size(),
+        &bitmap));
 #endif
   }
 
