@@ -116,11 +116,32 @@ AutomationTreeWalker.prototype = {
    * Returns true if |node| is interesting.
    *
    * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean|undefined}
+   * @return {boolean}
    * @private
    */
   isInteresting_: function(node) {
-    return node.state && node.state.focusable;
+    let loc = node.location;
+    let parent = node.parent;
+    let root = node.root;
+    let role = node.role;
+    let state = node.state;
+
+    // Skip things that are offscreen
+    if (state[chrome.automation.StateType.OFFSCREEN]
+        || loc.top < 0 || loc.left < 0)
+      return false;
+
+    if (parent) {
+      // crbug.com/710559
+      // Work around for browser tabs
+      if (role === chrome.automation.RoleType.TAB
+          && parent.role === chrome.automation.RoleType.TAB_LIST
+          && root.role === chrome.automation.RoleType.DESKTOP)
+        return true;
+    }
+
+    // The general rule that applies to everything.
+    return state[chrome.automation.StateType.FOCUSABLE] === true;
   },
 
   /**

@@ -23,6 +23,7 @@ AutomationTreeWalkerUnitTest.prototype = {
   browsePreload: DUMMY_URL,
 
   getSampleTree: function() {
+    let loc = {left: 0, top: 0, width: 0, height: 0};
     // root
     //   middle1
     //     leaf1
@@ -31,14 +32,14 @@ AutomationTreeWalkerUnitTest.prototype = {
     //   middle2
     //     leaf4
     //     leaf5
-    let root = {};
-    let middle1 = {};
-    let middle2 = {};
-    let leaf1 = {};
-    let leaf2 = {};
-    let leaf3 = {};
-    let leaf4 = {};
-    let leaf5 = {};
+    let root = {location: loc, state: {}};
+    let middle1 = {location: loc, state: {}};
+    let middle2 = {location: loc, state: {}};
+    let leaf1 = {location: loc, state: {}};
+    let leaf2 = {location: loc, state: {}};
+    let leaf3 = {location: loc, state: {}};
+    let leaf4 = {location: loc, state: {}};
+    let leaf5 = {location: loc, state: {}};
 
     root.firstChild = middle1;
     root.lastChild = middle2;
@@ -79,6 +80,11 @@ AutomationTreeWalkerUnitTest.prototype = {
 };
 
 TEST_F('AutomationTreeWalkerUnitTest', 'MoveToNode', function() {
+  chrome.automation = {
+    RoleType: {DESKTOP: 'desktop', TAB: 'tab', TAB_LIST: 'tabList'},
+    StateType: {FOCUSABLE: 'focusable', OFFSCREEN: 'offscreen'}
+  };
+
   let t = this.getSampleTree();
   let treeWalker = new AutomationTreeWalker();
 
@@ -154,14 +160,36 @@ TEST_F('AutomationTreeWalkerUnitTest', 'GetYoungestDescendant', function() {
 });
 
 TEST_F('AutomationTreeWalkerUnitTest', 'IsInteresting', function() {
-  let node1 = {};
-  let node2 = {state: {}};
-  let node3 = {state: {focusable: false}};
-  let node4 = {state: {focusable: true}};
+  chrome.automation = {
+    RoleType: {DESKTOP: 'desktop', TAB: 'tab', TAB_LIST: 'tabList'},
+    StateType: {FOCUSABLE: 'focusable', OFFSCREEN: 'offscreen'}
+  };
+
   let treeWalker = new AutomationTreeWalker();
 
-  assertTrue(treeWalker.isInteresting_(node1) === undefined);
-  assertTrue(treeWalker.isInteresting_(node2) === undefined);
-  assertFalse(treeWalker.isInteresting_(node3));
-  assertTrue(treeWalker.isInteresting_(node4));
+  // Testing focusable.
+  let loc1 = {left: 0, top: 0, width: 0, height: 0};
+  let node1 = {location: loc1, state: {}};
+  let node2 = {location: loc1, state: {focusable: false}};
+  let node3 = {location: loc1, state: {focusable: true}};
+  assertFalse(treeWalker.isInteresting_(node1));
+  assertFalse(treeWalker.isInteresting_(node2));
+  assertTrue(treeWalker.isInteresting_(node3));
+
+  // Testing onscreen.
+  let loc2 = {left: -1, top: 0, width: 0, height: 0};
+  let loc3 = {left: 0, top: -1, width: 0, height: 0};
+  let node4 = {location: loc2, state: {focusable: true}};
+  let node5 = {location: loc3, state: {focusable: true}};
+  assertFalse(treeWalker.isInteresting_(node4));
+  assertFalse(treeWalker.isInteresting_(node5));
+
+  // Testing if tab.
+  let node6 = {location: loc1, role: 'desktop', state: {}};
+  let node7 = {location: loc1, role: 'tabList', state: {}};
+  let node8 =
+      {location: loc1, parent: node7, root: node6, role: 'tab', state: {}};
+  assertFalse(treeWalker.isInteresting_(node6));
+  assertFalse(treeWalker.isInteresting_(node7));
+  assertTrue(treeWalker.isInteresting_(node8));
 });

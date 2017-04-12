@@ -107,14 +107,6 @@ SwitchAccess.prototype = {
     if (!this.node_)
       return;
 
-    let state = this.node_.state;
-    if (state && state.focusable)
-      console.log('Node was focusable, doing default on it')
-    else if (state)
-      console.log('Node was not focusable, but still doing default');
-    else
-      console.log('Node has no state, still doing default');
-    console.log('\n');
     this.node_.doDefault();
   },
 
@@ -170,6 +162,7 @@ SwitchAccess.prototype = {
     if (node) {
       console.log('Name = ' + node.name);
       console.log('Role = ' + node.role);
+      console.log('Root role = ' + node.root.role);
       if (!node.parent)
         console.log('At index ' + node.indexInParent + ', has no parent');
       else {
