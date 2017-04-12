@@ -1321,7 +1321,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore signing in again is required.">
         Account sign-in details are out of date.
       </message>
-      <message name="IDS_IOS_SYNC_PASSPHRASE_ENCRYPTING" desc="The title for the passphrase page while it is encrypting. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SYNC_PASSPHRASE_ENCRYPTING" desc="The title for the passphrase page while it is encrypting. [Length: 21em] [iOS only]">
         Encrypting…
       </message>
       <message name="IDS_IOS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase. [Length:100em, may be multiple lines] [iOS only]">
