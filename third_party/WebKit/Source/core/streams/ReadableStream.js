@@ -278,7 +278,13 @@
       const desiredSize =
           binding.WritableStreamDefaultWriterGetDesiredSize(writer);
       if (desiredSize === null) {
-        writableError(binding.getWritableStreamStoredError(dest));
+        // This can happen if abort() is queued but not yet started when
+        // pipeTo() is called. In that case [[storedError]] is not set yet, and
+        // we need to wait until it is before we can cancel the pipe. Once
+        // [[storedError]] has been set, the rejection handler set on the writer
+        // closed promise above will detect it, so all we need to do here is
+        // nothing.
+        return;
       }
       if (desiredSize <= 0) {
         thenPromise(
