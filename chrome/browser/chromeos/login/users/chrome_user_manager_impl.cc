@@ -32,6 +32,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
@@ -832,6 +834,14 @@ void ChromeUserManagerImpl::PublicAccountUserLoggedIn(
   // prevent the avatar from getting changed.
   GetUserImageManager(user->GetAccountId())->UserLoggedIn(false, true);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+
+  // In Public Sessions set the PS delegate on PermissionsUpdater (used to
+  // remove clipboard read permission from extensions in PS). This delegate will
+  // be active for the whole user-session and it will go away together with the
+  // browser process during logout (the browser process is destroyed during
+  // logout), ie. it's not freed and it leaks but that is fine.
+  extensions::PermissionsUpdater::SetPlatformDelegate(
+      new extensions::PermissionsUpdaterDelegateChromeOS);
 }
 
 void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {

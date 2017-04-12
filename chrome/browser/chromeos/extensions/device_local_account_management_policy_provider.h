@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEVICE_LOCAL_ACCOUNT_MANAGEMENT_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEVICE_LOCAL_ACCOUNT_MANAGEMENT_POLICY_PROVIDER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -21,6 +23,9 @@ class DeviceLocalAccountManagementPolicyProvider
   explicit DeviceLocalAccountManagementPolicyProvider(
       policy::DeviceLocalAccount::Type account_type);
   ~DeviceLocalAccountManagementPolicyProvider() override;
+
+  // Used to check whether an extension is explicitly whitelisted.
+  static bool IsWhitelisted(const extensions::Extension* extension);
 
   // extensions::ManagementPolicy::Provider:
   std::string GetDebugPolicyProviderName() const override;

@@ -69,6 +69,8 @@ std::unique_ptr<const PermissionSet> GetBoundedActivePermissions(
   return adjusted_active;
 }
 
+PermissionsUpdater::Delegate* g_delegate = nullptr;
+
 }  // namespace
 
 PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context)
@@ -81,6 +83,14 @@ PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
 }
 
 PermissionsUpdater::~PermissionsUpdater() {}
+
+// static
+void PermissionsUpdater::SetPlatformDelegate(Delegate* delegate) {
+  // Make sure we're setting it only once (allow setting to nullptr, but then
+  // take special care of actually freeing it).
+  CHECK(!g_delegate || !delegate);
+  g_delegate = delegate;
+}
 
 void PermissionsUpdater::AddPermissions(const Extension* extension,
                                         const PermissionSet& permissions) {
@@ -197,6 +207,9 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
                            &withheld_permissions,
                            (init_flag_ & INIT_FLAG_TRANSIENT) != 0);
 
+  if (g_delegate)
+    g_delegate->InitializePermissions(extension, &granted_permissions);
+
   SetPermissions(extension, std::move(granted_permissions),
                  std::move(withheld_permissions));
 }
@@ -243,7 +256,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     EventType event_type,
     const Extension* extension,
     const PermissionSet& changed) {
-  DCHECK((init_flag_ & INIT_FLAG_TRANSIENT) == 0);
+  DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
   if (changed.IsEmpty())
     return;
 

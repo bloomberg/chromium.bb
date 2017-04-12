@@ -24,6 +24,17 @@ class PermissionSet;
 // and notifies interested parties of the changes.
 class PermissionsUpdater {
  public:
+  // Platform specific delegate.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Platform specific initialization of |extension|'s permissions (does any
+    // necessary filtering of permissions or similar).
+    virtual void InitializePermissions(
+        const Extension* extension,
+        std::unique_ptr<const PermissionSet>* granted_permissions) = 0;
+  };
+
   enum InitFlag {
     INIT_FLAG_NONE = 0,
     INIT_FLAG_TRANSIENT = 1 << 0,
@@ -38,6 +49,12 @@ class PermissionsUpdater {
   PermissionsUpdater(content::BrowserContext* browser_context,
                      InitFlag init_flag);
   ~PermissionsUpdater();
+
+  // Sets a delegate to provide platform-specific logic. This should be set
+  // during startup (to ensure all extensions are initialized through the
+  // delegate).
+  // |delegate| is a singleton instance and is leaked.
+  static void SetPlatformDelegate(Delegate* delegate);
 
   // Adds the set of |permissions| to the |extension|'s active permission set
   // and sends the relevant messages and notifications. This method assumes the

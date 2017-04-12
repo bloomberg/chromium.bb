@@ -133,6 +133,27 @@ void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
+class PermissionsUpdaterTestDelegate : public PermissionsUpdater::Delegate {
+ public:
+  PermissionsUpdaterTestDelegate() {}
+  ~PermissionsUpdaterTestDelegate() override {}
+
+  // PermissionsUpdater::Delegate
+  void InitializePermissions(
+      const Extension* extension,
+      std::unique_ptr<const PermissionSet>* granted_permissions) override {
+    // Remove the cookie permission.
+    APIPermissionSet api_permission_set((*granted_permissions)->apis());
+    api_permission_set.erase(APIPermission::kCookie);
+    granted_permissions->reset(
+        new PermissionSet(api_permission_set, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet()));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PermissionsUpdaterTestDelegate);
+};
+
 }  // namespace
 
 // Test that the PermissionUpdater can correctly add and remove active
@@ -360,6 +381,35 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
                     .HasExplicitAccessToOrigin(kOrigin));
     EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())->IsEmpty());
   }
+}
+
+// Test that the permissions updater delegate works - in this test it removes
+// the cookies permission.
+TEST_F(PermissionsUpdaterTest, Delegate) {
+  InitializeEmptyExtensionService();
+
+  ListBuilder required_permissions;
+  required_permissions.Append("tabs").Append("management").Append("cookies");
+  scoped_refptr<const Extension> extension =
+      CreateExtensionWithOptionalPermissions(
+          base::MakeUnique<base::ListValue>(),
+          required_permissions.Build(),
+          "My Extension");
+
+  auto test_delegate = base::MakeUnique<PermissionsUpdaterTestDelegate>();
+  PermissionsUpdater::SetPlatformDelegate(test_delegate.get());
+  PermissionsUpdater updater(profile());
+  updater.InitializePermissions(extension.get());
+
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      APIPermission::kTab));
+  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
+      APIPermission::kManagement));
+  EXPECT_FALSE(extension->permissions_data()->HasAPIPermission(
+      APIPermission::kCookie));
+
+  // Unset the delegate.
+  PermissionsUpdater::SetPlatformDelegate(nullptr);
 }
 
 }  // namespace extensions

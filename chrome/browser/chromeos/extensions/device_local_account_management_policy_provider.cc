@@ -889,6 +889,12 @@ DeviceLocalAccountManagementPolicyProvider::
     ~DeviceLocalAccountManagementPolicyProvider() {
 }
 
+// static
+bool DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
+    const extensions::Extension* extension) {
+  return ArrayContains(kPublicSessionWhitelist, extension->id());
+}
+
 std::string DeviceLocalAccountManagementPolicyProvider::
     GetDebugPolicyProviderName() const {
 #if defined(NDEBUG)
@@ -916,7 +922,7 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
 
     // Allow extension if its specific ID is whitelisted for use in public
     // sessions.
-    if (ArrayContains(kPublicSessionWhitelist, extension->id())) {
+    if (IsWhitelisted(extension)) {
       return true;
     }
 

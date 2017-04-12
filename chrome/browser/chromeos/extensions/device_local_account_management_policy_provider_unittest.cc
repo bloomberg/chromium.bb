@@ -22,6 +22,7 @@ namespace chromeos {
 namespace {
 
 const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
+const char kBogusId[] = "bogus";
 
 scoped_refptr<const extensions::Extension> CreateExtensionFromValues(
     const std::string& id,
@@ -609,6 +610,18 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
   EXPECT_EQ(base::string16(), error);
   error.clear();
+}
+
+TEST(DeviceLocalAccountManagementPolicyProviderTest, IsWhitelisted) {
+  // Whitelisted extension, Chrome Remote Desktop.
+  auto extension = CreateRegularExtension(kWhitelistedId);
+  EXPECT_TRUE(DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
+      extension.get()));
+
+  // Bogus extension ID (never true).
+  extension = CreateRegularExtension(kBogusId);
+  EXPECT_FALSE(DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
+      extension.get()));
 }
 
 }  // namespace chromeos
