@@ -262,6 +262,20 @@ void AddChromeWorkItems(const InstallationState& original_state,
       check_for_duplicates ? WorkItem::CHECK_DUPLICATES :
                              WorkItem::ALWAYS_MOVE);
 
+  // Notify the shell of renaming the folder. This is for fixing an issue that
+  // the temp folder (e.g., "\Temp\source30163_39131\Chrome-bin\...") shows up
+  // in the callstack backtrace. (https://crbug.com/710698)
+  install_list->AddCallbackWorkItem(base::Bind(
+      [](const base::FilePath& src, const base::FilePath& target,
+         const CallbackWorkItem& work_item) {
+        if (!work_item.IsRollback()) {
+          SHChangeNotify(SHCNE_RENAMEFOLDER, SHCNF_PATH | SHCNF_FLUSHNOWAIT,
+                         src.value().c_str(), target.value().c_str());
+        }
+        return true;
+      },
+      src_path, target_path));
+
   // Delete any old_chrome.exe if present (ignore failure if it's in use).
   install_list
       ->AddDeleteTreeWorkItem(target_path.Append(installer::kChromeOldExe),
