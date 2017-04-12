@@ -170,6 +170,10 @@ void AwContentRendererClient::RenderFrameCreated(
   autofill::PasswordAutofillAgent* password_autofill_agent =
       new autofill::PasswordAutofillAgent(render_frame);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, NULL);
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  new SpellCheckProvider(render_frame, spellcheck_.get());
+#endif
 }
 
 void AwContentRendererClient::RenderViewCreated(
@@ -177,7 +181,13 @@ void AwContentRendererClient::RenderViewCreated(
   AwRenderViewExt::RenderViewCreated(render_view);
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  new SpellCheckProvider(render_view, spellcheck_.get());
+  // This is a workaround keeping the behavior that, the Blink side spellcheck
+  // enabled state is initialized on RenderView creation.
+  // TODO(xiaochengh): Design better way to sync between Chrome-side and
+  // Blink-side spellcheck enabled states.  See crbug.com/710097.
+  if (SpellCheckProvider* provider =
+          SpellCheckProvider::Get(render_view->GetMainRenderFrame()))
+    provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
 #endif
 }
 

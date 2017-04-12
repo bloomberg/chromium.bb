@@ -11,7 +11,6 @@
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -19,7 +18,6 @@
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebElement;
 using blink::WebLocalFrame;
@@ -36,16 +34,14 @@ static_assert(int(blink::kWebTextDecorationTypeGrammar) ==
                   int(SpellCheckResult::GRAMMAR),
               "mismatching enums");
 
-SpellCheckProvider::SpellCheckProvider(
-    content::RenderView* render_view,
-    SpellCheck* spellcheck)
-    : content::RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<SpellCheckProvider>(render_view),
+SpellCheckProvider::SpellCheckProvider(content::RenderFrame* render_frame,
+                                       SpellCheck* spellcheck)
+    : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck) {
   DCHECK(spellcheck_);
-  if (render_view) {  // NULL in unit tests.
-    EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
-  }
+  if (render_frame)  // NULL in unit tests.
+    render_frame->GetWebFrame()->SetTextCheckClient(this);
 }
 
 SpellCheckProvider::~SpellCheckProvider() {
@@ -100,7 +96,7 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  WebLocalFrame* frame = render_view()->GetWebView()->FocusedFrame();
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   WebElement element = frame->GetDocument().IsNull()
                            ? WebElement()
                            : frame->GetDocument().FocusedElement();
@@ -228,15 +224,7 @@ void SpellCheckProvider::OnRespondTextCheck(
 #endif
 
 void SpellCheckProvider::EnableSpellcheck(bool enable) {
-  if (!render_view()->GetWebView())
-    return;
-
-  WebLocalFrame* frame = render_view()->GetWebView()->FocusedFrame();
-  // TODO(yabinh): The null check should be unnecessary.
-  // See crbug.com/625068
-  if (!frame)
-    return;
-
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
   frame->EnableSpellChecking(enable);
   if (!enable)
     frame->RemoveSpellingMarkers();

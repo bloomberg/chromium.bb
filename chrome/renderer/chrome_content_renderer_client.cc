@@ -91,9 +91,9 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "ipc/ipc_sync_channel.h"
@@ -254,23 +254,27 @@ void AppendParams(const std::vector<base::string16>& additional_names,
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-class SpellCheckReplacer : public content::RenderViewVisitor {
+class SpellCheckReplacer : public content::RenderFrameVisitor {
  public:
   explicit SpellCheckReplacer(SpellCheck* spellcheck)
       : spellcheck_(spellcheck) {}
-  bool Visit(content::RenderView* render_view) override;
+  ~SpellCheckReplacer() override;
+  bool Visit(content::RenderFrame* render_frame) override;
 
  private:
-  SpellCheck* spellcheck_;  // New shared spellcheck for all views. Weak Ptr.
+  // New shared spellcheck for all frames. Weak Ptr.
+  SpellCheck* const spellcheck_;
   DISALLOW_COPY_AND_ASSIGN(SpellCheckReplacer);
 };
 
-bool SpellCheckReplacer::Visit(content::RenderView* render_view) {
-  SpellCheckProvider* provider = SpellCheckProvider::Get(render_view);
+bool SpellCheckReplacer::Visit(content::RenderFrame* render_frame) {
+  SpellCheckProvider* provider = SpellCheckProvider::Get(render_frame);
   DCHECK(provider);
   provider->set_spellcheck(spellcheck_);
   return true;
 }
+
+SpellCheckReplacer::~SpellCheckReplacer() = default;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -575,11 +579,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  // TODO(xiaochengh): Use a different SpellCheckProvider for each RenderFrame.
-  if (SpellCheckProvider* provider =
-          SpellCheckProvider::Get(render_frame->GetRenderView())) {
-    render_frame->GetWebFrame()->SetTextCheckClient(provider);
-  }
+  new SpellCheckProvider(render_frame, spellcheck_.get());
 #endif
 }
 
@@ -589,16 +589,13 @@ void ChromeContentRendererClient::RenderViewCreated(
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
-  SpellCheckProvider* provider =
-      new SpellCheckProvider(render_view, spellcheck_.get());
-  // For a main frame of a view, RenderFrameCreated is called earlier than
-  // RenderViewCreated. This workaround ensures that WebTextCheckClient is
-  // still set for any main frame.
-  // TODO(xiaochengh): Remove this workaround once SpellCheckProvider becomes
-  // a RenderFrameObserver.
-  if (content::RenderFrame* main_frame = render_view->GetMainRenderFrame())
-    main_frame->GetWebFrame()->SetTextCheckClient(provider);
-
+  // This is a workaround keeping the behavior that, the Blink side spellcheck
+  // enabled state is initialized on RenderView creation.
+  // TODO(xiaochengh): Design better way to sync between Chrome-side and
+  // Blink-side spellcheck enabled states.  See crbug.com/710097.
+  if (SpellCheckProvider* provider =
+          SpellCheckProvider::Get(render_view->GetMainRenderFrame()))
+    provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
   new SpellCheckPanel(render_view);
 #endif
   new prerender::PrerendererClient(render_view);
@@ -1240,7 +1237,7 @@ void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
     thread->RemoveObserver(spellcheck_.get());
   spellcheck_.reset(spellcheck);
   SpellCheckReplacer replacer(spellcheck_.get());
-  content::RenderView::ForEach(&replacer);
+  content::RenderFrame::ForEach(&replacer);
   if (thread)
     thread->AddObserver(spellcheck_.get());
 }

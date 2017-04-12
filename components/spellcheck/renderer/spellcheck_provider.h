@@ -13,8 +13,8 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "components/spellcheck/spellcheck_build_features.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebTextCheckClient.h"
 
 class SpellCheck;
@@ -25,17 +25,16 @@ class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
 
-// TODO(xiaochengh): Make SpellCheckProvider a RenderFrameObserver.
 // This class deals with invoking browser-side spellcheck mechanism
 // which is done asynchronously.
 class SpellCheckProvider
-    : public content::RenderViewObserver,
-      public content::RenderViewObserverTracker<SpellCheckProvider>,
+    : public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<SpellCheckProvider>,
       public blink::WebTextCheckClient {
  public:
   using WebTextCheckCompletions = IDMap<blink::WebTextCheckingCompletion*>;
 
-  SpellCheckProvider(content::RenderView* render_view,
+  SpellCheckProvider(content::RenderFrame* render_frame,
                      SpellCheck* spellcheck);
   ~SpellCheckProvider() override;
 
@@ -57,7 +56,7 @@ class SpellCheckProvider
   // Enables document-wide spellchecking.
   void EnableSpellcheck(bool enabled);
 
-  // RenderViewObserver implementation.
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
 
@@ -70,7 +69,7 @@ class SpellCheckProvider
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
-  // RenderViewObserver implementation.
+  // RenderFrameObserver implementation.
   void OnDestruct() override;
 
   // blink::WebTextCheckClient implementation.

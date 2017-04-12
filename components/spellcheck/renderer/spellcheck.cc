@@ -26,6 +26,8 @@
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "components/spellcheck/spellcheck_build_features.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -46,18 +48,18 @@ namespace {
 const int kNoOffset = 0;
 const int kNoTag = 0;
 
-class UpdateSpellcheckEnabled : public content::RenderViewVisitor {
+class UpdateSpellcheckEnabled : public content::RenderFrameVisitor {
  public:
   explicit UpdateSpellcheckEnabled(bool enabled) : enabled_(enabled) {}
-  bool Visit(content::RenderView* render_view) override;
+  bool Visit(content::RenderFrame* render_frame) override;
 
  private:
   bool enabled_;  // New spellcheck-enabled state.
   DISALLOW_COPY_AND_ASSIGN(UpdateSpellcheckEnabled);
 };
 
-bool UpdateSpellcheckEnabled::Visit(content::RenderView* render_view) {
-  SpellCheckProvider* provider = SpellCheckProvider::Get(render_view);
+bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
+  SpellCheckProvider* provider = SpellCheckProvider::Get(render_frame);
   DCHECK(provider);
   provider->EnableSpellcheck(enabled_);
   return true;
@@ -224,7 +226,7 @@ void SpellCheck::OnCustomDictionaryChanged(
 void SpellCheck::OnEnableSpellCheck(bool enable) {
   spellcheck_enabled_ = enable;
   UpdateSpellcheckEnabled updater(enable);
-  content::RenderView::ForEach(&updater);
+  content::RenderFrame::ForEach(&updater);
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before
