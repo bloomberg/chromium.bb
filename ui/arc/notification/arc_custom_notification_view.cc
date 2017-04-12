@@ -48,14 +48,17 @@ class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
       ForwardScrollEvent(event->AsScrollEvent());
     } else if (event->IsMouseWheelEvent()) {
       ForwardMouseWheelEvent(event->AsMouseWheelEvent());
-    } else if (!event->IsTouchEvent()) {
+    } else if (!event->IsTouchEvent() && event->type() != ui::ET_GESTURE_TAP) {
       // TODO(yoshiki): Use a better tigger (eg. focusing EditText on
       // notification) than clicking (crbug.com/697379).
       if (event->type() == ui::ET_MOUSE_PRESSED)
         owner_->ActivateToast();
 
-      // Forward the rest events to |owner_| except touches because View
-      // should no longer receive touch events. See View::OnTouchEvent.
+      // Forward the rest events to |owner_| except for:
+      // 1. Touches, because View should no longer receive touch events.
+      //    See View::OnTouchEvent.
+      // 2. Tap gestures are handled on the Android side, so ignore them.
+      //    See crbug.com/709911.
       owner_->OnEvent(event);
     }
   }
