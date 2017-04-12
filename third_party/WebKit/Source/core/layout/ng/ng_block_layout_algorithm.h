@@ -19,6 +19,11 @@ namespace blink {
 class NGConstraintSpace;
 class NGLayoutResult;
 
+// Updates the fragment's BFC offset if it's not already set.
+void MaybeUpdateFragmentBfcOffset(const NGConstraintSpace&,
+                                  const NGLogicalOffset&,
+                                  NGFragmentBuilder* builder);
+
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
 class CORE_EXPORT NGBlockLayoutAlgorithm
@@ -58,9 +63,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
       const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
-
-  // Updates the fragment's BFC offset if it's not already set.
-  void UpdateFragmentBfcOffset(const NGLogicalOffset& offset);
 
   NGFragmentBuilder builder_;
   NGConstraintSpaceBuilder space_builder_;

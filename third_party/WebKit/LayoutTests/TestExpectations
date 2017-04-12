@@ -350,8 +350,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/min-pref-width-nowrap-floats
 crbug.com/635619 virtual/layout_ng/fast/block/basic/percent-height-inside-anonymous-block.html [ Failure Crash ]
 
 #### fast/block/margin-collapse
-#### Passed: 30
-#### Skipped: 60
+#### Passed: 31
+#### Skipped: 59
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/004.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/016.html [ Skip ]
@@ -410,7 +410,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/table-beside-float
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-container.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-floats.html [ Skip ]
 
 #### fast/block/float
 #### Total: 209

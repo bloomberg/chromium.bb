@@ -74,7 +74,8 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     Initialize(0, 0);
 
   // BFC offset is known for inline fragments.
-  container_builder_.SetBfcOffset(space->BfcOffset());
+  MaybeUpdateFragmentBfcOffset(ConstraintSpace(), ConstraintSpace().BfcOffset(),
+                               &container_builder_);
 }
 
 bool NGInlineLayoutAlgorithm::IsFirstLine() const {
