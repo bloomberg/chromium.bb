@@ -139,6 +139,14 @@ constexpr char kLockScreenHTMLPath[] = "people_page/lock_screen.html";
 constexpr char kLockScreenJSPath[] = "people_page/lock_screen.js";
 constexpr char kSetupPinHTMLPath[] = "people_page/setup_pin_dialog.html";
 constexpr char kSetupPinJSPath[] = "people_page/setup_pin_dialog.js";
+constexpr char kEasyUnlockBrowserProxyHTMLPath[] =
+    "people_page/easy_unlock_browser_proxy.html";
+constexpr char kEasyUnlockBrowserProxyJSPath[] =
+    "people_page/easy_unlock_browser_proxy.js";
+constexpr char kEasyUnlockTurnOffDialogHTMLPath[] =
+    "people_page/easy_unlock_turn_off_dialog.html";
+constexpr char kEasyUnlockTurnOffDialogJSPath[] =
+    "people_page/easy_unlock_turn_off_dialog.js";
 constexpr char kFingerprintListHTMLPath[] = "people_page/fingerprint_list.html";
 constexpr char kFingerprintListJSPath[] = "people_page/fingerprint_list.js";
 constexpr char kSetupFingerprintHTMLPath[] =
@@ -311,6 +319,14 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
       IDR_OPTIONS_LOCK_STATE_BEHAVIOR_JS;
   path_to_idr_map_[kLockScreenHTMLPath] = IDR_OPTIONS_LOCK_SCREEN_HTML;
   path_to_idr_map_[kLockScreenJSPath] = IDR_OPTIONS_LOCK_SCREEN_JS;
+  path_to_idr_map_[kEasyUnlockBrowserProxyHTMLPath] =
+      IDR_OPTIONS_EASY_UNLOCK_BROWSER_PROXY_HTML;
+  path_to_idr_map_[kEasyUnlockBrowserProxyJSPath] =
+      IDR_OPTIONS_EASY_UNLOCK_BROWSER_PROXY_JS;
+  path_to_idr_map_[kEasyUnlockTurnOffDialogHTMLPath] =
+      IDR_OPTIONS_EASY_UNLOCK_TURN_OFF_DIALOG_HTML;
+  path_to_idr_map_[kEasyUnlockTurnOffDialogJSPath] =
+      IDR_OPTIONS_EASY_UNLOCK_TURN_OFF_DIALOG_JS;
   path_to_idr_map_[kSetupPinHTMLPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_HTML;
   path_to_idr_map_[kSetupPinJSPath] = IDR_OPTIONS_SETUP_PIN_DIALOG_JS;
   path_to_idr_map_[kFingerprintListHTMLPath] =

@@ -17,13 +17,16 @@
 Polymer({
   is: 'settings-lock-screen',
 
-  behaviors: [I18nBehavior, LockStateBehavior, settings.RouteObserverBehavior],
+  behaviors: [
+    I18nBehavior,
+    LockStateBehavior,
+    WebUIListenerBehavior,
+    settings.RouteObserverBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
-    prefs: {
-      type: Object
-    },
+    prefs: {type: Object},
 
     /**
      * setModes_ is a partially applied function that stores the previously
@@ -35,7 +38,7 @@ Polymer({
      */
     setModes_: {
       type: Object,
-      observer: 'onSetModesChanged_'
+      observer: 'onSetModesChanged_',
     },
 
     /**
@@ -47,7 +50,9 @@ Polymer({
      */
     writeUma_: {
       type: Object,
-      value: function() { return settings.recordLockScreenProgress; }
+      value: function() {
+        return settings.recordLockScreenProgress;
+      },
     },
 
     /**
@@ -79,10 +84,52 @@ Polymer({
       type: Number,
       value: 0,
     },
+
+    /**
+     * True if Easy Unlock is allowed on this machine.
+     */
+    easyUnlockAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockAllowed');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * True if Easy Unlock is enabled.
+     */
+    easyUnlockEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockEnabled');
+      },
+    },
+
+    /**
+     * True if Easy Unlock's proximity detection feature is allowed.
+     */
+    easyUnlockProximityDetectionAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('easyUnlockAllowed') &&
+            loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
+      },
+      readOnly: true,
+    },
+
+    /** @private */
+    showEasyUnlockTurnOffDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
+  /** @private {?settings.EasyUnlockBrowserProxy} */
+  easyUnlockBrowserProxy_: null,
+
   /** @private {?settings.FingerprintBrowserProxy} */
-  browserProxy_: null,
+  fingerprintBrowserProxy_: null,
 
   /** selectedUnlockType is defined in LockStateBehavior. */
   observers: ['selectedUnlockTypeChanged_(selectedUnlockType)'],
@@ -91,7 +138,19 @@ Polymer({
   attached: function() {
     if (this.shouldAskForPassword_(settings.getCurrentRoute()))
       this.$.passwordPrompt.open();
-    this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
+
+    this.easyUnlockBrowserProxy_ =
+        settings.EasyUnlockBrowserProxyImpl.getInstance();
+    this.fingerprintBrowserProxy_ =
+        settings.FingerprintBrowserProxyImpl.getInstance();
+
+    if (this.easyUnlockAllowed_) {
+      this.addWebUIListener(
+          'easy-unlock-enabled-status',
+          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
+      this.easyUnlockBrowserProxy_.getEnabledStatus().then(
+          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
+    }
   },
 
   /**
@@ -102,9 +161,8 @@ Polymer({
    */
   currentRouteChanged: function(newRoute, oldRoute) {
     if (newRoute == settings.Route.LOCK_SCREEN &&
-        this.fingerprintUnlockEnabled_ &&
-        this.browserProxy_) {
-      this.browserProxy_.getNumFingerprints().then(
+        this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
+      this.fingerprintBrowserProxy_.getNumFingerprints().then(
           function(numFingerprints) {
             this.numFingerprints_ = numFingerprints;
           }.bind(this));
@@ -205,5 +263,60 @@ Polymer({
    */
   shouldAskForPassword_: function(route) {
     return route == settings.Route.LOCK_SCREEN && !this.setModes_;
+  },
+
+  /**
+   * Handler for when the Easy Unlock enabled status has changed.
+   * @private
+   */
+  handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
+    this.easyUnlockEnabled_ = easyUnlockEnabled;
+    this.showEasyUnlockTurnOffDialog_ =
+        easyUnlockEnabled && this.showEasyUnlockTurnOffDialog_;
+  },
+
+  /** @private */
+  onEasyUnlockSetupTap_: function() {
+    this.easyUnlockBrowserProxy_.startTurnOnFlow();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onEasyUnlockTurnOffTap_: function(e) {
+    // Prevent the end of the tap event from focusing what is underneath the
+    // button.
+    e.preventDefault();
+    this.showEasyUnlockTurnOffDialog_ = true;
+  },
+
+  /** @private */
+  onEasyUnlockTurnOffDialogClose_: function() {
+    this.showEasyUnlockTurnOffDialog_ = false;
+
+    // Restores focus on close to either the turn-off or set-up button,
+    // whichever is being displayed.
+    this.$$('.secondary-button').focus();
+  },
+
+  /**
+   * @param {boolean} enabled
+   * @param {!string} enabledStr
+   * @param {!string} disabledStr
+   * @private
+   */
+  getEasyUnlockDescription_: function(enabled, enabledStr, disabledStr) {
+    return enabled ? enabledStr : disabledStr;
+  },
+
+  /**
+   * @param {boolean} easyUnlockEnabled
+   * @param {boolean} proximityDetectionAllowed
+   * @private
+   */
+  getShowEasyUnlockToggle_: function(
+      easyUnlockEnabled, proximityDetectionAllowed) {
+    return easyUnlockEnabled && proximityDetectionAllowed;
   },
 });

@@ -2,9 +2,12 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="easy_unlock_browser_proxy.html">
+<link rel="import" href="easy_unlock_turn_off_dialog.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="lock_screen_constants.html">
 <link rel="import" href="lock_state_behavior.html">
@@ -19,6 +22,13 @@
 <dom-module id="settings-lock-screen">
   <template>
     <style include="settings-shared action-link">
+      #easyUnlock .start {
+        /* When the easy unlock toggle is shown, the easy unlock section's
+         * content becomes squashed to the top and bottom edges. Use padding to
+         * ensure the easy unlock content looks correct. */
+        padding: 11px 0;
+      }
+
       .radio-indent {
         -webkit-margin-start: 36px;
       }
@@ -75,12 +85,56 @@
         </div>
       </template>
 
+      <template is="dom-if" if="[[easyUnlockAllowed_]]">
+        <div id="easyUnlock" class="settings-box two-line">
+          <div class="start">
+            <div>$i18n{easyUnlockSectionTitle}</div>
+            <div class="secondary">
+              [[getEasyUnlockDescription_(easyUnlockEnabled_,
+                  '$i18nPolymer{easyUnlockDescription}',
+                  '$i18nPolymer{easyUnlockSetupIntro}')]]
+              <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
+                $i18n{learnMore}
+              </a>
+              <template is="dom-if" if="[[getShowEasyUnlockToggle_(
+                  easyUnlockEnabled_, easyUnlockProximityDetectionAllowed_)]]">
+                <settings-toggle-button
+                    pref="{{prefs.easy_unlock.proximity_required}}"
+                    label="$i18n{easyUnlockRequireProximityLabel}">
+                </settings-toggle-button>
+              </template>
+            </div>
+          </div>
+          <div class="secondary-action">
+            <template is="dom-if" if="[[!easyUnlockEnabled_]]">
+              <paper-button id="easyUnlockSetup" class="secondary-button"
+                  on-tap="onEasyUnlockSetupTap_">
+                $i18n{easyUnlockSetupButton}
+              </paper-button>
+            </template>
+            <template is="dom-if" if="[[easyUnlockEnabled_]]">
+              <paper-button id="easyUnlockTurnOff" class="secondary-button"
+                  on-tap="onEasyUnlockTurnOffTap_">
+                $i18n{easyUnlockTurnOffButton}
+              </paper-button>
+            </template>
+          </div>
+        </div>
+      </template>
+
       <settings-password-prompt-dialog id="passwordPrompt"
           on-close="onPasswordClosed_" set-modes="{{setModes_}}">
       </settings-password-prompt-dialog>
+
       <settings-setup-pin-dialog id="setupPin" on-done="onPinSetupDone_"
           set-modes="[[setModes_]]">
       </settings-setup-pin-dialog>
+
+      <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]">
+        <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"
+            on-close="onEasyUnlockTurnOffDialogClose_">
+        </easy-unlock-turn-off-dialog>
+      </template>
     </div>
   </template>
 

@@ -97,53 +97,6 @@ Polymer({
       },
       readOnly: true,
     },
-
-    /** @private {!settings.EasyUnlockBrowserProxy} */
-    easyUnlockBrowserProxy_: {
-      type: Object,
-      value: function() {
-        return settings.EasyUnlockBrowserProxyImpl.getInstance();
-      },
-    },
-
-    /**
-     * True if Easy Unlock is allowed on this machine.
-     */
-    easyUnlockAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('easyUnlockAllowed');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * True if Easy Unlock is enabled.
-     */
-    easyUnlockEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('easyUnlockEnabled');
-      },
-    },
-
-    /**
-     * True if Easy Unlock's proximity detection feature is allowed.
-     */
-    easyUnlockProximityDetectionAllowed_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('easyUnlockAllowed') &&
-            loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
-      },
-      readOnly: true,
-    },
-
-    /** @private */
-    showEasyUnlockTurnOffDialog_: {
-      type: Boolean,
-      value: false,
-    },
 // </if>
 
     /** @private {!Map<string, string>} */
@@ -192,16 +145,6 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener('sync-status-changed',
                           this.handleSyncStatus_.bind(this));
-
-// <if expr="chromeos">
-    if (this.easyUnlockAllowed_) {
-      this.addWebUIListener(
-          'easy-unlock-enabled-status',
-          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
-      this.easyUnlockBrowserProxy_.getEnabledStatus().then(
-          this.handleEasyUnlockEnabledStatusChanged_.bind(this));
-    }
-// </if>
   },
 
   /** @protected */
@@ -291,18 +234,6 @@ Polymer({
 
     this.syncStatus = syncStatus;
   },
-
-// <if expr="chromeos">
-  /**
-   * Handler for when the Easy Unlock enabled status has changed.
-   * @private
-   */
-  handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
-    this.easyUnlockEnabled_ = easyUnlockEnabled;
-    this.showEasyUnlockTurnOffDialog_ =
-        easyUnlockEnabled && this.showEasyUnlockTurnOffDialog_;
-  },
-// </if>
 
   /** @private */
   onPictureTap_: function() {
@@ -403,25 +334,6 @@ Polymer({
   /** @private */
   onConfigureLockTap_: function() {
     settings.navigateTo(settings.Route.LOCK_SCREEN);
-  },
-
-  /** @private */
-  onEasyUnlockSetupTap_: function() {
-    this.easyUnlockBrowserProxy_.startTurnOnFlow();
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onEasyUnlockTurnOffTap_: function(e) {
-    e.preventDefault();
-    this.showEasyUnlockTurnOffDialog_ = true;
-  },
-
-  /** @private */
-  onEasyUnlockTurnOffDialogClose_: function() {
-    this.showEasyUnlockTurnOffDialog_ = false;
   },
 // </if>
 

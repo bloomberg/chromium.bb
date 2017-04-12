@@ -22,8 +22,6 @@
 
 <if expr="chromeos">
 <link rel="import" href="change_picture.html">
-<link rel="import" href="easy_unlock_browser_proxy.html">
-<link rel="import" href="easy_unlock_turn_off_dialog.html">
 <link rel="import" href="fingerprint_list.html">
 <link rel="import" href="lock_screen.html">
 <link rel="import" href="lock_state_behavior.html">
@@ -70,11 +68,6 @@
 
       .settings-box[actionable] .sync-error {
         color: var(--settings-error-color);
-      }
-
-      #easy-unlock .start {
-        /* Use padding to ensure taller content looks correct. */
-        padding: 11px 0;
       }
 
       .icon-container {
@@ -219,50 +212,6 @@
                 aria-describedby="lockScrenSecondary"></button>
           </div>
         </template>
-
-        <template is="dom-if" if="[[easyUnlockAllowed_]]">
-          <div id="easy-unlock" class="settings-box two-line">
-            <div class="start">
-              <div>$i18n{easyUnlockSectionTitle}</div>
-              <div class="secondary">
-                <template is="dom-if" if="[[!easyUnlockEnabled_]]">
-                  $i18n{easyUnlockSetupIntro}
-                </template>
-                <template is="dom-if" if="[[easyUnlockEnabled_]]">
-                  $i18n{easyUnlockDescription}
-                </template>
-                <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
-                  $i18n{learnMore}
-                </a>
-                <!-- TODO(dbeam): this should be 1 dom-if with a method instead
-                     of 2 nested dom-ifs. -->
-                <template is="dom-if" if="[[easyUnlockEnabled_]]">
-                  <template is="dom-if"
-                      if="[[easyUnlockProximityDetectionAllowed_]]">
-                    <settings-toggle-button
-                        pref="{{prefs.easy_unlock.proximity_required}}"
-                        label="$i18n{easyUnlockRequireProximityLabel}">
-                    </settings-toggle-button>
-                  </template>
-                </template>
-              </div>
-            </div>
-            <div class="secondary-action">
-              <template is="dom-if" if="[[!easyUnlockEnabled_]]">
-                <paper-button id="easyUnlockSetup" class="secondary-button"
-                    on-tap="onEasyUnlockSetupTap_">
-                  $i18n{easyUnlockSetupButton}
-                </paper-button>
-              </template>
-              <template is="dom-if" if="[[easyUnlockEnabled_]]">
-                <paper-button id="easyUnlockTurnOff" class="secondary-button"
-                    on-tap="onEasyUnlockTurnOffTap_">
-                  $i18n{easyUnlockTurnOffButton}
-                </paper-button>
-              </template>
-            </div>
-          </div>
-        </template>
 </if>
 
         <div id="manage-other-people-subpage-trigger"
@@ -396,13 +345,6 @@
       </settings-import-data-dialog>
     </template>
 
-<if expr="chromeos">
-    <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]">
-      <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"
-          on-close="onEasyUnlockTurnOffDialogClose_">
-      </easy-unlock-turn-off-dialog>
-    </template>
-</if>
   </template>
   <script src="people_page.js"></script>
 </dom-module>
