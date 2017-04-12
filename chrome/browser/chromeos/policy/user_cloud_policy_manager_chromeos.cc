@@ -103,14 +103,16 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       policy_fetch_timeout_(false, false) {
   time_init_started_ = base::Time::Now();
 
-  // Caller should pass a non-zero policy_fetch_timeout iff
+  // Caller must pass a non-zero policy_fetch_timeout iff
   // |wait_for_policy_fetch| is true.
   DCHECK_NE(wait_for_policy_fetch_, initial_policy_fetch_timeout.is_zero());
   allow_failed_policy_fetches_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kAllowFailedPolicyFetchForTest) ||
       !initial_policy_fetch_timeout.is_max();
-  if (wait_for_policy_fetch_ && allow_failed_policy_fetches_) {
+  // No need to set the timer when the timeout is infinite.
+  if (wait_for_policy_fetch_ && allow_failed_policy_fetches_ &&
+      !initial_policy_fetch_timeout.is_max()) {
     policy_fetch_timeout_.Start(
         FROM_HERE,
         initial_policy_fetch_timeout,
