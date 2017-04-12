@@ -8974,7 +8974,7 @@ I don't think this site should be blocked!
         Google may use your browsing history to personalize Search and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_SYNC_SETTINGS_LABEL" desc="Label of the checkbox that allows users to configure their sync settings on the settings page before signing in to Chrome.">
-        Control how this works in Settings
+        Manage Chrome Sync and personalization in Settings
       </message>
       <message name="IDS_SYNC_CONFIRMATION_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the sync confirmation dialog of the tab modal signin flow">
         Ok, got it
