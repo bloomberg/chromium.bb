@@ -1494,8 +1494,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)pageLoadStarting:(NSNotification*)notify {
   Tab* tab = notify.userInfo[kTabModelTabKey];
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
-  // Hide find bar when navigating to a new page.
-  [self hideFindBarWithAnimation:NO];
+
+  // Stop any Find in Page searches and close the find bar when navigating to a
+  // new page.
+  [self closeFindInPage];
 
   if (tab == [_model currentTab]) {
     // TODO(pinkerton): Fill in here about hiding the forward button on
