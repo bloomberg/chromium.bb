@@ -10,6 +10,8 @@ source_set("cells") {
     "content_suggestions_footer_item.mm",
     "content_suggestions_most_visited.h",
     "content_suggestions_most_visited.mm",
+    "content_suggestions_most_visited_item.h",
+    "content_suggestions_most_visited_item.mm",
     "content_suggestions_most_visited_tile.h",
     "content_suggestions_most_visited_tile.mm",
     "content_suggestions_reading_list_item.h",
@@ -37,12 +39,14 @@ source_set("unit_tests") {
   sources = [
     "content_suggestions_article_item_unittest.mm",
     "content_suggestions_footer_item_unittest.mm",
+    "content_suggestions_most_visited_item_unittest.mm",
     "content_suggestions_most_visited_tile_unittest.mm",
     "content_suggestions_most_visited_unittest.mm",
   ]
   deps = [
     ":cells",
     "//base",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//testing/gtest",
