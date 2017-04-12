@@ -25,9 +25,8 @@ enum PrefStoreType {
 
 // Allows observing changes to prefs stored in a |PrefStore|.
 interface PrefStoreObserver {
-  // The preference with the given |key| has changed. If |value| is null then
-  // the preference was deleted.
-  OnPrefChanged(string key, mojo.common.mojom.Value? value);
+  // Preferences have been changed.
+  OnPrefsChanged(array<PrefUpdate> updates);
 
   // The PrefStore has been initialized (asynchronously).
   OnInitializationCompleted(bool succeeded);
@@ -100,11 +99,20 @@ interface PrefStoreConnector {
        map<PrefStoreType, PrefStoreConnection> connections);
 };
 
+// An update to a pref.
+struct PrefUpdate {
+  // The key of the pref being updated.
+  string key;
+  // The new value; a null |value| indicates a delete.
+  mojo.common.mojom.Value? value;
+  //|flags| is a bitmask of WritablePrefStore::PrefWriteFlags.
+  uint32 flags;
+};
+
 // An interface providing mutation access to a PersistentPrefStore.
 interface PersistentPrefStore {
-  // Sets the value for |key|. A null |value| indicates a delete. |flags| is a
-  // bitmask of WritablePrefStore::PrefWriteFlags.
-  SetValue(string key, mojo.common.mojom.Value? value, uint32 flags);
+  // Sets the values for prefs.
+  SetValues(array<PrefUpdate> updates);
 
   // These mirror the C++ PersistentPrefStore methods.
   CommitPendingWrite();

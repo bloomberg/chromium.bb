@@ -66,14 +66,20 @@ class PersistentPrefStoreClient
                                     prefs::mojom::PrefStoreConnectionPtr>
                      other_pref_stores);
 
+  void QueueWrite(const std::string& key, uint32_t flags);
+  void FlushPendingWrites();
+
   mojom::PrefStoreConnectorPtr connector_;
   scoped_refptr<PrefRegistry> pref_registry_;
   bool read_only_ = false;
   PrefReadError read_error_ = PersistentPrefStore::PREF_READ_ERROR_NONE;
   mojom::PersistentPrefStorePtr pref_store_;
+  std::map<std::string, uint32_t> pending_writes_;
 
   std::unique_ptr<ReadErrorDelegate> error_delegate_;
   std::vector<PrefValueStore::PrefStoreType> already_connected_types_;
+
+  base::WeakPtrFactory<PersistentPrefStoreClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentPrefStoreClient);
 };

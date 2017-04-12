@@ -54,9 +54,11 @@ class PrefStoreClientMixin : public BasePrefStore,
 
  private:
   // prefs::mojom::PreferenceObserver:
-  void OnPrefChanged(const std::string& key,
-                     std::unique_ptr<base::Value> value) override;
+  void OnPrefsChanged(std::vector<mojom::PrefUpdatePtr> updates) override;
   void OnInitializationCompleted(bool succeeded) override;
+
+  void OnPrefChanged(const std::string& key,
+                     std::unique_ptr<base::Value> value);
 
   // Cached preferences.
   // If null, indicates that initialization failed.

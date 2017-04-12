@@ -34,20 +34,27 @@ class PersistentPrefStoreImpl::Connection : public mojom::PersistentPrefStore {
 
   ~Connection() override = default;
 
-  void OnPrefValueChanged(const std::string& key, const base::Value* value) {
-    if (write_in_progress_ || !base::ContainsKey(observed_keys_, key))
+  void OnPrefValuesChanged(const std::vector<mojom::PrefUpdatePtr>& updates) {
+    if (write_in_progress_)
       return;
 
-    observer_->OnPrefChanged(key, value ? value->CreateDeepCopy() : nullptr);
+    std::vector<mojom::PrefUpdatePtr> filtered_updates;
+    for (const auto& update : updates) {
+      if (base::ContainsKey(observed_keys_, update->key)) {
+        filtered_updates.push_back(mojom::PrefUpdate::New(
+            update->key,
+            update->value ? update->value->CreateDeepCopy() : nullptr, 0));
+      }
+    }
+    if (!filtered_updates.empty())
+      observer_->OnPrefsChanged(std::move(filtered_updates));
   }
 
  private:
   // mojom::PersistentPrefStore:
-  void SetValue(const std::string& key,
-                std::unique_ptr<base::Value> value,
-                uint32_t flags) override {
+  void SetValues(std::vector<mojom::PrefUpdatePtr> updates) override {
     base::AutoReset<bool> scoped_call_in_progress(&write_in_progress_, true);
-    pref_store_->SetValue(key, std::move(value), flags);
+    pref_store_->SetValues(std::move(updates));
   }
 
   void CommitPendingWrite() override { pref_store_->CommitPendingWrite(); }
@@ -76,17 +83,15 @@ PersistentPrefStoreImpl::PersistentPrefStoreImpl(
     scoped_refptr<PersistentPrefStore> backing_pref_store,
     base::OnceClosure on_initialized)
     : backing_pref_store_(backing_pref_store) {
-  backing_pref_store_->AddObserver(this);
   if (!backing_pref_store_->IsInitializationComplete()) {
+    backing_pref_store_->AddObserver(this);
     on_initialized_ = std::move(on_initialized);
     initializing_ = true;
     backing_pref_store_->ReadPrefsAsync(nullptr);
   }
 }
 
-PersistentPrefStoreImpl::~PersistentPrefStoreImpl() {
-  backing_pref_store_->RemoveObserver(this);
-}
+PersistentPrefStoreImpl::~PersistentPrefStoreImpl() = default;
 
 mojom::PersistentPrefStoreConnectionPtr
 PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
@@ -113,32 +118,28 @@ PersistentPrefStoreImpl::CreateConnection(ObservedPrefs observed_prefs) {
       backing_pref_store_->ReadOnly());
 }
 
-void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {
-  // All mutations are triggered by a client. Updates are only sent to clients
-  // other than the instigator so if there is only one client, it will ignore
-  // the update.
-  if (connections_.size() == 1)
-    return;
-
-  const base::Value* value = nullptr;
-  backing_pref_store_->GetValue(key, &value);
-  for (auto& entry : connections_)
-    entry.first->OnPrefValueChanged(key, value);
-}
+void PersistentPrefStoreImpl::OnPrefValueChanged(const std::string& key) {}
 
 void PersistentPrefStoreImpl::OnInitializationCompleted(bool succeeded) {
   DCHECK(initializing_);
+  backing_pref_store_->RemoveObserver(this);
   initializing_ = false;
   std::move(on_initialized_).Run();
 }
 
-void PersistentPrefStoreImpl::SetValue(const std::string& key,
-                                       std::unique_ptr<base::Value> value,
-                                       uint32_t flags) {
-  if (value)
-    backing_pref_store_->SetValue(key, std::move(value), flags);
-  else
-    backing_pref_store_->RemoveValue(key, flags);
+void PersistentPrefStoreImpl::SetValues(
+    std::vector<mojom::PrefUpdatePtr> updates) {
+  for (auto& entry : connections_)
+    entry.first->OnPrefValuesChanged(updates);
+
+  for (auto& update : updates) {
+    if (update->value) {
+      backing_pref_store_->SetValue(update->key, std::move(update->value),
+                                    update->flags);
+    } else {
+      backing_pref_store_->RemoveValue(update->key, update->flags);
+    }
+  }
 }
 
 void PersistentPrefStoreImpl::CommitPendingWrite() {

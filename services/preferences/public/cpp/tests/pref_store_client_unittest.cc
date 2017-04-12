@@ -40,7 +40,9 @@ class PrefStoreClientTest : public testing::Test {
 
   bool initialized() { return store_->IsInitializationComplete(); }
   void OnPrefChanged(const std::string& key, const base::Value& value) {
-    observer_ptr_->OnPrefChanged(key, value.CreateDeepCopy());
+    std::vector<mojom::PrefUpdatePtr> updates;
+    updates.push_back(mojom::PrefUpdate::New(key, value.CreateDeepCopy(), 0));
+    observer_ptr_->OnPrefsChanged(std::move(updates));
   }
   void OnInitializationCompleted() {
     observer_ptr_->OnInitializationCompleted(true);

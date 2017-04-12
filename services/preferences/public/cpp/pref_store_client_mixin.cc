@@ -82,6 +82,23 @@ void PrefStoreClientMixin<BasePrefStore>::ReportPrefValueChanged(
 }
 
 template <typename BasePrefStore>
+void PrefStoreClientMixin<BasePrefStore>::OnPrefsChanged(
+    std::vector<mojom::PrefUpdatePtr> updates) {
+  for (const auto& update : updates)
+    OnPrefChanged(update->key, std::move(update->value));
+}
+
+template <typename BasePrefStore>
+void PrefStoreClientMixin<BasePrefStore>::OnInitializationCompleted(
+    bool succeeded) {
+  if (!initialized_) {
+    initialized_ = true;
+    for (auto& observer : observers_)
+      observer.OnInitializationCompleted(succeeded);
+  }
+}
+
+template <typename BasePrefStore>
 void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
     const std::string& key,
     std::unique_ptr<base::Value> value) {
@@ -104,16 +121,6 @@ void PrefStoreClientMixin<BasePrefStore>::OnPrefChanged(
   }
   if (changed && initialized_)
     ReportPrefValueChanged(key);
-}
-
-template <typename BasePrefStore>
-void PrefStoreClientMixin<BasePrefStore>::OnInitializationCompleted(
-    bool succeeded) {
-  if (!initialized_) {
-    initialized_ = true;
-    for (auto& observer : observers_)
-      observer.OnInitializationCompleted(succeeded);
-  }
 }
 
 template class PrefStoreClientMixin<::PrefStore>;

@@ -19,12 +19,14 @@ PersistentPrefStoreClient::PersistentPrefStoreClient(
     std::vector<PrefValueStore::PrefStoreType> already_connected_types)
     : connector_(std::move(connector)),
       pref_registry_(std::move(pref_registry)),
-      already_connected_types_(std::move(already_connected_types)) {
+      already_connected_types_(std::move(already_connected_types)),
+      weak_factory_(this) {
   DCHECK(connector_);
 }
 
 PersistentPrefStoreClient::PersistentPrefStoreClient(
-    mojom::PersistentPrefStoreConnectionPtr connection) {
+    mojom::PersistentPrefStoreConnectionPtr connection)
+    : weak_factory_(this) {
   OnConnect(std::move(connection),
             std::unordered_map<PrefValueStore::PrefStoreType,
                                prefs::mojom::PrefStoreConnectionPtr>());
@@ -57,8 +59,8 @@ void PersistentPrefStoreClient::ReportValueChanged(const std::string& key,
   DCHECK(pref_store_);
   const base::Value* local_value = nullptr;
   GetMutableValues().Get(key, &local_value);
-  pref_store_->SetValue(
-      key, local_value ? local_value->CreateDeepCopy() : nullptr, flags);
+
+  QueueWrite(key, flags);
   ReportPrefValueChanged(key);
 }
 
@@ -67,7 +69,7 @@ void PersistentPrefStoreClient::SetValueSilently(
     std::unique_ptr<base::Value> value,
     uint32_t flags) {
   DCHECK(pref_store_);
-  pref_store_->SetValue(key, value->CreateDeepCopy(), flags);
+  QueueWrite(key, flags);
   GetMutableValues().Set(key, std::move(value));
 }
 
@@ -108,6 +110,8 @@ void PersistentPrefStoreClient::ReadPrefsAsync(
 
 void PersistentPrefStoreClient::CommitPendingWrite() {
   DCHECK(pref_store_);
+  if (!pending_writes_.empty())
+    FlushPendingWrites();
   pref_store_->CommitPendingWrite();
 }
 
@@ -125,7 +129,7 @@ PersistentPrefStoreClient::~PersistentPrefStoreClient() {
   if (!pref_store_)
     return;
 
-  pref_store_->CommitPendingWrite();
+  CommitPendingWrite();
 }
 
 void PersistentPrefStoreClient::OnConnect(
@@ -147,6 +151,34 @@ void PersistentPrefStoreClient::OnConnect(
   } else {
     Init(nullptr, false, nullptr);
   }
+}
+
+void PersistentPrefStoreClient::QueueWrite(const std::string& key,
+                                           uint32_t flags) {
+  if (pending_writes_.empty()) {
+    // Use a weak pointer since a pending write should not prolong the life of
+    // |this|. Instead, the destruction of |this| will flush any pending writes.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PersistentPrefStoreClient::FlushPendingWrites,
+                              weak_factory_.GetWeakPtr()));
+  }
+  pending_writes_.insert(std::make_pair(key, flags));
+}
+
+void PersistentPrefStoreClient::FlushPendingWrites() {
+  std::vector<mojom::PrefUpdatePtr> updates;
+  for (const auto& pref : pending_writes_) {
+    const base::Value* value = nullptr;
+    if (GetValue(pref.first, &value)) {
+      updates.push_back(mojom::PrefUpdate::New(
+          pref.first, value->CreateDeepCopy(), pref.second));
+    } else {
+      updates.push_back(
+          mojom::PrefUpdate::New(pref.first, nullptr, pref.second));
+    }
+  }
+  pref_store_->SetValues(std::move(updates));
+  pending_writes_.clear();
 }
 
 }  // namespace prefs

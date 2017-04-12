@@ -26,14 +26,18 @@ class PrefStoreImpl::Observer {
     if (!base::ContainsKey(prefs_, key))
       return;
 
-    observer_->OnPrefChanged(key, value.CreateDeepCopy());
+    std::vector<mojom::PrefUpdatePtr> updates;
+    updates.push_back(mojom::PrefUpdate::New(key, value.CreateDeepCopy(), 0));
+    observer_->OnPrefsChanged(std::move(updates));
   }
 
   void OnPrefRemoved(const std::string& key) const {
     if (!base::ContainsKey(prefs_, key))
       return;
 
-    observer_->OnPrefChanged(key, nullptr);
+    std::vector<mojom::PrefUpdatePtr> updates;
+    updates.push_back(mojom::PrefUpdate::New(key, nullptr, 0));
+    observer_->OnPrefsChanged(std::move(updates));
   }
 
  private:

@@ -14,10 +14,6 @@
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
-namespace base {
-class Value;
-}
-
 namespace prefs {
 
 class PersistentPrefStoreImpl : public PrefStore::Observer {
@@ -40,9 +36,7 @@ class PersistentPrefStoreImpl : public PrefStore::Observer {
  private:
   class Connection;
 
-  void SetValue(const std::string& key,
-                std::unique_ptr<base::Value> value,
-                uint32_t flags);
+  void SetValues(std::vector<mojom::PrefUpdatePtr> updates);
 
   void CommitPendingWrite();
   void SchedulePendingLossyWrites();
