@@ -68,6 +68,38 @@ float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
          (redirect.number_of_hits() + redirect.number_of_misses());
 }
 
+void UpdateOrAddToOrigins(
+    std::map<GURL, ResourcePrefetchPredictor::OriginRequestSummary>* summaries,
+    const ResourcePrefetchPredictor::URLRequestSummary& request_summary) {
+  const GURL& request_url = request_summary.request_url;
+  DCHECK(request_url.is_valid());
+  if (!request_url.is_valid())
+    return;
+
+  GURL origin = request_url.GetOrigin();
+  auto it = summaries->find(origin);
+  if (it == summaries->end()) {
+    ResourcePrefetchPredictor::OriginRequestSummary summary;
+    summary.origin = origin;
+    summary.first_occurrence = summaries->size();
+    it = summaries->insert({origin, summary}).first;
+  }
+
+  it->second.always_access_network |=
+      request_summary.always_revalidate || request_summary.is_no_store;
+  it->second.accessed_network |= request_summary.network_accessed;
+}
+
+void InitializeOriginStatFromOriginRequestSummary(
+    OriginStat* origin,
+    const ResourcePrefetchPredictor::OriginRequestSummary& summary) {
+  origin->set_origin(summary.origin.spec());
+  origin->set_number_of_hits(1);
+  origin->set_average_position(summary.first_occurrence + 1);
+  origin->set_always_access_network(summary.always_access_network);
+  origin->set_accessed_network(summary.accessed_network);
+}
+
 // Used to fetch the visit count for a URL from the History database.
 class GetUrlVisitCountTask : public history::HistoryDBTask {
  public:
@@ -263,16 +295,7 @@ bool ResourcePrefetchPredictor::ShouldRecordResponse(
 // static
 bool ResourcePrefetchPredictor::ShouldRecordRedirect(
     net::URLRequest* response) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(response);
-  if (!request_info)
-    return false;
-
-  if (!request_info->IsMainFrame())
-    return false;
-
-  return request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
-      IsHandledMainPage(response);
+  return ShouldRecordResponse(response);
 }
 
 // static
@@ -306,7 +329,7 @@ bool ResourcePrefetchPredictor::IsHandledSubresource(
     return false;
   }
 
-  if (!response->response_info().headers.get() || IsNoStore(response))
+  if (!response->response_info().headers.get())
     return false;
 
   return true;
@@ -341,11 +364,11 @@ content::ResourceType ResourcePrefetchPredictor::GetResourceType(
 }
 
 // static
-bool ResourcePrefetchPredictor::IsNoStore(const net::URLRequest* response) {
-  if (response->was_cached())
+bool ResourcePrefetchPredictor::IsNoStore(const net::URLRequest& response) {
+  if (response.was_cached())
     return false;
 
-  const net::HttpResponseInfo& response_info = response->response_info();
+  const net::HttpResponseInfo& response_info = response.response_info();
   if (!response_info.headers.get())
     return false;
   return response_info.headers->HasHeaderValue("cache-control", "no-store");
@@ -415,24 +438,28 @@ void ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(bool state) {
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor nested types.
 
+ResourcePrefetchPredictor::OriginRequestSummary::OriginRequestSummary()
+    : origin(),
+      always_access_network(false),
+      accessed_network(false),
+      first_occurrence(0) {}
+
+ResourcePrefetchPredictor::OriginRequestSummary::OriginRequestSummary(
+    const OriginRequestSummary& other) = default;
+
+ResourcePrefetchPredictor::OriginRequestSummary::~OriginRequestSummary() {}
+
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
       priority(net::IDLE),
       was_cached(false),
       has_validators(false),
-      always_revalidate(false) {}
+      always_revalidate(false),
+      is_no_store(false),
+      network_accessed(false) {}
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary(
-    const URLRequestSummary& other)
-    : navigation_id(other.navigation_id),
-      resource_url(other.resource_url),
-      resource_type(other.resource_type),
-      priority(other.priority),
-      mime_type(other.mime_type),
-      was_cached(other.was_cached),
-      redirect_url(other.redirect_url),
-      has_validators(other.has_validators),
-      always_revalidate(other.always_revalidate) {}
+    const URLRequestSummary& other) = default;
 
 ResourcePrefetchPredictor::URLRequestSummary::~URLRequestSummary() {
 }
@@ -447,6 +474,7 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
     return false;
 
   summary->resource_url = request.original_url();
+  summary->request_url = request.url();
   content::ResourceType resource_type_from_request =
       request_info->GetResourceType();
   summary->priority = request.priority();
@@ -464,7 +492,9 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
         headers->HasHeaderValue("cache-control", "no-cache") ||
         headers->HasHeaderValue("pragma", "no-cache") ||
         headers->HasHeaderValue("vary", "*");
+    summary->is_no_store = IsNoStore(request);
   }
+  summary->network_accessed = request.response_info().network_accessed;
   return true;
 }
 
@@ -519,6 +549,7 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto url_redirect_data_map = base::MakeUnique<RedirectDataMap>();
   auto host_redirect_data_map = base::MakeUnique<RedirectDataMap>();
   auto manifest_data_map = base::MakeUnique<ManifestDataMap>();
+  auto origin_data_map = base::MakeUnique<OriginDataMap>();
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
   // will be passed to the reply task.
@@ -527,17 +558,20 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto* url_redirect_data_map_ptr = url_redirect_data_map.get();
   auto* host_redirect_data_map_ptr = host_redirect_data_map.get();
   auto* manifest_data_map_ptr = manifest_data_map.get();
+  auto* origin_data_map_ptr = origin_data_map.get();
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
                  url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
-                 host_redirect_data_map_ptr, manifest_data_map_ptr),
+                 host_redirect_data_map_ptr, manifest_data_map_ptr,
+                 origin_data_map_ptr),
       base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
                  base::Passed(&url_data_map), base::Passed(&host_data_map),
                  base::Passed(&url_redirect_data_map),
                  base::Passed(&host_redirect_data_map),
-                 base::Passed(&manifest_data_map)));
+                 base::Passed(&manifest_data_map),
+                 base::Passed(&origin_data_map)));
 }
 
 void ResourcePrefetchPredictor::RecordURLRequest(
@@ -568,8 +602,10 @@ void ResourcePrefetchPredictor::RecordURLRedirect(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  CHECK_EQ(response.resource_type, content::RESOURCE_TYPE_MAIN_FRAME);
-  OnMainFrameRedirect(response);
+  if (response.resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+    OnMainFrameRedirect(response);
+  else
+    OnSubresourceRedirect(response);
 }
 
 void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
@@ -749,12 +785,32 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
   NavigationMap::const_iterator nav_it =
-        inflight_navigations_.find(response.navigation_id);
-  if (nav_it == inflight_navigations_.end()) {
+      inflight_navigations_.find(response.navigation_id);
+  if (nav_it == inflight_navigations_.end())
     return;
-  }
+  auto& page_request_summary = *nav_it->second;
 
-  nav_it->second->subresource_requests.push_back(response);
+  if (!response.is_no_store)
+    page_request_summary.subresource_requests.push_back(response);
+
+  if (config_.is_origin_prediction_enabled)
+    UpdateOrAddToOrigins(&page_request_summary.origins, response);
+}
+
+void ResourcePrefetchPredictor::OnSubresourceRedirect(
+    const URLRequestSummary& response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZED, initialization_state_);
+
+  if (!config_.is_origin_prediction_enabled)
+    return;
+
+  NavigationMap::const_iterator nav_it =
+      inflight_navigations_.find(response.navigation_id);
+  if (nav_it == inflight_navigations_.end())
+    return;
+  auto& page_request_summary = *nav_it->second;
+  UpdateOrAddToOrigins(&page_request_summary.origins, response);
 }
 
 void ResourcePrefetchPredictor::OnNavigationComplete(
@@ -888,7 +944,8 @@ void ResourcePrefetchPredictor::CreateCaches(
     std::unique_ptr<PrefetchDataMap> host_data_map,
     std::unique_ptr<RedirectDataMap> url_redirect_data_map,
     std::unique_ptr<RedirectDataMap> host_redirect_data_map,
-    std::unique_ptr<ManifestDataMap> manifest_data_map) {
+    std::unique_ptr<ManifestDataMap> manifest_data_map,
+    std::unique_ptr<OriginDataMap> origin_data_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(INITIALIZING, initialization_state_);
@@ -897,6 +954,8 @@ void ResourcePrefetchPredictor::CreateCaches(
   DCHECK(!url_redirect_table_cache_);
   DCHECK(!host_redirect_table_cache_);
   DCHECK(!manifest_table_cache_);
+  DCHECK(!origin_table_cache_);
+
   DCHECK(inflight_navigations_.empty());
 
   url_table_cache_ = std::move(url_data_map);
@@ -904,6 +963,7 @@ void ResourcePrefetchPredictor::CreateCaches(
   url_redirect_table_cache_ = std::move(url_redirect_data_map);
   host_redirect_table_cache_ = std::move(host_redirect_data_map);
   manifest_table_cache_ = std::move(manifest_data_map);
+  origin_table_cache_ = std::move(origin_data_map);
 
   ConnectToHistoryService();
 }
@@ -974,6 +1034,7 @@ void ResourcePrefetchPredictor::DeleteAllUrls() {
   url_redirect_table_cache_->clear();
   host_redirect_table_cache_->clear();
   manifest_table_cache_->clear();
+  origin_table_cache_->clear();
 
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::DeleteAllData, tables_));
@@ -985,6 +1046,7 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
   std::vector<std::string> urls_to_delete, hosts_to_delete;
   std::vector<std::string> url_redirects_to_delete, host_redirects_to_delete;
   std::vector<std::string> manifest_hosts_to_delete;
+  std::vector<std::string> origin_hosts_to_delete;
 
   for (const auto& it : urls) {
     const std::string& url_spec = it.url().spec();
@@ -1017,6 +1079,11 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
       manifest_hosts_to_delete.push_back(manifest_host);
       manifest_table_cache_->erase(manifest_host);
     }
+
+    if (origin_table_cache_->find(host) != origin_table_cache_->end()) {
+      origin_hosts_to_delete.push_back(host);
+      origin_table_cache_->erase(host);
+    }
   }
 
   if (!urls_to_delete.empty() || !hosts_to_delete.empty()) {
@@ -1038,6 +1105,13 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
         BrowserThread::DB, FROM_HERE,
         base::Bind(&ResourcePrefetchPredictorTables::DeleteManifestData,
                    tables_, manifest_hosts_to_delete));
+  }
+
+  if (!origin_hosts_to_delete.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData, tables_,
+                   origin_hosts_to_delete));
   }
 }
 
@@ -1109,6 +1183,28 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInManifestDataMap(
                  std::vector<std::string>({key_to_delete})));
 }
 
+void ResourcePrefetchPredictor::RemoveOldestEntryInOriginDataMap(
+    OriginDataMap* data_map) {
+  if (data_map->empty())
+    return;
+
+  uint64_t oldest_time = UINT64_MAX;
+  std::string key_to_delete;
+  for (const auto& kv : *data_map) {
+    const OriginData& data = kv.second;
+    if (key_to_delete.empty() || data.last_visit_time() < oldest_time) {
+      key_to_delete = kv.first;
+      oldest_time = data.last_visit_time();
+    }
+  }
+
+  data_map->erase(key_to_delete);
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData, tables_,
+                 std::vector<std::string>({key_to_delete})));
+}
+
 void ResourcePrefetchPredictor::OnVisitCountLookup(
     size_t url_visit_count,
     const PageRequestSummary& summary) {
@@ -1141,6 +1237,11 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   LearnNavigation(host, PREFETCH_KEY_TYPE_HOST, summary.subresource_requests,
                   config_.max_hosts_to_track, host_table_cache_.get(),
                   summary.initial_url.host(), host_redirect_table_cache_.get());
+
+  if (config_.is_origin_prediction_enabled) {
+    LearnOrigins(host, summary.origins, config_.max_hosts_to_track,
+                 origin_table_cache_.get());
+  }
 
   if (observer_)
     observer_->OnNavigationLearned(url_visit_count, summary);
@@ -1383,6 +1484,114 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
         base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
                    empty_data, empty_data, url_redirect_data,
                    host_redirect_data));
+  }
+}
+
+void ResourcePrefetchPredictor::LearnOrigins(
+    const std::string& host,
+    const std::map<GURL, OriginRequestSummary>& summaries,
+    size_t max_data_map_size,
+    OriginDataMap* data_map) {
+  if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength)
+    return;
+
+  auto cache_entry = data_map->find(host);
+  bool new_entry = cache_entry == data_map->end();
+  if (new_entry) {
+    if (data_map->size() >= max_data_map_size)
+      RemoveOldestEntryInOriginDataMap(data_map);
+
+    cache_entry = data_map->insert({host, OriginData()}).first;
+    OriginData& data = cache_entry->second;
+    data.set_host(host);
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
+    size_t origins_size = summaries.size();
+    auto ordered_origins =
+        std::vector<const OriginRequestSummary*>(origins_size);
+    for (const auto& kv : summaries) {
+      size_t index = kv.second.first_occurrence;
+      DCHECK_LT(index, origins_size);
+      ordered_origins[index] = &kv.second;
+    }
+
+    for (const OriginRequestSummary* summary : ordered_origins) {
+      auto* origin_to_add = data.add_origins();
+      InitializeOriginStatFromOriginRequestSummary(origin_to_add, *summary);
+    }
+  } else {
+    auto& data = cache_entry->second;
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
+
+    std::map<GURL, int> old_index;
+    int old_size = static_cast<int>(data.origins_size());
+    for (int i = 0; i < old_size; ++i) {
+      bool is_new =
+          old_index.insert({GURL(data.origins(i).origin()), i}).second;
+      DCHECK(is_new);
+    }
+
+    // Update the old origins.
+    for (int i = 0; i < old_size; ++i) {
+      auto* old_origin = data.mutable_origins(i);
+      GURL origin(old_origin->origin());
+      auto it = summaries.find(origin);
+      if (it == summaries.end()) {
+        // miss
+        old_origin->set_number_of_misses(old_origin->number_of_misses() + 1);
+        old_origin->set_consecutive_misses(old_origin->consecutive_misses() +
+                                           1);
+      } else {
+        // hit: update.
+        const auto& new_origin = it->second;
+        old_origin->set_always_access_network(new_origin.always_access_network);
+        old_origin->set_accessed_network(new_origin.accessed_network);
+
+        int position = new_origin.first_occurrence + 1;
+        int total =
+            old_origin->number_of_hits() + old_origin->number_of_misses();
+        old_origin->set_average_position(
+            ((old_origin->average_position() * total) + position) /
+            (total + 1));
+        old_origin->set_number_of_hits(old_origin->number_of_hits() + 1);
+        old_origin->set_consecutive_misses(0);
+      }
+    }
+
+    // Add new origins.
+    for (const auto& kv : summaries) {
+      if (old_index.find(kv.first) != old_index.end())
+        continue;
+
+      auto* origin_to_add = data.add_origins();
+      InitializeOriginStatFromOriginRequestSummary(origin_to_add, kv.second);
+    }
+  }
+
+  // Trim and Sort.
+  auto& data = cache_entry->second;
+  ResourcePrefetchPredictorTables::TrimOrigins(&data,
+                                               config_.max_consecutive_misses);
+  ResourcePrefetchPredictorTables::SortOrigins(&data);
+  if (data.origins_size() > static_cast<int>(config_.max_resources_per_entry)) {
+    data.mutable_origins()->DeleteSubrange(
+        config_.max_origins_per_entry,
+        data.origins_size() - config_.max_origins_per_entry);
+  }
+
+  // Update the database.
+  if (data.origins_size() == 0) {
+    data_map->erase(cache_entry);
+    if (!new_entry) {
+      BrowserThread::PostTask(
+          BrowserThread::DB, FROM_HERE,
+          base::Bind(&ResourcePrefetchPredictorTables::DeleteOriginData,
+                     tables_, std::vector<std::string>({host})));
+    }
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&ResourcePrefetchPredictorTables::UpdateOriginData, tables_,
+                   data));
   }
 }
 

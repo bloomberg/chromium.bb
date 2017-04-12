@@ -73,6 +73,7 @@ class ResourcePrefetchCommonTest : public testing::Test {
     EXPECT_FALSE(config.IsSmallDBEnabledForTest());
     EXPECT_FALSE(config.is_url_learning_enabled);
     EXPECT_FALSE(config.is_manifests_enabled);
+    EXPECT_FALSE(config.is_origin_prediction_enabled);
     EXPECT_GT(config.min_resource_hits_to_trigger_prefetch, 1U);
   }
 

@@ -137,13 +137,15 @@ ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
       max_hosts_to_track(200),
       min_url_visit_count(2),
       max_resources_per_entry(50),
+      max_origins_per_entry(50),
       max_consecutive_misses(3),
       min_resource_confidence_to_trigger_prefetch(0.7f),
       min_resource_hits_to_trigger_prefetch(2),
       max_prefetches_inflight_per_navigation(5),
       max_prefetches_inflight_per_host_per_navigation(3),
       is_url_learning_enabled(false),
-      is_manifests_enabled(false) {}
+      is_manifests_enabled(false),
+      is_origin_prediction_enabled(false) {}
 
 ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig(
     const ResourcePrefetchPredictorConfig& other) = default;

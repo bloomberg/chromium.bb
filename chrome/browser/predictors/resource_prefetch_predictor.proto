@@ -83,3 +83,21 @@ message RedirectData {
   optional uint64 last_visit_time = 2;
   repeated RedirectStat redirect_endpoints = 3;
 }
+
+// Historical data for a single origin accessed from a host.
+message OriginStat {
+  optional string origin = 1;
+  optional uint32 number_of_hits = 2;
+  optional uint32 number_of_misses = 3;
+  optional uint32 consecutive_misses = 4;
+  optional double average_position = 5;
+  optional bool always_access_network = 6;
+  optional bool accessed_network = 7;
+}
+
+// Collection of origins accessed from a host.
+message OriginData {
+  optional string host = 1;
+  optional uint64 last_visit_time = 2;
+  repeated OriginStat origins = 3;
+}
