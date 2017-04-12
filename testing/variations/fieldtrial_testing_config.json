@@ -424,6 +424,21 @@
             ]
         }
     ],
+    "CopylessPaste": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CopylessPaste"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataCompressionProxyDevRollout": [
         {
             "platforms": [
