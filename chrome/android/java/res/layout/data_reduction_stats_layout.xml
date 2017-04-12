@@ -15,6 +15,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:baselineAligned="false"
         android:orientation="horizontal" >
 
@@ -27,7 +28,6 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:orientation="horizontal" >
 
                 <TextView
@@ -57,16 +57,14 @@
                     android:layout_height="wrap_content"
                     android:singleLine="true"
                     android:text="@string/data_reduction_usage_label"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/DataReductionPrefSecondaryStyle" />
 
                 <TextView
                     android:id="@+id/data_reduction_usage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="3dp"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="14sp" />
+                    android:textAppearance="@style/DataReductionPrefSecondaryStyle" />
             </LinearLayout>
 
         </LinearLayout>
@@ -78,7 +76,7 @@
             android:layout_marginTop="0dp"
             android:includeFontPadding="false"
             android:textColor="@color/light_active_color"
-            android:textSize="50sp" />
+            android:textSize="34sp" />
 
     </LinearLayout>
 

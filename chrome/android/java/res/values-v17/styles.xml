@@ -119,7 +119,7 @@
     </style>
     <style name="PreferenceCategoryTextStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
     </style>
     <style name="PreferenceTitle">
@@ -587,22 +587,6 @@
         <item name="android:textSize">14sp</item>
         <item name="android:visibility">gone</item>
     </style>
-    <style name="DataUsageBreakdownColumnLabel">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingBottom">10dp</item>
-        <item name="android:paddingTop">10dp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textAppearance">@style/RobotoMediumStyle</item>
-    </style>
-    <style name="DataUsageBreakdownColumnItem">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingBottom">10dp</item>
-        <item name="android:paddingTop">10dp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:textSize">14sp</item>
-    </style>
 
     <!-- New tab page RecyclerView overscroll color -->
     <style name="NewTabPageRecyclerView">
@@ -691,6 +675,28 @@
         <item name="android:contentDescription">@null</item>
         <item name="android:scaleType">center</item>
         <item name="android:background">@color/light_active_color</item>
+    </style>
+
+    <!-- Data Reduction -->
+    <style name="DataReductionPrefSecondaryStyle">
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="DataUsageBreakdownColumnLabel">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAppearance">@style/RobotoMediumStyle</item>
+    </style>
+    <style name="DataUsageBreakdownColumnItem">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/data_reduction_breakdown_text_color</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
     <!-- Miscellaneous -->

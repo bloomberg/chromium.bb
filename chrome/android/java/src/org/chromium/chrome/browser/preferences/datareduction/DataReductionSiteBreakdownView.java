@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -29,6 +32,13 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private static final int NUM_DATA_USE_ITEMS_TO_DISPLAY = 10;
 
     private TableLayout mTableLayout;
+    private TextView mDataUsedTitle;
+    private TextView mDataSavedTitle;
+    private List<DataReductionDataUseItem> mDataUseItems;
+    @ColorInt
+    private int mTextColor;
+    @ColorInt
+    private int mLightTextColor;
 
     public DataReductionSiteBreakdownView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,6 +48,32 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTableLayout = (TableLayout) findViewById(R.id.data_reduction_proxy_breakdown_table);
+        mDataUsedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_used_title);
+        mDataSavedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_saved_title);
+        mTextColor = ApiCompatibilityUtils.getColor(
+                getContext().getResources(), R.color.data_reduction_breakdown_text_color);
+        mLightTextColor = ApiCompatibilityUtils.getColor(
+                getContext().getResources(), R.color.data_reduction_breakdown_light_text_color);
+
+        mDataUsedTitle.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setTextViewUnsortedAttributes(mDataSavedTitle);
+                setTextViewSortedAttributes(mDataUsedTitle);
+                Collections.sort(mDataUseItems, new DataUsedComparator());
+                updateSiteBreakdown();
+            }
+        });
+
+        mDataSavedTitle.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setTextViewUnsortedAttributes(mDataUsedTitle);
+                setTextViewSortedAttributes(mDataSavedTitle);
+                Collections.sort(mDataUseItems, new DataSavedComparator());
+                updateSiteBreakdown();
+            }
+        });
     }
 
     /**
@@ -45,7 +81,34 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
      * @param items A list of items split by hostname to show in the breakdown.
      */
     public void onQueryDataUsageComplete(List<DataReductionDataUseItem> items) {
-        updateSiteBreakdown(items);
+        mDataUseItems = items;
+        setTextViewUnsortedAttributes(mDataUsedTitle);
+        setTextViewSortedAttributes(mDataSavedTitle);
+        Collections.sort(items, new DataSavedComparator());
+        updateSiteBreakdown();
+    }
+
+    private void setTextViewSortedAttributes(TextView textView) {
+        textView.setTextColor(mTextColor);
+        Drawable arrowDrawable = getStartCompoundDrawable(textView);
+        arrowDrawable.mutate();
+        arrowDrawable.setAlpha(255);
+    }
+
+    private void setTextViewUnsortedAttributes(TextView textView) {
+        textView.setTextColor(mLightTextColor);
+        Drawable arrowDrawable = getStartCompoundDrawable(textView);
+        arrowDrawable.mutate();
+        arrowDrawable.setAlpha(0);
+    }
+
+    private Drawable getStartCompoundDrawable(TextView textView) {
+        Drawable[] drawables = textView.getCompoundDrawables();
+        // Start drawable can be in the left or right index based on if the layout is rtl.
+        if (drawables[0] != null) {
+            return drawables[0];
+        }
+        return drawables[2];
     }
 
     /**
@@ -65,11 +128,31 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     }
 
     /**
-     * Update the site breakdown to display the given date use items.
-     * @param items A list of items split by hostname to show in the breakdown.
+     * Sorts the DataReductionDataUseItems by most to least data saved. If data saved is equal, most
+     * likely because both items have zero data saving, then sort by data used.
      */
-    private void updateSiteBreakdown(List<DataReductionDataUseItem> items) {
-        if (items.size() == 0) {
+    private static class DataSavedComparator
+            implements Comparator<DataReductionDataUseItem>, Serializable {
+        @Override
+        public int compare(DataReductionDataUseItem lhs, DataReductionDataUseItem rhs) {
+            if (lhs.getDataSaved() < rhs.getDataSaved()) {
+                return 1;
+            } else if (lhs.getDataSaved() > rhs.getDataSaved()) {
+                return -1;
+            } else if (lhs.getDataUsed() < rhs.getDataUsed()) {
+                return 1;
+            } else if (lhs.getDataUsed() > rhs.getDataUsed()) {
+                return -1;
+            }
+            return 0;
+        }
+    }
+
+    /**
+     * Update the site breakdown to display the data use items.
+     */
+    private void updateSiteBreakdown() {
+        if (mDataUseItems.size() == 0) {
             setVisibility(GONE);
             return;
         }
@@ -77,14 +160,12 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         setVisibility(VISIBLE);
         // Remove all old rows except the header.
         mTableLayout.removeViews(1, mTableLayout.getChildCount() - 1);
-        final DataUsedComparator comp = new DataUsedComparator();
-        Collections.sort(items, comp);
 
         int numRemainingSites = 0;
         int everythingElseDataUsage = 0;
         int everythingElseDataSavings = 0;
 
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < mDataUseItems.size(); i++) {
             if (i < NUM_DATA_USE_ITEMS_TO_DISPLAY) {
                 TableRow row = (TableRow) LayoutInflater.from(getContext())
                                        .inflate(R.layout.data_usage_breakdown_row, null);
@@ -93,15 +174,15 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                 TextView dataUsedView = (TextView) row.findViewById(R.id.site_data_used);
                 TextView dataSavedView = (TextView) row.findViewById(R.id.site_data_saved);
 
-                hostnameView.setText(items.get(i).getHostname());
-                dataUsedView.setText(items.get(i).getFormattedDataUsed(getContext()));
-                dataSavedView.setText(items.get(i).getFormattedDataSaved(getContext()));
+                hostnameView.setText(mDataUseItems.get(i).getHostname());
+                dataUsedView.setText(mDataUseItems.get(i).getFormattedDataUsed(getContext()));
+                dataSavedView.setText(mDataUseItems.get(i).getFormattedDataSaved(getContext()));
 
                 mTableLayout.addView(row, i + 1);
             } else {
                 numRemainingSites++;
-                everythingElseDataUsage += items.get(i).getDataUsed();
-                everythingElseDataSavings += items.get(i).getDataSaved();
+                everythingElseDataUsage += mDataUseItems.get(i).getDataUsed();
+                everythingElseDataSavings += mDataUseItems.get(i).getDataSaved();
             }
         }
 

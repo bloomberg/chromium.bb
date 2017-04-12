@@ -13,19 +13,20 @@
         android:id="@+id/site_hostname"
         android:layout_width="0dp"
         android:layout_weight="0"
+        android:layout_gravity="start"
         style="@style/DataUsageBreakdownColumnItem" />
 
     <TextView
         android:id="@+id/site_data_used"
         android:layout_width="wrap_content"
+        android:layout_marginStart="24dp"
         android:gravity="end"
-        android:paddingStart="10dp"
         style="@style/DataUsageBreakdownColumnItem" />
 
     <TextView
         android:id="@+id/site_data_saved"
         android:layout_width="wrap_content"
+        android:layout_marginStart="24dp"
         android:gravity="end"
-        android:paddingStart="24dp"
         style="@style/DataUsageBreakdownColumnItem" />
 </TableRow>

@@ -993,11 +993,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_MENU_ITEM_SUMMARY" desc="Summary text for data reduction menu item.">
         <ph name="PERCENT">%1$s<ex>49%</ex></ph> data savings
       </message>
-      <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics data savings label">
-        Data Savings:
+      <message name="IDS_DATA_REDUCTION_SAVINGS_LABEL" desc="Data Reduction statistics label that states the amount of mobile data that was saved by Data Saver. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
+        Data Saved:
       </message>
-      <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics data usage label">
-        Data Usage:
+      <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics label that states the amount of data that was used by Chrome when Data Saver is enabled.">
+        Data Used:
       </message>
       <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
         Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
