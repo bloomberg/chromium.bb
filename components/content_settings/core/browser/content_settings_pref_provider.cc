@@ -197,8 +197,6 @@ void PrefProvider::Notify(
 }
 
 void PrefProvider::DiscardObsoletePreferences() {
-  if (is_incognito_)
-    return;
   // These prefs were never stored on iOS/Android so they don't need to be
   // deleted.
 #if !defined(OS_IOS)
