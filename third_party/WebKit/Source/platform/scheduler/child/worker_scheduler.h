@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "public/platform/WebCommon.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 namespace scheduler {

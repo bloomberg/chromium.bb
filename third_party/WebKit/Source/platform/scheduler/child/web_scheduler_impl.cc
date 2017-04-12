@@ -8,9 +8,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
+#include "platform/scheduler/child/worker_scheduler.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebViewScheduler.h"
-#include "public/platform/scheduler/child/worker_scheduler.h"
 
 namespace blink {
 namespace scheduler {

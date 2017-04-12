@@ -6,9 +6,9 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
 
 #include "base/macros.h"
-#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
-#include "public/platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/child/worker_scheduler.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
 namespace base {
 class Thread;

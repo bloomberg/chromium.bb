@@ -10,8 +10,8 @@
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
+#include "platform/scheduler/child/worker_scheduler.h"
 #include "public/platform/scheduler/base/task_time_observer.h"
-#include "public/platform/scheduler/child/worker_scheduler.h"
 
 namespace blink {
 namespace scheduler {
