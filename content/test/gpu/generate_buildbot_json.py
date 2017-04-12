@@ -1510,6 +1510,15 @@ COMMON_GTESTS = {
         'os_types': ['win']
       },
     ],
+    # Windows Intel doesn't have the GL extensions to support this test
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Win10 Debug (Intel HD 530)',
+          'Win10 Release (Intel HD 530)',
+        ],
+      },
+    ],
     'args': [
       '--use-angle=gl',
       '--use-test-data-path',

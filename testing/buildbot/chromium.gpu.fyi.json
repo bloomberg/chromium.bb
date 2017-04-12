@@ -11989,25 +11989,6 @@
         },
         "test": "video_decode_accelerator_unittest",
         "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-angle=gl",
-          "--use-test-data-path",
-          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
-        ],
-        "name": "video_decode_accelerator_gl_unittest",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Windows-10"
-            }
-          ]
-        },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
       }
     ],
     "isolated_scripts": [
@@ -13091,25 +13072,6 @@
           "--test_video_data=test-25fps.h264:320:240:250:258:::1"
         ],
         "name": "video_decode_accelerator_d3d9_unittest",
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Windows-10"
-            }
-          ]
-        },
-        "test": "video_decode_accelerator_unittest",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-angle=gl",
-          "--use-test-data-path",
-          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
-        ],
-        "name": "video_decode_accelerator_gl_unittest",
         "swarming": {
           "can_use_on_swarming_builders": false,
           "dimension_sets": [
