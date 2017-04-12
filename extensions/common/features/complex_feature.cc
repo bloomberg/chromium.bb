@@ -7,7 +7,7 @@
 namespace extensions {
 
 ComplexFeature::ComplexFeature(std::vector<Feature*>* features) {
-  DCHECK_GT(features->size(), 0UL);
+  DCHECK_GT(features->size(), 1UL);
   for (Feature* f : *features)
     features_.push_back(std::unique_ptr<Feature>(f));
   features->clear();

@@ -386,11 +386,11 @@
       "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
     ]
   }],
-  "fileSystem.requestFileSystem": [{
+  "fileSystem.requestFileSystem": {
     "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"]
-  }],
+  },
   "fileSystemProvider": [{
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
@@ -730,7 +730,7 @@
       "0136FCB13DB29FD5CD442F56E59E53B61F1DF96F"   // http://crbug.com/642141
     ]
   },
-  "inlineInstallPrivate":[{
+  "inlineInstallPrivate": {
     "channel": "dev",
     "extension_types": ["platform_app"],
     "whitelist": [
@@ -738,7 +738,7 @@
       "3A78E13285C1949EF84AA85E3BF65D1E83A3D9AB", // Test Extension
       "4477F0B4FE934D0A8C88922C0986DA7B25D881E1"  // API Test
     ]
-  }],
+  },
   "resourcesPrivate": {
     "channel": "stable",
     "extension_types": [
