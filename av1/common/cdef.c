@@ -383,7 +383,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             (MAX_MIB_SIZE << mi_high_l2[pli]) * (sbr + 1) - OD_FILT_VBORDER,
             coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER, hsize);
 
-        if (level == 0 && clpf_strength == 0) continue;
         if (tile_top) {
           fill_rect(src, OD_FILT_BSTRIDE, OD_FILT_VBORDER,
                     hsize + 2 * OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
