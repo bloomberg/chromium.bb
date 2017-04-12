@@ -5,6 +5,7 @@
 #include "content/public/test/fake_download_item.h"
 
 #include "base/bind.h"
+#include "net/http/http_response_headers.h"
 
 namespace content {
 
@@ -124,6 +125,16 @@ void FakeDownloadItem::SetState(const DownloadState& state) {
 
 DownloadItem::DownloadState FakeDownloadItem::GetState() const {
   return download_state_;
+}
+
+void FakeDownloadItem::SetResponseHeaders(
+    scoped_refptr<const net::HttpResponseHeaders> response_headers) {
+  response_headers_ = response_headers;
+}
+
+const scoped_refptr<const net::HttpResponseHeaders>&
+FakeDownloadItem::GetResponseHeaders() const {
+  return response_headers_;
 }
 
 void FakeDownloadItem::SetMimeType(const std::string& mime_type) {

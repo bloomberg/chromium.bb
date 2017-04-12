@@ -62,6 +62,8 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetTabReferrerUrl, const GURL&());
   MOCK_CONST_METHOD0(GetSuggestedFilename, std::string());
   MOCK_CONST_METHOD0(GetContentDisposition, std::string());
+  MOCK_CONST_METHOD0(GetResponseHeaders,
+                     const scoped_refptr<const net::HttpResponseHeaders>&());
   MOCK_CONST_METHOD0(GetMimeType, std::string());
   MOCK_CONST_METHOD0(GetOriginalMimeType, std::string());
   MOCK_CONST_METHOD0(GetReferrerCharset, std::string());

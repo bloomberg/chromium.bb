@@ -25,6 +25,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/download_danger_type.h"
@@ -37,6 +38,10 @@ namespace base {
 class FilePath;
 class Time;
 class TimeDelta;
+}
+
+namespace net {
+class HttpResponseHeaders;
 }
 
 namespace content {
@@ -244,6 +249,13 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // For downloads initiated via <a download>, this is the suggested download
   // filename from the download attribute.
   virtual std::string GetSuggestedFilename() const = 0;
+
+  // Returns the HTTP response headers. This contains a nullptr when the
+  // response has not yet been received, and, because the headers are not being
+  // persisted, only capture responses received during the lifetime of the
+  // current process and profile. Only for consuming headers.
+  virtual const scoped_refptr<const net::HttpResponseHeaders>&
+  GetResponseHeaders() const = 0;
 
   // Content-Disposition header value from HTTP response.
   virtual std::string GetContentDisposition() const = 0;

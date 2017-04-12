@@ -63,6 +63,11 @@ class FakeDownloadItem : public DownloadItem {
   void SetState(const DownloadState& state);
   DownloadState GetState() const override;
 
+  void SetResponseHeaders(
+      scoped_refptr<const net::HttpResponseHeaders> response_headers);
+  const scoped_refptr<const net::HttpResponseHeaders>& GetResponseHeaders()
+      const override;
+
   void SetMimeType(const std::string& mime_type);
   std::string GetMimeType() const override;
 
@@ -149,6 +154,7 @@ class FakeDownloadItem : public DownloadItem {
   // MAX_DOWNLOAD_STATE is used as the uninitialized state.
   DownloadState download_state_ =
       DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
+  scoped_refptr<const net::HttpResponseHeaders> response_headers_;
   std::string mime_type_;
   GURL original_url_;
   DownloadInterruptReason last_reason_ =

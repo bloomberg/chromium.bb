@@ -36,6 +36,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "crypto/secure_hash.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -275,6 +276,13 @@ class DownloadItemTest : public testing::Test {
                              net::NetLogWithSource());
     allocated_downloads_[download] = base::WrapUnique(download);
     return download;
+  }
+
+  // Creates a new net::HttpResponseHeaders object for the |response_code|.
+  scoped_refptr<const net::HttpResponseHeaders> CreateResponseHeaders(
+      int response_code) {
+    return make_scoped_refptr(new net::HttpResponseHeaders(
+        "HTTP/1.1 " + std::to_string(response_code)));
   }
 
   // This class keeps ownership of the created download item; it will
@@ -816,11 +824,13 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
 // subsequent Start() call shouldn't update the origin state (URL redirect
 // chains, Content-Disposition, download URL, etc..)
 TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
+  constexpr int kFirstResponseCode = 200;
   const char kContentDisposition[] = "attachment; filename=foo";
   const char kFirstETag[] = "ABC";
   const char kFirstLastModified[] = "Yesterday";
   const char kFirstURL[] = "http://www.example.com/download";
   const char kMimeType[] = "text/css";
+  create_info()->response_headers = CreateResponseHeaders(kFirstResponseCode);
   create_info()->content_disposition = kContentDisposition;
   create_info()->etag = kFirstETag;
   create_info()->last_modified = kFirstLastModified;
@@ -830,6 +840,8 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  ASSERT_TRUE(item->GetResponseHeaders());
+  EXPECT_EQ(kFirstResponseCode, item->GetResponseHeaders()->response_code());
   EXPECT_EQ(kContentDisposition, item->GetContentDisposition());
   EXPECT_EQ(kFirstETag, item->GetETag());
   EXPECT_EQ(kFirstLastModified, item->GetLastModifiedTime());
@@ -852,11 +864,13 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
 
   // Now change the create info. The changes should not cause the DownloadItem
   // to be updated.
+  constexpr int kSecondResponseCode = 418;
   const char kSecondContentDisposition[] = "attachment; filename=bar";
   const char kSecondETag[] = "123";
   const char kSecondLastModified[] = "Today";
   const char kSecondURL[] = "http://example.com/another-download";
   const char kSecondMimeType[] = "text/html";
+  create_info()->response_headers = CreateResponseHeaders(kSecondResponseCode);
   create_info()->content_disposition = kSecondContentDisposition;
   create_info()->etag = kSecondETag;
   create_info()->last_modified = kSecondLastModified;
@@ -879,6 +893,8 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
                       DOWNLOAD_INTERRUPT_REASON_NONE);
   RunAllPendingInMessageLoops();
 
+  ASSERT_TRUE(item->GetResponseHeaders());
+  EXPECT_EQ(kFirstResponseCode, item->GetResponseHeaders()->response_code());
   EXPECT_EQ(kContentDisposition, item->GetContentDisposition());
   EXPECT_EQ(kFirstETag, item->GetETag());
   EXPECT_EQ(kFirstLastModified, item->GetLastModifiedTime());
@@ -893,11 +909,13 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
 // If the download resumption request succeeds, the origin state should be
 // updated.
 TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
+  constexpr int kFirstResponseCode = 200;
   const char kContentDisposition[] = "attachment; filename=foo";
   const char kFirstETag[] = "ABC";
   const char kFirstLastModified[] = "Yesterday";
   const char kFirstURL[] = "http://www.example.com/download";
   const char kMimeType[] = "text/css";
+  create_info()->response_headers = CreateResponseHeaders(kFirstResponseCode);
   create_info()->content_disposition = kContentDisposition;
   create_info()->etag = kFirstETag;
   create_info()->last_modified = kFirstLastModified;
@@ -917,11 +935,13 @@ TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
 
   // Now change the create info. The changes should not cause the DownloadItem
   // to be updated.
+  constexpr int kSecondResponseCode = 201;
   const char kSecondContentDisposition[] = "attachment; filename=bar";
   const char kSecondETag[] = "123";
   const char kSecondLastModified[] = "Today";
   const char kSecondURL[] = "http://example.com/another-download";
   const char kSecondMimeType[] = "text/html";
+  create_info()->response_headers = CreateResponseHeaders(kSecondResponseCode);
   create_info()->content_disposition = kSecondContentDisposition;
   create_info()->etag = kSecondETag;
   create_info()->last_modified = kSecondLastModified;
@@ -932,6 +952,8 @@ TEST_F(DownloadItemTest, SucceededResumptionUpdatesOriginState) {
   DownloadTargetCallback target_callback;
   download_file = CallDownloadItemStart(item, &target_callback);
 
+  ASSERT_TRUE(item->GetResponseHeaders());
+  EXPECT_EQ(kSecondResponseCode, item->GetResponseHeaders()->response_code());
   EXPECT_EQ(kSecondContentDisposition, item->GetContentDisposition());
   EXPECT_EQ(kSecondETag, item->GetETag());
   EXPECT_EQ(kSecondLastModified, item->GetLastModifiedTime());

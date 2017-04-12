@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/http/http_response_headers.h"
 
 namespace content {
 

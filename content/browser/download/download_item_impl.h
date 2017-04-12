@@ -130,6 +130,8 @@ class CONTENT_EXPORT DownloadItemImpl
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
   std::string GetSuggestedFilename() const override;
+  const scoped_refptr<const net::HttpResponseHeaders>& GetResponseHeaders()
+      const override;
   std::string GetContentDisposition() const override;
   std::string GetMimeType() const override;
   std::string GetOriginalMimeType() const override;
@@ -568,7 +570,12 @@ class CONTENT_EXPORT DownloadItemImpl
   // Whether the download was triggered with a user gesture.
   bool has_user_gesture_ = false;
 
-  // Information from the request.
+  // Information from the response.
+
+  // The HTTP response headers. This contains a nullptr when the response has
+  // not yet been received. Only for consuming headers.
+  scoped_refptr<const net::HttpResponseHeaders> response_headers_;
+
   // Content-disposition field from the header.
   std::string content_disposition_;
 

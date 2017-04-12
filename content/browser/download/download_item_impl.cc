@@ -57,6 +57,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_parameters_callback.h"
@@ -217,6 +218,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       transition_type_(info.transition_type ? info.transition_type.value()
                                             : ui::PAGE_TRANSITION_LINK),
       has_user_gesture_(info.has_user_gesture),
+      response_headers_(info.response_headers),
       content_disposition_(info.content_disposition),
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
@@ -603,6 +605,11 @@ const GURL& DownloadItemImpl::GetTabReferrerUrl() const {
 
 std::string DownloadItemImpl::GetSuggestedFilename() const {
   return suggested_filename_;
+}
+
+const scoped_refptr<const net::HttpResponseHeaders>&
+DownloadItemImpl::GetResponseHeaders() const {
+  return response_headers_;
 }
 
 std::string DownloadItemImpl::GetContentDisposition() const {
@@ -1043,6 +1050,7 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
       url_chain_.end(), chain_iter, new_create_info.url_chain.end());
   etag_ = new_create_info.etag;
   last_modified_time_ = new_create_info.last_modified;
+  response_headers_ = new_create_info.response_headers;
   content_disposition_ = new_create_info.content_disposition;
   // It is possible that the previous download attempt failed right before the
   // response is received. Need to reset the MIME type.
