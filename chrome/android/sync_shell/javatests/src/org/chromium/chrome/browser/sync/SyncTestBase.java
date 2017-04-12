@@ -128,6 +128,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
         SigninTestUtil.resetSigninState();
+        SigninTestUtil.tearDownAuthForTest();
 
         super.tearDown();
     }

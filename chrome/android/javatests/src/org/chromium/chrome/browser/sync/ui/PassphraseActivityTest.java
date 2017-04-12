@@ -53,6 +53,7 @@ public class PassphraseActivityTest {
         // Clear ProfileSyncService in case it was mocked.
         ProfileSyncService.overrideForTests(null);
         SigninTestUtil.resetSigninState();
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     /**

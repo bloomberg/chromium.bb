@@ -29,6 +29,11 @@ std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcherAndroid::Create(
       new ChildAccountInfoFetcherAndroid(service, account_id, account_name));
 }
 
+void ChildAccountInfoFetcherAndroid::InitializeForTests() {
+  Java_ChildAccountInfoFetcher_initializeForTests(
+      base::android::AttachCurrentThread());
+}
+
 ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
     AccountFetcherService* service,
     const std::string& account_id,

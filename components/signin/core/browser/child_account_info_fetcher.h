@@ -34,6 +34,8 @@ class ChildAccountInfoFetcher {
       net::URLRequestContextGetter* request_context_getter,
       invalidation::InvalidationService* invalidation_service);
   virtual ~ChildAccountInfoFetcher();
+
+  static void InitializeForTests();
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_CHILD_ACCOUNT_INFO_FETCHER_H_

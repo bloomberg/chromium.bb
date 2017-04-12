@@ -12,6 +12,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,9 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.ModelTypeHelper;
@@ -111,6 +114,9 @@ public class InvalidationControllerTest {
 
         ContextUtils.initApplicationContextForTests(mContext.getApplicationContext());
 
+        AccountManagerHelper.overrideAccountManagerHelperForTests(
+                mContext, new SystemAccountManagerDelegate());
+
         ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
             @Override
             public String toNotificationType(int modelType) {
@@ -137,6 +143,11 @@ public class InvalidationControllerTest {
         ChromeSigninController.get().setSignedInAccountName("test@example.com");
         AndroidSyncSettings.updateAccount(mContext, ChromeSigninController.get().getSignedInUser());
         AndroidSyncSettings.enableChromeSync(mContext);
+    }
+
+    @After
+    public void tearDown() {
+        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     /**

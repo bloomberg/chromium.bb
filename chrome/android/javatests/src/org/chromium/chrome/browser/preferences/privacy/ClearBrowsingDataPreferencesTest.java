@@ -59,6 +59,7 @@ public class ClearBrowsingDataPreferencesTest
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        SigninTestUtil.tearDownAuthForTest();
         super.tearDown();
     }
 
