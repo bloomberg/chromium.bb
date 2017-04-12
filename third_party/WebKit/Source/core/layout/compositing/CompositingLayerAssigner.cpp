@@ -273,11 +273,6 @@ void CompositingLayerAssigner::UpdateSquashingAssignment(
   }
 }
 
-static ScrollingCoordinator* ScrollingCoordinatorFromLayer(PaintLayer& layer) {
-  Page* page = layer.GetLayoutObject().GetFrame()->GetPage();
-  return (!page) ? nullptr : page->GetScrollingCoordinator();
-}
-
 void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     PaintLayer* layer,
     SquashingState& squashing_state,
@@ -302,7 +297,7 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     layers_needing_paint_invalidation.push_back(layer);
     layers_changed_ = true;
     if (ScrollingCoordinator* scrolling_coordinator =
-            ScrollingCoordinatorFromLayer(*layer)) {
+            layer->GetScrollingCoordinator()) {
       if (layer->GetLayoutObject().Style()->HasViewportConstrainedPosition()) {
         scrolling_coordinator->FrameViewFixedObjectsDidChange(
             layer->GetLayoutObject().View()->GetFrameView());

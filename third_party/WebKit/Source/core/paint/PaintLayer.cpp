@@ -185,9 +185,8 @@ PaintLayer::~PaintLayer() {
     }
     rare_data_->resource_info->ClearLayer();
   }
-  if (GetLayoutObject().GetFrame() && GetLayoutObject().GetFrame()->GetPage()) {
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetLayoutObject().GetFrame()->GetPage()->GetScrollingCoordinator())
+  if (GetLayoutObject().GetFrame()) {
+    if (ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator())
       scrolling_coordinator->WillDestroyLayer(this);
   }
 
@@ -2747,6 +2746,11 @@ bool PaintLayer::PaintsWithTransform(
           GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) &&
          ((global_paint_flags & kGlobalPaintFlattenCompositingLayers) ||
           GetCompositingState() != kPaintsIntoOwnBacking);
+}
+
+ScrollingCoordinator* PaintLayer::GetScrollingCoordinator() {
+  Page* page = GetLayoutObject().GetFrame()->GetPage();
+  return (!page) ? nullptr : page->GetScrollingCoordinator();
 }
 
 bool PaintLayer::CompositesWithTransform() const {

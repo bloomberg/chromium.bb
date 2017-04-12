@@ -572,6 +572,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
             GetCompositingState() != kPaintsIntoOwnBacking);
   }
 
+  // Returns the ScrollingCoordinator associated with this layer, if
+  // any. Otherwise nullptr.
+  ScrollingCoordinator* GetScrollingCoordinator();
+
   // Returns true if the element or any ancestor is transformed.
   bool CompositesWithTransform() const;
 

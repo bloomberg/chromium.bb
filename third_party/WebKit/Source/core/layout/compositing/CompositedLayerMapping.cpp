@@ -160,13 +160,6 @@ static inline bool IsAcceleratedContents(LayoutObject& layout_object) {
          layout_object.IsVideo();
 }
 
-// Get the scrolling coordinator in a way that works inside
-// CompositedLayerMapping's destructor.
-static ScrollingCoordinator* ScrollingCoordinatorFromLayer(PaintLayer& layer) {
-  Page* page = layer.GetLayoutObject().GetFrame()->GetPage();
-  return (!page) ? nullptr : page->GetScrollingCoordinator();
-}
-
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       content_offset_in_compositing_layer_dirty_(false),
@@ -1604,7 +1597,7 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   // Register fixed position layers and their containers with the scrolling
   // coordinator.
   ScrollingCoordinator* scrolling_coordinator =
-      ScrollingCoordinatorFromLayer(owning_layer_);
+      owning_layer_.GetScrollingCoordinator();
   if (!scrolling_coordinator)
     return;
 
@@ -1939,7 +1932,7 @@ bool CompositedLayerMapping::ToggleScrollbarLayerIfNeeded(
   if (PaintLayerScrollableArea* scrollable_area =
           owning_layer_.GetScrollableArea()) {
     if (ScrollingCoordinator* scrolling_coordinator =
-            ScrollingCoordinatorFromLayer(owning_layer_)) {
+            owning_layer_.GetScrollingCoordinator()) {
       if (reason == kCompositingReasonLayerForHorizontalScrollbar)
         scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
             scrollable_area, kHorizontalScrollbar);
@@ -2375,7 +2368,7 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayer(
 bool CompositedLayerMapping::UpdateScrollingLayers(
     bool needs_scrolling_layers) {
   ScrollingCoordinator* scrolling_coordinator =
-      ScrollingCoordinatorFromLayer(owning_layer_);
+      owning_layer_.GetScrollingCoordinator();
 
   bool layer_changed = false;
   if (needs_scrolling_layers) {
@@ -2438,7 +2431,7 @@ static void UpdateScrollParentForGraphicsLayer(
 void CompositedLayerMapping::UpdateScrollParent(
     const PaintLayer* scroll_parent) {
   if (ScrollingCoordinator* scrolling_coordinator =
-          ScrollingCoordinatorFromLayer(owning_layer_)) {
+          owning_layer_.GetScrollingCoordinator()) {
     GraphicsLayer* topmost_layer = ChildForSuperlayers();
     UpdateScrollParentForGraphicsLayer(squashing_containment_layer_.get(),
                                        topmost_layer, scroll_parent,
@@ -2481,7 +2474,7 @@ void CompositedLayerMapping::UpdateClipParent(const PaintLayer* scroll_parent) {
   }
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          ScrollingCoordinatorFromLayer(owning_layer_)) {
+          owning_layer_.GetScrollingCoordinator()) {
     GraphicsLayer* topmost_layer = ChildForSuperlayers();
     UpdateClipParentForGraphicsLayer(squashing_containment_layer_.get(),
                                      topmost_layer, clip_parent,
