@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H
-#define CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H
+#ifndef CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
+#define CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -47,4 +47,4 @@ class MockLocalDeviceDataProvider : public LocalDeviceDataProvider {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H
+#endif  // CHROMEOS_COMPONENTS_TETHER_MOCK_LOCAL_DEVICE_DATA_PROVIDER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H
-#define CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H
+#ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H_
+#define CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H_
 
 #include <vector>
 
@@ -25,7 +25,6 @@ class TetherHostFetcher;
 // TODO(khorimoto): Add some sort of "staleness" timeout which removes scan
 //                  results which occurred long enough ago that they are no
 //                  longer valid.
-// TODO(hansberry): Implement handling for scan results.
 class HostScanner : public HostScannerOperation::Observer {
  public:
   HostScanner(TetherHostFetcher* tether_host_fetcher,
@@ -54,6 +53,7 @@ class HostScanner : public HostScannerOperation::Observer {
 
  private:
   friend class HostScannerTest;
+  friend class HostScanSchedulerTest;
 
   void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
 
@@ -77,4 +77,4 @@ class HostScanner : public HostScannerOperation::Observer {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H
+#endif  // CHROMEOS_COMPONENTS_TETHER_HOST_SCANNER_H_

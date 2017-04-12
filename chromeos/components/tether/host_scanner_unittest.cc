@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
+#include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -153,16 +154,18 @@ class HostScannerTest : public NetworkStateTest {
     fake_notification_presenter_ =
         base::MakeUnique<FakeNotificationPresenter>();
 
-    host_scanner_ = base::MakeUnique<HostScanner>(
+    host_scanner_ = base::WrapUnique(new HostScanner(
         fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
         fake_host_scan_device_prioritizer_.get(), network_state_handler(),
-        fake_notification_presenter_.get());
+        fake_notification_presenter_.get()));
   }
 
   void TearDown() override {
     ShutdownNetworkState();
     NetworkStateTest::TearDown();
     DBusThreadManager::Shutdown();
+
+    HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
   }
 
   // Causes |fake_operation| to receive the scan result in
@@ -355,4 +358,4 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

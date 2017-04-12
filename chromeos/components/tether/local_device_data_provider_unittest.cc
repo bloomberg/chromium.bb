@@ -10,8 +10,12 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/fake_cryptauth_gcm_manager.h"
+#include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,15 +27,42 @@ namespace chromeos {
 namespace tether {
 
 namespace {
-const std::string kDefaultPublicKey = "publicKey";
 
-const std::string kBeaconSeed1Data = "beaconSeed1Data";
+const char kDefaultPublicKey[] = "publicKey";
+
+const char kBeaconSeed1Data[] = "beaconSeed1Data";
 const int64_t kBeaconSeed1StartMs = 1000L;
 const int64_t kBeaconSeed1EndMs = 2000L;
 
-const std::string kBeaconSeed2Data = "beaconSeed2Data";
+const char kBeaconSeed2Data[] = "beaconSeed2Data";
 const int64_t kBeaconSeed2StartMs = 2000L;
 const int64_t kBeaconSeed2EndMs = 3000L;
+
+class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
+ public:
+  MockCryptAuthDeviceManager() {}
+  ~MockCryptAuthDeviceManager() override {}
+
+  MOCK_CONST_METHOD0(GetSyncedDevices,
+                     std::vector<cryptauth::ExternalDeviceInfo>());
+};
+
+class MockCryptAuthEnrollmentManager
+    : public cryptauth::CryptAuthEnrollmentManager {
+ public:
+  explicit MockCryptAuthEnrollmentManager(
+      cryptauth::FakeCryptAuthGCMManager* fake_cryptauth_gcm_manager)
+      : cryptauth::CryptAuthEnrollmentManager(
+            nullptr /* clock */,
+            nullptr /* enroller_factory */,
+            nullptr /* secure_message_delegate */,
+            cryptauth::GcmDeviceInfo(),
+            fake_cryptauth_gcm_manager,
+            nullptr /* pref_service */) {}
+  ~MockCryptAuthEnrollmentManager() override {}
+
+  MOCK_CONST_METHOD0(GetUserPublicKey, std::string());
+};
 
 cryptauth::BeaconSeed CreateBeaconSeed(const std::string& data,
                                        int64_t start_ms,
@@ -42,21 +73,11 @@ cryptauth::BeaconSeed CreateBeaconSeed(const std::string& data,
   seed.set_end_time_millis(end_ms);
   return seed;
 }
+
 }  // namespace
 
 class LocalDeviceDataProviderTest : public testing::Test {
  protected:
-  class MockProviderDelegate
-      : public LocalDeviceDataProvider::LocalDeviceDataProviderDelegate {
-   public:
-    MockProviderDelegate() {}
-    ~MockProviderDelegate() override {}
-
-    MOCK_CONST_METHOD0(GetUserPublicKey, std::string());
-    MOCK_CONST_METHOD0(GetSyncedDevices,
-                       std::vector<cryptauth::ExternalDeviceInfo>());
-  };
-
   LocalDeviceDataProviderTest() {
     fake_beacon_seeds_.push_back(CreateBeaconSeed(
         kBeaconSeed1Data, kBeaconSeed1StartMs, kBeaconSeed1EndMs));
@@ -105,26 +126,45 @@ class LocalDeviceDataProviderTest : public testing::Test {
   }
 
   void SetUp() override {
-    mock_delegate_ = new NiceMock<MockProviderDelegate>();
+    mock_device_manager_ =
+        base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
+    fake_cryptauth_gcm_manager_ =
+        base::MakeUnique<cryptauth::FakeCryptAuthGCMManager>("registrationId");
+    mock_enrollment_manager_ =
+        base::WrapUnique(new NiceMock<MockCryptAuthEnrollmentManager>(
+            fake_cryptauth_gcm_manager_.get()));
+
+    fake_cryptauth_service_ =
+        base::MakeUnique<cryptauth::FakeCryptAuthService>();
+    fake_cryptauth_service_->set_cryptauth_device_manager(
+        mock_device_manager_.get());
+    fake_cryptauth_service_->set_cryptauth_enrollment_manager(
+        mock_enrollment_manager_.get());
 
     provider_ = base::WrapUnique(
-        new LocalDeviceDataProvider(base::WrapUnique(mock_delegate_)));
+        new LocalDeviceDataProvider(fake_cryptauth_service_.get()));
   }
-
-  std::unique_ptr<LocalDeviceDataProvider> provider_;
-  NiceMock<MockProviderDelegate>* mock_delegate_;
 
   std::vector<cryptauth::BeaconSeed> fake_beacon_seeds_;
   std::vector<cryptauth::ExternalDeviceInfo> fake_synced_devices_;
+
+  std::unique_ptr<cryptauth::FakeCryptAuthGCMManager>
+      fake_cryptauth_gcm_manager_;
+  std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>> mock_device_manager_;
+  std::unique_ptr<NiceMock<MockCryptAuthEnrollmentManager>>
+      mock_enrollment_manager_;
+  std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
+
+  std::unique_ptr<LocalDeviceDataProvider> provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalDeviceDataProviderTest);
 };
 
 TEST_F(LocalDeviceDataProviderTest, TestGetLocalDeviceData_NoPublicKey) {
-  ON_CALL(*mock_delegate_, GetUserPublicKey())
+  ON_CALL(*mock_enrollment_manager_, GetUserPublicKey())
       .WillByDefault(Return(std::string()));
-  ON_CALL(*mock_delegate_, GetSyncedDevices())
+  ON_CALL(*mock_device_manager_, GetSyncedDevices())
       .WillByDefault(Return(fake_synced_devices_));
 
   std::string public_key;
@@ -134,9 +174,9 @@ TEST_F(LocalDeviceDataProviderTest, TestGetLocalDeviceData_NoPublicKey) {
 }
 
 TEST_F(LocalDeviceDataProviderTest, TestGetLocalDeviceData_NoSyncedDevices) {
-  ON_CALL(*mock_delegate_, GetUserPublicKey())
+  ON_CALL(*mock_enrollment_manager_, GetUserPublicKey())
       .WillByDefault(Return(kDefaultPublicKey));
-  ON_CALL(*mock_delegate_, GetSyncedDevices())
+  ON_CALL(*mock_device_manager_, GetSyncedDevices())
       .WillByDefault(Return(std::vector<cryptauth::ExternalDeviceInfo>()));
 
   std::string public_key;
@@ -147,9 +187,9 @@ TEST_F(LocalDeviceDataProviderTest, TestGetLocalDeviceData_NoSyncedDevices) {
 
 TEST_F(LocalDeviceDataProviderTest,
        TestGetLocalDeviceData_NoSyncedDeviceMatchingPublicKey) {
-  ON_CALL(*mock_delegate_, GetUserPublicKey())
+  ON_CALL(*mock_enrollment_manager_, GetUserPublicKey())
       .WillByDefault(Return(kDefaultPublicKey));
-  ON_CALL(*mock_delegate_, GetSyncedDevices())
+  ON_CALL(*mock_device_manager_, GetSyncedDevices())
       .WillByDefault(Return(std::vector<cryptauth::ExternalDeviceInfo>{
           fake_synced_devices_[0], fake_synced_devices_[1],
           fake_synced_devices_[2], fake_synced_devices_[3]}));
@@ -162,9 +202,9 @@ TEST_F(LocalDeviceDataProviderTest,
 
 TEST_F(LocalDeviceDataProviderTest,
        TestGetLocalDeviceData_SyncedDeviceIncludesPublicKeyButNoBeaconSeeds) {
-  ON_CALL(*mock_delegate_, GetUserPublicKey())
+  ON_CALL(*mock_enrollment_manager_, GetUserPublicKey())
       .WillByDefault(Return(kDefaultPublicKey));
-  ON_CALL(*mock_delegate_, GetSyncedDevices())
+  ON_CALL(*mock_device_manager_, GetSyncedDevices())
       .WillByDefault(Return(std::vector<cryptauth::ExternalDeviceInfo>{
           fake_synced_devices_[4],
       }));
@@ -176,9 +216,9 @@ TEST_F(LocalDeviceDataProviderTest,
 }
 
 TEST_F(LocalDeviceDataProviderTest, TestGetLocalDeviceData_Success) {
-  ON_CALL(*mock_delegate_, GetUserPublicKey())
+  ON_CALL(*mock_enrollment_manager_, GetUserPublicKey())
       .WillByDefault(Return(kDefaultPublicKey));
-  ON_CALL(*mock_delegate_, GetSyncedDevices())
+  ON_CALL(*mock_device_manager_, GetSyncedDevices())
       .WillByDefault(Return(fake_synced_devices_));
 
   std::string public_key;

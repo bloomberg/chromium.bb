@@ -18,22 +18,6 @@ namespace chromeos {
 namespace tether {
 
 TetherConnector::TetherConnector(
-    WifiHotspotConnector* wifi_hotspot_connector,
-    ActiveHost* active_host,
-    TetherHostFetcher* tether_host_fetcher,
-    BleConnectionManager* connection_manager,
-    HostScanDevicePrioritizer* host_scan_device_prioritizer,
-    DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map)
-    : TetherConnector(NetworkConnect::Get(),
-                      NetworkHandler::Get()->network_state_handler(),
-                      wifi_hotspot_connector,
-                      active_host,
-                      tether_host_fetcher,
-                      connection_manager,
-                      host_scan_device_prioritizer,
-                      device_id_tether_network_guid_map) {}
-
-TetherConnector::TetherConnector(
     NetworkConnect* network_connect,
     NetworkStateHandler* network_state_handler,
     WifiHotspotConnector* wifi_hotspot_connector,

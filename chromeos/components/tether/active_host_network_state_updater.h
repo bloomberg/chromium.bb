@@ -19,7 +19,8 @@ namespace tether {
 // to the networking stack.
 class ActiveHostNetworkStateUpdater : public ActiveHost::Observer {
  public:
-  ActiveHostNetworkStateUpdater(ActiveHost* active_host);
+  ActiveHostNetworkStateUpdater(ActiveHost* active_host,
+                                NetworkStateHandler* network_state_handler);
   ~ActiveHostNetworkStateUpdater();
 
   // ActiveHost::Observer:
@@ -27,11 +28,6 @@ class ActiveHostNetworkStateUpdater : public ActiveHost::Observer {
       const ActiveHost::ActiveHostChangeInfo& change_info) override;
 
  private:
-  friend class ActiveHostNetworkStateUpdaterTest;
-
-  ActiveHostNetworkStateUpdater(ActiveHost* active_host,
-                                NetworkStateHandler* network_state_handler);
-
   ActiveHost* active_host_;
   NetworkStateHandler* network_state_handler_;
 

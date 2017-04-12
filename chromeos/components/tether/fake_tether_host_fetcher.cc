@@ -13,7 +13,7 @@ namespace tether {
 FakeTetherHostFetcher::FakeTetherHostFetcher(
     std::vector<cryptauth::RemoteDevice> tether_hosts,
     bool synchronously_reply_with_results)
-    : TetherHostFetcher("", "", nullptr, nullptr),
+    : TetherHostFetcher(nullptr),
       tether_hosts_(tether_hosts),
       synchronously_reply_with_results_(synchronously_reply_with_results) {}
 

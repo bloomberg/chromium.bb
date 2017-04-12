@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate.h"
@@ -33,15 +34,8 @@ TetherHostFetcher::TetherHostFetchRequest::TetherHostFetchRequest(
 TetherHostFetcher::TetherHostFetchRequest::~TetherHostFetchRequest() {}
 
 TetherHostFetcher::TetherHostFetcher(
-    const std::string& user_id,
-    const std::string& user_private_key,
-    cryptauth::CryptAuthService* cryptauth_service,
-    cryptauth::CryptAuthDeviceManager* device_manager)
-    : user_id_(user_id),
-      user_private_key_(user_private_key),
-      cryptauth_service_(cryptauth_service),
-      device_manager_(device_manager),
-      weak_ptr_factory_(this) {}
+    cryptauth::CryptAuthService* cryptauth_service)
+    : cryptauth_service_(cryptauth_service), weak_ptr_factory_(this) {}
 
 TetherHostFetcher::~TetherHostFetcher() {}
 
@@ -64,7 +58,9 @@ void TetherHostFetcher::StartLoadingDevicesIfNeeded() {
   }
 
   remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
-      device_manager_->GetTetherHosts(), user_id_, user_private_key_,
+      cryptauth_service_->GetCryptAuthDeviceManager()->GetTetherHosts(),
+      cryptauth_service_->GetAccountId(),
+      cryptauth_service_->GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
       cryptauth_service_->CreateSecureMessageDelegate());
   remote_device_loader_->Load(
       base::Bind(&TetherHostFetcher::OnRemoteDevicesLoaded,

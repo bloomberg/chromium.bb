@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H
-#define CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H
+#ifndef CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_
+#define CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -14,9 +14,7 @@
 
 namespace cryptauth {
 class BeaconSeed;
-class ExternalDeviceInfo;
-class CryptAuthDeviceManager;
-class CryptAuthEnrollmentManager;
+class CryptAuthService;
 }
 
 namespace chromeos {
@@ -27,10 +25,8 @@ namespace tether {
 // code is running) for the current user (i.e., the one which is logged-in).
 class LocalDeviceDataProvider {
  public:
-  LocalDeviceDataProvider(
-      const cryptauth::CryptAuthDeviceManager* cryptauth_device_manager,
-      const cryptauth::CryptAuthEnrollmentManager*
-          cryptauth_enrollment_manager);
+  explicit LocalDeviceDataProvider(
+      cryptauth::CryptAuthService* cryptauth_service);
   virtual ~LocalDeviceDataProvider();
 
   // Fetches the public key and/or the beacon seeds for the local device.
@@ -43,40 +39,7 @@ class LocalDeviceDataProvider {
  private:
   friend class LocalDeviceDataProviderTest;
 
-  class LocalDeviceDataProviderDelegate {
-   public:
-    virtual ~LocalDeviceDataProviderDelegate() {}
-    virtual std::string GetUserPublicKey() const = 0;
-    virtual std::vector<cryptauth::ExternalDeviceInfo> GetSyncedDevices()
-        const = 0;
-  };
-
-  class LocalDeviceDataProviderDelegateImpl
-      : public LocalDeviceDataProviderDelegate {
-   public:
-    LocalDeviceDataProviderDelegateImpl(
-        const cryptauth::CryptAuthDeviceManager* cryptauth_device_manager,
-        const cryptauth::CryptAuthEnrollmentManager*
-            cryptauth_enrollment_manager);
-    ~LocalDeviceDataProviderDelegateImpl() override;
-
-    std::string GetUserPublicKey() const override;
-    std::vector<cryptauth::ExternalDeviceInfo> GetSyncedDevices()
-        const override;
-
-   private:
-    // Not owned and must outlive this instance.
-    const cryptauth::CryptAuthDeviceManager* const cryptauth_device_manager_;
-
-    // Not owned and must outlive this instance.
-    const cryptauth::CryptAuthEnrollmentManager* const
-        cryptauth_enrollment_manager_;
-  };
-
-  LocalDeviceDataProvider(
-      std::unique_ptr<LocalDeviceDataProviderDelegate> delegate);
-
-  std::unique_ptr<LocalDeviceDataProviderDelegate> delegate_;
+  cryptauth::CryptAuthService* cryptauth_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDeviceDataProvider);
 };
@@ -85,4 +48,4 @@ class LocalDeviceDataProvider {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H
+#endif  // CHROMEOS_COMPONENTS_TETHER_LOCAL_DEVICE_DATA_PROVIDER_H_

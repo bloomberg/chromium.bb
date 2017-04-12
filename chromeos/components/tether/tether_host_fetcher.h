@@ -28,10 +28,7 @@ namespace tether {
 // synced via CryptAuth.
 class TetherHostFetcher {
  public:
-  TetherHostFetcher(const std::string& user_id,
-                    const std::string& user_private_key,
-                    cryptauth::CryptAuthService* cryptauth_service,
-                    cryptauth::CryptAuthDeviceManager* device_manager);
+  explicit TetherHostFetcher(cryptauth::CryptAuthService* cryptauth_service);
   virtual ~TetherHostFetcher();
 
   // Fetches all tether hosts.
@@ -47,7 +44,8 @@ class TetherHostFetcher {
 
  protected:
   struct TetherHostFetchRequest {
-    TetherHostFetchRequest(const TetherHostListCallback& list_callback);
+    explicit TetherHostFetchRequest(
+        const TetherHostListCallback& list_callback);
     TetherHostFetchRequest(const std::string& device_id,
                            const TetherHostCallback& single_callback);
     TetherHostFetchRequest(const TetherHostFetchRequest& other);
@@ -63,6 +61,11 @@ class TetherHostFetcher {
     TetherHostCallback single_callback;
   };
 
+  TetherHostFetcher(const std::string& user_id,
+                    const std::string& user_private_key,
+                    cryptauth::CryptAuthService* cryptauth_service,
+                    cryptauth::CryptAuthDeviceManager* device_manager);
+
   void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
 
   std::vector<TetherHostFetchRequest> requests_;
@@ -70,11 +73,7 @@ class TetherHostFetcher {
  private:
   void StartLoadingDevicesIfNeeded();
 
-  const std::string user_id_;
-  const std::string user_private_key_;
-
   cryptauth::CryptAuthService* cryptauth_service_;
-  cryptauth::CryptAuthDeviceManager* device_manager_;
 
   std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
 

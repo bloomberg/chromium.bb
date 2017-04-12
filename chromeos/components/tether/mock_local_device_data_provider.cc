@@ -13,7 +13,7 @@ namespace chromeos {
 namespace tether {
 
 MockLocalDeviceDataProvider::MockLocalDeviceDataProvider()
-    : LocalDeviceDataProvider(nullptr, nullptr) {}
+    : LocalDeviceDataProvider(nullptr /* cryptauth_service */) {}
 
 MockLocalDeviceDataProvider::~MockLocalDeviceDataProvider() {}
 
@@ -55,4 +55,4 @@ bool MockLocalDeviceDataProvider::GetLocalDeviceData(
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

@@ -15,12 +15,6 @@ namespace chromeos {
 namespace tether {
 
 ActiveHostNetworkStateUpdater::ActiveHostNetworkStateUpdater(
-    ActiveHost* active_host)
-    : ActiveHostNetworkStateUpdater(
-          active_host,
-          NetworkHandler::Get()->network_state_handler()) {}
-
-ActiveHostNetworkStateUpdater::ActiveHostNetworkStateUpdater(
     ActiveHost* active_host,
     NetworkStateHandler* network_state_handler)
     : active_host_(active_host), network_state_handler_(network_state_handler) {

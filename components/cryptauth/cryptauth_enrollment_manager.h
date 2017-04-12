@@ -112,8 +112,8 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // been completed, then an empty string will be returned.
   // Note: These keys are really serialized protocol buffer messages, and should
   // only be used by passing to SecureMessageDelegate.
-  std::string GetUserPublicKey() const;
-  std::string GetUserPrivateKey() const;
+  virtual std::string GetUserPublicKey() const;
+  virtual std::string GetUserPrivateKey() const;
 
  protected:
   // Creates a new SyncScheduler instance. Exposed for testing.

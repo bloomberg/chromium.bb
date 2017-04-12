@@ -6,6 +6,7 @@
 
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace chromeos {
@@ -13,54 +14,24 @@ namespace chromeos {
 namespace tether {
 
 LocalDeviceDataProvider::LocalDeviceDataProvider(
-    const cryptauth::CryptAuthDeviceManager* cryptauth_device_manager,
-    const cryptauth::CryptAuthEnrollmentManager* cryptauth_enrollment_manager)
-    : LocalDeviceDataProvider(
-          base::MakeUnique<LocalDeviceDataProviderDelegateImpl>(
-              cryptauth_device_manager,
-              cryptauth_enrollment_manager)) {}
-
-LocalDeviceDataProvider::LocalDeviceDataProvider(
-    std::unique_ptr<LocalDeviceDataProviderDelegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    cryptauth::CryptAuthService* cryptauth_service)
+    : cryptauth_service_(cryptauth_service) {}
 
 LocalDeviceDataProvider::~LocalDeviceDataProvider() {}
-
-LocalDeviceDataProvider::LocalDeviceDataProviderDelegateImpl::
-    LocalDeviceDataProviderDelegateImpl(
-        const cryptauth::CryptAuthDeviceManager* cryptauth_device_manager,
-        const cryptauth::CryptAuthEnrollmentManager*
-            cryptauth_enrollment_manager)
-    : cryptauth_device_manager_(cryptauth_device_manager),
-      cryptauth_enrollment_manager_(cryptauth_enrollment_manager) {}
-
-LocalDeviceDataProvider::LocalDeviceDataProviderDelegateImpl::
-    ~LocalDeviceDataProviderDelegateImpl() {}
-
-std::string
-LocalDeviceDataProvider::LocalDeviceDataProviderDelegateImpl::GetUserPublicKey()
-    const {
-  return cryptauth_enrollment_manager_->GetUserPublicKey();
-}
-
-std::vector<cryptauth::ExternalDeviceInfo>
-LocalDeviceDataProvider::LocalDeviceDataProviderDelegateImpl::GetSyncedDevices()
-    const {
-  return cryptauth_device_manager_->GetSyncedDevices();
-}
 
 bool LocalDeviceDataProvider::GetLocalDeviceData(
     std::string* public_key_out,
     std::vector<cryptauth::BeaconSeed>* beacon_seeds_out) const {
   DCHECK(public_key_out || beacon_seeds_out);
 
-  std::string public_key = delegate_->GetUserPublicKey();
+  std::string public_key =
+      cryptauth_service_->GetCryptAuthEnrollmentManager()->GetUserPublicKey();
   if (public_key.empty()) {
     return false;
   }
 
   std::vector<cryptauth::ExternalDeviceInfo> synced_devices =
-      delegate_->GetSyncedDevices();
+      cryptauth_service_->GetCryptAuthDeviceManager()->GetSyncedDevices();
   for (const auto& device : synced_devices) {
     if (device.has_public_key() && device.public_key() == public_key &&
         device.beacon_seeds_size() > 0) {
@@ -84,4 +55,4 @@ bool LocalDeviceDataProvider::GetLocalDeviceData(
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

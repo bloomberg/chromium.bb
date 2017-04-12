@@ -32,6 +32,8 @@ class TetherConnector : public NetworkConnect::TetherDelegate,
                         public ConnectTetheringOperation::Observer {
  public:
   TetherConnector(
+      NetworkConnect* network_connect,
+      NetworkStateHandler* network_state_handler,
       WifiHotspotConnector* wifi_hotspot_connector,
       ActiveHost* active_host,
       TetherHostFetcher* tether_host_fetcher,
@@ -54,16 +56,6 @@ class TetherConnector : public NetworkConnect::TetherDelegate,
 
  private:
   friend class TetherConnectorTest;
-
-  TetherConnector(
-      NetworkConnect* network_connect,
-      NetworkStateHandler* network_state_handler,
-      WifiHotspotConnector* wifi_hotspot_connector,
-      ActiveHost* active_host,
-      TetherHostFetcher* tether_host_fetcher,
-      BleConnectionManager* connection_manager,
-      HostScanDevicePrioritizer* host_scan_device_prioritizer,
-      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
 
   void SetDisconnected();
   void SetConnected(const std::string& device_id,
