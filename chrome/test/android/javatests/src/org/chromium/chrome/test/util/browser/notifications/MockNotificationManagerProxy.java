@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.notifications.ChannelsInitializer;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,23 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
 
     public List<ChannelsInitializer.ChannelGroup> getNotificationChannelGroups() {
         return mNotificationChannelGroups;
+    }
+
+    @Override
+    public List<String> getNotificationChannelIds() {
+        List<String> channelIds = new ArrayList<>();
+        for (ChannelsInitializer.Channel channel : mChannels) {
+            channelIds.add(channel.mId);
+        }
+        return channelIds;
+    }
+
+    @Override
+    public void deleteNotificationChannel(@ChannelsInitializer.ChannelId String id) {
+        for (Iterator<ChannelsInitializer.Channel> it = mChannels.iterator(); it.hasNext();) {
+            ChannelsInitializer.Channel channel = it.next();
+            if (id.equals(channel.mId)) it.remove();
+        }
     }
 
     @Override

@@ -14,6 +14,8 @@ import org.chromium.base.Log;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Default implementation of the NotificationManagerProxy, which passes through all calls to the
@@ -108,6 +110,52 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
                 | InstantiationException | InvocationTargetException e) {
             Log.e(TAG, "Error initializing notification channel group:", e);
+        }
+    }
+
+    @Override
+    public List<String> getNotificationChannelIds() {
+        assert BuildInfo.isAtLeastO();
+        List<String> channelIds = new ArrayList<>();
+        /*
+        The code in the try-block uses reflection in order to compile as it calls APIs newer than
+        our compileSdkVersion of Android. The equivalent code without reflection looks like this:
+
+            List<NotificationChannel> list = mNotificationManager.getNotificationChannels();
+            for (NotificationChannel channel : list) {
+                channelIds.add(channel.getId());
+            }
+         */
+        // TODO(crbug.com/707804) Stop using reflection once compileSdkVersion is high enough.
+        try {
+            Method method = mNotificationManager.getClass().getMethod("getNotificationChannels");
+            List channelsList = (List) method.invoke(mNotificationManager);
+            for (Object o : channelsList) {
+                Method getId = o.getClass().getMethod("getId");
+                channelIds.add((String) getId.invoke(o));
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Log.e(TAG, "Error getting notification channels:", e);
+        }
+        return channelIds;
+    }
+
+    @Override
+    public void deleteNotificationChannel(@ChannelsInitializer.ChannelId String id) {
+        assert BuildInfo.isAtLeastO();
+        /*
+        The code in the try-block uses reflection in order to compile as it calls APIs newer than
+        our compileSdkVersion of Android. The equivalent code without reflection looks like this:
+
+            mNotificationManager.deleteNotificationChannel(id);
+         */
+        // TODO(crbug.com/707804) Stop using reflection once compileSdkVersion is high enough.
+        try {
+            Method method = mNotificationManager.getClass().getMethod(
+                    "deleteNotificationChannel", String.class);
+            method.invoke(mNotificationManager, id);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Log.e(TAG, "Error deleting notification channel:", e);
         }
     }
 

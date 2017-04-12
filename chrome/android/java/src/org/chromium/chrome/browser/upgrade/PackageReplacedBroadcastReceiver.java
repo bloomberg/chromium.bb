@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.upgrade;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
+
+import org.chromium.chrome.browser.notifications.ChannelsUpdater;
 
 /**
  * Triggered when Chrome's package is replaced (e.g. when it is upgraded).
@@ -25,9 +28,25 @@ import android.os.Build;
  */
 public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         if (!Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) return;
+        updateChannelsIfNecessary();
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N) return;
         UpgradeIntentService.startMigrationIfNecessary(context);
+    }
+
+    private void updateChannelsIfNecessary() {
+        if (!ChannelsUpdater.getInstance().shouldUpdateChannels()) return;
+
+        final PendingResult result = goAsync();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                ChannelsUpdater.getInstance().updateChannels();
+                result.finish();
+                return null;
+            }
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

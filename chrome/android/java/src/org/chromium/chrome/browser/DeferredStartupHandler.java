@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.notifications.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
@@ -200,6 +201,10 @@ public class DeferredStartupHandler {
                 ShareHelper.clearSharedImages();
 
                 OfflinePageUtils.clearSharedOfflineFiles(mAppContext);
+
+                if (ChannelsUpdater.getInstance().shouldUpdateChannels()) {
+                    initChannelsAsync();
+                }
             }
         });
 
@@ -247,6 +252,18 @@ public class DeferredStartupHandler {
         });
 
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
+    }
+
+    private void initChannelsAsync() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                ChannelsUpdater.getInstance().updateChannels();
+                return null;
+            }
+
+        }
+                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void initAsyncDiskTask() {

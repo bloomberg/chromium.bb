@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -28,6 +29,12 @@ public class ChannelsInitializerTest {
     public void setUp() throws Exception {
         mMockNotificationManager = new MockNotificationManagerProxy();
         mChannelsInitializer = new ChannelsInitializer(mMockNotificationManager);
+    }
+
+    @Test
+    public void testInitializeStartupChannels() throws Exception {
+        mChannelsInitializer.initializeStartupChannels();
+        assertThat(mMockNotificationManager.getChannels().size(), is(greaterThan(0)));
     }
 
     @Test

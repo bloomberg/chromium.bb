@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 
+import java.util.List;
+
 /**
  * A proxy for the Android Notification Manager. This allows tests to be written without having to
  * use the real Notification Manager.
@@ -18,6 +20,8 @@ public interface NotificationManagerProxy {
     void cancelAll();
     void createNotificationChannel(ChannelsInitializer.Channel channel);
     void createNotificationChannelGroup(ChannelsInitializer.ChannelGroup channelGroup);
+    List<String> getNotificationChannelIds();
+    void deleteNotificationChannel(@ChannelsInitializer.ChannelId String id);
 
     void notify(int id, Notification notification);
     void notify(String tag, int id, Notification notification);
