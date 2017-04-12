@@ -1447,7 +1447,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_READING_LIST" desc="The iOS menu item for opening the reading list [Length: 15em] [iOS only]">
         Reading List
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_RECENT_TABS" desc="The iOS menu item for opening the panel showing the recently closed tabs and the tabs from other devices. [Length: 15em] [iOS only]">
+      <message name="IDS_IOS_TOOLS_MENU_RECENT_TABS" desc="The iOS menu item for opening the panel showing the recently closed tabs and the tabs from other devices. [Length: 15em]" meaning="[In Title case] [iOS only]">
         Recent Tabs
       </message>
       <message name="IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE" desc="The iOS menu item for requesting the desktop site [Length: 15em] [iOS only]">
