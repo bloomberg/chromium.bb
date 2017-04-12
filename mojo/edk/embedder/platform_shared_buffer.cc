@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
@@ -145,6 +146,10 @@ std::unique_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::MapNoCheck(
     base::AutoLock locker(lock_);
     handle = base::SharedMemory::DuplicateHandle(shared_memory_->handle());
   }
+
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  CHECK(handle != base::SharedMemory::NULLHandle());
+
   if (handle == base::SharedMemory::NULLHandle())
     return nullptr;
 
@@ -310,8 +315,19 @@ bool PlatformSharedBufferMapping::Map() {
   size_t real_offset = offset_ - offset_rounding;
   size_t real_length = length_ + offset_rounding;
 
-  if (!shared_memory_.MapAt(static_cast<off_t>(real_offset), real_length))
-    return false;
+  bool result =
+      shared_memory_.MapAt(static_cast<off_t>(real_offset), real_length);
+
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  size_t offset = offset_;
+  size_t length = length_;
+  base::debug::Alias(&offset);
+  base::debug::Alias(&length);
+  base::debug::Alias(&page_size);
+  base::debug::Alias(&offset_rounding);
+  base::debug::Alias(&real_offset);
+  base::debug::Alias(&real_length);
+  CHECK(result);
 
   base_ = static_cast<char*>(shared_memory_.memory()) + offset_rounding;
   return true;

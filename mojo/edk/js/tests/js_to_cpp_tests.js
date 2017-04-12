@@ -110,16 +110,12 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     };
 
     while (!stopSignalled) {
-      dataPipe = core.createDataPipe(DATA_PIPE_PARAMS);
       messagePipe = core.createMessagePipe();
-      writeDataPipe(dataPipe, sampleData);
       writeMessagePipe(messagePipe, sampleMessage);
-      arg.data_handle = dataPipe.consumerHandle;
       arg.message_handle = messagePipe.handle1;
 
       this.cppSide_.bitFlipResponse(createEchoArgsList(arg));
 
-      core.close(dataPipe.producerHandle);
       core.close(messagePipe.handle0);
       iteration += 1;
     }
@@ -150,16 +146,12 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     };
 
     while (!stopSignalled) {
-      dataPipe = core.createDataPipe(DATA_PIPE_PARAMS);
       messagePipe = core.createMessagePipe();
-      writeDataPipe(dataPipe, sampleData);
       writeMessagePipe(messagePipe, sampleMessage);
-      arg.data_handle = dataPipe.consumerHandle;
       arg.message_handle = messagePipe.handle1;
 
       this.cppSide_.backPointerResponse(createEchoArgsList(arg));
 
-      core.close(dataPipe.producerHandle);
       core.close(messagePipe.handle0);
       iteration += 1;
     }

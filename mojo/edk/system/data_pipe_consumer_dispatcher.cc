@@ -322,6 +322,9 @@ bool DataPipeConsumerDispatcher::EndSerialize(
 
   ports[0] = control_port_.name();
 
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  CHECK(shared_ring_buffer_);
+
   buffer_handle_for_transit_ = shared_ring_buffer_->DuplicatePlatformHandle();
   platform_handles[0] = buffer_handle_for_transit_.get();
 
@@ -330,6 +333,10 @@ bool DataPipeConsumerDispatcher::EndSerialize(
 
 bool DataPipeConsumerDispatcher::BeginTransit() {
   base::AutoLock lock(lock_);
+
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  CHECK(shared_ring_buffer_);
+
   if (in_transit_)
     return false;
   in_transit_ = !in_two_phase_read_;
@@ -413,8 +420,15 @@ DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
 void DataPipeConsumerDispatcher::InitializeNoLock() {
   lock_.AssertAcquired();
 
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  CHECK(shared_ring_buffer_);
+
   if (shared_ring_buffer_) {
     DCHECK(!ring_buffer_mapping_);
+
+    // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+    CHECK(shared_ring_buffer_->IsValidMap(0, options_.capacity_num_bytes));
+
     ring_buffer_mapping_ =
         shared_ring_buffer_->Map(0, options_.capacity_num_bytes);
     if (!ring_buffer_mapping_) {
@@ -422,6 +436,9 @@ void DataPipeConsumerDispatcher::InitializeNoLock() {
       shared_ring_buffer_ = nullptr;
     }
   }
+
+  // TODO(crbug.com/706689): Remove this when the bug is sorted out.
+  CHECK(shared_ring_buffer_);
 
   base::AutoUnlock unlock(lock_);
   node_controller_->SetPortObserver(
