@@ -170,25 +170,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // be calculated from the object's inner text.
   virtual base::string16 GetValue() const;
 
-  // Starting at the given character offset, locates the start of the next or
-  // previous line and returns its character offset.
-  int GetLineStartBoundary(int start,
-                           ui::TextBoundaryDirection direction,
-                           ui::AXTextAffinity affinity) const;
-
-  // Starting at the given character offset, locates the start of the next or
-  // previous word and returns its character offset.
-  // In case there is no word boundary before or after the given offset, it
-  // returns one past the last character.
-  // If the given offset is already at the start of a word, returns the start
-  // of the next word if the search is forwards, and the given offset if it is
-  // backwards.
-  // If the start offset is equal to -1 and the search is in the forwards
-  // direction, returns the start boundary of the first word.
-  // Start offsets that are not in the range -1 to text length are invalid.
-  int GetWordStartBoundary(int start,
-                           ui::TextBoundaryDirection direction) const;
-
   // This is an approximate hit test that only uses the information in
   // the browser process to compute the correct result. It will not return
   // correct results in many cases of z-index, overflow, and absolute
@@ -401,11 +382,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // to compute a name from its descendants.
   std::string ComputeAccessibleNameFromDescendants();
 
-  // Creates a position rooted at this object.
-  // This is a text position on all platforms except IA2 and ATK, where tree
-  // positions are created for non-text objects representing hypertext offsets.
-  virtual AXPlatformPosition::AXPositionInstance CreatePositionAt(
-      int offset) const;
+  // Creates a text position rooted at this object.
+  AXPlatformPosition::AXPositionInstance CreatePositionAt(
+      int offset,
+      ui::AXTextAffinity affinity = ui::AX_TEXT_AFFINITY_DOWNSTREAM) const;
 
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;

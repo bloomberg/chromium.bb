@@ -1701,7 +1701,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   words.push_back(L"is \"");
   words.push_back(L"the ");
   words.push_back(L"study ");
-  words.push_back(L"of " + embedded_character + L' ');
+  words.push_back(L"of ");
+  words.push_back(embedded_character);
   words.push_back(L"of ");
   words.push_back(L"conflict ");
   words.push_back(L"and\n");
@@ -1719,6 +1720,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     CheckTextAtOffset(paragraph_text, word_start_offset, IA2_TEXT_BOUNDARY_WORD,
                       word_start_offset, word_end_offset, word);
     word_start_offset = word_end_offset;
+    // If the word boundary is inside an embedded object, |word_end_offset|
+    // should be one past the embedded object character. To get to the start of
+    // the next word, we have to skip the space between the embedded object
+    // character and the next word.
+    if (word == embedded_character)
+      ++word_start_offset;
   }
 }
 

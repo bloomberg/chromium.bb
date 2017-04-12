@@ -722,8 +722,8 @@ BrowserAccessibilityWin
 
   // |offset| could either be a text character or a child index in case of
   // non-text objects.
-  CONTENT_EXPORT AXPlatformPosition::AXPositionInstance CreatePositionAt(
-      int offset) const override;
+  AXPlatformPosition::AXPositionInstance CreatePositionForSelectionAt(
+      int offset) const;
 
   CONTENT_EXPORT base::string16 GetText() const override;
 

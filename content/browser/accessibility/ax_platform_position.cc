@@ -109,6 +109,10 @@ int AXPlatformPosition::MaxTextOffsetInParent() const {
     return INVALID_OFFSET;
   if (GetAnchor()->IsTextOnlyObject())
     return MaxTextOffset();
+  // Not all objects in the internal accessibility tree are exposed to platform
+  // APIs.
+  if (GetAnchor()->PlatformIsChildOfLeaf())
+    return MaxTextOffset();
   return 1;
 #else
   return MaxTextOffset();

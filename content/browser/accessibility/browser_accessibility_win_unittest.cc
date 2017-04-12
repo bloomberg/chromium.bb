@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1068,6 +1069,7 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   textarea_text.state = 1 << ui::AX_STATE_EDITABLE;
   textarea.SetValue(base::UTF16ToUTF8(text));
   textarea_text.SetName(base::UTF16ToUTF8(text));
+  textarea.AddStringAttribute(ui::AX_ATTR_HTML_TAG, "textarea");
   textarea.child_ids.push_back(textarea_div.id);
   textarea_div.child_ids.push_back(textarea_text.id);
 
@@ -1100,6 +1102,8 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
   text_field_text.state = 1 << ui::AX_STATE_EDITABLE;
   text_field.SetValue(base::UTF16ToUTF8(line1));
   text_field_text.SetName(base::UTF16ToUTF8(line1));
+  text_field.AddStringAttribute(ui::AX_ATTR_HTML_TAG, "input");
+  text_field.html_attributes.push_back(std::make_pair("type", "text"));
   text_field.child_ids.push_back(text_field_div.id);
   text_field_div.child_ids.push_back(text_field_text.id);
 

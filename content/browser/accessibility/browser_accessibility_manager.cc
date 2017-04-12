@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 namespace content {
@@ -66,6 +67,11 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
   int32_t no_id = empty_data.id;
 
   ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = 1;
+  tree_data.focused_tree_id = 1;
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
   update.root_id = node1.id;
   update.nodes.push_back(node1);
   if (node2.id != no_id)

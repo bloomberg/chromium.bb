@@ -2262,11 +2262,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
   if (!start_offset || !end_offset || !text)
     return E_INVALIDARG;
 
-  const base::string16& text_str = GetText();
   HandleSpecialTextOffset(&offset);
   if (offset < 0)
     return E_INVALIDARG;
 
+  const base::string16& text_str = GetText();
   LONG text_len = text_str.length();
   if (offset > text_len)
     return E_INVALIDARG;
@@ -3665,8 +3665,9 @@ void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
 
 // |offset| could either be a text character or a child index in case of
 // non-text objects.
+// TODO(nektar): Remove this function once selection bugs are fixed in Blink.
 BrowserAccessibilityWin::AXPlatformPositionInstance
-BrowserAccessibilityWin::CreatePositionAt(int offset) const {
+BrowserAccessibilityWin::CreatePositionForSelectionAt(int offset) const {
   if (!IsNativeTextControl() && !IsTextOnlyObject()) {
     DCHECK(manager_);
     const BrowserAccessibilityWin* child = this;
@@ -3696,7 +3697,7 @@ BrowserAccessibilityWin::CreatePositionAt(int offset) const {
     }
     return position;
   }
-  return BrowserAccessibility::CreatePositionAt(offset);
+  return CreatePositionAt(offset);
 }
 
 base::string16 BrowserAccessibilityWin::GetText() const {
@@ -4337,9 +4338,9 @@ void BrowserAccessibilityWin::SetIA2HypertextSelection(LONG start_offset,
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
   AXPlatformPositionInstance start_position =
-      CreatePositionAt(static_cast<int>(start_offset));
+      CreatePositionForSelectionAt(static_cast<int>(start_offset));
   AXPlatformPositionInstance end_position =
-      CreatePositionAt(static_cast<int>(end_offset));
+      CreatePositionForSelectionAt(static_cast<int>(end_offset));
   manager_->SetSelection(AXPlatformRange(start_position->AsTextPosition(),
                                          end_position->AsTextPosition()));
 }
@@ -4747,13 +4748,61 @@ LONG BrowserAccessibilityWin::FindBoundary(
                                     : ui::AX_TEXT_AFFINITY_DOWNSTREAM;
 
   HandleSpecialTextOffset(&start_offset);
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD)
-    return GetWordStartBoundary(static_cast<int>(start_offset), direction);
-  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
-    return GetLineStartBoundary(
-        static_cast<int>(start_offset), direction, affinity);
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_WORD) {
+    switch (direction) {
+      case ui::FORWARDS_DIRECTION: {
+        AXPlatformPositionInstance position =
+            CreatePositionAt(static_cast<int>(start_offset), affinity);
+        AXPlatformPositionInstance next_word =
+            position->CreateNextWordStartPosition();
+        if (next_word->anchor_id() != GetId())
+          next_word = position->CreatePositionAtEndOfAnchor();
+        return next_word->text_offset();
+      }
+      case ui::BACKWARDS_DIRECTION: {
+        AXPlatformPositionInstance position =
+            CreatePositionAt(static_cast<int>(start_offset), affinity);
+        AXPlatformPositionInstance previous_word;
+        if (!position->AtStartOfWord()) {
+          previous_word = position->CreatePreviousWordStartPosition();
+          if (previous_word->anchor_id() != GetId())
+            previous_word = position->CreatePositionAtStartOfAnchor();
+        } else {
+          previous_word = std::move(position);
+        }
+        return previous_word->text_offset();
+      }
+    }
   }
 
+  if (ia2_boundary == IA2_TEXT_BOUNDARY_LINE) {
+    switch (direction) {
+      case ui::FORWARDS_DIRECTION: {
+        AXPlatformPositionInstance position =
+            CreatePositionAt(static_cast<int>(start_offset), affinity);
+        AXPlatformPositionInstance next_line =
+            position->CreateNextLineStartPosition();
+        if (next_line->anchor_id() != GetId())
+          next_line = position->CreatePositionAtEndOfAnchor();
+        return next_line->text_offset();
+      }
+      case ui::BACKWARDS_DIRECTION: {
+        AXPlatformPositionInstance position =
+            CreatePositionAt(static_cast<int>(start_offset), affinity);
+        AXPlatformPositionInstance previous_line;
+        if (!position->AtStartOfLine()) {
+          previous_line = position->CreatePreviousLineStartPosition();
+          if (previous_line->anchor_id() != GetId())
+            previous_line = position->CreatePositionAtStartOfAnchor();
+        } else {
+          previous_line = std::move(position);
+        }
+        return previous_line->text_offset();
+      }
+    }
+  }
+
+  // TODO(nektar): |AXPosition| can handle other types of boundaries as well.
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   return ui::FindAccessibleTextBoundary(text, GetLineStartOffsets(), boundary,
                                         start_offset, direction, affinity);
