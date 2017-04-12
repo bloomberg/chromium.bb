@@ -313,7 +313,8 @@ AutomationPredicate.structuralContainer = AutomationPredicate.roles([
     Role.WINDOW,
     Role.EMBEDDED_OBJECT,
     Role.IFRAME,
-    Role.IFRAME_PRESENTATIONAL]);
+    Role.IFRAME_PRESENTATIONAL,
+    Role.UNKNOWN]);
 
 /**
  * Returns whether the given node should not be crossed when performing
