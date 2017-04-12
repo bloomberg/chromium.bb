@@ -19,7 +19,6 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Chrome on Windows and Linux create a GPU process that uses SwiftShader
     # when using either --disable-gpu or a blacklisted GPU.
-    self.Skip('GpuProcess_no_gpu_process', ['win', 'debug'], bug=630728)
     self.Skip('GpuProcess_skip_gpu_process', ['win', 'linux'], bug=630728)
 
     # Currently SwiftShader is integrated only on Windows and Linux. Remove
