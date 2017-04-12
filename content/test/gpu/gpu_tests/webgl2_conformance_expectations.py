@@ -719,6 +719,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-rgb16f-rgb-half_float.html',
         ['linux', 'nvidia'], bug=694359)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['linux', 'nvidia'], bug=694359)
     self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
         'tex-3d-srgb8_alpha8-rgba-unsigned_byte.html',
         ['linux', 'nvidia'], bug=679677)
