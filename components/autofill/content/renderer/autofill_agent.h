@@ -65,7 +65,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
 
   // mojom::AutofillAgent:
-  void FirstUserGestureObservedInTab() override;
   void FillForm(int32_t id, const FormData& form) override;
   void PreviewForm(int32_t id, const FormData& form) override;
   void FieldTypePredictionsAvailable(
@@ -186,7 +185,7 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebKeyboardEvent& event) override;
   void OpenTextDataListChooser(const blink::WebInputElement& element) override;
   void DataListOptionsChanged(const blink::WebInputElement& element) override;
-  void FirstUserGestureObserved() override;
+  void UserGestureObserved() override;
   void AjaxSucceeded() override;
 
   // Called when a same-document navigation is detected.

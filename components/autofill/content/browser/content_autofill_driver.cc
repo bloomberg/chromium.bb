@@ -36,7 +36,6 @@ ContentAutofillDriver::ContentAutofillDriver(
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : render_frame_host_(render_frame_host),
-      client_(client),
       autofill_manager_(new AutofillManager(this,
                                             client,
                                             app_locale,
@@ -181,11 +180,6 @@ void ContentAutofillDriver::DidInteractWithCreditCardForm() {
   contents->OnCreditCardInputShownOnHttp();
 }
 
-// mojom::AutofillDriver:
-void ContentAutofillDriver::FirstUserGestureObserved() {
-  client_->OnFirstUserGestureObserved();
-}
-
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
                                       base::TimeTicks timestamp) {
   autofill_manager_->OnFormsSeen(forms, timestamp);
@@ -253,10 +247,6 @@ void ContentAutofillDriver::SetAutofillManager(
     std::unique_ptr<AutofillManager> manager) {
   autofill_manager_ = std::move(manager);
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
-}
-
-void ContentAutofillDriver::NotifyFirstUserGestureObservedInTab() {
-  GetAutofillAgent()->FirstUserGestureObservedInTab();
 }
 
 const mojom::AutofillAgentPtr& ContentAutofillDriver::GetAutofillAgent() {

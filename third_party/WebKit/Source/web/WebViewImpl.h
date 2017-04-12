@@ -107,20 +107,6 @@ class WEB_EXPORT WebViewImpl final
   static WebViewImpl* Create(WebViewClient*, WebPageVisibilityState);
   static HashSet<WebViewImpl*>& AllInstances();
 
-  class UserGestureNotifier {
-   public:
-    // If a UserGestureIndicator is created for a user gesture since the last
-    // page load and the WebViewImpl's |m_userGestureObserved| is false, the
-    // UserGestureNotifier will notify the client and set
-    // |m_userGestureObserved| to true.
-    UserGestureNotifier(WebViewImpl*);
-    ~UserGestureNotifier();
-
-   private:
-    Persistent<WebLocalFrameImpl> frame_;
-    bool* const user_gesture_observed_;
-  };
-
   // WebWidget methods:
   void Close() override;
   WebSize size() override;
@@ -721,7 +707,6 @@ class WEB_EXPORT WebViewImpl final
   WebColor background_color_override_;
   float zoom_factor_override_;
 
-  bool user_gesture_observed_;
   bool should_dispatch_first_visually_non_empty_layout_;
   bool should_dispatch_first_layout_after_finished_parsing_;
   bool should_dispatch_first_layout_after_finished_loading_;

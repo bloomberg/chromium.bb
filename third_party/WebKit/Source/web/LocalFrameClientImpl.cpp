@@ -970,9 +970,16 @@ KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
   return web_frame_->Client()->OverrideFlashEmbedWithHTML(WebURL(url));
 }
 
-void LocalFrameClientImpl::SetHasReceivedUserGesture() {
-  if (web_frame_->Client())
+void LocalFrameClientImpl::SetHasReceivedUserGesture(bool received_previously) {
+  // The client potentially needs to dispatch the event to other processes only
+  // for the first time.
+  if (!received_previously && web_frame_->Client())
     web_frame_->Client()->SetHasReceivedUserGesture();
+  // WebAutofillClient reacts only to the user gestures for this particular
+  // frame. |received_previously| is ignored because it may be true due to an
+  // event in a child frame.
+  if (WebAutofillClient* autofill_client = web_frame_->AutofillClient())
+    autofill_client->UserGestureObserved();
 }
 
 void LocalFrameClientImpl::AbortClientNavigation() {

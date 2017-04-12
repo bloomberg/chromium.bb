@@ -115,10 +115,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // a form has been submitted by AJAX without navigation.
   void AJAXSucceeded();
 
-  // Called when the user first interacts with the page after a load. This is a
+  // Called when the user interacts with the page after a load. This is a
   // signal to make autofilled values of password input elements accessible to
   // JavaScript.
-  void FirstUserGestureObserved();
+  void UserGestureObserved();
 
   // Given password form data |form_data| and a supplied key |key| for
   // referencing the password info, returns a set of WebInputElements in

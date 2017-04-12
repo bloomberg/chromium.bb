@@ -36,19 +36,8 @@ class CountingAutofillDriver : public TestAutofillDriver {
 
   ~CountingAutofillDriver() override { --*instance_counter_; }
 
-  // Note that EXPECT_CALL cannot be used here, because creation and
-  // notification of the same driver might be done by a single AddForKey call
-  // from the test. Therefore tracking the "gesture_observed" flag is done
-  // explicitly here.
-  void NotifyFirstUserGestureObservedInTab() override {
-    gesture_observed_ = true;
-  }
-
-  bool gesture_observed() { return gesture_observed_; }
-
  private:
   int* const instance_counter_;
-  bool gesture_observed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CountingAutofillDriver);
 };
@@ -185,56 +174,6 @@ TEST_F(AutofillDriverFactoryTest, NavigationFinished) {
 TEST_F(AutofillDriverFactoryTest, TabHidden) {
   EXPECT_CALL(client_, HideAutofillPopup());
   factory_.TabHidden();
-}
-
-// Without calling OnFirstUserGestureObserved on the factory, the factory will
-// not call NotifyFirstUserGestureObservedInTab on a driver.
-TEST_F(AutofillDriverFactoryTest, OnFirstUserGestureObserved_NotCalled) {
-  factory_.AddForKey(KeyFrom(1), CreateDriverCallback());
-  EXPECT_FALSE(GetDriver(KeyFrom(1))->gesture_observed());
-}
-
-// Call OnFirstUserGestureObserved on the factory with one driver. The factory
-// will call NotifyFirstUserGestureObservedInTab on that driver.
-TEST_F(AutofillDriverFactoryTest, OnFirstUserGestureObserved_CalledOld) {
-  factory_.AddForKey(KeyFrom(1), CreateDriverCallback());
-  factory_.OnFirstUserGestureObserved();
-  EXPECT_TRUE(GetDriver(KeyFrom(1))->gesture_observed());
-}
-
-// Call OnFirstUserGestureObserved on the factory without drivers. Add a
-// driver. The factory will call NotifyFirstUserGestureObservedInTab on that
-// driver.
-TEST_F(AutofillDriverFactoryTest, OnFirstUserGestureObserved_CalledNew) {
-  factory_.OnFirstUserGestureObserved();
-  factory_.AddForKey(KeyFrom(1), CreateDriverCallback());
-  EXPECT_TRUE(GetDriver(KeyFrom(1))->gesture_observed());
-}
-
-// Combining the CalledOld and CalledNew test cases into one.
-TEST_F(AutofillDriverFactoryTest, OnFirstUserGestureObserved_MultipleDrivers) {
-  factory_.AddForKey(KeyFrom(1), CreateDriverCallback());
-  factory_.OnFirstUserGestureObserved();
-  EXPECT_TRUE(GetDriver(KeyFrom(1))->gesture_observed());
-
-  factory_.AddForKey(KeyFrom(7), CreateDriverCallback());
-  EXPECT_TRUE(GetDriver(KeyFrom(7))->gesture_observed());
-}
-
-// Call OnFirstUserGestureObserved on the factory with one driver. Simulate
-// navigation to a different page. Add a driver. The factory will not call
-// NotifyFirstUserGestureObservedInTab on that driver.
-TEST_F(AutofillDriverFactoryTest, OnFirstUserGestureObserved_CalledNavigation) {
-  factory_.AddForKey(KeyFrom(1), CreateDriverCallback());
-  factory_.OnFirstUserGestureObserved();
-  EXPECT_TRUE(GetDriver(KeyFrom(1))->gesture_observed());
-
-  EXPECT_CALL(client_, HideAutofillPopup());
-  factory_.NavigationFinished();
-
-  // Adding a sub-frame
-  factory_.AddForKey(KeyFrom(2), CreateDriverCallback());
-  EXPECT_FALSE(GetDriver(KeyFrom(2))->gesture_observed());
 }
 
 }  // namespace autofill

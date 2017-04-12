@@ -313,7 +313,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }
 
-  virtual void SetHasReceivedUserGesture() {}
+  virtual void SetHasReceivedUserGesture(bool received_previously) {}
 
   virtual void AbortClientNavigation() {}
 

@@ -48,8 +48,8 @@ class WebAutofillClient {
   virtual void OpenTextDataListChooser(const WebInputElement&) {}
   // This is called when the datalist for an input has changed.
   virtual void DataListOptionsChanged(const WebInputElement&) {}
-  // Called the first time the user interacts with the page after a load.
-  virtual void FirstUserGestureObserved() {}
+  // Called when the user interacts with the page after a load.
+  virtual void UserGestureObserved() {}
 
   virtual void DidAssociateFormControlsDynamically() {}
   virtual void AjaxSucceeded() {}

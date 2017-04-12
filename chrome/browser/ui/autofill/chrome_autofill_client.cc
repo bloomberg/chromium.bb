@@ -330,14 +330,6 @@ void ChromeAutofillClient::DidFillOrPreviewField(
 #endif  // defined(OS_ANDROID)
 }
 
-void ChromeAutofillClient::OnFirstUserGestureObserved() {
-  ContentAutofillDriverFactory* factory =
-      ContentAutofillDriverFactory::FromWebContents(web_contents());
-  DCHECK(factory);
-
-  factory->OnFirstUserGestureObserved();
-}
-
 bool ChromeAutofillClient::IsContextSecure() {
   content::SSLStatus ssl_status;
   content::NavigationEntry* navigation_entry =

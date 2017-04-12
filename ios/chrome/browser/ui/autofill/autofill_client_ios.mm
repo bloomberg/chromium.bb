@@ -209,12 +209,6 @@ bool AutofillClientIOS::IsContextSecure() {
           net::IsCertStatusMinorError(ssl.cert_status));
 }
 
-void AutofillClientIOS::OnFirstUserGestureObserved() {
-  // TODO(gcasto): [Merge 306796] http://crbug.com/439425 Verify if this method
-  // needs a real implementation or not.
-  NOTIMPLEMENTED();
-}
-
 bool AutofillClientIOS::ShouldShowSigninPromo() {
   return false;
 }

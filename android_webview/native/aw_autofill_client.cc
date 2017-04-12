@@ -185,10 +185,6 @@ void AwAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-void AwAutofillClient::OnFirstUserGestureObserved() {
-  NOTIMPLEMENTED();
-}
-
 bool AwAutofillClient::IsContextSecure() {
   content::SSLStatus ssl_status;
   content::NavigationEntry* navigation_entry =

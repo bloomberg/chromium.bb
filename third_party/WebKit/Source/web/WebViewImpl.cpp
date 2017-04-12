@@ -374,7 +374,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       background_color_override_enabled_(false),
       background_color_override_(Color::kTransparent),
       zoom_factor_override_(0),
-      user_gesture_observed_(false),
       should_dispatch_first_visually_non_empty_layout_(false),
       should_dispatch_first_layout_after_finished_parsing_(false),
       should_dispatch_first_layout_after_finished_loading_(false),
@@ -428,23 +427,6 @@ WebViewImpl::~WebViewImpl() {
   // in destructor. m_linkHighlightsTimeline might be destroyed earlier
   // than m_linkHighlights.
   DCHECK(link_highlights_.IsEmpty());
-}
-
-WebViewImpl::UserGestureNotifier::UserGestureNotifier(WebViewImpl* view)
-    // TODO(kenrb, alexmos): |m_frame| should be set to the local root frame,
-    // not the main frame. See crbug.com/589894.
-    : frame_(view->MainFrameImpl()),
-      user_gesture_observed_(&view->user_gesture_observed_) {
-  DCHECK(user_gesture_observed_);
-}
-
-WebViewImpl::UserGestureNotifier::~UserGestureNotifier() {
-  if (!*user_gesture_observed_ && frame_ &&
-      frame_->GetFrame()->HasReceivedUserGesture()) {
-    *user_gesture_observed_ = true;
-    if (frame_ && frame_->AutofillClient())
-      frame_->AutofillClient()->FirstUserGestureObserved();
-  }
 }
 
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
@@ -2182,20 +2164,6 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   if (!MainFrameImpl())
     return WebInputEventResult::kNotHandled;
 
-  WebAutofillClient* autofill_client = MainFrameImpl()->AutofillClient();
-  UserGestureNotifier notifier(this);
-  // On the first input event since page load, |notifier| instructs the
-  // autofill client to unblock values of password input fields of any forms
-  // on the page. There is a single input event, GestureTap, which can both
-  // be the first event after page load, and cause a form submission. In that
-  // case, the form submission happens before the autofill client is told
-  // to unblock the password values, and so the password values are not
-  // submitted. To avoid that, GestureTap is handled explicitly:
-  if (input_event.GetType() == WebInputEvent::kGestureTap && autofill_client) {
-    user_gesture_observed_ = true;
-    autofill_client->FirstUserGestureObserved();
-  }
-
   GetPage()->GetVisualViewport().StartTrackingPinchStats();
 
   TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type",
@@ -3712,7 +3680,6 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   // Make sure link highlight from previous page is cleared.
   link_highlights_.Clear();
   EndActiveFlingAnimation();
-  user_gesture_observed_ = false;
 }
 
 void WebViewImpl::PostLayoutResize(WebLocalFrameImpl* webframe) {

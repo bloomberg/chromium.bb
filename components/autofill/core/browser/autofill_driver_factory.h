@@ -34,12 +34,6 @@ class AutofillDriverFactory {
   // Handles hiding of the corresponding tab.
   void TabHidden();
 
-  // Call this to notify the factory that one of the frames saw a user gesture.
-  // The factory will distribute this information to all drivers when it comes
-  // for the first time since the last main frame navigation to a different
-  // page. It will also notify drivers added later (see AddForKey).
-  void OnFirstUserGestureObserved();
-
   AutofillClient* client() { return client_; };
 
  protected:
@@ -60,8 +54,6 @@ class AutofillDriverFactory {
   AutofillClient* const client_;
 
   std::unordered_map<void*, std::unique_ptr<AutofillDriver>> driver_map_;
-
-  bool user_gesture_seen_ = false;  // The state for OnFirstUserGestureObserved.
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDriverFactory);
 };

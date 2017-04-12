@@ -2117,22 +2117,26 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckElementValue("iframe", "password_field", "");
 
   // Simulate the user interaction in the iframe which should trigger autofill.
+  // Click in the middle of the frame to avoid the border.
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
       RenderFrameHost(),
       "var iframeRect = document.getElementById("
       "'iframe').getBoundingClientRect();"));
-  int top;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-      RenderFrameHost(), "window.domAutomationController.send(iframeRect.top);",
-      &top));
-  int left;
+  int y;
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
       RenderFrameHost(),
-      "window.domAutomationController.send(iframeRect.left);", &left));
+      "window.domAutomationController.send((iframeRect.top +"
+      "iframeRect.bottom) / 2);",
+      &y));
+  int x;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
+      RenderFrameHost(),
+      "window.domAutomationController.send((iframeRect.left + iframeRect.right)"
+      "/ 2);",
+      &x));
 
-  content::SimulateMouseClickAt(WebContents(), 0,
-                                blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(left + 1, top + 1));
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
   // Verify password has been autofilled
   WaitForElementValue("iframe", "password_field", "pa55w0rd");
 

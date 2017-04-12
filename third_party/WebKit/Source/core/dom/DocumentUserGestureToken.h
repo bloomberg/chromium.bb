@@ -37,10 +37,12 @@ class DocumentUserGestureToken final : public UserGestureToken {
   DocumentUserGestureToken(Status status) : UserGestureToken(status) {}
 
   static void SetHasReceivedUserGesture(Document* document) {
-    if (document && document->GetFrame() &&
-        !document->GetFrame()->HasReceivedUserGesture()) {
-      document->GetFrame()->SetDocumentHasReceivedUserGesture();
-      document->GetFrame()->Loader().Client()->SetHasReceivedUserGesture();
+    if (document && document->GetFrame()) {
+      bool had_gesture = document->GetFrame()->HasReceivedUserGesture();
+      if (!had_gesture)
+        document->GetFrame()->SetDocumentHasReceivedUserGesture();
+      document->GetFrame()->Loader().Client()->SetHasReceivedUserGesture(
+          had_gesture);
     }
   }
 };

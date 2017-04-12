@@ -69,10 +69,8 @@ class ContentAutofillDriver : public AutofillDriver,
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
   void DidInteractWithCreditCardForm() override;
-  void NotifyFirstUserGestureObservedInTab() override;
 
   // mojom::AutofillDriver:
-  void FirstUserGestureObserved() override;
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override;
   void WillSubmitForm(const FormData& form, base::TimeTicks timestamp) override;
@@ -125,9 +123,6 @@ class ContentAutofillDriver : public AutofillDriver,
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
   content::RenderFrameHost* const render_frame_host_;
-
-  // The per-tab client.
-  AutofillClient* client_;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.

@@ -491,15 +491,4 @@ TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
                   content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
 }
 
-TEST_F(ContentAutofillDriverTest, NotifyFirstUserGestureObservedInTab) {
-  driver_->NotifyFirstUserGestureObservedInTab();
-  EXPECT_CALL(fake_agent_, FirstUserGestureObservedInTab());
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(ContentAutofillDriverTest, FirstUserGestureObserved) {
-  EXPECT_CALL(*test_autofill_client_, OnFirstUserGestureObserved());
-  driver_->FirstUserGestureObserved();
-}
-
 }  // namespace autofill

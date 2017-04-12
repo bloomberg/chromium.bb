@@ -643,6 +643,9 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::RegisterElement(
 }
 
 void PasswordAutofillAgent::PasswordValueGatekeeper::OnUserGesture() {
+  if (was_user_gesture_seen_)
+    return;
+
   was_user_gesture_seen_ = true;
 
   for (blink::WebInputElement& element : elements_)
@@ -1018,7 +1021,7 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted() {
   provisionally_saved_form_.Reset();
 }
 
-void PasswordAutofillAgent::FirstUserGestureObserved() {
+void PasswordAutofillAgent::UserGestureObserved() {
   gatekeeper_.OnUserGesture();
 }
 

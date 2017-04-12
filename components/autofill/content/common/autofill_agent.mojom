@@ -10,10 +10,6 @@ import "mojo/common/string16.mojom";
 // There is one instance of this interface per render frame in the render
 // process.
 interface AutofillAgent {
-  // Tells the render frame that a user gesture was observed
-  // somewhere in the tab (including in a different frame).
-  FirstUserGestureObservedInTab();
-
   // Instructs the renderer to fill the active form with the given form data.
   // Please refer AutofillDriver.QueryFormFieldAutofill comments about the |id|.
   FillForm(int32 id, FormData form);

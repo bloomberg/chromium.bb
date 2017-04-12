@@ -107,7 +107,6 @@ void WebFrameWidgetBase::DragTargetDrop(const WebDragData& web_drag_data,
 
   DCHECK(current_drag_data_);
   current_drag_data_ = DataObject::Create(web_drag_data);
-  WebViewImpl::UserGestureNotifier notifier(View());
 
   // If this webview transitions from the "drop accepting" state to the "not
   // accepting" state, then our IPC message reply indicating that may be in-

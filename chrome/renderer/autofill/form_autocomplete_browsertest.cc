@@ -49,8 +49,6 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
  private:
   // mojom::AutofillDriver:
-  void FirstUserGestureObserved() override {}
-
   void FormsSeen(const std::vector<FormData>& forms,
                  base::TimeTicks timestamp) override {}
 

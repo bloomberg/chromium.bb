@@ -102,10 +102,6 @@ class AutofillDriver {
   // Called when the user interacted with a credit card form, so that
   // the current page's security state can be updated appropriately.
   virtual void DidInteractWithCreditCardForm() = 0;
-
-  // Tells the associated frame that a user gesture was observed somewhere in
-  // the tab (including in a different frame).
-  virtual void NotifyFirstUserGestureObservedInTab() {}
 };
 
 }  // namespace autofill

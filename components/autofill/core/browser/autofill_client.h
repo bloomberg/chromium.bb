@@ -180,9 +180,6 @@ class AutofillClient : public RiskDataLoader {
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) = 0;
 
-  // Informs the client that a user gesture has been observed.
-  virtual void OnFirstUserGestureObserved() = 0;
-
   // If the context is secure.
   virtual bool IsContextSecure() = 0;
 

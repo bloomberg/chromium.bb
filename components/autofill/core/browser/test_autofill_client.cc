@@ -117,9 +117,6 @@ void TestAutofillClient::DidFillOrPreviewField(
     const base::string16& profile_full_name) {
 }
 
-void TestAutofillClient::OnFirstUserGestureObserved() {
-}
-
 bool TestAutofillClient::IsContextSecure() {
   // Simplified secure context check for tests.
   return form_origin_.SchemeIs("https");

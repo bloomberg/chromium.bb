@@ -2627,9 +2627,7 @@ class MockAutofillClient : public WebAutofillClient {
     if (UserGestureIndicator::ProcessingUserGesture())
       ++text_changes_from_user_gesture_;
   }
-  void FirstUserGestureObserved() override {
-    ++user_gesture_notifications_count_;
-  }
+  void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
   void ClearChangeCounts() { text_changes_ = 0; }
 
@@ -3485,7 +3483,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
   key_event.SetType(WebInputEvent::kKeyUp);
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
 
-  EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
+  EXPECT_EQ(2, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(0);
 }
 
@@ -3509,24 +3507,6 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
   web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
   mouse_event.SetType(WebInputEvent::kMouseUp);
   web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
-
-  EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
-  frame->SetAutofillClient(0);
-}
-
-TEST_P(WebViewTest, FirstUserGestureObservedGestureTap) {
-  RegisterMockedHttpURLLoad("longpress_selection.html");
-  MockAutofillClient client;
-  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "longpress_selection.html", true);
-  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
-  frame->SetAutofillClient(&client);
-  web_view->SetInitialFocus(false);
-
-  EXPECT_EQ(0, client.GetUserGestureNotificationsCount());
-
-  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap,
-                             WebString::FromUTF8("target")));
 
   EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(0);

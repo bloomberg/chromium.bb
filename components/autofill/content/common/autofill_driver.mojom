@@ -13,9 +13,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // There is one instance of this interface per render frame host in the browser
 // process.
 interface AutofillDriver {
-  // Notification that there has been a user gesture.
-  FirstUserGestureObserved();
-
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutofillManager.
   FormsSeen(array<FormData> forms, mojo.common.mojom.TimeTicks timestamp);

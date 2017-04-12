@@ -421,10 +421,8 @@ void AutofillAgent::DataListOptionsChanged(const WebInputElement& element) {
   TextFieldDidChangeImpl(element);
 }
 
-void AutofillAgent::FirstUserGestureObserved() {
-  password_autofill_agent_->FirstUserGestureObserved();
-
-  GetAutofillDriver()->FirstUserGestureObserved();
+void AutofillAgent::UserGestureObserved() {
+  password_autofill_agent_->UserGestureObserved();
 }
 
 void AutofillAgent::DoAcceptDataListSuggestion(
@@ -458,10 +456,6 @@ void AutofillAgent::DoAcceptDataListSuggestion(
 }
 
 // mojom::AutofillAgent:
-void AutofillAgent::FirstUserGestureObservedInTab() {
-  password_autofill_agent_->FirstUserGestureObserved();
-}
-
 void AutofillAgent::FillForm(int32_t id, const FormData& form) {
   if (id != autofill_query_id_ && id != kNoQueryId)
     return;
