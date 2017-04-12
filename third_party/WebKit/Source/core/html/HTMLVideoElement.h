@@ -75,11 +75,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void PaintCurrentFrame(PaintCanvas*, const IntRect&, const PaintFlags*) const;
 
   // Used by WebGL to do GPU-GPU textures copy if possible.
+  // The caller is responsible for allocating the destination texture.
   bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                          GLuint texture,
-                                         GLenum internal_format,
-                                         GLenum format,
-                                         GLenum type,
                                          bool premultiply_alpha,
                                          bool flip_y);
 

@@ -943,9 +943,6 @@ size_t WebMediaPlayerImpl::VideoDecodedByteCount() const {
 bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned int texture,
-    unsigned internal_format,
-    unsigned format,
-    unsigned type,
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -966,8 +963,7 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
   if (!context_3d_cb_.is_null())
     context_3d = context_3d_cb_.Run();
   return skcanvas_video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, gl, video_frame.get(), texture, internal_format, format, type,
-      premultiply_alpha, flip_y);
+      context_3d, gl, video_frame.get(), texture, premultiply_alpha, flip_y);
 }
 
 void WebMediaPlayerImpl::SetContentDecryptionModule(

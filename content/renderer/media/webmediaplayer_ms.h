@@ -155,9 +155,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                          unsigned int texture,
-                                         unsigned internal_format,
-                                         unsigned format,
-                                         unsigned type,
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 

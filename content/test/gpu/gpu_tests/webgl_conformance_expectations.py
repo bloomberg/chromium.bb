@@ -101,6 +101,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=625738)
 
+    # Temporary suppression; will be removed after bug fix.
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+              bug=701060)
+
     # canvas.commit() promise synchronization isn't fully reliable yet.
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
               bug=709484)

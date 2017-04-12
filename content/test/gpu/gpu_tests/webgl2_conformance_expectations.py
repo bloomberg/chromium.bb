@@ -44,6 +44,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
+    # Temporary suppression; will be removed after bug fix.
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+              bug=701060)
+
     # canvas.commit() promise synchronization isn't fully reliable yet.
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
               bug=709484)
