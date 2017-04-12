@@ -269,6 +269,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       raise
     finally:
       if step_result:
+        result = step_result.json.output
         self._last_returned_properties = step_result.json.output.get(
             'properties', {})
 
@@ -278,44 +279,38 @@ class BotUpdateApi(recipe_api.RecipeApi):
               self.last_returned_properties.iteritems()):
             step_result.presentation.properties[prop_name] = prop_value
         # Add helpful step description in the step UI.
-        if 'step_text' in step_result.json.output:
-          step_text = step_result.json.output['step_text']
+        if 'step_text' in result:
+          step_text = result['step_text']
           step_result.presentation.step_text = step_text
-        # Add log line output.
-        if 'log_lines' in step_result.json.output:
-          for log_name, log_lines in step_result.json.output['log_lines']:
-            step_result.presentation.logs[log_name] = log_lines.splitlines()
 
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for
         # the checkout.
         # If there is a patch failure, emit another step that said things
         # failed.
-        if step_result.json.output.get('patch_failure'):
-          return_code = step_result.json.output.get('patch_apply_return_code')
-          if return_code == 3:
-            # This is download failure, hence an infra failure.
-            # Sadly, python.failing_step doesn't support kwargs.
-            self.m.python.inline(
-                'Patch failure - Try Rebasing',
-                ('import sys;'
-                 'print "Patch download failed. See bot_update step for'
-                 ' details";sys.exit(1)'),
-                infra_step=True,
-                step_test_data=lambda: self.m.raw_io.test_api.output(
-                  'Patch download failed. See bot_update step for details',
-                  retcode=1)
-                )
-          else:
-            # This is actual patch failure.
-            self.m.tryserver.set_patch_failure_tryjob_result()
-            self.m.python.failing_step(
-                'Patch failure', 'Check the bot_update step for details')
+        if result.get('patch_failure'):
+          return_code = result.get('patch_apply_return_code')
+          patch_body = result.get('failed_patch_body')
+          try:
+            if return_code == 3:
+              # This is download failure, hence an infra failure.
+              with self.m.step.context({'infra_step': True}):
+                self.m.python.failing_step(
+                    'Patch failure', 'Git reported a download failure')
+            else:
+              # This is actual patch failure.
+              self.m.tryserver.set_patch_failure_tryjob_result()
+              self.m.python.failing_step(
+                  'Patch failure', 'See attached log. Try rebasing?')
+          except self.m.step.StepFailure as e:
+            if patch_body:
+              e.result.presentation.logs['patch error'] = (
+                  patch_body.splitlines())
 
         # bot_update actually just sets root to be the folder name of the
         # first solution.
-        if step_result.json.output['did_run']:
-          co_root = step_result.json.output['root']
+        if result['did_run']:
+          co_root = result['root']
           cwd = self.m.step.get_from_context('cwd', self.m.path['start_dir'])
           if 'checkout' not in self.m.path:
             self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))

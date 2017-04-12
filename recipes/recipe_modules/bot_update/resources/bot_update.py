@@ -424,17 +424,6 @@ def get_commit_message_footer(message, key):
   return get_commit_message_footer_map(message).get(key)
 
 
-def emit_log_lines(name, lines):
-  for line in lines.splitlines():
-    print '@@@STEP_LOG_LINE@%s@%s@@@' % (name, line)
-  print '@@@STEP_LOG_END@%s@@@' % name
-
-
-def emit_properties(properties):
-  for property_name, property_value in sorted(properties.items()):
-    print '@@@SET_BUILD_PROPERTY@%s@"%s"@@@' % (property_name, property_value)
-
-
 # Derived from:
 # http://code.activestate.com/recipes/577972-disk-usage/?in=user-4178764
 def get_total_disk_space():
@@ -1070,16 +1059,12 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
       emit_json(options.output_json,
                 did_run=True,
                 root=first_sln,
-                log_lines=[('patch error', e.output),],
                 patch_apply_return_code=e.code,
                 patch_root=options.patch_root,
                 patch_failure=True,
+                failed_patch_body=e.output,
                 step_text='%s PATCH FAILED' % step_text,
                 fixed_revisions=revisions)
-    else:
-      # If we're not on recipes, tell annotator about our got_revisions.
-      emit_log_lines('patch error', e.output)
-      print '@@@STEP_TEXT@%s PATCH FAILED@@@' % step_text
     raise
 
   # Take care of got_revisions outputs.
@@ -1113,9 +1098,6 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
               fixed_revisions=revisions,
               properties=got_revisions,
               manifest=manifest)
-  else:
-    # If we're not on recipes, tell annotator about our got_revisions.
-    emit_properties(got_revisions)
 
 
 def print_debug_info():

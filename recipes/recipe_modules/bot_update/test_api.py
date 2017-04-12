@@ -50,8 +50,21 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
       output['fixed_revisions'] = fixed_revisions
 
     if fail_patch:
-      output['log_lines'] = [('patch error', 'Patch failed to apply'),]
       output['patch_failure'] = True
+      output['failed_patch_body'] = '\n'.join([
+        'Downloading patch...',
+        'Applying the patch...',
+        'Patch: foo/bar.py',
+        'Index: foo/bar.py',
+        'diff --git a/foo/bar.py b/foo/bar.py',
+        'index HASH..HASH MODE',
+        '--- a/foo/bar.py',
+        '+++ b/foo/bar.py',
+        'context',
+        '+something',
+        '-something',
+        'more context',
+      ])
       output['patch_apply_return_code'] = 1
       if fail_patch == 'download':
         output['patch_apply_return_code'] = 3
