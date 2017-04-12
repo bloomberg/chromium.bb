@@ -24,6 +24,10 @@
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace extensions {
 
 class FeatureProviderTest;
@@ -214,6 +218,24 @@ class SimpleFeature : public Feature {
       const base::Callback<Availability(const Feature*)>& checker) const;
 
   static bool IsValidExtensionId(const std::string& extension_id);
+
+  // Returns the availability of the feature with respect to the basic
+  // environment Chrome is running in.
+  Availability GetEnvironmentAvailability(
+      Platform platform,
+      version_info::Channel channel,
+      FeatureSessionType session_type,
+      base::CommandLine* command_line) const;
+
+  // Returns the availability of the feature with respect to a given extension's
+  // properties.
+  Availability GetManifestAvailability(const std::string& extension_id,
+                                       Manifest::Type type,
+                                       Manifest::Location location,
+                                       int manifest_version) const;
+
+  // Returns the availability of the feature with respect to a given context.
+  Availability GetContextAvailability(Context context, const GURL& url) const;
 
   // For clarity and consistency, we handle the default value of each of these
   // members the same way: it matches everything. It is up to the higher level

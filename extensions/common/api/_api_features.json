@@ -180,7 +180,7 @@
       "contexts": ["blessed_extension"]
     }, {
       "internal": true,
-      "channel": "trunk",
+      "channel": "stable",
       "contexts": ["webui"],
       "matches": [
         "chrome://cast/*",
@@ -241,7 +241,7 @@
     "contexts": ["blessed_extension"],
     "default_parent": true
   }, {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["webui"],
     "matches": [
       "chrome://md-settings/*",
@@ -519,7 +519,7 @@
     "contexts": ["blessed_extension"]
   }, {
     "internal": true,
-    "channel": "dev",
+    "channel": "stable",
     "contexts": ["webui"],
     "matches": [
       "chrome://chrome-signin/*",

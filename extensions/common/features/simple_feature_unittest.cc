@@ -860,4 +860,34 @@ TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
   }
 }
 
+TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
+  // Create a webui feature available on trunk.
+  SimpleFeature feature;
+  feature.set_contexts({Feature::WEBUI_CONTEXT});
+  feature.set_matches({"chrome://settings/*"});
+  feature.set_channel(version_info::Channel::UNKNOWN);
+
+  const GURL kWhitelistedUrl("chrome://settings/foo");
+  const GURL kOtherUrl("https://example.com");
+
+  {
+    // It should be available on trunk.
+    ScopedCurrentChannel current_channel(Channel::UNKNOWN);
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature
+                  .IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
+                                        kWhitelistedUrl)
+                  .result());
+  }
+  {
+    // It should be unavailable on beta.
+    ScopedCurrentChannel current_channel(Channel::BETA);
+    EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+              feature
+                  .IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
+                                        kWhitelistedUrl)
+                  .result());
+  }
+}
+
 }  // namespace extensions

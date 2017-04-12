@@ -164,8 +164,8 @@ std::string ListDisplayNames(const std::vector<EnumType>& enum_types) {
   return display_name_list;
 }
 
-bool IsCommandLineSwitchEnabled(const std::string& switch_name) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+bool IsCommandLineSwitchEnabled(base::CommandLine* command_line,
+                                const std::string& switch_name) {
   if (command_line->HasSwitch(switch_name + "=1"))
     return true;
   if (command_line->HasSwitch(std::string("enable-") + switch_name))
@@ -215,55 +215,15 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     Manifest::Location location,
     int manifest_version,
     Platform platform) const {
-  // Check extension type first to avoid granting platform app permissions
-  // to component extensions.
-  // HACK(kalman): user script -> extension. Solve this in a more generic way
-  // when we compile feature files.
-  Manifest::Type type_to_check = (type == Manifest::TYPE_USER_SCRIPT) ?
-      Manifest::TYPE_EXTENSION : type;
-  if (!extension_types_.empty() &&
-      !base::ContainsValue(extension_types_, type_to_check)) {
-    return CreateAvailability(INVALID_TYPE, type);
-  }
-
-  if (IsIdInBlacklist(extension_id))
-    return CreateAvailability(FOUND_IN_BLACKLIST, type);
-
-  // TODO(benwells): don't grant all component extensions.
-  // See http://crbug.com/370375 for more details.
-  // Component extensions can access any feature.
-  // NOTE: Deliberately does not match EXTERNAL_COMPONENT.
-  if (component_extensions_auto_granted_ && location == Manifest::COMPONENT)
-    return CreateAvailability(IS_AVAILABLE, type);
-
-  if (!whitelist_.empty() && !IsIdInWhitelist(extension_id) &&
-      !IsWhitelistedForTest(extension_id)) {
-    return CreateAvailability(NOT_FOUND_IN_WHITELIST, type);
-  }
-
-  if (!MatchesManifestLocation(location))
-    return CreateAvailability(INVALID_LOCATION, type);
-
-  if (!platforms_.empty() && !base::ContainsValue(platforms_, platform))
-    return CreateAvailability(INVALID_PLATFORM, type);
-
-  if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
-    return CreateAvailability(INVALID_MIN_MANIFEST_VERSION, type);
-
-  if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
-    return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
-
-  if (!command_line_switch_.empty() &&
-      !IsCommandLineSwitchEnabled(command_line_switch_)) {
-    return CreateAvailability(MISSING_COMMAND_LINE_SWITCH, type);
-  }
-
-  if (channel_ && *channel_ < GetCurrentChannel())
-    return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
-
-  const FeatureSessionType session_type = GetCurrentFeatureSessionType();
-  if (!MatchesSessionTypes(session_type))
-    return CreateAvailability(INVALID_SESSION_TYPE, session_type);
+  Availability environment_availability = GetEnvironmentAvailability(
+      platform, GetCurrentChannel(), GetCurrentFeatureSessionType(),
+      base::CommandLine::ForCurrentProcess());
+  if (!environment_availability.is_available())
+    return environment_availability;
+  Availability manifest_availability =
+      GetManifestAvailability(extension_id, type, location, manifest_version);
+  if (!manifest_availability.is_available())
+    return manifest_availability;
 
   return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
                                       extension_id,
@@ -277,36 +237,24 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     const Extension* extension,
     Feature::Context context,
     const GURL& url,
-    SimpleFeature::Platform platform) const {
+    Platform platform) const {
+  Availability environment_availability = GetEnvironmentAvailability(
+      platform, GetCurrentChannel(), GetCurrentFeatureSessionType(),
+      base::CommandLine::ForCurrentProcess());
+  if (!environment_availability.is_available())
+    return environment_availability;
+
   if (extension) {
-    Availability result = IsAvailableToManifest(extension->id(),
-                                                extension->GetType(),
-                                                extension->location(),
-                                                extension->manifest_version(),
-                                                platform);
-    if (!result.is_available())
-      return result;
+    Availability manifest_availability = GetManifestAvailability(
+        extension->id(), extension->GetType(), extension->location(),
+        extension->manifest_version());
+    if (!manifest_availability.is_available())
+      return manifest_availability;
   }
 
-  // TODO(lazyboy): This isn't quite right for Extension Service Worker
-  // extension API calls, since there's no guarantee that the extension is
-  // "active" in current renderer process when the API permission check is
-  // done.
-  if (!contexts_.empty() && !base::ContainsValue(contexts_, context))
-    return CreateAvailability(INVALID_CONTEXT, context);
-
-  // TODO(kalman): Consider checking |matches_| regardless of context type.
-  // Fewer surprises, and if the feature configuration wants to isolate
-  // "matches" from say "blessed_extension" then they can use complex features.
-  if ((context == WEB_PAGE_CONTEXT || context == WEBUI_CONTEXT) &&
-      !matches_.MatchesURL(url)) {
-    return CreateAvailability(INVALID_URL, url);
-  }
-
-  const FeatureSessionType session_type = GetCurrentFeatureSessionType();
-  if (!MatchesSessionTypes(session_type)) {
-    return CreateAvailability(INVALID_SESSION_TYPE, session_type);
-  }
+  Availability context_availability = GetContextAvailability(context, url);
+  if (!context_availability.is_available())
+    return context_availability;
 
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
   // then at some point a "matches" restriction was checked.
@@ -577,6 +525,92 @@ void SimpleFeature::set_platforms(std::initializer_list<Platform> platforms) {
 void SimpleFeature::set_whitelist(
     std::initializer_list<const char* const> whitelist) {
   whitelist_.assign(whitelist.begin(), whitelist.end());
+}
+
+Feature::Availability SimpleFeature::GetEnvironmentAvailability(
+    Platform platform,
+    version_info::Channel channel,
+    FeatureSessionType session_type,
+    base::CommandLine* command_line) const {
+  if (!platforms_.empty() && !base::ContainsValue(platforms_, platform))
+    return CreateAvailability(INVALID_PLATFORM);
+
+  if (channel_ && *channel_ < GetCurrentChannel())
+    return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
+
+  if (!command_line_switch_.empty() &&
+      !IsCommandLineSwitchEnabled(command_line, command_line_switch_)) {
+    return CreateAvailability(MISSING_COMMAND_LINE_SWITCH);
+  }
+
+  if (!MatchesSessionTypes(session_type))
+    return CreateAvailability(INVALID_SESSION_TYPE, session_type);
+
+  return CreateAvailability(IS_AVAILABLE);
+}
+
+Feature::Availability SimpleFeature::GetManifestAvailability(
+    const std::string& extension_id,
+    Manifest::Type type,
+    Manifest::Location location,
+    int manifest_version) const {
+  // Check extension type first to avoid granting platform app permissions
+  // to component extensions.
+  // HACK(kalman): user script -> extension. Solve this in a more generic way
+  // when we compile feature files.
+  Manifest::Type type_to_check =
+      (type == Manifest::TYPE_USER_SCRIPT) ? Manifest::TYPE_EXTENSION : type;
+  if (!extension_types_.empty() &&
+      !base::ContainsValue(extension_types_, type_to_check)) {
+    return CreateAvailability(INVALID_TYPE, type);
+  }
+
+  if (IsIdInBlacklist(extension_id))
+    return CreateAvailability(FOUND_IN_BLACKLIST);
+
+  // TODO(benwells): don't grant all component extensions.
+  // See http://crbug.com/370375 for more details.
+  // Component extensions can access any feature.
+  // NOTE: Deliberately does not match EXTERNAL_COMPONENT.
+  if (component_extensions_auto_granted_ && location == Manifest::COMPONENT)
+    return CreateAvailability(IS_AVAILABLE);
+
+  if (!whitelist_.empty() && !IsIdInWhitelist(extension_id) &&
+      !IsWhitelistedForTest(extension_id)) {
+    return CreateAvailability(NOT_FOUND_IN_WHITELIST);
+  }
+
+  if (!MatchesManifestLocation(location))
+    return CreateAvailability(INVALID_LOCATION);
+
+  if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
+    return CreateAvailability(INVALID_MIN_MANIFEST_VERSION);
+
+  if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
+    return CreateAvailability(INVALID_MAX_MANIFEST_VERSION);
+
+  return CreateAvailability(IS_AVAILABLE);
+}
+
+Feature::Availability SimpleFeature::GetContextAvailability(
+    Feature::Context context,
+    const GURL& url) const {
+  // TODO(lazyboy): This isn't quite right for Extension Service Worker
+  // extension API calls, since there's no guarantee that the extension is
+  // "active" in current renderer process when the API permission check is
+  // done.
+  if (!contexts_.empty() && !base::ContainsValue(contexts_, context))
+    return CreateAvailability(INVALID_CONTEXT, context);
+
+  // TODO(kalman): Consider checking |matches_| regardless of context type.
+  // Fewer surprises, and if the feature configuration wants to isolate
+  // "matches" from say "blessed_extension" then they can use complex features.
+  if ((context == WEB_PAGE_CONTEXT || context == WEBUI_CONTEXT) &&
+      !matches_.MatchesURL(url)) {
+    return CreateAvailability(INVALID_URL, url);
+  }
+
+  return CreateAvailability(IS_AVAILABLE);
 }
 
 }  // namespace extensions
