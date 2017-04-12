@@ -5,6 +5,7 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 
@@ -34,6 +35,18 @@ class ChromiumCommitTest(unittest.TestCase):
         chromium_commit = ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240')
 
         self.assertEqual(chromium_commit.position, 'refs/heads/master@{#789}')
+        self.assertEqual(chromium_commit.sha, 'c881563d734a86f7d9cd57ac509653a61c45c240')
+
+    def test_when_commit_has_no_position(self):
+        host = MockHost()
+
+        def run_command(_):
+            raise ScriptError('Unable to infer commit position from footers rutabaga')
+
+        host.executive = MockExecutive(run_command_fn=run_command)
+        chromium_commit = ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240')
+
+        self.assertEqual(chromium_commit.position, 'no-commit-position-yet')
         self.assertEqual(chromium_commit.sha, 'c881563d734a86f7d9cd57ac509653a61c45c240')
 
     def test_filtered_changed_files_blacklist(self):

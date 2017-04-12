@@ -40,6 +40,10 @@ def main():
         '--gh-token',
         help='GitHub token or password. Can also be provided using the GH_TOKEN '
              'environment variable.')
+    parser.add_argument('--gerrit-user', default=None,
+        help='Gerrit username (found on settings page or in .gitcookies).')
+    parser.add_argument('--gerrit-token', default=None,
+        help='Gerrit API key (found on settings page or in .gitcookies).')
     parser.add_argument(
         '--github-credentials-json',
         help='A JSON file with schema {"GH_USER": "", "GH_TOKEN": ""}. '
@@ -62,7 +66,14 @@ def main():
     if not (gh_user and gh_token):
         parser.error('Must provide both gh_user and gh_token for GitHub.')
 
-    TestExporter(host, gh_user, gh_token, dry_run=args.dry_run).run()
+    TestExporter(
+        host,
+        gh_user,
+        gh_token,
+        args.gerrit_user,
+        args.gerrit_token,
+        dry_run=args.dry_run
+    ).run()
 
 
 if __name__ == '__main__':

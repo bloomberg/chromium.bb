@@ -10,6 +10,7 @@ from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.test_exporter import TestExporter
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
+from webkitpy.w3c.gerrit_mock import MockGerrit
 
 
 class TestExporterTest(unittest.TestCase):
@@ -22,10 +23,12 @@ class TestExporterTest(unittest.TestCase):
         host.executive = mock_git_commands({
             'crrev-parse': 'c2087acb00eee7960339a0be34ea27d6b20e1131',
         })
-        test_exporter = TestExporter(host, 'gh-username', 'gh-token', dry_run=True)
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
+                                     gerrit_token=None, dry_run=True)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(title='title1', number=1234, body='', state='open'),
         ])
+        test_exporter.gerrit = MockGerrit(host, 'gerrit-username', 'gerrit-token')
         test_exporter.get_exportable_commits = lambda limit: [
             ChromiumCommit(host, position='refs/heads/master@{#458475}'),
             ChromiumCommit(host, position='refs/heads/master@{#458476}'),
@@ -62,8 +65,9 @@ class TestExporterTest(unittest.TestCase):
             return canned_git_outputs.get(args[1], '')
 
         host.executive = MockExecutive(run_command_fn=mock_command)
-        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None, gerrit_token=None)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[], create_pr_fail_index=1)
+        test_exporter.gerrit = MockGerrit(host, 'gerrit-username', 'gerrit-token')
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
@@ -88,7 +92,7 @@ class TestExporterTest(unittest.TestCase):
             'show': 'git show text\nCr-Commit-Position: refs/heads/master@{#458476}',
             'crrev-parse': 'c2087acb00eee7960339a0be34ea27d6b20e1131',
         })
-        test_exporter = TestExporter(host, 'gh-username', 'gh-token')
+        test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None, gerrit_token=None)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(
                 title='Open PR',
@@ -109,6 +113,7 @@ class TestExporterTest(unittest.TestCase):
                 state='open'
             ),
         ], unsuccessful_merge_index=0)
+        test_exporter.gerrit = MockGerrit(host, 'gerrit-username', 'gerrit-token')
         test_exporter.get_exportable_commits = lambda limit: [
             ChromiumCommit(host, position='refs/heads/master@{#458475}'),
             ChromiumCommit(host, position='refs/heads/master@{#458476}'),
