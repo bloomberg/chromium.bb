@@ -324,8 +324,7 @@ bool ScrollbarAnimationController::CalcNeedTriggerScrollbarShow(
     if (scrollbar->orientation() != orientation)
       continue;
 
-    if (distance <
-        (kMouseMoveDistanceToTriggerShow - scrollbar->ThumbThickness()))
+    if (distance < kMouseMoveDistanceToTriggerShow)
       return true;
   }
 

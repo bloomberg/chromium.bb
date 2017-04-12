@@ -1006,13 +1006,15 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, MouseLeaveFadeOut) {
   EXPECT_EQ(kFadeOutDelay, client_.delay());
 }
 
-// Scrollbars should schedule a delay show when mouse hover hidden scrollbar.
+// Scrollbars should schedule a delay show when mouse hover the show scrollbar
+// region of a hidden scrollbar.
 TEST_F(ScrollbarAnimationControllerAuraOverlayTest, BasicMouseHoverShow) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
-  // Move mouse over scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+  // Move mouse hover the show scrollbar region of scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 1);
 
   // An show animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
@@ -1032,8 +1034,9 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
-  // Move mouse over scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+  // Move mouse hover the show scrollbar region of scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 1);
 
   // An show animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
@@ -1041,31 +1044,33 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_EQ(kShowDelay, client_.delay());
 
   base::Closure& fade = client_.start_fade();
-  // Move mouse inside scrollbar. should not post a new show.
-  scrollbar_controller_->DidMouseMoveNear(
-      VERTICAL, kMouseMoveDistanceToTriggerShow - kThumbThickness - 1);
+  // Move mouse still hover the show scrollbar region of scrollbar should not
+  // post a new show.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 2);
 
   EXPECT_TRUE(fade.Equals(client_.start_fade()));
 }
 
 // Scrollbars should cancel delay show when mouse hover hidden scrollbar then
-// move out of scrollbar.
+// move far away.
 TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
        MouseHoverThenOutShouldCancelShow) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
-  // Move mouse over scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+  // Move mouse hover the show scrollbar region of scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 1);
 
   // An show animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
   EXPECT_FALSE(client_.start_fade().IsCancelled());
   EXPECT_EQ(kShowDelay, client_.delay());
 
-  // Move mouse out of scrollbar，delay show should be canceled.
-  scrollbar_controller_->DidMouseMoveNear(
-      VERTICAL, kMouseMoveDistanceToTriggerShow - kThumbThickness);
+  // Move mouse far away，delay show should be canceled.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow);
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 }
@@ -1077,8 +1082,9 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
 
-  // Move mouse over scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+  // Move mouse hover the show scrollbar region of scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 1);
 
   // An show animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
@@ -1090,8 +1096,9 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest,
   EXPECT_TRUE(client_.start_fade().is_null() ||
               client_.start_fade().IsCancelled());
 
-  // Move mouse over scrollbar.
-  scrollbar_controller_->DidMouseMoveNear(VERTICAL, 0);
+  // Move mouse hover the show scrollbar region of scrollbar.
+  scrollbar_controller_->DidMouseMoveNear(VERTICAL,
+                                          kMouseMoveDistanceToTriggerShow - 1);
 
   // An show animation should have been enqueued.
   EXPECT_FALSE(client_.start_fade().is_null());
