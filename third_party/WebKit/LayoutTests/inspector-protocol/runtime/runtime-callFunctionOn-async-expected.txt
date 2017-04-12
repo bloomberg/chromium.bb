@@ -109,10 +109,6 @@ Running test: testFunctionReturnRejectedPromise
         }
         exceptionId : 0
         lineNumber : 0
-        stackTrace : {
-            callFrames : [
-            ]
-        }
         text : Uncaught (in promise)
     }
     result : {

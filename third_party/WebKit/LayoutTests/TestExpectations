@@ -1495,6 +1495,10 @@ crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 crbug.com/521124 crbug.com/410145 [ Win7 ] virtual/sharedarraybuffer/fast/css/font-weight-1.html [ Pass Failure ]
 
+crbug.com/710946 inspector-protocol/runtime/runtime-callFunctionOn-async.html [ NeedsManualRebaseline ]
+crbug.com/710946 inspector-protocol/runtime/runtime-evaluate-async.html [ NeedsManualRebaseline ]
+crbug.com/710946 inspector-protocol/runtime/runtime-runScript-async.html [ NeedsManualRebaseline ]
+
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 

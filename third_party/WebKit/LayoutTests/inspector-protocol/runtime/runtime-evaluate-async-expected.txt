@@ -23,10 +23,6 @@ Running test: testRejectedPromise
         exceptionId : 0
         lineNumber : 0
         scriptId : 
-        stackTrace : {
-            callFrames : [
-            ]
-        }
         text : Uncaught (in promise)
     }
     result : {
