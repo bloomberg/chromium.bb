@@ -7,7 +7,7 @@
         onload = () => {
             var object = document.querySelector("object");
             object.setAttribute("data", "data:text/plain,second");
-            requestAnimationFrame(() => { testRunner.notifyDone(); });
+            object.addEventListener("message", () => { testRunner.notifyDone(); });
         };
     } else {
         document.write("Needs to be run as a layout test.");
