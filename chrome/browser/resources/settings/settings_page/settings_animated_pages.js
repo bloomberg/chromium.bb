@@ -56,8 +56,13 @@ Polymer({
    * @private
    */
   onIronSelect_: function(e) {
-    if (!this.focusConfig || !this.previousRoute_ ||
-        e.detail.item.tagName != 'NEON-ANIMATABLE') {
+    if (!this.focusConfig || !this.previousRoute_)
+      return;
+
+    // Only handle iron-select events from neon-animatable elements and the
+    // SITE_SETTINGS subpage only.
+    if (!e.detail.item.matches(
+        'neon-animatable, settings-subpage#site-settings')) {
       return;
     }
 

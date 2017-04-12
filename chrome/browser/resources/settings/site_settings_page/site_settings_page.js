@@ -49,6 +49,54 @@ Polymer({
       }
     },
 
+
+    /** @type {!Map<string, string>} */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
+  },
+
+  /**
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_: function(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should only
+    // fire once.
+    assert(!oldConfig);
+
+    // Populate the |focusConfig| map of the parent <settings-animated-pages>
+    // element, with additional entries that correspond to subpage trigger
+    // elements residing in this element's Shadow DOM.
+    var R = settings.Route;
+    [
+      [R.SITE_SETTINGS_COOKIES, 'cookies'],
+      [R.SITE_SETTINGS_LOCATION, 'location'],
+      [R.SITE_SETTINGS_CAMERA, 'camera'],
+      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
+      [R.SITE_SETTINGS_NOTIFICATIONS, 'notifications'],
+      [R.SITE_SETTINGS_JAVASCRIPT,'javascript'],
+      [R.SITE_SETTINGS_FLASH,'flash'],
+      [R.SITE_SETTINGS_IMAGES,'images'],
+      [R.SITE_SETTINGS_POPUPS,'popups'],
+      [R.SITE_SETTINGS_BACKGROUND_SYNC,'background-sync'],
+      [R.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,'automatic-downloads'],
+      [R.SITE_SETTINGS_UNSANDBOXED_PLUGINS,'unsandboxed-plugins'],
+      [R.SITE_SETTINGS_HANDLERS,'protocol-handlers'],
+      [R.SITE_SETTINGS_MIDI_DEVICES,'midi-devices'],
+      [R.SITE_SETTINGS_SUBRESOURCE_FILTER,'subresource-filter'],
+      [R.SITE_SETTINGS_ZOOM_LEVELS,'zoom-levels'],
+      [R.SITE_SETTINGS_USB_DEVICES,'usb-devices'],
+      [R.SITE_SETTINGS_PDF_DOCUMENTS,'pdf-documents'],
+      [R.SITE_SETTINGS_PROTECTED_CONTENT,'protected-content'],
+    ].forEach(function(pair) {
+      var route = pair[0];
+      var id = pair[1];
+      this.focusConfig.set(
+          route.path, '* /deep/ #' + id + ' .subpage-arrow');
+    }.bind(this));
   },
 
   /** @override */
