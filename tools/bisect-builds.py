@@ -795,8 +795,11 @@ def Bisect(context,
       min_str, max_str = 'bad', 'good'
     else:
       min_str, max_str = 'good', 'bad'
-    print 'Bisecting range [%s (%s), %s (%s)].' % (revlist[minrev], min_str,
-                                                   revlist[maxrev], max_str)
+    print ('Bisecting range [%s (%s), %s (%s)], '
+          'roughly %d steps left.') % (revlist[minrev], min_str,
+                                       revlist[maxrev], max_str,
+                                       int(maxrev - minrev)
+                                       .bit_length())
 
     # Pre-fetch next two possible pivots
     #   - down_pivot is the next revision to check if the current revision turns
