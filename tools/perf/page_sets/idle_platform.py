@@ -28,9 +28,18 @@ class _IdleStory(story.Story):
     super(_IdleStory, self).__init__(
         shared_state_class=_IdleSharedState, name=name)
     self._duration = duration
+    # https://github.com/catapult-project/catapult/issues/3489
+    # Even though there is no actual url being used, it is required for
+    # uploading results using the --upload-results flag. Remove url when
+    # it is no longer needed.
+    self._url = name
 
   def Run(self, shared_state):
     time.sleep(self._duration)
+
+  @property
+  def url(self):
+    return self._url
 
 
 class IdleStorySet(story.StorySet):
