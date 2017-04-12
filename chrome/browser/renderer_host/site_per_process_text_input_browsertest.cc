@@ -1283,8 +1283,9 @@ class TestBrowserClient : public ChromeContentBrowserClient {
 
 // This test verifies that requests for dictionary lookup based on selection
 // range are routed to the focused RenderWidgetHost.
+// Test is flaky: http://crbug.com/710842
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       LookUpStringForRangeRoutesToFocusedWidget) {
+                       DISABLED_LookUpStringForRangeRoutesToFocusedWidget) {
   // TestBrowserClient needs to replace the ChromeContenBrowserClient after most
   // things are initialized but before the WebContents is created. Here we make
   // that happen by creating a new WebContents in a new tab. But before the test
