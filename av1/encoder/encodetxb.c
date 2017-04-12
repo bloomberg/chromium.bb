@@ -182,16 +182,16 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
 #endif
-  const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+  const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   TX_SIZE tx_size = get_tx_size(plane, xd);
   const int bkw = tx_size_wide_unit[tx_size];
   const int bkh = tx_size_high_unit[tx_size];
   const int step = tx_size_wide_unit[tx_size] * tx_size_high_unit[tx_size];
   int row, col;
   int block = 0;
-  for (row = 0; row < num_4x4_h; row += bkh) {
-    for (col = 0; col < num_4x4_w; col += bkw) {
+  for (row = 0; row < max_blocks_high; row += bkh) {
+    for (col = 0; col < max_blocks_wide; col += bkw) {
       tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
       uint16_t eob = x->mbmi_ext->eobs[plane][block];
       TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
