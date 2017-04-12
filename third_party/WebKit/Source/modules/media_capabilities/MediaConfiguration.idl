@@ -4,14 +4,7 @@
 
 // https://wicg.github.io/media-capabilities/#dictdef-mediaconfiguration
 
-enum MediaConfigurationType {
-    "file",
-    "media-source",
-};
-
 dictionary MediaConfiguration {
-    required MediaConfigurationType type;
-
     VideoConfiguration video;
     AudioConfiguration audio;
 };

@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "modules/media_capabilities/MediaCapabilitiesInfo.h"
-#include "modules/media_capabilities/MediaConfiguration.h"
+#include "modules/media_capabilities/MediaDecodingConfiguration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
 #include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
@@ -23,11 +23,11 @@ WebAudioConfiguration ToWebAudioConfiguration(
     const AudioConfiguration& configuration) {
   WebAudioConfiguration web_configuration;
 
-  // contentType is mandatory.
+  // |contentType| is mandatory.
   DCHECK(configuration.hasContentType());
   web_configuration.content_type = configuration.contentType();
 
-  // channels is optional and will be set to a null WebString if not present.
+  // |channels| is optional and will be set to a null WebString if not present.
   web_configuration.channels = configuration.hasChannels()
                                    ? WebString(configuration.channels())
                                    : WebString();
@@ -65,10 +65,10 @@ WebVideoConfiguration ToWebVideoConfiguration(
 }
 
 WebMediaConfiguration ToWebMediaConfiguration(
-    const MediaConfiguration& configuration) {
+    const MediaDecodingConfiguration& configuration) {
   WebMediaConfiguration web_configuration;
 
-  // type is mandatory.
+  // |type| is mandatory.
   DCHECK(configuration.hasType());
 
   if (configuration.hasAudio()) {
@@ -90,7 +90,7 @@ MediaCapabilities::MediaCapabilities() = default;
 
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
-    const MediaConfiguration& configuration) {
+    const MediaDecodingConfiguration& configuration) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
