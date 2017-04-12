@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #import "ios/chrome/browser/store_kit/store_kit_launcher.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
@@ -22,6 +21,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using net::HttpResponseHeaders;
 using net::URLRequestStatus;
@@ -58,13 +61,12 @@ class DownloadManagerControllerTest : public ChromeWebTest {
     id mock_launcher =
         [OCMockObject niceMockForProtocol:@protocol(StoreKitLauncher)];
     helper->SetLauncher(mock_launcher);
-    _controller.reset([[DownloadManagerController alloc]
-        initWithWebState:web_state()
-             downloadURL:kTestURL]);
+    _controller =
+        [[DownloadManagerController alloc] initWithWebState:web_state()
+                                                downloadURL:kTestURL];
   }
-
   std::unique_ptr<net::TestURLFetcherFactory> _fetcher_factory;
-  base::scoped_nsobject<DownloadManagerController> _controller;
+  __strong DownloadManagerController* _controller;
 };
 
 TEST_F(DownloadManagerControllerTest, TestXibViewConnections) {

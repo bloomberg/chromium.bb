@@ -66,6 +66,7 @@ source_set("downloads") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "download_manager_controller_unittest.mm",
