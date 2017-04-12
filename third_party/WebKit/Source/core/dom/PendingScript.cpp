@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ClassicScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptElementBase.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -231,20 +232,20 @@ DEFINE_TRACE(PendingScript) {
   MemoryCoordinatorClient::Trace(visitor);
 }
 
-ScriptSourceCode PendingScript::GetSource(const KURL& document_url,
-                                          bool& error_occurred) const {
+ClassicScript* PendingScript::GetSource(const KURL& document_url,
+                                        bool& error_occurred) const {
   CheckState();
 
   error_occurred = this->ErrorOccurred();
   if (GetResource()) {
     DCHECK(GetResource()->IsLoaded());
     if (streamer_ && !streamer_->StreamingSuppressed())
-      return ScriptSourceCode(streamer_, GetResource());
-    return ScriptSourceCode(GetResource());
+      return ClassicScript::Create(ScriptSourceCode(streamer_, GetResource()));
+    return ClassicScript::Create(ScriptSourceCode(GetResource()));
   }
 
-  return ScriptSourceCode(element_->TextContent(), document_url,
-                          StartingPosition());
+  return ClassicScript::Create(ScriptSourceCode(
+      element_->TextContent(), document_url, StartingPosition()));
 }
 
 void PendingScript::SetStreamer(ScriptStreamer* streamer) {

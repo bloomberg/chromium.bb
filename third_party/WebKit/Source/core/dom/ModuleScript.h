@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
+#include "core/dom/Script.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
@@ -26,9 +27,7 @@ enum class ModuleInstantiationState {
 
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
-class CORE_EXPORT ModuleScript final
-    : public GarbageCollectedFinalized<ModuleScript>,
-      public TraceWrapperBase {
+class CORE_EXPORT ModuleScript final : public Script {
  public:
   static ModuleScript* Create(
       ScriptModule record,
@@ -39,7 +38,7 @@ class CORE_EXPORT ModuleScript final
     return new ModuleScript(record, base_url, nonce, parser_state,
                             credentials_mode);
   }
-  ~ModuleScript() = default;
+  ~ModuleScript() override = default;
 
   ScriptModule& Record() { return record_; }
   void ClearRecord() { record_ = ScriptModule(); }
@@ -73,6 +72,13 @@ class CORE_EXPORT ModuleScript final
         nonce_(nonce),
         parser_state_(parser_state),
         credentials_mode_(credentials_mode) {}
+
+  ScriptType GetScriptType() const override { return ScriptType::kModule; }
+  bool IsEmpty() const override;
+  bool CheckMIMETypeBeforeRunScript(Document* context_document,
+                                    const SecurityOrigin*) const override;
+  void RunScript(LocalFrame*, const SecurityOrigin*) const override;
+  String InlineSourceTextForCSP() const override;
 
   // Note: A "module script"'s "setttings object" is ommitted, as we currently
   // always have access to the corresponding Modulator when operating on a

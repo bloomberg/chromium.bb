@@ -36,6 +36,7 @@
 #include "core/HTMLNames.h"
 #include "core/XMLNSNames.h"
 #include "core/dom/CDATASection.h"
+#include "core/dom/ClassicScript.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -462,7 +463,7 @@ void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
               script_loader->WasCreatedDuringDocumentWrite());
     }
 
-    if (!script_loader->ExecuteScript(source_code))
+    if (!script_loader->ExecuteScript(ClassicScript::Create(source_code)))
       script_loader->DispatchErrorEvent();
     else
       script_loader->DispatchLoadEvent();
@@ -1118,9 +1119,9 @@ void XMLDocumentParser::EndElementNs() {
     // the libxml2 and Qt XMLDocumentParser implementations.
 
     if (script_loader->ReadyToBeParserExecuted()) {
-      if (!script_loader->ExecuteScript(
-              ScriptSourceCode(script_loader->ScriptContent(),
-                               GetDocument()->Url(), script_start_position_))) {
+      if (!script_loader->ExecuteScript(ClassicScript::Create(ScriptSourceCode(
+              script_loader->ScriptContent(), GetDocument()->Url(),
+              script_start_position_)))) {
         script_loader->DispatchErrorEvent();
         return;
       }

@@ -20,9 +20,35 @@ void ModuleScript::SetInstantiationSuccess() {
   instantiation_state_ = ModuleInstantiationState::kInstantiated;
 }
 
-DEFINE_TRACE(ModuleScript) {}
+DEFINE_TRACE(ModuleScript) {
+  Script::Trace(visitor);
+}
 DEFINE_TRACE_WRAPPERS(ModuleScript) {
+  Script::TraceWrappers(visitor);
   visitor->TraceWrappers(instantiation_error_);
+}
+
+bool ModuleScript::IsEmpty() const {
+  return false;
+}
+
+bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
+                                                const SecurityOrigin*) const {
+  // We don't check MIME type here because we check the MIME type in
+  // ModuleScriptLoader::WasModuleLoadSuccessful().
+  return true;
+}
+
+void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
+  // TODO(hiroshige): Implement this once Modulator::ExecuteModule() is landed.
+  NOTREACHED();
+}
+
+String ModuleScript::InlineSourceTextForCSP() const {
+  // Currently we don't support inline module scripts.
+  // TODO(hiroshige): Implement this.
+  NOTREACHED();
+  return String();
 }
 
 }  // namespace blink

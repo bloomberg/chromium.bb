@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "core/dom/ClassicScript.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/Element.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
@@ -79,14 +80,14 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
 }
 
 bool DoExecuteScript(ScriptElementBase* element,
-                     const ScriptSourceCode& source_code,
+                     const Script* script,
                      const TextPosition& text_position) {
   ScriptLoader* script_loader = element->Loader();
   DCHECK(script_loader);
   TRACE_EVENT_WITH_FLOW1("blink", "HTMLParserScriptRunner ExecuteScript",
                          element, TRACE_EVENT_FLAG_FLOW_IN, "data",
                          GetTraceArgsForScriptElement(element, text_position));
-  return script_loader->ExecuteScript(source_code);
+  return script_loader->ExecuteScript(script);
 }
 
 void TraceParserBlockingScript(const PendingScript* pending_script,
@@ -204,7 +205,7 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     PendingScript* pending_script,
     ScriptStreamer::Type pending_script_type) {
   bool error_occurred = false;
-  ScriptSourceCode source_code = pending_script->GetSource(
+  Script* script = pending_script->GetSource(
       DocumentURLForScriptExecution(document_), error_occurred);
 
   // Stop watching loads before executeScript to prevent recursion if the script
@@ -263,7 +264,7 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
                 MonotonicallyIncreasingTime() - script_parser_blocking_time,
                 script_loader->WasCreatedDuringDocumentWrite());
       }
-      if (!DoExecuteScript(element, source_code, script_start_position)) {
+      if (!DoExecuteScript(element, script, script_start_position)) {
         script_loader->DispatchErrorEvent();
       } else {
         element->DispatchLoadEvent();
@@ -656,7 +657,8 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         ScriptSourceCode source_code(script->textContent(),
                                      DocumentURLForScriptExecution(document_),
                                      script_start_position);
-        DoExecuteScript(element, source_code, script_start_position);
+        DoExecuteScript(element, ClassicScript::Create(source_code),
+                        script_start_position);
       }
     } else {
       // 2nd Clause of Step 23.

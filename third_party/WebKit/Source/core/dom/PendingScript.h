@@ -39,7 +39,7 @@
 namespace blink {
 
 class PendingScript;
-class ScriptSourceCode;
+class ClassicScript;
 
 class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
  public:
@@ -95,8 +95,8 @@ class CORE_EXPORT PendingScript final
 
   DECLARE_TRACE();
 
-  ScriptSourceCode GetSource(const KURL& document_url,
-                             bool& error_occurred) const;
+  ClassicScript* GetSource(const KURL& document_url,
+                           bool& error_occurred) const;
 
   void SetStreamer(ScriptStreamer*);
   void StreamingFinished();

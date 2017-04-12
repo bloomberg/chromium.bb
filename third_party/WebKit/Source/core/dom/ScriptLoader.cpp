@@ -29,9 +29,11 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/dom/ClassicScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
+#include "core/dom/Script.h"
 #include "core/dom/ScriptElementBase.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -39,12 +41,10 @@
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
-#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -468,7 +468,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                         ? element_document.Url()
                         : KURL();
 
-  if (!ExecuteScript(ScriptSourceCode(ScriptContent(), script_url, position))) {
+  if (!ExecuteScript(ClassicScript::Create(
+          ScriptSourceCode(ScriptContent(), script_url, position)))) {
     DispatchErrorEvent();
     return false;
   }
@@ -595,37 +596,9 @@ PendingScript* ScriptLoader::CreatePendingScript() {
   return PendingScript::Create(element_, resource_);
 }
 
-void ScriptLoader::LogScriptMIMEType(LocalFrame* frame,
-                                     ScriptResource* resource,
-                                     const String& mime_type) {
-  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))
-    return;
-  bool is_text = mime_type.StartsWith("text/", kTextCaseASCIIInsensitive);
-  if (is_text && MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
-                     mime_type.Substring(5)))
-    return;
-  bool is_same_origin =
-      element_->GetDocument().GetSecurityOrigin()->CanRequest(resource->Url());
-  bool is_application =
-      !is_text &&
-      mime_type.StartsWith("application/", kTextCaseASCIIInsensitive);
-
-  UseCounter::Feature feature =
-      is_same_origin
-          ? (is_text ? UseCounter::kSameOriginTextScript
-                     : is_application ? UseCounter::kSameOriginApplicationScript
-                                      : UseCounter::kSameOriginOtherScript)
-          : (is_text
-                 ? UseCounter::kCrossOriginTextScript
-                 : is_application ? UseCounter::kCrossOriginApplicationScript
-                                  : UseCounter::kCrossOriginOtherScript);
-
-  UseCounter::Count(frame, feature);
-}
-
-bool ScriptLoader::ExecuteScript(const ScriptSourceCode& source_code) {
+bool ScriptLoader::ExecuteScript(const Script* script) {
   double script_exec_start_time = MonotonicallyIncreasingTime();
-  bool result = DoExecuteScript(source_code);
+  bool result = DoExecuteScript(script);
 
   // NOTE: we do not check m_willBeParserExecuted here, since
   // m_willBeParserExecuted is false for inline scripts, and we want to
@@ -645,10 +618,10 @@ bool ScriptLoader::ExecuteScript(const ScriptSourceCode& source_code) {
 // i.e. load/error events are dispatched by the caller.
 // Steps 3--7 are implemented here in doExecuteScript().
 // TODO(hiroshige): Move event dispatching code to doExecuteScript().
-bool ScriptLoader::DoExecuteScript(const ScriptSourceCode& source_code) {
+bool ScriptLoader::DoExecuteScript(const Script* script) {
   DCHECK(already_started_);
 
-  if (source_code.IsEmpty())
+  if (script->IsEmpty())
     return true;
 
   Document* element_document = &(element_->GetDocument());
@@ -660,66 +633,27 @@ bool ScriptLoader::DoExecuteScript(const ScriptSourceCode& source_code) {
   if (!frame)
     return true;
 
-  const ContentSecurityPolicy* csp =
-      element_document->GetContentSecurityPolicy();
-  bool should_bypass_main_world_csp =
-      (frame->GetScriptController().ShouldBypassMainWorldCSP()) ||
-      csp->AllowScriptWithHash(source_code.Source(),
-                               ContentSecurityPolicy::InlineType::kBlock);
+  if (!is_external_script_) {
+    const ContentSecurityPolicy* csp =
+        element_document->GetContentSecurityPolicy();
+    bool should_bypass_main_world_csp =
+        (frame->GetScriptController().ShouldBypassMainWorldCSP()) ||
+        csp->AllowScriptWithHash(script->InlineSourceTextForCSP(),
+                                 ContentSecurityPolicy::InlineType::kBlock);
 
-  AtomicString nonce =
-      element_->IsNonceableElement() ? element_->nonce() : g_null_atom;
-  if (!is_external_script_ && !should_bypass_main_world_csp &&
-      !element_->AllowInlineScriptForCSP(nonce, start_line_number_,
-                                         source_code.Source())) {
-    return false;
+    AtomicString nonce =
+        element_->IsNonceableElement() ? element_->nonce() : g_null_atom;
+    if (!should_bypass_main_world_csp &&
+        !element_->AllowInlineScriptForCSP(nonce, start_line_number_,
+                                           script->InlineSourceTextForCSP())) {
+      return false;
+    }
   }
 
   if (is_external_script_) {
-    ScriptResource* resource = source_code.GetResource();
-    CHECK_EQ(resource, resource_);
-    CHECK(resource);
-    if (!ScriptResource::MimeTypeAllowedByNosniff(resource->GetResponse())) {
-      context_document->AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, kErrorMessageLevel,
-          "Refused to execute script from '" + resource->Url().ElidedString() +
-              "' because its MIME type ('" + resource->HttpContentType() +
-              "') is not executable, and "
-              "strict MIME type checking is "
-              "enabled."));
+    if (!script->CheckMIMETypeBeforeRunScript(
+            context_document, element_->GetDocument().GetSecurityOrigin()))
       return false;
-    }
-
-    String mime_type = resource->HttpContentType();
-    if (mime_type.StartsWith("image/") || mime_type == "text/csv" ||
-        mime_type.StartsWith("audio/") || mime_type.StartsWith("video/")) {
-      context_document->AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, kErrorMessageLevel,
-          "Refused to execute script from '" + resource->Url().ElidedString() +
-              "' because its MIME type ('" + mime_type +
-              "') is not executable."));
-      if (mime_type.StartsWith("image/"))
-        UseCounter::Count(frame, UseCounter::kBlockedSniffingImageToScript);
-      else if (mime_type.StartsWith("audio/"))
-        UseCounter::Count(frame, UseCounter::kBlockedSniffingAudioToScript);
-      else if (mime_type.StartsWith("video/"))
-        UseCounter::Count(frame, UseCounter::kBlockedSniffingVideoToScript);
-      else if (mime_type == "text/csv")
-        UseCounter::Count(frame, UseCounter::kBlockedSniffingCSVToScript);
-      return false;
-    }
-
-    LogScriptMIMEType(frame, resource, mime_type);
-  }
-
-  AccessControlStatus access_control_status = kNotSharableCrossOrigin;
-  if (!is_external_script_) {
-    access_control_status = kSharableCrossOrigin;
-  } else {
-    CHECK(source_code.GetResource());
-    access_control_status =
-        source_code.GetResource()->CalculateAccessControlStatus(
-            element_->GetDocument().GetSecurityOrigin());
   }
 
   const bool is_imported_script = context_document != element_document;
@@ -746,8 +680,7 @@ bool ScriptLoader::DoExecuteScript(const ScriptSourceCode& source_code) {
 
   //    2. "Run the classic script given by the script's script."
   // Note: This is where the script is compiled and actually executed.
-  frame->GetScriptController().ExecuteScriptInMainWorld(source_code,
-                                                        access_control_status);
+  script->RunScript(frame, element_->GetDocument().GetSecurityOrigin());
 
   //    - "module":
   // TODO(hiroshige): Implement this.
@@ -768,12 +701,12 @@ void ScriptLoader::Execute() {
   DCHECK(async_exec_type_ != ScriptRunner::kNone);
   DCHECK(pending_script_->GetResource());
   bool error_occurred = false;
-  ScriptSourceCode source = pending_script_->GetSource(KURL(), error_occurred);
+  Script* script = pending_script_->GetSource(KURL(), error_occurred);
   DetachPendingScript();
   if (error_occurred) {
     DispatchErrorEvent();
   } else if (!resource_->WasCanceled()) {
-    if (ExecuteScript(source))
+    if (ExecuteScript(script))
       DispatchLoadEvent();
     else
       DispatchErrorEvent();
