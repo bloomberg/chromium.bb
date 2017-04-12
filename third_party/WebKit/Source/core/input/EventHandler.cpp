@@ -960,6 +960,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev =
       EventHandlingUtil::PerformMouseEventHitTest(frame_, request, mouse_event);
+  Node* release_node = (mev.InnerNode() && mev.InnerNode()->IsTextNode())
+                           ? FlatTreeTraversal::Parent(*mev.InnerNode())
+                           : mev.InnerNode();
   LocalFrame* subframe =
       capturing_mouse_events_node_.Get()
           ? SubframeForTargetNode(capturing_mouse_events_node_.Get())
@@ -992,7 +995,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
       mev.Event(), Vector<WebMouseEvent>());
 
   WebInputEventResult click_event_result =
-      mouse_event_manager_->DispatchMouseClickIfNeeded(mev);
+      mouse_event_manager_->DispatchMouseClickIfNeeded(mev, release_node);
 
   scroll_manager_->ClearResizeScrollableArea(false);
 

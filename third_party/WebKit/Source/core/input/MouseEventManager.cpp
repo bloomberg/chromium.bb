@@ -232,7 +232,8 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
 }
 
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
-    const MouseEventWithHitTestResults& mev) {
+    const MouseEventWithHitTestResults& mev,
+    Node* release_node) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event =
@@ -249,8 +250,8 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
 
   WebInputEventResult click_event_result = WebInputEventResult::kNotHandled;
   const bool should_dispatch_click_event =
-      click_count_ > 0 && !context_menu_event && mev.InnerNode() &&
-      click_node_ && mev.InnerNode()->CanParticipateInFlatTree() &&
+      click_count_ > 0 && !context_menu_event && release_node && click_node_ &&
+      release_node->CanParticipateInFlatTree() &&
       click_node_->CanParticipateInFlatTree() &&
       !(frame_->GetEventHandler()
             .GetSelectionController()
@@ -258,16 +259,15 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
         IsLinkSelection(mev));
   if (should_dispatch_click_event) {
     Node* click_target_node = nullptr;
-    // Updates distribution because a 'mouseup' event listener can make the
-    // tree dirty at dispatchMouseEvent() invocation above.
-    // Unless distribution is updated, commonAncestor would hit ASSERT.
-    if (click_node_ == mev.InnerNode()) {
+    if (click_node_ == release_node) {
       click_target_node = click_node_;
-      click_target_node->UpdateDistribution();
-    } else if (click_node_->GetDocument() == mev.InnerNode()->GetDocument()) {
+    } else if (click_node_->GetDocument() == release_node->GetDocument()) {
+      // Updates distribution because a 'mouseup' event listener can make the
+      // tree dirty at dispatchMouseEvent() invocation above.
+      // Unless distribution is updated, commonAncestor would hit ASSERT.
       click_node_->UpdateDistribution();
-      mev.InnerNode()->UpdateDistribution();
-      click_target_node = mev.InnerNode()->CommonAncestor(
+      release_node->UpdateDistribution();
+      click_target_node = release_node->CommonAncestor(
           *click_node_, EventHandlingUtil::ParentForClickEvent);
     }
     if (click_target_node) {
