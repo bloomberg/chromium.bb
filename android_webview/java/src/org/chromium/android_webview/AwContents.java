@@ -2488,7 +2488,7 @@ public class AwContents implements SmartClipProvider {
         if (!isDestroyedOrNoOperation(NO_WARN)) {
             nativeSetViewVisibility(mNativeAwContents, mIsViewVisible);
         }
-        updateContentViewCoreVisibility();
+        postUpdateContentViewCoreVisibility();
     }
 
     private void setWindowVisibilityInternal(boolean visible) {
