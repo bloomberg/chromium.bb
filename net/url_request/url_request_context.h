@@ -45,6 +45,7 @@ class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
 class NetworkQualityEstimator;
+class ReportingService;
 class SdchManager;
 class ProxyService;
 class URLRequest;
@@ -249,6 +250,11 @@ class NET_EXPORT URLRequestContext
     network_quality_estimator_ = network_quality_estimator;
   }
 
+  ReportingService* reporting_service() const { return reporting_service_; }
+  void set_reporting_service(ReportingService* reporting_service) {
+    reporting_service_ = reporting_service;
+  }
+
   void set_enable_brotli(bool enable_brotli) { enable_brotli_ = enable_brotli; }
 
   bool enable_brotli() const { return enable_brotli_; }
@@ -299,6 +305,7 @@ class NET_EXPORT URLRequestContext
   URLRequestBackoffManager* backoff_manager_;
   SdchManager* sdch_manager_;
   NetworkQualityEstimator* network_quality_estimator_;
+  ReportingService* reporting_service_;
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to

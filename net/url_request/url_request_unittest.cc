@@ -92,6 +92,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_server_info.h"
+#include "net/reporting/reporting_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
@@ -6538,6 +6539,135 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   base::RunLoop().Run();
 
   EXPECT_EQ(1u, reporter.num_failures());
+}
+
+namespace {
+
+class TestReportingService : public ReportingService {
+ public:
+  struct Header {
+    GURL url;
+    std::string header_value;
+  };
+
+  ~TestReportingService() override {}
+
+  const std::vector<Header>& headers() { return headers_; }
+
+  void QueueReport(const GURL& url,
+                   const std::string& group,
+                   const std::string& type,
+                   std::unique_ptr<const base::Value> body) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ProcessHeader(const GURL& url,
+                     const std::string& header_value) override {
+    headers_.push_back({url, header_value});
+  }
+
+ private:
+  std::vector<Header> headers_;
+};
+
+std::unique_ptr<test_server::HttpResponse> SendReportToHeader(
+    const test_server::HttpRequest& request) {
+  std::unique_ptr<test_server::BasicHttpResponse> http_response(
+      new test_server::BasicHttpResponse);
+  http_response->set_code(HTTP_OK);
+  http_response->AddCustomHeader("Report-To", "foo");
+  http_response->AddCustomHeader("Report-To", "bar");
+  return std::move(http_response);
+}
+
+}  // namespace
+
+TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderNoService) {
+  http_test_server()->RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL request_url = http_test_server()->GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(request_url, DEFAULT_PRIORITY, &d));
+  request->Start();
+  base::RunLoop().Run();
+}
+
+TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderHTTP) {
+  http_test_server()->RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL request_url = http_test_server()->GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestReportingService reporting_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_reporting_service(&reporting_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(request_url, DEFAULT_PRIORITY, &d));
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(reporting_service.headers().empty());
+}
+
+TEST_F(URLRequestTestHTTP, ProcessReportToHeaderHTTPS) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestReportingService reporting_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_reporting_service(&reporting_service);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(request_url, DEFAULT_PRIORITY, &d));
+  request->Start();
+  base::RunLoop().Run();
+
+  ASSERT_EQ(1u, reporting_service.headers().size());
+  EXPECT_EQ(request_url, reporting_service.headers()[0].url);
+  EXPECT_EQ("foo, bar", reporting_service.headers()[0].header_value);
+}
+
+TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHTTPS) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
+  https_test_server.RegisterRequestHandler(base::Bind(&SendReportToHeader));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL request_url = https_test_server.GetURL("/");
+
+  TestNetworkDelegate network_delegate;
+  TestReportingService reporting_service;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_reporting_service(&reporting_service);
+  context.Init();
+
+  TestDelegate d;
+  d.set_allow_certificate_errors(true);
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(request_url, DEFAULT_PRIORITY, &d));
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(d.have_certificate_errors());
+  EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
+  EXPECT_TRUE(reporting_service.headers().empty());
 }
 
 #endif  // !defined(OS_IOS)

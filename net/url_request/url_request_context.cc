@@ -47,6 +47,7 @@ URLRequestContext::URLRequestContext()
       backoff_manager_(nullptr),
       sdch_manager_(nullptr),
       network_quality_estimator_(nullptr),
+      reporting_service_(nullptr),
       url_requests_(new std::set<const URLRequest*>),
       enable_brotli_(false),
       check_cleartext_permitted_(false),
@@ -83,6 +84,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_sdch_manager(other->sdch_manager_);
   set_http_user_agent_settings(other->http_user_agent_settings_);
   set_network_quality_estimator(other->network_quality_estimator_);
+  set_reporting_service(other->reporting_service_);
   set_enable_brotli(other->enable_brotli_);
   set_check_cleartext_permitted(other->check_cleartext_permitted_);
 }
