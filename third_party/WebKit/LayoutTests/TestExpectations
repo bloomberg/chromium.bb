@@ -1703,6 +1703,9 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
+crbug.com/704077 paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection-2.svg [ NeedsRebaseline ]
+crbug.com/704077 paint/invalidation/svg/marker-viewBox-changes.svg [ NeedsRebaseline ]
+
 crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 crbug.com/487344 [ Linux Mac Win7 ] paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 [ Linux Mac Win7 ] virtual/disable-spinvalidation/paint/invalidation/video-paint-invalidation.html [ Failure ]

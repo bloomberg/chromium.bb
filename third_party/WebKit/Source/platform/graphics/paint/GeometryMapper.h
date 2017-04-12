@@ -138,7 +138,7 @@ class PLATFORM_EXPORT GeometryMapper {
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
   // in the presences of transforms.
-  static FloatClipRect LocalToAncestorClipRect(
+  static const FloatClipRect& LocalToAncestorClipRect(
       const PropertyTreeState& local_transform_state,
       const PropertyTreeState& ancestor_state);
 

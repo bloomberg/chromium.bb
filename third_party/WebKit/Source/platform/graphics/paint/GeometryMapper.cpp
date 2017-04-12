@@ -119,7 +119,7 @@ void GeometryMapper::LocalToAncestorVisualRectInternal(
 
   FloatRect mapped_rect = transform_matrix.MapRect(rect_to_map.Rect());
 
-  FloatClipRect clip_rect =
+  const FloatClipRect& clip_rect =
       LocalToAncestorClipRectInternal(local_state.Clip(), ancestor_state.Clip(),
                                       ancestor_state.Transform(), success);
 
@@ -136,6 +136,7 @@ void GeometryMapper::LocalToAncestorVisualRectInternal(
     // --enable-prefer-compositing-to-lcd-text) for details.
     // Ignore it for SPv1 for now.
     success = true;
+    rect_to_map.SetRect(mapped_rect);
   }
 }
 
@@ -213,11 +214,11 @@ void GeometryMapper::AncestorToLocalRect(
   rect = transform_matrix.Inverse().MapRect(rect);
 }
 
-FloatClipRect GeometryMapper::LocalToAncestorClipRect(
+const FloatClipRect& GeometryMapper::LocalToAncestorClipRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state) {
   bool success = false;
-  FloatClipRect result =
+  const FloatClipRect& result =
       LocalToAncestorClipRectInternal(local_state.Clip(), ancestor_state.Clip(),
                                       ancestor_state.Transform(), success);
 

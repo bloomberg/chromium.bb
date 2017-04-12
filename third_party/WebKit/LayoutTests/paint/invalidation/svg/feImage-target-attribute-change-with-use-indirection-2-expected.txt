@@ -20,6 +20,10 @@
       "reason": "full"
     },
     {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "bounds change"
+    },
+    {
       "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage'",
       "reason": "full"
     },

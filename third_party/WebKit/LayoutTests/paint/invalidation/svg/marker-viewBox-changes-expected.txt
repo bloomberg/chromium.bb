@@ -25,6 +25,10 @@
       "reason": "full"
     },
     {
+      "object": "LayoutSVGRect rect",
+      "reason": "bounds change"
+    },
+    {
       "object": "LayoutSVGContainer g",
       "reason": "bounds change"
     },

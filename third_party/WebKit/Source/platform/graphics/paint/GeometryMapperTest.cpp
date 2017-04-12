@@ -17,10 +17,13 @@
 
 namespace blink {
 
-class GeometryMapperTest : public ::testing::Test,
-                           public ScopedSlimmingPaintV2ForTest {
+typedef bool SlimmingPaintV2Enabled;
+class GeometryMapperTest
+    : public ::testing::Test,
+      public ::testing::WithParamInterface<SlimmingPaintV2Enabled>,
+      public ScopedSlimmingPaintV2ForTest {
  public:
-  GeometryMapperTest() : ScopedSlimmingPaintV2ForTest(true) {}
+  GeometryMapperTest() : ScopedSlimmingPaintV2ForTest(GetParam()) {}
 
   const FloatClipRect* GetClip(
       const ClipPaintPropertyNode* descendant_clip,
@@ -77,6 +80,10 @@ class GeometryMapperTest : public ::testing::Test,
 
  private:
 };
+
+bool values[] = {false, true};
+
+INSTANTIATE_TEST_CASE_P(All, GeometryMapperTest, ::testing::ValuesIn(values));
 
 const static float kTestEpsilon = 1e-6;
 
@@ -157,7 +164,7 @@ const static float kTestEpsilon = 1e-6;
     }                                                                          \
   } while (false)
 
-TEST_F(GeometryMapperTest, Root) {
+TEST_P(GeometryMapperTest, Root) {
   FloatRect input(0, 0, 100, 100);
 
   bool has_radius = false;
@@ -166,7 +173,7 @@ TEST_F(GeometryMapperTest, Root) {
                  PropertyTreeState::Root(), PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, IdentityTransform) {
+TEST_P(GeometryMapperTest, IdentityTransform) {
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(),
@@ -181,7 +188,7 @@ TEST_F(GeometryMapperTest, IdentityTransform) {
                  local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, TranslationTransform) {
+TEST_P(GeometryMapperTest, TranslationTransform) {
   TransformationMatrix transform_matrix;
   transform_matrix.Translate(20, 10);
   RefPtr<TransformPaintPropertyNode> transform =
@@ -202,7 +209,7 @@ TEST_F(GeometryMapperTest, TranslationTransform) {
   EXPECT_RECT_EQ(input, output);
 }
 
-TEST_F(GeometryMapperTest, RotationAndScaleTransform) {
+TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
   TransformationMatrix transform_matrix;
   transform_matrix.Rotate(45);
   transform_matrix.Scale(2);
@@ -221,7 +228,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransform) {
                  local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
+TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
   TransformationMatrix transform_matrix;
   transform_matrix.Rotate(45);
   transform_matrix.Scale(2);
@@ -241,7 +248,7 @@ TEST_F(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
                  local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, NestedTransforms) {
+TEST_P(GeometryMapperTest, NestedTransforms) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -271,7 +278,7 @@ TEST_F(GeometryMapperTest, NestedTransforms) {
       *GetTransform(transform1.Get(), TransformPaintPropertyNode::Root()));
 }
 
-TEST_F(GeometryMapperTest, NestedTransformsFlattening) {
+TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate3d(45, 0, 0);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -297,7 +304,7 @@ TEST_F(GeometryMapperTest, NestedTransformsFlattening) {
                  PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
+TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   TransformationMatrix scale_transform;
   scale_transform.Scale(2);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -328,7 +335,7 @@ TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
                                            TransformPaintPropertyNode::Root()));
 }
 
-TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination) {
+TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -355,7 +362,7 @@ TEST_F(GeometryMapperTest, NestedTransformsIntermediateDestination) {
                  local_state, intermediate_state);
 }
 
-TEST_F(GeometryMapperTest, SimpleClip) {
+TEST_P(GeometryMapperTest, SimpleClip) {
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 50, 50));
@@ -377,7 +384,7 @@ TEST_F(GeometryMapperTest, SimpleClip) {
                  local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, RoundedClip) {
+TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
                                                 FloatSize(), FloatSize()));
@@ -403,7 +410,7 @@ TEST_F(GeometryMapperTest, RoundedClip) {
                  local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, TwoClips) {
+TEST_P(GeometryMapperTest, TwoClips) {
   FloatRoundedRect clip_rect1(
       FloatRect(10, 10, 30, 40),
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
@@ -452,7 +459,7 @@ TEST_F(GeometryMapperTest, TwoClips) {
                  local_state, ancestor_state);
 }
 
-TEST_F(GeometryMapperTest, TwoClipsTransformAbove) {
+TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix(),
@@ -500,7 +507,7 @@ TEST_F(GeometryMapperTest, TwoClipsTransformAbove) {
                  local_state, ancestor_state);
 }
 
-TEST_F(GeometryMapperTest, ClipBeforeTransform) {
+TEST_P(GeometryMapperTest, ClipBeforeTransform) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
   RefPtr<TransformPaintPropertyNode> transform =
@@ -531,7 +538,7 @@ TEST_F(GeometryMapperTest, ClipBeforeTransform) {
       local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, ClipAfterTransform) {
+TEST_P(GeometryMapperTest, ClipAfterTransform) {
   TransformationMatrix rotate_transform;
   rotate_transform.Rotate(45);
   RefPtr<TransformPaintPropertyNode> transform =
@@ -561,7 +568,7 @@ TEST_F(GeometryMapperTest, ClipAfterTransform) {
       local_state, PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween) {
+TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
   RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 200, 200));
@@ -623,7 +630,7 @@ TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween) {
   }
 }
 
-TEST_F(GeometryMapperTest, SiblingTransforms) {
+TEST_P(GeometryMapperTest, SiblingTransforms) {
   // These transforms are siblings. Thus mapping from one to the other requires
   // going through the root.
   TransformationMatrix rotate_transform1;
@@ -688,7 +695,7 @@ TEST_F(GeometryMapperTest, SiblingTransforms) {
   EXPECT_RECT_EQ(expected, result);
 }
 
-TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
+TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   // These transforms are siblings. Thus mapping from one to the other requires
   // going through the root.
   TransformationMatrix rotate_transform1;
@@ -757,7 +764,7 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
   EXPECT_RECT_EQ(expected_unclipped, result);
 }
 
-TEST_F(GeometryMapperTest, LowestCommonAncestor) {
+TEST_P(GeometryMapperTest, LowestCommonAncestor) {
   TransformationMatrix matrix;
   RefPtr<TransformPaintPropertyNode> child1 =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
@@ -793,7 +800,7 @@ TEST_F(GeometryMapperTest, LowestCommonAncestor) {
             LowestCommonAncestor(child1.Get(), child2.Get()));
 }
 
-TEST_F(GeometryMapperTest, FilterWithClipsAndTransforms) {
+TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   RefPtr<TransformPaintPropertyNode> transform_above_effect =
       TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
                                          TransformationMatrix().Scale(3),
@@ -846,7 +853,7 @@ TEST_F(GeometryMapperTest, FilterWithClipsAndTransforms) {
                  PropertyTreeState::Root());
 }
 
-TEST_F(GeometryMapperTest, ReflectionWithPaintOffset) {
+TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
   filters.AppendReferenceFilter(SkiaImageFilterBuilder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
@@ -866,6 +873,27 @@ TEST_F(GeometryMapperTest, ReflectionWithPaintOffset) {
   bool has_radius = false;
   CHECK_MAPPINGS(input, output, input, TransformationMatrix(), FloatClipRect(),
                  local_state, PropertyTreeState::Root());
+}
+
+TEST_P(GeometryMapperTest, InvertedClip) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
+  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      FloatRoundedRect(10, 10, 50, 50));
+
+  PropertyTreeState dest(TransformPaintPropertyNode::Root(), clip.Get(),
+                         EffectPaintPropertyNode::Root());
+
+  FloatClipRect floatClipRect(FloatRect(0, 0, 10, 200));
+  GeometryMapper::LocalToAncestorVisualRect(PropertyTreeState::Root(), dest,
+                                            floatClipRect);
+
+  // The "ancestor" clip is below the source clip in this case, so
+  // LocalToAncestorVisualRect must fall back to the original rect, mapped
+  // into the root space.
+  EXPECT_EQ(FloatRect(0, 0, 10, 200), floatClipRect.Rect());
 }
 
 }  // namespace blink
