@@ -20,7 +20,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
@@ -240,8 +239,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // Observes when sync becomes ready to create the mContextReporter.
     private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
 
-    private ActivityWindowAndroid mWindowAndroid;
-
     private ChromeFullscreenManager mFullscreenManager;
     private boolean mCreatedFullscreenManager;
 
@@ -287,6 +284,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     @Override
+    protected ActivityWindowAndroid createWindowAndroid() {
+        return new ChromeWindow(this);
+    }
+
+    @Override
     public void preInflationStartup() {
         super.preInflationStartup();
 
@@ -298,8 +300,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
-        mWindowAndroid = new ChromeWindow(this);
-        mWindowAndroid.restoreInstanceState(getSavedInstanceState());
 
         mFullscreenManager = createFullscreenManager();
         mCreatedFullscreenManager = true;
@@ -347,10 +347,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // Set up the animation placeholder to be the SurfaceView. This disables the
         // SurfaceView's 'hole' clipping during animations that are notified to the window.
-        mWindowAndroid.setAnimationPlaceholderView(mCompositorViewHolder.getCompositorView());
+        getWindowAndroid().setAnimationPlaceholderView(mCompositorViewHolder.getCompositorView());
 
         // Inform the WindowAndroid of the keyboard accessory view.
-        mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
+        getWindowAndroid().setKeyboardAccessoryView(
+                (ViewGroup) findViewById(R.id.keyboard_accessory));
         initializeToolbar();
         initializeTabModels();
         if (!isFinishing() && getFullscreenManager() != null) {
@@ -736,10 +737,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         setTabContentManager(new TabContentManager(this, getContentOffsetProvider(),
                 DeviceClassManager.enableSnapshots()));
-        mCompositorViewHolder.onNativeLibraryReady(mWindowAndroid, getTabContentManager());
+        mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
-            mContextualSearchManager = new ContextualSearchManager(this, mWindowAndroid, this);
+            mContextualSearchManager = new ContextualSearchManager(this, getWindowAndroid(), this);
         }
 
         if (ReaderModeManager.isEnabled(this)) {
@@ -1089,11 +1090,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (selector != null) selector.destroy();
         }
 
-        if (mWindowAndroid != null) {
-            mWindowAndroid.destroy();
-            mWindowAndroid = null;
-        }
-
         CombinedPolicyProvider.get().removePolicyChangeListener(this);
 
         if (mTabContentManager != null) {
@@ -1120,33 +1116,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * by the {@link WindowAndroid}.
      */
     protected void onDestroyInternal() {
-    }
-
-    /**
-     * This will handle passing {@link Intent} results back to the {@link WindowAndroid}.  It will
-     * return whether or not the {@link WindowAndroid} has consumed the event or not.
-     */
-    @Override
-    public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
-        if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            int[] grantResults) {
-        if (mWindowAndroid != null) {
-            if (mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-                return;
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mWindowAndroid.saveInstanceState(outState);
     }
 
     /**
@@ -1535,13 +1504,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     public ContentViewCore getCurrentContentViewCore() {
         return TabModelUtils.getCurrentContentViewCore(getCurrentTabModel());
-    }
-
-    /**
-     * @return A {@link WindowAndroid} instance.
-     */
-    public WindowAndroid getWindowAndroid() {
-        return mWindowAndroid;
     }
 
     /**
@@ -2075,13 +2037,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     getComponentName().flattenToString(),
                     true /* hardwareAccelerated */);
         }
-    }
-
-    @Override
-    public void onContextMenuClosed(Menu menu) {
-        if (mWindowAndroid == null) return;
-
-        mWindowAndroid.onContextMenuClosed();
     }
 
     private boolean shouldDisableHardwareAcceleration() {

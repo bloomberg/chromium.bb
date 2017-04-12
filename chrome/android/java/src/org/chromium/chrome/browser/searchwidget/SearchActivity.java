@@ -35,7 +35,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
-/** Prototype that queries the user's default search engine and shows autocomplete suggestions. */
+/** Queries the user's default search engine and shows autocomplete suggestions. */
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate,
                    View.OnLayoutChangeListener {
@@ -52,7 +52,6 @@ public class SearchActivity extends AsyncInitializationActivity
     /** The View that represents the search box. */
     private SearchActivityLocationBarLayout mSearchBox;
 
-    private ActivityWindowAndroid mWindowAndroid;
     private SnackbarManager mSnackbarManager;
     private SearchBoxDataProvider mSearchBoxDataProvider;
     private Tab mTab;
@@ -68,28 +67,12 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     @Override
-    public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
-        if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, String[] permissions, int[] grantResults) {
-        // TODO(dfalcantara): This is from ChromeWindow.  It should be moved into the
-        //                    AsyncInitializationActivity, but that has a lot of subclasses that
-        //                    don't need a WindowAndroid.
-        if (mWindowAndroid != null) {
-            if (mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-                return;
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    protected ActivityWindowAndroid createWindowAndroid() {
+        return new ActivityWindowAndroid(this);
     }
 
     @Override
     protected void setContentView() {
-        mWindowAndroid = new ActivityWindowAndroid(this);
         mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
@@ -100,7 +83,7 @@ public class SearchActivity extends AsyncInitializationActivity
                 R.id.search_location_bar);
         mSearchBox.setDelegate(this);
         mSearchBox.setToolbarDataProvider(mSearchBoxDataProvider);
-        mSearchBox.initializeControls(new WindowDelegate(getWindow()), mWindowAndroid);
+        mSearchBox.initializeControls(new WindowDelegate(getWindow()), getWindowAndroid());
 
         setContentView(mContentView);
     }
@@ -111,8 +94,8 @@ public class SearchActivity extends AsyncInitializationActivity
         mIsNativeReady = true;
 
         mTab = new Tab(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID),
-                Tab.INVALID_TAB_ID, false, this, mWindowAndroid, TabLaunchType.FROM_EXTERNAL_APP,
-                null, null);
+                Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+                TabLaunchType.FROM_EXTERNAL_APP, null, null);
         mTab.initialize(WebContentsFactory.createWebContents(false, false), null,
                 new TabDelegateFactory(), false, false);
         mTab.loadUrl(new LoadUrlParams("about:blank"));
