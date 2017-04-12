@@ -57,9 +57,9 @@ WaitingCallback::WaitingCallback(v8::Isolate* isolate,
       weak_factory_(this) {
   v8::Handle<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
-  GetWrapper(isolate)
-      ->SetPrivate(context, GetHiddenPropertyName(isolate), callback)
-      .FromJust();
+  v8::Maybe<bool> result = GetWrapper(isolate).ToLocalChecked()->SetPrivate(
+      context, GetHiddenPropertyName(isolate), callback);
+  DCHECK(result.IsJust() && result.FromJust());
 }
 
 WaitingCallback::~WaitingCallback() {
@@ -73,15 +73,22 @@ void WaitingCallback::OnHandleReady(MojoResult result) {
   gin::Runner::Scope scope(runner_.get());
   v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
 
-  v8::Handle<v8::Value> hidden_value =
-      GetWrapper(isolate)
+  v8::Local<v8::Object> wrapper;
+  if (!GetWrapper(isolate).ToLocal(&wrapper)) {
+    Cancel();
+    return;
+  }
+
+  v8::Local<v8::Value> hidden_value =
+      wrapper
           ->GetPrivate(runner_->GetContextHolder()->context(),
                        GetHiddenPropertyName(isolate))
           .ToLocalChecked();
-  v8::Handle<v8::Function> callback;
-  CHECK(gin::ConvertFromV8(isolate, hidden_value, &callback));
+  v8::Local<v8::Function> callback;
+  bool convert_result = gin::ConvertFromV8(isolate, hidden_value, &callback);
+  DCHECK(convert_result);
 
-  v8::Handle<v8::Value> args[] = { gin::ConvertToV8(isolate, result) };
+  v8::Local<v8::Value> args[] = {gin::ConvertToV8(isolate, result)};
   runner_->Call(callback, runner_->global(), 1, args);
 
   if (one_shot_ || result == MOJO_RESULT_CANCELLED) {

@@ -62,9 +62,9 @@ struct TestHelper {
         result(Result::Create(isolate)) {
     EXPECT_FALSE(runner->global().IsEmpty());
     runner->global()->Set(StringToV8(isolate, "timer"),
-                          timer_module->GetWrapper(isolate));
+                          timer_module->GetWrapper(isolate).ToLocalChecked());
     runner->global()->Set(StringToV8(isolate, "result"),
-                          result->GetWrapper(isolate));
+                          result->GetWrapper(isolate).ToLocalChecked());
   }
 
   void QuitSoon(base::MessageLoop* message_loop) {

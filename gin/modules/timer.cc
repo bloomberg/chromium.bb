@@ -46,6 +46,7 @@ Timer::Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
           isolate->GetCurrentContext())->runner()->GetWeakPtr()),
       weak_factory_(this) {
   GetWrapper(runner_->GetContextHolder()->isolate())
+      .ToLocalChecked()
       ->SetPrivate(isolate->GetCurrentContext(), GetHiddenPropertyName(isolate),
                    function)
       .FromJust();
@@ -68,6 +69,7 @@ void Timer::OnTimerFired() {
   v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
   v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(
       GetWrapper(isolate)
+          .ToLocalChecked()
           ->GetPrivate(runner_->GetContextHolder()->context(),
                        GetHiddenPropertyName(isolate))
           .ToLocalChecked());
@@ -87,7 +89,7 @@ Handle<TimerModule> TimerModule::Create(v8::Isolate* isolate) {
 
 // static
 v8::Local<v8::Value> TimerModule::GetModule(v8::Isolate* isolate) {
-  return Create(isolate)->GetWrapper(isolate);
+  return Create(isolate)->GetWrapper(isolate).ToLocalChecked();
 }
 
 TimerModule::TimerModule() {

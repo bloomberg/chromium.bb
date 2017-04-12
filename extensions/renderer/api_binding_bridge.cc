@@ -35,7 +35,7 @@ APIBindingBridge::APIBindingBridge(APIBindingHooks* hooks,
       context_type_(context_type),
       run_js_(run_js) {
   v8::Isolate* isolate = context->GetIsolate();
-  v8::Local<v8::Object> wrapper = GetWrapper(isolate);
+  v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();
   v8::Maybe<bool> result = wrapper->SetPrivate(
       context, GetPrivatePropertyName(isolate, kApiObjectKey), api_object);
   if (!result.IsJust() || !result.FromJust()) {
@@ -64,7 +64,10 @@ void APIBindingBridge::RegisterCustomHook(v8::Isolate* isolate,
   // functions in binding.js.
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Object> hook_object = v8::Object::New(isolate);
-  v8::Local<v8::Object> wrapper = GetWrapper(isolate);
+  v8::Local<v8::Object> wrapper;
+  if (!GetWrapper(isolate).ToLocal(&wrapper))
+    return;
+
   v8::Local<v8::Value> hook_interface =
       wrapper->GetPrivate(
           context, GetPrivatePropertyName(isolate, kHookInterfaceKey))

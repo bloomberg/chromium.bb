@@ -25,6 +25,7 @@ ObjectTemplateBuilder WrappableBase::GetObjectTemplateBuilder(
 void WrappableBase::FirstWeakCallback(
     const v8::WeakCallbackInfo<WrappableBase>& data) {
   WrappableBase* wrappable = data.GetParameter();
+  wrappable->dead_ = true;
   wrappable->wrapper_.Reset();
   data.SetSecondPassCallback(SecondWeakCallback);
 }
@@ -35,11 +36,15 @@ void WrappableBase::SecondWeakCallback(
   delete wrappable;
 }
 
-v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
-                                                    WrapperInfo* info) {
+v8::MaybeLocal<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
+                                                         WrapperInfo* info) {
   if (!wrapper_.IsEmpty()) {
-    return v8::Local<v8::Object>::New(isolate, wrapper_);
+    return v8::MaybeLocal<v8::Object>(
+        v8::Local<v8::Object>::New(isolate, wrapper_));
   }
+
+  if (dead_)
+    return v8::MaybeLocal<v8::Object>();
 
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(info);
@@ -56,7 +61,7 @@ v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
     // The current wrappable object will be no longer managed by V8. Delete this
     // now.
     delete this;
-    return wrapper;
+    return v8::MaybeLocal<v8::Object>(wrapper);
   }
 
   int indices[] = {kWrapperInfoIndex, kEncodedValueIndex};
@@ -64,7 +69,7 @@ v8::Local<v8::Object> WrappableBase::GetWrapperImpl(v8::Isolate* isolate,
   wrapper->SetAlignedPointerInInternalFields(2, indices, values);
   wrapper_.Reset(isolate, wrapper);
   wrapper_.SetWeak(this, FirstWeakCallback, v8::WeakCallbackType::kParameter);
-  return wrapper;
+  return v8::MaybeLocal<v8::Object>(wrapper);
 }
 
 namespace internal {

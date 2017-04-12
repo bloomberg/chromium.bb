@@ -127,7 +127,7 @@ v8::Local<v8::Value> ChromeSetting::GetOnChangeEvent(
     gin::Arguments* arguments) {
   v8::Isolate* isolate = arguments->isolate();
   v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
-  v8::Local<v8::Object> wrapper = GetWrapper(isolate);
+  v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();
   v8::Local<v8::Private> key = v8::Private::ForApi(
       isolate, gin::StringToSymbol(isolate, "onChangeEvent"));
   v8::Local<v8::Value> event;

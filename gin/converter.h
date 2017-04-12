@@ -27,7 +27,7 @@ bool SetProperty(v8::Isolate* isolate,
   return !maybe.IsNothing() && maybe.FromJust();
 }
 
-template<typename T>
+template <typename T, typename Enable = void>
 struct ToV8ReturnsMaybe {
   static const bool value = false;
 };
