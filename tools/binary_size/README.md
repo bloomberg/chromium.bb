@@ -48,8 +48,8 @@ Determine the cause of binary size bloat for a patch.
 
 ### Example Usage:
 
-    # Sync, build, and store MonochromePublic.apk for HEAD and HEAD^.
-    tools/binary_size/diagnose_apk_bloat.py -v
+    # Sync, build, and diff for HEAD and HEAD^.
+    tools/binary_size/diagnose_apk_bloat.py
 
     # Display detailed usage info (there are many options).
     tools/binary_size/diagnose_apk_bloat.py -h
