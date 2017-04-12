@@ -49,7 +49,8 @@ void WriteSomethingAfterStartWatch(const base::FilePath& path,
   EXPECT_TRUE(watch_success) << path.value();
 
   const char kDummy[] = "hello";
-  ASSERT_TRUE(base::WriteFile(path, kDummy, arraysize(kDummy)));
+  ASSERT_EQ(static_cast<int>(arraysize(kDummy)),
+            base::WriteFile(path, kDummy, arraysize(kDummy)));
 }
 
 class FileWriteWatcherTest : public testing::Test {

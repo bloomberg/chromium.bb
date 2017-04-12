@@ -48,8 +48,9 @@ class ProfileErrorBrowserTest : public InProcessBrowserTest,
     // Write either an empty or an invalid string to the user profile as
     // determined by the boolean parameter.
     const std::string kUserProfileData(do_corrupt_ ? "invalid json" : "{}");
-    if (!base::WriteFile(pref_file, kUserProfileData.c_str(),
-                         kUserProfileData.size())) {
+    if (base::WriteFile(pref_file, kUserProfileData.c_str(),
+                        kUserProfileData.size()) !=
+        static_cast<int>(kUserProfileData.size())) {
       ADD_FAILURE();
       return false;
     }

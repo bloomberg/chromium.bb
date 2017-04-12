@@ -47,8 +47,9 @@ class NativeMessagingHostManifestTest : public ::testing::Test {
   }
 
   bool WriteManifest(const std::string& manifest_content) {
-    return base::WriteFile(
-        manifest_path_, manifest_content.data(), manifest_content.size());
+    return base::WriteFile(manifest_path_, manifest_content.data(),
+                           manifest_content.size()) ==
+           static_cast<int>(manifest_content.size());
   }
 
   base::ScopedTempDir temp_dir_;

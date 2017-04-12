@@ -78,8 +78,8 @@ TEST_F(PasswordImporterTest, CSVImport) {
 
   base::FilePath input_path =
       temp_directory_.GetPath().AppendASCII(kTestFileName);
-  ASSERT_TRUE(
-      base::WriteFile(input_path, kTestCSVInput, strlen(kTestCSVInput)));
+  ASSERT_EQ(static_cast<int>(strlen(kTestCSVInput)),
+            base::WriteFile(input_path, kTestCSVInput, strlen(kTestCSVInput)));
   ASSERT_NO_FATAL_FAILURE(StartImportAndWaitForCompletion(input_path));
 
   EXPECT_EQ(PasswordImporter::SUCCESS, result());

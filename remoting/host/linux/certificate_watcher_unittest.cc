@@ -90,8 +90,9 @@ class CertificateWatcherTest : public testing::Test {
       EXPECT_TRUE(base::AppendToFile(path, testWriteString.c_str(),
                                      testWriteString.length()));
     } else {
-      EXPECT_TRUE(base::WriteFile(path, testWriteString.c_str(),
-                                  testWriteString.length()));
+      EXPECT_EQ(static_cast<int>(testWriteString.length()),
+                base::WriteFile(path, testWriteString.c_str(),
+                                testWriteString.length()));
     }
   }
 

@@ -968,7 +968,8 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   base::FilePath temp_path;
   EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
   GURL temp_url = FilePathToFileURL(temp_path);
-  EXPECT_TRUE(base::WriteFile(temp_path, buffer.get(), buffer_size));
+  EXPECT_EQ(static_cast<int>(buffer_size),
+            base::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));

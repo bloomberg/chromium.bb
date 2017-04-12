@@ -410,7 +410,8 @@ Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
     base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
     const char* contents = preexisting_preferences_file_contents_.c_str();
     size_t contents_length = preexisting_preferences_file_contents_.size();
-    if (!base::WriteFile(pref_path, contents, contents_length)) {
+    if (base::WriteFile(pref_path, contents, contents_length) !=
+        static_cast<int>(contents_length)) {
       LOG(FATAL) << "Preexisting Preferences file could not be written.";
     }
   }

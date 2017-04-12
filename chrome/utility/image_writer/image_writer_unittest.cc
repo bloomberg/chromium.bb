@@ -44,7 +44,8 @@ class ImageWriterUtilityTest : public testing::Test {
     std::unique_ptr<char[]> buffer(new char[kTestFileSize]);
     memset(buffer.get(), pattern, kTestFileSize);
 
-    ASSERT_TRUE(base::WriteFile(path, buffer.get(), kTestFileSize));
+    ASSERT_EQ(static_cast<int>(kTestFileSize),
+              base::WriteFile(path, buffer.get(), kTestFileSize));
   }
 
   void FillDefault(const base::FilePath& path) { FillFile(path, kTestPattern); }

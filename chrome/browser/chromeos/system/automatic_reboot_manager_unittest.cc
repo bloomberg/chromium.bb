@@ -319,10 +319,10 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   const base::FilePath& temp_dir = temp_dir_.GetPath();
   const base::FilePath uptime_file = temp_dir.Append("uptime");
   uptime_provider()->set_uptime_file_path(uptime_file);
-  ASSERT_FALSE(base::WriteFile(uptime_file, NULL, 0));
+  ASSERT_EQ(0, base::WriteFile(uptime_file, NULL, 0));
   update_reboot_needed_uptime_file_ =
       temp_dir.Append("update_reboot_needed_uptime");
-  ASSERT_FALSE(base::WriteFile(update_reboot_needed_uptime_file_, NULL, 0));
+  ASSERT_EQ(0, base::WriteFile(update_reboot_needed_uptime_file_, NULL, 0));
   ASSERT_TRUE(PathService::Override(chromeos::FILE_UPTIME, uptime_file));
   ASSERT_TRUE(PathService::Override(chromeos::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                                     update_reboot_needed_uptime_file_));

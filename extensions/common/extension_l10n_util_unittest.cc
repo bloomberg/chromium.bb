@@ -39,7 +39,8 @@ TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
 
   base::FilePath messages_file = locale.Append(kMessagesFilename);
   std::string data = "{ \"name\":";
-  ASSERT_TRUE(base::WriteFile(messages_file, data.c_str(), data.length()));
+  ASSERT_EQ(static_cast<int>(data.length()),
+            base::WriteFile(messages_file, data.c_str(), data.length()));
 
   base::DictionaryValue manifest;
   manifest.SetString(keys::kDefaultLocale, "en");
@@ -92,8 +93,9 @@ TEST(ExtensionL10nUtil, GetValidLocalesWithUnsupportedLocale) {
   base::FilePath locale_1 = src_path.AppendASCII("sr");
   ASSERT_TRUE(base::CreateDirectory(locale_1));
   std::string data("whatever");
-  ASSERT_TRUE(base::WriteFile(
-      locale_1.Append(kMessagesFilename), data.c_str(), data.length()));
+  ASSERT_EQ(static_cast<int>(data.length()),
+            base::WriteFile(locale_1.Append(kMessagesFilename), data.c_str(),
+                            data.length()));
   // Unsupported locale.
   ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("xxx_yyy")));
 
@@ -165,7 +167,8 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
 
   std::string data = "{ \"name\":";
   base::FilePath messages_file = locale.Append(kMessagesFilename);
-  ASSERT_TRUE(base::WriteFile(messages_file, data.c_str(), data.length()));
+  ASSERT_EQ(static_cast<int>(data.length()),
+            base::WriteFile(messages_file, data.c_str(), data.length()));
 
   std::string error;
   EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
@@ -190,14 +193,16 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   std::string data =
       "{ \"name\": { \"message\": \"something\" }, "
       "\"name\": { \"message\": \"something else\" } }";
-  ASSERT_TRUE(base::WriteFile(
-      locale_1.Append(kMessagesFilename), data.c_str(), data.length()));
+  ASSERT_EQ(static_cast<int>(data.length()),
+            base::WriteFile(locale_1.Append(kMessagesFilename), data.c_str(),
+                            data.length()));
 
   base::FilePath locale_2 = src_path.AppendASCII("sr");
   ASSERT_TRUE(base::CreateDirectory(locale_2));
 
-  ASSERT_TRUE(base::WriteFile(
-      locale_2.Append(kMessagesFilename), data.c_str(), data.length()));
+  ASSERT_EQ(static_cast<int>(data.length()),
+            base::WriteFile(locale_2.Append(kMessagesFilename), data.c_str(),
+                            data.length()));
 
   std::string error;
   // JSON parser hides duplicates. We are going to get only one key/value

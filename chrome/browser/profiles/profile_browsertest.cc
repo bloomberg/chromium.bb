@@ -123,7 +123,8 @@ class MockProfileDelegate : public Profile::Delegate {
 void CreatePrefsFileInDirectory(const base::FilePath& directory_path) {
   base::FilePath pref_path(directory_path.Append(chrome::kPreferencesFilename));
   std::string data("{}");
-  ASSERT_TRUE(base::WriteFile(pref_path, data.c_str(), data.size()));
+  ASSERT_EQ(static_cast<int>(data.size()),
+            base::WriteFile(pref_path, data.c_str(), data.size()));
 }
 
 void CheckChromeVersion(Profile *profile, bool is_new) {

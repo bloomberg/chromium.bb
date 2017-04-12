@@ -1842,9 +1842,11 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Try packing with an invalid manifest.
   std::string invalid_manifest_content = "I am not a manifest.";
-  ASSERT_TRUE(base::WriteFile(
-      temp_dir2.GetPath().Append(extensions::kManifestFilename),
-      invalid_manifest_content.c_str(), invalid_manifest_content.size()));
+  ASSERT_EQ(
+      static_cast<int>(invalid_manifest_content.size()),
+      base::WriteFile(temp_dir2.GetPath().Append(extensions::kManifestFilename),
+                      invalid_manifest_content.c_str(),
+                      invalid_manifest_content.size()));
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.GetPath(), crx_path, privkey_path,
                             base::FilePath(), ExtensionCreator::kOverwriteCRX));

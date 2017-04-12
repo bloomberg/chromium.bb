@@ -385,8 +385,9 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kGenerateAccessibilityTestExpectations)) {
       base::ThreadRestrictions::ScopedAllowIO allow_io_to_write_expected_file;
-      CHECK(base::WriteFile(
-          expected_file, actual_contents.c_str(), actual_contents.size()));
+      CHECK(base::WriteFile(expected_file, actual_contents.c_str(),
+                            actual_contents.size()) ==
+            static_cast<int>(actual_contents.size()));
       LOG(INFO) << "Wrote expectations to: "
                 << expected_file.LossyDisplayName();
     }

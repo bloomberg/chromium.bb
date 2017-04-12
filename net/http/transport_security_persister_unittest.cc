@@ -144,7 +144,8 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   // than block.) Use a different basename just for cleanliness.
   base::FilePath path =
       temp_dir_.GetPath().AppendASCII("TransportSecurityPersisterTest");
-  EXPECT_TRUE(base::WriteFile(path, serialized.c_str(), serialized.size()));
+  EXPECT_EQ(static_cast<int>(serialized.size()),
+            base::WriteFile(path, serialized.c_str(), serialized.size()));
 
   // Read the data back.
   std::string persisted;
