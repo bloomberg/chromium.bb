@@ -139,6 +139,7 @@ ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
       max_resources_per_entry(50),
       max_origins_per_entry(50),
       max_consecutive_misses(3),
+      max_redirect_consecutive_misses(5),
       min_resource_confidence_to_trigger_prefetch(0.7f),
       min_resource_hits_to_trigger_prefetch(2),
       max_prefetches_inflight_per_navigation(5),

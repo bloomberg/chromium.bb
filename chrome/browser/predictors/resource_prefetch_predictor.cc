@@ -398,35 +398,46 @@ content::ResourceType ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
   return fallback;
 }
 
-// static
 bool ResourcePrefetchPredictor::GetRedirectEndpoint(
-    const std::string& first_redirect,
+    const std::string& entry_point,
     const RedirectDataMap& redirect_data_map,
-    std::string* final_redirect) {
-  DCHECK(final_redirect);
+    std::string* redirect_endpoint) const {
+  DCHECK(redirect_endpoint);
 
-  RedirectDataMap::const_iterator it = redirect_data_map.find(first_redirect);
-  if (it == redirect_data_map.end())
-    return false;
+  RedirectDataMap::const_iterator it = redirect_data_map.find(entry_point);
+  if (it == redirect_data_map.end()) {
+    // Fallback to fetching URLs based on the incoming URL/host. By default
+    // the predictor is confident that there is no redirect.
+    *redirect_endpoint = entry_point;
+    return true;
+  }
 
   const RedirectData& redirect_data = it->second;
-  auto best_redirect = std::max_element(
-      redirect_data.redirect_endpoints().begin(),
-      redirect_data.redirect_endpoints().end(),
-      [](const RedirectStat& x, const RedirectStat& y) {
-        return ComputeRedirectConfidence(x) < ComputeRedirectConfidence(y);
-      });
+  DCHECK_GT(redirect_data.redirect_endpoints_size(), 0);
+  if (redirect_data.redirect_endpoints_size() > 1) {
+    // The predictor observed multiple redirect destinations recently. Redirect
+    // endpoint is ambiguous. The predictor predicts a redirect only if it
+    // believes that the redirect is "permanent", i.e. subsequent navigations
+    // will lead to the same destination.
+    return false;
+  }
 
-  const float kMinRedirectConfidenceToTriggerPrefetch = 0.7f;
+  // The threshold is higher than the threshold for resources because the
+  // redirect misprediction causes the waste of whole prefetch.
+  const float kMinRedirectConfidenceToTriggerPrefetch = 0.9f;
   const int kMinRedirectHitsToTriggerPrefetch = 2;
 
-  if (best_redirect == redirect_data.redirect_endpoints().end() ||
-      ComputeRedirectConfidence(*best_redirect) <
+  // The predictor doesn't apply a minimum-number-of-hits threshold to
+  // the no-redirect case because the no-redirect is a default assumption.
+  const RedirectStat& redirect = redirect_data.redirect_endpoints(0);
+  if (ComputeRedirectConfidence(redirect) <
           kMinRedirectConfidenceToTriggerPrefetch ||
-      best_redirect->number_of_hits() < kMinRedirectHitsToTriggerPrefetch)
+      (redirect.number_of_hits() < kMinRedirectHitsToTriggerPrefetch &&
+       redirect.url() != entry_point)) {
     return false;
+  }
 
-  *final_redirect = best_redirect->url();
+  *redirect_endpoint = redirect.url();
   return true;
 }
 
@@ -869,49 +880,30 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
       prediction ? &prediction->subresource_urls : nullptr;
   DCHECK(!urls || urls->empty());
 
-  // Fetch URLs based on a redirect endpoint for URL/host first.
+  // Fetch resources using URL-keyed data first.
   std::string redirect_endpoint;
+  const std::string& main_frame_url_spec = main_frame_url.spec();
   if (config_.is_url_learning_enabled &&
-      GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
+      GetRedirectEndpoint(main_frame_url_spec, *url_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *url_table_cache_, urls)) {
     if (prediction) {
       prediction->is_host = false;
-      prediction->is_redirected = true;
       prediction->main_frame_key = redirect_endpoint;
+      prediction->is_redirected = (redirect_endpoint != main_frame_url_spec);
     }
     return true;
   }
 
-  if (GetRedirectEndpoint(main_frame_url.host(), *host_redirect_table_cache_,
+  // Use host data if the URL-based prediction isn't available.
+  std::string main_frame_url_host = main_frame_url.host();
+  if (GetRedirectEndpoint(main_frame_url_host, *host_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_, urls)) {
     if (prediction) {
       prediction->is_host = true;
-      prediction->is_redirected = true;
       prediction->main_frame_key = redirect_endpoint;
-    }
-    return true;
-  }
-
-  // Fallback to fetching URLs based on the incoming URL/host.
-  if (config_.is_url_learning_enabled &&
-      PopulatePrefetcherRequest(main_frame_url.spec(), *url_table_cache_,
-                                urls)) {
-    if (prediction) {
-      prediction->is_host = false;
-      prediction->is_redirected = false;
-      prediction->main_frame_key = main_frame_url.spec();
-    }
-    return true;
-  }
-
-  if (PopulatePrefetcherRequest(main_frame_url.host(), *host_table_cache_,
-                                urls)) {
-    if (prediction) {
-      prediction->is_host = true;
-      prediction->is_redirected = false;
-      prediction->main_frame_key = main_frame_url.host();
+      prediction->is_redirected = (redirect_endpoint != main_frame_url_host);
     }
     return true;
   }
@@ -1407,10 +1399,10 @@ void ResourcePrefetchPredictor::LearnNavigation(
                    empty_redirect_data));
   }
 
-  if (key != key_before_redirects) {
-    LearnRedirect(key_before_redirects, key_type, key, max_data_map_size,
-                  redirect_map);
-  }
+  // Predictor learns about both redirected and non-redirected destinations to
+  // estimate whether the endpoint is permanent.
+  LearnRedirect(key_before_redirects, key_type, key, max_data_map_size,
+                redirect_map);
 }
 
 void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
@@ -1462,7 +1454,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
   RedirectData& data = cache_entry->second;
   // Trim the redirects after the update.
   ResourcePrefetchPredictorTables::TrimRedirects(
-      &data, config_.max_consecutive_misses);
+      &data, config_.max_redirect_consecutive_misses);
 
   if (data.redirect_endpoints_size() == 0) {
     redirect_map->erase(cache_entry);

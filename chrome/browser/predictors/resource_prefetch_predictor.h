@@ -318,12 +318,6 @@ class ResourcePrefetchPredictor
   // Returns true if the request (should have a response in it) is "no-store".
   static bool IsNoStore(const net::URLRequest& request);
 
-  // Returns true iff |redirect_data_map| contains confident redirect endpoint
-  // for |entry_point| and assigns it to the |redirect_endpoint|.
-  static bool GetRedirectEndpoint(const std::string& entry_point,
-                                  const RedirectDataMap& redirect_data_map,
-                                  std::string* redirect_endpoint);
-
   static void SetAllowPortInUrlsForTesting(bool state);
 
   // KeyedService methods override.
@@ -341,6 +335,16 @@ class ResourcePrefetchPredictor
   // "completion" of the navigation. The resources requested by the page up to
   // this point are the only ones considered for prefetching.
   void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
+
+  // Returns true iff one of the following conditions is true
+  // * |redirect_data_map| contains confident redirect endpoint for
+  //   |entry_point| and assigns it to the |redirect_endpoint|
+  //
+  // * |redirect_data_map| doens't contain an entry for |entry_point| and
+  //   assings |entry_point| to the |redirect_endpoint|.
+  bool GetRedirectEndpoint(const std::string& entry_point,
+                           const RedirectDataMap& redirect_data_map,
+                           std::string* redirect_endpoint) const;
 
   // Returns true iff there is PrefetchData that can be used for a
   // |main_frame_url| and fills |prediction| with resources that need to be
