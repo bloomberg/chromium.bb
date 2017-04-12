@@ -47,15 +47,6 @@ void IncrementAndAssign(int expected_before_counter,
   *status_out = status;
 }
 
-template <typename T>
-void IncrementAndAssignWithOwnedPointer(T* object,
-                                        int* counter,
-                                        SyncStatusCode* status_out,
-                                        SyncStatusCode status) {
-  ++(*counter);
-  *status_out = status;
-}
-
 class TaskManagerClient
     : public SyncTaskManager::Client,
       public base::SupportsWeakPtr<TaskManagerClient> {
