@@ -118,6 +118,9 @@ public class ContextualSearchTabHelper
         if (mTemplateUrlObserver != null) {
             TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
         }
+        if (NetworkChangeNotifier.isInitialized()) {
+            NetworkChangeNotifier.removeConnectionTypeObserver(this);
+        }
         removeContextualSearchHooks(mBaseContentViewCore);
         mBaseContentViewCore = null;
     }
