@@ -619,7 +619,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   root_window_->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           item_widget_.get(),
-          transform_window_.window()->GetParent()->GetShellWindowId(),
+          transform_window_.window()->GetParent()->aura_window()->id(),
           &params_label);
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);

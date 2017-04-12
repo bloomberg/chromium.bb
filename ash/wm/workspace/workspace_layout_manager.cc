@@ -374,7 +374,7 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
   // only windows in the default workspace container will go fullscreen but
   // this should really be tracked by the RootWindowController since
   // technically any container could get a fullscreen window.
-  if (window_->GetShellWindowId() != kShellWindowId_DefaultContainer)
+  if (window_->aura_window()->id() != kShellWindowId_DefaultContainer)
     return;
   bool is_fullscreen = wm::GetWindowForFullscreenMode(window_) != nullptr;
   if (is_fullscreen != is_fullscreen_) {

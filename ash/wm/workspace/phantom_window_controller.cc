@@ -120,7 +120,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
   WmWindow* phantom_widget_window =
       WmWindow::Get(phantom_widget->GetNativeWindow());
-  phantom_widget_window->SetShellWindowId(kShellWindowId_PhantomWindow);
+  phantom_widget_window->aura_window()->set_id(kShellWindowId_PhantomWindow);
   phantom_widget->SetBounds(bounds_in_screen);
   // TODO(sky): I suspect this is never true, verify that.
   if (phantom_widget_window->GetParent() == window_->GetParent()) {

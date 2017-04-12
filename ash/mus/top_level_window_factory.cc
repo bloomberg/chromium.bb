@@ -131,9 +131,8 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   aura::Window* context = nullptr;
   aura::Window* container_window = nullptr;
   if (GetInitialContainerId(*properties, &container_id)) {
-    container_window = root_window_controller->GetWindow()
-                           ->GetChildByShellWindowId(container_id)
-                           ->aura_window();
+    container_window =
+        root_window_controller->GetRootWindow()->GetChildById(container_id);
   } else {
     context = root_window_controller->GetRootWindow();
   }
@@ -160,9 +159,8 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     // Pick a parent so display information is obtained. Will pick the real one
     // once transient parent found.
     aura::Window* unparented_control_container =
-        root_window_controller->GetWindow()
-            ->GetChildByShellWindowId(kShellWindowId_UnparentedControlContainer)
-            ->aura_window();
+        root_window_controller->GetRootWindow()->GetChildById(
+            kShellWindowId_UnparentedControlContainer);
     // DetachedTitleAreaRendererForClient is owned by the client.
     DetachedTitleAreaRendererForClient* renderer =
         new DetachedTitleAreaRendererForClient(unparented_control_container,

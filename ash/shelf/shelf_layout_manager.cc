@@ -77,9 +77,8 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 // Returns true if the window is in the app list window container.
 bool IsAppListWindow(WmWindow* window) {
-  return window->GetParent() &&
-         window->GetParent()->GetShellWindowId() ==
-             kShellWindowId_AppListContainer;
+  return window->GetParent() && window->GetParent()->aura_window()->id() ==
+                                    kShellWindowId_AppListContainer;
 }
 
 }  // namespace

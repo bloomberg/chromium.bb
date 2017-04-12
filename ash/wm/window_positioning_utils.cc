@@ -50,7 +50,7 @@ void MoveAllTransientChildrenToNewRoot(const display::Display& display,
   WmWindow* dst_root =
       Shell::GetRootWindowControllerWithDisplayId(display.id())->GetWindow();
   for (WmWindow* transient_child : window->GetTransientChildren()) {
-    const int container_id = transient_child->GetParent()->GetShellWindowId();
+    const int container_id = transient_child->GetParent()->aura_window()->id();
     DCHECK_GE(container_id, 0);
     WmWindow* container = dst_root->GetChildByShellWindowId(container_id);
     const gfx::Rect transient_child_bounds_in_screen =
@@ -144,7 +144,7 @@ void SetBoundsInScreen(WmWindow* window,
     DCHECK(dst_root);
     WmWindow* dst_container = nullptr;
     if (dst_root != window->GetRootWindow()) {
-      int container_id = window->GetParent()->GetShellWindowId();
+      int container_id = window->GetParent()->aura_window()->id();
       // All containers that uses screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal background.

@@ -245,11 +245,10 @@ void WindowManager::CreateAndRegisterRootWindowController(
   root_window_controller->Init(root_window_type);
   // TODO: To avoid lots of IPC AddActivationParent() should take an array.
   // http://crbug.com/682048.
-  WmWindow* root_window = root_window_controller->GetWindow();
+  aura::Window* root_window = root_window_controller->GetRootWindow();
   for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
     window_manager_client_->AddActivationParent(
-        root_window->GetChildByShellWindowId(kActivatableShellWindowIds[i])
-            ->aura_window());
+        root_window->GetChildById(kActivatableShellWindowIds[i]));
   }
   root_window_controllers_.insert(std::move(root_window_controller));
 }

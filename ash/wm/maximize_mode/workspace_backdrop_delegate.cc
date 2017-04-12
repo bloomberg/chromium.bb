@@ -35,9 +35,9 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(WmWindow* container)
   // To disallow the MRU list from picking this window up it should not be
   // activateable.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  DCHECK_NE(kShellWindowId_Invalid, container_->GetShellWindowId());
+  DCHECK_NE(kShellWindowId_Invalid, container_->aura_window()->id());
   container_->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      background_, container_->GetShellWindowId(), &params);
+      background_, container_->aura_window()->id(), &params);
   background_->Init(params);
   background_window_ = WmWindow::Get(background_->GetNativeWindow());
   // Do not use the animation system. We don't want the bounds animation and

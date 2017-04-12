@@ -148,7 +148,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
   params.delegate = delegate_view_;
   shelf_container->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          this, shelf_container->GetShellWindowId(), &params);
+          this, shelf_container->aura_window()->id(), &params);
   Init(params);
 
   // The shelf should not take focus when initially shown.

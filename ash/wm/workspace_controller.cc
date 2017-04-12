@@ -12,12 +12,14 @@
 #include "ash/shell_port.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
@@ -62,17 +64,18 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   bool window_overlaps_launcher = false;
   // The default container may contain windows that may overlap the launcher
   // shelf and affect its transparency.
-  WmWindow* container = viewport_->GetRootWindow()->GetChildByShellWindowId(
-      kShellWindowId_DefaultContainer);
-  for (WmWindow* window : container->GetChildren()) {
-    wm::WindowState* window_state = window->GetWindowState();
+  aura::Window* container =
+      viewport_->GetRootWindow()->aura_window()->GetChildById(
+          kShellWindowId_DefaultContainer);
+  for (aura::Window* window : container->children()) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state->ignored_by_shelf() ||
-        (window->GetLayer() && !window->GetLayer()->GetTargetVisibility())) {
+        (window->layer() && !window->layer()->GetTargetVisibility())) {
       continue;
     }
     if (window_state->IsMaximized())
       return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
-    window_overlaps_launcher |= window->GetBounds().Intersects(shelf_bounds);
+    window_overlaps_launcher |= window->bounds().Intersects(shelf_bounds);
   }
 
   return window_overlaps_launcher

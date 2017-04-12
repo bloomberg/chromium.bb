@@ -20,6 +20,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_settings.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -164,18 +165,17 @@ void MoveOriginRelativeToSize(const gfx::Size& src_size,
 }
 
 // Reparents |window| to |new_parent|.
-// TODO(sky): This should take an aura::Window. http://crbug.com/671246.
-void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
-  const gfx::Size src_size = window->GetParent()->GetBounds().size();
-  const gfx::Size dst_size = new_parent->GetBounds().size();
+void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
+  const gfx::Size src_size = window->parent()->bounds().size();
+  const gfx::Size dst_size = new_parent->bounds().size();
   // Update the restore bounds to make it relative to the display.
-  wm::WindowState* state = window->GetWindowState();
+  wm::WindowState* state = wm::GetWindowState(window);
   gfx::Rect restore_bounds;
   const bool has_restore_bounds = state->HasRestoreBounds();
 
   const bool update_bounds = state->IsNormalOrSnapped() || state->IsMinimized();
   gfx::Rect work_area_in_new_parent =
-      wm::GetDisplayWorkAreaBoundsInParent(new_parent);
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(new_parent);
 
   gfx::Rect local_bounds;
   if (update_bounds) {
@@ -201,8 +201,7 @@ void ReparentWindow(WmWindow* window, WmWindow* new_parent) {
 }
 
 // Reparents the appropriate set of windows from |src| to |dst|.
-// TODO(sky): This should take an aura::Window. http://crbug.com/671246.
-void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
+void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
       kShellWindowId_DefaultContainer,
@@ -228,15 +227,17 @@ void ReparentAllWindows(WmWindow* src, WmWindow* dst) {
   }
 
   for (int id : container_ids) {
-    WmWindow* src_container = src->GetChildByShellWindowId(id);
-    WmWindow* dst_container = dst->GetChildByShellWindowId(id);
-    while (!src_container->GetChildren().empty()) {
+    aura::Window* src_container = src->GetChildById(id);
+    aura::Window* dst_container = dst->GetChildById(id);
+    while (!src_container->children().empty()) {
       // Restart iteration from the source container windows each time as they
       // may change as a result of moving other windows.
-      WmWindow::Windows src_container_children = src_container->GetChildren();
-      WmWindow::Windows::const_iterator iter = src_container_children.begin();
+      const aura::Window::Windows& src_container_children =
+          src_container->children();
+      auto iter = src_container_children.begin();
       while (iter != src_container_children.end() &&
-             SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
+             SystemModalContainerLayoutManager::IsModalBackground(
+                 WmWindow::Get(*iter))) {
         ++iter;
       }
       // If the entire window list is modal background windows then stop.
@@ -389,9 +390,8 @@ RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
   WmWindow* modal_container = nullptr;
   if (window) {
     WmWindow* window_container = wm::GetContainerForWindow(window);
-    if (window_container &&
-        window_container->GetShellWindowId() >=
-            kShellWindowId_LockScreenContainer) {
+    if (window_container && window_container->aura_window()->id() >=
+                                kShellWindowId_LockScreenContainer) {
       modal_container = GetWmContainer(kShellWindowId_LockSystemModalContainer);
     } else {
       modal_container = GetWmContainer(kShellWindowId_SystemModalContainer);
@@ -618,7 +618,7 @@ void RootWindowController::CloseChildWindows() {
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Clear the workspace controller, so it doesn't incorrectly update the shelf.
   workspace_controller_.reset();
-  ReparentAllWindows(GetWindow(), WmWindow::Get(dst));
+  ReparentAllWindows(GetRootWindow(), dst);
 }
 
 void RootWindowController::UpdateShelfVisibility() {

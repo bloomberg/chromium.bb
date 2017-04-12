@@ -81,7 +81,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
   // need a non-stub version of SessionStateDelegate. crbug.com/648964
   if (Shell::GetAshConfig() != Config::MASH) {
-    DCHECK(container_->GetShellWindowId() !=
+    DCHECK(container_->aura_window()->id() !=
                kShellWindowId_LockSystemModalContainer ||
            Shell::Get()->session_controller()->IsUserSessionBlocked());
   }
@@ -184,7 +184,7 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
 
 // static
 bool SystemModalContainerLayoutManager::IsModalBackground(WmWindow* window) {
-  int id = window->GetParent()->GetShellWindowId();
+  int id = window->GetParent()->aura_window()->id();
   if (id != kShellWindowId_SystemModalContainer &&
       id != kShellWindowId_LockSystemModalContainer)
     return false;

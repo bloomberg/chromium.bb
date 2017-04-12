@@ -109,8 +109,6 @@ class ASH_EXPORT WmWindow : public aura::WindowObserver,
   RootWindowController* GetRootWindowController();
 
   // See shell_window_ids.h for list of known ids.
-  void SetShellWindowId(int id);
-  int GetShellWindowId() const;
   WmWindow* GetChildByShellWindowId(int id);
 
   ui::wm::WindowType GetType() const;

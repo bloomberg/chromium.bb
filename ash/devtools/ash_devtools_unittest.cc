@@ -5,6 +5,7 @@
 #include "ash/devtools/ash_devtools_css_agent.h"
 #include "ash/devtools/ash_devtools_dom_agent.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm/widget_finder.h"
@@ -134,14 +135,13 @@ int GetPropertyByName(const std::string& name,
   return -1;
 }
 
-WmWindow* GetHighlightingWindow(int root_window_index) {
-  WmWindow::Windows overlay_windows =
-      ShellPort::Get()
-          ->GetAllRootWindows()[root_window_index]
-          ->GetChildByShellWindowId(kShellWindowId_OverlayContainer)
-          ->GetChildren();
-  for (WmWindow* window : overlay_windows) {
-    if (window->aura_window()->GetName() == "HighlightingWidget")
+aura::Window* GetHighlightingWindow(int root_window_index) {
+  const aura::Window::Windows& overlay_windows =
+      Shell::GetAllRootWindows()[root_window_index]
+          ->GetChildById(kShellWindowId_OverlayContainer)
+          ->children();
+  for (aura::Window* window : overlay_windows) {
+    if (window->GetName() == "HighlightingWidget")
       return window;
   }
   NOTREACHED();
@@ -167,14 +167,13 @@ std::unique_ptr<DOM::HighlightConfig> CreateHighlightConfig(
 }
 
 void ExpectHighlighted(const gfx::Rect& bounds, int root_window_index) {
-  WmWindow* highlighting_window = GetHighlightingWindow(root_window_index);
+  aura::Window* highlighting_window = GetHighlightingWindow(root_window_index);
   EXPECT_TRUE(highlighting_window->IsVisible());
   EXPECT_EQ(bounds, highlighting_window->GetBoundsInScreen());
-  EXPECT_EQ(kBackgroundColor,
-            GetInternalWidgetForWindow(highlighting_window->aura_window())
-                ->GetRootView()
-                ->background()
-                ->get_color());
+  EXPECT_EQ(kBackgroundColor, GetInternalWidgetForWindow(highlighting_window)
+                                  ->GetRootView()
+                                  ->background()
+                                  ->get_color());
 }
 
 }  // namespace

@@ -45,7 +45,7 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   status_container->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          this, status_container->GetShellWindowId(), &params);
+          this, status_container->aura_window()->id(), &params);
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);

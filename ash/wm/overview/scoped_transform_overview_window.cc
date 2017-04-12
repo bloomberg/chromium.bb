@@ -483,7 +483,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   window_->GetRootWindow()
       ->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
-          minimized_widget_.get(), window_->GetParent()->GetShellWindowId(),
+          minimized_widget_.get(), window_->GetParent()->aura_window()->id(),
           &params);
   minimized_widget_->set_focus_on_creation(false);
   minimized_widget_->Init(params);

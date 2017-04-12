@@ -155,14 +155,6 @@ RootWindowController* WmWindow::GetRootWindowController() {
   return root ? RootWindowController::ForWindow(root) : nullptr;
 }
 
-void WmWindow::SetShellWindowId(int id) {
-  window_->set_id(id);
-}
-
-int WmWindow::GetShellWindowId() const {
-  return window_->id();
-}
-
 ui::wm::WindowType WmWindow::GetType() const {
   return window_->type();
 }

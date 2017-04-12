@@ -20,7 +20,7 @@ bool IsToplevelWindow(WmWindow* window) {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return IsActivatableShellWindowId(window->GetParent()->GetShellWindowId());
+  return IsActivatableShellWindowId(window->GetParent()->aura_window()->id());
 }
 
 bool IsWindowConsideredActivatable(WmWindow* window) {
@@ -51,7 +51,7 @@ bool IsWindowConsideredVisibleForActivation(WmWindow* window) {
   if (!window->GetTargetVisibility())
     return false;
 
-  const int parent_shell_window_id = window->GetParent()->GetShellWindowId();
+  const int parent_shell_window_id = window->GetParent()->aura_window()->id();
   return parent_shell_window_id == kShellWindowId_DefaultContainer ||
          parent_shell_window_id == kShellWindowId_LockScreenContainer;
 }

@@ -15,7 +15,7 @@ namespace ash {
 
 AlwaysOnTopController::AlwaysOnTopController(WmWindow* viewport)
     : always_on_top_container_(viewport) {
-  DCHECK_NE(kShellWindowId_DefaultContainer, viewport->GetShellWindowId());
+  DCHECK_NE(kShellWindowId_DefaultContainer, viewport->aura_window()->id());
   always_on_top_container_->SetLayoutManager(
       base::MakeUnique<WorkspaceLayoutManager>(viewport));
   // Container should be empty.

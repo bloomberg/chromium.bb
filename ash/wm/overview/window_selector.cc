@@ -529,7 +529,7 @@ void WindowSelector::OnWindowHierarchyChanged(
     return;
 
   for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-    if (new_window->GetParent()->GetShellWindowId() ==
+    if (new_window->GetParent()->aura_window()->id() ==
             wm::kSwitchableWindowContainerIds[i] &&
         !new_window->GetTransientParent()) {
       // The new window is in one of the switchable containers, abort overview.

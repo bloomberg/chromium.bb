@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -54,10 +55,10 @@ std::unique_ptr<WindowOwner> AshTestImplMus::CreateTestWindow(
     const gfx::Rect& bounds_in_screen,
     ui::wm::WindowType type,
     int shell_window_id) {
-  WmWindow* window =
-      WmWindow::Get(wm_test_base_->CreateTestWindow(bounds_in_screen, type));
-  window->SetShellWindowId(shell_window_id);
-  return base::MakeUnique<WindowOwner>(window);
+  aura::Window* window =
+      wm_test_base_->CreateTestWindow(bounds_in_screen, type);
+  window->set_id(shell_window_id);
+  return base::MakeUnique<WindowOwner>(WmWindow::Get(window));
 }
 
 std::unique_ptr<WindowOwner> AshTestImplMus::CreateToplevelTestWindow(

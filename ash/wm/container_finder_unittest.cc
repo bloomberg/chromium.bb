@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test.h"
 #include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
@@ -20,15 +21,15 @@ TEST_F(ContainerFinderTest, GetContainerForWindow) {
   // Create a normal widget in the default container.
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(gfx::Rect(1, 2, 3, 4));
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* window = widget->GetNativeWindow();
 
   // The window itself is not a container.
-  EXPECT_EQ(kShellWindowId_Invalid, window->GetShellWindowId());
+  EXPECT_EQ(kShellWindowId_Invalid, window->id());
 
   // Container lookup finds the default container.
-  WmWindow* container = wm::GetContainerForWindow(window);
+  WmWindow* container = wm::GetContainerForWindow(WmWindow::Get(window));
   ASSERT_TRUE(container);
-  EXPECT_EQ(kShellWindowId_DefaultContainer, container->GetShellWindowId());
+  EXPECT_EQ(kShellWindowId_DefaultContainer, container->aura_window()->id());
 }
 
 }  // namespace ash

@@ -180,7 +180,7 @@ class SystemTray::ActivationObserver
 
     WmWindow* wm_gained_active = WmWindow::Get(gained_active);
     int container_id =
-        wm::GetContainerForWindow(wm_gained_active)->GetShellWindowId();
+        wm::GetContainerForWindow(wm_gained_active)->aura_window()->id();
 
     // Don't close the bubble if a popup notification is activated.
     if (container_id == kShellWindowId_StatusContainer)

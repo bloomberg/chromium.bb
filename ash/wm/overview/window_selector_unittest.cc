@@ -516,9 +516,9 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
   ToggleOverview();
   const std::vector<std::unique_ptr<WindowSelectorItem>>& overview1 =
       GetWindowItemsForRoot(0);
-  EXPECT_EQ(1, overview1[0]->GetWindow()->GetShellWindowId());
-  EXPECT_EQ(3, overview1[1]->GetWindow()->GetShellWindowId());
-  EXPECT_EQ(2, overview1[2]->GetWindow()->GetShellWindowId());
+  EXPECT_EQ(1, overview1[0]->GetWindow()->aura_window()->id());
+  EXPECT_EQ(3, overview1[1]->GetWindow()->aura_window()->id());
+  EXPECT_EQ(2, overview1[2]->GetWindow()->aura_window()->id());
   ToggleOverview();
 
   // Activate the second window.
@@ -528,9 +528,9 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
       GetWindowItemsForRoot(0);
 
   // The order should be MRU.
-  EXPECT_EQ(2, overview2[0]->GetWindow()->GetShellWindowId());
-  EXPECT_EQ(1, overview2[1]->GetWindow()->GetShellWindowId());
-  EXPECT_EQ(3, overview2[2]->GetWindow()->GetShellWindowId());
+  EXPECT_EQ(2, overview2[0]->GetWindow()->aura_window()->id());
+  EXPECT_EQ(1, overview2[1]->GetWindow()->aura_window()->id());
+  EXPECT_EQ(3, overview2[2]->GetWindow()->aura_window()->id());
   ToggleOverview();
 }
 
@@ -1403,7 +1403,7 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
       // string from the window IDs.
       const int index = index_path_for_direction[key_index][i];
       EXPECT_EQ(GetSelectedWindow()->id(),
-                overview_windows[index - 1]->GetWindow()->GetShellWindowId());
+                overview_windows[index - 1]->GetWindow()->aura_window()->id());
     }
     ToggleOverview();
   }

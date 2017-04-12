@@ -222,7 +222,7 @@ class PanelCalloutWidget : public views::Widget {
     params.bounds.set_height(kArrowHeight);
     params.accept_events = false;
     parent->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-        this, parent->GetShellWindowId(), &params);
+        this, parent->aura_window()->id(), &params);
     set_focus_on_creation(false);
     Init(params);
     WmWindow* widget_window = WmWindow::Get(this->GetNativeWindow());
@@ -274,8 +274,8 @@ PanelLayoutManager* PanelLayoutManager::Get(WmWindow* window) {
 
   return static_cast<PanelLayoutManager*>(
       window->GetRootWindow()
-          ->GetChildByShellWindowId(kShellWindowId_PanelContainer)
           ->aura_window()
+          ->GetChildById(kShellWindowId_PanelContainer)
           ->layout_manager());
 }
 

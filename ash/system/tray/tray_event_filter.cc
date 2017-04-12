@@ -10,6 +10,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -47,7 +48,7 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
                                           views::Widget* target) {
   if (target) {
     WmWindow* window = WmWindow::Get(target->GetNativeWindow());
-    int container_id = wm::GetContainerForWindow(window)->GetShellWindowId();
+    int container_id = wm::GetContainerForWindow(window)->aura_window()->id();
     // Don't process events that occurred inside an embedded menu, for example
     // the right-click menu in a popup notification.
     if (container_id == kShellWindowId_MenuContainer)

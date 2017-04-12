@@ -72,7 +72,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
 
   window_state->CreateDragDetails(point_in_parent, window_component, source);
   const int parent_shell_window_id =
-      window->GetParent() ? window->GetParent()->GetShellWindowId() : -1;
+      window->GetParent() ? window->GetParent()->aura_window()->id() : -1;
   if (window->GetParent() &&
       (parent_shell_window_id == kShellWindowId_DefaultContainer ||
        parent_shell_window_id == kShellWindowId_PanelContainer)) {

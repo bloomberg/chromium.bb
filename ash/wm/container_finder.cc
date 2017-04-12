@@ -46,7 +46,7 @@ WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
   int window_container_id =
-      window->GetTransientParent()->GetParent()->GetShellWindowId();
+      window->GetTransientParent()->GetParent()->aura_window()->id();
   if (window_container_id < kShellWindowId_LockScreenContainer)
     return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
   return root->GetChildByShellWindowId(kShellWindowId_LockSystemModalContainer);
@@ -64,7 +64,7 @@ WmWindow* GetContainerFromAlwaysOnTopController(WmWindow* root,
 WmWindow* GetContainerForWindow(WmWindow* window) {
   WmWindow* parent = window->GetParent();
   // The first parent with an explicit shell window ID is the container.
-  while (parent && parent->GetShellWindowId() == kShellWindowId_Invalid)
+  while (parent && parent->aura_window()->id() == kShellWindowId_Invalid)
     parent = parent->GetParent();
   return parent;
 }
@@ -101,7 +101,7 @@ WmWindow* GetDefaultParent(WmWindow* window, const gfx::Rect& bounds) {
       return target_root->GetChildByShellWindowId(
           kShellWindowId_DragImageAndTooltipContainer);
     default:
-      NOTREACHED() << "Window " << window->GetShellWindowId()
+      NOTREACHED() << "Window " << window->aura_window()->id()
                    << " has unhandled type " << window->GetType();
       break;
   }

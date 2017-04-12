@@ -18,6 +18,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/wm_screen_util.h"
 #include "ash/wm_window.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -55,12 +56,14 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   if (!display_area.Intersects(restore_bounds)) {
     const display::Display& display =
         display::Screen::GetScreen()->GetDisplayMatching(restore_bounds);
-    WmWindow* new_root =
-        ShellPort::Get()->GetRootWindowForDisplayId(display.id());
-    if (new_root != window_state->window()->GetRootWindow()) {
-      WmWindow* new_container = new_root->GetChildByShellWindowId(
-          window_state->window()->GetParent()->GetShellWindowId());
-      new_container->AddChild(window_state->window());
+    RootWindowController* new_root_controller =
+        Shell::Get()->GetRootWindowControllerWithDisplayId(display.id());
+    if (new_root_controller->GetRootWindow() !=
+        window_state->window()->GetRootWindow()->aura_window()) {
+      aura::Window* new_container =
+          new_root_controller->GetRootWindow()->GetChildById(
+              window_state->window()->GetParent()->aura_window()->id());
+      new_container->AddChild(window_state->window()->aura_window());
     }
   }
 }

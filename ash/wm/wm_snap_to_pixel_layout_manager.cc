@@ -20,8 +20,8 @@ WmSnapToPixelLayoutManager::~WmSnapToPixelLayoutManager() {}
 // static
 void WmSnapToPixelLayoutManager::InstallOnContainers(WmWindow* window) {
   for (WmWindow* child : window->GetChildren()) {
-    if (child->GetShellWindowId() < kShellWindowId_Min ||
-        child->GetShellWindowId() > kShellWindowId_Max)  // not a container
+    if (child->aura_window()->id() < kShellWindowId_Min ||
+        child->aura_window()->id() > kShellWindowId_Max)  // not a container
       continue;
     if (child->aura_window()->GetProperty(kSnapChildrenToPixelBoundary)) {
       if (!child->GetLayoutManager() && !child->aura_window()->layout_manager())
