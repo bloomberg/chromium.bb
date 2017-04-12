@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
@@ -66,7 +67,7 @@
 @end
 
 // Observer that bridges WebStateList events to an Objective-C observer that
-// implements the WebStateListObserver protocol (the observer is owned).
+// implements the WebStateListObserver protocol (the observer is *not* owned).
 class WebStateListObserverBridge : public WebStateListObserver {
  public:
   explicit WebStateListObserverBridge(id<WebStateListObserving> observer);
@@ -100,7 +101,7 @@ class WebStateListObserverBridge : public WebStateListObserver {
                            int active_index,
                            bool user_action) override;
 
-  id<WebStateListObserving> observer_;
+  base::WeakNSProtocol<id<WebStateListObserving>> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListObserverBridge);
 };

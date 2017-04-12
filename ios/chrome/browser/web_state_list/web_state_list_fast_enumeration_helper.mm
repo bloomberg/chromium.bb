@@ -17,67 +17,8 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - WebStateListFastEnumerationHelperObserver
-
-// Observer for WebStateListFastEnumerationHelper that will increment the
-// mutation counter provided in the constructor every time the WebStateList
-// it is tracking is modified.
-@interface WebStateListFastEnumerationHelperObserver
-    : NSObject<WebStateListObserving>
-
-// Initializes the observer with a pointer to the mutation counter to increment
-// when the WebStateList is mutated.
-- (instancetype)initWithMutationCounter:(unsigned long*)mutationCounter
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
+@interface WebStateListFastEnumerationHelper ()<WebStateListObserving>
 @end
-
-@implementation WebStateListFastEnumerationHelperObserver {
-  // Pointer to the mutation counter to increment when the WebStateList is
-  // mutated.
-  unsigned long* _mutationCounter;
-}
-
-- (instancetype)initWithMutationCounter:(unsigned long*)mutationCounter {
-  DCHECK(mutationCounter);
-  if ((self = [super init]))
-    _mutationCounter = mutationCounter;
-  return self;
-}
-
-#pragma mark WebStateListObserving
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  ++*_mutationCounter;
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex {
-  ++*_mutationCounter;
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-            byWebState:(web::WebState*)newWebState
-               atIndex:(int)index {
-  ++*_mutationCounter;
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)index {
-  ++*_mutationCounter;
-}
-
-@end
-
-#pragma mark - WebStateListFastEnumerationHelper
 
 @implementation WebStateListFastEnumerationHelper {
   // The wrapped WebStateList.
@@ -100,9 +41,7 @@
   if ((self = [super init])) {
     _webStateList = webStateList;
     _proxyFactory = proxyFactory;
-    _observerBridge = base::MakeUnique<WebStateListObserverBridge>(
-        [[WebStateListFastEnumerationHelperObserver alloc]
-            initWithMutationCounter:&_mutationCounter]);
+    _observerBridge = base::MakeUnique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_observerBridge.get());
   }
   return self;
@@ -142,6 +81,34 @@
   state->itemsPtr = buffer;
 
   return static_cast<NSUInteger>(count);
+}
+
+#pragma mark WebStateListObserving
+
+- (void)webStateList:(WebStateList*)webStateList
+    didInsertWebState:(web::WebState*)webState
+              atIndex:(int)index {
+  ++_mutationCounter;
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+     didMoveWebState:(web::WebState*)webState
+           fromIndex:(int)fromIndex
+             toIndex:(int)toIndex {
+  ++_mutationCounter;
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+            byWebState:(web::WebState*)newWebState
+               atIndex:(int)index {
+  ++_mutationCounter;
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)index {
+  ++_mutationCounter;
 }
 
 @end

@@ -145,6 +145,11 @@ void CleanCertificatePolicyCache(
   // notification, translate and forward events, update metrics, ...).
   std::vector<std::unique_ptr<WebStateListObserver>> _webStateListObservers;
 
+  // Strong references to id<WebStateListObserving> wrapped by non-owning
+  // WebStateListObserverBridges.
+  base::scoped_nsobject<NSArray<id<WebStateListObserving>>>
+      _retainedWebStateListObservers;
+
   // The delegate for sync.
   std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
 
@@ -201,13 +206,21 @@ void CleanCertificatePolicyCache(
   // Clear weak pointer to WebStateListMetricsObserver before destroying it.
   _webStateListMetricsObserver = nullptr;
 
-  [self closeAllTabs];
+  // Close all tabs. Do this in an @autoreleasepool as WebStateList observers
+  // will be notified (they are unregistered later). As some of them may be
+  // implemented in Objective-C and unregister themselves in their -dealloc
+  // method, ensure they -autorelease introduced by ARC are processed before
+  // the WebStateList destructor is called.
+  @autoreleasepool {
+    [self closeAllTabs];
+  }
 
   // Unregister all observers after closing all the tabs as some of them are
   // required to properly clean up the Tabs.
   for (const auto& webStateListObserver : _webStateListObservers)
     _webStateList->RemoveObserver(webStateListObserver.get());
   _webStateListObservers.clear();
+  _retainedWebStateListObservers.reset();
 
   _clearPoliciesTaskTracker.TryCancelAll();
 
@@ -283,12 +296,20 @@ void CleanCertificatePolicyCache(
     DCHECK(service);
     _sessionService.reset([service retain]);
 
-    _webStateListObservers.push_back(base::MakeUnique<
-                                     WebStateListObserverBridge>([
-        [TabModelClosingWebStateObserver alloc]
-        initWithTabModel:self
-          restoreService:IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-                             _browserState)]));
+    base::scoped_nsobject<NSMutableArray<id<WebStateListObserving>>>
+        retainedWebStateListObservers([[NSMutableArray alloc] init]);
+
+    base::scoped_nsobject<TabModelClosingWebStateObserver>
+        tabModelClosingWebStateObserver([[TabModelClosingWebStateObserver alloc]
+            initWithTabModel:self
+              restoreService:IOSChromeTabRestoreServiceFactory::
+                                 GetForBrowserState(_browserState)]);
+    [retainedWebStateListObservers addObject:tabModelClosingWebStateObserver];
+
+    _webStateListObservers.push_back(
+        base::MakeUnique<WebStateListObserverBridge>(
+            tabModelClosingWebStateObserver));
+
     _webStateListObservers.push_back(
         base::MakeUnique<SnapshotCacheWebStateListObserver>(
             [SnapshotCache sharedInstance]));
@@ -298,14 +319,21 @@ void CleanCertificatePolicyCache(
               _tabUsageRecorder.get()));
     }
     _webStateListObservers.push_back(base::MakeUnique<TabParentingObserver>());
+
+    base::scoped_nsobject<TabModelSelectedTabObserver>
+        tabModelSelectedTabObserver(
+            [[TabModelSelectedTabObserver alloc] initWithTabModel:self]);
+    [retainedWebStateListObservers addObject:tabModelSelectedTabObserver];
     _webStateListObservers.push_back(
         base::MakeUnique<WebStateListObserverBridge>(
-            [[TabModelSelectedTabObserver alloc] initWithTabModel:self]));
+            tabModelSelectedTabObserver));
+
+    base::scoped_nsobject<TabModelObserversBridge> tabModelObserversBridge(
+        [[TabModelObserversBridge alloc] initWithTabModel:self
+                                        tabModelObservers:_observers.get()]);
+    [retainedWebStateListObservers addObject:tabModelObserversBridge];
     _webStateListObservers.push_back(
-        base::MakeUnique<WebStateListObserverBridge>(
-            [[TabModelObserversBridge alloc]
-                 initWithTabModel:self
-                tabModelObservers:_observers.get()]));
+        base::MakeUnique<WebStateListObserverBridge>(tabModelObserversBridge));
 
     auto webStateListMetricsObserver =
         base::MakeUnique<WebStateListMetricsObserver>();
@@ -314,6 +342,7 @@ void CleanCertificatePolicyCache(
 
     for (const auto& webStateListObserver : _webStateListObservers)
       _webStateList->AddObserver(webStateListObserver.get());
+    _retainedWebStateListObservers.reset([retainedWebStateListObservers copy]);
 
     if (window) {
       DCHECK([_observers empty]);
