@@ -15,9 +15,9 @@ PASS Test finished promise resolves when reaching to the natural boundary.
 PASS Test finished promise changes when a prior finished promise resolved and the animation falls out finished state 
 PASS Test no new finished promise generated when finished state is checked asynchronously 
 PASS Test new finished promise generated when finished state is checked synchronously 
-FAIL Test synchronous finished promise resolved even if finished state is changed soon assert_true: Animation.finished should be resolved even if the finished state is changed soon expected true got false
-FAIL Test synchronous finished promise resolved even if asynchronous finished promise happens just before synchronous promise assert_true: Animation.finished should be resolved soon after finish() is called even if there are other asynchronous promises just before it expected true got false
-PASS Test finished promise is not resolved when the animation falls out finished state immediately 
+PASS Test synchronous finished promise resolved even if finished state is changed soon 
+PASS Test synchronous finished promise resolved even if asynchronous finished promise happens just before synchronous promise 
+FAIL Test finished promise is not resolved when the animation falls out finished state immediately assert_unreached: Animation.finished should not be resolved Reached unreachable code
 FAIL Test finished promise is not resolved once the animation falls out finished state even though the current finished promise is generated soon after animation state became finished assert_unreached: Animation.finished should not be resolved Reached unreachable code
 PASS Finished promise should be resolved after the ready promise is resolved 
 PASS Finished promise should be rejected after the ready promise is rejected 

@@ -237,7 +237,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   using AnimationPromise = ScriptPromiseProperty<Member<Animation>,
                                                  Member<Animation>,
                                                  Member<DOMException>>;
-  void ResolvePromiseAsync(AnimationPromise*);
+  void ResolvePromiseMaybeAsync(AnimationPromise*);
 
   String id_;
 

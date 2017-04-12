@@ -45,6 +45,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/heap/Persistent.h"
@@ -1040,9 +1041,9 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
         animation_->ready_promise_->Reject(DOMException::Create(kAbortError));
       }
       animation_->ready_promise_->Reset();
-      animation_->ResolvePromiseAsync(animation_->ready_promise_.Get());
+      animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (old_play_state == kPending) {
-      animation_->ResolvePromiseAsync(animation_->ready_promise_.Get());
+      animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (new_play_state == kPending) {
       DCHECK_NE(animation_->ready_promise_->GetState(),
                 AnimationPromise::kPending);
@@ -1059,7 +1060,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
       }
       animation_->finished_promise_->Reset();
     } else if (new_play_state == kFinished) {
-      animation_->ResolvePromiseAsync(animation_->finished_promise_.Get());
+      animation_->ResolvePromiseMaybeAsync(animation_->finished_promise_.Get());
     } else if (old_play_state == kFinished) {
       animation_->finished_promise_->Reset();
     }
@@ -1138,11 +1139,15 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
                                    StyleChangeReason::kStyleSheetChange));
 }
 
-void Animation::ResolvePromiseAsync(AnimationPromise* promise) {
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
-      ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(&AnimationPromise::Resolve<Animation*>,
-                           WrapPersistent(promise), WrapPersistent(this)));
+void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
+  if (ScriptForbiddenScope::IsScriptForbidden()) {
+    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+        ->PostTask(BLINK_FROM_HERE,
+                   WTF::Bind(&AnimationPromise::Resolve<Animation*>,
+                             WrapPersistent(promise), WrapPersistent(this)));
+  } else {
+    promise->Resolve(this);
+  }
 }
 
 DEFINE_TRACE(Animation) {
