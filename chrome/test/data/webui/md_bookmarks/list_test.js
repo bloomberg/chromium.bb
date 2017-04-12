@@ -32,53 +32,23 @@ suite('<bookmarks-list>', function() {
     assertDeepEquals(['1', '3', '5', '7'], ids);
   });
 
-  test('selects individual items', function() {
+  test('shift-selects multiple items', function() {
     var items = list.root.querySelectorAll('bookmarks-item');
 
     customClick(items[0]);
-    var expected = {
-      name: 'select-items',
-      add: false,
-      anchor: '1',
-      items: ['1'],
-    };
-    assertDeepEquals(expected, store.lastAction);
-
-    customClick(items[2], {ctrlKey: true});
-    expected.add = true;
-    expected.anchor = '5';
-    expected.items = ['5'];
-    assertDeepEquals(expected, store.lastAction);
-  });
-
-  test('shift-selects multiple items', function() {
-    var items = list.root.querySelectorAll('bookmarks-item');
-    store.data.selection.anchor = '1';
-
-    customClick(items[2], {shiftKey: true});
 
     assertEquals('select-items', store.lastAction.name);
     assertFalse(store.lastAction.add);
-    assertEquals('5', store.lastAction.anchor);
-    assertDeepEquals(['1', '3', '5'], store.lastAction.items);
-  });
-
-  test('selects the item when the anchor is missing', function() {
-    var items = list.root.querySelectorAll('bookmarks-item');
-    // Anchor hasn't been set yet:
-    store.data.selection.anchor = null;
-
-    customClick(items[0], {shiftKey: true});
     assertEquals('1', store.lastAction.anchor);
     assertDeepEquals(['1'], store.lastAction.items);
 
-    // Anchor item doesn't exist:
-    store.data.selection.anchor = '42';
+    store.data.selection.anchor = '1';
+    customClick(items[2], {shiftKey: true, ctrlKey: true});
 
-    customClick(items[1], {shiftKey: true});
-
-    assertEquals('3', store.lastAction.anchor);
-    assertDeepEquals(['3'], store.lastAction.items);
+    assertEquals('select-items', store.lastAction.name);
+    assertTrue(store.lastAction.add);
+    assertEquals('5', store.lastAction.anchor);
+    assertDeepEquals(['1', '3', '5'], store.lastAction.items);
   });
 
   test('deselects items on click outside of card', function() {

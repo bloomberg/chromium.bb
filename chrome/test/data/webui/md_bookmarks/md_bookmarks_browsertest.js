@@ -27,6 +27,20 @@ MaterialBookmarksBrowserTest.prototype = {
   ]),
 };
 
+function MaterialBookmarksActionsTest() {}
+
+MaterialBookmarksActionsTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'actions_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksActionsTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksAppTest() {}
 
 MaterialBookmarksAppTest.prototype = {
@@ -122,25 +136,7 @@ MaterialBookmarksRouterTest.prototype = {
 };
 
 TEST_F('MaterialBookmarksRouterTest', 'All', function() {
-  mocha.grep('<bookmarks-router>').run();
-});
-
-function MaterialBookmarksRouterOnLoadTest() {}
-
-MaterialBookmarksRouterOnLoadTest.prototype = {
-  __proto__: MaterialBookmarksRouterTest.prototype,
-
-  browsePreload: 'chrome://bookmarks/?q=testQuery',
-
-  setUp: function() {
-    chrome.bookmarks.search = function(query) {
-      window.searchedQuery = query;
-    };
-  },
-};
-
-TEST_F('MaterialBookmarksRouterOnLoadTest', 'All', function() {
-  mocha.grep('URL preload').run();
+  mocha.run();
 });
 
 function MaterialBookmarksSidebarTest() {}

@@ -13,6 +13,7 @@ suite('<bookmarks-router>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
+      nodes: testTree(createFolder('1', [createFolder('2', [])])),
       selectedFolder: '1',
       search: {
         term: '',
@@ -31,17 +32,17 @@ suite('<bookmarks-router>', function() {
   });
 
   test('selected folder updates from route', function() {
-    navigateTo('/?id=5');
+    navigateTo('/?id=2');
     assertEquals('select-folder', store.lastAction.name);
-    assertEquals('5', store.lastAction.id);
+    assertEquals('2', store.lastAction.id);
   });
 
   test('route updates from ID', function() {
-    store.data.selectedFolder = '6';
+    store.data.selectedFolder = '2';
     store.notifyObservers();
 
     return Promise.resolve().then(function() {
-      assertEquals('chrome://bookmarks/?id=6', window.location.href);
+      assertEquals('chrome://bookmarks/?id=2', window.location.href);
     });
   });
 
@@ -64,17 +65,55 @@ suite('<bookmarks-router>', function() {
 });
 
 suite('URL preload', function() {
-  test('loading a search URL performs a search', function(done) {
-    function verifySearch(query) {
-      assertEquals('testQuery', query);
-      done();
-    }
+  /**
+   * Reset the page state with a <bookmarks-app> and a clean Store, with the
+   * given |url| to trigger routing initialization code.
+   */
+  function setupWithUrl(url) {
+    PolymerTest.clearBody();
+    bookmarks.Store.instance_ = undefined;
+    window.history.replaceState({}, '', url);
 
-    if (window.searchedQuery) {
-      verifySearch(window.searchedQuery);
-      return;
-    }
+    chrome.bookmarks.getTree = function(callback) {
+      console.log('getTree');
+      console.log(window.location.href);
+      callback([
+        createFolder(
+            '0',
+            [
+              createFolder(
+                  '1',
+                  [
+                    createFolder('11', []),
+                  ]),
+              createFolder(
+                  '2',
+                  [
+                    createItem('21'),
+                  ]),
+            ]),
+      ]);
+    };
 
-    chrome.bookmarks.search = verifySearch;
+    app = document.createElement('bookmarks-app');
+    document.body.appendChild(app);
+  }
+
+  test('loading a search URL performs a search', function() {
+    var lastQuery;
+    chrome.bookmarks.search = function(query) {
+      lastQuery = query;
+      return ['11'];
+    };
+
+    setupWithUrl('/?q=testQuery');
+    assertEquals('testQuery', lastQuery);
+  });
+
+  test('loading a folder URL selects that folder', function() {
+    setupWithUrl('/?id=2');
+    var state = bookmarks.Store.getInstance().data;
+    assertEquals('2', state.selectedFolder);
+    assertDeepEquals(['21'], bookmarks.util.getDisplayedList(state));
   });
 });
