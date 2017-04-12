@@ -60,6 +60,8 @@ import javax.annotation.Nullable;
 public class MediaNotificationManager {
     private static final String TAG = "MediaNotification";
 
+    static final int MINIMAL_MEDIA_IMAGE_SIZE_PX = 114;
+
     @VisibleForTesting
     static final int CUSTOM_MEDIA_SESSION_ACTION_STOP = MediaSessionAction.LAST + 1;
 
@@ -538,6 +540,15 @@ public class MediaNotificationManager {
             return LOW_IMAGE_SIZE_PX;
         }
         return HIGH_IMAGE_SIZE_PX;
+    }
+
+    /**
+     * @returns Whether |icon| is suitable as the media image, i.e. bigger than the minimal size.
+     * @param icon The icon to be checked.
+     */
+    public static boolean isBitmapSuitableAsMediaImage(Bitmap icon) {
+        return icon != null && icon.getWidth() >= MINIMAL_MEDIA_IMAGE_SIZE_PX
+                && icon.getHeight() >= MINIMAL_MEDIA_IMAGE_SIZE_PX;
     }
 
     private static MediaNotificationManager getManager(int notificationId) {

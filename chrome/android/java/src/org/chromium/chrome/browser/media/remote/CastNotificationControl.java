@@ -83,6 +83,8 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         }
         mPosterBitmap = posterBitmap;
         if (mNotificationBuilder == null || mMediaRouteController == null) return;
+
+        updateNotificationBuilderIfPosterIsGoodEnough();
         mNotificationBuilder.setNotificationLargeIcon(mMediaRouteController.getPoster());
         updateNotification();
     }
@@ -108,10 +110,11 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
                 .setPrivate(false)
                 .setNotificationSmallIcon(R.drawable.ic_notification_media_route)
                 .setContentIntent(contentIntent)
-                .setNotificationLargeIcon(mMediaRouteController.getPoster())
                 .setDefaultNotificationLargeIcon(R.drawable.cast_playing_square)
                 .setId(R.id.remote_notification)
                 .setListener(this);
+
+        updateNotificationBuilderIfPosterIsGoodEnough();
         mState = initialState;
         updateNotification();
         mIsShowing = true;
@@ -145,7 +148,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     // poster changes.
     public void onPosterBitmapChanged() {
         if (mNotificationBuilder == null || mMediaRouteController == null) return;
-        mNotificationBuilder.setNotificationLargeIcon(mMediaRouteController.getPoster());
+        updateNotificationBuilderIfPosterIsGoodEnough();
         updateNotification();
     }
 
@@ -234,5 +237,13 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     @VisibleForTesting
     boolean isShowingForTests() {
         return mIsShowing;
+    }
+
+    private void updateNotificationBuilderIfPosterIsGoodEnough() {
+        Bitmap poster = mMediaRouteController.getPoster();
+        if (MediaNotificationManager.isBitmapSuitableAsMediaImage(poster)) {
+            mNotificationBuilder.setNotificationLargeIcon(poster);
+            mNotificationBuilder.setMediaSessionImage(poster);
+        }
     }
 }
