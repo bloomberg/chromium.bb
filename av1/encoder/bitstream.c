@@ -856,13 +856,13 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
-    const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
-
     if (token == BLOCK_Z_TOKEN) {
       aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
       p++;
       continue;
     }
+
+    const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
     if (p->eob_val == LAST_EOB) {
       // Just code a flag indicating whether the value is >1 or 1.
       aom_write_bit(w, token != ONE_TOKEN);
