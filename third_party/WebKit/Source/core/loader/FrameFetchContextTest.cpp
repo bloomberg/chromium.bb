@@ -187,7 +187,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
     ResourceRequest resource_request(input_url);
     return fetch_context->CanRequest(
         Resource::kImage, resource_request, input_url, ResourceLoaderOptions(),
-        reporting_policy, FetchRequest::kUseDefaultOriginRestrictionForType);
+        reporting_policy, FetchParameters::kUseDefaultOriginRestrictionForType);
   }
 
   int filtered_load_callback_counter_;
@@ -481,7 +481,7 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
                     float width = 0) {
     ClientHintsPreferences hints_preferences;
 
-    FetchRequest::ResourceWidth resource_width;
+    FetchParameters::ResourceWidth resource_width;
     if (width > 0) {
       resource_width.width = width;
       resource_width.is_set = true;
@@ -557,52 +557,57 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   ResourceRequest request("http://www.example.com");
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Post
   ResourceRequest post_request("http://www.example.com");
   post_request.SetHTTPMethod(HTTPNames::POST);
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            fetch_context->ResourceRequestCachePolicy(
-                post_request, Resource::kMainResource, FetchRequest::kNoDefer));
+  EXPECT_EQ(
+      WebCachePolicy::kValidatingCacheData,
+      fetch_context->ResourceRequestCachePolicy(
+          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Re-post
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
-  EXPECT_EQ(WebCachePolicy::kReturnCacheDataDontLoad,
-            fetch_context->ResourceRequestCachePolicy(
-                post_request, Resource::kMainResource, FetchRequest::kNoDefer));
+  EXPECT_EQ(
+      WebCachePolicy::kReturnCacheDataDontLoad,
+      fetch_context->ResourceRequestCachePolicy(
+          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReload
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
   EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeStandard);
   ResourceRequest conditional("http://www.example.com");
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
-  EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMainResource, FetchRequest::kNoDefer));
+  EXPECT_EQ(
+      WebCachePolicy::kValidatingCacheData,
+      fetch_context->ResourceRequestCachePolicy(
+          conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
             fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
-            fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMainResource, FetchRequest::kNoDefer));
+  EXPECT_EQ(
+      WebCachePolicy::kBypassingCache,
+      fetch_context->ResourceRequestCachePolicy(
+          conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a post request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
-  EXPECT_EQ(WebCachePolicy::kBypassingCache,
-            fetch_context->ResourceRequestCachePolicy(
-                post_request, Resource::kMainResource, FetchRequest::kNoDefer));
+  EXPECT_EQ(
+      WebCachePolicy::kBypassingCache,
+      fetch_context->ResourceRequestCachePolicy(
+          post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Set up a child frame
   FrameFetchContext* child_fetch_context = CreateChildFrame();
@@ -611,19 +616,19 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
   EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
             child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
             child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload bypassing cache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
             child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Per-frame bypassing reload, but parent load type is different.
   // This is not the case users can trigger through user interfaces, but for
@@ -633,21 +638,21 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
       kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
             child_fetch_context->ResourceRequestCachePolicy(
-                request, Resource::kMainResource, FetchRequest::kNoDefer));
+                request, Resource::kMainResource, FetchParameters::kNoDefer));
 }
 
 TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Default case
   ResourceRequest request("http://www.example.com/mock");
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
-            fetch_context->ResourceRequestCachePolicy(request, Resource::kMock,
-                                                      FetchRequest::kNoDefer));
+            fetch_context->ResourceRequestCachePolicy(
+                request, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReload should not affect sub-resources
   document->Loader()->SetLoadType(kFrameLoadTypeReload);
   EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
-            fetch_context->ResourceRequestCachePolicy(request, Resource::kMock,
-                                                      FetchRequest::kNoDefer));
+            fetch_context->ResourceRequestCachePolicy(
+                request, Resource::kMock, FetchParameters::kNoDefer));
 
   // Conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeStandard);
@@ -655,31 +660,31 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchRequest::kNoDefer));
+                conditional, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
-            fetch_context->ResourceRequestCachePolicy(request, Resource::kMock,
-                                                      FetchRequest::kNoDefer));
+            fetch_context->ResourceRequestCachePolicy(
+                request, Resource::kMock, FetchParameters::kNoDefer));
 
   // FrameLoadTypeReloadBypassingCache with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchRequest::kNoDefer));
+                conditional, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
   EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
-            fetch_context->ResourceRequestCachePolicy(request, Resource::kMock,
-                                                      FetchRequest::kNoDefer));
+            fetch_context->ResourceRequestCachePolicy(
+                request, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation with a conditional request
   document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
   EXPECT_EQ(WebCachePolicy::kReturnCacheDataElseLoad,
             fetch_context->ResourceRequestCachePolicy(
-                conditional, Resource::kMock, FetchRequest::kNoDefer));
+                conditional, Resource::kMock, FetchParameters::kNoDefer));
 }
 
 TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {

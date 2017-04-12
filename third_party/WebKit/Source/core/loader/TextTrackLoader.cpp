@@ -30,7 +30,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -125,12 +125,12 @@ bool TextTrackLoader::Load(const KURL& url,
                            CrossOriginAttributeValue cross_origin) {
   CancelLoad();
 
-  FetchRequest cue_request(ResourceRequest(url),
-                           FetchInitiatorTypeNames::texttrack);
+  FetchParameters cue_fetch_params(ResourceRequest(url),
+                                   FetchInitiatorTypeNames::texttrack);
 
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    cue_request.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
-                                            cross_origin);
+    cue_fetch_params.SetCrossOriginAccessControl(
+        GetDocument().GetSecurityOrigin(), cross_origin);
   } else if (!GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(url)) {
     // Text track elements without 'crossorigin' set on the parent are "No
     // CORS"; report error if not same-origin.
@@ -139,7 +139,7 @@ bool TextTrackLoader::Load(const KURL& url,
   }
 
   ResourceFetcher* fetcher = GetDocument().Fetcher();
-  SetResource(RawResource::FetchTextTrack(cue_request, fetcher));
+  SetResource(RawResource::FetchTextTrack(cue_fetch_params, fetcher));
   return GetResource();
 }
 

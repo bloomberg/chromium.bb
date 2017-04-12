@@ -35,7 +35,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "wtf/Forward.h"
@@ -77,7 +77,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   WebCachePolicy ResourceRequestCachePolicy(
       ResourceRequest&,
       Resource::Type,
-      FetchRequest::DeferOption) const override;
+      FetchParameters::DeferOption) const override;
   void DispatchDidChangeResourcePriority(unsigned long identifier,
                                          ResourceLoadPriority,
                                          int intra_priority_value) override;
@@ -128,7 +128,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchRequest::OriginRestriction) const override;
+      FetchParameters::OriginRestriction) const override;
   ResourceRequestBlockedReason AllowResponse(
       Resource::Type,
       const ResourceRequest&,
@@ -150,14 +150,14 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
   void PopulateResourceRequest(Resource::Type,
                                const ClientHintsPreferences&,
-                               const FetchRequest::ResourceWidth&,
+                               const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
 
   // Exposed for testing.
   void ModifyRequestForCSP(ResourceRequest&);
   void AddClientHintsIfNecessary(const ClientHintsPreferences&,
-                                 const FetchRequest::ResourceWidth&,
+                                 const FetchParameters::ResourceWidth&,
                                  ResourceRequest&);
 
   MHTMLArchive* Archive() const override;
@@ -192,7 +192,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchRequest::OriginRestriction,
+      FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
 
   void AddCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);

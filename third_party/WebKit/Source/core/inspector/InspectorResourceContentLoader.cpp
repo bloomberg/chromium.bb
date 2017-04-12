@@ -124,8 +124,9 @@ void InspectorResourceContentLoader::Start() {
 
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());
-      FetchRequest request(resource_request, FetchInitiatorTypeNames::internal);
-      Resource* resource = RawResource::Fetch(request, document->Fetcher());
+      FetchParameters params(resource_request,
+                             FetchInitiatorTypeNames::internal);
+      Resource* resource = RawResource::Fetch(params, document->Fetcher());
       if (resource) {
         // Prevent garbage collection by holding a reference to this resource.
         resources_.push_back(resource);
@@ -147,9 +148,10 @@ void InspectorResourceContentLoader::Start() {
       ResourceRequest resource_request(url);
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextInternal);
-      FetchRequest request(resource_request, FetchInitiatorTypeNames::internal);
+      FetchParameters params(resource_request,
+                             FetchInitiatorTypeNames::internal);
       Resource* resource =
-          CSSStyleSheetResource::Fetch(request, document->Fetcher());
+          CSSStyleSheetResource::Fetch(params, document->Fetcher());
       if (!resource)
         continue;
       // Prevent garbage collection by holding a reference to this resource.

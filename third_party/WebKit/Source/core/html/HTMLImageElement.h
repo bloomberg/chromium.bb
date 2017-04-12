@@ -32,7 +32,7 @@
 #include "core/html/canvas/CanvasImageElementSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 
 namespace blink {
@@ -128,7 +128,7 @@ class CORE_EXPORT HTMLImageElement final
 
   void SetIsFallbackImage() { is_fallback_image_ = true; }
 
-  FetchRequest::ResourceWidth GetResourceWidth();
+  FetchParameters::ResourceWidth GetResourceWidth();
   float SourceSize(Element&);
 
   void ForceReload() const;

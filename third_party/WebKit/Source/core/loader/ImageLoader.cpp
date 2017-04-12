@@ -44,7 +44,7 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
@@ -223,23 +223,23 @@ void ImageLoader::SetImageWithoutConsideringPendingLoadEvent(
 }
 
 static void ConfigureRequest(
-    FetchRequest& request,
+    FetchParameters& params,
     ImageLoader::BypassMainWorldBehavior bypass_behavior,
     Element& element,
     const ClientHintsPreferences& client_hints_preferences) {
   if (bypass_behavior == ImageLoader::kBypassMainWorldCSP)
-    request.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
+    params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
   CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
       element.FastGetAttribute(HTMLNames::crossoriginAttr));
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    request.SetCrossOriginAccessControl(
+    params.SetCrossOriginAccessControl(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
   if (client_hints_preferences.ShouldSendResourceWidth() &&
       isHTMLImageElement(element))
-    request.SetResourceWidth(toHTMLImageElement(element).GetResourceWidth());
+    params.SetResourceWidth(toHTMLImageElement(element).GetResourceWidth());
 }
 
 inline void ImageLoader::DispatchErrorEvent() {
@@ -311,17 +311,17 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull())
       resource_request.SetRequestContext(
           WebURLRequest::kRequestContextImageSet);
-    FetchRequest request(resource_request, GetElement()->localName(),
-                         resource_loader_options);
-    ConfigureRequest(request, bypass_behavior, *element_,
+    FetchParameters params(resource_request, GetElement()->localName(),
+                           resource_loader_options);
+    ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetClientHintsPreferences());
 
     if (update_behavior != kUpdateForcedReload && document.GetSettings() &&
         document.GetSettings()->GetFetchImagePlaceholders()) {
-      request.SetAllowImagePlaceholder();
+      params.SetAllowImagePlaceholder();
     }
 
-    new_image = ImageResourceContent::Fetch(request, document.Fetcher());
+    new_image = ImageResourceContent::Fetch(params, document.Fetcher());
 
     if (!new_image && !PageIsBeingDismissed(&document)) {
       CrossSiteOrCSPViolationOccurred(image_source_url);

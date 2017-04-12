@@ -31,7 +31,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 
 #include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -84,14 +84,14 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   RawResource* FetchRawResource() {
     ResourceRequest resource_request(KURL(kParsedURLString, kResourceURL));
     resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
-    FetchRequest fetch_request(resource_request, FetchInitiatorInfo());
-    return RawResource::Fetch(fetch_request, Fetcher());
+    FetchParameters fetch_params(resource_request, FetchInitiatorInfo());
+    return RawResource::Fetch(fetch_params, Fetcher());
   }
   MockResource* FetchMockResource() {
-    FetchRequest fetch_request(
+    FetchParameters fetch_params(
         ResourceRequest(KURL(kParsedURLString, kResourceURL)),
         FetchInitiatorInfo());
-    return MockResource::Fetch(fetch_request, Fetcher());
+    return MockResource::Fetch(fetch_params, Fetcher());
   }
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
   void AdvanceClock(double seconds) { platform_->AdvanceClockSeconds(seconds); }
@@ -435,7 +435,7 @@ TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
 
   ResourceRequest request2(KURL(kParsedURLString, kResourceURL));
   request2.SetHTTPMethod(HTTPNames::POST);
-  FetchRequest fetch2(request2, FetchInitiatorInfo());
+  FetchParameters fetch2(request2, FetchInitiatorInfo());
   RawResource* resource2 = RawResource::FetchSynchronously(fetch2, Fetcher());
 
   EXPECT_EQ(resource2, GetMemoryCache()->ResourceForURL(request2.Url()));

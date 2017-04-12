@@ -37,7 +37,7 @@
 #include "platform/loader/fetch/CachedMetadata.h"
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClient.h"
@@ -469,12 +469,12 @@ void Resource::SetIntegrityDisposition(
 }
 
 bool Resource::MustRefetchDueToIntegrityMetadata(
-    const FetchRequest& request) const {
-  if (request.IntegrityMetadata().IsEmpty())
+    const FetchParameters& params) const {
+  if (params.IntegrityMetadata().IsEmpty())
     return false;
 
   return !IntegrityMetadata::SetsEqual(integrity_metadata_,
-                                       request.IntegrityMetadata());
+                                       params.IntegrityMetadata());
 }
 
 static double CurrentAge(const ResourceResponse& response,

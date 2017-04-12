@@ -32,7 +32,7 @@
 #include "platform/Timer.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
@@ -70,7 +70,7 @@ class PLATFORM_EXPORT ResourceFetcher
   virtual ~ResourceFetcher();
   DECLARE_VIRTUAL_TRACE();
 
-  Resource* RequestResource(FetchRequest&,
+  Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,
                             const SubstituteData& = SubstituteData());
 
@@ -159,7 +159,7 @@ class PLATFORM_EXPORT ResourceFetcher
   explicit ResourceFetcher(FetchContext*);
 
   void InitializeRevalidation(ResourceRequest&, Resource*);
-  Resource* CreateResourceForLoading(FetchRequest&,
+  Resource* CreateResourceForLoading(FetchParameters&,
                                      const String& charset,
                                      const ResourceFactory&);
   void StorePerformanceTimingInitiatorInformation(Resource*);
@@ -167,43 +167,44 @@ class PLATFORM_EXPORT ResourceFetcher
       Resource::Type,
       const ResourceRequest&,
       ResourcePriority::VisibilityStatus,
-      FetchRequest::DeferOption = FetchRequest::kNoDefer,
+      FetchParameters::DeferOption = FetchParameters::kNoDefer,
       bool is_speculative_preload = false,
       bool is_link_preload = false);
 
   enum PrepareRequestResult { kAbort, kContinue, kBlock };
 
-  PrepareRequestResult PrepareRequest(FetchRequest&,
+  PrepareRequestResult PrepareRequest(FetchParameters&,
                                       const ResourceFactory&,
                                       const SubstituteData&,
                                       unsigned long identifier,
                                       ResourceRequestBlockedReason&);
 
-  Resource* ResourceForStaticData(const FetchRequest&,
+  Resource* ResourceForStaticData(const FetchParameters&,
                                   const ResourceFactory&,
                                   const SubstituteData&);
-  Resource* ResourceForBlockedRequest(const FetchRequest&,
+  Resource* ResourceForBlockedRequest(const FetchParameters&,
                                       const ResourceFactory&,
                                       ResourceRequestBlockedReason);
 
   // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum RevalidationPolicy { kUse, kRevalidate, kReload, kLoad };
   RevalidationPolicy DetermineRevalidationPolicy(Resource::Type,
-                                                 const FetchRequest&,
+                                                 const FetchParameters&,
                                                  Resource* existing_resource,
                                                  bool is_static_data) const;
 
-  void MakePreloadedResourceBlockOnloadIfNeeded(Resource*, const FetchRequest&);
+  void MakePreloadedResourceBlockOnloadIfNeeded(Resource*,
+                                                const FetchParameters&);
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
   void HandleLoadCompletion(Resource*);
 
   void InitializeResourceRequest(ResourceRequest&,
                                  Resource::Type,
-                                 FetchRequest::DeferOption);
+                                 FetchParameters::DeferOption);
   void RequestLoadStarted(unsigned long identifier,
                           Resource*,
-                          const FetchRequest&,
+                          const FetchParameters&,
                           RevalidationPolicy,
                           bool is_static_data = false);
 
@@ -211,7 +212,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                       Resource*,
                                       const ResourceRequest&);
 
-  bool ResourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
+  bool ResourceNeedsLoad(Resource*, const FetchParameters&, RevalidationPolicy);
 
   void ResourceTimingReportTimerFired(TimerBase*);
 
@@ -219,7 +220,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void UpdateMemoryCacheStats(Resource*,
                               RevalidationPolicy,
-                              const FetchRequest&,
+                              const FetchParameters&,
                               const ResourceFactory&,
                               bool is_static_data) const;
 

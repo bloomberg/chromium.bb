@@ -9,7 +9,7 @@
 #include "core/CoreExport.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -43,8 +43,8 @@ class CORE_EXPORT PreloadRequest {
       Resource::Type resource_type,
       const ReferrerPolicy referrer_policy,
       ReferrerSource referrer_source,
-      const FetchRequest::ResourceWidth& resource_width =
-          FetchRequest::ResourceWidth(),
+      const FetchParameters::ResourceWidth& resource_width =
+          FetchParameters::ResourceWidth(),
       const ClientHintsPreferences& client_hints_preferences =
           ClientHintsPreferences(),
       RequestType request_type = kRequestTypePreload) {
@@ -67,7 +67,7 @@ class CORE_EXPORT PreloadRequest {
   Resource* Start(Document*);
 
   double DiscoveryTime() const { return discovery_time_; }
-  void SetDefer(FetchRequest::DeferOption defer) { defer_ = defer; }
+  void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
   void SetCharset(const String& charset) { charset_ = charset.IsolatedCopy(); }
   void SetCrossOrigin(CrossOriginAttributeValue cross_origin) {
     cross_origin_ = cross_origin;
@@ -105,7 +105,7 @@ class CORE_EXPORT PreloadRequest {
                  const String& resource_url,
                  const KURL& base_url,
                  Resource::Type resource_type,
-                 const FetchRequest::ResourceWidth& resource_width,
+                 const FetchParameters::ResourceWidth& resource_width,
                  const ClientHintsPreferences& client_hints_preferences,
                  RequestType request_type,
                  const ReferrerPolicy referrer_policy,
@@ -117,7 +117,7 @@ class CORE_EXPORT PreloadRequest {
         resource_type_(resource_type),
         cross_origin_(kCrossOriginAttributeNotSet),
         discovery_time_(MonotonicallyIncreasingTime()),
-        defer_(FetchRequest::kNoDefer),
+        defer_(FetchParameters::kNoDefer),
         resource_width_(resource_width),
         client_hints_preferences_(client_hints_preferences),
         request_type_(request_type),
@@ -135,8 +135,8 @@ class CORE_EXPORT PreloadRequest {
   CrossOriginAttributeValue cross_origin_;
   String nonce_;
   double discovery_time_;
-  FetchRequest::DeferOption defer_;
-  FetchRequest::ResourceWidth resource_width_;
+  FetchParameters::DeferOption defer_;
+  FetchParameters::ResourceWidth resource_width_;
   ClientHintsPreferences client_hints_preferences_;
   RequestType request_type_;
   ReferrerPolicy referrer_policy_;

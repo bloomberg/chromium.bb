@@ -20,6 +20,7 @@
 
 #include "core/dom/ProcessingInstruction.h"
 
+#include <memory>
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -32,9 +33,8 @@
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h"  // for parseAttributes()
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include <memory>
 
 namespace blink {
 
@@ -149,15 +149,15 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
   String url = GetDocument().CompleteURL(href).GetString();
 
   StyleSheetResource* resource = nullptr;
-  FetchRequest request(ResourceRequest(GetDocument().CompleteURL(href)),
-                       FetchInitiatorTypeNames::processinginstruction);
+  FetchParameters params(ResourceRequest(GetDocument().CompleteURL(href)),
+                         FetchInitiatorTypeNames::processinginstruction);
   if (is_xsl_) {
     if (RuntimeEnabledFeatures::xsltEnabled())
-      resource = XSLStyleSheetResource::Fetch(request, GetDocument().Fetcher());
+      resource = XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher());
   } else {
-    request.SetCharset(charset.IsEmpty() ? GetDocument().characterSet()
-                                         : charset);
-    resource = CSSStyleSheetResource::Fetch(request, GetDocument().Fetcher());
+    params.SetCharset(charset.IsEmpty() ? GetDocument().characterSet()
+                                        : charset);
+    resource = CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher());
   }
 
   if (resource) {

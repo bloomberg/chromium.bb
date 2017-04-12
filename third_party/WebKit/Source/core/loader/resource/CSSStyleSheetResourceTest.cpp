@@ -23,7 +23,6 @@
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"

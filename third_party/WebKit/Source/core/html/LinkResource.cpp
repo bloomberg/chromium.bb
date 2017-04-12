@@ -68,19 +68,19 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
     charset_ = owner_->GetDocument().characterSet();
 }
 
-FetchRequest LinkRequestBuilder::Build(bool low_priority) const {
+FetchParameters LinkRequestBuilder::Build(bool low_priority) const {
   ResourceRequest resource_request(owner_->GetDocument().CompleteURL(url_));
   ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
   if (referrer_policy != kReferrerPolicyDefault) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_policy, url_, owner_->GetDocument().OutgoingReferrer()));
   }
-  FetchRequest request(resource_request, owner_->localName(), charset_);
+  FetchParameters params(resource_request, owner_->localName(), charset_);
   if (low_priority)
-    request.SetDefer(FetchRequest::kLazyLoad);
-  request.SetContentSecurityPolicyNonce(
+    params.SetDefer(FetchParameters::kLazyLoad);
+  params.SetContentSecurityPolicyNonce(
       owner_->FastGetAttribute(HTMLNames::nonceAttr));
-  return request;
+  return params;
 }
 
 }  // namespace blink

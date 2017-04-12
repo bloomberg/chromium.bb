@@ -105,9 +105,9 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // https://fetch.spec.whatwg.org/#concept-request-initiator
   const AtomicString& initiator_name = g_empty_atom;
 
-  FetchRequest fetch_request(resource_request, initiator_name, options);
+  FetchParameters fetch_params(resource_request, initiator_name, options);
   // ... cryptographic nonce metadata is cryptographic nonce, ...
-  fetch_request.SetContentSecurityPolicyNonce(module_request.Nonce());
+  fetch_params.SetContentSecurityPolicyNonce(module_request.Nonce());
   // Note: The fetch request's "origin" isn't specified in
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
@@ -121,11 +121,11 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
               WebURLRequest::kFetchCredentialsModeInclude
           ? kCrossOriginAttributeUseCredentials
           : kCrossOriginAttributeAnonymous;
-  fetch_request.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
-                                            cross_origin);
+  fetch_params.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
+                                           cross_origin);
 
   // Module scripts are always async.
-  fetch_request.SetDefer(FetchRequest::kLazyLoad);
+  fetch_params.SetDefer(FetchParameters::kLazyLoad);
 
   // Step 6. If the caller specified custom steps to perform the fetch,
   // perform them on request, setting the is top-level flag if the top-level
@@ -139,7 +139,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   nonce_ = module_request.Nonce();
   parser_state_ = module_request.ParserState();
 
-  ScriptResource* resource = ScriptResource::Fetch(fetch_request, fetcher);
+  ScriptResource* resource = ScriptResource::Fetch(fetch_params, fetcher);
   if (state_ == State::kFinished) {
     // ScriptResource::fetch() has succeeded synchronously,
     // ::notifyFinished() already took care of the |resource|.

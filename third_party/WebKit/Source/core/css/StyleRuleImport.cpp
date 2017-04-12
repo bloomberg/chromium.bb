@@ -26,7 +26,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
@@ -130,9 +130,9 @@ void StyleRuleImport::RequestStyleSheet() {
     root_sheet = sheet;
   }
 
-  FetchRequest request(ResourceRequest(abs_url), FetchInitiatorTypeNames::css,
-                       parent_style_sheet_->Charset());
-  resource_ = CSSStyleSheetResource::Fetch(request, fetcher);
+  FetchParameters params(ResourceRequest(abs_url), FetchInitiatorTypeNames::css,
+                         parent_style_sheet_->Charset());
+  resource_ = CSSStyleSheetResource::Fetch(params, fetcher);
   if (resource_) {
     // if the import rule is issued dynamically, the sheet may be
     // removed from the pending sheet count, so let the doc know

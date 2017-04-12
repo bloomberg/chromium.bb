@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -33,9 +33,9 @@
 
 namespace blink {
 
-FetchRequest::FetchRequest(const ResourceRequest& resource_request,
-                           const AtomicString& initiator,
-                           const String& charset)
+FetchParameters::FetchParameters(const ResourceRequest& resource_request,
+                                 const AtomicString& initiator,
+                                 const String& charset)
     : resource_request_(resource_request),
       charset_(charset),
       options_(ResourceFetcher::DefaultResourceOptions()),
@@ -47,9 +47,9 @@ FetchRequest::FetchRequest(const ResourceRequest& resource_request,
   options_.initiator_info.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resource_request,
-                           const AtomicString& initiator,
-                           const ResourceLoaderOptions& options)
+FetchParameters::FetchParameters(const ResourceRequest& resource_request,
+                                 const AtomicString& initiator,
+                                 const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
       options_(options),
       speculative_preload_(false),
@@ -61,8 +61,8 @@ FetchRequest::FetchRequest(const ResourceRequest& resource_request,
   options_.initiator_info.name = initiator;
 }
 
-FetchRequest::FetchRequest(const ResourceRequest& resource_request,
-                           const FetchInitiatorInfo& initiator)
+FetchParameters::FetchParameters(const ResourceRequest& resource_request,
+                                 const FetchInitiatorInfo& initiator)
     : resource_request_(resource_request),
       options_(ResourceFetcher::DefaultResourceOptions()),
       speculative_preload_(false),
@@ -74,9 +74,9 @@ FetchRequest::FetchRequest(const ResourceRequest& resource_request,
   options_.initiator_info = initiator;
 }
 
-FetchRequest::~FetchRequest() {}
+FetchParameters::~FetchParameters() {}
 
-void FetchRequest::SetCrossOriginAccessControl(
+void FetchParameters::SetCrossOriginAccessControl(
     SecurityOrigin* origin,
     CrossOriginAttributeValue cross_origin) {
   DCHECK_NE(cross_origin, kCrossOriginAttributeNotSet);
@@ -95,8 +95,8 @@ void FetchRequest::SetCrossOriginAccessControl(
   const bool is_same_origin_request =
       origin && origin->CanRequestNoSuborigin(resource_request_.Url());
 
-  // Currently FetchRequestMode and FetchCredentialsMode are only used when the
-  // request goes to Service Worker.
+  // Currently FetchParametersMode and FetchCredentialsMode are only used when
+  // the request goes to Service Worker.
   resource_request_.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
   resource_request_.SetFetchCredentialsMode(
       use_credentials ? WebURLRequest::kFetchCredentialsModeInclude
@@ -122,20 +122,20 @@ void FetchRequest::SetCrossOriginAccessControl(
     resource_request_.SetHTTPOrigin(origin);
 }
 
-void FetchRequest::SetResourceWidth(ResourceWidth resource_width) {
+void FetchParameters::SetResourceWidth(ResourceWidth resource_width) {
   if (resource_width.is_set) {
     resource_width_.width = resource_width.width;
     resource_width_.is_set = true;
   }
 }
 
-void FetchRequest::SetSpeculativePreload(bool speculative_preload,
-                                         double discovery_time) {
+void FetchParameters::SetSpeculativePreload(bool speculative_preload,
+                                            double discovery_time) {
   speculative_preload_ = speculative_preload;
   preload_discovery_time_ = discovery_time;
 }
 
-void FetchRequest::MakeSynchronous() {
+void FetchParameters::MakeSynchronous() {
   // Synchronous requests should always be max priority, lest they hang the
   // renderer.
   resource_request_.SetPriority(kResourceLoadPriorityHighest);
@@ -143,7 +143,7 @@ void FetchRequest::MakeSynchronous() {
   options_.synchronous_policy = kRequestSynchronously;
 }
 
-void FetchRequest::SetAllowImagePlaceholder() {
+void FetchParameters::SetAllowImagePlaceholder() {
   DCHECK_EQ(kDisallowPlaceholder, placeholder_image_request_type_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
       resource_request_.HttpMethod() != "GET" ||

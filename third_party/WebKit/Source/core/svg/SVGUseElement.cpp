@@ -42,7 +42,7 @@
 #include "core/svg/SVGSymbolElement.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/Vector.h"
 
@@ -210,9 +210,9 @@ void SVGUseElement::UpdateTargetReference() {
       (resource_ &&
        EqualIgnoringFragmentIdentifier(resolved_url, resource_->Url())))
     return;
-  FetchRequest request(ResourceRequest(resolved_url), localName());
+  FetchParameters params(ResourceRequest(resolved_url), localName());
   SetDocumentResource(
-      DocumentResource::FetchSVGDocument(request, GetDocument().Fetcher()));
+      DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher()));
 }
 
 void SVGUseElement::SvgAttributeChanged(const QualifiedName& attr_name) {

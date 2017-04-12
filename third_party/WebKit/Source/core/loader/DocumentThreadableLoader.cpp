@@ -49,7 +49,7 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -1001,21 +1001,21 @@ void DocumentThreadableLoader::LoadRequestAsync(
                                 BLINK_FROM_HERE);
   }
 
-  FetchRequest new_request(request, options_.initiator,
-                           resource_loader_options);
+  FetchParameters new_params(request, options_.initiator,
+                             resource_loader_options);
   if (options_.cross_origin_request_policy == kAllowCrossOriginRequests)
-    new_request.SetOriginRestriction(FetchRequest::kNoOriginRestriction);
+    new_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
   DCHECK(!GetResource());
 
   ResourceFetcher* fetcher = loading_context_->GetResourceFetcher();
   if (request.GetRequestContext() == WebURLRequest::kRequestContextVideo ||
       request.GetRequestContext() == WebURLRequest::kRequestContextAudio)
-    SetResource(RawResource::FetchMedia(new_request, fetcher));
+    SetResource(RawResource::FetchMedia(new_params, fetcher));
   else if (request.GetRequestContext() ==
            WebURLRequest::kRequestContextManifest)
-    SetResource(RawResource::FetchManifest(new_request, fetcher));
+    SetResource(RawResource::FetchManifest(new_params, fetcher));
   else
-    SetResource(RawResource::Fetch(new_request, fetcher));
+    SetResource(RawResource::Fetch(new_params, fetcher));
 
   if (!GetResource()) {
     probe::documentThreadableLoaderFailedToStartLoadingForClient(GetDocument(),
@@ -1046,12 +1046,12 @@ void DocumentThreadableLoader::LoadRequestAsync(
 void DocumentThreadableLoader::LoadRequestSync(
     const ResourceRequest& request,
     ResourceLoaderOptions resource_loader_options) {
-  FetchRequest fetch_request(request, options_.initiator,
-                             resource_loader_options);
+  FetchParameters fetch_params(request, options_.initiator,
+                               resource_loader_options);
   if (options_.cross_origin_request_policy == kAllowCrossOriginRequests)
-    fetch_request.SetOriginRestriction(FetchRequest::kNoOriginRestriction);
+    fetch_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
   Resource* resource = RawResource::FetchSynchronously(
-      fetch_request, loading_context_->GetResourceFetcher());
+      fetch_params, loading_context_->GetResourceFetcher());
   ResourceResponse response =
       resource ? resource->GetResponse() : ResourceResponse();
   unsigned long identifier = resource

@@ -24,19 +24,19 @@
 
 #include "core/dom/XMLDocument.h"
 #include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-DocumentResource* DocumentResource::FetchSVGDocument(FetchRequest& request,
+DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
                                                      ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  request.SetRequestContext(WebURLRequest::kRequestContextImage);
+  params.SetRequestContext(WebURLRequest::kRequestContextImage);
   return ToDocumentResource(
-      fetcher->RequestResource(request, SVGDocumentResourceFactory()));
+      fetcher->RequestResource(params, SVGDocumentResourceFactory()));
 }
 
 DocumentResource::DocumentResource(const ResourceRequest& request,

@@ -30,7 +30,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
@@ -73,13 +73,13 @@ static void RecordPackageFormatHistogram(FontPackageFormat format) {
   package_format_histogram.Count(format);
 }
 
-FontResource* FontResource::Fetch(FetchRequest& request,
+FontResource* FontResource::Fetch(FetchParameters& params,
                                   ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  request.SetRequestContext(WebURLRequest::kRequestContextFont);
+  params.SetRequestContext(WebURLRequest::kRequestContextFont);
   return ToFontResource(
-      fetcher->RequestResource(request, FontResourceFactory()));
+      fetcher->RequestResource(params, FontResourceFactory()));
 }
 
 FontResource::FontResource(const ResourceRequest& resource_request,

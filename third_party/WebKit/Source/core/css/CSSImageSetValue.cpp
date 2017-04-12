@@ -25,6 +25,7 @@
 
 #include "core/css/CSSImageSetValue.h"
 
+#include <algorithm>
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
@@ -33,13 +34,12 @@
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleInvalidImage.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -113,21 +113,23 @@ StyleImage* CSSImageSetValue::CacheImage(
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));
     resource_request.SetHTTPReferrer(image.referrer);
-    FetchRequest request(resource_request, FetchInitiatorTypeNames::css);
+    FetchParameters params(resource_request, FetchInitiatorTypeNames::css);
 
-    if (cross_origin != kCrossOriginAttributeNotSet)
-      request.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                          cross_origin);
+    if (cross_origin != kCrossOriginAttributeNotSet) {
+      params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
+                                         cross_origin);
+    }
     if (document.GetSettings() &&
         document.GetSettings()->GetFetchImagePlaceholders())
-      request.SetAllowImagePlaceholder();
+      params.SetAllowImagePlaceholder();
 
     if (ImageResourceContent* cached_image =
-            ImageResourceContent::Fetch(request, document.Fetcher()))
+            ImageResourceContent::Fetch(params, document.Fetcher())) {
       cached_image_ = StyleFetchedImageSet::Create(
-          cached_image, image.scale_factor, this, request.Url());
-    else
+          cached_image, image.scale_factor, this, params.Url());
+    } else {
       cached_image_ = StyleInvalidImage::Create(image.image_url);
+    }
     cached_scale_factor_ = device_scale_factor;
   }
 

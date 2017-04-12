@@ -33,14 +33,14 @@
 namespace blink {
 
 class Document;
-class FetchRequest;
+class FetchParameters;
 class ResourceFetcher;
 
 class CORE_EXPORT DocumentResource final : public TextResource {
  public:
   using ClientType = ResourceClient;
 
-  static DocumentResource* FetchSVGDocument(FetchRequest&, ResourceFetcher*);
+  static DocumentResource* FetchSVGDocument(FetchParameters&, ResourceFetcher*);
   ~DocumentResource() override;
   DECLARE_VIRTUAL_TRACE();
 

@@ -47,7 +47,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
@@ -285,13 +285,13 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // 21. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
-    FetchRequest::DeferOption defer = FetchRequest::kNoDefer;
+    FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
     if (!parser_inserted_ || element_->AsyncAttributeValue() ||
         element_->DeferAttributeValue())
-      defer = FetchRequest::kLazyLoad;
+      defer = FetchParameters::kLazyLoad;
     if (document_write_intervention_ ==
         DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle)
-      defer = FetchRequest::kIdleLoad;
+      defer = FetchParameters::kIdleLoad;
     if (!FetchScript(element_->SourceAttributeValue(), encoding, defer))
       return false;
   }
@@ -479,7 +479,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 // Steps 15--21 of https://html.spec.whatwg.org/#prepare-a-script
 bool ScriptLoader::FetchScript(const String& source_url,
                                const String& encoding,
-                               FetchRequest::DeferOption defer) {
+                               FetchParameters::DeferOption defer) {
   Document* element_document = &(element_->GetDocument());
   if (!element_->IsConnected() || element_->GetDocument() != element_document)
     return false;
@@ -498,7 +498,7 @@ bool ScriptLoader::FetchScript(const String& source_url,
           "<https://www.chromestatus.com/feature/5718547946799104>");
     }
 
-    FetchRequest request(resource_request, element_->InitiatorName());
+    FetchParameters params(resource_request, element_->InitiatorName());
 
     // 15. "Let CORS setting be the current state of the element's
     //      crossorigin content attribute."
@@ -511,25 +511,26 @@ bool ScriptLoader::FetchScript(const String& source_url,
 
     // 21.6, "classic": "Fetch a classic script given ... CORS setting
     //                   ... and encoding."
-    if (cross_origin != kCrossOriginAttributeNotSet)
-      request.SetCrossOriginAccessControl(element_document->GetSecurityOrigin(),
-                                          cross_origin);
+    if (cross_origin != kCrossOriginAttributeNotSet) {
+      params.SetCrossOriginAccessControl(element_document->GetSecurityOrigin(),
+                                         cross_origin);
+    }
 
-    request.SetCharset(encoding);
+    params.SetCharset(encoding);
 
     // 17. "If the script element has a nonce attribute,
     //      then let cryptographic nonce be that attribute's value.
     //      Otherwise, let cryptographic nonce be the empty string."
     if (element_->IsNonceableElement())
-      request.SetContentSecurityPolicyNonce(element_->nonce());
+      params.SetContentSecurityPolicyNonce(element_->nonce());
 
     // 19. "Let parser state be "parser-inserted"
     //      if the script element has been flagged as "parser-inserted",
     //      and "not parser-inserted" otherwise."
-    request.SetParserDisposition(IsParserInserted() ? kParserInserted
-                                                    : kNotParserInserted);
+    params.SetParserDisposition(IsParserInserted() ? kParserInserted
+                                                   : kNotParserInserted);
 
-    request.SetDefer(defer);
+    params.SetDefer(defer);
 
     // 18. "If the script element has an integrity attribute,
     //      then let integrity metadata be that attribute's value.
@@ -539,7 +540,7 @@ bool ScriptLoader::FetchScript(const String& source_url,
       IntegrityMetadataSet metadata_set;
       SubresourceIntegrity::ParseIntegrityAttribute(
           integrity_attr, metadata_set, element_document);
-      request.SetIntegrityMetadata(metadata_set);
+      params.SetIntegrityMetadata(metadata_set);
     }
 
     // 21.6. "Switch on the script's type:"
@@ -547,7 +548,7 @@ bool ScriptLoader::FetchScript(const String& source_url,
     // - "classic":
     //   "Fetch a classic script given url, settings, cryptographic nonce,
     //    integrity metadata, parser state, CORS setting, and encoding."
-    resource_ = ScriptResource::Fetch(request, element_document->Fetcher());
+    resource_ = ScriptResource::Fetch(params, element_document->Fetcher());
 
     // - "module":
     //   "Fetch a module script graph given url, settings, "script",

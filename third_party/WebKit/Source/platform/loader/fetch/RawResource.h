@@ -31,7 +31,7 @@
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {
-class FetchRequest;
+class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
 class SubstituteData;
@@ -40,15 +40,15 @@ class PLATFORM_EXPORT RawResource final : public Resource {
  public:
   using ClientType = RawResourceClient;
 
-  static RawResource* FetchSynchronously(FetchRequest&, ResourceFetcher*);
-  static RawResource* Fetch(FetchRequest&, ResourceFetcher*);
-  static RawResource* FetchMainResource(FetchRequest&,
+  static RawResource* FetchSynchronously(FetchParameters&, ResourceFetcher*);
+  static RawResource* Fetch(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchMainResource(FetchParameters&,
                                         ResourceFetcher*,
                                         const SubstituteData&);
-  static RawResource* FetchImport(FetchRequest&, ResourceFetcher*);
-  static RawResource* FetchMedia(FetchRequest&, ResourceFetcher*);
-  static RawResource* FetchTextTrack(FetchRequest&, ResourceFetcher*);
-  static RawResource* FetchManifest(FetchRequest&, ResourceFetcher*);
+  static RawResource* FetchImport(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchMedia(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchTextTrack(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchManifest(FetchParameters&, ResourceFetcher*);
 
   // Exposed for testing
   static RawResource* Create(const ResourceRequest& request, Type type) {
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void SetDefersLoading(bool);
 
   // Resource implementation
-  bool CanReuse(const FetchRequest&) const override;
+  bool CanReuse(const FetchParameters&) const override;
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 

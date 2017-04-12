@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -86,7 +86,7 @@ class PLATFORM_EXPORT FetchContext
   virtual WebCachePolicy ResourceRequestCachePolicy(
       ResourceRequest&,
       Resource::Type,
-      FetchRequest::DeferOption) const;
+      FetchParameters::DeferOption) const;
 
   virtual void DispatchDidChangeResourcePriority(unsigned long identifier,
                                                  ResourceLoadPriority,
@@ -151,7 +151,7 @@ class PLATFORM_EXPORT FetchContext
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchRequest::OriginRestriction) const {
+      FetchParameters::OriginRestriction) const {
     return ResourceRequestBlockedReason::kOther;
   }
   virtual ResourceRequestBlockedReason AllowResponse(
@@ -182,7 +182,7 @@ class PLATFORM_EXPORT FetchContext
   // prepare a ResourceRequest instance at the start of resource loading.
   virtual void PopulateResourceRequest(Resource::Type,
                                        const ClientHintsPreferences&,
-                                       const FetchRequest::ResourceWidth&,
+                                       const FetchParameters::ResourceWidth&,
                                        ResourceRequest&);
   // Sets the first party for cookies and requestor origin using information
   // stored in the FetchContext implementation.

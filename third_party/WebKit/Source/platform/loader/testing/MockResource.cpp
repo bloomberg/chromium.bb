@@ -4,7 +4,7 @@
 
 #include "platform/loader/testing/MockResource.h"
 
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 
@@ -26,10 +26,10 @@ class MockResourceFactory final : public ResourceFactory {
 }  // namespace
 
 // static
-MockResource* MockResource::Fetch(FetchRequest& request,
+MockResource* MockResource::Fetch(FetchParameters& params,
                                   ResourceFetcher* fetcher) {
-  request.SetRequestContext(WebURLRequest::kRequestContextSubresource);
-  Resource* resource = fetcher->RequestResource(request, MockResourceFactory());
+  params.SetRequestContext(WebURLRequest::kRequestContextSubresource);
+  Resource* resource = fetcher->RequestResource(params, MockResourceFactory());
   return static_cast<MockResource*>(resource);
 }
 

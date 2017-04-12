@@ -124,7 +124,7 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
 // - ThreadableLoaderOptions argument configures this ThreadableLoader's
 //   behavior.
 //
-// - ResourceLoaderOptions argument will be passed to the FetchRequest
+// - ResourceLoaderOptions argument will be passed to the FetchParameters
 //   that this ThreadableLoader creates. It can be altered e.g. when
 //   redirect happens.
 class CORE_EXPORT ThreadableLoader

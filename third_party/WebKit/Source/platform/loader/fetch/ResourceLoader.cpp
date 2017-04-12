@@ -178,7 +178,7 @@ bool ResourceLoader::WillFollowRedirect(
         (resource_->IsUnusedPreload()
              ? SecurityViolationReportingPolicy::kSuppressReporting
              : SecurityViolationReportingPolicy::kReport),
-        FetchRequest::kUseDefaultOriginRestrictionForType);
+        FetchParameters::kUseDefaultOriginRestrictionForType);
     if (blocked_reason != ResourceRequestBlockedReason::kNone) {
       CancelForRedirectAccessCheckError(new_request.Url(), blocked_reason);
       return false;
@@ -271,7 +271,7 @@ ResourceRequestBlockedReason ResourceLoader::CanAccessResponse(
       /* Don't send security violation reports for unused preloads */
       (unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
                       : SecurityViolationReportingPolicy::kReport),
-      FetchRequest::kUseDefaultOriginRestrictionForType);
+      FetchParameters::kUseDefaultOriginRestrictionForType);
   if (blocked_reason != ResourceRequestBlockedReason::kNone)
     return blocked_reason;
 

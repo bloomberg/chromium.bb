@@ -7,7 +7,7 @@
 #include "core/loader/resource/MockFontResourceClient.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -50,8 +50,9 @@ TEST_F(FontResourceTest,
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);
-  FetchRequest fetch_request1 = FetchRequest(request1, FetchInitiatorInfo());
-  Resource* resource1 = FontResource::Fetch(fetch_request1, fetcher);
+  FetchParameters fetch_params1 =
+      FetchParameters(request1, FetchInitiatorInfo());
+  Resource* resource1 = FontResource::Fetch(fetch_params1, fetcher);
   ASSERT_TRUE(resource1);
   fetcher->StartLoad(resource1);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
@@ -64,8 +65,9 @@ TEST_F(FontResourceTest,
   // Revalidate the resource.
   ResourceRequest request2(url);
   request2.SetCachePolicy(WebCachePolicy::kValidatingCacheData);
-  FetchRequest fetch_request2 = FetchRequest(request2, FetchInitiatorInfo());
-  Resource* resource2 = FontResource::Fetch(fetch_request2, fetcher);
+  FetchParameters fetch_params2 =
+      FetchParameters(request2, FetchInitiatorInfo());
+  Resource* resource2 = FontResource::Fetch(fetch_params2, fetcher);
   ASSERT_TRUE(resource2);
   EXPECT_EQ(resource1, resource2);
   EXPECT_TRUE(resource2->IsCacheValidator());
@@ -74,8 +76,9 @@ TEST_F(FontResourceTest,
   // Fetch the same resource again before actual load operation starts.
   ResourceRequest request3(url);
   request3.SetCachePolicy(WebCachePolicy::kValidatingCacheData);
-  FetchRequest fetch_request3 = FetchRequest(request3, FetchInitiatorInfo());
-  Resource* resource3 = FontResource::Fetch(fetch_request3, fetcher);
+  FetchParameters fetch_params3 =
+      FetchParameters(request3, FetchInitiatorInfo());
+  Resource* resource3 = FontResource::Fetch(fetch_params3, fetcher);
   ASSERT_TRUE(resource3);
   EXPECT_EQ(resource2, resource3);
   EXPECT_TRUE(resource3->IsCacheValidator());
@@ -105,9 +108,9 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
 
-  FetchRequest fetch_request = FetchRequest(url, FetchInitiatorInfo());
-  fetch_request.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
-  FontResource* resource = FontResource::Fetch(fetch_request, fetcher);
+  FetchParameters fetch_params = FetchParameters(url, FetchInitiatorInfo());
+  fetch_params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
+  FontResource* resource = FontResource::Fetch(fetch_params, fetcher);
   ASSERT_TRUE(resource);
 
   Persistent<MockFontResourceClient> client =

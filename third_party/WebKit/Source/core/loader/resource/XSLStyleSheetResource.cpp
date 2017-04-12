@@ -29,14 +29,14 @@
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
 
-static void ApplyXSLRequestProperties(FetchRequest& request) {
-  request.SetRequestContext(WebURLRequest::kRequestContextXSLT);
+static void ApplyXSLRequestProperties(FetchParameters& params) {
+  params.SetRequestContext(WebURLRequest::kRequestContextXSLT);
   // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
   // the browser process, and... here. The browser process can't tell the
   // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
@@ -45,27 +45,27 @@ static void ApplyXSLRequestProperties(FetchRequest& request) {
   DEFINE_STATIC_LOCAL(const AtomicString, accept_xslt,
                       ("text/xml, application/xml, application/xhtml+xml, "
                        "text/xsl, application/rss+xml, application/atom+xml"));
-  request.MutableResourceRequest().SetHTTPAccept(accept_xslt);
+  params.MutableResourceRequest().SetHTTPAccept(accept_xslt);
 }
 
 XSLStyleSheetResource* XSLStyleSheetResource::FetchSynchronously(
-    FetchRequest& request,
+    FetchParameters& params,
     ResourceFetcher* fetcher) {
-  ApplyXSLRequestProperties(request);
-  request.MakeSynchronous();
+  ApplyXSLRequestProperties(params);
+  params.MakeSynchronous();
   XSLStyleSheetResource* resource = ToXSLStyleSheetResource(
-      fetcher->RequestResource(request, XSLStyleSheetResourceFactory()));
+      fetcher->RequestResource(params, XSLStyleSheetResourceFactory()));
   if (resource && resource->Data())
     resource->sheet_ = resource->DecodedText();
   return resource;
 }
 
-XSLStyleSheetResource* XSLStyleSheetResource::Fetch(FetchRequest& request,
+XSLStyleSheetResource* XSLStyleSheetResource::Fetch(FetchParameters& params,
                                                     ResourceFetcher* fetcher) {
   DCHECK(RuntimeEnabledFeatures::xsltEnabled());
-  ApplyXSLRequestProperties(request);
+  ApplyXSLRequestProperties(params);
   return ToXSLStyleSheetResource(
-      fetcher->RequestResource(request, XSLStyleSheetResourceFactory()));
+      fetcher->RequestResource(params, XSLStyleSheetResourceFactory()));
 }
 
 XSLStyleSheetResource::XSLStyleSheetResource(

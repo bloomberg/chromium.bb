@@ -25,7 +25,7 @@
 #include "core/dom/PendingScript.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/loader/resource/ScriptResource.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -132,7 +132,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   bool FetchScript(const String& source_url,
                    const String& encoding,
-                   FetchRequest::DeferOption);
+                   FetchParameters::DeferOption);
   bool DoExecuteScript(const ScriptSourceCode&);
 
   // Clears the connection to the PendingScript.

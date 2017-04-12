@@ -129,39 +129,39 @@ class ImageResource::ImageResourceFactory : public ResourceFactory {
   STACK_ALLOCATED();
 
  public:
-  ImageResourceFactory(const FetchRequest& fetch_request)
-      : ResourceFactory(Resource::kImage), fetch_request_(&fetch_request) {}
+  ImageResourceFactory(const FetchParameters& fetch_params)
+      : ResourceFactory(Resource::kImage), fetch_params_(&fetch_params) {}
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options,
                    const String&) const override {
     return new ImageResource(request, options, ImageResourceContent::Create(),
-                             fetch_request_->GetPlaceholderImageRequestType() ==
-                                 FetchRequest::kAllowPlaceholder);
+                             fetch_params_->GetPlaceholderImageRequestType() ==
+                                 FetchParameters::kAllowPlaceholder);
   }
 
  private:
   // Weak, unowned pointer. Must outlive |this|.
-  const FetchRequest* fetch_request_;
+  const FetchParameters* fetch_params_;
 };
 
-ImageResource* ImageResource::Fetch(FetchRequest& request,
+ImageResource* ImageResource::Fetch(FetchParameters& params,
                                     ResourceFetcher* fetcher) {
-  if (request.GetResourceRequest().GetRequestContext() ==
+  if (params.GetResourceRequest().GetRequestContext() ==
       WebURLRequest::kRequestContextUnspecified) {
-    request.SetRequestContext(WebURLRequest::kRequestContextImage);
+    params.SetRequestContext(WebURLRequest::kRequestContextImage);
   }
   if (fetcher->Context().PageDismissalEventBeingDispatched()) {
-    KURL request_url = request.GetResourceRequest().Url();
+    KURL request_url = params.GetResourceRequest().Url();
     if (request_url.IsValid()) {
       ResourceRequestBlockedReason block_reason = fetcher->Context().CanRequest(
-          Resource::kImage, request.GetResourceRequest(), request_url,
-          request.Options(),
+          Resource::kImage, params.GetResourceRequest(), request_url,
+          params.Options(),
           /* Don't send security violation reports for speculative preloads */
-          request.IsSpeculativePreload()
+          params.IsSpeculativePreload()
               ? SecurityViolationReportingPolicy::kSuppressReporting
               : SecurityViolationReportingPolicy::kReport,
-          request.GetOriginRestriction());
+          params.GetOriginRestriction());
       if (block_reason == ResourceRequestBlockedReason::kNone)
         fetcher->Context().SendImagePing(request_url);
     }
@@ -169,14 +169,14 @@ ImageResource* ImageResource::Fetch(FetchRequest& request,
   }
 
   return ToImageResource(
-      fetcher->RequestResource(request, ImageResourceFactory(request)));
+      fetcher->RequestResource(params, ImageResourceFactory(params)));
 }
 
-bool ImageResource::CanReuse(const FetchRequest& request) const {
+bool ImageResource::CanReuse(const FetchParameters& params) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
-  if (request.GetPlaceholderImageRequestType() !=
-          FetchRequest::kAllowPlaceholder &&
+  if (params.GetPlaceholderImageRequestType() !=
+          FetchParameters::kAllowPlaceholder &&
       placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     return false;
   return true;

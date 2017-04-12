@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class FetchRequest;
+class FetchParameters;
 class ImageResourceContent;
 class ResourceClient;
 class ResourceFetcher;
@@ -60,7 +60,7 @@ class CORE_EXPORT ImageResource final
 
   // Use ImageResourceContent::fetch() unless ImageResource is required.
   // TODO(hiroshige): Make fetch() private.
-  static ImageResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static ImageResource* Fetch(FetchParameters&, ResourceFetcher*);
 
   // TODO(hiroshige): Make create() test-only by refactoring ImageDocument.
   static ImageResource* Create(const ResourceRequest&);
@@ -79,7 +79,7 @@ class CORE_EXPORT ImageResource final
 
   void AllClientsAndObserversRemoved() override;
 
-  bool CanReuse(const FetchRequest&) const override;
+  bool CanReuse(const FetchParameters&) const override;
 
   PassRefPtr<const SharedBuffer> ResourceBuffer() const override;
   void AppendData(const char*, size_t) override;

@@ -665,8 +665,8 @@ static bool SourceSizeValue(Element& element,
   return exists;
 }
 
-FetchRequest::ResourceWidth HTMLImageElement::GetResourceWidth() {
-  FetchRequest::ResourceWidth resource_width;
+FetchParameters::ResourceWidth HTMLImageElement::GetResourceWidth() {
+  FetchParameters::ResourceWidth resource_width;
   Element* element = source_.Get();
   if (!element)
     element = this;

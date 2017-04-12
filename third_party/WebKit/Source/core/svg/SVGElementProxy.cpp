@@ -8,7 +8,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGResourceClient.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
@@ -135,8 +135,8 @@ void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
 void SVGElementProxy::Resolve(Document& document) {
   if (is_local_ || id_.IsEmpty() || url_.IsEmpty())
     return;
-  FetchRequest request(ResourceRequest(url_), FetchInitiatorTypeNames::css);
-  document_ = DocumentResource::FetchSVGDocument(request, document.Fetcher());
+  FetchParameters params(ResourceRequest(url_), FetchInitiatorTypeNames::css);
+  document_ = DocumentResource::FetchSVGDocument(params, document.Fetcher());
   url_ = String();
 }
 

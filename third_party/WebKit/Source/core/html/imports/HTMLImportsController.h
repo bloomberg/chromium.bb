@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class FetchRequest;
+class FetchParameters;
 class HTMLImport;
 class HTMLImportChild;
 class HTMLImportChildClient;
@@ -60,7 +60,7 @@ class HTMLImportsController final
   bool ShouldBlockScriptExecution(const Document&) const;
   HTMLImportChild* Load(HTMLImport* parent,
                         HTMLImportChildClient*,
-                        FetchRequest);
+                        FetchParameters);
 
   Document* Master() const;
 

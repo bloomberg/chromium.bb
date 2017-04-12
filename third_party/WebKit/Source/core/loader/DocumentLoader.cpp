@@ -65,7 +65,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -194,36 +194,36 @@ const KURL& DocumentLoader::Url() const {
 }
 
 Resource* DocumentLoader::StartPreload(Resource::Type type,
-                                       FetchRequest& request) {
+                                       FetchParameters& params) {
   Resource* resource = nullptr;
   switch (type) {
     case Resource::kImage:
       if (frame_ && frame_->GetSettings() &&
           frame_->GetSettings()->GetFetchImagePlaceholders()) {
-        request.SetAllowImagePlaceholder();
+        params.SetAllowImagePlaceholder();
       }
-      resource = ImageResource::Fetch(request, Fetcher());
+      resource = ImageResource::Fetch(params, Fetcher());
       break;
     case Resource::kScript:
-      resource = ScriptResource::Fetch(request, Fetcher());
+      resource = ScriptResource::Fetch(params, Fetcher());
       break;
     case Resource::kCSSStyleSheet:
-      resource = CSSStyleSheetResource::Fetch(request, Fetcher());
+      resource = CSSStyleSheetResource::Fetch(params, Fetcher());
       break;
     case Resource::kFont:
-      resource = FontResource::Fetch(request, Fetcher());
+      resource = FontResource::Fetch(params, Fetcher());
       break;
     case Resource::kMedia:
-      resource = RawResource::FetchMedia(request, Fetcher());
+      resource = RawResource::FetchMedia(params, Fetcher());
       break;
     case Resource::kTextTrack:
-      resource = RawResource::FetchTextTrack(request, Fetcher());
+      resource = RawResource::FetchTextTrack(params, Fetcher());
       break;
     case Resource::kImportResource:
-      resource = RawResource::FetchImport(request, Fetcher());
+      resource = RawResource::FetchImport(params, Fetcher());
       break;
     case Resource::kRaw:
-      resource = RawResource::Fetch(request, Fetcher());
+      resource = RawResource::Fetch(params, Fetcher());
       break;
     default:
       NOTREACHED();
@@ -876,10 +876,10 @@ void DocumentLoader::StartLoadingMainResource() {
       ResourceLoaderOptions, main_resource_load_options,
       (kDoNotBufferData, kAllowStoredCredentials, kClientRequestedCredentials,
        kCheckContentSecurityPolicy, kDocumentContext));
-  FetchRequest fetch_request(request_, FetchInitiatorTypeNames::document,
-                             main_resource_load_options);
-  main_resource_ = RawResource::FetchMainResource(fetch_request, Fetcher(),
-                                                  substitute_data_);
+  FetchParameters fetch_params(request_, FetchInitiatorTypeNames::document,
+                               main_resource_load_options);
+  main_resource_ =
+      RawResource::FetchMainResource(fetch_params, Fetcher(), substitute_data_);
 
   // PlzNavigate:
   // The final access checks are still performed here, potentially rejecting
@@ -896,7 +896,7 @@ void DocumentLoader::StartLoadingMainResource() {
   // m_request needs to include those. Even when using a cached resource, we may
   // make some modification to the request, e.g. adding the referer header.
   request_ = main_resource_->IsLoading() ? main_resource_->GetResourceRequest()
-                                         : fetch_request.GetResourceRequest();
+                                         : fetch_params.GetResourceRequest();
   main_resource_->AddClient(this);
 }
 

@@ -88,29 +88,29 @@ HTMLImportChild* HTMLImportsController::CreateChild(
 
 HTMLImportChild* HTMLImportsController::Load(HTMLImport* parent,
                                              HTMLImportChildClient* client,
-                                             FetchRequest request) {
-  DCHECK(!request.Url().IsEmpty());
-  DCHECK(request.Url().IsValid());
+                                             FetchParameters params) {
+  DCHECK(!params.Url().IsEmpty());
+  DCHECK(params.Url().IsValid());
   DCHECK(parent == Root() || ToHTMLImportChild(parent)->Loader()->IsFirstImport(
                                  ToHTMLImportChild(parent)));
 
-  if (HTMLImportChild* child_to_share_with = Root()->Find(request.Url())) {
+  if (HTMLImportChild* child_to_share_with = Root()->Find(params.Url())) {
     HTMLImportLoader* loader = child_to_share_with->Loader();
     DCHECK(loader);
-    HTMLImportChild* child = CreateChild(request.Url(), loader, parent, client);
+    HTMLImportChild* child = CreateChild(params.Url(), loader, parent, client);
     child->DidShareLoader();
     return child;
   }
 
-  request.SetCrossOriginAccessControl(Master()->GetSecurityOrigin(),
-                                      kCrossOriginAttributeAnonymous);
+  params.SetCrossOriginAccessControl(Master()->GetSecurityOrigin(),
+                                     kCrossOriginAttributeAnonymous);
   RawResource* resource =
-      RawResource::FetchImport(request, parent->GetDocument()->Fetcher());
+      RawResource::FetchImport(params, parent->GetDocument()->Fetcher());
   if (!resource)
     return nullptr;
 
   HTMLImportLoader* loader = CreateLoader();
-  HTMLImportChild* child = CreateChild(request.Url(), loader, parent, client);
+  HTMLImportChild* child = CreateChild(params.Url(), loader, parent, client);
   // We set resource after the import tree is built since
   // Resource::addClient() immediately calls back to feed the bytes when the
   // resource is cached.

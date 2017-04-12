@@ -28,7 +28,7 @@
 #include "core/style/StyleInvalidImage.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -60,23 +60,25 @@ StyleImage* CSSImageValue::CacheImage(const Document& document,
     ResourceRequest resource_request(absolute_url_);
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
-    FetchRequest request(resource_request, initiator_name_.IsEmpty()
-                                               ? FetchInitiatorTypeNames::css
-                                               : initiator_name_);
+    FetchParameters params(resource_request, initiator_name_.IsEmpty()
+                                                 ? FetchInitiatorTypeNames::css
+                                                 : initiator_name_);
 
-    if (cross_origin != kCrossOriginAttributeNotSet)
-      request.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                          cross_origin);
+    if (cross_origin != kCrossOriginAttributeNotSet) {
+      params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
+                                         cross_origin);
+    }
     if (document.GetSettings() &&
         document.GetSettings()->GetFetchImagePlaceholders())
-      request.SetAllowImagePlaceholder();
+      params.SetAllowImagePlaceholder();
 
     if (ImageResourceContent* cached_image =
-            ImageResourceContent::Fetch(request, document.Fetcher()))
+            ImageResourceContent::Fetch(params, document.Fetcher())) {
       cached_image_ =
-          StyleFetchedImage::Create(cached_image, document, request.Url());
-    else
+          StyleFetchedImage::Create(cached_image, document, params.Url());
+    } else {
       cached_image_ = StyleInvalidImage::Create(Url());
+    }
   }
 
   return cached_image_.Get();

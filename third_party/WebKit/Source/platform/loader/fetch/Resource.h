@@ -48,7 +48,7 @@
 
 namespace blink {
 
-class FetchRequest;
+class FetchParameters;
 class ResourceClient;
 class ResourceFetcher;
 class ResourceTimingInfo;
@@ -280,7 +280,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   ResourceIntegrityDisposition IntegrityDisposition() const {
     return integrity_disposition_;
   }
-  bool MustRefetchDueToIntegrityMetadata(const FetchRequest&) const;
+  bool MustRefetchDueToIntegrityMetadata(const FetchParameters&) const;
 
   double CurrentAge() const;
   double FreshnessLifetime() const;
@@ -308,7 +308,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     response_.AddToDecodedBodyLength(value);
   }
 
-  virtual bool CanReuse(const FetchRequest&) const { return true; }
+  virtual bool CanReuse(const FetchParameters&) const { return true; }
 
   // If cache-aware loading is activated, this callback is called when the first
   // disk-cache-only request failed due to cache miss. After this callback,

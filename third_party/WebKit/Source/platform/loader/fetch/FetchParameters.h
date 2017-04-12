@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FetchRequest_h
-#define FetchRequest_h
+#ifndef FetchParameters_h
+#define FetchParameters_h
 
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PlatformExport.h"
@@ -39,9 +39,10 @@
 namespace blink {
 class SecurityOrigin;
 
-// A FetchRequest is a "parameter object" for ResourceFetcher::requestResource
-// to avoid the method having too many arguments.
-class PLATFORM_EXPORT FetchRequest {
+// A FetchParameters is a "parameter object" for
+// ResourceFetcher::requestResource to avoid the method having too many
+// arguments.
+class PLATFORM_EXPORT FetchParameters {
   STACK_ALLOCATED();
 
  public:
@@ -68,14 +69,14 @@ class PLATFORM_EXPORT FetchRequest {
     ResourceWidth() : width(0), is_set(false) {}
   };
 
-  FetchRequest(const ResourceRequest&,
-               const AtomicString& initiator,
-               const String& charset = String());
-  FetchRequest(const ResourceRequest&,
-               const AtomicString& initiator,
-               const ResourceLoaderOptions&);
-  FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
-  ~FetchRequest();
+  FetchParameters(const ResourceRequest&,
+                  const AtomicString& initiator,
+                  const String& charset = String());
+  FetchParameters(const ResourceRequest&,
+                  const AtomicString& initiator,
+                  const ResourceLoaderOptions&);
+  FetchParameters(const ResourceRequest&, const FetchInitiatorInfo&);
+  ~FetchParameters();
 
   ResourceRequest& MutableResourceRequest() { return resource_request_; }
   const ResourceRequest& GetResourceRequest() const {

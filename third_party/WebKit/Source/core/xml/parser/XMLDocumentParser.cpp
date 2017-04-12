@@ -646,10 +646,10 @@ static void* OpenFunc(const char* uri) {
     Document* document = XMLDocumentParserScope::current_document_;
     XMLDocumentParserScope scope(0);
     // FIXME: We should restore the original global error handler as well.
-    FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml,
-                         ResourceFetcher::DefaultResourceOptions());
+    FetchParameters params(ResourceRequest(url), FetchInitiatorTypeNames::xml,
+                           ResourceFetcher::DefaultResourceOptions());
     Resource* resource =
-        RawResource::FetchSynchronously(request, document->Fetcher());
+        RawResource::FetchSynchronously(params, document->Fetcher());
     if (resource && !resource->ErrorOccurred()) {
       data = resource->ResourceBuffer();
       final_url = resource->GetResponse().Url();

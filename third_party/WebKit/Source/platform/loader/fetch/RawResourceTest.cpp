@@ -116,8 +116,8 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
   ResourceRequest png_request;
   png_request.SetHTTPAccept("image/png");
 
-  EXPECT_FALSE(
-      jpeg_resource->CanReuse(FetchRequest(png_request, FetchInitiatorInfo())));
+  EXPECT_FALSE(jpeg_resource->CanReuse(
+      FetchParameters(png_request, FetchInitiatorInfo())));
 }
 
 class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
@@ -583,16 +583,16 @@ TEST_F(RawResourceTest,
   request.SetHTTPHeaderField(
       HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
   Resource* raw = RawResource::Create(request, Resource::kRaw);
-  EXPECT_TRUE(raw->CanReuse(
-      FetchRequest(ResourceRequest("data:text/html,"), FetchInitiatorInfo())));
+  EXPECT_TRUE(raw->CanReuse(FetchParameters(ResourceRequest("data:text/html,"),
+                                            FetchInitiatorInfo())));
 }
 
 TEST_F(RawResourceTest, CanReuseDevToolsRequestIdHeader) {
   ResourceRequest request("data:text/html,");
   request.SetHTTPHeaderField(HTTPNames::X_DevTools_Request_Id, "12345");
   Resource* raw = RawResource::Create(request, Resource::kRaw);
-  EXPECT_TRUE(raw->CanReuse(
-      FetchRequest(ResourceRequest("data:text/html,"), FetchInitiatorInfo())));
+  EXPECT_TRUE(raw->CanReuse(FetchParameters(ResourceRequest("data:text/html,"),
+                                            FetchInitiatorInfo())));
 }
 
 }  // namespace blink

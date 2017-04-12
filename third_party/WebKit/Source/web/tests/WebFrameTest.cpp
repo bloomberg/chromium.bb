@@ -90,7 +90,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -8431,11 +8431,11 @@ TEST_P(ParameterizedWebFrameTest, NotifyManifestChange) {
 }
 
 static Resource* FetchManifest(Document* document, const KURL& url) {
-  FetchRequest fetch_request =
-      FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
-  fetch_request.SetRequestContext(WebURLRequest::kRequestContextManifest);
+  FetchParameters fetch_parameters =
+      FetchParameters(ResourceRequest(url), FetchInitiatorInfo());
+  fetch_parameters.SetRequestContext(WebURLRequest::kRequestContextManifest);
 
-  return RawResource::FetchSynchronously(fetch_request, document->Fetcher());
+  return RawResource::FetchSynchronously(fetch_parameters, document->Fetcher());
 }
 
 TEST_P(ParameterizedWebFrameTest, ManifestFetch) {

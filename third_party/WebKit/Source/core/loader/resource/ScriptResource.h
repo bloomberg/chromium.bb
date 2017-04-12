@@ -36,7 +36,7 @@ namespace blink {
 
 enum class ScriptIntegrityDisposition { kNotChecked = 0, kFailed, kPassed };
 
-class FetchRequest;
+class FetchParameters;
 class ResourceFetcher;
 class ScriptResource;
 
@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptResourceClient : public ResourceClient {
 class CORE_EXPORT ScriptResource final : public TextResource {
  public:
   using ClientType = ScriptResourceClient;
-  static ScriptResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static ScriptResource* Fetch(FetchParameters&, ResourceFetcher*);
 
   // Public for testing
   static ScriptResource* Create(const ResourceRequest& request,

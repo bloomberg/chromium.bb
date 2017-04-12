@@ -320,12 +320,12 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   // priority.  When the link element is created by scripts, load the
   // stylesheets asynchronously but in high priority.
   bool low_priority = !media_query_matches || owner_->IsAlternate();
-  FetchRequest request = builder.Build(low_priority);
+  FetchParameters params = builder.Build(low_priority);
   CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
       owner_->FastGetAttribute(HTMLNames::crossoriginAttr));
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    request.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
-                                        cross_origin);
+    params.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
+                                       cross_origin);
     SetFetchFollowingCORS();
   }
 
@@ -333,9 +333,9 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   if (!integrity_attr.IsEmpty()) {
     IntegrityMetadataSet metadata_set;
     SubresourceIntegrity::ParseIntegrityAttribute(integrity_attr, metadata_set);
-    request.SetIntegrityMetadata(metadata_set);
+    params.SetIntegrityMetadata(metadata_set);
   }
-  SetResource(CSSStyleSheetResource::Fetch(request, GetDocument().Fetcher()));
+  SetResource(CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher()));
 
   if (loading_ && !GetResource()) {
     // The request may have been denied if (for example) the stylesheet is

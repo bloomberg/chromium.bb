@@ -30,14 +30,14 @@
 
 namespace blink {
 
-class FetchRequest;
+class FetchParameters;
 class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
  public:
-  static XSLStyleSheetResource* FetchSynchronously(FetchRequest&,
+  static XSLStyleSheetResource* FetchSynchronously(FetchParameters&,
                                                    ResourceFetcher*);
-  static XSLStyleSheetResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static XSLStyleSheetResource* Fetch(FetchParameters&, ResourceFetcher*);
 
   const String& Sheet() const { return sheet_; }
 

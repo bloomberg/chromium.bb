@@ -6,7 +6,7 @@
 #define MockFetchContext_h
 
 #include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/wtf/PtrUtil.h"
@@ -51,7 +51,7 @@ class MockFetchContext : public FetchContext {
       const KURL&,
       const ResourceLoaderOptions&,
       SecurityViolationReportingPolicy,
-      FetchRequest::OriginRestriction) const override {
+      FetchParameters::OriginRestriction) const override {
     return ResourceRequestBlockedReason::kNone;
   }
   bool ShouldLoadNewResource(Resource::Type) const override {

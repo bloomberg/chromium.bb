@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
@@ -76,7 +76,7 @@ class LinkRequestBuilder {
   bool IsValid() const { return !url_.IsEmpty() && url_.IsValid(); }
   const KURL& Url() const { return url_; }
   const AtomicString& Charset() const { return charset_; }
-  FetchRequest Build(bool low_priority) const;
+  FetchParameters Build(bool low_priority) const;
 
  private:
   Member<HTMLLinkElement> owner_;

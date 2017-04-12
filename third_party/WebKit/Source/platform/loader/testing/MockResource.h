@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class FetchRequest;
+class FetchParameters;
 class ResourceFetcher;
 struct ResourceLoaderOptions;
 
@@ -20,7 +20,7 @@ struct ResourceLoaderOptions;
 // class to verify classes that consume Resource sub-classes in a simple way.
 class MockResource final : public Resource {
  public:
-  static MockResource* Fetch(FetchRequest&, ResourceFetcher*);
+  static MockResource* Fetch(FetchParameters&, ResourceFetcher*);
   static MockResource* Create(const ResourceRequest&);
   MockResource(const ResourceRequest&, const ResourceLoaderOptions&);
 };

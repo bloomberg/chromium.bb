@@ -24,7 +24,7 @@ enum class ModuleGraphLevel;
 
 // A ModuleScriptLoader is responsible for loading a new single ModuleScript.
 //
-// A ModuleScriptLoader constructs and emits FetchRequest to ResourceFetcher
+// A ModuleScriptLoader constructs and emits FetchParameters to ResourceFetcher
 // (via ScriptResource::fetch). Then, it keeps track of the fetch progress by
 // being a ScriptResourceClient. Finally, it returns its client a compiled
 // ModuleScript.
@@ -38,7 +38,7 @@ class CORE_EXPORT ModuleScriptLoader final
 
   enum class State {
     kInitial,
-    // FetchRequest is being processed, and ModuleScriptLoader hasn't
+    // FetchParameters is being processed, and ModuleScriptLoader hasn't
     // notifyFinished().
     kFetching,
     // Finished successfully or w/ error.

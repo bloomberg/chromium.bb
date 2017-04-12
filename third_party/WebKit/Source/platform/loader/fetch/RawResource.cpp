@@ -25,94 +25,94 @@
 
 #include "platform/loader/fetch/RawResource.h"
 
+#include <memory>
 #include "platform/HTTPNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
-#include <memory>
 
 namespace blink {
 
-RawResource* RawResource::FetchSynchronously(FetchRequest& request,
+RawResource* RawResource::FetchSynchronously(FetchParameters& params,
                                              ResourceFetcher* fetcher) {
-  request.MakeSynchronous();
+  params.MakeSynchronous();
   return ToRawResource(
-      fetcher->RequestResource(request, RawResourceFactory(Resource::kRaw)));
+      fetcher->RequestResource(params, RawResourceFactory(Resource::kRaw)));
 }
 
-RawResource* RawResource::FetchImport(FetchRequest& request,
+RawResource* RawResource::FetchImport(FetchParameters& params,
                                       ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  request.SetRequestContext(WebURLRequest::kRequestContextImport);
+  params.SetRequestContext(WebURLRequest::kRequestContextImport);
   return ToRawResource(fetcher->RequestResource(
-      request, RawResourceFactory(Resource::kImportResource)));
+      params, RawResourceFactory(Resource::kImportResource)));
 }
 
-RawResource* RawResource::Fetch(FetchRequest& request,
+RawResource* RawResource::Fetch(FetchParameters& params,
                                 ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  DCHECK_NE(request.GetResourceRequest().GetRequestContext(),
+  DCHECK_NE(params.GetResourceRequest().GetRequestContext(),
             WebURLRequest::kRequestContextUnspecified);
   return ToRawResource(
-      fetcher->RequestResource(request, RawResourceFactory(Resource::kRaw)));
+      fetcher->RequestResource(params, RawResourceFactory(Resource::kRaw)));
 }
 
 RawResource* RawResource::FetchMainResource(
-    FetchRequest& request,
+    FetchParameters& params,
     ResourceFetcher* fetcher,
     const SubstituteData& substitute_data) {
-  DCHECK_NE(request.GetResourceRequest().GetFrameType(),
+  DCHECK_NE(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  DCHECK(request.GetResourceRequest().GetRequestContext() ==
+  DCHECK(params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextForm ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextFrame ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextHyperlink ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextIframe ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextInternal ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextLocation);
 
   return ToRawResource(fetcher->RequestResource(
-      request, RawResourceFactory(Resource::kMainResource), substitute_data));
+      params, RawResourceFactory(Resource::kMainResource), substitute_data));
 }
 
-RawResource* RawResource::FetchMedia(FetchRequest& request,
+RawResource* RawResource::FetchMedia(FetchParameters& params,
                                      ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  DCHECK(request.GetResourceRequest().GetRequestContext() ==
+  DCHECK(params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextAudio ||
-         request.GetResourceRequest().GetRequestContext() ==
+         params.GetResourceRequest().GetRequestContext() ==
              WebURLRequest::kRequestContextVideo);
   return ToRawResource(
-      fetcher->RequestResource(request, RawResourceFactory(Resource::kMedia)));
+      fetcher->RequestResource(params, RawResourceFactory(Resource::kMedia)));
 }
 
-RawResource* RawResource::FetchTextTrack(FetchRequest& request,
+RawResource* RawResource::FetchTextTrack(FetchParameters& params,
                                          ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  request.SetRequestContext(WebURLRequest::kRequestContextTrack);
+  params.SetRequestContext(WebURLRequest::kRequestContextTrack);
   return ToRawResource(fetcher->RequestResource(
-      request, RawResourceFactory(Resource::kTextTrack)));
+      params, RawResourceFactory(Resource::kTextTrack)));
 }
 
-RawResource* RawResource::FetchManifest(FetchRequest& request,
+RawResource* RawResource::FetchManifest(FetchParameters& params,
                                         ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  DCHECK_EQ(request.GetResourceRequest().GetRequestContext(),
+  DCHECK_EQ(params.GetResourceRequest().GetRequestContext(),
             WebURLRequest::kRequestContextManifest);
   return ToRawResource(fetcher->RequestResource(
-      request, RawResourceFactory(Resource::kManifest)));
+      params, RawResourceFactory(Resource::kManifest)));
 }
 
 RawResource::RawResource(const ResourceRequest& resource_request,
@@ -257,8 +257,9 @@ static bool IsCacheableHTTPMethod(const AtomicString& method) {
   return method != "POST" && method != "PUT" && method != "DELETE";
 }
 
-bool RawResource::CanReuse(const FetchRequest& new_fetch_request) const {
-  const ResourceRequest& new_request = new_fetch_request.GetResourceRequest();
+bool RawResource::CanReuse(const FetchParameters& new_fetch_parameters) const {
+  const ResourceRequest& new_request =
+      new_fetch_parameters.GetResourceRequest();
 
   if (GetDataBufferingPolicy() == kDoNotBufferData)
     return false;

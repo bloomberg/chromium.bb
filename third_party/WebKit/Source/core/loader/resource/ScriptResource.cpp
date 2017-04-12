@@ -29,7 +29,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
@@ -37,15 +37,15 @@
 
 namespace blink {
 
-ScriptResource* ScriptResource::Fetch(FetchRequest& request,
+ScriptResource* ScriptResource::Fetch(FetchParameters& params,
                                       ResourceFetcher* fetcher) {
-  DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeNone);
-  request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  params.SetRequestContext(WebURLRequest::kRequestContextScript);
   ScriptResource* resource = ToScriptResource(
-      fetcher->RequestResource(request, ScriptResourceFactory()));
-  if (resource && !request.IntegrityMetadata().IsEmpty())
-    resource->SetIntegrityMetadata(request.IntegrityMetadata());
+      fetcher->RequestResource(params, ScriptResourceFactory()));
+  if (resource && !params.IntegrityMetadata().IsEmpty())
+    resource->SetIntegrityMetadata(params.IntegrityMetadata());
   return resource;
 }
 

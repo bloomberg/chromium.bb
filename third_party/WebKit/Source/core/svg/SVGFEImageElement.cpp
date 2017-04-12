@@ -28,7 +28,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
 #include "platform/graphics/Image.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
 namespace blink {
@@ -70,9 +70,9 @@ void SVGFEImageElement::ClearResourceReferences() {
 }
 
 void SVGFEImageElement::FetchImageResource() {
-  FetchRequest request(ResourceRequest(GetDocument().CompleteURL(HrefString())),
-                       localName());
-  cached_image_ = ImageResourceContent::Fetch(request, GetDocument().Fetcher());
+  FetchParameters params(
+      ResourceRequest(GetDocument().CompleteURL(HrefString())), localName());
+  cached_image_ = ImageResourceContent::Fetch(params, GetDocument().Fetcher());
 
   if (cached_image_)
     cached_image_->AddObserver(this);

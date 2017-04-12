@@ -146,7 +146,7 @@ class TokenPreloadScanner::StartTagScanner {
         input_is_image_(false),
         source_size_(0),
         source_size_set_(false),
-        defer_(FetchRequest::kNoDefer),
+        defer_(FetchParameters::kNoDefer),
         cross_origin_(kCrossOriginAttributeNotSet),
         media_values_(media_values),
         referrer_policy_set_(false),
@@ -225,7 +225,7 @@ class TokenPreloadScanner::StartTagScanner {
 
     TextPosition position =
         TextPosition(source.CurrentLine(), source.CurrentColumn());
-    FetchRequest::ResourceWidth resource_width;
+    FetchParameters::ResourceWidth resource_width;
     float source_size = source_size_;
     bool source_size_set = source_size_set_;
     if (picture_data.picked) {
@@ -273,9 +273,9 @@ class TokenPreloadScanner::StartTagScanner {
     else if (Match(attribute_name, nonceAttr))
       SetNonce(attribute_value);
     else if (Match(attribute_name, asyncAttr))
-      SetDefer(FetchRequest::kLazyLoad);
+      SetDefer(FetchParameters::kLazyLoad);
     else if (Match(attribute_name, deferAttr))
-      SetDefer(FetchRequest::kLazyLoad);
+      SetDefer(FetchParameters::kLazyLoad);
     // Note that only scripts need to have the integrity metadata set on
     // preloads. This is because script resources fetches, and only script
     // resource fetches, need to re-request resources if a cached version has
@@ -536,7 +536,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void SetNonce(const String& nonce) { nonce_ = nonce; }
 
-  void SetDefer(FetchRequest::DeferOption defer) { defer_ = defer; }
+  void SetDefer(FetchParameters::DeferOption defer) { defer_ = defer; }
 
   bool Defer() const { return defer_; }
 
@@ -557,7 +557,7 @@ class TokenPreloadScanner::StartTagScanner {
   String language_attribute_value_;
   float source_size_;
   bool source_size_set_;
-  FetchRequest::DeferOption defer_;
+  FetchParameters::DeferOption defer_;
   CrossOriginAttributeValue cross_origin_;
   String nonce_;
   Member<MediaValuesCached> media_values_;

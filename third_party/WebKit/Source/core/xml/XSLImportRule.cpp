@@ -25,7 +25,7 @@
 #include "core/loader/resource/XSLStyleSheetResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "wtf/text/TextEncoding.h"
@@ -89,11 +89,11 @@ void XSLImportRule::LoadSheet() {
 
   ResourceLoaderOptions fetch_options(
       ResourceFetcher::DefaultResourceOptions());
-  FetchRequest request(ResourceRequest(owner_document->CompleteURL(abs_href)),
-                       FetchInitiatorTypeNames::xml, fetch_options);
-  request.SetOriginRestriction(FetchRequest::kRestrictToSameOrigin);
+  FetchParameters params(ResourceRequest(owner_document->CompleteURL(abs_href)),
+                         FetchInitiatorTypeNames::xml, fetch_options);
+  params.SetOriginRestriction(FetchParameters::kRestrictToSameOrigin);
   XSLStyleSheetResource* resource = XSLStyleSheetResource::FetchSynchronously(
-      request, owner_document->Fetcher());
+      params, owner_document->Fetcher());
   if (!resource || !resource->Sheet())
     return;
 

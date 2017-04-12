@@ -60,7 +60,7 @@ void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&,
 WebCachePolicy FetchContext::ResourceRequestCachePolicy(
     ResourceRequest&,
     Resource::Type,
-    FetchRequest::DeferOption defer) const {
+    FetchParameters::DeferOption defer) const {
   return WebCachePolicy::kUseProtocolCachePolicy;
 }
 
@@ -114,10 +114,11 @@ void FetchContext::SendImagePing(const KURL&) {}
 void FetchContext::AddConsoleMessage(const String&,
                                      FetchContext::LogMessageType) const {}
 
-void FetchContext::PopulateResourceRequest(Resource::Type,
-                                           const ClientHintsPreferences&,
-                                           const FetchRequest::ResourceWidth&,
-                                           ResourceRequest&) {}
+void FetchContext::PopulateResourceRequest(
+    Resource::Type,
+    const ClientHintsPreferences&,
+    const FetchParameters::ResourceWidth&,
+    ResourceRequest&) {}
 
 void FetchContext::SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) {}
 

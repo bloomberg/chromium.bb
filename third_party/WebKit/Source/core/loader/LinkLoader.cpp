@@ -48,7 +48,7 @@
 #include "platform/Timer.h"
 #include "platform/loader/LinkHeader.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/WebPrerender.h"
@@ -333,12 +333,12 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
         referrer_policy, href, document.OutgoingReferrer()));
   }
 
-  FetchRequest link_request(resource_request, FetchInitiatorTypeNames::link,
-                            document.EncodingName());
+  FetchParameters link_fetch_params(
+      resource_request, FetchInitiatorTypeNames::link, document.EncodingName());
 
   if (cross_origin != kCrossOriginAttributeNotSet) {
-    link_request.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                             cross_origin);
+    link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
+                                                  cross_origin);
   }
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {
@@ -346,8 +346,9 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
         kOtherMessageSource, kVerboseMessageLevel,
         String("Preload triggered for " + href.Host() + href.GetPath())));
   }
-  link_request.SetLinkPreload(true);
-  return document.Loader()->StartPreload(resource_type.value(), link_request);
+  link_fetch_params.SetLinkPreload(true);
+  return document.Loader()->StartPreload(resource_type.value(),
+                                         link_fetch_params);
 }
 
 static Resource* PrefetchIfNeeded(Document& document,
@@ -364,12 +365,13 @@ static Resource* PrefetchIfNeeded(Document& document,
           referrer_policy, href, document.OutgoingReferrer()));
     }
 
-    FetchRequest link_request(resource_request, FetchInitiatorTypeNames::link);
+    FetchParameters link_fetch_params(resource_request,
+                                      FetchInitiatorTypeNames::link);
     if (cross_origin != kCrossOriginAttributeNotSet) {
-      link_request.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
-                                               cross_origin);
+      link_fetch_params.SetCrossOriginAccessControl(
+          document.GetSecurityOrigin(), cross_origin);
     }
-    return LinkFetchResource::Fetch(Resource::kLinkPrefetch, link_request,
+    return LinkFetchResource::Fetch(Resource::kLinkPrefetch, link_fetch_params,
                                     document.Fetcher());
   }
   return nullptr;

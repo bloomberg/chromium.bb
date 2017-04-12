@@ -35,7 +35,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/loader/fetch/FetchRequest.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
@@ -76,15 +76,15 @@ bool CSSFontFaceSrcValue::HasFailedOrCanceledSubresources() const {
   return fetched_ && fetched_->GetResource()->LoadFailedOrCanceled();
 }
 
-static void SetCrossOriginAccessControl(FetchRequest& request,
+static void SetCrossOriginAccessControl(FetchParameters& params,
                                         SecurityOrigin* security_origin) {
   // Local fonts are accessible from file: URLs even when
   // allowFileAccessFromFileURLs is false.
-  if (request.Url().IsLocalFile())
+  if (params.Url().IsLocalFile())
     return;
 
-  request.SetCrossOriginAccessControl(security_origin,
-                                      kCrossOriginAttributeAnonymous);
+  params.SetCrossOriginAccessControl(security_origin,
+                                     kCrossOriginAttributeAnonymous);
 }
 
 FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
@@ -92,13 +92,13 @@ FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
     ResourceRequest resource_request(absolute_resource_);
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
-    FetchRequest request(resource_request, FetchInitiatorTypeNames::css);
+    FetchParameters params(resource_request, FetchInitiatorTypeNames::css);
     if (RuntimeEnabledFeatures::webFontsCacheAwareTimeoutAdaptationEnabled())
-      request.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
-    request.SetContentSecurityCheck(should_check_content_security_policy_);
+      params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
+    params.SetContentSecurityCheck(should_check_content_security_policy_);
     SecurityOrigin* security_origin = document->GetSecurityOrigin();
-    SetCrossOriginAccessControl(request, security_origin);
-    FontResource* resource = FontResource::Fetch(request, document->Fetcher());
+    SetCrossOriginAccessControl(params, security_origin);
+    FontResource* resource = FontResource::Fetch(params, document->Fetcher());
     if (!resource)
       return nullptr;
     fetched_ = FontResourceHelper::Create(resource);

@@ -119,7 +119,7 @@ bool IsConnectionEffectively2G(WebEffectiveConnectionType effective_type) {
 }
 
 bool ShouldDisallowFetchForMainFrameScript(ResourceRequest& request,
-                                           FetchRequest::DeferOption defer,
+                                           FetchParameters::DeferOption defer,
                                            Document& document) {
   // Only scripts inserted via document.write are candidates for having their
   // fetch disallowed.
@@ -133,7 +133,7 @@ bool ShouldDisallowFetchForMainFrameScript(ResourceRequest& request,
     return false;
 
   // Only block synchronously loaded (parser blocking) scripts.
-  if (defer != FetchRequest::kNoDefer)
+  if (defer != FetchParameters::kNoDefer)
     return false;
 
   probe::documentWriteFetchScript(&document);
@@ -372,7 +372,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 WebCachePolicy FrameFetchContext::ResourceRequestCachePolicy(
     ResourceRequest& request,
     Resource::Type type,
-    FetchRequest::DeferOption defer) const {
+    FetchParameters::DeferOption defer) const {
   DCHECK(GetFrame());
   if (type == Resource::kMainResource) {
     const WebCachePolicy cache_policy = DetermineWebCachePolicy(
@@ -674,7 +674,7 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
-    FetchRequest::OriginRestriction origin_restriction) const {
+    FetchParameters::OriginRestriction origin_restriction) const {
   ResourceRequestBlockedReason blocked_reason = CanRequestInternal(
       type, resource_request, url, options, reporting_policy,
       origin_restriction, resource_request.GetRedirectStatus());
@@ -694,7 +694,7 @@ ResourceRequestBlockedReason FrameFetchContext::AllowResponse(
   ResourceRequestBlockedReason blocked_reason =
       CanRequestInternal(type, resource_request, url, options,
                          SecurityViolationReportingPolicy::kReport,
-                         FetchRequest::kUseDefaultOriginRestrictionForType,
+                         FetchParameters::kUseDefaultOriginRestrictionForType,
                          RedirectStatus::kFollowedRedirect);
   if (blocked_reason != ResourceRequestBlockedReason::kNone) {
     probe::didBlockRequest(GetFrame(), resource_request, MasterDocumentLoader(),
@@ -709,7 +709,7 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
     const KURL& url,
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
-    FetchRequest::OriginRestriction origin_restriction,
+    FetchParameters::OriginRestriction origin_restriction,
     ResourceRequest::RedirectStatus redirect_status) const {
   bool should_block_request = false;
   probe::shouldBlockRequest(GetFrame(), resource_request,
@@ -721,7 +721,7 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
   if (!security_origin && document_)
     security_origin = document_->GetSecurityOrigin();
 
-  if (origin_restriction != FetchRequest::kNoOriginRestriction &&
+  if (origin_restriction != FetchParameters::kNoOriginRestriction &&
       security_origin && !security_origin->CanDisplay(url)) {
     if (reporting_policy == SecurityViolationReportingPolicy::kReport)
       FrameLoader::ReportLocalLoadFailed(GetFrame(), url.ElidedString());
@@ -748,7 +748,7 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
     case Resource::kMock:
       // By default these types of resources can be loaded from any origin.
       // FIXME: Are we sure about Resource::Font?
-      if (origin_restriction == FetchRequest::kRestrictToSameOrigin &&
+      if (origin_restriction == FetchParameters::kRestrictToSameOrigin &&
           !security_origin->CanRequest(url)) {
         PrintAccessDeniedMessage(url);
         return ResourceRequestBlockedReason::kOrigin;
@@ -956,7 +956,7 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
 
 void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
-    const FetchRequest::ResourceWidth& resource_width,
+    const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
   if (!RuntimeEnabledFeatures::clientHintsEnabled() || !document_)
     return;
@@ -1005,7 +1005,7 @@ void FrameFetchContext::AddCSPHeaderIfNecessary(Resource::Type type,
 void FrameFetchContext::PopulateResourceRequest(
     Resource::Type type,
     const ClientHintsPreferences& hints_preferences,
-    const FetchRequest::ResourceWidth& resource_width,
+    const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
   SetFirstPartyCookieAndRequestorOrigin(request);
   ModifyRequestForCSP(request);
