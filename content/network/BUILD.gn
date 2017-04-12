@@ -4,18 +4,51 @@
 
 import("//services/service_manager/public/service_manifest.gni")
 
-source_set("lib") {
+group("network") {
+  visibility = [ "//content/*" ]  # This is an internal content API.
+
+  if (is_component_build) {
+    public_deps = [
+      "//content",
+    ]
+  } else {
+    public_deps = [
+      ":network_sources",
+    ]
+  }
+}
+
+source_set("network_sources") {
+  # Depend on via ":network above.
+  visibility = [
+    ":network",
+    "//content",  # For the component build.
+    "//content/app:*",
+    "//content/utility:utility",
+  ]
+
   sources = [
+    "net_adapters.cc",
+    "net_adapters.h",
+    "network_context.cc",
+    "network_context.h",
     "network_service.cc",
     "network_service.h",
+    "url_loader_impl.cc",
+    "url_loader_impl.h",
   ]
 
   configs += [ "//content:content_implementation" ]
 
   deps = [
     "//base",
+    "//content:export",
+    "//content/common",
     "//content/common:mojo_bindings",
+    "//content/public/common:common_sources",
     "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/service_manager/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

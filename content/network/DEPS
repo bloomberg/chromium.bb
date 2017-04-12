@@ -1,3 +1,19 @@
+# Tight rules since this will move to services/network. See README.
 include_rules = [
+  "-content",
+  "+content/common/content_export.h",
+  "+content/common/url_loader.mojom.h",
+  "+content/common/url_loader_factory.mojom.h",
+  "+content/network",
+  "+content/public/common/content_client.h",
+  "+content/public/common/referrer.h",
+  "+content/public/common/resource_response.h",
   "+services/service_manager/public",
 ]
+
+specific_include_rules = {
+  '.*_[a-z]*test.*': [
+    "+content/browser/loader/test_url_loader_client.h",
+    "+content/public/common/content_paths.h",
+  ],
+}
