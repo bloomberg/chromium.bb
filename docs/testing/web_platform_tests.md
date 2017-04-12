@@ -26,7 +26,7 @@ of the
 GitHub repos, and periodically imports a subset of the tests so that they are
 run as part of the regular Blink layout test testing process.
 
-The goal of this process are to be able to run web-platform-tests unmodified
+The goals of this process are to be able to run web-platform-tests unmodified
 locally just as easily as we can run the Blink tests, and ensure that we are
 tracking tip-of-tree in the web-platform-tests repository as closely as
 possible, and running as many of the tests as possible.
