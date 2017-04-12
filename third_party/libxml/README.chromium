@@ -17,8 +17,6 @@ Modifications:
   chromium-issue-620679.patch: See https://crbug.com/620679#c34
   chromium-issue-628581.patch: See https://crbug.com/628581#c18
   chromium-issue-683629.patch: See https://crbug.com/683629#c9
-  libxml2-2.9.4-security-CVE-2017-7375-xmlParsePEReference-xxe.patch:
-  See https://crbug.com/708434
   libxml2-2.9.4-security-CVE-2017-7376-nanohttp-out-of-bounds-write.patch:
   See https://crbug.com/708433
   libxml2-2.9.4-security-xpath-nodetab-uaf.patch: See https://crbug.com/705445

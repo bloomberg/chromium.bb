@@ -8120,14 +8120,6 @@ xmlParsePEReference(xmlParserCtxtPtr ctxt)
 			      "PEReference: %%%s; not found\n",
 			      name);
 	} else {
-	    if ((entity->etype == XML_EXTERNAL_PARAMETER_ENTITY) &&
-	        ((ctxt->options & XML_PARSE_NOENT) == 0) &&
-	        ((ctxt->options & XML_PARSE_DTDVALID) == 0) &&
-	        ((ctxt->options & XML_PARSE_DTDLOAD) == 0) &&
-	        ((ctxt->options & XML_PARSE_DTDATTR) == 0) &&
-	        (ctxt->replaceEntities == 0) &&
-	        (ctxt->validate == 0))
-	        return;
 	    /*
 	     * [ VC: Entity Declared ]
 	     * In a document with an external subset or external
