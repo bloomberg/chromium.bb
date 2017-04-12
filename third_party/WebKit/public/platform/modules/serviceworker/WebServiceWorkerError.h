@@ -54,10 +54,22 @@ struct WebServiceWorkerError {
   };
 
   WebServiceWorkerError(ErrorType error_type, const WebString& message)
-      : error_type(error_type), message(message) {}
+      : WebServiceWorkerError(error_type, message, WebString()) {}
+
+  WebServiceWorkerError(ErrorType error_type,
+                        const WebString& message,
+                        const WebString& unsanitized_message)
+      : error_type(error_type),
+        message(message),
+        unsanitized_message(unsanitized_message) {}
 
   ErrorType error_type;
+  // |message| can be used to populate an error that's exposed to JavaScript.
+  // For service worker APIs, typically a promise will reject with this error.
   WebString message;
+  // |unsanitized_message| can be used to add a more detailed error to
+  // console or other logging that shouldn't be exposed to JavaScript.
+  WebString unsanitized_message;
 };
 
 }  // namespace blink

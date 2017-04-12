@@ -310,6 +310,13 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
   // This method may be called after onNavigationPreloadResponse() was called.
   if (!fetch_event)
     return;
+  // Display an unsanitized console message.
+  if (!error->unsanitized_message.IsEmpty()) {
+    WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
+        kWorkerMessageSource, blink::MessageLevel::kErrorMessageLevel,
+        error->unsanitized_message));
+  }
+  // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
       std::move(error));

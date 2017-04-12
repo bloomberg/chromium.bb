@@ -415,6 +415,14 @@ net::HttpResponseInfo CreateHttpResponseInfo() {
   return info;
 }
 
+const std::string kNavigationPreloadAbortError =
+    "The service worker navigation preload request was cancelled before "
+    "'preloadResponse' settled. If you intend to use 'preloadResponse', use "
+    "waitUntil() or respondWith() to wait for the promise to settle.";
+const std::string kNavigationPreloadNetworkError =
+    "The service worker navigation preload request failed with a network "
+    "error.";
+
 }  // namespace
 
 class ServiceWorkerBrowserTest : public ContentBrowserTest {
@@ -508,6 +516,52 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
   std::vector<base::string16> messages_;
   size_t expected_message_count_ = 0;
   base::Closure quit_;
+};
+
+// Listens to console messages on ServiceWorkerContextWrapper.
+class ConsoleMessageContextObserver
+    : public ServiceWorkerContextObserver,
+      public base::RefCountedThreadSafe<ConsoleMessageContextObserver> {
+ public:
+  explicit ConsoleMessageContextObserver(ServiceWorkerContextWrapper* context)
+      : context_(context) {}
+  void Init() { context_->AddObserver(this); }
+
+  // ServiceWorkerContextObserver overrides.
+  void OnReportConsoleMessage(int64_t version_id,
+                              int process_id,
+                              int thread_id,
+                              const ConsoleMessage& console_message) override {
+    messages_.push_back(console_message.message);
+    if (messages_.size() == expected_message_count_) {
+      run_loop_.Quit();
+    }
+  }
+
+  void WaitForConsoleMessages(size_t expected_message_count) {
+    if (messages_.size() >= expected_message_count) {
+      context_->RemoveObserver(this);
+      return;
+    }
+
+    expected_message_count_ = expected_message_count;
+    run_loop_.Run();
+    ASSERT_EQ(messages_.size(), expected_message_count);
+    context_->RemoveObserver(this);
+  }
+
+  const std::vector<base::string16>& messages() const { return messages_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<ConsoleMessageContextObserver>;
+  ~ConsoleMessageContextObserver() override {}
+
+  std::vector<base::string16> messages_;
+  size_t expected_message_count_ = 0;
+  base::RunLoop run_loop_;
+  ServiceWorkerContextWrapper* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConsoleMessageContextObserver);
 };
 
 class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
@@ -1896,13 +1950,23 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
+  scoped_refptr<ConsoleMessageContextObserver> console_observer =
+      new ConsoleMessageContextObserver(wrapper());
+  console_observer->Init();
+
   const base::string16 title = base::ASCIIToUTF16("REJECTED");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("RESOLVED"));
   NavigateToURL(shell(), page_url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
+  EXPECT_EQ("NetworkError: " + kNavigationPreloadNetworkError,
             GetTextContent());
+
+  console_observer->WaitForConsoleMessages(1);
+  const base::string16 expected =
+      base::ASCIIToUTF16("net::ERR_CONNECTION_REFUSED");
+  std::vector<base::string16> messages = console_observer->messages();
+  EXPECT_NE(base::string16::npos, messages[0].find(expected));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
@@ -1919,7 +1983,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
       "text/javascript");
 
-  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
+  EXPECT_EQ("NetworkError: " + kNavigationPreloadAbortError,
             LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
 }
 
@@ -2036,11 +2100,21 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       "text/javascript");
   RegisterStaticFile(kRedirectedPageUrl1, kRedirectedPage, "text/html");
 
+  scoped_refptr<ConsoleMessageContextObserver> console_observer =
+      new ConsoleMessageContextObserver(wrapper());
+  console_observer->Init();
+
   // According to the spec, multiple Location headers is not an error. So the
   // preloadResponse must be resolved with an opaque redirect response.
   // But Chrome treats multiple Location headers as an error (crbug.com/98895).
-  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
+  EXPECT_EQ("NetworkError: " + kNavigationPreloadNetworkError,
             LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
+
+  console_observer->WaitForConsoleMessages(1);
+  const base::string16 expected =
+      base::ASCIIToUTF16("ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION");
+  std::vector<base::string16> messages = console_observer->messages();
+  EXPECT_NE(base::string16::npos, messages[0].find(expected));
 
   // The page request must be sent only once, since the worker responded with
   // a generated Response.
@@ -2070,7 +2144,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
   // preloadResponse must be resolve with an opaque redirect response. But
   // currently Chrome handles the invalid location URL in the browser process as
   // an error. crbug.com/707185
-  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
+  EXPECT_EQ("NetworkError: " + kNavigationPreloadAbortError,
             LoadNavigationPreloadTestPage(page_url, worker_url, "REJECTED"));
 
   // The page request must be sent only once, since the worker responded with

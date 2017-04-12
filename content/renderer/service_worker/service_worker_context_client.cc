@@ -51,6 +51,7 @@
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
@@ -424,8 +425,26 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
     if (status.error_code != net::OK) {
+      std::string message;
+      std::string unsanitized_message;
+      if (status.error_code == net::ERR_ABORTED) {
+        message =
+            "The service worker navigation preload request was cancelled "
+            "before 'preloadResponse' settled. If you intend to use "
+            "'preloadResponse', use waitUntil() or respondWith() to wait for "
+            "the promise to settle.";
+      } else {
+        message =
+            "The service worker navigation preload request failed with a "
+            "network error.";
+        unsanitized_message =
+            "The service worker navigation preload request failed with network "
+            "error: " +
+            net::ErrorToString(status.error_code) + ".";
+      }
+
       // This will delete |this|.
-      ReportErrorToClient("Service Worker navigation preload network error.");
+      ReportErrorToClient(message, unsanitized_message);
       return;
     }
 
@@ -458,7 +477,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body_)));
   }
 
-  void ReportErrorToClient(const char* error_message) {
+  void ReportErrorToClient(const std::string& message,
+                           const std::string& unsanitized_message) {
     ServiceWorkerContextClient* client =
         ServiceWorkerContextClient::ThreadSpecificInstance();
     if (!client)
@@ -467,7 +487,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     client->OnNavigationPreloadError(
         fetch_event_id_, base::MakeUnique<blink::WebServiceWorkerError>(
                              blink::WebServiceWorkerError::kErrorTypeNetwork,
-                             blink::WebString::FromUTF8(error_message)));
+                             blink::WebString::FromUTF8(message),
+                             blink::WebString::FromUTF8(unsanitized_message)));
   }
 
   const int fetch_event_id_;
