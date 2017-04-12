@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/vr_shell/fps_meter.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
@@ -163,6 +164,9 @@ VrShellGl::VrShellGl(
       binding_(this),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
+#if DCHECK_IS_ON()
+      fps_meter_(new FPSMeter()),
+#endif
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -875,6 +879,13 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     TRACE_EVENT0("gpu", "VrShellGl::SwapBuffers");
     surface_->SwapBuffers();
   }
+
+#if DCHECK_IS_ON()
+  // After saving the timestamp, fps will be available via GetFPS().
+  // TODO(vollick): enable rendering of this framerate in a HUD.
+  fps_meter_->AddFrame(current_time);
+  LOG(ERROR) << "fps: " << fps_meter_->GetFPS();
+#endif
 }
 
 void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {

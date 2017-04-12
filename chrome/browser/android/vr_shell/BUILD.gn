@@ -20,6 +20,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "animation.h",
       "easing.cc",
       "easing.h",
+      "fps_meter.cc",
+      "fps_meter.h",
       "gltf_asset.cc",
       "gltf_asset.h",
       "gltf_parser.cc",
@@ -107,6 +109,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
 if (enable_vr) {
   test("vr_shell_unittests") {
     sources = [
+      "fps_meter_unittest.cc",
       "gltf_parser_unittest.cc",
       "test/paths.cc",
       "test/paths.h",

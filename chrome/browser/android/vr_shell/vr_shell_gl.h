@@ -44,6 +44,7 @@ struct MailboxHolder;
 
 namespace vr_shell {
 
+class FPSMeter;
 class MailboxToSurfaceBridge;
 class UiScene;
 class VrController;
@@ -241,6 +242,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   // Attributes for gesture detection while holding app button.
   gfx::Vector3dF controller_start_direction_;
+
+  std::unique_ptr<FPSMeter> fps_meter_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
