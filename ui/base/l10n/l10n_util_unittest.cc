@@ -587,8 +587,7 @@ TEST_F(L10nUtilTest, IsValidLocaleSyntax) {
   EXPECT_FALSE(l10n_util::IsValidLocaleSyntax("en-US@=y"));
 }
 
-// TODO(jungshik): Enable after http://crbug.com/707515 is fixed.
-TEST_F(L10nUtilTest, DISABLED_TimeDurationFormatAllLocales) {
+TEST_F(L10nUtilTest, TimeDurationFormatAllLocales) {
   base::test::ScopedRestoreICUDefaultLocale restore_locale;
 
   // Verify that base::TimeDurationFormat() works for all available locales:
