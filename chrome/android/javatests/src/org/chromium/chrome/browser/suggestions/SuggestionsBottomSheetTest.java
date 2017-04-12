@@ -54,10 +54,10 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
         ViewHolder firstCardViewHolder = RecyclerViewTestUtils.waitForView(recyclerView, 2);
         assertEquals(firstCardViewHolder.getItemViewType(), ItemViewType.SNIPPET);
 
-        assertFalse(recyclerView.onInterceptTouchEvent(createTapEvent()));
+        assertFalse(getActivity().getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         TestTouchUtils.longClickView(getInstrumentation(), firstCardViewHolder.itemView);
-        assertTrue(recyclerView.onInterceptTouchEvent(createTapEvent()));
+        assertTrue(getActivity().getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -66,7 +66,7 @@ public class SuggestionsBottomSheetTest extends BottomSheetTestCaseBase {
             }
         });
 
-        assertFalse(recyclerView.onInterceptTouchEvent(createTapEvent()));
+        assertFalse(getActivity().getBottomSheet().onInterceptTouchEvent(createTapEvent()));
     }
 
     private static MotionEvent createTapEvent() {
