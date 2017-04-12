@@ -18,18 +18,24 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/containers/adapters.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/transferable_resource.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/env.h"
@@ -183,6 +189,62 @@ class LaserSegment {
   DISALLOW_COPY_AND_ASSIGN(LaserSegment);
 };
 
+class LaserCompositorFrameSinkHolder
+    : public cc::mojom::MojoCompositorFrameSink,
+      public cc::CompositorFrameSinkSupportClient {
+ public:
+  LaserCompositorFrameSinkHolder(LaserPointerView* view,
+                                 const cc::FrameSinkId& frame_sink_id)
+      : frame_sink_support_(cc::CompositorFrameSinkSupport::Create(
+            this,
+            aura::Env::GetInstance()
+                ->context_factory_private()
+                ->GetSurfaceManager(),
+            frame_sink_id,
+            false /* is_root */,
+            true /* handles_frame_sink_id_invalidation */,
+            true /* needs_sync_points */)),
+        view_(view) {}
+  ~LaserCompositorFrameSinkHolder() override {}
+
+  // Called before laser pointer view is destroyed.
+  void OnLaserPointerViewDestroying() { view_ = nullptr; }
+
+  // Overridden from cc::mojom::MojoCompositorFrameSink:
+  void SetNeedsBeginFrame(bool needs_begin_frame) override {
+    frame_sink_support_->SetNeedsBeginFrame(needs_begin_frame);
+  }
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame) override {
+    frame_sink_support_->SubmitCompositorFrame(local_surface_id,
+                                               std::move(frame));
+  }
+  void BeginFrameDidNotSwap(const cc::BeginFrameAck& begin_frame_ack) override {
+    frame_sink_support_->BeginFrameDidNotSwap(begin_frame_ack);
+  }
+  void EvictFrame() override { frame_sink_support_->EvictFrame(); }
+
+  // Overridden from cc::CompositorFrameSinkSupportClient:
+  void DidReceiveCompositorFrameAck(
+      const cc::ReturnedResourceArray& resources) override {
+    if (view_)
+      view_->DidReceiveCompositorFrameAck(resources);
+  }
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override {}
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override {
+    if (view_)
+      view_->ReclaimResources(resources);
+  }
+  void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
+                       const gfx::Rect& damage_rect) override {}
+
+ private:
+  std::unique_ptr<cc::CompositorFrameSinkSupport> frame_sink_support_;
+  LaserPointerView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(LaserCompositorFrameSinkHolder);
+};
+
 // This struct contains the resources associated with a laser pointer frame.
 struct LaserResource {
   LaserResource() {}
@@ -211,15 +273,9 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
       frame_sink_id_(aura::Env::GetInstance()
                          ->context_factory_private()
                          ->AllocateFrameSinkId()),
-      frame_sink_support_(cc::CompositorFrameSinkSupport::Create(
-          this,
-          aura::Env::GetInstance()
-              ->context_factory_private()
-              ->GetSurfaceManager(),
-          frame_sink_id_,
-          false /* is_root */,
-          true /* handles_frame_sink_id_invalidation */,
-          true /* needs_sync_points */)),
+      frame_sink_holder_(
+          base::MakeUnique<LaserCompositorFrameSinkHolder>(this,
+                                                           frame_sink_id_)),
       weak_ptr_factory_(this) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
@@ -242,7 +298,9 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
   scale_factor_ = ui::GetScaleFactorForNativeView(widget_->GetNativeView());
 }
 
-LaserPointerView::~LaserPointerView() {}
+LaserPointerView::~LaserPointerView() {
+  frame_sink_holder_->OnLaserPointerViewDestroying();
+}
 
 void LaserPointerView::Stop() {
   buffer_damage_rect_.Union(GetBoundingBox());
@@ -378,29 +436,10 @@ void LaserPointerView::UpdateTime() {
   OnPointsUpdated();
 }
 
-void LaserPointerView::SetNeedsBeginFrame(bool needs_begin_frame) {
-  frame_sink_support_->SetNeedsBeginFrame(needs_begin_frame);
-}
-
-void LaserPointerView::SubmitCompositorFrame(
-    const cc::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
-  frame_sink_support_->SubmitCompositorFrame(local_surface_id,
-                                             std::move(frame));
-}
-
-void LaserPointerView::BeginFrameDidNotSwap(
-    const cc::BeginFrameAck& begin_frame_ack) {
-  frame_sink_support_->BeginFrameDidNotSwap(begin_frame_ack);
-}
-
-void LaserPointerView::EvictFrame() {
-  frame_sink_support_->EvictFrame();
-}
-
 void LaserPointerView::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   ReclaimResources(resources);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&LaserPointerView::OnDidDrawSurface,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -716,7 +755,8 @@ void LaserPointerView::UpdateSurface() {
     widget_->GetNativeView()->layer()->SetFillsBoundsOpaquely(false);
   }
 
-  SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  frame_sink_holder_->SubmitCompositorFrame(local_surface_id_,
+                                            std::move(frame));
 
   resources_[transferable_resource.id] = std::move(resource);
 
