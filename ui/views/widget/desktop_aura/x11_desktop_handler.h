@@ -38,8 +38,13 @@ namespace views {
 class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
                                        public aura::EnvObserver {
  public:
-  // Returns the singleton handler.
+  // Returns the singleton handler.  Creates one if one has not
+  // already been created.
   static X11DesktopHandler* get();
+
+  // Returns the singleton handler, or nullptr if one has not already
+  // been created.
+  static X11DesktopHandler* get_dont_create();
 
   // Adds/removes X11DesktopHandlerObservers.
   void AddObserver(X11DesktopHandlerObserver* observer);

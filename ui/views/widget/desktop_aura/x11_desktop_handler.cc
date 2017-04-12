@@ -40,6 +40,11 @@ X11DesktopHandler* X11DesktopHandler::get() {
   return g_handler;
 }
 
+// static
+X11DesktopHandler* X11DesktopHandler::get_dont_create() {
+  return g_handler;
+}
+
 X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
