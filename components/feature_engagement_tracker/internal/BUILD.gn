@@ -38,6 +38,10 @@ static_library("internal") {
     "store.h",
   ]
 
+  public_deps = [
+    "//components/feature_engagement_tracker/internal/proto",
+  ]
+
   deps = [
     "//base",
     "//components/feature_engagement_tracker/public",

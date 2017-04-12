@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
@@ -40,8 +41,15 @@ class TestModel : public Model {
 
   bool IsCurrentlyShowing() const override { return false; }
 
+  const Event& GetEvent(const std::string& event_name) override {
+    return empty_event_;
+  }
+
+  void IncrementEvent(const std::string& event_name) override {}
+
  private:
   FeatureConfig feature_config_;
+  Event empty_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestModel);
 };

@@ -6,6 +6,7 @@
 #define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_MODEL_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@ struct Feature;
 }  // namespace base
 
 namespace feature_engagement_tracker {
+class Event;
 
 // A Model provides all necessary runtime state.
 class Model {
@@ -43,6 +45,15 @@ class Model {
 
   // Returns whether any in-product help is currently showing.
   virtual bool IsCurrentlyShowing() const = 0;
+
+  // Retrieves the Event object for the event with the given name. If the event
+  // is not found, an empty event will be returned. Calling this before the
+  // Model has finished initializing will result in undefined behavior.
+  virtual const Event& GetEvent(const std::string& event_name) = 0;
+
+  // Increments the counter for today for how many times the event has happened.
+  // If the event has never happened before, the Event object will be created.
+  virtual void IncrementEvent(const std::string& event_name) = 0;
 
  protected:
   Model() = default;

@@ -8,7 +8,9 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/in_memory_store.h"
@@ -36,7 +38,7 @@ void RegisterFeatureConfig(EditableConfiguration* configuration,
 
 class FeatureEngagementTrackerImplTest : public ::testing::Test {
  public:
-  void SetUp() override {
+  FeatureEngagementTrackerImplTest() {
     std::unique_ptr<Store> store = base::MakeUnique<InMemoryStore>();
     std::unique_ptr<EditableConfiguration> configuration =
         base::MakeUnique<EditableConfiguration>();
@@ -52,9 +54,12 @@ class FeatureEngagementTrackerImplTest : public ::testing::Test {
 
     tracker_.reset(new FeatureEngagementTrackerImpl(
         std::move(store), std::move(configuration), std::move(validator)));
+    // Ensure all initialization is finished.
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
+  base::MessageLoop message_loop_;
   std::unique_ptr<FeatureEngagementTrackerImpl> tracker_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

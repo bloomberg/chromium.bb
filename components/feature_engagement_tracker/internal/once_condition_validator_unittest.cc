@@ -4,11 +4,14 @@
 
 #include "components/feature_engagement_tracker/internal/once_condition_validator.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement_tracker/internal/editable_configuration.h"
 #include "components/feature_engagement_tracker/internal/model.h"
+#include "components/feature_engagement_tracker/internal/proto/event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement_tracker {
@@ -44,17 +47,22 @@ class TestModel : public Model {
 
   EditableConfiguration& GetConfiguration() { return configuration_; }
 
+  const Event& GetEvent(const std::string& event_name) override {
+    return empty_event_;
+  }
+
+  void IncrementEvent(const std::string& event_name) override {}
+
  private:
   EditableConfiguration configuration_;
+  Event empty_event_;
   bool ready_;
   bool is_showing_;
 };
 
 class OnceConditionValidatorTest : public ::testing::Test {
  public:
-  OnceConditionValidatorTest() = default;
-
-  void SetUp() override {
+  OnceConditionValidatorTest() {
     // By default, model should be ready.
     model_.SetIsReady(true);
   }
