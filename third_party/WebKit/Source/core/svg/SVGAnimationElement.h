@@ -137,6 +137,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   // http://www.w3.org/TR/SVG/animate.html#ValuesAttribute .
   static bool ParseValues(const String&, Vector<String>& result);
 
+  void InvalidatedValuesCache();
   void AnimationAttributeChanged() override;
 
  private:

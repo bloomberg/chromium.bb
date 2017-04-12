@@ -221,11 +221,15 @@ void SVGAnimationElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGSMILElement::SvgAttributeChanged(attr_name);
 }
 
+void SVGAnimationElement::InvalidatedValuesCache() {
+  last_values_animation_from_ = String();
+  last_values_animation_to_ = String();
+}
+
 void SVGAnimationElement::AnimationAttributeChanged() {
   // Assumptions may not hold after an attribute change.
   animation_valid_ = false;
-  last_values_animation_from_ = String();
-  last_values_animation_to_ = String();
+  InvalidatedValuesCache();
   SetInactive();
 }
 

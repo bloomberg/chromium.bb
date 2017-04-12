@@ -581,6 +581,7 @@ void SVGAnimateElement::SetAttributeType(const AtomicString& attribute_type) {
 
 void SVGAnimateElement::ResetAnimatedPropertyType() {
   DCHECK(!animated_value_);
+  InvalidatedValuesCache();
   from_property_.Clear();
   to_property_.Clear();
   to_at_end_of_duration_property_.Clear();
