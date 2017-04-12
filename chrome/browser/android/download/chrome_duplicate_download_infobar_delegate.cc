@@ -19,13 +19,14 @@
 namespace {
 
 void CreateNewFileDone(
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback,
-    const base::FilePath& target_path, bool verified) {
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+    PathValidationResult result,
+    const base::FilePath& target_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (verified)
-    callback.Run(target_path);
+  if (result == PathValidationResult::SUCCESS)
+    callback.Run(DownloadConfirmationResult::CONFIRMED, target_path);
   else
-    callback.Run(base::FilePath());
+    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
 }
 
 }  // namespace
@@ -44,7 +45,7 @@ void ChromeDuplicateDownloadInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     content::DownloadItem* download_item,
     const base::FilePath& file_path,
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
   infobar_service->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(
       base::WrapUnique(new ChromeDuplicateDownloadInfoBarDelegate(
           download_item, file_path, callback))));
@@ -59,7 +60,7 @@ void ChromeDuplicateDownloadInfoBarDelegate::OnDownloadDestroyed(
 ChromeDuplicateDownloadInfoBarDelegate::ChromeDuplicateDownloadInfoBarDelegate(
     content::DownloadItem* download_item,
     const base::FilePath& file_path,
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback&
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback&
         file_selected_callback)
     : download_item_(download_item),
       file_path_(file_path),
@@ -95,7 +96,8 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Cancel() {
   if (!download_item_)
     return true;
 
-  file_selected_callback_.Run(base::FilePath());
+  file_selected_callback_.Run(DownloadConfirmationResult::CANCELED,
+                              base::FilePath());
   // TODO(qinmin): rename this histogram enum.
   DownloadController::RecordDownloadCancelReason(
       DownloadController::CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED);

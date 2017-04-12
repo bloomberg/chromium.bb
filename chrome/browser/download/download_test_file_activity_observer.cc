@@ -52,15 +52,17 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   }
 
  protected:
-  void PromptUserForDownloadPath(
-      content::DownloadItem* item,
-      const base::FilePath& suggested_path,
-      const FileSelectedCallback& callback) override {
+  void RequestConfirmation(content::DownloadItem* item,
+                           const base::FilePath& suggested_path,
+                           DownloadConfirmationReason reason,
+                           const ConfirmationCallback& callback) override {
     file_chooser_displayed_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, (file_chooser_enabled_ ? suggested_path
-                                                    : base::FilePath())));
+        FROM_HERE, base::Bind(callback,
+                              (file_chooser_enabled_
+                                   ? DownloadConfirmationResult::CONFIRMED
+                                   : DownloadConfirmationResult::CANCELED),
+                              suggested_path));
   }
 
   void OpenDownload(content::DownloadItem* item) override {}

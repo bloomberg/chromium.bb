@@ -4,6 +4,9 @@
 
 #include "chrome/browser/download/download_target_determiner.h"
 
+#include <string>
+#include <vector>
+
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -11,7 +14,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -42,11 +44,6 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/android/download/download_manager_service.h"
 #endif
 
 #if defined(OS_WIN)
@@ -83,28 +80,21 @@ bool g_is_adobe_reader_up_to_date_ = false;
 
 }  // namespace
 
-DownloadTargetInfo::DownloadTargetInfo()
-    : target_disposition(DownloadItem::TARGET_DISPOSITION_OVERWRITE),
-      danger_type(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
-      danger_level(DownloadFileType::NOT_DANGEROUS),
-      is_filetype_handled_safely(false) {}
-
-DownloadTargetInfo::~DownloadTargetInfo() {}
-
 DownloadTargetDeterminerDelegate::~DownloadTargetDeterminerDelegate() {
 }
 
 DownloadTargetDeterminer::DownloadTargetDeterminer(
     DownloadItem* download,
     const base::FilePath& initial_virtual_path,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
     const CompletionCallback& callback)
     : next_state_(STATE_GENERATE_TARGET_PATH),
-      should_prompt_(false),
+      confirmation_reason_(DownloadConfirmationReason::NONE),
       should_notify_extensions_(false),
       create_target_directory_(false),
-      conflict_action_(DownloadPathReservationTracker::OVERWRITE),
+      conflict_action_(conflict_action),
       danger_type_(download->GetDangerType()),
       danger_level_(DownloadFileType::NOT_DANGEROUS),
       virtual_path_(initial_virtual_path),
@@ -149,7 +139,7 @@ void DownloadTargetDeterminer::DoLoop() {
         result = DoReserveVirtualPath();
         break;
       case STATE_PROMPT_USER_FOR_DOWNLOAD_PATH:
-        result = DoPromptUserForDownloadPath();
+        result = DoRequestConfirmation();
         break;
       case STATE_DETERMINE_LOCAL_PATH:
         result = DoDetermineLocalPath();
@@ -182,16 +172,15 @@ void DownloadTargetDeterminer::DoLoop() {
   // determination and delete |this|.
 
   if (result == COMPLETE)
-    ScheduleCallbackAndDeleteSelf();
+    ScheduleCallbackAndDeleteSelf(content::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoGenerateTargetPath() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(local_path_.empty());
-  DCHECK(!should_prompt_);
+  DCHECK_EQ(confirmation_reason_, DownloadConfirmationReason::NONE);
   DCHECK(!should_notify_extensions_);
-  DCHECK_EQ(DownloadPathReservationTracker::OVERWRITE, conflict_action_);
   bool is_forced_path = !download_->GetForcedFilePath().empty();
 
   next_state_ = STATE_NOTIFY_EXTENSIONS;
@@ -200,7 +189,8 @@ DownloadTargetDeterminer::Result
     // The download is being resumed and the user has already been prompted for
     // a path. Assume that it's okay to overwrite the file if there's a conflict
     // and reuse the selection.
-    should_prompt_ = ShouldPromptForDownload(virtual_path_);
+    confirmation_reason_ = NeedsConfirmation(virtual_path_);
+    conflict_action_ = DownloadPathReservationTracker::OVERWRITE;
   } else if (!is_forced_path) {
     // If we don't have a forced path, we should construct a path for the
     // download. Forced paths are only specified for programmatic downloads
@@ -222,9 +212,9 @@ DownloadTargetDeterminer::Result
         suggested_filename,
         download_->GetMimeType(),
         default_filename);
-    should_prompt_ = ShouldPromptForDownload(generated_filename);
+    confirmation_reason_ = NeedsConfirmation(generated_filename);
     base::FilePath target_directory;
-    if (should_prompt_) {
+    if (confirmation_reason_ != DownloadConfirmationReason::NONE) {
       DCHECK(!download_prefs_->IsDownloadPathManaged());
       // If the user is going to be prompted and the user has been prompted
       // before, then always prefer the last directory that the user selected.
@@ -232,20 +222,10 @@ DownloadTargetDeterminer::Result
     } else {
       target_directory = download_prefs_->DownloadPath();
     }
-#if defined(OS_ANDROID)
-    // If |virtual_path_| is not empty, we are resuming a download which already
-    // has a target path. Don't prompt user in this case.
-    if (!virtual_path_.empty()) {
-      conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
-    } else {
-      conflict_action_ = DownloadPathReservationTracker::PROMPT;
-    }
-#else
-    conflict_action_ = DownloadPathReservationTracker::UNIQUIFY;
-#endif
     virtual_path_ = target_directory.Append(generated_filename);
     should_notify_extensions_ = true;
   } else {
+    conflict_action_ = DownloadPathReservationTracker::OVERWRITE;
     virtual_path_ = download_->GetForcedFilePath();
     // If this is a resumed download which was previously interrupted due to an
     // issue with the forced path, the user is still not prompted. If the path
@@ -325,39 +305,38 @@ DownloadTargetDeterminer::Result
 }
 
 void DownloadTargetDeterminer::ReserveVirtualPathDone(
-    const base::FilePath& path, bool verified) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    PathValidationResult result,
+    const base::FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "Reserved path: " << path.AsUTF8Unsafe()
-            << " Verified:" << verified;
+            << " Result:" << static_cast<int>(result);
   DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
-#if defined(OS_ANDROID)
-  if (!verified) {
-    if (path.empty()) {
-      DownloadManagerService::OnDownloadCanceled(
-          download_, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
-      CancelOnFailureAndDeleteSelf();
-      return;
-    }
-    if (!download_->GetWebContents()) {
-      // If we cannot reserve the path and the WebContent is already gone, there
-      // is no way to prompt user for an infobar. This could happen after chrome
-      // gets killed, and user tries to resume a download while another app has
-      // created the target file (not the temporary .crdownload file).
-      DownloadManagerService::OnDownloadCanceled(
-          download_,
-          DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
-      CancelOnFailureAndDeleteSelf();
-      return;
-    }
-  }
-#endif
-  should_prompt_ = (should_prompt_ || !verified);
+
   virtual_path_ = path;
+
+  switch (result) {
+    case PathValidationResult::SUCCESS:
+      break;
+
+    case PathValidationResult::PATH_NOT_WRITABLE:
+      confirmation_reason_ =
+          DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE;
+      break;
+
+    case PathValidationResult::NAME_TOO_LONG:
+      confirmation_reason_ = DownloadConfirmationReason::NAME_TOO_LONG;
+      break;
+
+    case PathValidationResult::CONFLICT:
+      confirmation_reason_ = DownloadConfirmationReason::TARGET_CONFLICT;
+      break;
+  }
+
   DoLoop();
 }
 
 DownloadTargetDeterminer::Result
-    DownloadTargetDeterminer::DoPromptUserForDownloadPath() {
+DownloadTargetDeterminer::DoRequestConfirmation() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path_.empty());
 
@@ -365,26 +344,35 @@ DownloadTargetDeterminer::Result
 
   // Avoid prompting for a download if it isn't in-progress. The user will be
   // prompted once the download is resumed and headers are available.
-  if (should_prompt_ && download_->GetState() == DownloadItem::IN_PROGRESS) {
-    delegate_->PromptUserForDownloadPath(
-        download_,
-        virtual_path_,
-        base::Bind(&DownloadTargetDeterminer::PromptUserForDownloadPathDone,
+  if (confirmation_reason_ != DownloadConfirmationReason::NONE &&
+      download_->GetState() == DownloadItem::IN_PROGRESS) {
+    delegate_->RequestConfirmation(
+        download_, virtual_path_, confirmation_reason_,
+        base::Bind(&DownloadTargetDeterminer::RequestConfirmationDone,
                    weak_ptr_factory_.GetWeakPtr()));
     return QUIT_DOLOOP;
   }
   return CONTINUE;
 }
 
-void DownloadTargetDeterminer::PromptUserForDownloadPathDone(
+void DownloadTargetDeterminer::RequestConfirmationDone(
+    DownloadConfirmationResult result,
     const base::FilePath& virtual_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << "User selected path:" << virtual_path.AsUTF8Unsafe();
-  if (virtual_path.empty()) {
-    CancelOnFailureAndDeleteSelf();
+  if (result == DownloadConfirmationResult::CANCELED) {
+    ScheduleCallbackAndDeleteSelf(
+        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return;
   }
+  DCHECK(!virtual_path.empty());
   DCHECK_EQ(STATE_DETERMINE_LOCAL_PATH, next_state_);
+
+  // If the user wasn't prompted, then we need to clear the
+  // confirmation_reason_. This way it's clear that user has not given consent
+  // to download this resource.
+  if (result == DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION)
+    confirmation_reason_ = DownloadConfirmationReason::NONE;
 
   virtual_path_ = virtual_path;
   download_prefs_->SetSaveFilePath(virtual_path_.DirName());
@@ -412,8 +400,12 @@ void DownloadTargetDeterminer::DetermineLocalPathDone(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << "Local path: " << local_path.AsUTF8Unsafe();
   if (local_path.empty()) {
-    // Path subsitution failed.
-    CancelOnFailureAndDeleteSelf();
+    // Path subsitution failed. Usually caused by something going wrong with the
+    // Google Drive logic (e.g. filesystem error while trying to create the
+    // cache file). We are going to return a generic error here since a more
+    // specific one is unlikely to be helpful to the user.
+    ScheduleCallbackAndDeleteSelf(
+        content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     return;
   }
   DCHECK_EQ(STATE_DETERMINE_MIME_TYPE, next_state_);
@@ -760,19 +752,23 @@ DownloadTargetDeterminer::Result
   return COMPLETE;
 }
 
-void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
+void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
+    content::DownloadInterruptReason result) {
   DCHECK(download_);
   DVLOG(20) << "Scheduling callback. Virtual:" << virtual_path_.AsUTF8Unsafe()
             << " Local:" << local_path_.AsUTF8Unsafe()
             << " Intermediate:" << intermediate_path_.AsUTF8Unsafe()
-            << " Should prompt:" << should_prompt_
+            << " Confirmation reason:" << static_cast<int>(confirmation_reason_)
             << " Danger type:" << danger_type_
-            << " Danger level:" << danger_level_;
+            << " Danger level:" << danger_level_
+            << " Result:" << static_cast<int>(result);
   std::unique_ptr<DownloadTargetInfo> target_info(new DownloadTargetInfo);
 
   target_info->target_path = local_path_;
+  target_info->result = result;
   target_info->target_disposition =
-      (HasPromptedForPath() || should_prompt_
+      (HasPromptedForPath() ||
+               confirmation_reason_ != DownloadConfirmationReason::NONE
            ? DownloadItem::TARGET_DISPOSITION_PROMPT
            : DownloadItem::TARGET_DISPOSITION_OVERWRITE);
   target_info->danger_type = danger_type_;
@@ -787,35 +783,30 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf() {
   delete this;
 }
 
-void DownloadTargetDeterminer::CancelOnFailureAndDeleteSelf() {
-  // Path substitution failed.
-  virtual_path_.clear();
-  local_path_.clear();
-  intermediate_path_.clear();
-  ScheduleCallbackAndDeleteSelf();
-}
-
 Profile* DownloadTargetDeterminer::GetProfile() const {
   DCHECK(download_->GetBrowserContext());
   return Profile::FromBrowserContext(download_->GetBrowserContext());
 }
 
-bool DownloadTargetDeterminer::ShouldPromptForDownload(
+DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
     const base::FilePath& filename) const {
-#if defined(OS_ANDROID)
-  // Don't prompt user about saving path on Android.
-  // TODO(qinmin): show an error toast to warn user in certain cases.
-  return false;
-#endif
   if (is_resumption_) {
     // For resumed downloads, if the target disposition or prefs require
     // prompting, the user has already been prompted. Try to respect the user's
     // selection, unless we've discovered that the target path cannot be used
     // for some reason.
     content::DownloadInterruptReason reason = download_->GetLastReason();
-    return (reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED ||
-            reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE ||
-            reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE);
+    switch (reason) {
+      case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+        return DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE;
+
+      case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+      case content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+        return DownloadConfirmationReason::TARGET_NO_SPACE;
+
+      default:
+        return DownloadConfirmationReason::NONE;
+    }
   }
 
   // If the download path is forced, don't prompt.
@@ -823,38 +814,38 @@ bool DownloadTargetDeterminer::ShouldPromptForDownload(
     // 'Save As' downloads shouldn't have a forced path.
     DCHECK(DownloadItem::TARGET_DISPOSITION_PROMPT !=
            download_->GetTargetDisposition());
-    return false;
+    return DownloadConfirmationReason::NONE;
   }
 
   // Don't ask where to save if the download path is managed. Even if the user
   // wanted to be prompted for "all" downloads, or if this was a 'Save As'
   // download.
   if (download_prefs_->IsDownloadPathManaged())
-    return false;
+    return DownloadConfirmationReason::NONE;
 
   // Prompt if this is a 'Save As' download.
   if (download_->GetTargetDisposition() ==
       DownloadItem::TARGET_DISPOSITION_PROMPT)
-    return true;
+    return DownloadConfirmationReason::SAVE_AS;
 
-  // Check if the user has the "Always prompt for download location" preference
-  // set. If so we prompt for most downloads except for the following scenarios:
-  // 1) Extension installation. Note that we only care here about the case where
-  //    an extension is installed, not when one is downloaded with "save as...".
-  // 2) Filetypes marked "always open." If the user just wants this file opened,
-  //    don't bother asking where to keep it.
-  if (download_prefs_->PromptForDownload() &&
-      !download_crx_util::IsExtensionDownload(*download_) &&
-      !filename.MatchesExtension(extensions::kExtensionFileExtension) &&
-      !download_prefs_->IsAutoOpenEnabledBasedOnExtension(filename))
-    return true;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Don't prompt for extension downloads.
+  if (download_crx_util::IsExtensionDownload(*download_) ||
+      filename.MatchesExtension(extensions::kExtensionFileExtension))
+    return DownloadConfirmationReason::NONE;
+#endif
 
-  // Otherwise, don't prompt. Note that the user might still be prompted if
-  // there are unresolved conflicts during path reservation (e.g. due to the
-  // target path being unwriteable or because there are too many conflicting
-  // files), or if an extension signals that the user be prompted on a filename
-  // conflict.
-  return false;
+  // Don't prompt for file types that are marked for opening automatically.
+  if (download_prefs_->IsAutoOpenEnabledBasedOnExtension(filename))
+    return DownloadConfirmationReason::NONE;
+
+  // For everything else, prompting is controlled by the PromptForDownload pref.
+  // The user may still be prompted even if this pref is disabled due to, for
+  // example, there being an unresolvable filename conflict or the target path
+  // is not writeable.
+  return download_prefs_->PromptForDownload()
+             ? DownloadConfirmationReason::PREFERENCE
+             : DownloadConfirmationReason::NONE;
 }
 
 bool DownloadTargetDeterminer::HasPromptedForPath() const {
@@ -869,7 +860,8 @@ DownloadFileType::DangerLevel DownloadTargetDeterminer::GetDangerLevel(
   // If the user has has been prompted or will be, assume that the user has
   // approved the download. A programmatic download is considered safe unless it
   // contains malware.
-  if (HasPromptedForPath() || should_prompt_ ||
+  if (HasPromptedForPath() ||
+      confirmation_reason_ != DownloadConfirmationReason::NONE ||
       !download_->GetForcedFilePath().empty())
     return DownloadFileType::NOT_DANGEROUS;
 
@@ -919,20 +911,23 @@ void DownloadTargetDeterminer::OnDownloadDestroyed(
     DownloadItem* download) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(download_, download);
-  CancelOnFailureAndDeleteSelf();
+  ScheduleCallbackAndDeleteSelf(
+      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
 }
 
 // static
-void DownloadTargetDeterminer::Start(content::DownloadItem* download,
-                                     const base::FilePath& initial_virtual_path,
-                                     DownloadPrefs* download_prefs,
-                                     DownloadTargetDeterminerDelegate* delegate,
-                                     const CompletionCallback& callback) {
+void DownloadTargetDeterminer::Start(
+    content::DownloadItem* download,
+    const base::FilePath& initial_virtual_path,
+    DownloadPathReservationTracker::FilenameConflictAction conflict_action,
+    DownloadPrefs* download_prefs,
+    DownloadTargetDeterminerDelegate* delegate,
+    const CompletionCallback& callback) {
   // DownloadTargetDeterminer owns itself and will self destruct when the job is
   // complete or the download item is destroyed. The callback is always invoked
   // asynchronously.
-  new DownloadTargetDeterminer(download, initial_virtual_path, download_prefs,
-                               delegate, callback);
+  new DownloadTargetDeterminer(download, initial_virtual_path, conflict_action,
+                               download_prefs, delegate, callback);
 }
 
 // static

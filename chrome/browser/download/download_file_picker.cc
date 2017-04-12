@@ -49,10 +49,9 @@ void RecordFilePickerResult(const base::FilePath& suggested_path,
 
 }  // namespace
 
-DownloadFilePicker::DownloadFilePicker(
-    DownloadItem* item,
-    const base::FilePath& suggested_path,
-    const FileSelectedCallback& callback)
+DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
+                                       const base::FilePath& suggested_path,
+                                       const ConfirmationCallback& callback)
     : suggested_path_(suggested_path),
       file_selected_callback_(callback),
       should_record_file_picker_result_(false) {
@@ -104,7 +103,10 @@ DownloadFilePicker::~DownloadFilePicker() {
 void DownloadFilePicker::OnFileSelected(const base::FilePath& path) {
   if (should_record_file_picker_result_)
     RecordFilePickerResult(suggested_path_, path);
-  file_selected_callback_.Run(path);
+  file_selected_callback_.Run(path.empty()
+                                  ? DownloadConfirmationResult::CANCELED
+                                  : DownloadConfirmationResult::CONFIRMED,
+                              path);
   delete this;
 }
 
@@ -123,7 +125,7 @@ void DownloadFilePicker::FileSelectionCanceled(void* params) {
 // static
 void DownloadFilePicker::ShowFilePicker(DownloadItem* item,
                                         const base::FilePath& suggested_path,
-                                        const FileSelectedCallback& callback) {
+                                        const ConfirmationCallback& callback) {
   new DownloadFilePicker(item, suggested_path, callback);
   // DownloadFilePicker deletes itself.
 }

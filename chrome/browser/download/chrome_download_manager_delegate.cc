@@ -59,6 +59,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/chrome_duplicate_download_infobar_delegate.h"
+#include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
 
@@ -193,6 +195,16 @@ enum DangerousFileReason {
   DANGEROUS_FILE_REASON_MAX
 };
 
+// On Android, Chrome wants to warn the user of file overwrites rather than
+// uniquify.
+#if defined(OS_ANDROID)
+const DownloadPathReservationTracker::FilenameConflictAction
+    kDefaultPlatformConflictAction = DownloadPathReservationTracker::PROMPT;
+#else
+const DownloadPathReservationTracker::FilenameConflictAction
+    kDefaultPlatformConflictAction = DownloadPathReservationTracker::UNIQUIFY;
+#endif
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -278,8 +290,7 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
   DownloadTargetDeterminer::Start(
       download,
       GetPlatformDownloadPath(profile_, download, PLATFORM_TARGET_PATH),
-      download_prefs_.get(),
-      this,
+      kDefaultPlatformConflictAction, download_prefs_.get(), this,
       target_determined_callback);
   return true;
 }
@@ -596,10 +607,8 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path.empty());
 #if defined(OS_CHROMEOS)
-  // TODO(asanka): Handle path reservations for virtual paths as well.
-  //               http://crbug.com/151618
   if (drive::util::IsUnderDriveMountPoint(virtual_path)) {
-    callback.Run(virtual_path, true);
+    callback.Run(PathValidationResult::SUCCESS, virtual_path);
     return;
   }
 #endif
@@ -612,23 +621,65 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
       callback);
 }
 
-void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
+void ChromeDownloadManagerDelegate::RequestConfirmation(
     DownloadItem* download,
     const base::FilePath& suggested_path,
-    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
+    DownloadConfirmationReason reason,
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
-  content::WebContents* web_contents = download->GetWebContents();
-  if (!web_contents) {
-    callback.Run(base::FilePath());
-    return;
+  switch (reason) {
+    case DownloadConfirmationReason::NONE:
+      NOTREACHED();
+      return;
+
+    case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
+      DownloadManagerService::OnDownloadCanceled(
+          download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+      return;
+
+    case DownloadConfirmationReason::NAME_TOO_LONG:
+    case DownloadConfirmationReason::TARGET_NO_SPACE:
+    // These are errors. But rather than cancel the download we are going to
+    // continue with the current path so that the download will get
+    // interrupted again.
+    //
+    // Ideally we'd allow the user to try another location, but on Android,
+    // the user doesn't have much of a choice (currently). So we skip the
+    // prompt and try the same location.
+
+    case DownloadConfirmationReason::SAVE_AS:
+    case DownloadConfirmationReason::PREFERENCE:
+      callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+                   suggested_path);
+      return;
+
+    case DownloadConfirmationReason::TARGET_CONFLICT:
+      if (download->GetWebContents()) {
+        chrome::android::ChromeDuplicateDownloadInfoBarDelegate::Create(
+            InfoBarService::FromWebContents(download->GetWebContents()),
+            download, suggested_path, callback);
+        return;
+      }
+    // Fallthrough
+
+    // If we cannot reserve the path and the WebContent is already gone, there
+    // is no way to prompt user for an infobar. This could happen after chrome
+    // gets killed, and user tries to resume a download while another app has
+    // created the target file (not the temporary .crdownload file).
+    case DownloadConfirmationReason::UNEXPECTED:
+      DownloadManagerService::OnDownloadCanceled(
+          download,
+          DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+      return;
   }
-  chrome::android::ChromeDuplicateDownloadInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), download,
-      suggested_path, callback);
-#else
+#else   // !OS_ANDROID
+  // Desktop Chrome displays a file picker for all confirmation needs. We can do
+  // better.
   DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);
-#endif
+#endif  // !OS_ANDROID
 }
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(
@@ -786,9 +837,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
   }
   callback.Run(target_info->target_path, target_info->target_disposition,
                target_info->danger_type, target_info->intermediate_path,
-               target_info->target_path.empty()
-                   ? content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
-                   : content::DOWNLOAD_INTERRUPT_REASON_NONE);
+               target_info->result);
 }
 
 bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(

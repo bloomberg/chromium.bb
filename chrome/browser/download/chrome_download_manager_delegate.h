@@ -8,9 +8,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
@@ -93,10 +96,6 @@ class ChromeDownloadManagerDelegate
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
  protected:
-  // So that test classes that inherit from this for override purposes
-  // can call back into the DownloadManager.
-  content::DownloadManager* download_manager_;
-
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();
 
@@ -110,9 +109,10 @@ class ChromeDownloadManagerDelegate
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       const ReservedPathCallback& callback) override;
-  void PromptUserForDownloadPath(content::DownloadItem* download,
-                                 const base::FilePath& suggested_virtual_path,
-                                 const FileSelectedCallback& callback) override;
+  void RequestConfirmation(content::DownloadItem* download,
+                           const base::FilePath& suggested_virtual_path,
+                           DownloadConfirmationReason reason,
+                           const ConfirmationCallback& callback) override;
   void DetermineLocalPath(content::DownloadItem* download,
                           const base::FilePath& virtual_path,
                           const LocalPathCallback& callback) override;
@@ -122,8 +122,14 @@ class ChromeDownloadManagerDelegate
   void GetFileMimeType(const base::FilePath& path,
                        const GetFileMimeTypeCallback& callback) override;
 
+  // So that test classes that inherit from this for override purposes
+  // can call back into the DownloadManager.
+  content::DownloadManager* download_manager_;
+
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
+  FRIEND_TEST_ALL_PREFIXES(ChromeDownloadManagerDelegateTest,
+                           RequestConfirmation_Android);
 
   typedef std::vector<content::DownloadIdCallback> IdCallbackVector;
 

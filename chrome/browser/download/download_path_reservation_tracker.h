@@ -15,6 +15,13 @@ namespace content {
 class DownloadItem;
 }
 
+enum class PathValidationResult {
+  SUCCESS,
+  PATH_NOT_WRITABLE,
+  NAME_TOO_LONG,
+  CONFLICT
+};
+
 // Chrome attempts to uniquify filenames that are assigned to downloads in order
 // to avoid overwriting files that already exist on the file system. Downloads
 // that are considered potentially dangerous use random intermediate filenames.
@@ -24,16 +31,16 @@ class DownloadItem;
 class DownloadPathReservationTracker {
  public:
   // Callback used with |GetReservedPath|. |target_path| specifies the target
-  // path for the download. |target_path_verified| is true if all of the
-  // following is true:
+  // path for the download. If |result| is SUCCESS then:
   // - |requested_target_path| (passed into GetReservedPath()) was writeable.
   // - |target_path| was verified as being unique if uniqueness was
   //   required.
   //
   // If |requested_target_path| was not writeable, then the parent directory of
   // |target_path| may be different from that of |requested_target_path|.
-  typedef base::Callback<void(const base::FilePath& target_path,
-                              bool target_path_verified)> ReservedPathCallback;
+  using ReservedPathCallback =
+      base::Callback<void(PathValidationResult result,
+                          const base::FilePath& target_path)>;
 
   // The largest index for the uniquification suffix that we will try while
   // attempting to come up with a unique path.

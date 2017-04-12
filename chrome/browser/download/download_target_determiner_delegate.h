@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_DETERMINER_DELEGATE_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_DETERMINER_DELEGATE_H_
 
-#include "base/callback_forward.h"
+#include <string>
 
+#include "base/callback_forward.h"
+#include "chrome/browser/download/download_confirmation_reason.h"
+#include "chrome/browser/download/download_confirmation_result.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "content/public/browser/download_danger_type.h"
 
@@ -33,20 +36,18 @@ class DownloadTargetDeterminerDelegate {
       DownloadPathReservationTracker::FilenameConflictAction conflict_action)>
   NotifyExtensionsCallback;
 
-  // Callback to be invoked when ReserveVirtualPath() completes. If the path
-  // reservation is successful, then |successful| should be true and
-  // |reserved_path| should contain the reserved path. Otherwise, |successful|
-  // should be false. In the failure case, |reserved_path| is ignored.
-  typedef base::Callback<void(const base::FilePath& reserved_path,
-                              bool successful)> ReservedPathCallback;
+  // Callback to be invoked when ReserveVirtualPath() completes.
+  using ReservedPathCallback =
+      DownloadPathReservationTracker::ReservedPathCallback;
 
-  // Callback to be invoked when PromptUserForDownloadPath() completes.
+  // Callback to be invoked when RequestConfirmation() completes.
   // |virtual_path|: The path chosen by the user. If the user cancels the file
   //    selection, then this parameter will be the empty path. On Chrome OS,
   //    this path may contain virtual mount points if the user chose a virtual
   //    path (e.g. Google Drive).
-  typedef base::Callback<void(const base::FilePath& virtual_path)>
-  FileSelectedCallback;
+  typedef base::Callback<void(DownloadConfirmationResult,
+                              const base::FilePath& virtual_path)>
+      ConfirmationCallback;
 
   // Callback to be invoked when DetermineLocalPath() completes. The argument
   // should be the determined local path. It should be non-empty on success. If
@@ -94,10 +95,10 @@ class DownloadTargetDeterminerDelegate {
 
   // Display a prompt to the user requesting that a download target be chosen.
   // Should invoke |callback| upon completion.
-  virtual void PromptUserForDownloadPath(
-      content::DownloadItem* download,
-      const base::FilePath& virtual_path,
-      const FileSelectedCallback& callback) = 0;
+  virtual void RequestConfirmation(content::DownloadItem* download,
+                                   const base::FilePath& virtual_path,
+                                   DownloadConfirmationReason reason,
+                                   const ConfirmationCallback& callback) = 0;
 
   // If |virtual_path| is not a local path, should return a possibly temporary
   // local path to use for storing the downloaded file. If |virtual_path| is
@@ -116,6 +117,7 @@ class DownloadTargetDeterminerDelegate {
   // Get the MIME type for the given file.
   virtual void GetFileMimeType(const base::FilePath& path,
                                const GetFileMimeTypeCallback& callback) = 0;
+
  protected:
   virtual ~DownloadTargetDeterminerDelegate();
 };

@@ -5,8 +5,13 @@
 #include "chrome/browser/download/download_browsertest.h"
 
 #include <stdint.h>
+
+#include <memory>
+#include <set>
 #include <sstream>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -481,12 +486,12 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   // Location of the file source (the place from which it is downloaded).
-  base::FilePath OriginFile(base::FilePath file) {
+  base::FilePath OriginFile(const base::FilePath& file) {
     return test_dir_.Append(file);
   }
 
   // Location of the file destination (place to which it is downloaded).
-  base::FilePath DestinationFile(Browser* browser, base::FilePath file) {
+  base::FilePath DestinationFile(Browser* browser, const base::FilePath& file) {
     return GetDownloadDirectory(browser).Append(file.BaseName());
   }
 
@@ -1112,6 +1117,7 @@ class FakeSafeBrowsingService
     return nullptr;
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
 
@@ -2950,22 +2956,24 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
   };
 
   std::vector<DownloadItem*> download_items;
-  base::FilePath origin(FILE_PATH_LITERAL("origin"));
-  ASSERT_TRUE(base::CreateDirectory(DestinationFile(browser(), origin)));
+  base::FilePath origin_directory =
+      GetDownloadDirectory(browser()).Append(FILE_PATH_LITERAL("origin"));
+  ASSERT_TRUE(base::CreateDirectory(origin_directory));
 
   for (size_t index = 0; index < arraysize(kCrazyFilenames); ++index) {
+    SCOPED_TRACE(testing::Message() << "Index " << index);
     base::string16 crazy16;
     std::string crazy8;
     const wchar_t* crazy_w = kCrazyFilenames[index];
     ASSERT_TRUE(base::WideToUTF8(crazy_w, wcslen(crazy_w), &crazy8));
     ASSERT_TRUE(base::WideToUTF16(crazy_w, wcslen(crazy_w), &crazy16));
-    base::FilePath file_path(DestinationFile(browser(), origin.Append(
+    base::FilePath file_path(origin_directory.Append(
 #if defined(OS_WIN)
-            crazy16
+        crazy16
 #elif defined(OS_POSIX)
-            crazy8
+        crazy8
 #endif
-        )));
+        ));
 
     // Create the file.
     EXPECT_EQ(static_cast<int>(crazy8.size()),
@@ -3042,8 +3050,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   // Write a huge file.
-  base::FilePath file_path(DestinationFile(
-      browser(), base::FilePath(FILE_PATH_LITERAL("DownloadTest_BigZip.zip"))));
+  base::FilePath file_path(
+      GetDownloadDirectory(browser()).AppendASCII("source").AppendASCII(
+          "DownloadTest_BigZip.zip"));
+  ASSERT_TRUE(CreateDirectory(file_path.DirName()));
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   ASSERT_TRUE(file.IsValid());
   int64_t size = 1 << 25;
