@@ -44,7 +44,7 @@ static NSString* const kHostPreferencesPairSecretKey = @"PairSecret";
   NSError* keychainError =
       remoting::ios::WriteHostPreferencesToKeychain(writeData);
 
-  DLOG_IF(ERROR, !keychainError) << "Could not write to keychain.";
+  LOG_IF(ERROR, !keychainError) << "Could not write to keychain.";
 }
 
 + (HostPreferences*)hostForId:(NSString*)hostId {
