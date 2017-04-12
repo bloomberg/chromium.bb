@@ -31,6 +31,10 @@
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/payments/android/web_app_manifest_section_table.h"
+#endif
+
 namespace {
 
 void InitSyncableServicesOnDBThread(
@@ -86,13 +90,17 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 
   // All tables objects that participate in managing the database must
   // be added here.
-  web_database_->AddTable(base::WrapUnique(new autofill::AutofillTable));
-  web_database_->AddTable(base::WrapUnique(new KeywordTable));
+  web_database_->AddTable(base::MakeUnique<autofill::AutofillTable>());
+  web_database_->AddTable(base::MakeUnique<KeywordTable>());
   // TODO(mdm): We only really need the LoginsTable on Windows for IE7 password
   // access, but for now, we still create it on all platforms since it deletes
   // the old logins table. We can remove this after a while, e.g. in M22 or so.
-  web_database_->AddTable(base::WrapUnique(new LoginsTable));
-  web_database_->AddTable(base::WrapUnique(new TokenServiceTable));
+  web_database_->AddTable(base::MakeUnique<LoginsTable>());
+  web_database_->AddTable(base::MakeUnique<TokenServiceTable>());
+#if defined(OS_ANDROID)
+  web_database_->AddTable(
+      base::MakeUnique<payments::WebAppManifestSectionTable>());
+#endif
   web_database_->LoadDatabase();
 
   autofill_web_data_ = new autofill::AutofillWebDataService(

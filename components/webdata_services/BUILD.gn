@@ -21,6 +21,10 @@ static_library("webdata_services") {
     "//components/webdata/common",
     "//sql",
   ]
+
+  if (is_android) {
+    deps += [ "//components/payments/android" ]
+  }
 }
 
 static_library("test_support") {
