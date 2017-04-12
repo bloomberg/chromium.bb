@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -135,8 +134,7 @@ SearchGeolocationService::SearchGeolocationService(Profile* profile)
     : profile_(profile),
       pref_service_(profile_->GetPrefs()),
       host_content_settings_map_(
-          HostContentSettingsMapFactory::GetForProfile(profile_)),
-      location_settings_(new LocationSettingsImpl()) {
+          HostContentSettingsMapFactory::GetForProfile(profile_)) {
   // This class should never be constructed in incognito.
   DCHECK(!profile_->IsOffTheRecord());
 
@@ -172,9 +170,6 @@ bool SearchGeolocationService::UseDSEGeolocationSetting(
       GetCurrentContentSetting() == CONTENT_SETTING_ASK) {
     return false;
   }
-
-  if (!location_settings_->HasAndroidLocationPermission())
-    return false;
 
   return true;
 }
@@ -323,9 +318,4 @@ void SearchGeolocationService::SetSearchEngineDelegateForTest(
   delegate_ = std::move(delegate);
   delegate_->SetDSEChangedCallback(base::Bind(
       &SearchGeolocationService::OnDSEChanged, base::Unretained(this)));
-}
-
-void SearchGeolocationService::SetLocationSettingsForTest(
-    std::unique_ptr<LocationSettings> settings) {
-  location_settings_ = std::move(settings);
 }

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/android/mock_location_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -77,12 +76,6 @@ class SearchGeolocationServiceTest : public testing::Test {
     auto test_delegate = base::MakeUnique<TestSearchEngineDelegate>();
     test_delegate_ = test_delegate.get();
     GetService()->SetSearchEngineDelegateForTest(std::move(test_delegate));
-
-    auto mock_settings = base::MakeUnique<MockLocationSettings>();
-    mock_settings->SetLocationStatus(
-        true /* has_android_location_permission */,
-        true /* is_system_location_setting_enabled */);
-    GetService()->SetLocationSettingsForTest(std::move(mock_settings));
   }
 
   void TearDown() override {
@@ -155,8 +148,7 @@ TEST_F(SearchGeolocationServiceTest, Initialization) {
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
 
-  // Nothing happens if the pref is already set when the service is
-  // initialized.
+  // Nothing happens if the pref is already set when the service is initialized.
   SetContentSetting(kGoogleURL, CONTENT_SETTING_ASK);
   ReinitializeService(false /* clear_pref */);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));

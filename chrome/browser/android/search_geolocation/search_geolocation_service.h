@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/android/location_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -147,13 +146,10 @@ class SearchGeolocationService : public KeyedService {
   void SetSearchEngineDelegateForTest(
       std::unique_ptr<SearchEngineDelegate> delegate);
 
-  void SetLocationSettingsForTest(std::unique_ptr<LocationSettings> settings);
-
   Profile* profile_;
   PrefService* pref_service_;
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<SearchEngineDelegate> delegate_;
-  std::unique_ptr<LocationSettings> location_settings_;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SEARCH_GEOLOCATION_SEARCH_GEOLOCATION_SERVICE_H_

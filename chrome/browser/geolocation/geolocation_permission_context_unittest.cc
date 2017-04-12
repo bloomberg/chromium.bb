@@ -1340,8 +1340,6 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
       SearchGeolocationService::Factory::GetForBrowserContext(profile());
   geo_service->SetSearchEngineDelegateForTest(
       base::MakeUnique<TestSearchEngineDelegate>());
-  geo_service->SetLocationSettingsForTest(
-      base::MakeUnique<MockLocationSettings>());
 
   Profile* otr_profile = profile()->GetOffTheRecordProfile();
 
