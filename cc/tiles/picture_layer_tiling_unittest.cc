@@ -65,7 +65,6 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
     return PriorityRectType::VISIBLE_RECT;
   }
 
-  using PictureLayerTiling::RemoveTileAt;
   using PictureLayerTiling::RemoveTilesInRegion;
   using PictureLayerTiling::ComputePriorityRectTypeForTile;
 

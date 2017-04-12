@@ -124,7 +124,7 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
       }
     }
   }
-  VerifyLiveTilesRect(false);
+  VerifyLiveTilesRect();
 }
 
 void PictureLayerTiling::TakeTilesAndPropertiesFrom(
@@ -158,7 +158,7 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
   if (create_missing_tiles)
     CreateMissingTilesInLiveTilesRect();
 
-  VerifyLiveTilesRect(false);
+  VerifyLiveTilesRect();
 
   SetTilePriorityRects(pending_twin->current_content_to_screen_scale_,
                        pending_twin->current_visible_rect_,
@@ -221,11 +221,11 @@ void PictureLayerTiling::SetRasterSourceAndResize(
   // Drop tiles outside the new layer bounds if the layer shrank.
   for (int i = after_right + 1; i <= before_right; ++i) {
     for (int j = before_top; j <= before_bottom; ++j)
-      RemoveTileAt(i, j);
+      TakeTileAt(i, j);
   }
   for (int i = before_left; i <= after_right; ++i) {
     for (int j = after_bottom + 1; j <= before_bottom; ++j)
-      RemoveTileAt(i, j);
+      TakeTileAt(i, j);
   }
 
   if (after_right > before_right) {
@@ -555,14 +555,6 @@ std::unique_ptr<Tile> PictureLayerTiling::TakeTileAt(int i, int j) {
   return result;
 }
 
-bool PictureLayerTiling::RemoveTileAt(int i, int j) {
-  TileMap::iterator found = tiles_.find(TileMapKey(i, j));
-  if (found == tiles_.end())
-    return false;
-  tiles_.erase(found);
-  return true;
-}
-
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
   tiles_.clear();
@@ -649,14 +641,14 @@ void PictureLayerTiling::SetLiveTilesRect(
   for (TilingData::DifferenceIterator iter(&tiling_data_, live_tiles_rect_,
                                            new_live_tiles_rect);
        iter; ++iter) {
-    RemoveTileAt(iter.index_x(), iter.index_y());
+    TakeTileAt(iter.index_x(), iter.index_y());
   }
 
   // We don't rasterize non ideal resolution tiles, so there is no need to
   // create any new tiles.
   if (resolution_ == NON_IDEAL_RESOLUTION) {
     live_tiles_rect_.Intersect(new_live_tiles_rect);
-    VerifyLiveTilesRect(false);
+    VerifyLiveTilesRect();
     return;
   }
 
@@ -670,14 +662,13 @@ void PictureLayerTiling::SetLiveTilesRect(
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
-  VerifyLiveTilesRect(false);
+  VerifyLiveTilesRect();
 }
 
-void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
+void PictureLayerTiling::VerifyLiveTilesRect() const {
 #if DCHECK_IS_ON()
   for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
-    if (!it->second)
-      continue;
+    DCHECK(it->second);
     TileMapKey key = it->first;
     DCHECK(key.index_x < tiling_data_.num_tiles_x())
         << this << " " << key.index_x << "," << key.index_y << " num_tiles_x "

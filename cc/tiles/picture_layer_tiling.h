@@ -288,11 +288,11 @@ class CC_EXPORT PictureLayerTiling {
       std::unordered_map<TileMapKey, std::unique_ptr<Tile>, TileMapKeyHash>;
 
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
-  void VerifyLiveTilesRect(bool is_on_recycle_tree) const;
+  void VerifyLiveTilesRect() const;
   Tile* CreateTile(const Tile::CreateInfo& info);
+  // Removes the tile at i, j and returns it. Returns nullptr if the tile did
+  // not exist.
   std::unique_ptr<Tile> TakeTileAt(int i, int j);
-  // Returns true if the Tile existed and was removed from the tiling.
-  bool RemoveTileAt(int i, int j);
   bool TilingMatchesTileIndices(const PictureLayerTiling* twin) const;
 
   // Save the required data for computing tile priorities later.
