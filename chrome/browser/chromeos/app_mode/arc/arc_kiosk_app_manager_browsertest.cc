@@ -158,12 +158,13 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     waiter.Wait();
     EXPECT_TRUE(waiter.was_notified());
 
-    ArcKioskAppManager::ArcKioskApps apps = manager()->GetAllApps();
+    ArcKioskAppManager::Apps apps;
+    manager()->GetAllApps(&apps);
     ASSERT_EQ(2u, apps.size());
-    ASSERT_EQ(app1, apps[0].app_info());
-    ASSERT_EQ(app2, apps[1].app_info());
-    ASSERT_EQ(app1.package_name(), apps[0].name());
-    ASSERT_EQ(app2.display_name(), apps[1].name());
+    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
+    ASSERT_EQ(app2.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->name());
+    ASSERT_EQ(app2.display_name(), apps[1]->name());
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
     EXPECT_FALSE(manager()->current_app_was_auto_launched_with_zero_delay());
   }
@@ -178,15 +179,16 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     EXPECT_TRUE(waiter.was_notified());
 
     EXPECT_TRUE(manager()->GetAutoLaunchAccountId().is_valid());
-    ASSERT_EQ(2u, manager()->GetAllApps().size());
 
-    ArcKioskAppManager::ArcKioskApps apps = manager()->GetAllApps();
-    ASSERT_EQ(app1, apps[0].app_info());
-    ASSERT_EQ(app2, apps[1].app_info());
-    ASSERT_EQ(app1.package_name(), apps[0].name());
-    ASSERT_EQ(app2.display_name(), apps[1].name());
+    ArcKioskAppManager::Apps apps;
+    manager()->GetAllApps(&apps);
+    ASSERT_EQ(2u, apps.size());
+    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
+    ASSERT_EQ(app2.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->name());
+    ASSERT_EQ(app2.display_name(), apps[1]->name());
     EXPECT_TRUE(manager()->GetAutoLaunchAccountId().is_valid());
-    ASSERT_EQ(apps[1].account_id(), manager()->GetAutoLaunchAccountId());
+    ASSERT_EQ(apps[1]->account_id(), manager()->GetAutoLaunchAccountId());
     EXPECT_TRUE(manager()->current_app_was_auto_launched_with_zero_delay());
   }
 
@@ -201,12 +203,13 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     waiter.Wait();
     EXPECT_TRUE(waiter.was_notified());
 
-    ArcKioskAppManager::ArcKioskApps apps = manager()->GetAllApps();
+    ArcKioskAppManager::Apps apps;
+    manager()->GetAllApps(&apps);
     ASSERT_EQ(2u, apps.size());
-    ASSERT_EQ(app1, apps[0].app_info());
-    ASSERT_EQ(app3, apps[1].app_info());
-    ASSERT_EQ(app1.package_name(), apps[0].name());
-    ASSERT_EQ(app3.package_name(), apps[1].name());
+    ASSERT_EQ(app1.package_name(), apps[0]->app_id());
+    ASSERT_EQ(app3.package_name(), apps[1]->app_id());
+    ASSERT_EQ(app1.package_name(), apps[0]->name());
+    ASSERT_EQ(app3.package_name(), apps[1]->name());
     // Auto launch app must be reset.
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
     EXPECT_FALSE(manager()->current_app_was_auto_launched_with_zero_delay());
@@ -220,7 +223,9 @@ IN_PROC_BROWSER_TEST_F(ArcKioskAppManagerTest, Basic) {
     waiter.Wait();
     EXPECT_TRUE(waiter.was_notified());
 
-    ASSERT_EQ(0u, manager()->GetAllApps().size());
+    ArcKioskAppManager::Apps apps;
+    manager()->GetAllApps(&apps);
+    ASSERT_EQ(0u, apps.size());
     EXPECT_FALSE(manager()->GetAutoLaunchAccountId().is_valid());
   }
 }

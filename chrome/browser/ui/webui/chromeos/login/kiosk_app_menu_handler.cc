@@ -129,21 +129,27 @@ void KioskAppMenuHandler::SendKioskApps() {
     apps_list.Append(std::move(app_info));
   }
 
-  const auto& arc_apps = ArcKioskAppManager::Get()->GetAllApps();
+  ArcKioskAppManager::Apps arc_apps;
+  ArcKioskAppManager::Get()->GetAllApps(&arc_apps);
   for (size_t i = 0; i < arc_apps.size(); ++i) {
     std::unique_ptr<base::DictionaryValue> app_info(
         new base::DictionaryValue());
     app_info->SetBoolean("isApp", true);
     app_info->SetBoolean("isAndroidApp", true);
-    app_info->SetString("id", arc_apps[i].app_info().package_name());
+    app_info->SetString("id", arc_apps[i]->app_id());
     app_info->SetString("account_email",
-                        arc_apps[i].account_id().GetUserEmail());
-    app_info->SetString("label", arc_apps[i].name());
+                        arc_apps[i]->account_id().GetUserEmail());
+    app_info->SetString("label", arc_apps[i]->name());
 
-    std::string icon_url =
-        webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
-                                     .GetImageNamed(IDR_APP_DEFAULT_ICON)
-                                     .ToSkBitmap());
+    std::string icon_url;
+    if (arc_apps[i]->icon().isNull()) {
+      icon_url =
+          webui::GetBitmapDataUrl(*ResourceBundle::GetSharedInstance()
+                                       .GetImageNamed(IDR_APP_DEFAULT_ICON)
+                                       .ToSkBitmap());
+    } else {
+      icon_url = webui::GetBitmapDataUrl(*arc_apps[i]->icon().bitmap());
+    }
     app_info->SetString("iconUrl", icon_url);
 
     apps_list.Append(std::move(app_info));
