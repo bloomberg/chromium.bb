@@ -13,10 +13,12 @@ addEventListener('unhandledrejection', function(e) {
 
 function finishTest() {
     setTimeout(function() {
-        if (window.testRunner) {
-            testRunner.notifyDone();
-        }
-    }, 1);
+        setTimeout(function() {
+            if (window.testRunner) {
+                testRunner.notifyDone();
+            }
+        }, 0);
+    }, 0);
 };
 </script>
 <script src='http://localhost:8000/security/resources/promise-access-control.php?allow=false' onload='finishTest()'></script>
