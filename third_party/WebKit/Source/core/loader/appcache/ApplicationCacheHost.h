@@ -31,12 +31,12 @@
 #ifndef ApplicationCacheHost_h
 #define ApplicationCacheHost_h
 
+#include <memory>
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 class ApplicationCache;

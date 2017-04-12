@@ -35,9 +35,9 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceResponse.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

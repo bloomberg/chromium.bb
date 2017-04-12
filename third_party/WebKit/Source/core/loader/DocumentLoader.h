@@ -50,9 +50,9 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/SubstituteData.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
-#include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
 
 #include <memory>
 

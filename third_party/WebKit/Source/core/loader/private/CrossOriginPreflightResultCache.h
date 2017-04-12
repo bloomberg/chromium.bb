@@ -30,9 +30,9 @@
 #include <memory>
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURLHash.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

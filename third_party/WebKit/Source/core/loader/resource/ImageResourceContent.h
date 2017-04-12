@@ -16,9 +16,9 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/AutoReset.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

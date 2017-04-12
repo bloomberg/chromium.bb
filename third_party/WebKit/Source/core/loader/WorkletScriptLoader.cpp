@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/loader/FrameFetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "wtf/WTF.h"
+#include "platform/wtf/WTF.h"
 
 namespace blink {
 

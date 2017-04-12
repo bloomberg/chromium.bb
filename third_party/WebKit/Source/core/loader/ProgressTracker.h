@@ -31,10 +31,10 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

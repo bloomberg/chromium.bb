@@ -77,11 +77,11 @@
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "wtf/Assertions.h"
-#include "wtf/AutoReset.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -8,7 +8,7 @@
 #include "core/frame/Frame.h"
 #include "platform/heap/Persistent.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

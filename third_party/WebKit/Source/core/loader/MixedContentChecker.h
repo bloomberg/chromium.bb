@@ -36,9 +36,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

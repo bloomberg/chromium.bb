@@ -45,10 +45,10 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/FormDataEncoder.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 

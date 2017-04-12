@@ -48,14 +48,14 @@
 #include "platform/testing/ScopedMockedURL.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/Base64.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/Base64.h"
 
 namespace blink {
 

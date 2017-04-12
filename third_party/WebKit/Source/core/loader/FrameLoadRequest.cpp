@@ -5,8 +5,8 @@
 #include "core/loader/FrameLoadRequest.h"
 
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

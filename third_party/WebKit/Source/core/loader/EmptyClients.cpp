@@ -37,12 +37,12 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/FileChooser.h"
 #include "platform/FrameViewBase.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

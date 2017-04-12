@@ -30,7 +30,7 @@
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 class CSSStyleSheetResource;

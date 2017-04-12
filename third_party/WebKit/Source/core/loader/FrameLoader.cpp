@@ -94,12 +94,12 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "wtf/AutoReset.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
 
 using blink::WebURLRequest;
 

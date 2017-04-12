@@ -30,8 +30,8 @@
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

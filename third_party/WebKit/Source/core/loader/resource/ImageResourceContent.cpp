@@ -17,9 +17,9 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/PlaceholderImage.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 namespace {

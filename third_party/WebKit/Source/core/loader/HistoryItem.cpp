@@ -28,9 +28,9 @@
 #include "core/html/forms/FormController.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

@@ -31,11 +31,11 @@
 #ifndef TextResourceDecoderBuilder_h
 #define TextResourceDecoderBuilder_h
 
-#include "core/html/parser/TextResourceDecoder.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 #include <memory>
+#include "core/html/parser/TextResourceDecoder.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

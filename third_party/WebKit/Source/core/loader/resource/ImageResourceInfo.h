@@ -10,7 +10,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

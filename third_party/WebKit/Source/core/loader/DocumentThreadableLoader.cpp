@@ -57,11 +57,11 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

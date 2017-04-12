@@ -23,15 +23,15 @@
 #ifndef ImageLoader_h
 #define ImageLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
-#include "wtf/WeakPtr.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/WeakPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

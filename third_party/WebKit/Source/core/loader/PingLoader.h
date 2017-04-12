@@ -32,15 +32,15 @@
 #ifndef PingLoader_h
 #define PingLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebURLLoaderClient.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

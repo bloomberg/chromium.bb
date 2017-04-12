@@ -13,7 +13,7 @@
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 #ifndef HttpEquiv_h
 #define HttpEquiv_h
 
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

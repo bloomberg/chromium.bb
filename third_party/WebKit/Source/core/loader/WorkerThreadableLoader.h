@@ -31,19 +31,19 @@
 #ifndef WorkerThreadableLoader_h
 #define WorkerThreadableLoader_h
 
+#include <memory>
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

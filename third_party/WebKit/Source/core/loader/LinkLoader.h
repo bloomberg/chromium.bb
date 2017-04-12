@@ -39,7 +39,7 @@
 #include "platform/PrerenderClient.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

@@ -32,17 +32,17 @@
 #ifndef NavigationScheduler_h
 #define NavigationScheduler_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

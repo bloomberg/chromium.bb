@@ -63,13 +63,13 @@
 #include "platform/network/ParsedContentType.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/Compiler.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

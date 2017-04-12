@@ -8,8 +8,8 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

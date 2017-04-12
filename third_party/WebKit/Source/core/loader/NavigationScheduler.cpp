@@ -52,11 +52,11 @@
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

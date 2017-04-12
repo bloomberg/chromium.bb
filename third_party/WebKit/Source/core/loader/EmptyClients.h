@@ -48,10 +48,10 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebScreenInfo.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
 
 /*
  This file holds empty Client stubs for use by WebCore.

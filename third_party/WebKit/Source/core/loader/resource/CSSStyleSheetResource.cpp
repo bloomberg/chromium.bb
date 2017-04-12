@@ -35,7 +35,7 @@
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/CurrentTime.h"
+#include "platform/wtf/CurrentTime.h"
 
 namespace blink {
 

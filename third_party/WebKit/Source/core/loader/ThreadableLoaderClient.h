@@ -31,11 +31,11 @@
 #ifndef ThreadableLoaderClient_h
 #define ThreadableLoaderClient_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

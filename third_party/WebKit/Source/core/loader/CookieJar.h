@@ -26,8 +26,8 @@
 #ifndef CookieJar_h
 #define CookieJar_h
 
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

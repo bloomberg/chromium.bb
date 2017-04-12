@@ -5,8 +5,8 @@
 #include "core/loader/resource/MultipartImageResourceParser.h"
 
 #include "platform/network/HTTPParsers.h"
-#include "wtf/NotFound.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <algorithm>
 

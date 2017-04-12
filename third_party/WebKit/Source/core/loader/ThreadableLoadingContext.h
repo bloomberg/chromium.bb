@@ -10,8 +10,8 @@
 #include "core/frame/UseCounter.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

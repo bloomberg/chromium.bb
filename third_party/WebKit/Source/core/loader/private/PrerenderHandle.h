@@ -34,8 +34,8 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

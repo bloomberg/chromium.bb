@@ -44,8 +44,8 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/Functional.h"
-#include "wtf/debug/Alias.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/debug/Alias.h"
 
 namespace blink {
 

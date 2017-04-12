@@ -79,11 +79,11 @@
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

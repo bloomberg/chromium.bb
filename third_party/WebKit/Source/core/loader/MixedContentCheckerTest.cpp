@@ -12,11 +12,11 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

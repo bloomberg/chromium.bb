@@ -47,9 +47,9 @@
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/Forward.h"
-#include "wtf/HashSet.h"
 
 #include <memory>
 

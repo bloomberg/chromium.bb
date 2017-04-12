@@ -29,12 +29,12 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

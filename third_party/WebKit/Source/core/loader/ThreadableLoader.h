@@ -31,13 +31,13 @@
 #ifndef ThreadableLoader_h
 #define ThreadableLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -42,10 +42,10 @@
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMixedContent.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

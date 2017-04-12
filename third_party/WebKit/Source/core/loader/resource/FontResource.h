@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
