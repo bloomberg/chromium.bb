@@ -1027,13 +1027,13 @@ void ContainerNode::FocusStateChanged() {
                                               kFocusControlState);
 }
 
-void ContainerNode::SetFocused(bool received) {
+void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
   // Recurse up author shadow trees to mark shadow hosts if it matches :focus.
   // TODO(kochi): Handle UA shadows which marks multiple nodes as focused such
   // as <input type="date"> the same way as author shadow.
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (root->GetType() != ShadowRootType::kUserAgent)
-      OwnerShadowHost()->SetFocused(received);
+      OwnerShadowHost()->SetFocused(received, focus_type);
   }
 
   // If this is an author shadow host and indirectly focused (has focused
@@ -1048,7 +1048,7 @@ void ContainerNode::SetFocused(bool received) {
   if (IsFocused() == received)
     return;
 
-  Node::SetFocused(received);
+  Node::SetFocused(received, focus_type);
 
   FocusStateChanged();
 

@@ -165,7 +165,8 @@ inline bool MultipleFieldsTemporalInputTypeView::ContainsFocusedShadowElement()
       GetElement().GetDocument().FocusedElement());
 }
 
-void MultipleFieldsTemporalInputTypeView::DidBlurFromControl() {
+void MultipleFieldsTemporalInputTypeView::DidBlurFromControl(
+    WebFocusType focus_type) {
   // We don't need to call blur(). This function is called when control
   // lost focus.
 
@@ -173,12 +174,13 @@ void MultipleFieldsTemporalInputTypeView::DidBlurFromControl() {
     return;
   EventQueueScope scope;
   // Remove focus ring by CSS "focus" pseudo class.
-  GetElement().SetFocused(false);
+  GetElement().SetFocused(false, focus_type);
   if (SpinButtonElement* spin_button = GetSpinButtonElement())
     spin_button->ReleaseCapture();
 }
 
-void MultipleFieldsTemporalInputTypeView::DidFocusOnControl() {
+void MultipleFieldsTemporalInputTypeView::DidFocusOnControl(
+    WebFocusType focus_type) {
   // We don't need to call focus(). This function is called when control
   // got focus.
 
@@ -186,7 +188,7 @@ void MultipleFieldsTemporalInputTypeView::DidFocusOnControl() {
     return;
   // Add focus ring by CSS "focus" pseudo class.
   // FIXME: Setting the focus flag to non-focused element is too tricky.
-  GetElement().SetFocused(true);
+  GetElement().SetFocused(true, focus_type);
 }
 
 void MultipleFieldsTemporalInputTypeView::EditControlValueChanged() {

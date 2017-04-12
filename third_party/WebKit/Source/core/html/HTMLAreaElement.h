@@ -23,10 +23,11 @@
 #ifndef HTMLAreaElement_h
 #define HTMLAreaElement_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "platform/geometry/LayoutRect.h"
-#include <memory>
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
   bool IsMouseFocusable() const override;
   bool LayoutObjectIsFocusable() const override;
   void UpdateFocusAppearance(SelectionBehaviorOnFocus) override;
-  void SetFocused(bool) override;
+  void SetFocused(bool, WebFocusType) override;
 
   enum Shape { kDefault, kPoly, kRect, kCircle };
   void InvalidateCachedPath();

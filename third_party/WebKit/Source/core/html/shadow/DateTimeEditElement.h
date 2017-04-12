@@ -29,6 +29,7 @@
 #include "core/html/forms/StepRange.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 #include "platform/DateComponents.h"
+#include "public/platform/WebFocusType.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -52,8 +53,8 @@ class DateTimeEditElement final : public HTMLDivElement,
   class EditControlOwner : public GarbageCollectedMixin {
    public:
     virtual ~EditControlOwner();
-    virtual void DidBlurFromControl() = 0;
-    virtual void DidFocusOnControl() = 0;
+    virtual void DidBlurFromControl(WebFocusType) = 0;
+    virtual void DidFocusOnControl(WebFocusType) = 0;
     virtual void EditControlValueChanged() = 0;
     virtual String FormatDateTimeFieldsState(
         const DateTimeFieldsState&) const = 0;
@@ -139,8 +140,8 @@ class DateTimeEditElement final : public HTMLDivElement,
   bool IsDateTimeEditElement() const override;
 
   // DateTimeFieldElement::FieldOwner functions.
-  void DidBlurFromField() override;
-  void DidFocusOnField() override;
+  void DidBlurFromField(WebFocusType) override;
+  void DidFocusOnField(WebFocusType) override;
   void FieldValueChanged() override;
   bool FocusOnNextField(const DateTimeFieldElement&) override;
   bool FocusOnPreviousField(const DateTimeFieldElement&) override;

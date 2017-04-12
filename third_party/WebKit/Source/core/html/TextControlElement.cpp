@@ -212,8 +212,8 @@ void TextControlElement::ClearValueBeforeFirstUserEdit() {
   value_before_first_user_edit_ = String();
 }
 
-void TextControlElement::SetFocused(bool flag) {
-  HTMLFormControlElementWithState::SetFocused(flag);
+void TextControlElement::SetFocused(bool flag, WebFocusType focus_type) {
+  HTMLFormControlElementWithState::SetFocused(flag, focus_type);
 
   if (!flag)
     DispatchFormControlChangeEvent();

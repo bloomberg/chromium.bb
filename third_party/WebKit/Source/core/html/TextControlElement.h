@@ -31,6 +31,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormControlElementWithState.h"
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -63,7 +64,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
 
   void ForwardEvent(Event*);
 
-  void SetFocused(bool flag) override;
+  void SetFocused(bool, WebFocusType) override;
 
   // The derived class should return true if placeholder processing is needed.
   virtual bool IsPlaceholderVisible() const = 0;

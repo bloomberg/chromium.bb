@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/html/CollectionType.h"
+#include "public/platform/WebFocusType.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -136,7 +137,7 @@ class CORE_EXPORT ContainerNode : public Node {
   void AttachLayoutTree(const AttachContext& = AttachContext()) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
   LayoutRect BoundingBox() const final;
-  void SetFocused(bool) override;
+  void SetFocused(bool, WebFocusType) override;
   void FocusStateChanged();
   void SetActive(bool = true) override;
   void SetDragged(bool) override;

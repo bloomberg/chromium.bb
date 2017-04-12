@@ -36,6 +36,7 @@
 #include "core/html/shadow/DateTimeEditElement.h"
 #include "core/html/shadow/PickerIndicatorElement.h"
 #include "core/html/shadow/SpinButtonElement.h"
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -62,8 +63,8 @@ class MultipleFieldsTemporalInputTypeView final
                                       BaseTemporalInputType&);
 
   // DateTimeEditElement::EditControlOwner functions
-  void DidBlurFromControl() final;
-  void DidFocusOnControl() final;
+  void DidBlurFromControl(WebFocusType) final;
+  void DidFocusOnControl(WebFocusType) final;
   void EditControlValueChanged() final;
   String FormatDateTimeFieldsState(const DateTimeFieldsState&) const override;
   bool IsEditControlOwnerDisabled() const final;

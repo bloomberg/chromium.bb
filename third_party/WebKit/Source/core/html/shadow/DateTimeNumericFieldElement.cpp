@@ -92,14 +92,15 @@ int DateTimeNumericFieldElement::DefaultValueForStepUp() const {
   return range_.minimum;
 }
 
-void DateTimeNumericFieldElement::SetFocused(bool value) {
+void DateTimeNumericFieldElement::SetFocused(bool value,
+                                             WebFocusType focus_type) {
   if (!value) {
     int value = TypeAheadValue();
     type_ahead_buffer_.Clear();
     if (value >= 0)
       SetValueAsInteger(value, kDispatchEvent);
   }
-  DateTimeFieldElement::SetFocused(value);
+  DateTimeFieldElement::SetFocused(value, focus_type);
 }
 
 String DateTimeNumericFieldElement::FormatValue(int value) const {

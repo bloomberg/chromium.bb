@@ -28,6 +28,7 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSpanElement.h"
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -49,8 +50,8 @@ class DateTimeFieldElement : public HTMLSpanElement {
   class FieldOwner : public GarbageCollectedMixin {
    public:
     virtual ~FieldOwner();
-    virtual void DidBlurFromField() = 0;
-    virtual void DidFocusOnField() = 0;
+    virtual void DidBlurFromField(WebFocusType) = 0;
+    virtual void DidFocusOnField(WebFocusType) = 0;
     virtual void FieldValueChanged() = 0;
     virtual bool FocusOnNextField(const DateTimeFieldElement&) = 0;
     virtual bool FocusOnPreviousField(const DateTimeFieldElement&) = 0;
@@ -94,7 +95,7 @@ class DateTimeFieldElement : public HTMLSpanElement {
   virtual int ValueForARIAValueNow() const;
 
   // Node functions.
-  void SetFocused(bool) override;
+  void SetFocused(bool, WebFocusType) override;
 
  private:
   void DefaultKeyboardEventHandler(KeyboardEvent*);

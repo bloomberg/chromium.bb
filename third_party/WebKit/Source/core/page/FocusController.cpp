@@ -370,7 +370,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
 
   if (!focused && document->FocusedElement()) {
     Element* focused_element = document->FocusedElement();
-    focused_element->SetFocused(false);
+    // Use focus_type kWebFocusTypePage, same as used in DispatchBlurEvent.
+    focused_element->SetFocused(false, kWebFocusTypePage);
     DispatchBlurEvent(*document, *focused_element);
   }
 
@@ -379,7 +380,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
         Event::Create(focused ? EventTypeNames::focus : EventTypeNames::blur));
   if (focused && document->FocusedElement()) {
     Element* focused_element(document->FocusedElement());
-    focused_element->SetFocused(true);
+    // Use focus_type kWebFocusTypePage, same as used in DispatchFocusEvent.
+    focused_element->SetFocused(true, kWebFocusTypePage);
     DispatchFocusEvent(*document, *focused_element);
   }
 }

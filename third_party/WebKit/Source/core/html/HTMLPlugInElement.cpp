@@ -155,6 +155,12 @@ void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
   persisted_plugin_ = plugin;
 }
 
+void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
+  if (plugin_)
+    plugin_->SetFocused(focused, focus_type);
+  HTMLFrameOwnerElement::SetFocused(focused, focus_type);
+}
+
 bool HTMLPlugInElement::RequestObjectInternal(
     const String& url,
     const String& mime_type,

@@ -2347,7 +2347,7 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
   return nullptr;
 }
 
-void Node::SetFocused(bool flag) {
+void Node::SetFocused(bool flag, WebFocusType focus_type) {
   GetDocument().UserActionElements().SetFocused(this, flag);
 }
 

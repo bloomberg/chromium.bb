@@ -213,8 +213,8 @@ bool HTMLFrameElementBase::SupportsFocus() const {
   return true;
 }
 
-void HTMLFrameElementBase::SetFocused(bool received) {
-  HTMLFrameOwnerElement::SetFocused(received);
+void HTMLFrameElementBase::SetFocused(bool received, WebFocusType focus_type) {
+  HTMLFrameOwnerElement::SetFocused(received, focus_type);
   if (Page* page = GetDocument().GetPage()) {
     if (received) {
       page->GetFocusController().SetFocusedFrame(ContentFrame());

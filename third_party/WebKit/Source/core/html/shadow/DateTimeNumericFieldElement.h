@@ -27,6 +27,7 @@
 #define DateTimeNumericFieldElement_h
 
 #include "core/html/shadow/DateTimeFieldElement.h"
+#include "public/platform/WebFocusType.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -93,7 +94,7 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
   String Value() const final;
 
   // Node functions.
-  void SetFocused(bool) final;
+  void SetFocused(bool, WebFocusType) final;
 
   String FormatValue(int) const;
   int RoundUp(int) const;

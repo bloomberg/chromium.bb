@@ -46,6 +46,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   ~HTMLPlugInElement() override;
   DECLARE_VIRTUAL_TRACE();
 
+  void SetFocused(bool, WebFocusType) override;
   void ResetInstance();
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.

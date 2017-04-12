@@ -26,6 +26,7 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "public/platform/WebFocusType.h"
 
 namespace blink {
 
@@ -52,7 +53,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
 
  private:
   bool SupportsFocus() const final;
-  void SetFocused(bool) final;
+  void SetFocused(bool, WebFocusType) final;
 
   bool IsURLAttribute(const Attribute&) const final;
   bool HasLegalLinkAttribute(const QualifiedName&) const final;

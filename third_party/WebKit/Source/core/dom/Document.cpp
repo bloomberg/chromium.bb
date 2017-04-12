@@ -4056,7 +4056,7 @@ bool Document::SetFocusedElement(Element* prp_new_focused_element,
 
   // Remove focus from the existing focus node (if any)
   if (old_focused_element) {
-    old_focused_element->SetFocused(false);
+    old_focused_element->SetFocused(false, params.type);
 
     // Dispatch the blur event and let the node do any other blur related
     // activities (important for text fields)
@@ -4088,12 +4088,6 @@ bool Document::SetFocusedElement(Element* prp_new_focused_element,
         new_focused_element = nullptr;
       }
     }
-
-    if (IsHTMLPlugInElement(old_focused_element)) {
-      if (PluginView* plugin =
-              ToHTMLPlugInElement(old_focused_element)->Plugin())
-        plugin->SetFocused(false, params.type);
-    }
   }
 
   if (new_focused_element)
@@ -4109,7 +4103,7 @@ bool Document::SetFocusedElement(Element* prp_new_focused_element,
     focused_element_ = new_focused_element;
     SetSequentialFocusNavigationStartingPoint(focused_element_.Get());
 
-    focused_element_->SetFocused(true);
+    focused_element_->SetFocused(true, params.type);
     // Element::setFocused for frames can dispatch events.
     if (focused_element_ != new_focused_element) {
       focus_change_blocked = true;
@@ -4158,11 +4152,6 @@ bool Document::SetFocusedElement(Element* prp_new_focused_element,
 
     if (IsRootEditableElement(*focused_element_))
       GetFrame()->GetSpellChecker().DidBeginEditing(focused_element_.Get());
-
-    if (IsHTMLPlugInElement(focused_element_)) {
-      if (PluginView* plugin = ToHTMLPlugInElement(focused_element_)->Plugin())
-        plugin->SetFocused(true, params.type);
-    }
   }
 
   if (!focus_change_blocked && focused_element_) {
