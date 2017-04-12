@@ -6,8 +6,8 @@
 
 #include "ash/laser/laser_pointer_controller_test_api.h"
 #include "ash/laser/laser_pointer_view.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/test/event_generator.h"
 
@@ -44,7 +44,7 @@ class LaserPointerControllerTest : public test::AshTestBase {
 // points from stylus movements as expected.
 TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   // Crashes in mash mode: crbug.com/702657
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 
@@ -121,7 +121,7 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
 // prediction as expected when it receives points from stylus movements.
 TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
   // Crashes in mash mode: crbug.com/702657
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 

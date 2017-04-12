@@ -9,6 +9,7 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -463,7 +464,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
 // pre-target list.
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   // TODO: investigate failure in mash, http://crbug.com/695758.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   Shell* shell = Shell::Get();
@@ -514,7 +515,7 @@ TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
   // applicable to mash as all windows must be destroyed before ash, that isn't
   // the case with classic-ash where embedders can separately create
   // aura::Windows.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   window_.reset(new aura::Window(NULL));

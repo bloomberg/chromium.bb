@@ -9,6 +9,7 @@
 #include "ash/accessibility_types.h"
 #include "ash/ash_switches.h"
 #include "ash/ime_control_delegate.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -523,7 +524,7 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
 
 TEST_F(AcceleratorControllerTest, RotateScreen) {
   // TODO: needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -663,7 +664,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // CycleBackward
@@ -1041,7 +1042,7 @@ class PreferredReservedAcceleratorsTest : public test::AshTestBase {
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   // TODO: needs LockStateController ported: http://crbug.com/632189.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
@@ -1092,7 +1093,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   // TODO: needs LockStateController ported: http://crbug.com/632189.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   aura::Window* w1 = CreateTestWindowInShellWithId(0);
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
@@ -1124,7 +1125,7 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
 
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   // TODO: TestScreenshotDelegate is null in mash http://crbug.com/632111.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::set<AcceleratorAction> all_actions;
@@ -1315,7 +1316,7 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
   // TODO: disabled because of UnblockUserSession() not working:
   // http://crbug.com/632201.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   for (size_t i = 0; i < kDeprecatedAcceleratorsLength; ++i) {
     const AcceleratorData& entry = kDeprecatedAccelerators[i];

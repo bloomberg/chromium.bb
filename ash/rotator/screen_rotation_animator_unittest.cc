@@ -5,6 +5,7 @@
 #include "ash/rotator/screen_rotation_animator.h"
 
 #include "ash/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/rotator/test/screen_rotation_animator_test_api.h"
 #include "ash/shell.h"
@@ -165,7 +166,7 @@ void ScreenRotationAnimatorTest::WaitForCopyCallback() {
 
 TEST_F(ScreenRotationAnimatorTest, ShouldNotifyObserver) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -188,7 +189,7 @@ TEST_F(ScreenRotationAnimatorTest, ShouldNotifyObserver) {
 
 TEST_F(ScreenRotationAnimatorTest, ShouldNotifyObserverOnce) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -215,7 +216,7 @@ TEST_F(ScreenRotationAnimatorTest, ShouldNotifyObserverOnce) {
 
 TEST_F(ScreenRotationAnimatorTest, RotatesToDifferentRotation) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -232,7 +233,7 @@ TEST_F(ScreenRotationAnimatorTest, RotatesToDifferentRotation) {
 
 TEST_F(ScreenRotationAnimatorTest, ShouldNotRotateTheSameRotation) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -249,7 +250,7 @@ TEST_F(ScreenRotationAnimatorTest, ShouldNotRotateTheSameRotation) {
 // request to the |last_pending_request_|.
 TEST_F(ScreenRotationAnimatorTest, RotatesDuringRotation) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -271,7 +272,7 @@ TEST_F(ScreenRotationAnimatorTest, RotatesDuringRotation) {
 // last request and finish the rotation animation.
 TEST_F(ScreenRotationAnimatorTest, ShouldCompleteAnimations) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -298,7 +299,7 @@ TEST_F(ScreenRotationAnimatorTest, ShouldCompleteAnimations) {
 // Test enable smooth screen rotation code path.
 TEST_F(ScreenRotationAnimatorTest, RotatesToDifferentRotationWithCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;
@@ -319,7 +320,7 @@ TEST_F(ScreenRotationAnimatorTest, RotatesToDifferentRotationWithCopyCallback) {
 // If the external display is removed, it should not crash.
 TEST_F(ScreenRotationAnimatorTest, RemoveSecondaryDisplayAfterCopyCallback) {
   // TODO(wutao): needs GetDisplayInfo http://crbug.com/622480.
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     ASSERT_TRUE(ShellPort::Get()->GetDisplayInfo(display_id()).id() !=
                 display_id());
     return;

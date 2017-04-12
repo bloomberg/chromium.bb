@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -189,7 +190,7 @@ TEST_F(UserMetricsRecorderTest, VerifyStatsRecordedByRecordPeriodicMetrics) {
 // UserMetricsRecorder::RecordPeriodicMetrics() method.
 TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   // TODO: investigate failure in mash, http://crbug.com/695629.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   test::TestShelfDelegate* test_shelf_delegate =

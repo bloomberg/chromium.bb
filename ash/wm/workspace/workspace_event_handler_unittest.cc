@@ -4,9 +4,9 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_aura.h"
@@ -97,7 +97,7 @@ class WindowPropertyObserver : public aura::WindowObserver {
 
 TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   // TODO: investigate failure. http://crbug.com/699175.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Double clicking the vertical resize edge of a window should maximize it
@@ -207,7 +207,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 // Tests the behavior when double clicking the border of a side snapped window.
 TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
   // TODO: investigate failure. http://crbug.com/699175.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect restored_bounds(10, 10, 50, 50);
@@ -326,7 +326,7 @@ TEST_F(WorkspaceEventHandlerTest,
 // Test the behavior as a result of double clicking the window header.
 TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   // TODO: investigate failure. http://crbug.com/699175.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   aura::test::TestWindowDelegate delegate;
@@ -409,7 +409,7 @@ TEST_F(WorkspaceEventHandlerTest,
 
 TEST_F(WorkspaceEventHandlerTest, DoubleTapCaptionTogglesMaximize) {
   // TODO: investigate failure. http://crbug.com/699175.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   aura::test::TestWindowDelegate delegate;

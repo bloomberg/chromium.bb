@@ -269,7 +269,7 @@ bool ShouldDestroyWindowInCloseChildWindows(WmWindow* window) {
   if (!WmWindow::GetAuraWindow(window)->owned_by_parent())
     return false;
 
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     return true;
 
   aura::WindowMus* window_mus =
@@ -626,7 +626,7 @@ void RootWindowController::UpdateShelfVisibility() {
 }
 
 void RootWindowController::InitTouchHuds() {
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -771,7 +771,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
-    if (!shell_port->IsRunningInMash())
+    if (Shell::GetAshConfig() != Config::MASH)
       shell->InitKeyboard();
   } else {
     window_tree_host_->Show();
@@ -788,7 +788,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode) &&
-      !shell_port->IsRunningInMash()) {
+      Shell::GetAshConfig() != Config::MASH) {
     touch_exploration_manager_.reset(new AshTouchExplorationManager(this));
   }
 }

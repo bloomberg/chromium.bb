@@ -54,7 +54,7 @@ ShellPortClassic::~ShellPortClassic() {}
 
 // static
 ShellPortClassic* ShellPortClassic::Get() {
-  CHECK(!ShellPort::Get()->IsRunningInMash());
+  CHECK(Shell::GetAshConfig() == Config::CLASSIC);
   return static_cast<ShellPortClassic*>(ShellPort::Get());
 }
 
@@ -67,10 +67,6 @@ void ShellPortClassic::Shutdown() {
   ShellPort::Shutdown();
 
   Shell::Get()->window_tree_host_manager()->Shutdown();
-}
-
-bool ShellPortClassic::IsRunningInMash() const {
-  return false;
 }
 
 Config ShellPortClassic::GetAshConfig() const {

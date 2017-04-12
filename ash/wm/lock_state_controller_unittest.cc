@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/lock_state_controller_test_api.h"
@@ -93,7 +93,7 @@ class LockStateControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    const bool is_mash = ShellPort::Get()->IsRunningInMash();
+    const bool is_mash = Shell::GetAshConfig() == Config::MASH;
     AshTestBase::TearDown();
     // Mash shuts down DBus during normal destruction.
     if (!is_mash)
@@ -401,7 +401,7 @@ TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
   // Make sure a mouse move event won't show the cursor.
   GenerateMouseMoveEvent();
   // TODO: CursorManager not created in mash. http://crbug.com/631103.
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     EXPECT_FALSE(cursor_visible());
 
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
@@ -812,7 +812,7 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
       SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   GenerateMouseMoveEvent();
   // TODO: CursorManager not created in mash. http://crbug.com/631103.
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     EXPECT_FALSE(cursor_visible());
 }
 
@@ -828,7 +828,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
 
   GenerateMouseMoveEvent();
   // TODO: CursorManager not created in mash. http://crbug.com/631103.
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
@@ -852,7 +852,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
 
   GenerateMouseMoveEvent();
   // TODO: CursorManager not created in mash. http://crbug.com/631103.
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     EXPECT_FALSE(cursor_visible());
 
   EXPECT_EQ(0, NumShutdownRequests());
@@ -1031,7 +1031,7 @@ TEST_F(LockStateControllerTest, TestHiddenWallpaperLockUnlock) {
 
 TEST_F(LockStateControllerTest, Screenshot) {
   // TODO: fails because of no screenshot in mash. http://crbug.com/698033.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   test::TestScreenshotDelegate* delegate = GetScreenshotDelegate();

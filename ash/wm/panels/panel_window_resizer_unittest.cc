@@ -4,6 +4,7 @@
 
 #include "ash/wm/panels/panel_window_resizer.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -225,7 +226,7 @@ class PanelWindowResizerTransientTest
 // reattached.
 TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
@@ -234,7 +235,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachBottom) {
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
@@ -244,7 +245,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
@@ -282,7 +283,7 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x400");
@@ -294,7 +295,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
 
 TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x400");
@@ -323,7 +324,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
 
 TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x400");
@@ -343,7 +344,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
 
 TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x600");
@@ -376,7 +377,7 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
 
 TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x600");
@@ -402,7 +403,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
 
 TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("600x400,600x600");
@@ -492,7 +493,7 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
 // The transient children should be reparented in sync with the panel.
 TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
   // TODO: investigate failure. http://crbug.com/698888.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));

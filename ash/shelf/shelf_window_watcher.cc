@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_constants.h"
@@ -33,7 +34,7 @@ namespace {
 // Returns the shelf item type, with special temporary behavior for Mash:
 // Mash provides a default shelf item type (TYPE_APP) for non-ignored windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if (!ShellPort::Get()->IsRunningInMash() ||
+  if (Shell::GetAshConfig() != Config::MASH ||
       window->GetProperty(kShelfItemTypeKey) != TYPE_UNDEFINED) {
     return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
   }

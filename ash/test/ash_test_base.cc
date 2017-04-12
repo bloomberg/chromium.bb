@@ -362,7 +362,7 @@ void AshTestBase::UnblockUserSession() {
 void AshTestBase::DisableIME() {
   // WindowTreeHostManager isn't applicable to mash and IME is routed
   // differently in mash.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   Shell::Get()->RemovePreTargetHandler(

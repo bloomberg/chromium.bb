@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -200,7 +201,7 @@ TEST_F(WmShelfObserverIconTest, AddRemove) {
 // shelf on external display as well as one on primary.
 TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("400x400,400x400");
@@ -1785,7 +1786,7 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 TEST_F(ShelfViewTest,
        Launcher_ButtonPressedUserActionsRecordedWhenItemSelected) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;
@@ -1805,7 +1806,7 @@ TEST_F(ShelfViewTest,
 // selected.
 TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;
@@ -2097,7 +2098,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 // ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   InitAppListButtonInkDrop();
@@ -2154,7 +2155,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 // tests that mouse drag and mouse release does not affect the ink drop state.
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   InitAppListButtonInkDrop();
@@ -2221,7 +2222,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 // transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   InitAppListButtonInkDrop();
@@ -2291,7 +2292,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 // and dragging the touch point transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   InitAppListButtonInkDrop();

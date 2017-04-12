@@ -4,6 +4,7 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -47,7 +48,7 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
 // caused by using sticky keys with multiple displays.
 TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   // TODO: investigate failure in mash, http://crbug.com/696006.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Add a secondary display to the left of the primary one.
@@ -58,7 +59,7 @@ TEST_F(StickyKeysOverlayTest, OverlayNotDestroyedAfterDisplayRemoved) {
   int64_t secondary_display_id = display_ids[1];
   // TODO: disabled as ScreenRotationAnimator does not work in mash,
   // http://crbug.com/696754.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),

@@ -154,10 +154,6 @@ void ShellPortMash::Shutdown() {
   window_manager_->DeleteAllRootWindowControllers();
 }
 
-bool ShellPortMash::IsRunningInMash() const {
-  return GetAshConfig() == Config::MASH;
-}
-
 Config ShellPortMash::GetAshConfig() const {
   return window_manager_->config();
 }

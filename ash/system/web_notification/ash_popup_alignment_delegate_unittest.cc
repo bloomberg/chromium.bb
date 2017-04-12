@@ -7,12 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm_window.h"
 #include "base/command_line.h"
@@ -168,7 +168,7 @@ TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
 
 TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
   // TODO: needs unified mode. http://crbug.com/698024.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const gfx::Rect toast_size(0, 0, 10, 10);
@@ -223,7 +223,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
 
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
   // TODO: needs unified mode. http://crbug.com/698024.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   display_manager()->SetUnifiedDesktopEnabled(true);

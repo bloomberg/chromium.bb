@@ -6,8 +6,8 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
@@ -161,7 +161,7 @@ TEST_F(TrayIMETest, ShownWithSingleIMEWhenManaged) {
 // enabled.
 TEST_F(TrayIMETest, HidesOnA11yEnabled) {
   // TODO: investigate failure in mash. http://crbug.com/695561.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   SetIMELength(0);
@@ -179,7 +179,7 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
 // to toggle between enabled and disabled.
 TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   // TODO: investigate failure in mash. http://crbug.com/695561.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   SetIMELength(0);

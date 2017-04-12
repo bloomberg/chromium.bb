@@ -34,7 +34,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort,
 
   // ShellPort:
   void Shutdown() override;
-  bool IsRunningInMash() const override;
   Config GetAshConfig() const override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;

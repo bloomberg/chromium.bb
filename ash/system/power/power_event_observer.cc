@@ -4,6 +4,7 @@
 
 #include "ash/system/power/power_event_observer.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -121,7 +122,7 @@ void PowerEventObserver::SuspendImminent() {
 
   // TODO(derat): After mus exposes a method for suspending displays, call it
   // here: http://crbug.com/692193
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     Shell::Get()->display_configurator()->SuspendDisplays(base::Bind(
         &OnSuspendDisplaysCompleted, chromeos::DBusThreadManager::Get()
                                          ->GetPowerManagerClient()
@@ -132,7 +133,7 @@ void PowerEventObserver::SuspendImminent() {
 void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   // TODO(derat): After mus exposes a method for resuming displays, call it
   // here: http://crbug.com/692193
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     Shell::Get()->display_configurator()->ResumeDisplays();
   Shell::Get()->system_tray_notifier()->NotifyRefreshClock();
 

@@ -6,11 +6,11 @@
 
 #include "ash/ash_constants.h"
 #include "ash/aura/aura_layout_manager_adapter.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/widget_finder.h"
@@ -576,7 +576,7 @@ void WmWindow::Show() {
 }
 
 void WmWindow::CloseWidget() {
-  if (ShellPort::Get()->IsRunningInMash() &&
+  if (Shell::GetAshConfig() == Config::MASH &&
       aura_window()->GetProperty(kWidgetCreationTypeKey) ==
           WidgetCreationType::FOR_CLIENT) {
     // NOTE: in the FOR_CLIENT case there is not necessarily a widget associated
@@ -639,7 +639,7 @@ WmWindow* WmWindow::GetChildByShellWindowId(int id) {
 }
 
 void WmWindow::ShowResizeShadow(int component) {
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     // TODO: http://crbug.com/640773.
     return;
   }
@@ -650,7 +650,7 @@ void WmWindow::ShowResizeShadow(int component) {
 }
 
 void WmWindow::HideResizeShadow() {
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     // TODO: http://crbug.com/640773.
     return;
   }
@@ -721,7 +721,7 @@ void WmWindow::RemoveTransientWindowObserver(
 
 void WmWindow::AddLimitedPreTargetHandler(ui::EventHandler* handler) {
   // In mus AddPreTargetHandler() only works for windows created by this client.
-  DCHECK(!ShellPort::Get()->IsRunningInMash() ||
+  DCHECK(Shell::GetAshConfig() != Config::MASH ||
          Shell::window_tree_client()->WasCreatedByThisClient(
              aura::WindowMus::Get(window_)));
   window_->AddPreTargetHandler(handler);

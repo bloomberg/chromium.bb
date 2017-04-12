@@ -8,6 +8,7 @@
 #include <cstdlib>
 
 #include "ash/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -404,7 +405,7 @@ TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
             WallpaperController::GetMaxDisplaySizeInNative().ToString());
 
   // TODO: mash doesn't support rotation yet, http://crbug.com/695556.
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     // Rotated display should return the rotated size.
     UpdateDisplay("1000x300*2/r");
     EXPECT_EQ("300x1000",

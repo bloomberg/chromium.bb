@@ -4,6 +4,7 @@
 
 #include "ash/shelf/wm_shelf.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -16,7 +17,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/wm_shelf_observer.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm_window.h"
 #include "base/logging.h"
@@ -121,7 +121,7 @@ void WmShelf::CreateShelfWidget(WmWindow* root) {
 
   // TODO: ShelfBezelEventHandler needs to work with mus too.
   // http://crbug.com/636647
-  if (!ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() != Config::MASH)
     bezel_event_handler_ = base::MakeUnique<ShelfBezelEventHandler>(this);
 }
 
@@ -342,7 +342,7 @@ ShelfView* WmShelf::GetShelfViewForTesting() {
 }
 
 void WmShelf::WillDeleteShelfLayoutManager() {
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     // TODO(sky): this should be removed once Shell is used everywhere.
     ShutdownShelfWidget();
   }
@@ -362,7 +362,7 @@ void WmShelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   if (new_state != SHELF_AUTO_HIDE) {
     auto_hide_event_handler_.reset();
   } else if (!auto_hide_event_handler_ &&
-             !ShellPort::Get()->IsRunningInMash()) {
+             Shell::GetAshConfig() != Config::MASH) {
     auto_hide_event_handler_ =
         base::MakeUnique<AutoHideEventHandler>(shelf_layout_manager());
   }

@@ -4,12 +4,12 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/immersive_fullscreen_controller_test_api.h"
 #include "ash/wm/window_state.h"
@@ -261,7 +261,7 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
 // top-of-window views getting hidden and revealed.
 TEST_F(ImmersiveFullscreenControllerTest, Delegate) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Initial state.
@@ -345,7 +345,7 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
 // Test mouse event processing for top-of-screen reveal triggering.
 TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Set up initial state.
@@ -449,7 +449,7 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
 // top container's widget is inactive.
 TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Set up initial state.
@@ -510,7 +510,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
 TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
   // http://crbug.com/698043.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Set up initial state.
@@ -596,7 +596,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
 // Test behavior when the mouse becomes hovered without moving.
 TEST_F(ImmersiveFullscreenControllerTest, MouseHoveredWithoutMoving) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   SetEnabled(true);
@@ -649,7 +649,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseHoveredWithoutMoving) {
 // the mouse off of the top-of-window views.
 TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   SetEnabled(true);
@@ -686,7 +686,7 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
 // Test when the SWIPE_CLOSE edge gesture closes the top-of-window views.
 TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   SetEnabled(true);
@@ -722,7 +722,7 @@ TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
 // the child window consumes all events.
 TEST_F(ImmersiveFullscreenControllerTest, RevealViaGestureChildConsumesEvents) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Enabling initially hides the top views.
@@ -805,7 +805,7 @@ TEST_F(ImmersiveFullscreenControllerTest, WindowStateImmersiveFullscreen) {
 // revealed.
 TEST_F(ImmersiveFullscreenControllerTest, Focus) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Add views to the view hierarchy which we will focus and unfocus during the
@@ -874,7 +874,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Focus) {
 // revealed.
 TEST_F(ImmersiveFullscreenControllerTest, Transient) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   views::Widget* top_container_widget = top_container()->GetWidget();
@@ -923,7 +923,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Transient) {
 // Test how bubbles affect whether the top-of-window views are revealed.
 TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
   // TODO: investigate failure. http://crbug.com/698085.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<ImmersiveRevealedLock> revealed_lock;

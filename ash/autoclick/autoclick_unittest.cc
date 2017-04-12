@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
@@ -71,7 +72,7 @@ class AutoclickTest : public test::AshTestBase {
 
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
-    if (!ShellPort::Get()->IsRunningInMash())
+    if (Shell::GetAshConfig() != Config::MASH)
       Shell::Get()->display_manager()->UpdateDisplays();
     RunAllPendingInMessageLoop();
   }

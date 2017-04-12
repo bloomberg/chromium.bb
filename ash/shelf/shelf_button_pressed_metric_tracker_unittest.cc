@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "ash/public/cpp/config.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_button_pressed_metric_tracker_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -155,7 +156,7 @@ void ShelfButtonPressedMetricTrackerTest::ButtonPressed(
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByMouse) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -172,7 +173,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByTouch) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const ui::TouchEvent touch_event(
@@ -190,7 +191,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;
@@ -203,7 +204,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_MinimizeTaskIsRecordedWhenWindowIsMinimized) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;
@@ -216,7 +217,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
 TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_SwitchTaskIsRecordedWhenExistingWindowIsActivated) {
   // TODO: investigate failure in mash. http://crbug.com/695565.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;

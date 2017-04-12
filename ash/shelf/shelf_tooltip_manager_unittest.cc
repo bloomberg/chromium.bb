@@ -4,11 +4,12 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/wm_shelf.h"
-#include "ash/shell_port.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_item_delegate.h"
@@ -167,7 +168,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHideHidden) {
 
 TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   // TODO: investigate failure in mash. http://crbug.com/695563.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -203,7 +204,7 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
 
 TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   // TODO: investigate failure in mash. http://crbug.com/695563.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   ui::test::EventGenerator& generator = GetEventGenerator();

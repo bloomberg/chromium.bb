@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -397,7 +398,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Normal window bounds shouldn't be changed.
@@ -482,7 +483,7 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // TODO: fix. This test verifies that when a window is added the bounds are
   // adjusted. CreateTestWindow() for mus adds, then sets the bounds (this comes
   // from NativeWidgetAura), which means this test now fails for aura-mus.
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     EXPECT_EQ(gfx::Rect(gfx::Point(100, 101), work_area).ToString(),
               window->GetBounds().ToString());
   }

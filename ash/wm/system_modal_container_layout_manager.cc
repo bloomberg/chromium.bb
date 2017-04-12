@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -79,7 +80,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
          child->GetType() == ui::wm::WINDOW_TYPE_POPUP);
   // TODO(mash): IsUserSessionBlocked() depends on knowing the login state. We
   // need a non-stub version of SessionStateDelegate. crbug.com/648964
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     DCHECK(container_->GetShellWindowId() !=
                kShellWindowId_LockSystemModalContainer ||
            Shell::Get()->session_controller()->IsUserSessionBlocked());

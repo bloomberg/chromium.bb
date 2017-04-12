@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/user_action_tester.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -121,7 +121,7 @@ DesktopTaskSwitchMetricRecorderTest::CreateNonPositionableWindow() const {
 TEST_F(DesktopTaskSwitchMetricRecorderTest,
        ActivatePositionableWindowWhenNullWindowWasActivatedLast) {
   // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<aura::Window> null_window;
@@ -141,7 +141,7 @@ TEST_F(
     DesktopTaskSwitchMetricRecorderTest,
     ActivatePositionableWindowWhenADifferentPositionableWindowWasActivatedLast) {
   // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<aura::Window> positionable_window_1 =
@@ -176,7 +176,7 @@ TEST_F(
 TEST_F(DesktopTaskSwitchMetricRecorderTest,
        ActivatePositionableWindowWhenANonPositionableWindowWasActivatedLast) {
   // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   std::unique_ptr<aura::Window> non_positionable_window =
@@ -321,7 +321,7 @@ aura::Window* DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::
 TEST_F(DesktopTaskSwitchMetricRecorderWithShellIntegrationTest,
        ActivatePositionableWindowWithInputEvent) {
   // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
   aura::Window* positionable_window =
       CreatePositionableWindowInShellWithBounds(gfx::Rect(0, 0, 10, 10));

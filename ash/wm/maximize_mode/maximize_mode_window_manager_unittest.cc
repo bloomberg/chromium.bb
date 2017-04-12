@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/wm_shelf.h"
@@ -1293,7 +1294,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
 // Test that an edge swipe from the top will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1337,7 +1338,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
 // Test that an edge swipe from the bottom will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1375,7 +1376,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
 // Test that an edge touch press at the top will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect rect(10, 10, 200, 50);
@@ -1415,7 +1416,7 @@ TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
 // Test that an edge touch press at the bottom will end full screen mode.
 TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtBottom) {
   // TODO: investigate failure. http://crbug.com/698093.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect rect(10, 10, 200, 50);

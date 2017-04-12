@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -685,7 +686,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
 // Various assertions around auto-hide.
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   ui::test::EventGenerator& generator(GetEventGenerator());
@@ -748,7 +749,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 // boundary between the primary and the secondary display.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("800x600,800x600");
@@ -959,7 +960,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Show the app list and the shelf stays visible.
@@ -991,7 +992,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Show the app list and the shelf should be temporarily visible.
@@ -1059,7 +1060,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Show the app list; only the shelf on the same display should be shown.
@@ -1099,7 +1100,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Show the app list and the shelf should be temporarily visible.
@@ -1244,7 +1245,7 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
 // Test for Pinned mode.
 TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   WmShelf* shelf = GetPrimaryShelf();
@@ -1334,7 +1335,7 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Slop is an implementation detail of gesture recognition, and complicates
@@ -1522,7 +1523,7 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   WmShelf* shelf = GetPrimaryShelf();
@@ -1720,7 +1721,7 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(true);

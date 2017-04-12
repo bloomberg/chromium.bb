@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -153,7 +154,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-    if (!ShellPort::Get()->IsRunningInMash()) {
+    if (Shell::GetAshConfig() != Config::MASH) {
       Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
           keyboard::KeyboardController::GetInstance());
     }
@@ -161,7 +162,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
 
   void TearDown() override {
     // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-    if (!ShellPort::Get()->IsRunningInMash()) {
+    if (Shell::GetAshConfig() != Config::MASH) {
       Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
           keyboard::KeyboardController::GetInstance());
     }
@@ -662,7 +663,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedFromKeyboard) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
@@ -702,7 +703,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboard) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
@@ -739,7 +740,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered) {
   // TODO: mash doesn't support virtual keyboard. http://crbug.com/698892.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();

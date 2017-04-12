@@ -363,7 +363,7 @@ void Shell::DeactivateKeyboard() {
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
-  DCHECK(!shell_port_->IsRunningInMash());
+  DCHECK(GetAshConfig() != Config::MASH);
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
       resolution_notification_controller_->DoesNotificationTimeout());
@@ -571,7 +571,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
   // state on ShellPortClassic. http://crbug.com/671246.
 
-  if (!shell_port_->IsRunningInMash()) {
+  // Don't use Shell::GetAshConfig() as |instance_| has not yet been set.
+  if (shell_port_->GetAshConfig() != Config::MASH) {
     gpu_support_.reset(shell_delegate_->CreateGPUSupport());
     display_manager_.reset(ScreenAsh::CreateDisplayManager());
     window_tree_host_manager_.reset(new WindowTreeHostManager);
@@ -769,7 +770,6 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
-  const bool is_mash = shell_port_->IsRunningInMash();
   const Config config = shell_port_->GetAshConfig();
 
   blocking_pool_ = init_params.blocking_pool;
@@ -777,7 +777,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Can be null in tests.
-  if (shell_port_->IsRunningInMash() && shell_delegate_->GetShellConnector()) {
+  if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(),
         make_scoped_refptr(new PrefRegistrySimple()),
@@ -811,11 +811,11 @@ void Shell::Init(const ShellInitParams& init_params) {
     devtools_server_->AttachClient(std::move(devtools_client));
   }
 
-  if (is_mash)
+  if (config == Config::MASH)
     app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
 
   // TODO(sky): move creation to ShellPort.
-  if (!is_mash)
+  if (config != Config::MASH)
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
 
   scoped_overview_animation_settings_factory_.reset(
@@ -911,7 +911,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   shell_port_->CreatePrimaryHost();
   root_window_for_new_windows_ = WmWindow::Get(GetPrimaryRootWindow());
 
-  if (!is_mash) {
+  if (config != Config::MASH) {
     resolution_notification_controller_.reset(
         new ResolutionNotificationController);
   }
@@ -957,7 +957,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   toplevel_window_event_handler_ =
       base::MakeUnique<ToplevelWindowEventHandler>();
 
-  if (!is_mash) {
+  if (config != Config::MASH) {
     system_gesture_filter_.reset(new SystemGestureEventFilter);
     AddPreTargetHandler(system_gesture_filter_.get());
   }
@@ -976,7 +976,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddShellObserver(lock_state_controller_.get());
 
   // The connector is unavailable in some tests.
-  if (is_mash && shell_delegate_->GetShellConnector()) {
+  if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
     shell_delegate_->GetShellConnector()->BindInterface(ui::mojom::kServiceName,
                                                         &user_activity_monitor);
@@ -1040,7 +1040,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  if (!is_mash) {
+  if (config != Config::MASH) {
     touch_transformer_controller_.reset(new AshTouchTransformController(
         display_configurator_.get(), display_manager_.get()));
   }
@@ -1051,7 +1051,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
-  if (!is_mash)
+  if (config != Config::MASH)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
   audio_a11y_controller_.reset(new chromeos::AudioA11yController);
@@ -1073,7 +1073,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   video_activity_notifier_.reset(
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
-  if (!is_mash) {
+  if (config != Config::MASH) {
     screen_orientation_controller_.reset(new ScreenOrientationController());
     screen_layout_observer_.reset(new ScreenLayoutObserver());
   }
@@ -1082,13 +1082,13 @@ void Shell::Init(const ShellInitParams& init_params) {
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
-  if (!is_mash)
+  if (config != Config::MASH)
     display_manager_->CreateMirrorWindowAsyncIfAny();
 
   for (auto& observer : shell_observers_)
     observer.OnShellInitialized();
 
-  if (!is_mash)
+  if (config != Config::MASH)
     user_metrics_recorder_->OnShellInitialized();
 }
 
@@ -1220,7 +1220,7 @@ void Shell::SessionStateChanged(session_manager::SessionState state) {
   if (state == session_manager::SessionState::ACTIVE) {
     CreateShelfView();
 
-    if (!shell_port_->IsRunningInMash()) {
+    if (GetAshConfig() != Config::MASH) {
       // Recreate the keyboard after initial login and after multiprofile login.
       CreateKeyboard();
     }

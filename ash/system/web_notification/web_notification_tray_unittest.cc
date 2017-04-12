@@ -7,11 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -254,7 +254,7 @@ TEST_F(WebNotificationTrayTest, DISABLED_ManyPopupNotifications) {
 // Verifies if the notification appears on both displays when extended mode.
 TEST_F(WebNotificationTrayTest, PopupShownOnBothDisplays) {
   // TODO: needs ScreenLayoutObserver, http://crbug.com/696752.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(

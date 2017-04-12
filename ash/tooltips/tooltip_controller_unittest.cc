@@ -4,8 +4,8 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
@@ -115,7 +115,7 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
   // TODO: CursorManager not created in mash. http://crbug.com/631103.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   // Disable mouse event which hides the cursor and check again.

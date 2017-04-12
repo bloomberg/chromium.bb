@@ -5,6 +5,7 @@
 #include "ash/system/overview/overview_button_tray.h"
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -112,7 +113,7 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
 // Tests that tapping on the control will record the user action Tray_Overview.
 TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
   // TODO: investigate failure in mash, http://crbug.com/698129.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
@@ -213,7 +214,7 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   // TODO: disabled as ScreenRotationAnimator does not work in mash,
   // http://crbug.com/696754.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -186,7 +187,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(root_windows[1], panel->GetRootWindow());
   EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     // TODO(erg): Ignore this one part of the test when running mash. We would
     // crash because the aura::Window |d2| created in the other block doesn't
     // get deleted, and thus continues to contain a reference to its delegate,
@@ -302,7 +303,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 // Make sure lock related windows moves.
 TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   display_manager()->SetUnifiedDesktopEnabled(true);
@@ -763,7 +764,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardOnTouchableDisplayOnly) {
   // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -815,7 +816,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // virtual keyboard follows the input focus.
 TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
   // TODO: investigate failure in mash. http://crbug.com/695640.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -885,7 +886,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        VirtualKeyboardShowOnSpecifiedDisplay) {
   // TODO: fails in mash. http://crbug.com/695640.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("500x500,500x500");
@@ -1082,7 +1083,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        EnsureCaretInWorkAreaWithMultipleDisplays) {
   // TODO: fails in mash. http://crbug.com/695640.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("500x500,600x600");

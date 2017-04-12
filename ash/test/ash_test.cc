@@ -4,6 +4,7 @@
 
 #include "ash/test/ash_test.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
@@ -108,7 +109,7 @@ display::Display AshTest::GetSecondaryDisplay() {
 bool AshTest::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
-  if (ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() == Config::MASH) {
     NOTIMPLEMENTED();
     return false;
   }

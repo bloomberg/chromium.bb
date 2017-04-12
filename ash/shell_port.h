@@ -70,9 +70,6 @@ class ASH_EXPORT ShellPort {
 
   virtual void Shutdown();
 
-  // Returns true when ash is running as a service_manager::Service.
-  // TODO(sky): remove and convert to GetAshConfig().
-  virtual bool IsRunningInMash() const = 0;
   virtual Config GetAshConfig() const = 0;
 
   // Convenience for GetPrimaryRootWindow()->GetRootWindowController().

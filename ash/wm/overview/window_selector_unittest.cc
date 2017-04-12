@@ -8,9 +8,9 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -341,7 +341,7 @@ class WindowSelectorTest : public test::AshTestBase {
 TEST_F(WindowSelectorTest, OverviewScreenRotation) {
   // TODO: fails in mash because rotation is not supported.
   // http://crbug.com/695556
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect bounds(0, 0, 400, 300);
@@ -419,7 +419,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     // Hide the cursor before entering overview to test that it will be shown.
     aura::client::GetCursorClient(root_window)->HideCursor();
   }
@@ -439,7 +439,7 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
-  if (!ShellPort::Get()->IsRunningInMash()) {
+  if (Shell::GetAshConfig() != Config::MASH) {
     // Cursor should have been unlocked.
     EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
   }
@@ -555,7 +555,7 @@ TEST_F(WindowSelectorTest, BasicGesture) {
 // in overview mode which is different from the previously-active window.
 TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionRecorded) {
   // TODO: fails because of metrics. http://crbug.com/698129.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   base::UserActionTester user_action_tester;
@@ -930,7 +930,7 @@ TEST_F(WindowSelectorTest, FullscreenWindowMaximizeMode) {
 // Tests that beginning window selection hides the app list.
 TEST_F(WindowSelectorTest, SelectingHidesAppList) {
   // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   gfx::Rect bounds(0, 0, 400, 400);
@@ -1223,7 +1223,7 @@ TEST_F(WindowSelectorTest, Shutdown) {
 TEST_F(WindowSelectorTest, RemoveDisplay) {
   // TODO: hits CHECK in stl as order of |ShelfModel::items_| is wrong.
   // http://crbug.com/698878.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("400x400,400x400");
@@ -1309,7 +1309,7 @@ TEST_F(WindowSelectorTest, CreateLabelUnderWindow) {
 TEST_F(WindowSelectorTest, DisplayOrientationChanged) {
   // TODO: fails in mash because rotation is not supported.
   // http://crbug.com/695556
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
@@ -1444,7 +1444,7 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
 TEST_F(WindowSelectorTest, MultiMonitorReversedOrder) {
   // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
   // http://crbug.com/698043.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   UpdateDisplay("400x400,400x400");

@@ -8,10 +8,10 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_screenshot_delegate.h"
@@ -36,7 +36,7 @@ typedef AshTestBase AcceleratorFilterTest;
 // Tests if AcceleratorFilter works without a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
   // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
@@ -54,7 +54,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 // Tests if AcceleratorFilter works as expected with a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   aura::test::TestWindowDelegate test_delegate;
@@ -80,7 +80,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
 // Tests if AcceleratorFilter ignores the flag for Caps Lock.
 TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (ShellPort::Get()->IsRunningInMash())
+  if (Shell::GetAshConfig() == Config::MASH)
     return;
 
   const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
