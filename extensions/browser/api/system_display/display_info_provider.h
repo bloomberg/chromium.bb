@@ -60,8 +60,10 @@ class DisplayInfoProvider {
   // Enables the unified desktop feature.
   virtual void EnableUnifiedDesktop(bool enable);
 
-  // Gets display information.
-  virtual DisplayUnitInfoList GetAllDisplaysInfo();
+  // Returns a list of information for all displays. If |single_unified| is
+  // true, when in unified mode a single display will be returned representing
+  // the single unified desktop.
+  virtual DisplayUnitInfoList GetAllDisplaysInfo(bool single_unified);
 
   // Gets display layout information.
   virtual DisplayLayoutList GetDisplayLayout();

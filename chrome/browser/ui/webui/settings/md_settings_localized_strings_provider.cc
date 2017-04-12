@@ -46,6 +46,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
+#include "ui/display/display_switches.h"
 #else
 #include "chrome/browser/ui/webui/settings/system_handler.h"
 #endif
@@ -642,8 +643,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayArrangementText", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TEXT},
       {"displayArrangementTitle", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TITLE},
       {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
-      {"displayMirrorOff", IDS_SETTINGS_DISPLAY_MIRRORING_OFF},
-      {"displayMirrorOn", IDS_SETTINGS_DISPLAY_MIRRORING_ON},
+      {"displayUnfiedDesktop", IDS_SETTINGS_DISPLAY_UNIFIED_DESKTOP},
       {"displayResolutionTitle", IDS_SETTINGS_DISPLAY_RESOLUTION_TITLE},
       {"displayResolutionText", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT},
       {"displayResolutionTextBest", IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_BEST},
@@ -665,10 +665,12 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"displayTouchCalibrationTitle",
        IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TITLE},
       {"displayTouchCalibrationText",
-       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT}
-  };
+       IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT}};
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));
+  html_source->AddBoolean("unifiedDesktopAvailable",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              ::switches::kEnableUnifiedDesktop));
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",

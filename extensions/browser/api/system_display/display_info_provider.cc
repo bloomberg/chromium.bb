@@ -61,6 +61,7 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   unit.is_primary = (display.id() == primary_display_id);
   unit.is_internal = display.IsInternal();
   unit.is_enabled = true;
+  unit.is_unified = false;
   unit.rotation = RotationToDegrees(display.rotation());
   unit.bounds.left = bounds.x();
   unit.bounds.top = bounds.y();
@@ -83,7 +84,7 @@ bool DisplayInfoProvider::SetDisplayLayout(const DisplayLayoutList& layout) {
 void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
 
 DisplayInfoProvider::DisplayUnitInfoList
-DisplayInfoProvider::GetAllDisplaysInfo() {
+DisplayInfoProvider::GetAllDisplaysInfo(bool /* single_unified*/) {
   display::Screen* screen = display::Screen::GetScreen();
   int64_t primary_id = screen->GetPrimaryDisplay().id();
   std::vector<display::Display> displays = screen->GetAllDisplays();

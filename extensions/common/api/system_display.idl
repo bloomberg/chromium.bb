@@ -129,6 +129,10 @@ namespace system.display {
     // True if this display is enabled.
     boolean isEnabled;
 
+    // True for all displays when in unified desktop mode. See documentation
+    // for $(ref:enableUnifiedDesktop).
+    boolean isUnified;
+
     // The number of pixels per inch along the x-axis.
     double dpiX;
 
@@ -163,6 +167,13 @@ namespace system.display {
   };
 
   dictionary DisplayProperties {
+    // Chrome OS only. If set to true, changes the display mode to unified
+    // desktop (see $(ref:enableUnifiedDesktop) for details). If set to false,
+    // unified desktop mode will be disabled. This is only valid for the
+    // primary display. If provided, mirroringSourceId must not be provided and
+    // other properties may not apply. This is has no effect if not provided.
+    boolean? isUnified;
+
     // Chrome OS only. If set and not empty, enables mirroring for this display.
     // Otherwise disables mirroring for this display. This value should indicate
     // the id of the source display to mirror, which must not be the same as the
@@ -203,6 +214,13 @@ namespace system.display {
     DisplayMode? displayMode;
   };
 
+  dictionary GetInfoFlags {
+    // If set to true, only a single $(ref:DisplayUnitInfo) will be returned
+    // by $(ref:getInfo) when in unified desktop mode (see
+    // $(ref:enableUnifiedDesktop)). Defaults to false.
+    boolean? singleUnified;
+  };
+
   callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
   callback DisplayLayoutCallback = void (DisplayLayout[] layouts);
   callback SetDisplayUnitInfoCallback = void();
@@ -210,11 +228,15 @@ namespace system.display {
   callback NativeTouchCalibrationCallback = void(boolean success);
 
   interface Functions {
-    // Get the information of all attached display devices.
-    static void getInfo(DisplayInfoCallback callback);
+    // Requests the information for all attached display devices.
+    // |flags|: Options affecting how the information is returned.
+    // |callback|: The callback to invoke with the results.
+    static void getInfo(optional GetInfoFlags flags,
+                        DisplayInfoCallback callback);
 
-    // Get the layout info for all displays.
+    // Requests the layout info for all displays.
     // NOTE: This is only available to Chrome OS Kiosk apps and Web UI.
+    // |callback|: The callback to invoke with the results.
     static void getDisplayLayout(DisplayLayoutCallback callback);
 
     // Updates the properties for the display specified by |id|, according to

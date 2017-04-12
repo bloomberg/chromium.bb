@@ -179,8 +179,12 @@ bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
 }
 
 ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
+  std::unique_ptr<display::GetInfo::Params> params(
+      display::GetInfo::Params::Create(*args_));
+  bool single_unified = params->flags && params->flags->single_unified &&
+                        *params->flags->single_unified;
   DisplayInfoProvider::DisplayUnitInfoList all_displays_info =
-      DisplayInfoProvider::Get()->GetAllDisplaysInfo();
+      DisplayInfoProvider::Get()->GetAllDisplaysInfo(single_unified);
   return RespondNow(
       ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }

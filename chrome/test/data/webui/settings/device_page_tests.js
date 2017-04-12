@@ -488,7 +488,7 @@ cr.define('device_page_tests', function() {
             displayPage.displays[0].id, displayPage.selectedDisplay.id);
         expectEquals(
             displayPage.displays[0].id, displayPage.primaryDisplayId);
-        expectFalse(displayPage.showMirror_(displayPage.displays));
+        expectFalse(displayPage.showMirror_(false, displayPage.displays));
         expectFalse(displayPage.isMirrored_(displayPage.displays));
 
         // Add a second display.
@@ -507,7 +507,7 @@ cr.define('device_page_tests', function() {
         expectEquals(
             displayPage.displays[0].id, displayPage.selectedDisplay.id);
         expectEquals(displayPage.displays[0].id, displayPage.primaryDisplayId);
-        expectTrue(displayPage.showMirror_(displayPage.displays));
+        expectTrue(displayPage.showMirror_(false, displayPage.displays));
         expectFalse(displayPage.isMirrored_(displayPage.displays));
 
         // Select the second display and make it primary. Also change the
@@ -554,7 +554,7 @@ cr.define('device_page_tests', function() {
         expectEquals(
             displayPage.displays[0].id, displayPage.selectedDisplay.id);
         expectTrue(displayPage.displays[0].isPrimary);
-        expectTrue(displayPage.showMirror_(displayPage.displays));
+        expectTrue(displayPage.showMirror_(false, displayPage.displays));
         expectTrue(displayPage.isMirrored_(displayPage.displays));
       });
     });

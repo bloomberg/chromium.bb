@@ -31,7 +31,7 @@ cr.define('settings', function() {
 
     // SystemDisplay overrides.
     /** @override */
-    getInfo: function(callback) {
+    getInfo: function(flags, callback) {
       setTimeout(function() {
         // Create a shallow copy to trigger Polymer data binding updates.
         var displays;

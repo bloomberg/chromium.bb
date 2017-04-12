@@ -70,6 +70,20 @@ Polymer({
 
     /** @private {!Array<number>} Mode index values for slider. */
     modeValues_: Array,
+
+    /** @private */
+    unifiedDesktopAvailable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('unifiedDesktopAvailable');
+      }
+    },
+
+    /** @private */
+    unifiedDesktopMode_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {number} Selected mode index received from chrome. */
@@ -122,8 +136,11 @@ Polymer({
 
   /** @private */
   getDisplayInfo_: function() {
+    /** @type {chrome.system.display.GetInfoFlags} */ var flags = {
+      singleUnified: true
+    };
     settings.display.systemDisplayApi.getInfo(
-        this.displayInfoFetched_.bind(this));
+        flags, this.displayInfoFetched_.bind(this));
   },
 
   /**
@@ -240,17 +257,41 @@ Polymer({
    * @private
    */
   getDisplayMirrorText_: function(displays) {
-    return this.i18n(
-        this.isMirrored_(displays) ? 'displayMirrorOn' : 'displayMirrorOff');
+    return this.i18n(this.isMirrored_(displays) ? 'toggleOn' : 'toggleOff');
   },
 
   /**
+   * @param {boolean} unifiedDesktopAvailable
+   * @param {boolean} unifiedDesktopMode
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @return {boolean}
    * @private
    */
-  showMirror_: function(displays) {
-    return this.isMirrored_(displays) || displays.length == 2;
+  showUnifiedDesktop_: function(
+      unifiedDesktopAvailable, unifiedDesktopMode, displays) {
+    return unifiedDesktopMode ||
+        (unifiedDesktopAvailable && displays.length > 1 &&
+         !this.isMirrored_(displays));
+  },
+
+  /**
+   * @param {boolean} unifiedDesktopMode
+   * @return {string}
+   * @private
+   */
+  getUnifiedDesktopText_: function(unifiedDesktopMode) {
+    return this.i18n(unifiedDesktopMode ? 'toggleOn' : 'toggleOff');
+  },
+
+  /**
+   * @param {boolean} unifiedDesktopMode
+   * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
+   * @return {boolean}
+   * @private
+   */
+  showMirror_: function(unifiedDesktopMode, displays) {
+    return this.isMirrored_(displays) ||
+        (!unifiedDesktopMode && displays.length == 2);
   },
 
   /**
@@ -423,6 +464,16 @@ Polymer({
         id, properties, this.setPropertiesCallback_.bind(this));
   },
 
+  /** @private */
+  onUnifiedDesktopTap_: function() {
+    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+      isUnified: !this.unifiedDesktopMode_,
+    };
+    settings.display.systemDisplayApi.setDisplayProperties(
+        this.primaryDisplayId, properties,
+        this.setPropertiesCallback_.bind(this));
+  },
+
   /**
    * @param {!Event} e
    * @private
@@ -453,6 +504,8 @@ Polymer({
     selectedDisplay = selectedDisplay || primaryDisplay ||
         (this.displays && this.displays[0]);
     this.setSelectedDisplay_(selectedDisplay);
+
+    this.unifiedDesktopMode_ = !!primaryDisplay && primaryDisplay.isUnified;
 
     this.$.displayLayout.updateDisplays(this.displays, this.layouts);
   },

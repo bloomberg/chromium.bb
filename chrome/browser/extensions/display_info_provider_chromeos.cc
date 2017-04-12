@@ -239,6 +239,18 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
   bool is_primary =
       id == primary_display_id || (info.is_primary && *info.is_primary);
 
+  if (info.is_unified) {
+    if (!is_primary) {
+      *error = "Unified desktop mode can only be set for the primary display.";
+      return false;
+    }
+    if (info.mirroring_source_id) {
+      *error = "Unified desktop mode can not be set with mirroringSourceId.";
+      return false;
+    }
+    return true;
+  }
+
   // If mirroring source id is set, a display with the given id should exist,
   // and if should not be the same as the target display's id.
   if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
@@ -417,15 +429,15 @@ bool IsMaximizeModeWindowManagerEnabled() {
 }  // namespace
 
 // static
-const char DisplayInfoProviderChromeOS::
-    kCustomTouchCalibrationInProgressError[] =
+const char
+    DisplayInfoProviderChromeOS::kCustomTouchCalibrationInProgressError[] =
         "Another custom touch calibration already under progress.";
 
 // static
-const char DisplayInfoProviderChromeOS::
-    kCompleteCalibrationCalledBeforeStartError[] =
+const char
+    DisplayInfoProviderChromeOS::kCompleteCalibrationCalledBeforeStartError[] =
         "system.display.completeCustomTouchCalibration called before "
-             "system.display.startCustomTouchCalibration before.";
+        "system.display.startCustomTouchCalibration before.";
 
 // static
 const char DisplayInfoProviderChromeOS::kTouchBoundsNegativeError[] =
@@ -457,6 +469,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
     *error = "Not implemented for mash.";
     return false;
   }
+
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
   ash::DisplayConfigurationController* display_configuration_controller =
@@ -476,6 +489,13 @@ bool DisplayInfoProviderChromeOS::SetInfo(
   if (!ValidateParamsForDisplay(info, target, display_manager, primary.id(),
                                 error)) {
     return false;
+  }
+
+  // Process 'isUnified' parameter if set.
+  if (info.is_unified) {
+    display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
+        *info.is_unified ? display::DisplayManager::UNIFIED
+                         : display::DisplayManager::EXTENDED);
   }
 
   // Process 'isPrimary' parameter.
@@ -619,7 +639,7 @@ void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
 }
 
 DisplayInfoProvider::DisplayUnitInfoList
-DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
+DisplayInfoProviderChromeOS::GetAllDisplaysInfo(bool single_unified) {
   if (ash_util::IsRunningInMash()) {
     // TODO(crbug.com/682402): Mash support.
     NOTIMPLEMENTED();
@@ -627,21 +647,31 @@ DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
   }
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
+
   if (!display_manager->IsInUnifiedMode())
-    return DisplayInfoProvider::GetAllDisplaysInfo();
+    return DisplayInfoProvider::GetAllDisplaysInfo(single_unified);
 
-  std::vector<display::Display> displays =
-      display_manager->software_mirroring_display_list();
-  CHECK_GT(displays.size(), 0u);
+  // Chrome OS specific: get displays for unified mode.
+  std::vector<display::Display> displays;
+  int64_t primary_id;
+  if (single_unified) {
+    for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i)
+      displays.push_back(display_manager->GetDisplayAt(i));
+    primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  } else {
+    displays = display_manager->software_mirroring_display_list();
+    CHECK_GT(displays.size(), 0u);
+    // Use first display as primary.
+    primary_id = displays[0].id();
+  }
 
-  // Use first display as primary.
-  int64_t primary_id = displays[0].id();
   DisplayUnitInfoList all_displays;
   for (const display::Display& display : displays) {
-    system_display::DisplayUnitInfo unit =
+    system_display::DisplayUnitInfo unit_info =
         CreateDisplayUnitInfo(display, primary_id);
-    UpdateDisplayUnitInfoForPlatform(display, &unit);
-    all_displays.push_back(std::move(unit));
+    UpdateDisplayUnitInfoForPlatform(display, &unit_info);
+    unit_info.is_unified = true;
+    all_displays.push_back(std::move(unit_info));
   }
   return all_displays;
 }
@@ -733,7 +763,8 @@ bool DisplayInfoProviderChromeOS::OverscanCalibrationComplete(
 }
 
 bool DisplayInfoProviderChromeOS::ShowNativeTouchCalibration(
-    const std::string& id, std::string* error,
+    const std::string& id,
+    std::string* error,
     const DisplayInfoProvider::TouchCalibrationCallback& callback) {
   if (ash_util::IsRunningInMash()) {
     // TODO(crbug.com/682402): Mash support.
@@ -805,8 +836,8 @@ bool DisplayInfoProviderChromeOS::CompleteCustomTouchCalibration(
 
   custom_touch_calibration_active_ = false;
 
-  if (!ValidateParamsForTouchCalibration(
-      touch_calibration_target_id_, display, GetTouchCalibrator(), error)) {
+  if (!ValidateParamsForTouchCalibration(touch_calibration_target_id_, display,
+                                         GetTouchCalibrator(), error)) {
     return false;
   }
 
