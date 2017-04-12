@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
@@ -141,13 +140,6 @@ public class MainPreferences extends PreferenceFragment
                     HomepageManager.getInstance(getActivity()).getPrefHomepageEnabled());
         } else {
             getPreferenceScreen().removePreference(homepagePref);
-        }
-
-        Preference suggestionsPref = findPreference(PREF_SUGGESTIONS);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
-            setOnOffSummary(suggestionsPref, SnippetsBridge.areRemoteSuggestionsEnabled());
-        } else {
-            getPreferenceScreen().removePreference(suggestionsPref);
         }
 
         ChromeBasePreference dataReduction =

@@ -31,6 +31,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Settings fragment that allows the user to configure content suggestions.
  */
+// TODO(https://crbug.com/710636): Remove when the suggestions preference design is stabilised.
 public class ContentSuggestionsPreferences extends PreferenceFragment {
     private static final String PREF_MAIN_SWITCH = "suggestions_switch";
     private static final String PREF_NOTIFICATIONS_SWITCH = "suggestions_notifications_switch";

@@ -33,10 +33,6 @@
         android:key="privacy"
         android:title="@string/prefs_privacy" />
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.ContentSuggestionsPreferences"
-        android:key="suggestions"
-        android:title="@string/prefs_suggestions" />
-    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AccessibilityPreferences"
         android:key="accessibility"
         android:title="@string/prefs_accessibility" />

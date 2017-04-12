@@ -21,7 +21,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -31,7 +30,6 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
-import org.chromium.chrome.browser.preferences.ContentSuggestionsPreferences;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -183,14 +181,6 @@ public class ContentSuggestionsNotificationHelper {
                         .setPriority(priority)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
-            PendingIntent settingsIntent = PendingIntent.getActivity(context, 0,
-                    ContentSuggestionsPreferences.createLaunchIntent(
-                            context, ContentSuggestionsPreferences.LAUNCH_SOURCE_NOTIFICATION),
-                    0);
-            builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
-                    settingsIntent);
-        }
         if (priority >= 0) {
             builder.setDefaults(Notification.DEFAULT_ALL);
         }
