@@ -67,11 +67,17 @@ double DistanceEffect::LinearGain(double distance) {
 }
 
 double DistanceEffect::InverseGain(double distance) {
+  if (ref_distance_ == 0)
+    return 0;
+
   return ref_distance_ / (ref_distance_ + clampTo(rolloff_factor_, 0.0) *
                                               (distance - ref_distance_));
 }
 
 double DistanceEffect::ExponentialGain(double distance) {
+  if (ref_distance_ == 0)
+    return 0;
+
   return pow(distance / ref_distance_, -clampTo(rolloff_factor_, 0.0));
 }
 

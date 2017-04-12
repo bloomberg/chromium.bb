@@ -17,12 +17,12 @@
       var audit = Audit.createTaskRunner();
 
       audit.defineTask("ref-distance-error", function (taskDone) {
-        testDistanceLimits({name: "refDistance"});
+        testDistanceLimits({name: "refDistance", isZeroAllowed: true});
         taskDone();
       });
 
       audit.defineTask("max-distance-error", function (taskDone) {
-        testDistanceLimits({name: "maxDistance"});
+        testDistanceLimits({name: "maxDistance", isZeroAllowed: false});
         taskDone();
       });
 
@@ -39,11 +39,19 @@
           new PannerNode(context, nodeOptions);
         }).throw("RangeError");
 
-        success = Should(prefix + "0})", function () {
-          var nodeOptions = {};
-          nodeOptions[attrName] = 0;
-          new PannerNode(context, nodeOptions);
-        }).throw("RangeError") && success;
+        if (options.isZeroAllowed) {
+          success = Should(prefix + "0})", function () {
+            var nodeOptions = {};
+            nodeOptions[attrName] = 0;
+            new PannerNode(context, nodeOptions);
+          }).notThrow() && success;
+        } else {
+          success = Should(prefix + "0})", function () {
+            var nodeOptions = {};
+            nodeOptions[attrName] = 0;
+            new PannerNode(context, nodeOptions);
+          }).throw("RangeError") && success;
+        }
 
         // The smallest representable positive single float.
         var leastPositiveDoubleFloat = 4.9406564584124654e-324;
@@ -61,9 +69,15 @@
           panner[attrName] = -1;
         }).throw("RangeError") && success;
 
-        success = Should(prefix + "0", function () {
-          panner[attrName] = 0;
-        }).throw("RangeError") && success;
+        if (options.isZeroAllowed) {
+          success = Should(prefix + "0", function () {
+            panner[attrName] = 0;
+          }).notThrow() && success;
+        } else {
+          success = Should(prefix + "0", function () {
+            panner[attrName] = 0;
+          }).throw("RangeError") && success;
+        }
 
         success = Should(prefix + leastPositiveDoubleFloat, function () {
           panner[attrName] = leastPositiveDoubleFloat;

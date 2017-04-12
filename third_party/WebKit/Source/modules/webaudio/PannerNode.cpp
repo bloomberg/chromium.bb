@@ -748,7 +748,7 @@ double PannerNode::refDistance() const {
 
 void PannerNode::setRefDistance(double distance,
                                 ExceptionState& exception_state) {
-  if (distance <= 0) {
+  if (distance < 0) {
     exception_state.ThrowDOMException(
         kV8RangeError, ExceptionMessages::IndexExceedsMinimumBound<double>(
                            "refDistance", distance, 0));
