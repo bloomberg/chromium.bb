@@ -58,16 +58,13 @@ namespace {
 // anyhow).
 
 // Version 3: b6d6a783/r231648 by beaudoin@chromium.org on 2013-10-29
-// Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31
+// Version 2: eb0b24e6/r87284 by satorux@chromium.org on 2011-05-31 (deprecated)
 // Version 1: 809cc4d8/r64072 by sky@chromium.org on 2010-10-27 (deprecated)
 
 // NOTE(shess): When changing the version, add a new golden file for
 // the new version and a test to verify that Init() works with it.
-// NOTE(shess): RecoverDatabaseOrRaze() depends on the specific
-// version number.  The code is subtle and in development, contact me
-// if the necessary changes are not obvious.
 static const int kVersionNumber = 3;
-static const int kDeprecatedVersionNumber = 1;  // and earlier.
+static const int kDeprecatedVersionNumber = 2;  // and earlier.
 
 bool InitTables(sql::Connection* db) {
   const char kThumbnailsSql[] =
@@ -108,9 +105,8 @@ void SetRedirects(const std::string& redirects, MostVisitedURL* url) {
 // Track various failure (and success) cases in recovery code.
 //
 // TODO(shess): The recovery code is complete, but by nature runs in challenging
-// circumstances, so initially the default error response is to leave the
-// existing database in place.  This histogram is intended to expose the
-// failures seen in the fleet.  Frequent failure cases can be explored more
+// circumstances, so errors will happen.  This histogram is intended to expose
+// the failures seen in the fleet.  Frequent failure cases can be explored more
 // deeply to see if the complexity to fix them is warranted.  Infrequent failure
 // cases can be resolved by marking the database unrecoverable (which will
 // delete the data).
@@ -126,18 +122,21 @@ enum RecoveryEventType {
 
   // Sqlite.RecoveryEvent can usually be used to get more detail about the
   // specific failure (see sql/recovery.cc).
-  RECOVERY_EVENT_FAILED_SCOPER,
+  OBSOLETE_RECOVERY_EVENT_FAILED_SCOPER,
   RECOVERY_EVENT_FAILED_META_VERSION,
   RECOVERY_EVENT_FAILED_META_WRONG_VERSION,
-  RECOVERY_EVENT_FAILED_META_INIT,
-  RECOVERY_EVENT_FAILED_SCHEMA_INIT,
-  RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS,
+  OBSOLETE_RECOVERY_EVENT_FAILED_META_INIT,
+  OBSOLETE_RECOVERY_EVENT_FAILED_SCHEMA_INIT,
+  OBSOLETE_RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS,
   RECOVERY_EVENT_FAILED_COMMIT,
 
   // Track invariants resolved by FixThumbnailsTable().
   RECOVERY_EVENT_INVARIANT_RANK,
   RECOVERY_EVENT_INVARIANT_REDIRECT,
   RECOVERY_EVENT_INVARIANT_CONTIGUOUS,
+
+  // Track automated full-database recovery.
+  RECOVERY_EVENT_FAILED_AUTORECOVER,
 
   // Always keep this at the end.
   RECOVERY_EVENT_MAX,
@@ -203,86 +202,45 @@ void FixThumbnailsTable(sql::Connection* db) {
     RecordRecoveryEvent(RECOVERY_EVENT_INVARIANT_CONTIGUOUS);
 }
 
-// Recover the database to the extent possible, razing it if recovery is not
-// possible.
-void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
+// Recover the database to the extent possible, then fixup any broken
+// constraints.
+void RecoverAndFixup(sql::Connection* db, const base::FilePath& db_path) {
   // NOTE(shess): If the version changes, review this code.
   DCHECK_EQ(3, kVersionNumber);
 
-  // It is almost certain that some operation against |db| will fail, prevent
-  // reentry.
-  db->reset_error_callback();
-
-  // For generating histogram stats.
-  size_t thumbnails_recovered = 0;
-  int64_t original_size = 0;
-  base::GetFileSize(db_path, &original_size);
-
-  std::unique_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
+  std::unique_ptr<sql::Recovery> recovery =
+      sql::Recovery::BeginRecoverDatabase(db, db_path);
   if (!recovery) {
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_SCOPER);
+    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER);
     return;
   }
 
-  // Setup the meta recovery table and fetch the version number from the corrupt
-  // database.
+  // If the [meta] table does not exist, or the [version] key cannot be found,
+  // then the schema is indeterminate.  The only plausible approach would be to
+  // validate that the schema contains all of the tables and indices and columns
+  // expected, but that complexity may not be warranted, this case has only been
+  // seen for a few thousand database files.
   int version = 0;
   if (!recovery->SetupMeta() || !recovery->GetMetaVersionNumber(&version)) {
-    // TODO(shess): Prior histograms indicate all failures are in creating the
-    // recover virtual table for corrupt.meta.  The table may not exist, or the
-    // database may be too far gone.  Either way, unclear how to resolve.
-    sql::Recovery::Rollback(std::move(recovery));
+    sql::Recovery::Unrecoverable(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_VERSION);
     return;
   }
 
-  // This code runs in a context which may be able to read version information
-  // that the regular deprecation path cannot.  The effect of this code will be
-  // to raze the database.
+  // In this case the next open will clear the database anyhow.
   if (version <= kDeprecatedVersionNumber) {
     sql::Recovery::Unrecoverable(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_DEPRECATED);
     return;
   }
 
-  // TODO(shess): Earlier versions have been deprecated, later versions should
-  // be impossible.  Unrecoverable() seems like a feasible response if this is
-  // infrequent enough.
-  if (version != 2 && version != 3) {
+  // TODO(shess): Consider marking corrupt databases from the future
+  // Unrecoverable(), since this histogram value has never been seen.  OTOH,
+  // this may be too risky, because if future code was correlated with
+  // corruption then rollback would be a sensible response.
+  if (version > kVersionNumber) {
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
     sql::Recovery::Rollback(std::move(recovery));
-    return;
-  }
-
-  // Both v2 and v3 recover to current schema version.
-  sql::MetaTable recover_meta_table;
-  if (!recover_meta_table.Init(recovery->db(), kVersionNumber,
-                               kVersionNumber)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INIT);
-    return;
-  }
-
-  // Create a fresh version of the schema.  The recovery code uses
-  // conflict-resolution to handle duplicates, so any indices are necessary.
-  if (!InitTables(recovery->db())) {
-    // TODO(shess): Unable to create the new schema in the new database.  The
-    // new database should be a temporary file, so being unable to work with it
-    // is pretty unclear.
-    //
-    // What are the potential responses, even?  The recovery database could be
-    // opened as in-memory.  If the temp database had a filesystem problem and
-    // the temp filesystem differs from the main database, then that could fix
-    // it.
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_SCHEMA_INIT);
-    return;
-  }
-
-  // In the v2 case the missing column will get default values.
-  if (!recovery->AutoRecoverTable("thumbnails", &thumbnails_recovered)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS);
     return;
   }
 
@@ -297,23 +255,6 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     return;
   }
 
-  // Track the size of the recovered database relative to the size of the input
-  // database.  The size should almost always be smaller, unless the input
-  // database was empty to start with.  If the percentage results are very low,
-  // something is awry.
-  int64_t final_size = 0;
-  if (original_size > 0 && base::GetFileSize(db_path, &final_size) &&
-      final_size > 0) {
-    UMA_HISTOGRAM_PERCENTAGE("History.TopSitesRecoveredPercentage",
-                             final_size * 100 / original_size);
-  }
-
-  // Using 10,000 because these cases mostly care about "none recovered" and
-  // "lots recovered".  More than 10,000 rows recovered probably means there's
-  // something wrong with the profile.
-  UMA_HISTOGRAM_COUNTS_10000("History.TopSitesRecoveredRowsThumbnails",
-                             static_cast<int>(thumbnails_recovered));
-
   RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
 }
 
@@ -325,11 +266,21 @@ void DatabaseErrorCallback(sql::Connection* db,
   // be the history thread, but at this level I can't see how to reach that.
 
   // Attempt to recover corrupt databases.
-  int error = (extended_error & 0xFF);
-  if (error == SQLITE_CORRUPT ||
-      error == SQLITE_CANTOPEN ||
-      error == SQLITE_NOTADB) {
-    RecoverDatabaseOrRaze(db, db_path);
+  if (sql::Recovery::ShouldRecover(extended_error)) {
+    // Prevent reentrant calls.
+    db->reset_error_callback();
+
+    // After this call, the |db| handle is poisoned so that future calls will
+    // return errors until the handle is re-opened.
+    RecoverAndFixup(db, db_path);
+
+    // The DLOG(FATAL) below is intended to draw immediate attention to errors
+    // in newly-written code.  Database corruption is generally a result of OS
+    // or hardware issues, not coding errors at the client level, so displaying
+    // the error would probably lead to confusion.  The ignored call signals the
+    // test-expectation framework that the error was handled.
+    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    return;
   }
 
   // TODO(shess): This database's error histograms look like:

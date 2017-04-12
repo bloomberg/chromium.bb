@@ -82,9 +82,9 @@ namespace {
 // fatal (in fact, very old data may be expired immediately at startup
 // anyhow).
 
-// Version 8: ???????? by rogerm@chromium.org on 2015-??-??
+// Version 8: 982ef2c1/r323176 by rogerm@chromium.org on 2015-03-31
 // Version 7: 911a634d/r209424 by qsr@chromium.org on 2013-07-01
-// Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20
+// Version 6: 610f923b/r152367 by pkotwicz@chromium.org on 2012-08-20 (depr.)
 // Version 5: e2ee8ae9/r105004 by groby@chromium.org on 2011-10-12 (deprecated)
 // Version 4: 5f104d76/r77288 by sky@chromium.org on 2011-03-08 (deprecated)
 // Version 3: 09911bf3/r15 by initial.commit on 2008-07-26 (deprecated)
@@ -94,7 +94,7 @@ namespace {
 // the new version and a test to verify that Init() works with it.
 const int kCurrentVersionNumber = 8;
 const int kCompatibleVersionNumber = 8;
-const int kDeprecatedVersionNumber = 5;  // and earlier.
+const int kDeprecatedVersionNumber = 6;  // and earlier.
 
 void FillIconMapping(const sql::Statement& statement,
                      const GURL& page_url,
@@ -146,8 +146,7 @@ void GenerateDiagnostics(sql::Connection* db,
 }
 
 // NOTE(shess): Schema modifications must consider initial creation in
-// |InitImpl()|, recovery in |RecoverDatabaseOrRaze()|, and history pruning in
-// |RetainDataForPageUrls()|.
+// |InitImpl()| and history pruning in |RetainDataForPageUrls()|.
 bool InitTables(sql::Connection* db) {
   const char kIconMappingSql[] =
       "CREATE TABLE IF NOT EXISTS icon_mapping"
@@ -190,8 +189,7 @@ bool InitTables(sql::Connection* db) {
 }
 
 // NOTE(shess): Schema modifications must consider initial creation in
-// |InitImpl()|, recovery in |RecoverDatabaseOrRaze()|, and history pruning in
-// |RetainDataForPageUrls()|.
+// |InitImpl()| and history pruning in |RetainDataForPageUrls()|.
 bool InitIndices(sql::Connection* db) {
   const char kIconMappingUrlIndexSql[] =
       "CREATE INDEX IF NOT EXISTS icon_mapping_page_url_idx"
@@ -218,199 +216,6 @@ bool InitIndices(sql::Connection* db) {
   return true;
 }
 
-enum RecoveryEventType {
-  RECOVERY_EVENT_RECOVERED = 0,
-  RECOVERY_EVENT_FAILED_SCOPER,
-  RECOVERY_EVENT_FAILED_META_VERSION_ERROR,  // obsolete
-  RECOVERY_EVENT_FAILED_META_VERSION_NONE,  // obsolete
-  RECOVERY_EVENT_FAILED_META_WRONG_VERSION6,  // obsolete
-  RECOVERY_EVENT_FAILED_META_WRONG_VERSION5,  // obsolete
-  RECOVERY_EVENT_FAILED_META_WRONG_VERSION,
-  RECOVERY_EVENT_FAILED_RECOVER_META,  // obsolete
-  RECOVERY_EVENT_FAILED_META_INSERT,  // obsolete
-  RECOVERY_EVENT_FAILED_INIT,
-  RECOVERY_EVENT_FAILED_RECOVER_FAVICONS,  // obsolete
-  RECOVERY_EVENT_FAILED_FAVICONS_INSERT,  // obsolete
-  RECOVERY_EVENT_FAILED_RECOVER_FAVICON_BITMAPS,  // obsolete
-  RECOVERY_EVENT_FAILED_FAVICON_BITMAPS_INSERT,  // obsolete
-  RECOVERY_EVENT_FAILED_RECOVER_ICON_MAPPING,  // obsolete
-  RECOVERY_EVENT_FAILED_ICON_MAPPING_INSERT,  // obsolete
-  RECOVERY_EVENT_RECOVERED_VERSION6,  // obsolete
-  RECOVERY_EVENT_FAILED_META_INIT,
-  RECOVERY_EVENT_FAILED_META_VERSION,
-  RECOVERY_EVENT_DEPRECATED,
-  RECOVERY_EVENT_FAILED_V5_INITSCHEMA,  // obsolete
-  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_FAVICONS,  // obsolete
-  RECOVERY_EVENT_FAILED_V5_AUTORECOVER_ICON_MAPPING,  // obsolete
-  RECOVERY_EVENT_RECOVERED_VERSION5,  // obsolete
-  RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS,
-  RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS,
-  RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING,
-  RECOVERY_EVENT_FAILED_COMMIT,
-
-  // Always keep this at the end.
-  RECOVERY_EVENT_MAX,
-};
-
-void RecordRecoveryEvent(RecoveryEventType recovery_event) {
-  UMA_HISTOGRAM_ENUMERATION("History.FaviconsRecovery",
-                            recovery_event, RECOVERY_EVENT_MAX);
-}
-
-// Recover the database to the extent possible, razing it if recovery
-// is not possible.
-// TODO(shess): This is mostly just a safe proof of concept.  In the
-// real world, this database is probably not worthwhile recovering, as
-// opposed to just razing it and starting over whenever corruption is
-// detected.  So this database is a good test subject.
-void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
-  // NOTE(shess): This code is currently specific to the version
-  // number.  I am working on simplifying things to loosen the
-  // dependency, meanwhile contact me if you need to bump the version.
-  DCHECK_EQ(8, kCurrentVersionNumber);
-
-  // TODO(shess): Reset back after?
-  db->reset_error_callback();
-
-  // For histogram purposes.
-  size_t favicons_rows_recovered = 0;
-  size_t favicon_bitmaps_rows_recovered = 0;
-  size_t icon_mapping_rows_recovered = 0;
-  int64_t original_size = 0;
-  base::GetFileSize(db_path, &original_size);
-
-  std::unique_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
-  if (!recovery) {
-    // TODO(shess): Unable to create recovery connection.  This
-    // implies something substantial is wrong.  At this point |db| has
-    // been poisoned so there is nothing really to do.
-    //
-    // Possible responses are unclear.  If the failure relates to a
-    // problem somehow specific to the temporary file used to back the
-    // database, then an in-memory database could possibly be used.
-    // This could potentially allow recovering the main database, and
-    // might be simple to implement w/in Begin().
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_SCOPER);
-    return;
-  }
-
-  // Setup the meta recovery table and fetch the version number from
-  // the corrupt database.
-  int version = 0;
-  if (!recovery->SetupMeta() || !recovery->GetMetaVersionNumber(&version)) {
-    // TODO(shess): Prior histograms indicate all failures are in
-    // creating the recover virtual table for corrupt.meta.  The table
-    // may not exist, or the database may be too far gone.  Either
-    // way, unclear how to resolve.
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_VERSION);
-    return;
-  }
-
-  // This code may be able to fetch version information that the regular
-  // deprecation path cannot.
-  // NOTE(shess,rogerm): v6 is not currently deprecated in the normal Init()
-  // path, but is deprecated in the recovery path in the interest of keeping
-  // the code simple.  http://crbug.com/327485 for numbers.
-  DCHECK_LE(kDeprecatedVersionNumber, 6);
-  if (version <= 6) {
-    sql::Recovery::Unrecoverable(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_DEPRECATED);
-    return;
-  }
-
-  // Earlier versions have been handled or deprecated.
-  if (version < 7) {
-    sql::Recovery::Unrecoverable(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_WRONG_VERSION);
-    return;
-  }
-
-  // Recover to current schema version.
-  sql::MetaTable recover_meta_table;
-  if (!recover_meta_table.Init(recovery->db(), kCurrentVersionNumber,
-                               kCompatibleVersionNumber)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_META_INIT);
-    return;
-  }
-
-  // Create a fresh version of the database.  The recovery code uses
-  // conflict-resolution to handle duplicates, so the indices are
-  // necessary.
-  if (!InitTables(recovery->db()) || !InitIndices(recovery->db())) {
-    // TODO(shess): Unable to create the new schema in the new
-    // database.  The new database should be a temporary file, so
-    // being unable to work with it is pretty unclear.
-    //
-    // What are the potential responses, even?  The recovery database
-    // could be opened as in-memory.  If the temp database had a
-    // filesystem problem and the temp filesystem differs from the
-    // main database, then that could fix it.
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_INIT);
-    return;
-  }
-
-  if (!recovery->AutoRecoverTable("favicons", &favicons_rows_recovered)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS);
-    return;
-  }
-  if (!recovery->AutoRecoverTable("favicon_bitmaps",
-                                  &favicon_bitmaps_rows_recovered)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS);
-    return;
-  }
-  if (!recovery->AutoRecoverTable("icon_mapping",
-                                  &icon_mapping_rows_recovered)) {
-    sql::Recovery::Rollback(std::move(recovery));
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING);
-    return;
-  }
-
-  // TODO(shess): Is it possible/likely to have broken foreign-key
-  // issues with the tables?
-  // - icon_mapping.icon_id maps to no favicons.id
-  // - favicon_bitmaps.icon_id maps to no favicons.id
-  // - favicons.id is referenced by no icon_mapping.icon_id
-  // - favicons.id is referenced by no favicon_bitmaps.icon_id
-  // This step is possibly not worth the effort necessary to develop
-  // and sequence the statements, as it is basically a form of garbage
-  // collection.
-
-  if (!sql::Recovery::Recovered(std::move(recovery))) {
-    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_COMMIT);
-    return;
-  }
-
-  // Track the size of the recovered database relative to the size of
-  // the input database.  The size should almost always be smaller,
-  // unless the input database was empty to start with.  If the
-  // percentage results are very low, something is awry.
-  int64_t final_size = 0;
-  if (original_size > 0 &&
-      base::GetFileSize(db_path, &final_size) &&
-      final_size > 0) {
-    int percentage = static_cast<int>(original_size * 100 / final_size);
-    UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
-                             std::max(100, percentage));
-  }
-
-  // Using 10,000 because these cases mostly care about "none
-  // recovered" and "lots recovered".  More than 10,000 rows recovered
-  // probably means there's something wrong with the profile.
-  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFavicons",
-                             static_cast<int>(favicons_rows_recovered));
-  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsFaviconBitmaps",
-                             static_cast<int>(favicon_bitmaps_rows_recovered));
-  UMA_HISTOGRAM_COUNTS_10000("History.FaviconsRecoveredRowsIconMapping",
-                             static_cast<int>(icon_mapping_rows_recovered));
-
-  RecordRecoveryEvent(RECOVERY_EVENT_RECOVERED);
-}
-
 void DatabaseErrorCallback(sql::Connection* db,
                            const base::FilePath& db_path,
                            HistoryBackendClient* backend_client,
@@ -425,11 +230,36 @@ void DatabaseErrorCallback(sql::Connection* db,
   }
 
   // Attempt to recover corrupt databases.
-  int error = (extended_error & 0xFF);
-  if (error == SQLITE_CORRUPT ||
-      error == SQLITE_CANTOPEN ||
-      error == SQLITE_NOTADB) {
-    RecoverDatabaseOrRaze(db, db_path);
+  if (sql::Recovery::ShouldRecover(extended_error)) {
+    // NOTE(shess): This approach is valid as of version 8.  When bumping the
+    // version, it will PROBABLY remain valid, but consider whether any schema
+    // changes might break automated recovery.
+    DCHECK_EQ(8, kCurrentVersionNumber);
+
+    // Prevent reentrant calls.
+    db->reset_error_callback();
+
+    // TODO(shess): Is it possible/likely to have broken foreign-key
+    // issues with the tables?
+    // - icon_mapping.icon_id maps to no favicons.id
+    // - favicon_bitmaps.icon_id maps to no favicons.id
+    // - favicons.id is referenced by no icon_mapping.icon_id
+    // - favicons.id is referenced by no favicon_bitmaps.icon_id
+    // This step is possibly not worth the effort necessary to develop
+    // and sequence the statements, as it is basically a form of garbage
+    // collection.
+
+    // After this call, the |db| handle is poisoned so that future calls will
+    // return errors until the handle is re-opened.
+    sql::Recovery::RecoverDatabaseWithMetaVersion(db, db_path);
+
+    // The DLOG(FATAL) below is intended to draw immediate attention to errors
+    // in newly-written code.  Database corruption is generally a result of OS
+    // or hardware issues, not coding errors at the client level, so displaying
+    // the error would probably lead to confusion.  The ignored call signals the
+    // test-expectation framework that the error was handled.
+    ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
+    return;
   }
 
   // The default handling is to assert on debug and to ignore on release.

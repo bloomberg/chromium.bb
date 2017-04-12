@@ -156,17 +156,27 @@ class SQL_EXPORT Recovery {
   bool GetMetaVersionNumber(int* version_number);
 
   // Attempt to recover the database by creating a new database with schema from
-  // |db|, then copying over as much data as possible.  After this call, the
-  // |db| handle will be poisoned (though technically remaining open) so that
-  // future calls will return errors until the handle is re-opened.
-  //
-  // If a corrupt database contains tables without unique indices, the resulting
-  // table may contain duplication.  If this is not acceptable, the client
-  // should use the manual process as described in the example at the top of the
-  // file, cleaning up data at the appropriate points.
+  // |db|, then copying over as much data as possible.  If successful, the
+  // recovery handle is returned to allow the caller to make additional changes,
+  // such as validating constraints not expressed in the schema.
   //
   // In case of SQLITE_NOTADB, the database is deemed unrecoverable and deleted.
+  static std::unique_ptr<Recovery> BeginRecoverDatabase(
+      Connection* db,
+      const base::FilePath& db_path) WARN_UNUSED_RESULT;
+
+  // Call BeginRecoverDatabase() to recover the database, then commit the
+  // changes using Recovered().  After this call, the |db| handle will be
+  // poisoned (though technically remaining open) so that future calls will
+  // return errors until the handle is re-opened.
   static void RecoverDatabase(Connection* db, const base::FilePath& db_path);
+
+  // Variant on RecoverDatabase() which requires that the database have a valid
+  // meta table with a version value.  The meta version value is used by some
+  // clients to make assertions about the database schema.  If this information
+  // cannot be determined, the database is considered unrecoverable.
+  static void RecoverDatabaseWithMetaVersion(Connection* db,
+                                             const base::FilePath& db_path);
 
   // Returns true for SQLite errors which RecoverDatabase() can plausibly fix.
   // This does not guarantee that RecoverDatabase() will successfully recover

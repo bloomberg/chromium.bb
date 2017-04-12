@@ -86,31 +86,15 @@ TEST_F(TopSitesDatabaseTest, Version1) {
   VerifyDatabaseEmpty(db.db_.get());
 }
 
+// Version 2 is deprecated, the resulting schema should be current,
+// with no data.
 TEST_F(TopSitesDatabaseTest, Version2) {
   ASSERT_TRUE(CreateDatabaseFromSQL(file_name_, "TopSites.v2.sql"));
 
   TopSitesDatabase db;
   ASSERT_TRUE(db.Init(file_name_));
-
   VerifyTablesAndColumns(db.db_.get());
-
-  // Basic operational check.
-  MostVisitedURLList urls;
-  std::map<GURL, Images> thumbnails;
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(3u, urls.size());
-  ASSERT_EQ(3u, thumbnails.size());
-  EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
-  // kGoogleThumbnail includes nul terminator.
-  ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
-            thumbnails[urls[0].url].thumbnail->size());
-  EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
-                      kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
-
-  ASSERT_TRUE(db.RemoveURL(urls[1]));
-  db.GetPageThumbnails(&urls, &thumbnails);
-  ASSERT_EQ(2u, urls.size());
-  ASSERT_EQ(2u, thumbnails.size());
+  VerifyDatabaseEmpty(db.db_.get());
 }
 
 TEST_F(TopSitesDatabaseTest, Version3) {
@@ -198,29 +182,15 @@ TEST_F(TopSitesDatabaseTest, Recovery2) {
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
-  // Corruption should be detected and recovered during Init().  After recovery,
-  // the Version2 checks should work.
+  // Corruption should be detected and recovered during Init().
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
 
     TopSitesDatabase db;
     ASSERT_TRUE(db.Init(file_name_));
-
     VerifyTablesAndColumns(db.db_.get());
-
-    // Basic operational check.
-    MostVisitedURLList urls;
-    std::map<GURL, Images> thumbnails;
-    db.GetPageThumbnails(&urls, &thumbnails);
-    ASSERT_EQ(3u, urls.size());
-    ASSERT_EQ(3u, thumbnails.size());
-    EXPECT_EQ(kUrl0, urls[0].url);  // [0] because of url_rank.
-    // kGoogleThumbnail includes nul terminator.
-    ASSERT_EQ(sizeof(kGoogleThumbnail) - 1,
-              thumbnails[urls[0].url].thumbnail->size());
-    EXPECT_TRUE(!memcmp(thumbnails[urls[0].url].thumbnail->front(),
-                        kGoogleThumbnail, sizeof(kGoogleThumbnail) - 1));
+    VerifyDatabaseEmpty(db.db_.get());
 
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
