@@ -165,7 +165,7 @@ public class MediaCaptureNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER)
+                                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_MEDIA)
                         .setAutoCancel(false)
                         .setOngoing(true)
                         .setContentTitle(mContext.getString(R.string.app_name))

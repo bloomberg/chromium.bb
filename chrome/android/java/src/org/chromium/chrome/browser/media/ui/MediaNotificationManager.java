@@ -771,7 +771,7 @@ public class MediaNotificationManager {
 
     private void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_BROWSER);
+                true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_MEDIA);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.notificationSmallIcon);

@@ -85,7 +85,10 @@ public class ChannelsUpdaterTest {
         assertThat(mMockNotificationManager.getChannels().size(), is(greaterThan(0)));
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
                 containsInAnyOrder(ChannelsInitializer.CHANNEL_ID_BROWSER,
-                        ChannelsInitializer.CHANNEL_ID_SITES));
+                        ChannelsInitializer.CHANNEL_ID_DOWNLOADS,
+                        ChannelsInitializer.CHANNEL_ID_INCOGNITO,
+                        ChannelsInitializer.CHANNEL_ID_SITES,
+                        ChannelsInitializer.CHANNEL_ID_MEDIA));
         assertThat(mMockSharedPreferences.getInt(ChannelsUpdater.CHANNELS_VERSION_KEY, -1), is(21));
     }
 
@@ -108,6 +111,9 @@ public class ChannelsUpdaterTest {
 
         assertThat(mMockNotificationManager.getNotificationChannelIds(),
                 containsInAnyOrder(ChannelsInitializer.CHANNEL_ID_BROWSER,
-                        ChannelsInitializer.CHANNEL_ID_SITES));
+                        ChannelsInitializer.CHANNEL_ID_DOWNLOADS,
+                        ChannelsInitializer.CHANNEL_ID_INCOGNITO,
+                        ChannelsInitializer.CHANNEL_ID_SITES,
+                        ChannelsInitializer.CHANNEL_ID_MEDIA));
     }
 }

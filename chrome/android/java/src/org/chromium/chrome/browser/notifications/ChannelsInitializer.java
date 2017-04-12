@@ -28,10 +28,14 @@ public class ChannelsInitializer {
 
     // To define a new channel, add the channel ID to this StringDef and add a new entry to
     // PredefinedChannels.MAP below with the appropriate channel parameters.
-    @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_SITES})
+    @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_DOWNLOADS, CHANNEL_ID_INCOGNITO, CHANNEL_ID_MEDIA,
+            CHANNEL_ID_SITES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {}
     public static final String CHANNEL_ID_BROWSER = "browser";
+    public static final String CHANNEL_ID_DOWNLOADS = "downloads";
+    public static final String CHANNEL_ID_INCOGNITO = "incognito";
+    public static final String CHANNEL_ID_MEDIA = "media";
     public static final String CHANNEL_ID_SITES = "sites";
 
     @StringDef({CHANNEL_GROUP_ID_GENERAL})
@@ -52,6 +56,18 @@ public class ChannelsInitializer {
             map.put(CHANNEL_ID_BROWSER,
                     new Channel(CHANNEL_ID_BROWSER,
                             org.chromium.chrome.R.string.notification_category_browser,
+                            NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
+            map.put(CHANNEL_ID_DOWNLOADS,
+                    new Channel(CHANNEL_ID_DOWNLOADS,
+                            org.chromium.chrome.R.string.notification_category_downloads,
+                            NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
+            map.put(CHANNEL_ID_INCOGNITO,
+                    new Channel(CHANNEL_ID_INCOGNITO,
+                            org.chromium.chrome.R.string.notification_category_incognito,
+                            NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
+            map.put(CHANNEL_ID_MEDIA,
+                    new Channel(CHANNEL_ID_MEDIA,
+                            org.chromium.chrome.R.string.notification_category_media,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             map.put(CHANNEL_ID_SITES,
                     new Channel(CHANNEL_ID_SITES,
