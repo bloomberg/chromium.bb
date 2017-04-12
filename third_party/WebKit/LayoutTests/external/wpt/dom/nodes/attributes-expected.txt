@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 56 tests; 46 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 58 tests; 50 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown. (setAttribute) 
 PASS When qualifiedName does not match the Name production, an INVALID_CHARACTER_ERR exception is to be thrown, even if the attribute is already present. (setAttribute) 
 PASS setAttribute should lowercase its name argument (upper case attribute) 
@@ -31,8 +31,8 @@ PASS Entities in attributes should have been expanded while parsing.
 PASS Unset attributes return null 
 PASS First set attribute is returned by getAttribute 
 PASS Style attributes are not normalized 
-FAIL Only lowercase attributes are returned on HTML elements (upper case attribute) assert_equals: expected (object) null but got (string) "left"
-FAIL Only lowercase attributes are returned on HTML elements (mixed case attribute) assert_equals: expected (object) null but got (string) "tasty"
+PASS Only lowercase attributes are returned on HTML elements (upper case attribute) 
+PASS Only lowercase attributes are returned on HTML elements (mixed case attribute) 
 PASS First set attribute is returned with mapped attribute set first 
 PASS First set attribute is returned with mapped attribute set later 
 PASS Non-HTML element with upper-case attribute 
@@ -40,6 +40,8 @@ PASS Attribute with prefix in local name
 PASS Attribute loses its owner when removed 
 PASS Basic functionality of getAttributeNode/getAttributeNodeNS 
 PASS Basic functionality of setAttributeNode 
+PASS setAttributeNode should distinguish attributes with same local name and different namespaces 
+PASS setAttributeNode doesn't have case-insensitivity even with an HTMLElement 
 PASS Basic functionality of setAttributeNodeNS 
 PASS If attr’s element is neither null nor element, throw an InUseAttributeError. 
 PASS Replacing an attr by itself 

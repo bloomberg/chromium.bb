@@ -200,7 +200,11 @@ class CORE_EXPORT Element : public ContainerNode {
   const AtomicString& GetNameAttribute() const;
   const AtomicString& GetClassAttribute() const;
 
-  bool ShouldIgnoreAttributeCase() const;
+  // This is an operation defined in the DOM standard like:
+  //   If element is in the HTML namespace and its node document is an HTML
+  //   document, then set qualifiedName to qualifiedName in ASCII lowercase.
+  //   https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
+  AtomicString LowercaseIfNecessary(const AtomicString&) const;
 
   // Call this to get the value of the id attribute for style resolution
   // purposes.  The value will already be lowercased if the document is in

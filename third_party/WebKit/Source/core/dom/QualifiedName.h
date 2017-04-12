@@ -135,14 +135,6 @@ class CORE_EXPORT QualifiedName {
                                     NamespaceURI() == other.NamespaceURI());
   }
 
-  bool MatchesPossiblyIgnoringASCIICase(const QualifiedName& other,
-                                        bool should_ignore_case) const {
-    return impl_ == other.impl_ ||
-           (EqualPossiblyIgnoringASCIICase(LocalName(), other.LocalName(),
-                                           should_ignore_case) &&
-            NamespaceURI() == other.NamespaceURI());
-  }
-
   bool HasPrefix() const { return impl_->prefix_ != g_null_atom; }
   void SetPrefix(const AtomicString& prefix) {
     *this = QualifiedName(prefix, LocalName(), NamespaceURI());

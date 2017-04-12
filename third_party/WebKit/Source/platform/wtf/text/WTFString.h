@@ -475,12 +475,6 @@ inline bool operator!=(const char* a, const String& b) {
   return !(a == b);
 }
 
-inline bool EqualPossiblyIgnoringASCIICase(const String& a,
-                                           const String& b,
-                                           bool ignore_case) {
-  return ignore_case ? EqualIgnoringASCIICase(a, b) : (a == b);
-}
-
 inline bool EqualIgnoringNullity(const String& a, const String& b) {
   return EqualIgnoringNullity(a.Impl(), b.Impl());
 }

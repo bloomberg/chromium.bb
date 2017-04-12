@@ -62,13 +62,12 @@ class AttributeCollectionGeneric {
   bool IsEmpty() const { return !size(); }
 
   iterator Find(const QualifiedName&) const;
-  iterator Find(const AtomicString& name, bool should_ignore_case) const;
-  size_t FindIndex(const QualifiedName&, bool should_ignore_case = false) const;
-  size_t FindIndex(const AtomicString& name, bool should_ignore_case) const;
+  iterator Find(const AtomicString& name) const;
+  size_t FindIndex(const QualifiedName&) const;
+  size_t FindIndex(const AtomicString& name) const;
 
  protected:
-  size_t FindSlowCase(const AtomicString& name,
-                      bool should_ignore_attribute_case) const;
+  size_t FindSlowCase(const AtomicString& name) const;
 
   ContainerMemberType attributes_;
 };
@@ -128,36 +127,29 @@ template <typename Container, typename ContainerMemberType>
 inline typename AttributeCollectionGeneric<Container,
                                            ContainerMemberType>::iterator
 AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
-    const AtomicString& name,
-    bool should_ignore_case) const {
-  size_t index = FindIndex(name, should_ignore_case);
+    const AtomicString& name) const {
+  size_t index = FindIndex(name);
   return index != kNotFound ? &at(index) : nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>
 inline size_t
 AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
-    const QualifiedName& name,
-    bool should_ignore_case) const {
+    const QualifiedName& name) const {
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
-    if (it->GetName().MatchesPossiblyIgnoringASCIICase(name,
-                                                       should_ignore_case))
+    if (it->GetName().Matches(name))
       return index;
   }
   return kNotFound;
 }
 
-// We use a boolean parameter instead of calling shouldIgnoreAttributeCase so
-// that the caller can tune the behavior (hasAttribute is case sensitive whereas
-// getAttribute is not).
 template <typename Container, typename ContainerMemberType>
 inline size_t
 AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
-    const AtomicString& name,
-    bool should_ignore_case) const {
-  bool do_slow_check = should_ignore_case;
+    const AtomicString& name) const {
+  bool do_slow_check = false;
 
   // Optimize for the case where the attribute exists and its name exactly
   // matches.
@@ -175,7 +167,7 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
   }
 
   if (do_slow_check)
-    return FindSlowCase(name, should_ignore_case);
+    return FindSlowCase(name);
   return kNotFound;
 }
 
@@ -194,25 +186,21 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
 
 template <typename Container, typename ContainerMemberType>
 size_t AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
-    const AtomicString& name,
-    bool should_ignore_attribute_case) const {
+    const AtomicString& name) const {
   // Continue to checking case-insensitively and/or full namespaced names if
   // necessary:
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
-    // FIXME: Why check the prefix? Namespace is all that should matter
-    // and all HTML/SVG attributes have a null namespace!
     if (!it->GetName().HasPrefix()) {
-      if (should_ignore_attribute_case &&
-          EqualIgnoringASCIICase(name, it->LocalName()))
-        return index;
+      // Skip attributes with no prefixes because they must be checked in
+      // FindIndex(const AtomicString&).
+      DCHECK_NE(name, it->LocalName());
     } else {
       // FIXME: Would be faster to do this comparison without calling ToString,
       // which generates a temporary string by concatenation. But this branch is
       // only reached if the attribute name has a prefix, which is rare in HTML.
-      if (EqualPossiblyIgnoringASCIICase(name, it->GetName().ToString(),
-                                         should_ignore_attribute_case))
+      if (name == it->GetName().ToString())
         return index;
     }
   }

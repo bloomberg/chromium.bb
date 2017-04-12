@@ -45,8 +45,8 @@ Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespace_uri,
 
 Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
                                     ExceptionState& exception_state) {
-  size_t index = element_->Attributes().FindIndex(
-      name, element_->ShouldIgnoreAttributeCase());
+  size_t index =
+      element_->Attributes().FindIndex(element_->LowercaseIfNecessary(name));
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
         kNotFoundError, "No item with name '" + name + "' was found.");

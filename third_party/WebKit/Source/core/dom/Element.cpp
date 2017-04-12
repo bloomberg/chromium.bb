@@ -393,8 +393,7 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
   if (!GetElementData())
     return;
   if (GetElementData()->style_attribute_is_dirty_ &&
-      EqualPossiblyIgnoringASCIICase(local_name, styleAttr.LocalName(),
-                                     ShouldIgnoreAttributeCase())) {
+      LowercaseIfNecessary(local_name) == styleAttr.LocalName()) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
@@ -426,8 +425,9 @@ const AtomicString& Element::getAttribute(const QualifiedName& name) const {
   return g_null_atom;
 }
 
-bool Element::ShouldIgnoreAttributeCase() const {
-  return IsHTMLElement() && GetDocument().IsHTMLDocument();
+AtomicString Element::LowercaseIfNecessary(const AtomicString& name) const {
+  return IsHTMLElement() && GetDocument().IsHTMLDocument() ? name.LowerASCII()
+                                                           : name;
 }
 
 void Element::scrollIntoView(bool align_to_top) {
@@ -1219,8 +1219,8 @@ const AtomicString& Element::getAttribute(
   if (!GetElementData())
     return g_null_atom;
   SynchronizeAttribute(local_name);
-  if (const Attribute* attribute = GetElementData()->Attributes().Find(
-          local_name, ShouldIgnoreAttributeCase()))
+  if (const Attribute* attribute =
+          GetElementData()->Attributes().Find(LowercaseIfNecessary(local_name)))
     return attribute->Value();
   return g_null_atom;
 }
@@ -1242,8 +1242,7 @@ void Element::setAttribute(const AtomicString& local_name,
   }
 
   SynchronizeAttribute(local_name);
-  const AtomicString& case_adjusted_local_name =
-      ShouldIgnoreAttributeCase() ? local_name.LowerASCII() : local_name;
+  AtomicString case_adjusted_local_name = LowercaseIfNecessary(local_name);
 
   if (!GetElementData()) {
     SetAttributeInternal(
@@ -1254,7 +1253,7 @@ void Element::setAttribute(const AtomicString& local_name,
   }
 
   AttributeCollection attributes = GetElementData()->Attributes();
-  size_t index = attributes.FindIndex(case_adjusted_local_name, false);
+  size_t index = attributes.FindIndex(case_adjusted_local_name);
   const QualifiedName& q_name =
       index != kNotFound
           ? attributes[index].GetName()
@@ -2473,8 +2472,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   const UniqueElementData& element_data = EnsureUniqueElementData();
 
   AttributeCollection attributes = element_data.Attributes();
-  size_t index = attributes.FindIndex(attr_node->GetQualifiedName(),
-                                      ShouldIgnoreAttributeCase());
+  size_t index = attributes.FindIndex(attr_node->GetQualifiedName());
   AtomicString local_name;
   if (index != kNotFound) {
     const Attribute& attr = attributes[index];
@@ -2629,9 +2627,8 @@ void Element::removeAttribute(const AtomicString& name) {
   if (!GetElementData())
     return;
 
-  AtomicString local_name =
-      ShouldIgnoreAttributeCase() ? name.LowerASCII() : name;
-  size_t index = GetElementData()->Attributes().FindIndex(local_name, false);
+  AtomicString local_name = LowercaseIfNecessary(name);
+  size_t index = GetElementData()->Attributes().FindIndex(local_name);
   if (index == kNotFound) {
     if (UNLIKELY(local_name == styleAttr) &&
         GetElementData()->style_attribute_is_dirty_ && IsStyledElement())
@@ -2651,8 +2648,8 @@ Attr* Element::getAttributeNode(const AtomicString& local_name) {
   if (!GetElementData())
     return nullptr;
   SynchronizeAttribute(local_name);
-  const Attribute* attribute = GetElementData()->Attributes().Find(
-      local_name, ShouldIgnoreAttributeCase());
+  const Attribute* attribute =
+      GetElementData()->Attributes().Find(LowercaseIfNecessary(local_name));
   if (!attribute)
     return nullptr;
   return EnsureAttr(attribute->GetName());
@@ -2675,8 +2672,7 @@ bool Element::hasAttribute(const AtomicString& local_name) const {
     return false;
   SynchronizeAttribute(local_name);
   return GetElementData()->Attributes().FindIndex(
-             ShouldIgnoreAttributeCase() ? local_name.LowerASCII() : local_name,
-             false) != kNotFound;
+             LowercaseIfNecessary(local_name)) != kNotFound;
 }
 
 bool Element::hasAttributeNS(const AtomicString& namespace_uri,
@@ -3885,10 +3881,8 @@ void Element::SetSavedLayerScrollOffset(const ScrollOffset& size) {
 
 Attr* Element::AttrIfExists(const QualifiedName& name) {
   if (AttrNodeList* attr_node_list = this->GetAttrNodeList()) {
-    bool should_ignore_case = ShouldIgnoreAttributeCase();
     for (const auto& attr : *attr_node_list) {
-      if (attr->GetQualifiedName().MatchesPossiblyIgnoringASCIICase(
-              name, should_ignore_case))
+      if (attr->GetQualifiedName().Matches(name))
         return attr.Get();
     }
   }
