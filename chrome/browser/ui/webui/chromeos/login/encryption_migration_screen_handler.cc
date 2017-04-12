@@ -7,6 +7,9 @@
 #include <string>
 #include <utility>
 
+#include "base/files/file_path.h"
+#include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -15,6 +18,12 @@
 namespace {
 
 constexpr char kJsScreenPath[] = "login.EncryptionMigrationScreen";
+
+// Path to the mount point to check the available space.
+constexpr char kCheckStoragePath[] = "/home";
+
+// The minimum size of available space to start the migration.
+constexpr int64_t kMinimumAvailableStorage = 10LL * 1024 * 1024;  // 10MB
 
 // JS API callbacks names.
 constexpr char kJsApiStartMigration[] = "startMigration";
@@ -59,15 +68,16 @@ void EncryptionMigrationScreenHandler::SetUserContext(
 }
 
 void EncryptionMigrationScreenHandler::SetShouldResume(bool should_resume) {
-  if (current_ui_state_ == INITIAL && should_resume) {
-    // TODO(fukino): Wait until the battery gets enough level.
-    StartMigration();
-  }
+  should_resume_ = should_resume;
 }
 
 void EncryptionMigrationScreenHandler::SetContinueLoginCallback(
     ContinueLoginCallback callback) {
   continue_login_callback_ = std::move(callback);
+}
+
+void EncryptionMigrationScreenHandler::SetupInitialView() {
+  CheckAvailableStorage();
 }
 
 void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
@@ -93,7 +103,6 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
 }
 
 void EncryptionMigrationScreenHandler::HandleStartMigration() {
-  // TODO(fukino): Wait until the battery gets enough level.
   StartMigration();
 }
 
@@ -122,6 +131,31 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
 
   current_ui_state_ = state;
   CallJS("setUIState", static_cast<int>(state));
+}
+
+void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::USER_VISIBLE),
+      base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
+                 base::FilePath(kCheckStoragePath)),
+      base::Bind(&EncryptionMigrationScreenHandler::OnGetAvailableStorage,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
+  if (size < kMinimumAvailableStorage) {
+    UpdateUIState(NOT_ENOUGH_STORAGE);
+    CallJS("setIsResuming", should_resume_);
+  } else {
+    if (should_resume_) {
+      // TODO(fukino): Check the battery level.
+      StartMigration();
+    } else {
+      UpdateUIState(READY);
+    }
+  }
 }
 
 void EncryptionMigrationScreenHandler::StartMigration() {

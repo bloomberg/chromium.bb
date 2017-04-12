@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <template is="dom-if" if="[[isInitial_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons>
+        <p>Checking the system...</p>
+      </oobe-dialog>
+    </template>
+    <template is="dom-if" if="[[isReady_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
         <div class="header">
           <h1 class="title">Your file system needs upgrade</h1>
           <div class="subtitle">
@@ -68,6 +73,27 @@
           <div class="flex"></div>
           <oobe-text-button inverse on-tap="onRestart_">Restart
           </oobe-text-button>
+        </div>
+      </oobe-dialog>
+    </template>
+    <template is="dom-if" if="[[isNotEnoughSpace_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
+        <div class="header">
+          <h1 class="title">Not enough storage for update</h1>
+          <div class="subtitle">
+            Please free up some space on your device and sign in again.
+          </div>
+        </div>
+        <div class="bottom-buttons flex layout horizontal">
+          <div class="flex"></div>
+          <template is="dom-if" if="[[!isResuming]]">
+            <oobe-text-button inverse on-tap="onSkip_">Continue
+            </oobe-text-button>
+          </template>
+          <template is="dom-if" if="[[isResuming]]">
+            <oobe-text-button inverse on-tap="onRestart_">Restart
+            </oobe-text-button>
+          </template>
         </div>
       </oobe-dialog>
     </template>

@@ -41,6 +41,10 @@ class EncryptionMigrationScreen
   // session from the migration UI.
   void SetContinueLoginCallback(ContinueLoginCallback callback);
 
+  // Setup the initial view in the migration UI.
+  // This should be called after other state like UserContext, etc... are set.
+  void SetupInitialView();
+
  private:
   EncryptionMigrationScreenView* view_;
 

@@ -8,6 +8,7 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
     EXTERNAL_API: [
       'setUIState',
       'setMigrationProgress',
+      'setIsResuming',
     ],
 
     /**
@@ -56,6 +57,15 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
      */
     setMigrationProgress: function(progress) {
       $('encryption-migration-element').progress = progress;
+    },
+
+    /**
+     * Updates the migration screen based on whether the migration process is
+     * resuming the previous one.
+     * @param {boolean} isResuming
+     */
+    setIsResuming: function(isResuming) {
+      $('encryption-migration-element').isResuming = isResuming;
     },
   };
 });

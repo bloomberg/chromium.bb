@@ -14,9 +14,11 @@
  */
 var EncryptionMigrationUIState = {
   INITIAL: 0,
-  MIGRATING: 1,
-  MIGRATION_SUCCEEDED: 2,
-  MIGRATION_FAILED: 3
+  READY: 1,
+  MIGRATING: 2,
+  MIGRATION_SUCCEEDED: 3,
+  MIGRATION_FAILED: 4,
+  NOT_ENOUGH_SPACE: 5
 };
 
 Polymer({
@@ -40,6 +42,14 @@ Polymer({
       type: Number,
       value: -1
     },
+
+    /**
+     * Whether the current migration is resuming the previous one.
+     */
+    isResuming: {
+      type: Boolean,
+      value: false
+    },
   },
 
   /**
@@ -49,6 +59,15 @@ Polymer({
    */
   isInitial_: function(state) {
     return state == EncryptionMigrationUIState.INITIAL;
+  },
+
+  /**
+   * Returns true if the migration is ready to start.
+   * @param {EncryptionMigrationUIState} state Current UI state
+   * @private
+   */
+  isReady_: function(state) {
+    return state == EncryptionMigrationUIState.READY;
   },
 
   /**
@@ -76,6 +95,15 @@ Polymer({
    */
   isMigrationFailed_: function(state) {
     return state == EncryptionMigrationUIState.MIGRATION_FAILED;
+  },
+
+  /**
+   * Returns true if the available space is not enough to start migration.
+   * @param {EncryptionMigrationUIState} state Current UI state
+   * @private
+   */
+  isNotEnoughSpace_: function(state) {
+    return state == EncryptionMigrationUIState.NOT_ENOUGH_SPACE;
   },
 
   /**

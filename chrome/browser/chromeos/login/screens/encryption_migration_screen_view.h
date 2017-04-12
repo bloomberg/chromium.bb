@@ -39,6 +39,7 @@ class EncryptionMigrationScreenView {
   virtual void SetUserContext(const UserContext& user_context) = 0;
   virtual void SetShouldResume(bool should_resume) = 0;
   virtual void SetContinueLoginCallback(ContinueLoginCallback callback) = 0;
+  virtual void SetupInitialView() = 0;
 };
 
 }  // namespace chromeos

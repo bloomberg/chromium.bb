@@ -630,6 +630,7 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
   migration_screen->SetContinueLoginCallback(base::BindOnce(
       &ExistingUserController::ContinuePerformLogin, weak_factory_.GetWeakPtr(),
       login_performer_->auth_mode()));
+  migration_screen->SetupInitialView();
 }
 
 void ExistingUserController::ShowTPMError() {

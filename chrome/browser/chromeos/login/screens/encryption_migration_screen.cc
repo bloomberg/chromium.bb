@@ -64,4 +64,9 @@ void EncryptionMigrationScreen::SetContinueLoginCallback(
   view_->SetContinueLoginCallback(std::move(callback));
 }
 
+void EncryptionMigrationScreen::SetupInitialView() {
+  DCHECK(view_);
+  view_->SetupInitialView();
+}
+
 }  // namespace chromeos

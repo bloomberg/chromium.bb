@@ -27,6 +27,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void SetUserContext(const UserContext& user_context) override;
   void SetShouldResume(bool should_resume) override;
   void SetContinueLoginCallback(ContinueLoginCallback callback) override;
+  void SetupInitialView() override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -38,9 +39,11 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // EncryptionMigrationUIState in JS code.
   enum UIState {
     INITIAL = 0,
-    MIGRATING = 1,
-    MIGRATION_SUCCEEDED = 2,
-    MIGRATION_FAILED = 3
+    READY = 1,
+    MIGRATING = 2,
+    MIGRATION_SUCCEEDED = 3,
+    MIGRATION_FAILED = 4,
+    NOT_ENOUGH_STORAGE = 5,
   };
 
   // WebUIMessageHandler implementation:
@@ -55,6 +58,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void UpdateUIState(UIState state);
 
   // Requests cryptohome to start encryption migration.
+  void CheckAvailableStorage();
+  void OnGetAvailableStorage(int64_t size);
   void StartMigration();
 
   // Handlers for cryptohome API callbacks.
@@ -75,6 +80,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
 
   // The callback which is used to log in to the session from the migration UI.
   ContinueLoginCallback continue_login_callback_;
+
+  // True if the system should resume the previous incomplete migration.
+  bool should_resume_ = false;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
 
