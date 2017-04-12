@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "device/battery/battery_monitor.mojom.h"
+#include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/light.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
@@ -60,6 +61,7 @@ class DeviceService
       public service_manager::InterfaceFactory<mojom::PowerMonitor>,
       public service_manager::InterfaceFactory<
           mojom::ScreenOrientationListener>,
+      public service_manager::InterfaceFactory<mojom::SensorProvider>,
       public service_manager::InterfaceFactory<mojom::TimeZoneMonitor>,
       public service_manager::InterfaceFactory<mojom::WakeLockContextProvider> {
  public:
@@ -116,6 +118,10 @@ class DeviceService
   // InterfaceFactory<mojom::ScreenOrientationListener>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::ScreenOrientationListenerRequest request) override;
+
+  // InterfaceFactory<mojom::SensorProvider>:
+  void Create(const service_manager::Identity& remote_identity,
+              mojom::SensorProviderRequest request) override;
 
   // InterfaceFactory<mojom::TimeZoneMonitor>:
   void Create(const service_manager::Identity& remote_identity,

@@ -70,7 +70,6 @@ source_set("browser") {
     "//crypto",
     "//device/bluetooth",
     "//device/gamepad",
-    "//device/generic_sensor",
     "//device/geolocation",
     "//device/geolocation/public/interfaces",
     "//device/nfc:mojo_bindings",

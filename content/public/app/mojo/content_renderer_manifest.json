@@ -22,6 +22,7 @@
         "content_browser": [ "renderer" ],
         "device": [
           "device:battery_monitor",
+          "device:generic_sensor",
           "device:power_monitor",
           "device:screen_orientation",
           "device:sensors",

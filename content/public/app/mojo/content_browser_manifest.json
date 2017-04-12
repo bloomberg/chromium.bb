@@ -91,7 +91,6 @@
           "content::mojom::BrowserTarget",
           "device::mojom::VRService",
           "device::mojom::GeolocationService",
-          "device::mojom::SensorProvider",
           "device::mojom::WakeLockService",
           "device::nfc::mojom::NFC",
           "device::usb::DeviceManager",

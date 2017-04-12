@@ -6,8 +6,9 @@
 
 #include "modules/sensor/SensorProxy.h"
 #include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "services/device/public/interfaces/constants.mojom-blink.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace blink {
 
@@ -15,12 +16,12 @@ namespace blink {
 SensorProviderProxy::SensorProviderProxy(LocalFrame& frame)
     : Supplement<LocalFrame>(frame) {}
 
-void SensorProviderProxy::InitializeIfNeeded(LocalFrame* frame) {
+void SensorProviderProxy::InitializeIfNeeded() {
   if (IsInitialized())
     return;
 
-  frame->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&sensor_provider_));
+  Platform::Current()->GetConnector()->BindInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&sensor_provider_));
   sensor_provider_.set_connection_error_handler(ConvertToBaseCallback(
       WTF::Bind(&SensorProviderProxy::OnSensorProviderConnectionError,
                 WrapWeakPersistent(this))));
@@ -39,7 +40,7 @@ SensorProviderProxy* SensorProviderProxy::From(LocalFrame* frame) {
     provider_proxy = new SensorProviderProxy(*frame);
     Supplement<LocalFrame>::ProvideTo(*frame, SupplementName(), provider_proxy);
   }
-  provider_proxy->InitializeIfNeeded(frame);
+  provider_proxy->InitializeIfNeeded();
   return provider_proxy;
 }
 

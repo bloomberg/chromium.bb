@@ -95,7 +95,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vr/features.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
@@ -2512,13 +2511,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
       base::Bind(&IgnoreInterfaceRequest<device::mojom::VRService>));
 #endif
-
-  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
-    GetInterfaceRegistry()->AddInterface(
-        base::Bind(&device::SensorProviderImpl::Create,
-                   BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-  }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // BrowserMainLoop::GetInstance() may be null on unit tests.

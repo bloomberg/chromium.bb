@@ -87,6 +87,7 @@
 #include "net/cert/cert_verify_proc_android.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "services/device/public/cpp/device_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"

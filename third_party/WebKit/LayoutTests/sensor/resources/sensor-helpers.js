@@ -23,7 +23,8 @@ function sensor_mocks(mojo) {
     'mojo/public/js/bindings',
     'device/generic_sensor/public/interfaces/sensor_provider.mojom',
     'device/generic_sensor/public/interfaces/sensor.mojom',
-  ], (core, bindings, sensor_provider, sensor) => {
+    'services/device/public/interfaces/constants.mojom',
+  ], (core, bindings, sensor_provider, sensor, deviceConstants) => {
 
     // Helper function that returns resolved promise with result.
     function sensorResponse(success) {
@@ -350,7 +351,8 @@ function sensor_mocks(mojo) {
     }
 
     let mockSensorProvider = new MockSensorProvider;
-    mojo.frameInterfaces.addInterfaceOverrideForTesting(
+    mojo.connector.addInterfaceOverrideForTesting(
+        deviceConstants.kServiceName,
         sensor_provider.SensorProvider.name,
         pipe => {
           mockSensorProvider.bindToPipe(pipe);

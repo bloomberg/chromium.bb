@@ -7,4 +7,5 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/sensor",
     "+mojo/public/cpp/bindings",
+    "+services/device/public/interfaces/constants.mojom-blink.h",
 ]

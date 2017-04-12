@@ -238,6 +238,7 @@ target(link_target_type, "child") {
     "//mojo/common",
     "//mojo/edk/system",
     "//net",
+    "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
     "//services/device/public/interfaces:constants",
     "//services/resource_coordinator/public/cpp",

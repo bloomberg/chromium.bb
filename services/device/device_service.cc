@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -14,11 +15,13 @@
 #include "device/battery/battery_monitor.mojom.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/battery/battery_status_service.h"
+#include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/sensors/device_sensor_host.h"
 #include "device/wake_lock/wake_lock_context_provider.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -91,6 +94,9 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::OrientationAbsoluteSensor>(this);
   registry_.AddInterface<mojom::PowerMonitor>(this);
   registry_.AddInterface<mojom::ScreenOrientationListener>(this);
+  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
+    registry_.AddInterface<mojom::SensorProvider>(this);
+  }
   registry_.AddInterface<mojom::TimeZoneMonitor>(this);
   registry_.AddInterface<mojom::WakeLockContextProvider>(this);
 
@@ -215,6 +221,15 @@ void DeviceService::Create(const service_manager::Identity& remote_identity,
                               base::Passed(&request)));
   }
 #endif
+}
+
+void DeviceService::Create(const service_manager::Identity& remote_identity,
+                           mojom::SensorProviderRequest request) {
+  if (io_task_runner_) {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&device::SensorProviderImpl::Create,
+                              file_task_runner_, base::Passed(&request)));
+  }
 }
 
 void DeviceService::Create(const service_manager::Identity& remote_identity,

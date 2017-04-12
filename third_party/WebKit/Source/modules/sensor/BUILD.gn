@@ -34,5 +34,7 @@ blink_modules_sources("sensor") {
     "//device/base/synchronization",
     "//device/generic_sensor/public/cpp",
     "//device/generic_sensor/public/interfaces:interfaces_blink",
+    "//services/device/public/interfaces:constants_blink",
+    "//services/service_manager/public/cpp",
   ]
 }
