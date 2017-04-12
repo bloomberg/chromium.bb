@@ -33,7 +33,6 @@ namespace blink {
 class Text;
 
 #define AppleInterchangeNewline "Apple-interchange-newline"
-#define AppleConvertedSpace "Apple-converted-space"
 
 enum EAnnotateForInterchange {
   kDoNotAnnotateForInterchange,

@@ -120,17 +120,6 @@ static bool IsInterchangeHTMLBRElement(const Node* node) {
   return true;
 }
 
-static bool IsHTMLInterchangeConvertedSpaceSpan(const Node* node) {
-  DEFINE_STATIC_LOCAL(String, converted_space_span_class_string,
-                      (AppleConvertedSpace));
-  if (!node->IsHTMLElement() || ToHTMLElement(node)->getAttribute(classAttr) !=
-                                    converted_space_span_class_string)
-    return false;
-  UseCounter::Count(node->GetDocument(),
-                    UseCounter::kEditingAppleConvertedSpace);
-  return true;
-}
-
 static Position PositionAvoidingPrecedingNodes(Position pos) {
   // If we're already on a break, it's probably a placeholder and we shouldn't
   // change our position.
@@ -382,17 +371,6 @@ void ReplacementFragment::RemoveInterchangeNodes(ContainerNode* container) {
       break;
     }
     node = node->lastChild();
-  }
-
-  node = container->FirstChild();
-  while (node) {
-    Node* next = NodeTraversal::Next(*node);
-    if (IsHTMLInterchangeConvertedSpaceSpan(node)) {
-      HTMLElement& element = ToHTMLElement(*node);
-      next = NodeTraversal::NextSkippingChildren(element);
-      RemoveNodePreservingChildren(&element);
-    }
-    node = next;
   }
 }
 
@@ -1009,13 +987,6 @@ static bool IsInlineHTMLElementWithStyle(const Node* node) {
   // We can skip over elements whose class attribute is
   // one of our internal classes.
   const HTMLElement* element = ToHTMLElement(node);
-  const AtomicString& class_attribute_value = element->getAttribute(classAttr);
-  if (class_attribute_value == AppleConvertedSpace) {
-    UseCounter::Count(element->GetDocument(),
-                      UseCounter::kEditingAppleConvertedSpace);
-    return true;
-  }
-
   return EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(element);
 }
 

@@ -40,8 +40,7 @@ String ConvertHTMLTextToInterchangeFormat(const String& in, const Text& node) {
       node.GetLayoutObject()->Style()->PreserveNewline())
     return in;
 
-  const char kConvertedSpaceString[] =
-      "<span class=\"" AppleConvertedSpace "\">\xA0</span>";
+  const char kConvertedSpaceString[] = "<span>\xA0</span>";
   static_assert((static_cast<unsigned char>('\xA0') == kNoBreakSpaceCharacter),
                 "\\xA0 should be non-breaking space");
 
