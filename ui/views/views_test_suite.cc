@@ -53,16 +53,26 @@ void ViewsTestSuite::Initialize() {
   ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 #if defined(USE_AURA)
-  env_ = aura::Env::CreateInstance();
+  InitializeEnv();
 #endif
 }
 
 void ViewsTestSuite::Shutdown() {
 #if defined(USE_AURA)
-  env_.reset();
+  DestroyEnv();
 #endif
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
 }
+
+#if defined(USE_AURA)
+void ViewsTestSuite::InitializeEnv() {
+  env_ = aura::Env::CreateInstance();
+}
+
+void ViewsTestSuite::DestroyEnv() {
+  env_.reset();
+}
+#endif
 
 }  // namespace views

@@ -906,7 +906,6 @@ source_set("views_unittests_sources") {
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
     "widget/widget_unittest.cc",
-    "widget/window_reorderer_unittest.cc",
     "window/custom_frame_view_unittest.cc",
     "window/dialog_client_view_unittest.cc",
     "window/dialog_delegate_unittest.cc",
@@ -984,10 +983,8 @@ source_set("views_unittests_sources") {
     sources += [
       "accessibility/ax_aura_obj_cache_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
-      "corewm/tooltip_controller_unittest.cc",
       "touchui/touch_selection_menu_runner_views_unittest.cc",
       "view_unittest_aura.cc",
-      "widget/native_widget_aura_unittest.cc",
     ]
     public_deps += [
       "//ui/aura",
@@ -1002,7 +999,6 @@ source_set("views_unittests_sources") {
     sources -= [
       "bubble/bubble_window_targeter_unittest.cc",
       "controls/native/native_view_host_unittest.cc",
-      "widget/window_reorderer_unittest.cc",
     ]
     public_deps += [ "//ui/accelerated_widget_mac" ]
   }
@@ -1020,9 +1016,22 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += [
+      # These tests currently use AuraTestBase, but then try to use views
+      # objects. Thus, when they are run in views_mus_unittests, they test the
+      # local aura path instead of the remote mus path, so pull them
+      # out. crbug.com/710939.
+      #
       # Some of the tests need drag-drop support. crbug.com/614037
+      "corewm/tooltip_controller_unittest.cc",
       "touchui/touch_selection_controller_impl_unittest.cc",
+      "widget/native_widget_aura_unittest.cc",
+      "widget/window_reorderer_unittest.cc",
     ]
+
+    if (is_mac) {
+      # views_unittests not yet compiling on Mac. http://crbug.com/378134
+      sources -= [ "widget/window_reorderer_unittest.cc" ]
+    }
 
     if (!is_chromeos) {
       sources += [

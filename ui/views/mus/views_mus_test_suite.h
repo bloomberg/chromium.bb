@@ -23,6 +23,10 @@ class ViewsMusTestSuite : public ViewsTestSuite {
   // ViewsTestSuite:
   void Initialize() override;
   void Shutdown() override;
+  void InitializeEnv() override;
+  void DestroyEnv() override;
+
+  std::unique_ptr<aura::Env> env_;
 
   std::unique_ptr<ServiceManagerConnection> service_manager_connections_;
 

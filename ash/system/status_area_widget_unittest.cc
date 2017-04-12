@@ -15,6 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/command_line.h"
+#include "ui/aura/env.h"
 
 namespace ash {
 
@@ -64,18 +65,27 @@ class StatusAreaWidgetPaletteTest : public test::AshTestBase {
 
   // testing::Test:
   void SetUp() override {
-    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-    cmd->AppendSwitch(switches::kAshForceEnablePalette);
-    // It's difficult to write a test that marks the primary display as
-    // internal before the status area is constructed. Just force the palette
-    // for all displays.
-    cmd->AppendSwitch(switches::kAshEnablePaletteOnAllDisplays);
+    // TODO(erg): The implementation of PaletteTray assumes it can talk directly
+    // to ui::InputDeviceManager in a mus environment, which it can't.
+    if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS) {
+      base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+      cmd->AppendSwitch(switches::kAshForceEnablePalette);
+      // It's difficult to write a test that marks the primary display as
+      // internal before the status area is constructed. Just force the palette
+      // for all displays.
+      cmd->AppendSwitch(switches::kAshEnablePaletteOnAllDisplays);
+    }
     AshTestBase::SetUp();
   }
 };
 
 // Tests that the stylus palette tray is constructed.
 TEST_F(StatusAreaWidgetPaletteTest, Basics) {
+  // TODO(erg): The implementation of PaletteTray assumes it can talk directly
+  // to ui::InputDeviceManager in a mus environment, which it can't.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    return;
+
   StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   EXPECT_TRUE(status->palette_tray());
 

@@ -25,6 +25,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderFactory {
   // Sets the factory which builds the providers.
   static void SetFactory(Factory* factory);
 
+  // Returns the current factory and sets the factory to null.
+  static Factory* TakeFactory();
+
   // Creates a Provider based on the current configuration.
   static std::unique_ptr<OSExchangeData::Provider> CreateProvider();
 };

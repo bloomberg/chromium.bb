@@ -39,11 +39,13 @@ class OSExchangeDataProviderMusTest
   // Overridden from PlatformTest:
   void SetUp() override {
     PlatformTest::SetUp();
+    old_factory_ = ui::OSExchangeDataProviderFactory::TakeFactory();
     ui::OSExchangeDataProviderFactory::SetFactory(this);
   }
 
   void TearDown() override {
-    ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
+    ui::OSExchangeDataProviderFactory::TakeFactory();
+    ui::OSExchangeDataProviderFactory::SetFactory(old_factory_);
     PlatformTest::TearDown();
   }
 
@@ -53,6 +55,7 @@ class OSExchangeDataProviderMusTest
   }
 
  private:
+  ui::OSExchangeDataProviderFactory::Factory* old_factory_ = nullptr;
   base::MessageLoopForUI message_loop_;
 };
 

@@ -46,6 +46,11 @@ using WidgetTestTest = WidgetTest;
 // Ensure that Widgets with various root windows are correctly reported by
 // WidgetTest::GetAllWidgets().
 TEST_F(WidgetTestTest, GetAllWidgets) {
+  // TODO: this test transitively uses GetContext(). That should go away for
+  // aura-mus client. http://crbug.com/663781.
+  if (IsMus())
+    return;
+
   // Note Widget::Widgets is a std::set ordered by pointer value, so the order
   // that |expected| is updated below is not important.
   Widget::Widgets expected;

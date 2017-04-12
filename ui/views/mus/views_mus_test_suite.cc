@@ -261,4 +261,12 @@ void ViewsMusTestSuite::Shutdown() {
   ViewsTestSuite::Shutdown();
 }
 
+void ViewsMusTestSuite::InitializeEnv() {
+  env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
+}
+
+void ViewsMusTestSuite::DestroyEnv() {
+  env_.reset();
+}
+
 }  // namespace views

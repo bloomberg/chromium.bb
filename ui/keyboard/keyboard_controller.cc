@@ -96,9 +96,10 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 void ToggleTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetInputController()
-      ->SetTouchEventLoggingEnabled(enable);
+  ui::InputController* controller =
+      ui::OzonePlatform::GetInstance()->GetInputController();
+  if (controller)
+    controller->SetTouchEventLoggingEnabled(enable);
 #elif defined(USE_X11)
   if (!base::SysInfo::IsRunningOnChromeOS())
     return;

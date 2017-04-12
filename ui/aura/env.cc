@@ -32,12 +32,6 @@ namespace {
 base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
 
-// Returns true if running inside of mus. Checks for mojo specific flag.
-bool RunningInsideMus() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      "primordial-pipe-token");
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +145,7 @@ Env::Env(Mode mode)
 }
 
 void Env::Init() {
-  if (RunningInsideMus()) {
+  if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
     return;
   }

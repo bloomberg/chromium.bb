@@ -26,6 +26,14 @@ void OSExchangeDataProviderFactory::SetFactory(Factory* factory) {
   factory_ = factory;
 }
 
+// static
+OSExchangeDataProviderFactory::Factory*
+OSExchangeDataProviderFactory::TakeFactory() {
+  OSExchangeDataProviderFactory::Factory* to_return = factory_;
+  factory_ = nullptr;
+  return to_return;
+}
+
 //static
 std::unique_ptr<OSExchangeData::Provider>
 OSExchangeDataProviderFactory::CreateProvider() {

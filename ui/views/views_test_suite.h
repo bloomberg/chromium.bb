@@ -30,6 +30,12 @@ class ViewsTestSuite : public base::TestSuite {
   void Initialize() override;
   void Shutdown() override;
 
+#if defined(USE_AURA)
+  // Different test suites may wish to create Env differently.
+  virtual void InitializeEnv();
+  virtual void DestroyEnv();
+#endif
+
  private:
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env_;
