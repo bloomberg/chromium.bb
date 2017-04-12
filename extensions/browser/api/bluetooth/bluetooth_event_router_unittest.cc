@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
@@ -40,8 +41,12 @@ namespace bluetooth = api::bluetooth;
 class BluetoothEventRouterTest : public ExtensionsTest {
  public:
   BluetoothEventRouterTest()
-      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
-        router_(new BluetoothEventRouter(browser_context())) {
+      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()) {
+  }
+
+  void SetUp() override {
+    ExtensionsTest::SetUp();
+    router_ = base::MakeUnique<BluetoothEventRouter>(browser_context());
     router_->SetAdapterForTest(mock_adapter_);
   }
 

@@ -148,10 +148,7 @@ class FakeExtensionSystem : public MockExtensionSystem {
 
 class UpdateServiceTest : public ExtensionsTest {
  public:
-  UpdateServiceTest() {
-    extensions_browser_client()->set_extension_system_factory(
-        &fake_extension_system_factory_);
-  }
+  UpdateServiceTest() {}
   ~UpdateServiceTest() override {}
 
   void SetUp() override {
@@ -159,6 +156,8 @@ class UpdateServiceTest : public ExtensionsTest {
     browser_threads_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::DEFAULT));
 
+    extensions_browser_client()->set_extension_system_factory(
+        &fake_extension_system_factory_);
     extensions_browser_client()->SetUpdateClientFactory(base::Bind(
         &UpdateServiceTest::CreateUpdateClient, base::Unretained(this)));
 

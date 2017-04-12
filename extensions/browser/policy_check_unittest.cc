@@ -66,15 +66,15 @@ class TestExtensionSystem : public MockExtensionSystem {
 
 class PolicyCheckTest : public ExtensionsTest {
  public:
-  PolicyCheckTest() {
-    // Replace the MockExtensionSystemFactory set by ExtensionsTest.
-    extensions_browser_client()->set_extension_system_factory(&factory_);
-  }
+  PolicyCheckTest() {}
 
   ~PolicyCheckTest() override {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
+
+    // Replace the MockExtensionSystemFactory set by ExtensionsTest.
+    extensions_browser_client()->set_extension_system_factory(&factory_);
 
     base::DictionaryValue manifest_dict;
     manifest_dict.SetString("name", "dummy name");

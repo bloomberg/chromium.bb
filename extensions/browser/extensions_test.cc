@@ -32,24 +32,21 @@ std::unique_ptr<content::TestBrowserContext> CreateTestIncognitoContext() {
 
 namespace extensions {
 
-// This class does work in the constructor instead of SetUp() to give subclasses
-// a valid BrowserContext to use while initializing their members. For example:
-//
-// class MyExtensionsTest : public ExtensionsTest {
-//   MyExtensionsTest()
-//     : my_object_(browser_context())) {
-//   }
-// };
-// TODO(crbug.com/708256): All these instances are setup in the constructor, but
-// destroyed in TearDown(), which may cause problems. Move this initialization
-// to SetUp().
-ExtensionsTest::ExtensionsTest()
-    : content_browser_client_(new TestContentBrowserClient),
-      content_utility_client_(new TestContentUtilityClient),
-      browser_context_(new content::TestBrowserContext),
-      incognito_context_(CreateTestIncognitoContext()),
-      extensions_browser_client_(
-          new TestExtensionsBrowserClient(browser_context_.get())) {
+ExtensionsTest::ExtensionsTest() {}
+
+ExtensionsTest::~ExtensionsTest() {
+  content::SetBrowserClientForTesting(nullptr);
+  content::SetUtilityClientForTesting(nullptr);
+}
+
+void ExtensionsTest::SetUp() {
+  content_browser_client_ = base::MakeUnique<TestContentBrowserClient>();
+  content_utility_client_ = base::MakeUnique<TestContentUtilityClient>();
+  browser_context_ = base::MakeUnique<content::TestBrowserContext>();
+  incognito_context_ = CreateTestIncognitoContext();
+  extensions_browser_client_ =
+      base::MakeUnique<TestExtensionsBrowserClient>(browser_context_.get());
+
   BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(
       browser_context_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
@@ -78,15 +75,7 @@ ExtensionsTest::ExtensionsTest()
 
   ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
       browser_context(), std::move(extension_prefs));
-}
 
-ExtensionsTest::~ExtensionsTest() {
-  ExtensionsBrowserClient::Set(nullptr);
-  content::SetBrowserClientForTesting(nullptr);
-  content::SetUtilityClientForTesting(nullptr);
-}
-
-void ExtensionsTest::SetUp() {
   // Crashing here? Don't use this class in Chrome's unit_tests. See header.
   BrowserContextDependencyManager::GetInstance()
       ->CreateBrowserContextServicesForTest(browser_context_.get());
@@ -99,10 +88,9 @@ void ExtensionsTest::TearDown() {
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
 
-  // TODO(crbug.com/708256): |extension_browser_client_| is reset here but not
-  // unset as the singleton until the destructor. This can lead to use after
-  // free errors.
   extensions_browser_client_.reset();
+  ExtensionsBrowserClient::Set(nullptr);
+
   browser_context_.reset();
   incognito_context_.reset();
   pref_service_.reset();

@@ -55,6 +55,7 @@ class FileHandlersMimeUtilTest : public ExtensionsTest {
   ~FileHandlersMimeUtilTest() override {}
 
   void SetUp() override {
+    ExtensionsTest::SetUp();
     file_system_context_ = content::CreateFileSystemContextForTesting(
         NULL, browser_context()->GetPath());
 

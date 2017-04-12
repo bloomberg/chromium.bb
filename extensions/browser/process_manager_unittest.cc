@@ -5,6 +5,7 @@
 #include "extensions/browser/process_manager.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
@@ -55,16 +56,21 @@ class TestProcessManagerDelegate : public ProcessManagerDelegate {
 
 class ProcessManagerTest : public ExtensionsTest {
  public:
-  ProcessManagerTest() : extension_registry_(browser_context()) {
+  ProcessManagerTest() {}
+
+  ~ProcessManagerTest() override {}
+
+  void SetUp() override {
+    ExtensionsTest::SetUp();
+    extension_registry_ =
+        base::MakeUnique<ExtensionRegistry>(browser_context());
     extensions_browser_client()->set_process_manager_delegate(
         &process_manager_delegate_);
   }
 
-  ~ProcessManagerTest() override {}
-
   // Use original_context() to make it clear it is a non-incognito context.
   BrowserContext* original_context() { return browser_context(); }
-  ExtensionRegistry* extension_registry() { return &extension_registry_; }
+  ExtensionRegistry* extension_registry() { return extension_registry_.get(); }
   TestProcessManagerDelegate* process_manager_delegate() {
     return &process_manager_delegate_;
   }
@@ -79,7 +85,8 @@ class ProcessManagerTest : public ExtensionsTest {
   }
 
  private:
-  ExtensionRegistry extension_registry_;  // Shared between BrowserContexts.
+  std::unique_ptr<ExtensionRegistry>
+      extension_registry_;  // Shared between BrowserContexts.
   TestProcessManagerDelegate process_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManagerTest);

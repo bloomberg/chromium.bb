@@ -114,6 +114,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
 
  protected:
   void SetUp() override {
+    ExtensionsTest::SetUp();
     user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
   }
 
