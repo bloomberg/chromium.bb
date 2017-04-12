@@ -110,9 +110,6 @@ class GridTrackSizingAlgorithm final {
 
 #if DCHECK_IS_ON()
   bool TracksAreWiderThanMinTrackBreadth() const;
-  bool IsTrackSizingOperation() const {
-    return sizing_operation_ == kTrackSizing;
-  };
 #endif
 
  private:
