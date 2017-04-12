@@ -10,7 +10,6 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -64,7 +63,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NGLogicalOffset CalculateLogicalOffset(
       const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
 
-  NGFragmentBuilder builder_;
   NGConstraintSpaceBuilder space_builder_;
 
   NGBoxStrut border_and_padding_;

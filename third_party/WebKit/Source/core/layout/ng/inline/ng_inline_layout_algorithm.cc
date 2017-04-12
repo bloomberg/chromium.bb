@@ -56,7 +56,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGConstraintSpace* space,
     NGInlineBreakToken* break_token)
     : NGLayoutAlgorithm(inline_node, space, break_token),
-      container_builder_(NGPhysicalFragment::kFragmentBox, inline_node),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       disallow_first_line_rules_(false),

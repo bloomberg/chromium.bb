@@ -6,6 +6,7 @@
 #define NGLayoutAlgorithm_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_min_max_content_size.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
@@ -24,7 +25,10 @@ class CORE_EXPORT NGLayoutAlgorithm {
   NGLayoutAlgorithm(NGInputNodeType* node,
                     NGConstraintSpace* space,
                     NGBreakTokenType* break_token)
-      : node_(node), constraint_space_(space), break_token_(break_token) {}
+      : node_(node),
+        constraint_space_(space),
+        break_token_(break_token),
+        container_builder_(NGPhysicalFragment::kFragmentBox, node) {}
 
   virtual ~NGLayoutAlgorithm() {}
 
@@ -55,6 +59,11 @@ class CORE_EXPORT NGLayoutAlgorithm {
     return node_->Style();
   }
 
+  NGLogicalOffset ContainerBfcOffset() const {
+    DCHECK(container_builder_.BfcOffset().has_value());
+    return container_builder_.BfcOffset().value();
+  }
+
   virtual NGInputNodeType* Node() const { return node_; }
 
   NGBreakTokenType* BreakToken() const { return break_token_; }
@@ -64,6 +73,8 @@ class CORE_EXPORT NGLayoutAlgorithm {
 
   // The break token from which we are currently resuming layout.
   NGBreakTokenType* break_token_;
+
+  NGFragmentBuilder container_builder_;
 };
 
 }  // namespace blink

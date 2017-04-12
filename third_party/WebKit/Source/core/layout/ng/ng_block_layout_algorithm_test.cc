@@ -2270,5 +2270,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
+TEST_F(NGBlockLayoutAlgorithmTest, NewFormattingContextBlock) {}
+
 }  // namespace
 }  // namespace blink
