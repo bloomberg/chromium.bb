@@ -49,6 +49,9 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // opportunity, and max-content is when lines do not wrap at all.
   MinMaxContentSize ComputeMinMaxContentSize() override;
 
+  // Copy fragment data of all lines to LayoutBlockFlow.
+  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);
+
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();
 

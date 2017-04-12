@@ -90,10 +90,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   // part of layout operations and modifies the state of |this|.
   MinMaxContentSize ComputeMinMaxContentSizeByLayout();
 
-  // Copy fragment data of all lines to LayoutBlockFlow.
-  // TODO(kojii): Move to NGInlineNode (or remove when paint is implemented.)
-  void CopyFragmentDataToLayoutBlockFlow(NGLayoutResult*);
-
   // Compute inline size of an NGLayoutInlineItem.
   // Same as NGLayoutInlineItem::InlineSize(), except that this function can
   // compute atomic inlines by performing layout.
