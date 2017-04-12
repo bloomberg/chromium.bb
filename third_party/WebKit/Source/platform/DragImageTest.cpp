@@ -153,42 +153,6 @@ TEST(DragImageTest, TrimWhitespace) {
   EXPECT_EQ(test_image->size().Width(), expected_image->size().Width());
 }
 
-// SkPixelRef which fails to lock, as a lazy pixel ref might if its pixels
-// cannot be generated.
-class InvalidPixelRef : public SkPixelRef {
- public:
-  InvalidPixelRef(const SkImageInfo& info) : SkPixelRef(info) {}
-
- private:
-  bool onNewLockPixels(LockRec*) override { return false; }
-  void onUnlockPixels() override { ASSERT_NOT_REACHED(); }
-};
-
-TEST(DragImageTest, InvalidRotatedBitmapImage) {
-  // This test is mostly useful with MSAN builds, which can actually detect
-  // the use of uninitialized memory.
-
-  // Create a BitmapImage which will fail to produce pixels, and hence not
-  // draw.
-  SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-  sk_sp<SkPixelRef> pixel_ref(new InvalidPixelRef(info));
-  SkBitmap invalid_bitmap;
-  invalid_bitmap.setInfo(info);
-  invalid_bitmap.setPixelRef(pixel_ref, 0, 0);
-  RefPtr<BitmapImage> image = BitmapImage::CreateWithOrientationForTesting(
-      invalid_bitmap, kOriginRightTop);
-
-  // Create a DragImage from it. In MSAN builds, this will cause a failure if
-  // the pixel memory is not initialized, if we have to respect non-default
-  // orientation.
-  std::unique_ptr<DragImage> drag_image =
-      DragImage::Create(image.Get(), kRespectImageOrientation);
-
-  // With an invalid pixel ref, BitmapImage should have no backing SkImage =>
-  // we don't allocate a DragImage.
-  ASSERT_FALSE(drag_image);
-}
-
 TEST(DragImageTest, InterpolationNone) {
   SkBitmap expected_bitmap;
   expected_bitmap.allocN32Pixels(4, 4);
