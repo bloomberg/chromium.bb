@@ -1,8 +1,7 @@
-CONSOLE WARNING: line 35: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE WARNING: line 45: Subresource requests whose URLs contain embedded credentials (e.g. `https://user:pass@host/`) are blocked. See https://www.chromestatus.com/feature/5669008342777856 for more details.
+CONSOLE WARNING: line 30: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 Test for bug 13075: XMLHttpRequest with failed authentication should set status to 401.
 
 Sync, no credentials: OK
-Sync, incorrect credentials: NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://badname:passpw@127.0.0.1:8000/xmlhttprequest/resources/basic-auth/basic-auth.php?uid=login2'.
+Sync, incorrect credentials: OK
 Async, no credentials: OK
 Async, incorrect credentials: OK

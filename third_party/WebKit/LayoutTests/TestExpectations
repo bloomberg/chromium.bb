@@ -2350,7 +2350,6 @@ crbug.com/658997 external/wpt/service-workers/service-worker/invalid-blobtype.ht
 crbug.com/658997 external/wpt/service-workers/service-worker/invalid-header.https.html [ Skip ]
 crbug.com/658997 external/wpt/service-workers/service-worker/referer.https.html [ Skip ]
 
-crbug.com/435547 external/wpt/service-workers/cache-storage/serviceworker/credentials.https.html [ Skip ]
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 

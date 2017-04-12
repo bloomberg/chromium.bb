@@ -818,7 +818,10 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
       if (RuntimeEnabledFeatures::blockLegacySubresourcesEnabled())
         return ResourceRequestBlockedReason::kOrigin;
     }
-    if (!url.User().IsEmpty() || !url.Pass().IsEmpty()) {
+
+    if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
+        resource_request.GetRequestContext() !=
+            WebURLRequest::kRequestContextXMLHttpRequest) {
       Deprecation::CountDeprecation(
           GetFrame()->GetDocument(),
           UseCounter::kRequestedSubresourceWithEmbeddedCredentials);

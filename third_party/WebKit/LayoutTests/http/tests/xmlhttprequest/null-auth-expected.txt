@@ -1,8 +1,6 @@
-CONSOLE WARNING: line 10: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE WARNING: line 11: Subresource requests whose URLs contain embedded credentials (e.g. `https://user:pass@host/`) are blocked. See https://www.chromestatus.com/feature/5669008342777856 for more details.
-CONSOLE MESSAGE: line 14: Pass: credentialed URL threw.
+CONSOLE WARNING: line 9: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 Test that null values in XHR login/password parameters are treated correctly.
 
 No auth tokens should be sent with this request.
 
- 
+No authentication
