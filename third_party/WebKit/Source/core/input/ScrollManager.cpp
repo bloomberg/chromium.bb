@@ -22,6 +22,7 @@
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
 
@@ -196,6 +197,67 @@ void ScrollManager::CustomizedScroll(const Node& start_node,
   scroll_state.distributeToScrollChainDescendant();
 }
 
+uint32_t ScrollManager::ComputeNonCompositedMainThreadScrollingReasons() {
+  // When scrolling on the main thread, the scrollableArea may or may not be
+  // composited. Either way, we have recorded either the reasons stored in
+  // its layer or the reason NonFastScrollableRegion from the compositor
+  // side. Here we record scrolls that occurred on main thread due to a
+  // non-composited scroller.
+  if (!scroll_gesture_handling_node_->GetLayoutObject() || !frame_->View())
+    return 0;
+
+  uint32_t non_composited_main_thread_scrolling_reasons = 0;
+
+  for (auto* cur_box =
+           scroll_gesture_handling_node_->GetLayoutObject()->EnclosingBox();
+       cur_box; cur_box = cur_box->ContainingBlock()) {
+    PaintLayerScrollableArea* scrollable_area = cur_box->GetScrollableArea();
+
+    if (!scrollable_area || !scrollable_area->ScrollsOverflow())
+      continue;
+
+    DCHECK(!scrollable_area->UsesCompositedScrolling() ||
+           !scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+    non_composited_main_thread_scrolling_reasons |=
+        scrollable_area->GetNonCompositedMainThreadScrollingReasons();
+  }
+
+  return non_composited_main_thread_scrolling_reasons;
+}
+
+void ScrollManager::RecordNonCompositedMainThreadScrollingReasons(
+    const WebGestureDevice device) {
+  if (device != kWebGestureDeviceTouchpad &&
+      device != kWebGestureDeviceTouchscreen) {
+    return;
+  }
+
+  uint32_t reasons = ComputeNonCompositedMainThreadScrollingReasons();
+  if (!reasons)
+    return;
+  DCHECK(MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
+
+  uint32_t main_thread_scrolling_reason_enum_max =
+      MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
+  for (uint32_t i = MainThreadScrollingReason::kNonCompositedReasonsFirst;
+       i <= MainThreadScrollingReason::kNonCompositedReasonsLast; ++i) {
+    unsigned val = 1 << i;
+    if (reasons & val) {
+      if (device == kWebGestureDeviceTouchscreen) {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, touch_histogram,
+                            ("Renderer4.MainThreadGestureScrollReason",
+                             main_thread_scrolling_reason_enum_max));
+        touch_histogram.Count(i + 1);
+      } else {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, wheel_histogram,
+                            ("Renderer4.MainThreadWheelScrollReason",
+                             main_thread_scrolling_reason_enum_max));
+        wheel_histogram.Count(i + 1);
+      }
+    }
+  }
+}
+
 WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   Document* document = frame_->GetDocument();
@@ -220,6 +282,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 
   PassScrollGestureEvent(gesture_event,
                          scroll_gesture_handling_node_->GetLayoutObject());
+
+  RecordNonCompositedMainThreadScrollingReasons(gesture_event.source_device);
 
   current_scroll_chain_.clear();
   std::unique_ptr<ScrollStateData> scroll_state_data =

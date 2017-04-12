@@ -557,6 +557,10 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
     return;
   }
 
+  // NonCompositedScrollReasons should only be set on the main thread.
+  DCHECK(
+      !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
+
   // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
   // greater than the sample value. kMainThreadScrollingReasonCount doesn't
   // include the NotScrollingOnMain enum but the histograms do so adding
