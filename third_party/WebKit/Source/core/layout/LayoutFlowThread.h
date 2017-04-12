@@ -32,7 +32,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "wtf/ListHashSet.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

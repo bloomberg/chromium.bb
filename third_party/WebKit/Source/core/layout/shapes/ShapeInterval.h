@@ -30,7 +30,7 @@
 #ifndef ShapeInterval_h
 #define ShapeInterval_h
 
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

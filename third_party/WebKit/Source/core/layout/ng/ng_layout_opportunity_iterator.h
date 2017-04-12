@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
-#include "wtf/Optional.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

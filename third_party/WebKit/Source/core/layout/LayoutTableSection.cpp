@@ -26,6 +26,8 @@
 
 #include "core/layout/LayoutTableSection.h"
 
+#include <algorithm>
+#include <limits>
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCell.h"
@@ -34,9 +36,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/paint/TableSectionPainter.h"
-#include "wtf/HashSet.h"
-#include <algorithm>
-#include <limits>
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

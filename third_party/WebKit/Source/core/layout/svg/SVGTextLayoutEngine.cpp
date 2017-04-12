@@ -30,7 +30,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGTextContentElement.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

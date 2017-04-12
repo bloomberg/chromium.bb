@@ -13,8 +13,8 @@
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 namespace {

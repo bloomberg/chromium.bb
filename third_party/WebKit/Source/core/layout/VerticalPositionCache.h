@@ -28,8 +28,8 @@
 
 #include "core/layout/api/LineLayoutItem.h"
 #include "platform/fonts/FontBaseline.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

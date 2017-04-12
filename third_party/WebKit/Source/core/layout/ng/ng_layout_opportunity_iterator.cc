@@ -5,8 +5,8 @@
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
-#include "wtf/NonCopyingSort.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/NonCopyingSort.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace {

@@ -29,6 +29,7 @@
 
 #include "core/layout/shapes/Shape.h"
 
+#include <memory>
 #include "core/css/BasicShapeFunctions.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
@@ -44,10 +45,9 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/PaintFlags.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
-#include <memory>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

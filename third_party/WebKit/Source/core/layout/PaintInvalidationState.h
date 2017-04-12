@@ -10,8 +10,8 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

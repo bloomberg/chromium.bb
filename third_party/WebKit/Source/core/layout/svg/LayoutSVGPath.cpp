@@ -31,7 +31,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGeometryElement.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

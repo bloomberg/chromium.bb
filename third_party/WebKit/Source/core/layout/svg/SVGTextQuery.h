@@ -22,7 +22,7 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

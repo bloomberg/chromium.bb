@@ -8,7 +8,7 @@
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

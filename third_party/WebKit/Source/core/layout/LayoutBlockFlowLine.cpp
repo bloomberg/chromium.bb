@@ -39,7 +39,7 @@
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

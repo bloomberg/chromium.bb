@@ -30,6 +30,7 @@
 
 #include "core/layout/LayoutFlexibleBox.h"
 
+#include <limits>
 #include "core/frame/UseCounter.h"
 #include "core/layout/FlexibleBoxAlgorithm.h"
 #include "core/layout/LayoutState.h"
@@ -39,9 +40,8 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
-#include "wtf/AutoReset.h"
-#include "wtf/MathExtras.h"
-#include <limits>
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

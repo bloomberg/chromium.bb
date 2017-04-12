@@ -28,8 +28,8 @@
 
 #import "core/layout/LayoutTheme.h"
 #import "core/paint/ThemePainterMac.h"
-#import "wtf/HashMap.h"
-#import "wtf/RetainPtr.h"
+#import "platform/wtf/HashMap.h"
+#import "platform/wtf/RetainPtr.h"
 
 OBJC_CLASS BlinkLayoutThemeNotificationObserver;
 

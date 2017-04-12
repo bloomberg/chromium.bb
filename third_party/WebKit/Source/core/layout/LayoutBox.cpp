@@ -26,6 +26,8 @@
 
 #include "core/layout/LayoutBox.h"
 
+#include <math.h>
+#include <algorithm>
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/FrameView.h"
@@ -66,9 +68,7 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <math.h>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

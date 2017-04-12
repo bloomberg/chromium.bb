@@ -21,8 +21,8 @@
 #define SVGMarkerData_h
 
 #include "platform/graphics/Path.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

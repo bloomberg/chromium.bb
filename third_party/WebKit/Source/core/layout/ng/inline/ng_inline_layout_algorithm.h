@@ -14,7 +14,7 @@
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

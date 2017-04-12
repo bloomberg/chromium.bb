@@ -75,9 +75,9 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

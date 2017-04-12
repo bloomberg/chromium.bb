@@ -11,8 +11,8 @@
 #include "core/paint/ObjectPaintInvalidator.h"
 
 #include "platform/LayoutUnit.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
 
 namespace blink {
 

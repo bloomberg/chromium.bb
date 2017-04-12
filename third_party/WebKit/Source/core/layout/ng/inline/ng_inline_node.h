@@ -12,7 +12,7 @@
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <unicode/ubidi.h>
 #include <unicode/uscript.h>

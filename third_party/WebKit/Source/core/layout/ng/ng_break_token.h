@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

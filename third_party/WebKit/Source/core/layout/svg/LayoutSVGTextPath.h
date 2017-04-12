@@ -21,9 +21,9 @@
 #ifndef LayoutSVGTextPath_h
 #define LayoutSVGTextPath_h
 
-#include "core/layout/svg/LayoutSVGInline.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/layout/svg/LayoutSVGInline.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -33,8 +33,8 @@
 #include "core/paint/InlineTextBoxPainter.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 #include <algorithm>
 

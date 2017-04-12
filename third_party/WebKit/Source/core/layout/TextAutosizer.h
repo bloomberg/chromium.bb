@@ -31,13 +31,13 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
+#include <unicode/uchar.h>
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
-#include <unicode/uchar.h>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

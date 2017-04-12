@@ -25,11 +25,11 @@
 #ifndef FloatingObjects_h
 #define FloatingObjects_h
 
+#include <memory>
 #include "platform/PODFreeListArena.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/ListHashSet.h"
-#include <memory>
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

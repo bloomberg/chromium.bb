@@ -10,7 +10,7 @@
 #include "core/layout/ng/ng_min_max_content_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 class ComputedStyle;

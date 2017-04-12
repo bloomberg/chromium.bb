@@ -29,7 +29,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/Scrollbar.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

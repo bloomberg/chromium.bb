@@ -53,7 +53,7 @@
 #include "core/paint/BlockFlowPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

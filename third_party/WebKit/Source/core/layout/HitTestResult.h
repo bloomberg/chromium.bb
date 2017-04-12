@@ -30,9 +30,9 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Forward.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/VectorTraits.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/VectorTraits.h"
 
 namespace blink {
 

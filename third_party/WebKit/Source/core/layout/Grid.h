@@ -8,9 +8,9 @@
 #include "core/layout/OrderIterator.h"
 #include "core/style/GridArea.h"
 #include "core/style/GridPositionsResolver.h"
-#include "wtf/Assertions.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define CompositingInputsUpdater_h
 
 #include "core/layout/LayoutGeometryMap.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

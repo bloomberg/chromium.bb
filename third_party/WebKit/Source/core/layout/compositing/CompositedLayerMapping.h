@@ -26,6 +26,7 @@
 #ifndef CompositedLayerMapping_h
 #define CompositedLayerMapping_h
 
+#include <memory>
 #include "core/layout/compositing/GraphicsLayerUpdater.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
@@ -33,8 +34,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

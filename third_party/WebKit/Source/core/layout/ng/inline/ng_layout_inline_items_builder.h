@@ -7,10 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

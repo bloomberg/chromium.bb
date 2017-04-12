@@ -26,7 +26,7 @@
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

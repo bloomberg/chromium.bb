@@ -9,7 +9,7 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_result.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

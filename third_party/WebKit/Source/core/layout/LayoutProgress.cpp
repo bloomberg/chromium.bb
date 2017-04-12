@@ -23,8 +23,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLProgressElement.h"
 #include "core/layout/LayoutTheme.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

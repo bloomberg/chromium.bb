@@ -13,7 +13,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

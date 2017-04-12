@@ -20,11 +20,11 @@
 #ifndef SVGResources_h
 #define SVGResources_h
 
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

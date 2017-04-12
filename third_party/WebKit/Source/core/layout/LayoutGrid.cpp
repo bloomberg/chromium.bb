@@ -36,7 +36,7 @@
 #include "core/style/GridArea.h"
 #include "platform/LengthFunctions.h"
 #include "platform/text/WritingMode.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

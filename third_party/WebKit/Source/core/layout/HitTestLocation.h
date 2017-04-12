@@ -26,10 +26,10 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

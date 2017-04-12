@@ -29,7 +29,7 @@
 
 #include "core/layout/shapes/BoxShape.h"
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

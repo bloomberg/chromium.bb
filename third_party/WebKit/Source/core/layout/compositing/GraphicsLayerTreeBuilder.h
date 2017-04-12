@@ -28,7 +28,7 @@
 #define GraphicsLayerTreeBuilder_h
 
 #include "platform/graphics/GraphicsLayer.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

@@ -45,7 +45,7 @@
 #define ScrollAlignment_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

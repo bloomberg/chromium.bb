@@ -17,7 +17,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

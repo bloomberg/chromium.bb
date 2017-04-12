@@ -27,8 +27,8 @@
 
 #include "core/CSSValueKeywords.h"
 #include "platform/fonts/FontDescription.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

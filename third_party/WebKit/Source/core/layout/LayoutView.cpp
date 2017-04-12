@@ -49,8 +49,8 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

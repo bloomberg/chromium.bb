@@ -30,7 +30,7 @@
 #include "core/layout/shapes/PolygonShape.h"
 
 #include "platform/geometry/LayoutPoint.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

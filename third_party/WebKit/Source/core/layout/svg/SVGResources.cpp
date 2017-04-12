@@ -31,7 +31,7 @@
 #include "core/svg/SVGPatternElement.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGURIReference.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

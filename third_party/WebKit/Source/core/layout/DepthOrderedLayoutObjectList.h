@@ -5,9 +5,9 @@
 #ifndef DepthOrderedLayoutObjectList_h
 #define DepthOrderedLayoutObjectList_h
 
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

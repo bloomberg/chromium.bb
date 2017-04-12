@@ -26,8 +26,8 @@
 #define WordMeasurement_h
 
 #include "platform/fonts/SimpleFontData.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

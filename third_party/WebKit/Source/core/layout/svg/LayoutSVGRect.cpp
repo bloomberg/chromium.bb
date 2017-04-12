@@ -28,7 +28,7 @@
 #include "core/layout/svg/LayoutSVGRect.h"
 
 #include "core/svg/SVGRectElement.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

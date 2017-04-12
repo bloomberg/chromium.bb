@@ -30,12 +30,12 @@
 #ifndef ShapeOutsideInfo_h
 #define ShapeOutsideInfo_h
 
+#include <memory>
 #include "core/layout/shapes/Shape.h"
 #include "core/style/ShapeValue.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

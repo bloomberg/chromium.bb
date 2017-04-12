@@ -32,9 +32,9 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThemeEngine.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

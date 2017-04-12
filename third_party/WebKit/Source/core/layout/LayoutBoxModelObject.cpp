@@ -42,7 +42,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

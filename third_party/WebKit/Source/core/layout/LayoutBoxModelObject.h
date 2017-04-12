@@ -24,14 +24,14 @@
 #ifndef LayoutBoxModelObject_h
 #define LayoutBoxModelObject_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/ContentChangeType.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

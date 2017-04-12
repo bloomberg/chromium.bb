@@ -27,9 +27,9 @@
 #define LayoutState_h
 
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

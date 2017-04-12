@@ -29,8 +29,8 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "platform/fonts/FontTraits.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

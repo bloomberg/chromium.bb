@@ -25,9 +25,9 @@
 #ifndef GlyphOverflow_h
 #define GlyphOverflow_h
 
-#include "platform/geometry/FloatRect.h"
-#include "wtf/Allocator.h"
 #include <algorithm>
+#include "platform/geometry/FloatRect.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

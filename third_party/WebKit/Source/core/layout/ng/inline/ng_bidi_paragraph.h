@@ -5,9 +5,9 @@
 #ifndef NGBidiParagraph_h
 #define NGBidiParagraph_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 #include <unicode/ubidi.h>
 

@@ -29,6 +29,7 @@
 
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 
+#include <memory>
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -36,9 +37,8 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "platform/LengthFunctions.h"
+#include "platform/wtf/AutoReset.h"
 #include "public/platform/Platform.h"
-#include "wtf/AutoReset.h"
-#include <memory>
 
 namespace blink {
 

@@ -57,9 +57,9 @@
 #include "core/page/PrintContext.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/HexNumber.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -11,8 +11,8 @@
 #include "core/layout/ng/ng_break_token.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

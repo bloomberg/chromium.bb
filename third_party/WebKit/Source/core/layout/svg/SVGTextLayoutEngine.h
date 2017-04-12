@@ -20,12 +20,12 @@
 #ifndef SVGTextLayoutEngine_h
 #define SVGTextLayoutEngine_h
 
+#include <memory>
 #include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGTextFragment.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

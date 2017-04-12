@@ -26,8 +26,8 @@
 #include "core/layout/ListMarkerText.h"
 
 #include "core/layout/TextRunConstructor.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

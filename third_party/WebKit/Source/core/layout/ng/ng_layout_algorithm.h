@@ -7,8 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_min_max_content_size.h"
-#include "wtf/Allocator.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

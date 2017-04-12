@@ -22,12 +22,12 @@
 #ifndef LayoutSVGResourcePattern_h
 #define LayoutSVGResourcePattern_h
 
+#include <memory>
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashMap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 

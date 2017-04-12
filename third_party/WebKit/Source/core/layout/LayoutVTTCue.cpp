@@ -30,7 +30,7 @@
 #include "core/html/media/MediaControls.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutState.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

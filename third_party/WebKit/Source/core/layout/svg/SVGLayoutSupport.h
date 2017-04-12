@@ -28,7 +28,7 @@
 #include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

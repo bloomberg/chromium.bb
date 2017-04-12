@@ -29,8 +29,8 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutText.h"
-#include "wtf/Allocator.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

@@ -28,8 +28,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextRunConstructor.h"
 #include "platform/LengthFunctions.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

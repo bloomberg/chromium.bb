@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableBoxComponent.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

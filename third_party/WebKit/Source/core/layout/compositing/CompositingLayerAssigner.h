@@ -31,7 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/SquashingDisallowedReasons.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

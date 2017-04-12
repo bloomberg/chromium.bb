@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

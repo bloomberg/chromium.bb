@@ -28,9 +28,9 @@
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/paint/ListItemPainter.h"
-#include "wtf/SaturatedArithmetic.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/SaturatedArithmetic.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

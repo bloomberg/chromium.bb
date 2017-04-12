@@ -4,14 +4,14 @@
 
 #include "core/layout/ImageQualityController.h"
 
+#include <memory>
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

@@ -15,9 +15,9 @@
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Optional.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

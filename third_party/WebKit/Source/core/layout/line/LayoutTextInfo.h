@@ -25,7 +25,7 @@
 #define LayoutTextInfo_h
 
 #include "platform/text/TextBreakIterator.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

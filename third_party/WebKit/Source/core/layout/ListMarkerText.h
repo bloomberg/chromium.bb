@@ -25,8 +25,8 @@
 #define ListMarkerText_h
 
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/text/Unicode.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/Unicode.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

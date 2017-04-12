@@ -87,9 +87,9 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #ifndef NDEBUG
 #include <stdio.h>
 #endif

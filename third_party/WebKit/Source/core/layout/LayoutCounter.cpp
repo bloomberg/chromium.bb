@@ -32,8 +32,8 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/ListMarkerText.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

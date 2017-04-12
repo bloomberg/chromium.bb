@@ -21,12 +21,12 @@
 #ifndef RootInlineBox_h
 #define RootInlineBox_h
 
+#include <memory>
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

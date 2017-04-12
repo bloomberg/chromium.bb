@@ -25,7 +25,7 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

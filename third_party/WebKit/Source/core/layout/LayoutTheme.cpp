@@ -53,10 +53,10 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/StringTruncator.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFallbackThemeEngine.h"
 #include "public/platform/WebRect.h"
-#include "wtf/text/StringBuilder.h"
 
 // The methods in this file are shared by all themes on every platform.
 

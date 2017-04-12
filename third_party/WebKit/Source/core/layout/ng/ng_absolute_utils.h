@@ -11,7 +11,7 @@
 #include "core/layout/ng/geometry/ng_static_position.h"
 #include "core/layout/ng/ng_min_max_content_size.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

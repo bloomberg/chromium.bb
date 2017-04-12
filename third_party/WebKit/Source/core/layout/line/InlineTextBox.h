@@ -29,7 +29,7 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
 #include "platform/text/TextRun.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

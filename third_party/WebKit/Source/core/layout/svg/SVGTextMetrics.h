@@ -20,7 +20,7 @@
 #ifndef SVGTextMetrics_h
 #define SVGTextMetrics_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

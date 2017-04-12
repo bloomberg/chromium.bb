@@ -20,9 +20,9 @@
 #ifndef SVGCharacterData_h
 #define SVGCharacterData_h
 
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

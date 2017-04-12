@@ -20,6 +20,8 @@
 
 #include "core/layout/line/InlineFlowBox.h"
 
+#include <math.h>
+#include <algorithm>
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
@@ -37,9 +39,7 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <math.h>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

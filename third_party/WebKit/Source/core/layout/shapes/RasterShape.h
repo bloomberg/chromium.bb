@@ -30,12 +30,12 @@
 #ifndef RasterShape_h
 #define RasterShape_h
 
+#include <memory>
 #include "core/layout/shapes/Shape.h"
 #include "core/layout/shapes/ShapeInterval.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/Assertions.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

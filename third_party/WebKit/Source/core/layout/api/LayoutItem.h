@@ -8,7 +8,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutObject.h"
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

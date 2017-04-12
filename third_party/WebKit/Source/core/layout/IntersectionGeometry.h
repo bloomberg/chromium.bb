@@ -8,7 +8,7 @@
 #include "platform/Length.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

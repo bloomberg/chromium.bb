@@ -22,9 +22,9 @@
 
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/style/SVGComputedStyleDefs.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

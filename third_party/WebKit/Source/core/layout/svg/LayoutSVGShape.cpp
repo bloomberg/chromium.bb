@@ -40,8 +40,8 @@
 #include "core/svg/SVGPathElement.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

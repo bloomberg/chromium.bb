@@ -25,7 +25,7 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/svg/SVGCharacterData.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

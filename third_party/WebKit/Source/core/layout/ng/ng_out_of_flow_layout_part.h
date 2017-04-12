@@ -11,7 +11,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

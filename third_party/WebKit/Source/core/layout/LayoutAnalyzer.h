@@ -5,10 +5,10 @@
 #ifndef LayoutAnalyzer_h
 #define LayoutAnalyzer_h
 
-#include "platform/LayoutUnit.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/LayoutUnit.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

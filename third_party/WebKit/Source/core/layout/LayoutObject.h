@@ -50,7 +50,7 @@
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

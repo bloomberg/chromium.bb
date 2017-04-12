@@ -27,7 +27,7 @@
 #define LayoutMedia_h
 
 #include "core/layout/LayoutImage.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

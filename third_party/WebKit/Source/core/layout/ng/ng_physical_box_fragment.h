@@ -10,7 +10,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

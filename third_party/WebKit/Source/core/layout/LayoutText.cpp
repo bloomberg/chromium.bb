@@ -48,11 +48,11 @@
 #include "platform/text/Hyphenation.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRunIterator.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_exclusion.h"
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

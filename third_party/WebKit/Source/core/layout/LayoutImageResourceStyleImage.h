@@ -29,7 +29,7 @@
 
 #include "core/layout/LayoutImageResource.h"
 #include "core/style/StyleImage.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

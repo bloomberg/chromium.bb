@@ -6,7 +6,7 @@
 #define MultiColumnFragmentainerGroup_h
 
 #include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

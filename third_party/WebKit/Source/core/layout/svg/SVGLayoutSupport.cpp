@@ -42,7 +42,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/StrokeData.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

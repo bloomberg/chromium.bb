@@ -26,11 +26,11 @@
 #ifndef PaintLayerCompositor_h
 #define PaintLayerCompositor_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
-#include "wtf/HashMap.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

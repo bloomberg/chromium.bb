@@ -22,7 +22,7 @@
 #include "core/layout/svg/LayoutSVGResourceMarker.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

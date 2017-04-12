@@ -23,7 +23,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGTreeScopeResources.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

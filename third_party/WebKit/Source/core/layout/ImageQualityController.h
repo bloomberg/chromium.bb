@@ -31,13 +31,13 @@
 #ifndef ImageQualityController_h
 #define ImageQualityController_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
-#include "wtf/HashMap.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

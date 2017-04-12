@@ -33,7 +33,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

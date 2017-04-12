@@ -19,6 +19,7 @@
 
 #include "core/layout/svg/SVGTextQuery.h"
 
+#include <algorithm>
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/api/LineLayoutSVGInlineText.h"
@@ -27,9 +28,8 @@
 #include "core/layout/svg/SVGTextFragment.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
-#include <algorithm>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

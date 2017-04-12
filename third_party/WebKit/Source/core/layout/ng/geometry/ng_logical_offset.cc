@@ -6,7 +6,7 @@
 
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

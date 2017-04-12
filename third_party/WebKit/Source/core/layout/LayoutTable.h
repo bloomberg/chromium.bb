@@ -26,12 +26,12 @@
 #ifndef LayoutTable_h
 #define LayoutTable_h
 
+#include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/style/CollapsedBorderValue.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

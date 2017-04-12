@@ -24,10 +24,10 @@
 #ifndef LayoutBlock_h
 #define LayoutBlock_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
-#include "wtf/ListHashSet.h"
-#include <memory>
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

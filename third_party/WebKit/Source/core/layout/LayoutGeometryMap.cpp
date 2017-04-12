@@ -28,7 +28,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/TransformState.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
 

@@ -22,9 +22,9 @@
 #ifndef CounterNode_h
 #define CounterNode_h
 
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefCounted.h"
 
 // This implements a counter tree that is used for finding parents in counters()
 // lookup, and for propagating count changes when nodes are added or removed.

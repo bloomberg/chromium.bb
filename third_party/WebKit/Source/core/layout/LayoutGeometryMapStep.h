@@ -27,10 +27,10 @@
 #ifndef LayoutGeometryMapStep_h
 #define LayoutGeometryMapStep_h
 
+#include <memory>
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

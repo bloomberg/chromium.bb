@@ -22,12 +22,12 @@
 #ifndef LayoutSVGResourceGradient_h
 #define LayoutSVGResourceGradient_h
 
+#include <memory>
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/svg/SVGGradientElement.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/HashMap.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

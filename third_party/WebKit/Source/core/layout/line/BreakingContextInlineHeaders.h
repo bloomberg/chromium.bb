@@ -44,8 +44,8 @@
 #include "platform/fonts/CharacterRange.h"
 #include "platform/text/Hyphenation.h"
 #include "platform/text/TextBreakIterator.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

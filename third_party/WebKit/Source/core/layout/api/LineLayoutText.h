@@ -8,7 +8,7 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

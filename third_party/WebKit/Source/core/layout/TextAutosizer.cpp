@@ -48,7 +48,7 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

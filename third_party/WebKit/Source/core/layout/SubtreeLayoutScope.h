@@ -32,8 +32,8 @@
 #define SubtreeLayoutScope_h
 
 #include "core/inspector/InspectorTraceEvents.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
 
 // This is the way to mark a subtree as needing layout during layout,
 // e.g. for the purposes of doing a multipass layout.

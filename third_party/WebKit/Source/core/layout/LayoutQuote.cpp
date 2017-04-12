@@ -24,8 +24,8 @@
 #include "core/dom/PseudoElement.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/AtomicString.h"
 
 #include <algorithm>
 

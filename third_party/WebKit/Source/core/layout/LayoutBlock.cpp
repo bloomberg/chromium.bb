@@ -24,6 +24,7 @@
 
 #include "core/layout/LayoutBlock.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -56,9 +57,8 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

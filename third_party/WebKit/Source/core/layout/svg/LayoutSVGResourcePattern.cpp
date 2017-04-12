@@ -34,7 +34,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

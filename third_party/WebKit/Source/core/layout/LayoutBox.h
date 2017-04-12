@@ -23,13 +23,13 @@
 #ifndef LayoutBox_h
 #define LayoutBox_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/Compiler.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

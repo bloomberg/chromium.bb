@@ -24,6 +24,7 @@
 
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 
+#include <algorithm>
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -31,9 +32,8 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/fonts/Font.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CharacterNames.h"
-#include <algorithm>
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

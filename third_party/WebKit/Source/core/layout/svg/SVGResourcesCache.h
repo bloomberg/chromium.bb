@@ -20,11 +20,11 @@
 #ifndef SVGResourcesCache_h
 #define SVGResourcesCache_h
 
-#include "core/style/StyleDifference.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "core/style/StyleDifference.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

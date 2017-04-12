@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_rect.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

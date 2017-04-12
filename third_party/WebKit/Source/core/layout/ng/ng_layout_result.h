@@ -11,7 +11,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
