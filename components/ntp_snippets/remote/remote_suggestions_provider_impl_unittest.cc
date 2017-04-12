@@ -463,7 +463,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         scheduler_.get(), std::move(suggestions_fetcher),
         std::move(image_fetcher), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
-            utils_.fake_signin_manager(), utils_.pref_service()));
+            utils_.fake_signin_manager(), utils_.pref_service(),
+            std::string()));
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>

@@ -198,8 +198,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             CreateIOSImageDecoder(web::WebThread::GetBlockingPool()),
             request_context.get()),
         base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
-        base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
-                                                         prefs));
+        base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager, prefs,
+                                                         std::string()));
 
     service->remote_suggestions_scheduler()->SetProvider(provider.get());
     service->set_remote_suggestions_provider(provider.get());

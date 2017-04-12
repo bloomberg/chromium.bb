@@ -24,6 +24,7 @@
 #include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -214,6 +215,16 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
     api_key = is_stable_channel ? google_apis::GetAPIKey()
                                 : google_apis::GetNonStableAPIKey();
   }
+
+  // Pass the pref name associated to the search suggest toggle, and use it to
+  // also guard the remote suggestions feature.
+  // TODO(https://crbug.com/710636): Cleanup this clunky dependency once the
+  // preference design is stable.
+  std::string additional_toggle_pref;
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContentSuggestionsSettings)) {
+    additional_toggle_pref = prefs::kSearchSuggestEnabled;
+  }
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
       signin_manager, token_service, request_context, pref_service,
       language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
@@ -225,8 +236,8 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
-      base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
-                                                       pref_service));
+      base::MakeUnique<RemoteSuggestionsStatusService>(
+          signin_manager, pref_service, additional_toggle_pref));
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());
   service->set_remote_suggestions_provider(provider.get());

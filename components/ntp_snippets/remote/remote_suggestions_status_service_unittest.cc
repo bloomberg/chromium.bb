@@ -32,7 +32,7 @@ class RemoteSuggestionsStatusServiceTest : public ::testing::Test {
 
   std::unique_ptr<RemoteSuggestionsStatusService> MakeService() {
     return base::MakeUnique<RemoteSuggestionsStatusService>(
-        utils_.fake_signin_manager(), utils_.pref_service());
+        utils_.fake_signin_manager(), utils_.pref_service(), std::string());
   }
 
  protected:
