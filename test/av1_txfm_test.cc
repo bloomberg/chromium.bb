@@ -14,7 +14,7 @@
 
 namespace libaom_test {
 
-int get_txfm1d_size(TX_SIZE tx_size) { return 1 << (tx_size + 2); }
+int get_txfm1d_size(TX_SIZE tx_size) { return tx_size_wide[tx_size]; }
 
 void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
   switch (txfm2d_type) {
