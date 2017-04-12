@@ -399,13 +399,14 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     change_size_for_next_commit_ = false;
   }
 
+  compositor_has_pending_frame_ = true;
   sink_->SubmitCompositorFrame(current_local_surface_id_, std::move(frame));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
   ReclaimResources(resources);
-  // TODO(fsamuel): Implement this.
+  compositor_has_pending_frame_ = false;
 }
 
 void OffscreenCanvasFrameDispatcherImpl::SetNeedsBeginFrame(
@@ -419,10 +420,19 @@ void OffscreenCanvasFrameDispatcherImpl::SetNeedsBeginFrame(
 void OffscreenCanvasFrameDispatcherImpl::OnBeginFrame(
     const cc::BeginFrameArgs& begin_frame_args) {
   DCHECK(Client());
+
   // TODO(eseckler): Set correct |latest_confirmed_sequence_number|.
   current_begin_frame_ack_ = cc::BeginFrameAck(
       begin_frame_args.source_id, begin_frame_args.sequence_number,
       begin_frame_args.sequence_number, false);
+
+  if (compositor_has_pending_frame_ ||
+      (begin_frame_args.type == cc::BeginFrameArgs::MISSED &&
+       base::TimeTicks::Now() > begin_frame_args.deadline)) {
+    sink_->BeginFrameDidNotSwap(current_begin_frame_ack_);
+    return;
+  }
+
   Client()->BeginFrame();
   // TODO(eseckler): Tell |m_sink| if we did not draw during the BeginFrame.
   current_begin_frame_ack_.sequence_number =
