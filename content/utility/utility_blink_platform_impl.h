@@ -12,7 +12,7 @@
 
 namespace blink {
 namespace scheduler {
-class WebThreadImplForUtilityThread;
+class WebThreadBase;
 }
 }
 
@@ -27,7 +27,7 @@ class UtilityBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThread* CurrentThread() override;
 
  private:
-  std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;
+  std::unique_ptr<blink::scheduler::WebThreadBase> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityBlinkPlatformImpl);
 };

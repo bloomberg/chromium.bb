@@ -12,7 +12,7 @@
 #include "gin/public/isolate_holder.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -71,7 +71,8 @@ class Request {
 class BlinkInitializer : public blink::Platform {
  public:
   BlinkInitializer()
-      : main_thread_(new blink::scheduler::WebThreadImplForUtilityThread()) {
+      : main_thread_(
+            blink::scheduler::WebThreadBase::InitializeUtilityThread()) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot();
     gin::V8Initializer::LoadV8Natives();
@@ -85,7 +86,7 @@ class BlinkInitializer : public blink::Platform {
   blink::WebThread* CurrentThread() override { return main_thread_.get(); }
 
  private:
-  std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;
+  std::unique_ptr<blink::scheduler::WebThreadBase> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkInitializer);
 };

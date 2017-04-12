@@ -14,6 +14,7 @@
 #include "base/threading/platform_thread.h"
 #include "platform/scheduler/child/compositor_worker_scheduler.h"
 #include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "platform/scheduler/utility/webthread_impl_for_utility_thread.h"
 #include "public/platform/WebTraceLocation.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
@@ -133,6 +134,10 @@ std::unique_ptr<WebThreadBase> WebThreadBase::CreateWorkerThread(
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateCompositorThread(
     base::Thread::Options options) {
   return base::MakeUnique<WebThreadForCompositor>(options);
+}
+
+std::unique_ptr<WebThreadBase> WebThreadBase::InitializeUtilityThread() {
+  return base::MakeUnique<WebThreadImplForUtilityThread>();
 }
 
 }  // namespace scheduler

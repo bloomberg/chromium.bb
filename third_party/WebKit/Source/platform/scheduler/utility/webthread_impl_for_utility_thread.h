@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "public/platform/scheduler/child/webthread_base.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/child/webthread_base.h"
 
 namespace blink {
 namespace scheduler {
