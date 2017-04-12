@@ -417,9 +417,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   PropertyTreeState ContentsProperties() const;
 
  private:
-  RarePaintData& EnsureRarePaintData();
-  RarePaintData* GetRarePaintData() { return rare_paint_data_.get(); }
-
   //////////////////////////////////////////
   // Helper functions. Dangerous to use!
   void SetPreviousSibling(LayoutObject* previous) { previous_ = previous; }
@@ -2107,6 +2104,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetPreviousOutlineMayBeAffectedByDescendants(bool b) {
     bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
   }
+
+  RarePaintData& EnsureRarePaintData();
+  RarePaintData* GetRarePaintData() const { return rare_paint_data_.get(); }
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a

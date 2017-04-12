@@ -5,12 +5,17 @@
 #include "core/paint/RarePaintData.h"
 
 #include "core/paint/ObjectPaintProperties.h"
+#include "core/paint/PaintLayer.h"
 
 namespace blink {
 
 RarePaintData::RarePaintData() {}
 
 RarePaintData::~RarePaintData() {}
+
+void RarePaintData::SetLayer(std::unique_ptr<PaintLayer> layer) {
+  layer_ = std::move(layer);
+};
 
 ObjectPaintProperties& RarePaintData::EnsurePaintProperties() {
   if (!paint_properties_)

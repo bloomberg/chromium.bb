@@ -235,7 +235,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
 LayoutBoxModelObject::~LayoutBoxModelObject() {
   // Our layer should have been destroyed and cleared by now
   DCHECK(!HasLayer());
-  DCHECK(!layer_);
+  DCHECK(!Layer());
 }
 
 void LayoutBoxModelObject::WillBeDestroyed() {
@@ -257,7 +257,8 @@ void LayoutBoxModelObject::WillBeDestroyed() {
 
   LayoutObject::WillBeDestroyed();
 
-  DestroyLayer();
+  if (HasLayer())
+    DestroyLayer();
 }
 
 void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
@@ -328,7 +329,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     if (!Layer() && LayerCreationAllowedForSubtree()) {
       if (was_floating_before_style_changed && IsFloating())
         SetChildNeedsLayout();
-      CreateLayer();
+      CreateLayerAfterStyleChange();
       if (Parent() && !NeedsLayout()) {
         // FIXME: We should call a specialized version of this function.
         Layer()->UpdateLayerPositionsAfterLayout();
@@ -342,7 +343,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     SetHasReflection(false);
     Layer()->UpdateFilters(old_style, StyleRef());
     Layer()->UpdateClipPath(old_style, StyleRef());
-    // Calls destroyLayer() which clears m_layer.
+    // Calls DestroyLayer() which clears the layer.
     Layer()->RemoveOnlyThisLayerAfterStyleChange();
     if (was_floating_before_style_changed && IsFloating())
       SetChildNeedsLayout();
@@ -502,24 +503,25 @@ void LayoutBoxModelObject::InvalidateStickyConstraints() {
         ->InvalidateAllStickyConstraints();
 }
 
-void LayoutBoxModelObject::CreateLayer() {
-  DCHECK(!layer_);
-  layer_ = WTF::MakeUnique<PaintLayer>(*this);
+void LayoutBoxModelObject::CreateLayerAfterStyleChange() {
+  DCHECK(!HasLayer() && !Layer());
+  EnsureRarePaintData().SetLayer(WTF::MakeUnique<PaintLayer>(*this));
   SetHasLayer(true);
-  layer_->InsertOnlyThisLayerAfterStyleChange();
+  Layer()->InsertOnlyThisLayerAfterStyleChange();
 }
 
 void LayoutBoxModelObject::DestroyLayer() {
+  DCHECK(HasLayer() && Layer());
   SetHasLayer(false);
-  layer_ = nullptr;
+  GetRarePaintData()->SetLayer(nullptr);
 }
 
 bool LayoutBoxModelObject::HasSelfPaintingLayer() const {
-  return layer_ && layer_->IsSelfPaintingLayer();
+  return Layer() && Layer()->IsSelfPaintingLayer();
 }
 
 PaintLayerScrollableArea* LayoutBoxModelObject::GetScrollableArea() const {
-  return layer_ ? layer_->GetScrollableArea() : 0;
+  return Layer() ? Layer()->GetScrollableArea() : nullptr;
 }
 
 void LayoutBoxModelObject::AddLayerHitTestRects(

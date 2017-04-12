@@ -81,13 +81,11 @@ struct LayoutBoxModelObjectRareData {
 //
 // The reason for this partial implementation is that the 2 classes inheriting
 // from it (LayoutBox and LayoutInline) have different requirements but need to
-// have a PaintLayer.
-// For a full implementation of the box model, see LayoutBox.
+// have a PaintLayer. For a full implementation of the box model, see LayoutBox.
 //
-// An important member of this class is PaintLayer. This class is
-// central to painting and hit-testing (see its class comment).
-// PaintLayers are instantiated for several reasons based on the
-// return value of layerTypeRequired().
+// An important member of this class is PaintLayer, which is stored in a rare-
+// data pattern (see: Layer()). PaintLayers are instantiated for several reasons
+// based on the return value of layerTypeRequired().
 // Interestingly, most SVG objects inherit from LayoutSVGModelObject and thus
 // can't have a PaintLayer. This is an unfortunate artifact of our
 // design as it limits code sharing and prevents hardware accelerating SVG
@@ -178,14 +176,15 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual int PixelSnappedOffsetHeight(const Element*) const;
 
   bool HasSelfPaintingLayer() const;
-  PaintLayer* Layer() const { return layer_.get(); }
+  PaintLayer* Layer() const {
+    return GetRarePaintData() ? GetRarePaintData()->Layer() : nullptr;
+  }
+  // The type of PaintLayer to instantiate. Any value returned from this
+  // function other than NoPaintLayer will lead to a PaintLayer being created.
+  virtual PaintLayerType LayerTypeRequired() const = 0;
   PaintLayerScrollableArea* GetScrollableArea() const;
 
   virtual void UpdateFromStyle();
-
-  // The type of PaintLayer to instantiate. Any value returned from this
-  // function other than NoPaintLayer will populate |m_layer|.
-  virtual PaintLayerType LayerTypeRequired() const = 0;
 
   // This will work on inlines to return the bounding box of all of the lines'
   // border boxes.
@@ -535,7 +534,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                               bool full_remove_insert = false);
 
  private:
-  void CreateLayer();
+  void CreateLayerAfterStyleChange();
 
   LayoutUnit ComputedCSSPadding(const Length&) const;
   bool IsBoxModelObject() const final { return true; }
@@ -545,10 +544,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
       rare_data_ = WTF::MakeUnique<LayoutBoxModelObjectRareData>();
     return *rare_data_.get();
   }
-
-  // The PaintLayer associated with this object. |m_layer| can be nullptr
-  // depending on the return value of layerTypeRequired().
-  std::unique_ptr<PaintLayer> layer_;
 
   std::unique_ptr<LayoutBoxModelObjectRareData> rare_data_;
 };

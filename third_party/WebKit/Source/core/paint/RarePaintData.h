@@ -13,10 +13,10 @@ namespace blink {
 
 class PropertyTreeState;
 class ObjectPaintProperties;
+class PaintLayer;
 
 // This is for paint-related data on LayoutObject that is not needed on all
 // objects.
-// TODO(pdr): Store LayoutBoxModelObject's m_paintLayer in this structure.
 class CORE_EXPORT RarePaintData {
   WTF_MAKE_NONCOPYABLE(RarePaintData);
   USING_FAST_MALLOC(RarePaintData);
@@ -24,6 +24,9 @@ class CORE_EXPORT RarePaintData {
  public:
   RarePaintData();
   ~RarePaintData();
+
+  PaintLayer* Layer() { return layer_.get(); }
+  void SetLayer(std::unique_ptr<PaintLayer>);
 
   ObjectPaintProperties* PaintProperties() const {
     return paint_properties_.get();
@@ -44,6 +47,10 @@ class CORE_EXPORT RarePaintData {
   PropertyTreeState ContentsProperties() const;
 
  private:
+  // The PaintLayer associated with this LayoutBoxModelObject. This can be null
+  // depending on the return value of LayoutBoxModelObject::layerTypeRequired().
+  std::unique_ptr<PaintLayer> layer_;
+
   // Holds references to the paint property nodes created by this object.
   std::unique_ptr<ObjectPaintProperties> paint_properties_;
 
