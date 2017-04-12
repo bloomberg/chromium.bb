@@ -1316,28 +1316,35 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
-                         fetched_status=None, other_cl_owner=None):
+                         fetched_status=None, other_cl_owner=None,
+                         custom_cl_base=None):
     calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.git-cl-similarity'],),
-         CERR1),
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', '--bool', 'branch.master.git-find-copies'],),
-         CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.git-cl-similarity'],), CERR1),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', '--bool', 'branch.master.git-find-copies'],), CERR1),
     ]
     calls += cls._is_gerrit_calls(True)
     calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
-        ((['git', 'config', 'branch.master.gerritissue'],),
-          CERR1 if issue is None else str(issue)),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
+      ((['git', 'config', 'branch.master.gerritissue'],),
+        CERR1 if issue is None else str(issue)),
+    ]
+
+    if custom_cl_base:
+      ancestor_revision = custom_cl_base
+    else:
+      # Determine ancestor_revision to be merge base.
+      ancestor_revision = 'fake_ancestor_sha'
+      calls += [
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'master',
-           'refs/remotes/origin/master'],),
-         'fake_ancestor_sha'),
-        # Calls to verify branch point is ancestor
-    ]
+           'refs/remotes/origin/master'],), ancestor_revision),
+      ]
+
+    # Calls to verify branch point is ancestor
     calls += cls._gerrit_ensure_auth_calls(issue=issue)
 
     if issue:
@@ -1367,32 +1374,31 @@ class TestGitCl(TestCase):
           (('ask_for_data', 'Press Enter to upload, or Ctrl+C to abort'), ''),
         ]
 
-    calls += cls._git_sanity_checks('fake_ancestor_sha', 'master',
-                                  get_remote_branch=False)
+    calls += cls._git_sanity_checks(ancestor_revision, 'master',
+                                    get_remote_branch=False)
     calls += [
-        ((['git', 'rev-parse', '--show-cdup'],), ''),
-        ((['git', 'rev-parse', 'HEAD'],), '12345'),
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['git', 'rev-parse', 'HEAD'],), '12345'),
 
-        ((['git',
-           'diff', '--name-status', '--no-renames', '-r',
-           'fake_ancestor_sha...', '.'],),
-         'M\t.gitignore\n'),
-        ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
+      ((['git', 'diff', '--name-status', '--no-renames', '-r',
+         ancestor_revision + '...', '.'],),
+       'M\t.gitignore\n'),
+      ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
     ]
 
     if not issue:
       calls += [
-        ((['git',
-           'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
+        ((['git', 'log', '--pretty=format:%s%n%n%b',
+           ancestor_revision + '...'],),
          'foo'),
       ]
 
     calls += [
-        ((['git', 'config', 'user.email'],), 'me@example.com'),
-        ((['git',
-           'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
-           'fake_ancestor_sha', 'HEAD'],),
-         '+dat'),
+      ((['git', 'config', 'user.email'],), 'me@example.com'),
+      ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] +
+         ([custom_cl_base] if custom_cl_base else
+          [ancestor_revision, 'HEAD']),),
+       '+dat'),
     ]
     return calls
 
@@ -1402,11 +1408,15 @@ class TestGitCl(TestCase):
                            expected_upstream_ref='origin/refs/heads/master',
                            ref_suffix='', title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
-                           git_mirror=None):
+                           git_mirror=None,
+                           custom_cl_base=None):
     if post_amend_description is None:
       post_amend_description = description
-    calls = []
     cc = cc or []
+    # Determined in `_gerrit_base_calls`.
+    determined_ancestor_revision = custom_cl_base or 'fake_ancestor_sha'
+
+    calls = []
 
     if squash_mode == 'default':
       calls.extend([
@@ -1424,62 +1434,80 @@ class TestGitCl(TestCase):
     # If issue is given, then description is fetched from Gerrit instead.
     if issue is None:
       calls += [
-          ((['git', 'log', '--pretty=format:%s\n\n%b',
-                   'fake_ancestor_sha..HEAD'],),
-                  description)]
+        ((['git', 'log', '--pretty=format:%s\n\n%b',
+           ((custom_cl_base + '..') if custom_cl_base else
+            'fake_ancestor_sha..HEAD')],),
+         description),
+      ]
       if squash:
         title = 'Initial_upload'
     else:
       if not title:
         calls += [
-            ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
-            (('ask_for_data', 'Title for patchset []: '), 'User input'),
+          ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
+          (('ask_for_data', 'Title for patchset []: '), 'User input'),
         ]
         title = 'User_input'
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
-          # DownloadGerritHook(False)
-          ((False, ),
-            ''),
-          # Amending of commit message to get the Change-Id.
-          ((['git', 'log', '--pretty=format:%s\n\n%b',
-             'fake_ancestor_sha..HEAD'],),
-           description),
-          ((['git', 'commit', '--amend', '-m', description],),
-           ''),
-          ((['git', 'log', '--pretty=format:%s\n\n%b',
-             'fake_ancestor_sha..HEAD'],),
-           post_amend_description)
-          ]
+        (('DownloadGerritHook', False), ''),
+        # Amending of commit message to get the Change-Id.
+        ((['git', 'log', '--pretty=format:%s\n\n%b',
+           determined_ancestor_revision + '..HEAD'],),
+         description),
+        ((['git', 'commit', '--amend', '-m', description],), ''),
+        ((['git', 'log', '--pretty=format:%s\n\n%b',
+           determined_ancestor_revision + '..HEAD'],),
+         post_amend_description)
+      ]
     if squash:
       if not issue:
         # Prompting to edit description on first upload.
         calls += [
-            ((['git', 'config', 'core.editor'],), ''),
-            ((['RunEditor'],), description),
+          ((['git', 'config', 'core.editor'],), ''),
+          ((['RunEditor'],), description),
         ]
       ref_to_push = 'abcdef0123456789'
       calls += [
-          ((['git', 'config', 'branch.master.merge'],),
-           'refs/heads/master'),
-          ((['git', 'config', 'branch.master.remote'],),
-           'origin'),
+        ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
+        ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ]
+
+      if custom_cl_base is None:
+        calls += [
           ((['get_or_create_merge_base', 'master',
              'refs/remotes/origin/master'],),
            'origin/master'),
-          ((['git', 'rev-parse', 'HEAD:'],),
-           '0123456789abcdef'),
-          ((['git', 'commit-tree', '0123456789abcdef', '-p',
-             'origin/master', '-m', description],),
-           ref_to_push),
-          ]
+        ]
+        parent = 'origin/master'
+      else:
+        calls += [
+          ((['git', 'merge-base', '--is-ancestor', custom_cl_base,
+             'refs/remotes/origin/master'],),
+           callError(1)),   # Means not ancenstor.
+          (('ask_for_data',
+            'Do you take responsibility for cleaning up potential mess '
+            'resulting from proceeding with upload? Press Enter to upload, '
+            'or Ctrl+C to abort'), ''),
+        ]
+        parent = custom_cl_base
+
+      calls += [
+        ((['git', 'rev-parse', 'HEAD:'],),  # `HEAD:` means HEAD's tree hash.
+         '0123456789abcdef'),
+        ((['git', 'commit-tree', '0123456789abcdef', '-p', parent,
+           '-m', description],),
+         ref_to_push),
+      ]
     else:
       ref_to_push = 'HEAD'
 
     calls += [
-        ((['git', 'rev-list',
-            expected_upstream_ref + '..' + ref_to_push],), ''),
-        ]
+      ((['git', 'rev-list',
+         (custom_cl_base if custom_cl_base else expected_upstream_ref) + '..' +
+         ref_to_push],),
+      '1hashPerLine\n'),
+    ]
 
     if title:
       if ref_suffix:
@@ -1565,7 +1593,8 @@ class TestGitCl(TestCase):
       cc=None,
       git_mirror=None,
       fetched_status=None,
-      other_cl_owner=None):
+      other_cl_owner=None,
+      custom_cl_base=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1585,7 +1614,8 @@ class TestGitCl(TestCase):
               lambda _, offer_removal: None)
     self.mock(git_cl.gclient_utils, 'RunEditor',
               lambda *_, **__: self._mocked_call(['RunEditor']))
-    self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
+    self.mock(git_cl, 'DownloadGerritHook', lambda force: self._mocked_call(
+      'DownloadGerritHook', force))
 
     original_os_path_isdir = os.path.isdir
     def selective_os_path_isdir_mock(path):
@@ -1598,7 +1628,8 @@ class TestGitCl(TestCase):
         issue=issue,
         fetched_description=description,
         fetched_status=fetched_status,
-        other_cl_owner=other_cl_owner)
+        other_cl_owner=other_cl_owner,
+        custom_cl_base=custom_cl_base)
     if fetched_status != 'ABANDONED':
       self.calls += self._gerrit_upload_calls(
           description, reviewers, squash,
@@ -1606,7 +1637,8 @@ class TestGitCl(TestCase):
           expected_upstream_ref=expected_upstream_ref,
           ref_suffix=ref_suffix, title=title, notify=notify,
           post_amend_description=post_amend_description,
-          issue=issue, cc=cc, git_mirror=git_mirror)
+          issue=issue, cc=cc, git_mirror=git_mirror,
+          custom_cl_base=custom_cl_base)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -1620,7 +1652,6 @@ class TestGitCl(TestCase):
         post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
 
   def test_gerrit_upload_without_change_id_override_nosquash(self):
-    self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
     self._run_gerrit_upload_test(
         [],
         'desc\n\nBUG=\n',
@@ -1686,6 +1717,19 @@ class TestGitCl(TestCase):
         [],
         squash=True,
         expected_upstream_ref='origin/master')
+
+  def test_gerrit_upload_squash_first_against_rev(self):
+    custom_cl_base = 'custom_cl_base_rev_or_branch'
+    self._run_gerrit_upload_test(
+        ['--squash', custom_cl_base],
+        'desc\nBUG=\n\nChange-Id: 123456789',
+        [],
+        squash=True,
+        expected_upstream_ref='origin/master',
+        custom_cl_base=custom_cl_base)
+    self.assertIn(
+        'If you proceed with upload, more than 1 CL may be created by Gerrit',
+        sys.stdout.getvalue())
 
   def test_gerrit_upload_squash_first_with_mirror(self):
     self._run_gerrit_upload_test(

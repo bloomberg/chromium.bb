@@ -1583,9 +1583,9 @@ class Changelist(object):
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
+    custom_cl_base = None
     if git_diff_args:
-      # TODO(ukai): is it ok for gerrit case?
-      base_branch = git_diff_args[0]
+      custom_cl_base = base_branch = git_diff_args[0]
     else:
       if self.GetBranch() is None:
         DieWithError('Can\'t upload from detached HEAD state. Get on a branch!')
@@ -1640,7 +1640,7 @@ class Changelist(object):
         confirm_or_exit(action='upload')
 
     print_stats(options.similarity, options.find_copies, git_diff_args)
-    ret = self.CMDUploadChange(options, git_diff_args, change)
+    ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
     if not ret:
       if options.use_commit_queue:
         self.SetCQState(_CQState.COMMIT)
@@ -1869,7 +1869,7 @@ class _ChangelistCodereviewBase(object):
     """
     raise NotImplementedError()
 
-  def CMDUploadChange(self, options, args, change):
+  def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Uploads a change to codereview."""
     raise NotImplementedError()
 
@@ -2185,7 +2185,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           codereview='rietveld')
     return None
 
-  def CMDUploadChange(self, options, args, change):
+  def CMDUploadChange(self, options, args, custom_cl_base, change):
     """Upload the patch to Rietveld."""
     upload_args = ['--assume_yes']  # Don't ask about untracked files.
     upload_args.extend(['--server', self.GetCodereviewServer()])
@@ -2786,7 +2786,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       else:
         print('OK, will keep Gerrit commit-msg hook in place.')
 
-  def CMDUploadChange(self, options, args, change):
+  def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Upload the current branch to Gerrit."""
     if options.squash and options.no_squash:
       DieWithError('Can only use one of --squash or --no-squash')
@@ -2796,10 +2796,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       options.squash = settings.GetSquashGerritUploads()
     elif options.no_squash:
       options.squash = False
-
-    # We assume the remote called "origin" is the one we want.
-    # It is probably not worthwhile to support different workflows.
-    gerrit_remote = 'origin'
 
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
@@ -2872,7 +2868,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         if options.message:
           message = options.message
         else:
-          message = CreateDescriptionFromLog(args)
+          message = CreateDescriptionFromLog(git_diff_args)
           if options.title:
             message = options.title + '\n\n' + message
         change_desc = ChangeDescription(message)
@@ -2898,22 +2894,26 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         change_id = change_ids[0]
 
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      parent = self._ComputeParent(remote, upstream_branch, change_desc)
+      parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
+                                   options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
       ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
                             '-m', message]).strip()
     else:
       change_desc = ChangeDescription(
-          options.message or CreateDescriptionFromLog(args))
+          options.message or CreateDescriptionFromLog(git_diff_args))
       if not change_desc.description:
         DieWithError("Description is empty. Aborting...")
 
       if not git_footers.get_footer_change_id(change_desc.description):
         DownloadGerritHook(False)
-        change_desc.set_description(self._AddChangeIdToCommitMessage(options,
-                                                                     args))
+        change_desc.set_description(
+            self._AddChangeIdToCommitMessage(options, git_diff_args))
       ref_to_push = 'HEAD'
-      parent = '%s/%s' % (gerrit_remote, branch)
+      # For no-squash mode, we assume the remote called "origin" is the one we
+      # want. It is not worthwhile to support different workflows for
+      # no-squash mode.
+      parent = 'origin/%s' % branch
       change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
     assert change_desc
@@ -3020,7 +3020,33 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           is_reviewer=False, notify=bool(options.send_mail))
     return 0
 
-  def _ComputeParent(self, remote, upstream_branch, change_desc):
+  def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,
+                     change_desc):
+    """Computes parent of the generated commit to be uploaded to Gerrit.
+
+    Returns revision or a ref name.
+    """
+    if custom_cl_base:
+      # Try to avoid creating additional unintended CLs when uploading, unless
+      # user wants to take this risk.
+      local_ref_of_target_remote = self.GetRemoteBranch()[1]
+      code, _ = RunGitWithCode(['merge-base', '--is-ancestor', custom_cl_base,
+                                local_ref_of_target_remote])
+      if code == 1:
+        print('\nWARNING: manually specified base of this CL `%s` '
+              'doesn\'t seem to belong to target remote branch `%s`.\n\n'
+              'If you proceed with upload, more than 1 CL may be created by '
+              'Gerrit as a result, in turn confusing or crashing git cl.\n\n'
+              'If you are certain that specified base `%s` has already been '
+              'uploaded to Gerrit as another CL, you may proceed.\n' %
+              (custom_cl_base, local_ref_of_target_remote, custom_cl_base))
+        if not force:
+          confirm_or_exit(
+              'Do you take responsibility for cleaning up potential mess '
+              'resulting from proceeding with upload?',
+              action='upload')
+      return custom_cl_base
+
     if remote != '.':
       return self.GetCommonAncestorWithUpstream()
 
@@ -3028,12 +3054,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # squashed version.
     upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
 
-    # TODO(tandrii): Remove this master-specific hack
-    # Bug: https://bugs.chromium.org/p/chromium/issues/detail?id=682104
     if upstream_branch_name == 'master':
-      return RunGitSilent(['rev-parse', 'origin/master']).strip()
+      return 'origin/master'
 
     # Check the squashed hash of the parent.
+    # TODO(tandrii): consider checking parent change in Gerrit and using its
+    # hash if tree hash of latest parent revision (patchset) in Gerrit matches
+    # the tree hash of the parent branch. The upside is less likely bogus
+    # requests to reupload parent change just because it's uploadhash is
+    # missing, yet the downside likely exists, too (albeit unknown to me yet).
     parent = RunGit(['config',
                      'branch.%s.gerritsquashhash' % upstream_branch_name],
                     error_ok=True).strip()
