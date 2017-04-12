@@ -7,10 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 
 namespace vr_shell {
 
+struct UiElement;
 class UiScene;
 
 class UiSceneManager {
@@ -26,10 +28,19 @@ class UiSceneManager {
   void SetWebVRMode(bool web_vr);
 
  private:
+  void ConfigureSecurityWarnings();
+  void OnSecurityWarningTimer();
+
   UiScene* scene_;
+
+  // UI elemenet pointers (not owned by the scene manager).
+  UiElement* permanent_security_warning_ = nullptr;
+  UiElement* transient_security_warning_ = nullptr;
 
   bool web_vr_mode_ = false;
   bool secure_origin_ = false;
+
+  base::OneShotTimer security_warning_timer_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 
