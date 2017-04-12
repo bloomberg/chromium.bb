@@ -110,21 +110,6 @@ static String GetTagName(Node* n) {
   return n->nodeName();
 }
 
-static bool IsEmptyOrUnstyledAppleStyleSpan(const Node* node) {
-  if (!isHTMLSpanElement(node))
-    return false;
-
-  const HTMLElement& elem = ToHTMLElement(*node);
-  if (elem.getAttribute(classAttr) != "Apple-style-span")
-    return false;
-
-  if (!elem.HasChildren())
-    return true;
-
-  const StylePropertySet* inline_style_decl = elem.InlineStyle();
-  return (!inline_style_decl || inline_style_decl->IsEmpty());
-}
-
 String QuoteAndEscapeNonPrintables(const String& s) {
   StringBuilder result;
   result.Append('"');
@@ -171,13 +156,8 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
 
   if (o.GetNode()) {
     String tag_name = GetTagName(o.GetNode());
-    if (!tag_name.IsEmpty()) {
+    if (!tag_name.IsEmpty())
       ts << " {" << tag_name << "}";
-      // flag empty or unstyled AppleStyleSpan because we never
-      // want to leave them in the DOM
-      if (IsEmptyOrUnstyledAppleStyleSpan(o.GetNode()))
-        ts << " *empty or unstyled AppleStyleSpan*";
-    }
   }
 
   LayoutRect rect = o.DebugRect();
