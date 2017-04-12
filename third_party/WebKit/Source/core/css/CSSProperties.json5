@@ -78,6 +78,8 @@
         // Field has type specified at field_type_path and has a getter/setter.
         // Also has a setter taking an rvalue reference. Cannot be packed.
         "external",
+        // Only the storage is generated. The interface is handwritten.
+        "storage_only",
       ],
     },
 

@@ -58,19 +58,19 @@ NONPROPERTIES = [
      'inherited': False, 'independent': False},
     # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
     # TODO(shend): Remove these fields and delete the 'storage_only' template.
-    {'name': 'EmptyState', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
+    {'name': 'EmptyState', 'field_template': 'storage_only', 'field_size': 1, 'default_value': 'false',
      'type_name': 'bool', 'inherited': False, 'independent': False},
-    {'name': 'StyleType', 'field_template': 'storage_only', 'size': 6, 'default_value': '0',
+    {'name': 'StyleType', 'field_template': 'storage_only', 'field_size': 6, 'default_value': '0',
      'type_name': 'PseudoId', 'inherited': False, 'independent': False},
-    {'name': 'PseudoBits', 'field_template': 'storage_only', 'size': 8, 'default_value': 'kPseudoIdNone',
+    {'name': 'PseudoBits', 'field_template': 'storage_only', 'field_size': 8, 'default_value': 'kPseudoIdNone',
      'type_name': 'PseudoId', 'inherited': False, 'independent': False},
     # True if 'underline solid' is the only text decoration on this element.
-    {'name': 'HasSimpleUnderline', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
+    {'name': 'HasSimpleUnderline', 'field_template': 'storage_only', 'field_size': 1, 'default_value': 'false',
      'type_name': 'bool', 'inherited': True, 'independent': False},
     # TODO(shend): vertical align is actually a CSS property, but since we don't support union fields
     # which can be either a keyword or Length, this is generated as a nonproperty for now. Remove this
     # once we can support union fields and groups.
-    {'name': 'VerticalAlign', 'field_template': 'storage_only', 'size': 4, 'default_value': 'EVerticalAlign::kBaseline',
+    {'name': 'VerticalAlign', 'field_template': 'storage_only', 'field_size': 4, 'default_value': 'EVerticalAlign::kBaseline',
      'type_name': 'EVerticalAlign', 'inherited': False, 'independent': False},
 ]
 
@@ -199,7 +199,7 @@ def _create_field(field_role, property_):
         # 'storage_only' fields need to specify a size, type_name and default_value
         type_name = property_['type_name']
         default_value = property_['default_value']
-        size = property_['size']
+        size = property_['field_size']
     elif property_['field_template'] == 'external':
         type_name = property_['type_name']
         default_value = property_['default_value']
@@ -317,10 +317,12 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
 
         property_values = self._properties.values()
 
-        # Override the type name when field_type_path is specified
         for property_ in property_values:
+            # Override the type name when field_type_path is specified
             if property_['field_type_path']:
                 property_['type_name'] = property_['field_type_path'].split('/')[-1]
+            # CSS properties are not allowed to explicitly specify their field_size.
+            property_['field_size'] = None
 
         self._generated_enums = _create_enums(property_values + NONPROPERTIES)
 
