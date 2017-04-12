@@ -223,8 +223,6 @@ public class ContentViewCore
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
 
-    private ContentViewClient mContentViewClient;
-
     // Native pointer to C++ ContentViewCoreImpl object which will be set by nativeInit().
     private long mNativeContentViewCore;
 
@@ -689,12 +687,6 @@ public class ContentViewCore
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         mImeAdapter.resetAndHideKeyboard();
-        // TODO(igsolla): address TODO in ContentViewClient because ContentViewClient is not
-        // currently a real Null Object.
-        //
-        // Instead of deleting the client we use the Null Object pattern to avoid null checks
-        // in this class.
-        mContentViewClient = new ContentViewClient();
         mWebContents = null;
         mNativeContentViewCore = 0;
         mJavaScriptInterfaces.clear();
@@ -717,27 +709,6 @@ public class ContentViewCore
         return mNativeContentViewCore != 0;
     }
 
-    public void setContentViewClient(ContentViewClient client) {
-        if (client == null) {
-            throw new IllegalArgumentException("The client can't be null.");
-        }
-        mContentViewClient = client;
-    }
-
-    @VisibleForTesting
-    public ContentViewClient getContentViewClient() {
-        if (mContentViewClient == null) {
-            // We use the Null Object pattern to avoid having to perform a null check in this class.
-            // We create it lazily because most of the time a client will be set almost immediately
-            // after ContentView is created.
-            mContentViewClient = new ContentViewClient();
-            // We don't set the native ContentViewClient pointer here on purpose. The native
-            // implementation doesn't mind a null delegate and using one is better than passing a
-            // Null Object, since we cut down on the number of JNI calls.
-        }
-        return mContentViewClient;
-    }
-
     /**
      * @return Viewport width in physical pixels as set from onSizeChanged.
      */
@@ -752,14 +723,6 @@ public class ContentViewCore
     @CalledByNative
     public int getViewportHeightPix() {
         return mViewportHeightPix;
-    }
-
-    /**
-     * @return Viewport height when the OSK is hidden in physical pixels as set from onSizeChanged.
-     */
-    @CalledByNative
-    public int getViewportHeightWithOSKHiddenPix() {
-        return mViewportHeightPix + getContentViewClient().getSystemWindowInsetBottom();
     }
 
     /**

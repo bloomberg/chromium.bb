@@ -151,8 +151,7 @@ public class OSKOverscrollTest extends ChromeActivityTestCaseBase<ChromeActivity
                 // Verify that the size of the viewport before the OSK show is equal to the size of
                 // the viewport after the OSK show plus the size of the keyboard.
                 int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
-                int keyboardHeight =
-                        viewCoreRef.get().getContentViewClient().getSystemWindowInsetBottom();
+                int keyboardHeight = getActivity().getActivityTab().getSystemWindowInsetBottom();
 
                 int priorHeight = (int) (viewportHeightBeforeCss * cssToDevicePixFactor);
                 int afterHeightPlusKeyboard =

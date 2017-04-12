@@ -12,7 +12,6 @@ import android.widget.FrameLayout;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
@@ -31,7 +30,6 @@ public class ShellManager extends FrameLayout {
 
     // The target for all content rendering.
     private ContentViewRenderView mContentViewRenderView;
-    private final ContentViewClient mContentViewClient = new ContentViewClient();
 
     /**
      * Constructor for inflating via XML.
@@ -106,7 +104,7 @@ public class ShellManager extends FrameLayout {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
-        shellView.initialize(nativeShellPtr, mWindow, mContentViewClient);
+        shellView.initialize(nativeShellPtr, mWindow);
 
         // TODO(tedchoc): Allow switching back to these inactive shells.
         if (mActiveShell != null) removeShell(mActiveShell);

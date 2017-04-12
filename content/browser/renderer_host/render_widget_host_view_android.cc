@@ -646,11 +646,13 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
     return default_bounds_;
 
+  gfx::Size size(content_view_core_->GetViewSize());
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOSKOverscroll))
-    return gfx::Rect(content_view_core_->GetViewSizeWithOSKHidden());
+          switches::kEnableOSKOverscroll)) {
+    size.Enlarge(0, view_.GetSystemWindowInsetBottom() / view_.GetDipScale());
+  }
 
-  return gfx::Rect(content_view_core_->GetViewSize());
+  return gfx::Rect(size);
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() const {

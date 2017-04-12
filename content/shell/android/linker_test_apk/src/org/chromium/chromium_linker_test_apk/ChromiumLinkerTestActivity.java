@@ -20,7 +20,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
@@ -165,7 +164,6 @@ public class ChromiumLinkerTestActivity extends Activity {
     private void finishInitialization(Bundle savedInstanceState) {
         String shellUrl = ShellManager.DEFAULT_SHELL_URL;
         mShellManager.launchShell(shellUrl);
-        getActiveContentViewCore().setContentViewClient(new ContentViewClient());
     }
 
     private void initializationFailed() {
