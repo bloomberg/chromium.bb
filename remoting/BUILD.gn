@@ -37,6 +37,10 @@ group("remoting_all") {
     ]
   }
 
+  if (is_ios) {
+    deps += [ "//remoting/client/ios:all" ]
+  }
+
   if (enable_remoting_host) {
     deps += [
       "//remoting:remoting_perftests",

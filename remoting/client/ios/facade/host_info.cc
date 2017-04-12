@@ -22,7 +22,7 @@ bool HostInfo::ParseHostInfo(const base::DictionaryValue& host_info) {
     if (!list_value->empty()) {
       for (const auto& item : *list_value) {
         std::string token_url_pattern;
-        if (!item->GetAsString(&token_url_pattern)) {
+        if (!item.GetAsString(&token_url_pattern)) {
           return false;
         }
         token_url_patterns.push_back(token_url_pattern);
