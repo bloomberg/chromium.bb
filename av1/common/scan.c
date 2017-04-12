@@ -6801,6 +6801,40 @@ void av1_init_scan_order(AV1_COMMON *cm) {
   }
 }
 
+static void update_eob_threshold(AV1_COMMON *cm, TX_SIZE tx_size,
+                                 TX_TYPE tx_type) {
+  int i, row, col, row_limit, col_limit, cal_idx = 0;
+  const int tx_width = tx_size_wide[tx_size];
+  const int tx_height = tx_size_high[tx_size];
+
+  row_limit = tx_width >> 1;
+  col_limit = tx_height >> 1;
+
+  if (tx_width >= 8 && tx_height >= 8) {
+    SCAN_ORDER *sc = &cm->fc->sc[tx_size][tx_type];
+    int16_t *threshold = &cm->fc->eob_threshold[tx_size][tx_type][0];
+    const int tx2d_size = tx_size_2d[tx_size];
+
+    while (cal_idx < EOB_THRESHOLD_NUM) {
+      for (i = 0; i < tx2d_size; ++i) {
+        row = sc->scan[i] / tx_height;
+        col = sc->scan[i] % tx_width;
+        if (row >= row_limit || col >= col_limit) break;
+      }
+      row_limit >>= 1;
+      col_limit >>= 1;
+      threshold[cal_idx] = i;
+      cal_idx++;
+    }
+  }
+}
+
+const EobThreshold *av1_get_eob_threshold(const AV1_COMMON *cm,
+                                          const TX_SIZE tx_size,
+                                          const TX_TYPE tx_type) {
+  return (const EobThreshold *)&cm->fc->eob_threshold[tx_size][tx_type];
+}
+
 void av1_adapt_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
@@ -6813,6 +6847,7 @@ void av1_adapt_scan_order(AV1_COMMON *cm) {
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);
       update_scan_order_facade(cm, tx_size, tx_type);
+      update_eob_threshold(cm, tx_size, tx_type);
     }
   }
 }
