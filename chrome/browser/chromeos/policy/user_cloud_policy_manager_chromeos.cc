@@ -425,8 +425,7 @@ void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
 }
 
 void UserCloudPolicyManagerChromeOS::OnBlockingFetchTimeout() {
-  if (!wait_for_policy_fetch_)
-    return;
+  DCHECK(wait_for_policy_fetch_);
   LOG(WARNING) << "Timed out while waiting for the policy fetch. "
                << "The session will start with the cached policy.";
   CancelWaitForPolicyFetch(false);
