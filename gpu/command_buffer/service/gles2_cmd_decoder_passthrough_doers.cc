@@ -466,10 +466,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage2D(
     GLsizei width,
     GLsizei height,
     GLint border,
-    GLsizei imageSize,
+    GLsizei image_size,
+    GLsizei data_size,
     const void* data) {
+  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
+  // entry point
   glCompressedTexImage2D(target, level, internalformat, width, height, border,
-                         imageSize, data);
+                         image_size, data);
   return error::kNoError;
 }
 
@@ -481,10 +484,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage2D(
     GLsizei width,
     GLsizei height,
     GLenum format,
-    GLsizei imageSize,
+    GLsizei image_size,
+    GLsizei data_size,
     const void* data) {
+  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
+  // entry point
   glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
-                            format, imageSize, data);
+                            format, image_size, data);
   return error::kNoError;
 }
 
@@ -496,10 +502,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage3D(
     GLsizei height,
     GLsizei depth,
     GLint border,
-    GLsizei imageSize,
+    GLsizei image_size,
+    GLsizei data_size,
     const void* data) {
+  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
+  // entry point
   glCompressedTexImage3D(target, level, internalformat, width, height, depth,
-                         border, imageSize, data);
+                         border, image_size, data);
   return error::kNoError;
 }
 
@@ -513,10 +522,13 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage3D(
     GLsizei height,
     GLsizei depth,
     GLenum format,
-    GLsizei imageSize,
+    GLsizei image_size,
+    GLsizei data_size,
     const void* data) {
+  // TODO(cwallez@chromium.org): Use data_size with the robust version of the
+  // entry point
   glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
-                            height, depth, format, imageSize, data);
+                            height, depth, format, image_size, data);
   return error::kNoError;
 }
 
