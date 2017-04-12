@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
+#include "content/public/common/page_type.h"
 
 namespace base {
 class FilePath;
@@ -70,6 +71,9 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // HTTPS. Saving a page will fail if that is the case. HTTP connections are
   // not affected.
   virtual bool HasConnectionSecurityError();
+
+  // Returns the page type of the page being saved.
+  virtual content::PageType GetPageType();
 
   // Reports failure to create archive a page to the client that requested it.
   void ReportFailure(ArchiverResult result);

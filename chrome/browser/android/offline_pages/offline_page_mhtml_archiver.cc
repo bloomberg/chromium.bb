@@ -16,6 +16,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "net/base/filename_util.h"
@@ -58,8 +59,23 @@ void OfflinePageMHTMLArchiver::CreateArchive(
   DCHECK(!callback.is_null());
   callback_ = callback;
 
+  // TODO(chili): crbug/710248 These checks should probably be done inside
+  // the offliner.
   if (HasConnectionSecurityError()) {
     ReportFailure(ArchiverResult::ERROR_SECURITY_CERTIFICATE);
+    return;
+  }
+
+  // Don't save chrome error pages.
+  if (GetPageType() == content::PageType::PAGE_TYPE_ERROR) {
+    ReportFailure(ArchiverResult::ERROR_ERROR_PAGE);
+    return;
+  }
+
+  // Don't save chrome-injected interstitial info pages
+  // i.e. "This site may be dangerous. Are you sure you want to continue?"
+  if (GetPageType() == content::PageType::PAGE_TYPE_INTERSTITIAL) {
+    ReportFailure(ArchiverResult::ERROR_INTERSTITIAL_PAGE);
     return;
   }
 
@@ -128,6 +144,10 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
   helper->GetSecurityInfo(&security_info);
   return security_state::SecurityLevel::DANGEROUS ==
          security_info.security_level;
+}
+
+content::PageType OfflinePageMHTMLArchiver::GetPageType() {
+  return web_contents_->GetController().GetVisibleEntry()->GetPageType();
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {

@@ -37,6 +37,8 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
     NOT_ABLE_TO_ARCHIVE,
     WEB_CONTENTS_MISSING,
     CONNECTION_SECURITY_ERROR,
+    ERROR_PAGE,
+    INTERSTITIAL_PAGE,
   };
 
   TestMHTMLArchiver(const GURL& url, const TestScenario test_scenario);
@@ -46,6 +48,7 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
   void GenerateMHTML(const base::FilePath& archives_dir,
                      const CreateArchiveParams& create_archive_params) override;
   bool HasConnectionSecurityError() override;
+  content::PageType GetPageType() override;
 
   const GURL url_;
   const TestScenario test_scenario_;
@@ -84,6 +87,14 @@ void TestMHTMLArchiver::GenerateMHTML(
 
 bool TestMHTMLArchiver::HasConnectionSecurityError() {
   return test_scenario_ == TestScenario::CONNECTION_SECURITY_ERROR;
+}
+
+content::PageType TestMHTMLArchiver::GetPageType() {
+  if (test_scenario_ == TestScenario::ERROR_PAGE)
+    return content::PageType::PAGE_TYPE_ERROR;
+  if (test_scenario_ == TestScenario::INTERSTITIAL_PAGE)
+    return content::PageType::PAGE_TYPE_INTERSTITIAL;
+  return content::PageType::PAGE_TYPE_NORMAL;
 }
 
 }  // namespace
@@ -212,6 +223,31 @@ TEST_F(OfflinePageMHTMLArchiverTest, ConnectionNotSecure) {
 
   EXPECT_EQ(archiver.get(), last_archiver());
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_SECURITY_CERTIFICATE,
+            last_result());
+  EXPECT_EQ(base::FilePath(), last_file_path());
+  EXPECT_EQ(0LL, last_file_size());
+}
+
+// Tests for archiver handling of an error page.
+TEST_F(OfflinePageMHTMLArchiverTest, PageError) {
+  GURL page_url = GURL(kTestURL);
+  std::unique_ptr<TestMHTMLArchiver> archiver(
+      CreateArchive(page_url, TestMHTMLArchiver::TestScenario::ERROR_PAGE));
+
+  EXPECT_EQ(archiver.get(), last_archiver());
+  EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_ERROR_PAGE,
+            last_result());
+  EXPECT_EQ(base::FilePath(), last_file_path());
+  EXPECT_EQ(0LL, last_file_size());
+}
+
+// Tests for archiver handling of an interstitial page.
+TEST_F(OfflinePageMHTMLArchiverTest, InterstitialPage) {
+  GURL page_url = GURL(kTestURL);
+  std::unique_ptr<TestMHTMLArchiver> archiver(CreateArchive(
+      page_url, TestMHTMLArchiver::TestScenario::INTERSTITIAL_PAGE));
+  EXPECT_EQ(archiver.get(), last_archiver());
+  EXPECT_EQ(OfflinePageArchiver::ArchiverResult::ERROR_INTERSTITIAL_PAGE,
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());

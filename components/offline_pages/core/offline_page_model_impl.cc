@@ -72,6 +72,11 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
     case ArchiverResult::ERROR_SECURITY_CERTIFICATE:
       result = SavePageResult::SECURITY_CERTIFICATE_ERROR;
       break;
+    case ArchiverResult::ERROR_ERROR_PAGE:
+      result = SavePageResult::ERROR_PAGE;
+      break;
+    case ArchiverResult::ERROR_INTERSTITIAL_PAGE:
+      result = SavePageResult::INTERSTITIAL_PAGE;
     default:
       NOTREACHED();
       result = SavePageResult::CONTENT_UNAVAILABLE;
