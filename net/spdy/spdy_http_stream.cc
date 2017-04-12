@@ -191,6 +191,11 @@ int64_t SpdyHttpStream::GetTotalSentBytes() const {
   return stream_->raw_sent_bytes();
 }
 
+bool SpdyHttpStream::GetAlternativeService(
+    AlternativeService* alternative_service) const {
+  return false;
+}
+
 bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   if (stream_closed_) {
     if (!closed_stream_has_load_timing_info_)

@@ -423,6 +423,14 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   return true;
 }
 
+bool QuicHttpStream::GetAlternativeService(
+    AlternativeService* alternative_service) const {
+  alternative_service->protocol = kProtoQUIC;
+  alternative_service->host = server_id_.host();
+  alternative_service->port = server_id_.port();
+  return true;
+}
+
 void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   details->connection_info = ConnectionInfoFromQuicVersion(quic_version_);
   if (was_handshake_confirmed_)

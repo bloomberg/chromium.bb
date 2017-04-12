@@ -14970,6 +14970,12 @@ class FakeStream : public HttpStream,
     return false;
   }
 
+  bool GetAlternativeService(
+      AlternativeService* alternative_service) const override {
+    ADD_FAILURE();
+    return false;
+  }
+
   void GetSSLInfo(SSLInfo* ssl_info) override { ADD_FAILURE(); }
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
@@ -15213,6 +15219,12 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     NOTREACHED();
+    return false;
+  }
+
+  bool GetAlternativeService(
+      AlternativeService* alternative_service) const override {
+    ADD_FAILURE();
     return false;
   }
 

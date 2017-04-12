@@ -127,6 +127,10 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
     return false;
   }
+  bool GetAlternativeService(
+      AlternativeService* alternative_service) const override {
+    return false;
+  }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }

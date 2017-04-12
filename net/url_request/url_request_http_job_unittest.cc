@@ -1136,6 +1136,11 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return false;
   }
 
+  bool GetAlternativeService(
+      AlternativeService* alternative_service) const override {
+    return false;
+  }
+
   void GetSSLInfo(SSLInfo* ssl_info) override {}
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
