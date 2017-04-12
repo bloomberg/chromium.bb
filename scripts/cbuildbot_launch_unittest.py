@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import mock
 import os
+import unittest
 
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
@@ -76,6 +77,26 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
                   branch='release-R56-9000.B', git_cache_dir='/git-cache'),
         mock.call().Sync()
     ])
+
+
+class CbuildbotLaunchGlobalTest(cros_test_lib.TestCase):
+  """Validate our global setup function."""
+  def setUp(self):
+    self.originalSudo = cros_build_lib.STRICT_SUDO
+    self.originalUmask = os.umask(0) # Have to set it to read it, make it bogus
+
+  def teardown(self):
+    cros_build_lib.STRICT_SUDO = self.originalSudo
+    os.umask(self.originalUmask)
+
+  @unittest.skip("Global side effects break other tests. Run serially?")
+  def testConfigureGlobalEnvironment(self):
+    cros_build_lib.STRICT_SUDO = False
+
+    cbuildbot_launch.ConfigureGlobalEnvironment()
+
+    self.assertTrue(cros_build_lib.STRICT_SUDO)
+    self.assertEqual(os.umask(0), 0o22)
 
 
 class RunTests(cros_build_lib_unittest.RunCommandTestCase):

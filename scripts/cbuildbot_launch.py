@@ -69,7 +69,7 @@ def CleanBuildroot(branchname, buildroot):
   #   1) osutils.RmDir('chroot')
   #   2) osutils.RmDir('.cache')
   #   3) EmptyDir(buildroot, excludes=['.repo'])
-  #   4) EmptyDir(buildroot)
+  #   4) rm -rf buildroot
 
   state_file = os.path.join(buildroot, '.cbuildbot_launch_state')
   new_state = branchname or 'TOT'
@@ -150,6 +150,14 @@ def RunCbuildbot(options):
   logging.debug('cbuildbot result is: %s', result.returncode)
   return result.returncode
 
+def ConfigureGlobalEnvironment():
+  """Setup process wide environmental changes."""
+  # Turn on strict sudo checks.
+  cros_build_lib.STRICT_SUDO = True
+
+  # Set umask to 022 so files created by buildbot are readable.
+  os.umask(0o22)
+
 
 def main(argv):
   """main method of script.
@@ -160,6 +168,8 @@ def main(argv):
   Returns:
     Return code of cbuildbot as an integer.
   """
+  ConfigureGlobalEnvironment()
+
   # Specified branch, or 'master'
   options = PreParseArguments(argv)
 
