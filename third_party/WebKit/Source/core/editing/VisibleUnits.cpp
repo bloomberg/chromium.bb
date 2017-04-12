@@ -79,17 +79,11 @@ static PositionType CanonicalizeCandidate(const PositionType& candidate) {
 }
 
 template <typename PositionType>
-static PositionType CanonicalPosition(const PositionType& passed_position) {
+static PositionType CanonicalPosition(const PositionType& position) {
   // Sometimes updating selection positions can be extremely expensive and
   // occur frequently.  Often calling preventDefault on mousedown events can
   // avoid doing unnecessary text selection work.  http://crbug.com/472258.
   TRACE_EVENT0("input", "VisibleUnits::canonicalPosition");
-
-  // The updateLayout call below can do so much that even the position passed
-  // in to us might get changed as a side effect. Specifically, there are code
-  // paths that pass selection endpoints, and updateLayout can change the
-  // selection.
-  PositionType position = passed_position;
 
   // FIXME (9535):  Canonicalizing to the leftmost candidate means that if
   // we're at a line wrap, we will ask layoutObjects to paint downstream
@@ -103,33 +97,30 @@ static PositionType CanonicalPosition(const PositionType& passed_position) {
   DCHECK(position.GetDocument());
   DCHECK(!position.GetDocument()->NeedsLayoutTreeUpdate());
 
-  Node* node = position.ComputeContainerNode();
+  const PositionType& backward_candidate = MostBackwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(backward_candidate))
+    return backward_candidate;
 
-  PositionType candidate = MostBackwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate))
-    return candidate;
-  candidate = MostForwardCaretPosition(position);
-  if (IsVisuallyEquivalentCandidate(candidate))
-    return candidate;
+  const PositionType& forward_candidate = MostForwardCaretPosition(position);
+  if (IsVisuallyEquivalentCandidate(forward_candidate))
+    return forward_candidate;
 
   // When neither upstream or downstream gets us to a candidate
   // (upstream/downstream won't leave blocks or enter new ones), we search
   // forward and backward until we find one.
-  PositionType next = CanonicalizeCandidate(NextCandidate(position));
-  PositionType prev = CanonicalizeCandidate(PreviousCandidate(position));
-  Node* next_node = next.AnchorNode();
-  Node* prev_node = prev.AnchorNode();
+  const PositionType& next = CanonicalizeCandidate(NextCandidate(position));
+  const PositionType& prev = CanonicalizeCandidate(PreviousCandidate(position));
 
   // The new position must be in the same editable element. Enforce that
   // first. Unless the descent is from a non-editable html element to an
   // editable body.
+  Node* const node = position.ComputeContainerNode();
   if (node && node->GetDocument().documentElement() == node &&
       !HasEditableStyle(*node) && node->GetDocument().body() &&
       HasEditableStyle(*node->GetDocument().body()))
     return next.IsNotNull() ? next : prev;
 
-  Element* editing_root = RootEditableElementOf(position);
-
+  Element* const editing_root = RootEditableElementOf(position);
   // If the html element is editable, descending into its body will look like
   // a descent from non-editable to editable content since
   // |rootEditableElementOf()| always stops at the body.
@@ -138,9 +129,11 @@ static PositionType CanonicalPosition(const PositionType& passed_position) {
       position.AnchorNode()->IsDocumentNode())
     return next.IsNotNull() ? next : prev;
 
-  bool prev_is_in_same_editable_element =
+  Node* const next_node = next.AnchorNode();
+  Node* const prev_node = prev.AnchorNode();
+  const bool prev_is_in_same_editable_element =
       prev_node && RootEditableElementOf(prev) == editing_root;
-  bool next_is_in_same_editable_element =
+  const bool next_is_in_same_editable_element =
       next_node && RootEditableElementOf(next) == editing_root;
   if (prev_is_in_same_editable_element && !next_is_in_same_editable_element)
     return prev;
@@ -152,10 +145,10 @@ static PositionType CanonicalPosition(const PositionType& passed_position) {
     return PositionType();
 
   // The new position should be in the same block flow element. Favor that.
-  Element* original_block = node ? EnclosingBlockFlowElement(*node) : 0;
-  bool next_is_outside_original_block =
+  Element* const original_block = node ? EnclosingBlockFlowElement(*node) : 0;
+  const bool next_is_outside_original_block =
       !next_node->IsDescendantOf(original_block) && next_node != original_block;
-  bool prev_is_outside_original_block =
+  const bool prev_is_outside_original_block =
       !prev_node->IsDescendantOf(original_block) && prev_node != original_block;
   if (next_is_outside_original_block && !prev_is_outside_original_block)
     return prev;
