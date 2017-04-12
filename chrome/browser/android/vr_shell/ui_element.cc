@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_element.h"
 
 #include <limits>
 
@@ -101,11 +101,11 @@ bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
                              distance);
 }
 
-ContentRectangle::ContentRectangle() = default;
+UiElement::UiElement() = default;
 
-ContentRectangle::~ContentRectangle() = default;
+UiElement::~UiElement() = default;
 
-void ContentRectangle::Animate(const base::TimeTicks& time) {
+void UiElement::Animate(const base::TimeTicks& time) {
   for (auto& it : animations) {
     Animation& animation = *it;
     if (time < animation.start)
@@ -201,11 +201,11 @@ void ContentRectangle::Animate(const base::TimeTicks& time) {
   }
 }
 
-bool ContentRectangle::IsVisible() const {
+bool UiElement::IsVisible() const {
   return visible && computed_opacity > 0.0f;
 }
 
-bool ContentRectangle::IsHitTestable() const {
+bool UiElement::IsHitTestable() const {
   return IsVisible() && hit_testable;
 }
 

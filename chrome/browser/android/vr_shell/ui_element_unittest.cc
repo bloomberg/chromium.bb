@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_element.h"
 
 #include <utility>
 
@@ -44,7 +44,7 @@ base::TimeDelta usToDelta(uint64_t us) {
 }  // namespace
 
 TEST(UiElements, AnimateCopyRect) {
-  ContentRectangle rect;
+  UiElement rect;
   rect.copy_rect = {10, 100, 1000, 10000};
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::COPYRECT,
@@ -58,7 +58,7 @@ TEST(UiElements, AnimateCopyRect) {
 }
 
 TEST(UiElements, AnimateSize) {
-  ContentRectangle rect;
+  UiElement rect;
   rect.size = {10, 100, 1};
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::SIZE,
@@ -72,7 +72,7 @@ TEST(UiElements, AnimateSize) {
 }
 
 TEST(UiElements, AnimateTranslation) {
-  ContentRectangle rect;
+  UiElement rect;
   rect.translation = {10, 100, 1000};
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::TRANSLATION,
@@ -86,7 +86,7 @@ TEST(UiElements, AnimateTranslation) {
 }
 
 TEST(UiElements, AnimateRotation) {
-  ContentRectangle rect;
+  UiElement rect;
   rect.rotation = {10, 100, 1000, 10000};
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::ROTATION,
@@ -100,7 +100,7 @@ TEST(UiElements, AnimateRotation) {
 }
 
 TEST(UiElements, AnimationHasNoEffectBeforeScheduledStart) {
-  ContentRectangle rect;
+  UiElement rect;
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::TRANSLATION,
       std::unique_ptr<easing::Easing>(new easing::Linear()), {10, 100, 1000},
@@ -111,7 +111,7 @@ TEST(UiElements, AnimationHasNoEffectBeforeScheduledStart) {
 }
 
 TEST(UiElements, AnimationPurgedWhenDone) {
-  ContentRectangle rect;
+  UiElement rect;
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::TRANSLATION,
       std::unique_ptr<easing::Easing>(new easing::Linear()), {10, 100, 1000},
@@ -122,7 +122,7 @@ TEST(UiElements, AnimationPurgedWhenDone) {
 }
 
 TEST(UiElements, AnimationLinearEasing) {
-  ContentRectangle rect;
+  UiElement rect;
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::TRANSLATION,
       std::unique_ptr<easing::Easing>(new easing::Linear()), {10, 100, 1000},
@@ -137,7 +137,7 @@ TEST(UiElements, AnimationLinearEasing) {
 }
 
 TEST(UiElements, AnimationStartFromSpecifiedLocation) {
-  ContentRectangle rect;
+  UiElement rect;
   std::unique_ptr<Animation> animation(new Animation(
       0, Animation::Property::TRANSLATION,
       std::unique_ptr<easing::Easing>(new easing::Linear()), {10, 100, 1000},
@@ -155,7 +155,7 @@ TEST(UiElements, AnimationStartFromSpecifiedLocation) {
 //   Animation 2:        ?  .......... 50
 //   Result:       0 ... 10 ... 30 ... 50
 TEST(UiElements, AnimationOverlap) {
-  ContentRectangle rect;
+  UiElement rect;
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::TRANSLATION,
                     std::unique_ptr<easing::Easing>(new easing::Linear()), {},

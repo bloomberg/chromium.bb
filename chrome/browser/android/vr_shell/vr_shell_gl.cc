@@ -15,7 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/fps_meter.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
@@ -910,15 +910,14 @@ void VrShellGl::DrawWorldElements(const vr::Mat4f& head_pose) {
                  backgroundColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
-  std::vector<const ContentRectangle*> elements = scene_->GetWorldElements();
+  std::vector<const UiElement*> elements = scene_->GetWorldElements();
   DrawUiView(head_pose, elements, render_size_primary_,
              kViewportListPrimaryOffset, !ShouldDrawWebVr());
 }
 
 void VrShellGl::DrawHeadLockedElements() {
   TRACE_EVENT0("gpu", "VrShellGl::DrawHeadLockedElements");
-  std::vector<const ContentRectangle*> elements =
-      scene_->GetHeadLockedElements();
+  std::vector<const UiElement*> elements = scene_->GetHeadLockedElements();
 
   // Add head-locked viewports. The list gets reset to just
   // the recommended viewports (for the primary buffer) each frame.
@@ -937,7 +936,7 @@ void VrShellGl::DrawHeadLockedElements() {
 }
 
 void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
-                           const std::vector<const ContentRectangle*>& elements,
+                           const std::vector<const UiElement*>& elements,
                            const gfx::Size& render_size,
                            int viewport_offset,
                            bool draw_cursor) {
@@ -977,9 +976,8 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
   }
 }
 
-void VrShellGl::DrawElements(
-    const vr::Mat4f& view_proj_matrix,
-    const std::vector<const ContentRectangle*>& elements) {
+void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
+                             const std::vector<const UiElement*>& elements) {
   for (const auto* rect : elements) {
     vr::Mat4f transform;
     vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
@@ -1025,10 +1023,10 @@ void VrShellGl::DrawElements(
   vr_shell_renderer_->GetTexturedQuadRenderer()->Flush();
 }
 
-std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
+std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
     const vr::Mat4f& view_matrix,
-    const std::vector<const ContentRectangle*>& elements) {
-  typedef std::pair<float, const ContentRectangle*> DistanceElementPair;
+    const std::vector<const UiElement*>& elements) {
+  typedef std::pair<float, const UiElement*> DistanceElementPair;
   std::vector<DistanceElementPair> zOrderedElementPairs;
   zOrderedElementPairs.reserve(elements.size());
 
@@ -1054,7 +1052,7 @@ std::vector<const ContentRectangle*> VrShellGl::GetElementsInDrawOrder(
         }
       });
 
-  std::vector<const ContentRectangle*> zOrderedElements;
+  std::vector<const UiElement*> zOrderedElements;
   zOrderedElements.reserve(elements.size());
   for (auto distanceElementPair : zOrderedElementPairs) {
     zOrderedElements.push_back(distanceElementPair.second);

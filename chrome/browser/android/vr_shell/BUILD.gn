@@ -30,8 +30,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "mailbox_to_surface_bridge.h",
       "non_presenting_gvr_delegate.cc",
       "non_presenting_gvr_delegate.h",
-      "ui_elements.cc",
-      "ui_elements.h",
+      "ui_element.cc",
+      "ui_element.h",
       "ui_interface.cc",
       "ui_interface.h",
       "ui_scene.cc",
@@ -113,7 +113,7 @@ if (enable_vr) {
       "gltf_parser_unittest.cc",
       "test/paths.cc",
       "test/paths.h",
-      "ui_elements_unittest.cc",
+      "ui_element_unittest.cc",
       "ui_scene_unittest.cc",
     ]
 

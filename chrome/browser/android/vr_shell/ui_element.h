@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_
+#define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_
 
 #include <memory>
 #include <string>
@@ -86,9 +86,9 @@ class WorldRectangle {
   Transform transform_;
 };
 
-struct ContentRectangle : public WorldRectangle {
-  ContentRectangle();
-  ~ContentRectangle();
+struct UiElement : public WorldRectangle {
+  UiElement();
+  ~UiElement();
 
   void Animate(const base::TimeTicks& time);
 
@@ -168,9 +168,9 @@ struct ContentRectangle : public WorldRectangle {
   bool dirty;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ContentRectangle);
+  DISALLOW_COPY_AND_ASSIGN(UiElement);
 };
 
 }  // namespace vr_shell
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENTS_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_H_

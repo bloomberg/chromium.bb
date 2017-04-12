@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_element.h"
 #include "device/vr/vr_math.h"
 #include "device/vr/vr_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +38,7 @@ base::TimeDelta usToDelta(uint64_t us) {
 }
 
 void addElement(UiScene* scene, int id) {
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = id;
   scene->AddUiElement(std::move(element));
 }
@@ -114,7 +114,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
 
   // Add a parent element, with distinct transformations.
   // Size of the parent should be ignored by the child.
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = 0;
   element->size = {1000, 1000, 1};
   element->scale = {3, 3, 1};
@@ -123,7 +123,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with different transformations.
-  element = base::MakeUnique<ContentRectangle>();
+  element = base::MakeUnique<UiElement>();
   element->id = 1;
   element->parent_id = 0;
   element->size = {1, 1, 1};
@@ -131,7 +131,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->rotation = {0, 0, 1, M_PI / 2};
   element->translation = {3, 0, 0};
   scene.AddUiElement(std::move(element));
-  const ContentRectangle* child = scene.GetUiElementById(1);
+  const UiElement* child = scene.GetUiElementById(1);
 
   const gfx::Vector3dF origin(0, 0, 0);
   const gfx::Vector3dF point(1, 0, 0);
@@ -146,12 +146,12 @@ TEST(UiScene, ParentTransformAppliesToChild) {
 TEST(UiScene, Opacity) {
   UiScene scene;
 
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = 0;
   element->opacity = 0.5;
   scene.AddUiElement(std::move(element));
 
-  element = base::MakeUnique<ContentRectangle>();
+  element = base::MakeUnique<UiElement>();
   element->id = 1;
   element->parent_id = 0;
   element->opacity = 0.5;
@@ -165,12 +165,12 @@ TEST(UiScene, Opacity) {
 TEST(UiScene, LockToFov) {
   UiScene scene;
 
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = 0;
   element->lock_to_fov = true;
   scene.AddUiElement(std::move(element));
 
-  element = base::MakeUnique<ContentRectangle>();
+  element = base::MakeUnique<UiElement>();
   element->id = 1;
   element->parent_id = 0;
   element->lock_to_fov = false;
@@ -194,14 +194,14 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   UiScene scene;
 
   // Create a parent element with non-unity size and scale.
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = 0;
   element->size = {2, 2, 1};
   element->scale = {2, 2, 1};
   scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with anchoring.
-  element = base::MakeUnique<ContentRectangle>();
+  element = base::MakeUnique<UiElement>();
   element->id = 1;
   element->parent_id = 0;
   element->x_anchoring = GetParam().x_anchoring;
@@ -209,7 +209,7 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   scene.AddUiElement(std::move(element));
 
   scene.UpdateTransforms(usToTicks(0));
-  const ContentRectangle* child = scene.GetUiElementById(1);
+  const UiElement* child = scene.GetUiElementById(1);
   EXPECT_NEAR(child->GetCenter().x(), GetParam().expected_x, TOLERANCE);
   EXPECT_NEAR(child->GetCenter().y(), GetParam().expected_y, TOLERANCE);
   scene.RemoveUiElement(1);

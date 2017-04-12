@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_element.h"
 #include "device/vr/vr_math.h"
 
 namespace vr_shell {
@@ -142,7 +142,7 @@ std::unique_ptr<easing::Easing> ParseEasing(const base::DictionaryValue& dict) {
   return result;
 }
 
-void ApplyAnchoring(const ContentRectangle& parent,
+void ApplyAnchoring(const UiElement& parent,
                     XAnchoring x_anchoring,
                     YAnchoring y_anchoring,
                     Transform* transform) {
@@ -176,7 +176,7 @@ void ApplyAnchoring(const ContentRectangle& parent,
 
 }  // namespace
 
-void UiScene::AddUiElement(std::unique_ptr<ContentRectangle> element) {
+void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
   CHECK_GE(element->id, 0);
   CHECK_EQ(GetUiElementById(element->id), nullptr);
   if (element->parent_id >= 0) {
@@ -193,7 +193,7 @@ void UiScene::AddUiElementFromDict(const base::DictionaryValue& dict) {
   CHECK(ParseInt(dict, "id", &id));
   CHECK_EQ(GetUiElementById(id), nullptr);
 
-  auto element = base::MakeUnique<ContentRectangle>();
+  auto element = base::MakeUnique<UiElement>();
   element->id = id;
 
   ApplyDictToElement(dict, element.get());
@@ -203,7 +203,7 @@ void UiScene::AddUiElementFromDict(const base::DictionaryValue& dict) {
 void UiScene::UpdateUiElementFromDict(const base::DictionaryValue& dict) {
   int id;
   CHECK(ParseInt(dict, "id", &id));
-  ContentRectangle* element = GetUiElementById(id);
+  UiElement* element = GetUiElementById(id);
   CHECK_NE(element, nullptr);
   ApplyDictToElement(dict, element);
 }
@@ -222,7 +222,7 @@ void UiScene::RemoveUiElement(int element_id) {
 
 void UiScene::AddAnimation(int element_id,
                            std::unique_ptr<Animation> animation) {
-  ContentRectangle* element = GetUiElementById(element_id);
+  UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
   for (auto& existing_animation : element->animations) {
     CHECK_NE(existing_animation->id, animation->id);
@@ -267,7 +267,7 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
   base::TimeTicks start = current_time + delay;
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(duration_ms);
 
-  ContentRectangle* element = GetUiElementById(element_id);
+  UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
   element->animations.emplace_back(base::MakeUnique<Animation>(
       animation_id, static_cast<Animation::Property>(property),
@@ -275,7 +275,7 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
 }
 
 void UiScene::RemoveAnimation(int element_id, int animation_id) {
-  ContentRectangle* element = GetUiElementById(element_id);
+  UiElement* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
   auto& animations = element->animations;
   for (auto it = animations.begin(); it != animations.end(); ++it) {
@@ -341,7 +341,7 @@ void UiScene::UpdateTransforms(const base::TimeTicks& time) {
   }
 }
 
-ContentRectangle* UiScene::GetUiElementById(int element_id) {
+UiElement* UiScene::GetUiElementById(int element_id) {
   for (auto& element : ui_elements_) {
     if (element->id == element_id) {
       return element.get();
@@ -350,8 +350,8 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
   return nullptr;
 }
 
-std::vector<const ContentRectangle*> UiScene::GetWorldElements() const {
-  std::vector<const ContentRectangle*> elements;
+std::vector<const UiElement*> UiScene::GetWorldElements() const {
+  std::vector<const UiElement*> elements;
   for (const auto& element : ui_elements_) {
     if (element->IsVisible() && !element->lock_to_fov) {
       elements.push_back(element.get());
@@ -360,8 +360,8 @@ std::vector<const ContentRectangle*> UiScene::GetWorldElements() const {
   return elements;
 }
 
-std::vector<const ContentRectangle*> UiScene::GetHeadLockedElements() const {
-  std::vector<const ContentRectangle*> elements;
+std::vector<const UiElement*> UiScene::GetHeadLockedElements() const {
+  std::vector<const UiElement*> elements;
   for (const auto& element : ui_elements_) {
     if (element->IsVisible() && element->lock_to_fov) {
       elements.push_back(element.get());
@@ -386,8 +386,7 @@ bool UiScene::GetWebVrRenderingEnabled() const {
   return webvr_rendering_enabled_;
 }
 
-const std::vector<std::unique_ptr<ContentRectangle>>& UiScene::GetUiElements()
-    const {
+const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {
   return ui_elements_;
 }
 
@@ -395,11 +394,11 @@ UiScene::UiScene() = default;
 
 UiScene::~UiScene() = default;
 
-void UiScene::ApplyRecursiveTransforms(ContentRectangle* element) {
+void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   if (!element->dirty)
     return;
 
-  ContentRectangle* parent = nullptr;
+  UiElement* parent = nullptr;
   if (element->parent_id >= 0) {
     parent = GetUiElementById(element->parent_id);
     CHECK(parent != nullptr);
@@ -435,7 +434,7 @@ void UiScene::ApplyRecursiveTransforms(ContentRectangle* element) {
 }
 
 void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
-                                 ContentRectangle* element) {
+                                 UiElement* element) {
   int parent_id;
 
   if (ParseInt(dict, "parentId", &parent_id)) {

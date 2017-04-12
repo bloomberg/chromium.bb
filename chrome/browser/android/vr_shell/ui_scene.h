@@ -20,7 +20,7 @@ class TimeTicks;
 namespace vr_shell {
 
 class Animation;
-struct ContentRectangle;
+struct UiElement;
 
 class UiScene {
  public:
@@ -36,7 +36,7 @@ class UiScene {
   UiScene();
   virtual ~UiScene();
 
-  void AddUiElement(std::unique_ptr<ContentRectangle> element);
+  void AddUiElement(std::unique_ptr<UiElement> element);
 
   // Add a UI element according to a dictionary passed from the UI HTML.
   void AddUiElementFromDict(const base::DictionaryValue& dict);
@@ -65,12 +65,12 @@ class UiScene {
   void HandleCommands(std::unique_ptr<base::ListValue> commands,
                       const base::TimeTicks& current_time);
 
-  const std::vector<std::unique_ptr<ContentRectangle>>& GetUiElements() const;
+  const std::vector<std::unique_ptr<UiElement>>& GetUiElements() const;
 
-  ContentRectangle* GetUiElementById(int element_id);
+  UiElement* GetUiElementById(int element_id);
 
-  std::vector<const ContentRectangle*> GetWorldElements() const;
-  std::vector<const ContentRectangle*> GetHeadLockedElements() const;
+  std::vector<const UiElement*> GetWorldElements() const;
+  std::vector<const UiElement*> GetHeadLockedElements() const;
   bool HasVisibleHeadLockedElements() const;
 
   const vr::Colorf& GetBackgroundColor() const;
@@ -78,12 +78,12 @@ class UiScene {
   bool GetWebVrRenderingEnabled() const;
 
  private:
-  void ApplyRecursiveTransforms(ContentRectangle* element);
+  void ApplyRecursiveTransforms(UiElement* element);
   void ApplyDictToElement(const base::DictionaryValue& dict,
-                          ContentRectangle* element);
+                          UiElement* element);
 
-  std::vector<std::unique_ptr<ContentRectangle>> ui_elements_;
-  ContentRectangle* content_element_ = nullptr;
+  std::vector<std::unique_ptr<UiElement>> ui_elements_;
+  UiElement* content_element_ = nullptr;
   vr::Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
   float background_distance_ = 10.0f;
   bool webvr_rendering_enabled_ = true;

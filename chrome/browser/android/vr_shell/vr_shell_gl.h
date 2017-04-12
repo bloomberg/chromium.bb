@@ -50,7 +50,7 @@ class UiScene;
 class VrController;
 class VrShell;
 class VrShellRenderer;
-struct ContentRectangle;
+struct UiElement;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,
@@ -121,15 +121,15 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void DrawWorldElements(const vr::Mat4f& head_pose);
   void DrawHeadLockedElements();
   void DrawUiView(const vr::Mat4f& head_pose,
-                  const std::vector<const ContentRectangle*>& elements,
+                  const std::vector<const UiElement*>& elements,
                   const gfx::Size& render_size,
                   int viewport_offset,
                   bool draw_cursor);
   void DrawElements(const vr::Mat4f& view_proj_matrix,
-                    const std::vector<const ContentRectangle*>& elements);
-  std::vector<const ContentRectangle*> GetElementsInDrawOrder(
+                    const std::vector<const UiElement*>& elements);
+  std::vector<const UiElement*> GetElementsInDrawOrder(
       const vr::Mat4f& view_matrix,
-      const std::vector<const ContentRectangle*>& elements);
+      const std::vector<const UiElement*>& elements);
   void DrawCursor(const vr::Mat4f& render_matrix);
   void DrawController(const vr::Mat4f& view_proj_matrix);
   bool ShouldDrawWebVr();
@@ -203,7 +203,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   vr::Quatf controller_quat_;
 
   gfx::Point3F target_point_;
-  const ContentRectangle* target_element_ = nullptr;
+  const UiElement* target_element_ = nullptr;
   InputTarget current_input_target_ = InputTarget::NONE;
   InputTarget current_scroll_target = InputTarget::NONE;
   int ui_tex_css_width_ = 0;
