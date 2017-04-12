@@ -47,7 +47,7 @@ namespace {
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
 const base::Feature kFallbackBT709VideoToBT601{
-    "FallbackBT709VideoToBT601", base::FEATURE_ENABLED_BY_DEFAULT};
+    "FallbackBT709VideoToBT601", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This class is used to make sure a specified surface isn't current, and upon
 // destruction it will make the surface current again if it had been before.
