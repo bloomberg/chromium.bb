@@ -17,7 +17,7 @@
 
 #define ACCT_STR __func__
 
-static int read_golomb(aom_reader *r) {
+static int read_golomb(MACROBLOCKD *xd, aom_reader *r) {
   int x = 1;
   int length = 0;
   int i = 0;
@@ -25,6 +25,11 @@ static int read_golomb(aom_reader *r) {
   while (!i) {
     i = aom_read_bit(r, ACCT_STR);
     ++length;
+    if (length >= 32) {
+      aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid length in read_golomb");
+      break;
+    }
   }
 
   for (i = 0; i < length - 1; ++i) {
@@ -179,7 +184,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (idx < COEFF_BASE_RANGE) continue;
 
     // decode 0-th order Golomb code
-    *v = read_golomb(r) + COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
+    *v = read_golomb(xd, r) + COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
     if (sign) *v = -(*v);
     cul_level += abs(*v);
   }
