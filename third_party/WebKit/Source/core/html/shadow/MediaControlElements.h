@@ -336,28 +336,6 @@ class CORE_EXPORT MediaControlVolumeSliderElement final
   bool KeepEventInNode(Event*) override;
 };
 
-// ----------------------------
-
-class CORE_EXPORT MediaControlTimeRemainingDisplayElement final
-    : public MediaControlTimeDisplayElement {
- public:
-  static MediaControlTimeRemainingDisplayElement* Create(MediaControls&);
-
- private:
-  explicit MediaControlTimeRemainingDisplayElement(MediaControls&);
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlCurrentTimeDisplayElement final
-    : public MediaControlTimeDisplayElement {
- public:
-  static MediaControlCurrentTimeDisplayElement* Create(MediaControls&);
-
- private:
-  explicit MediaControlCurrentTimeDisplayElement(MediaControls&);
-};
-
 }  // namespace blink
 
 #endif  // MediaControlElements_h

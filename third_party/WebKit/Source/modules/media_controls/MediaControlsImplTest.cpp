@@ -21,6 +21,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
@@ -204,6 +205,9 @@ class MediaControlsImplTest : public ::testing::Test {
   }
   MediaControlTimelineElement* TimelineElement() const {
     return media_controls_->timeline_;
+  }
+  MediaControlCurrentTimeDisplayElement* GetCurrentTimeDisplayElement() const {
+    return media_controls_->current_time_display_;
   }
   MockVideoWebMediaPlayer* WebMediaPlayer() {
     return static_cast<MockVideoWebMediaPlayer*>(
@@ -570,10 +574,7 @@ TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
   EnsureSizing();
 
   MediaControlCurrentTimeDisplayElement* current_time_display =
-      static_cast<MediaControlCurrentTimeDisplayElement*>(
-          GetElementByShadowPseudoId(
-              MediaControls(), "-webkit-media-controls-current-time-display"));
-
+      GetCurrentTimeDisplayElement();
   double duration = 600;
   LoadMediaWithDuration(duration);
 

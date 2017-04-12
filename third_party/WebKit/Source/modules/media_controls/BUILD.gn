@@ -14,11 +14,15 @@ blink_modules_sources("media_controls") {
     "MediaControlsOrientationLockDelegate.h",
     "MediaControlsWindowEventListener.cpp",
     "MediaControlsWindowEventListener.h",
+    "elements/MediaControlCurrentTimeDisplayElement.cpp",
+    "elements/MediaControlCurrentTimeDisplayElement.h",
     "elements/MediaControlMuteButtonElement.cpp",
     "elements/MediaControlMuteButtonElement.h",
     "elements/MediaControlOverlayEnclosureElement.cpp",
     "elements/MediaControlOverlayEnclosureElement.h",
     "elements/MediaControlPanelEnclosureElement.cpp",
     "elements/MediaControlPanelEnclosureElement.h",
+    "elements/MediaControlRemainingTimeDisplayElement.cpp",
+    "elements/MediaControlRemainingTimeDisplayElement.h",
   ]
 }

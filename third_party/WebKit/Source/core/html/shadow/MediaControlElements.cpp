@@ -1033,36 +1033,4 @@ void MediaControlCastButtonElement::RecordMetrics(CastOverlayMetrics metric) {
   overlay_histogram.Count(static_cast<int>(metric));
 }
 
-// ----------------------------
-
-MediaControlTimeRemainingDisplayElement::
-    MediaControlTimeRemainingDisplayElement(MediaControls& media_controls)
-    : MediaControlTimeDisplayElement(media_controls,
-                                     kMediaTimeRemainingDisplay) {}
-
-MediaControlTimeRemainingDisplayElement*
-MediaControlTimeRemainingDisplayElement::Create(MediaControls& media_controls) {
-  MediaControlTimeRemainingDisplayElement* element =
-      new MediaControlTimeRemainingDisplayElement(media_controls);
-  element->SetShadowPseudoId(
-      AtomicString("-webkit-media-controls-time-remaining-display"));
-  return element;
-}
-
-// ----------------------------
-
-MediaControlCurrentTimeDisplayElement::MediaControlCurrentTimeDisplayElement(
-    MediaControls& media_controls)
-    : MediaControlTimeDisplayElement(media_controls, kMediaCurrentTimeDisplay) {
-}
-
-MediaControlCurrentTimeDisplayElement*
-MediaControlCurrentTimeDisplayElement::Create(MediaControls& media_controls) {
-  MediaControlCurrentTimeDisplayElement* element =
-      new MediaControlCurrentTimeDisplayElement(media_controls);
-  element->SetShadowPseudoId(
-      AtomicString("-webkit-media-controls-current-time-display"));
-  return element;
-}
-
 }  // namespace blink

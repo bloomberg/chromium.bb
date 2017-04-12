@@ -38,9 +38,11 @@ class Event;
 class MediaControlsMediaEventListener;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
+class MediaControlCurrentTimeDisplayElement;
 class MediaControlMuteButtonElement;
 class MediaControlOverlayEnclosureElement;
 class MediaControlPanelEnclosureElement;
+class MediaControlRemainingTimeDisplayElement;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by
@@ -209,7 +211,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlPlayButtonElement> play_button_;
   Member<MediaControlTimelineElement> timeline_;
   Member<MediaControlCurrentTimeDisplayElement> current_time_display_;
-  Member<MediaControlTimeRemainingDisplayElement> duration_display_;
+  Member<MediaControlRemainingTimeDisplayElement> duration_display_;
   Member<MediaControlMuteButtonElement> mute_button_;
   Member<MediaControlVolumeSliderElement> volume_slider_;
   Member<MediaControlToggleClosedCaptionsButtonElement>

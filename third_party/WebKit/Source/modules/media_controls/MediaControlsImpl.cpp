@@ -46,9 +46,11 @@
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
+#include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverlayEnclosureElement.h"
 #include "modules/media_controls/elements/MediaControlPanelEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -269,7 +271,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |    (-webkit-media-controls-play-button)
 //     +-MediaControlCurrentTimeDisplayElement
 //     |    (-webkit-media-controls-current-time-display)
-//     +-MediaControlTimeRemainingDisplayElement
+//     +-MediaControlRemainingTimeDisplayElement
 //     |    (-webkit-media-controls-time-remaining-display)
 //     +-MediaControlTimelineElement
 //     |    (-webkit-media-controls-timeline)
@@ -324,16 +326,12 @@ void MediaControlsImpl::InitializeControls() {
   play_button_ = play_button;
   panel->AppendChild(play_button);
 
-  MediaControlCurrentTimeDisplayElement* current_time_display =
-      MediaControlCurrentTimeDisplayElement::Create(*this);
-  current_time_display_ = current_time_display;
+  current_time_display_ = new MediaControlCurrentTimeDisplayElement(*this);
   current_time_display_->SetIsWanted(true);
-  panel->AppendChild(current_time_display);
+  panel->AppendChild(current_time_display_);
 
-  MediaControlTimeRemainingDisplayElement* duration_display =
-      MediaControlTimeRemainingDisplayElement::Create(*this);
-  duration_display_ = duration_display;
-  panel->AppendChild(duration_display);
+  duration_display_ = new MediaControlRemainingTimeDisplayElement(*this);
+  panel->AppendChild(duration_display_);
 
   MediaControlTimelineElement* timeline =
       MediaControlTimelineElement::Create(*this);
