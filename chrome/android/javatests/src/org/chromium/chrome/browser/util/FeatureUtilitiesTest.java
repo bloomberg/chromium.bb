@@ -15,7 +15,6 @@ import android.support.test.filters.SmallTest;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,11 +58,6 @@ public class FeatureUtilitiesTest {
         // constructor due to external dependencies.
         mAccountTestingContext = new AdvancedMockContext(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
-    }
-
-    @After
-    public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     private static class IntentTestPackageManager extends MockPackageManager {

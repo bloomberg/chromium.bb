@@ -56,7 +56,6 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
     @Override
     public void tearDown() throws Exception {
         SigninTestUtil.resetSigninState();
-        SigninTestUtil.tearDownAuthForTest();
         super.tearDown();
     }
 

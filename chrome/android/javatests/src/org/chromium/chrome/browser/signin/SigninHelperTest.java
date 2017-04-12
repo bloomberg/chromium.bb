@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,11 +42,6 @@ public class SigninHelperTest {
         mAccountManager = new MockAccountManager(
                 mContext, InstrumentationRegistry.getInstrumentation().getContext());
         AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
-    }
-
-    @After
-    public void tearDown() {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     @Test

@@ -260,9 +260,6 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
                 mBookmarks.destroy();
             }
         });
-
-        SigninTestUtil.tearDownAuthForTest();
-
         super.tearDown();
     }
 

@@ -31,12 +31,6 @@ public class AccountManagerHelperTest extends InstrumentationTestCase {
         mHelper = AccountManagerHelper.get();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        AccountManagerHelper.resetAccountManagerHelperForTests();
-        super.tearDown();
-    }
-
     @SmallTest
     public void testCanonicalAccount() throws InterruptedException {
         addTestAccount("test@gmail.com", "password");

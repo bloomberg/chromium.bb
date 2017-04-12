@@ -237,8 +237,6 @@ public class SupervisedUserContentProviderUnitTest {
                 .nativeShouldProceed(eq(5678L),
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         eq("url"));
-
-        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     @Test
@@ -268,8 +266,6 @@ public class SupervisedUserContentProviderUnitTest {
 
         assertThat(result.shouldProceed(), is(false));
         assertThat(result.getErrorInt(0), is(5));
-
-        AccountManagerHelper.resetAccountManagerHelperForTests();
     }
 
     @Test

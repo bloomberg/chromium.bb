@@ -31,9 +31,3 @@ std::unique_ptr<ChildAccountInfoFetcher> ChildAccountInfoFetcher::CreateFrom(
 
 ChildAccountInfoFetcher::~ChildAccountInfoFetcher() {
 }
-
-void ChildAccountInfoFetcher::InitializeForTests() {
-#if defined(OS_ANDROID)
-  ChildAccountInfoFetcherAndroid::InitializeForTests();
-#endif
-}

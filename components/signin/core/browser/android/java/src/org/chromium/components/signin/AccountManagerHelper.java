@@ -21,14 +21,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 /**
  * AccountManagerHelper wraps our access of AccountManager in Android.
  *
- * Use the {@link #initializeAccountManagerHelper} to instantiate it.
- * After initialization, instance get be acquired by calling {@link #get}.
+ * Use the AccountManagerHelper.get(someContext) to instantiate it
  */
 public class AccountManagerHelper {
     private static final String TAG = "Sync_Signin";
@@ -48,7 +46,9 @@ public class AccountManagerHelper {
     @VisibleForTesting
     public static final String FEATURE_IS_CHILD_ACCOUNT_KEY = "service_uca";
 
-    private static final AtomicReference<AccountManagerHelper> sInstance = new AtomicReference<>();
+    private static final Object sLock = new Object();
+
+    private static AccountManagerHelper sAccountManagerHelper;
 
     private final AccountManagerDelegate mAccountManager;
 
@@ -87,21 +87,26 @@ public class AccountManagerHelper {
      * @param delegate the custom AccountManagerDelegate to use.
      */
     public static void initializeAccountManagerHelper(AccountManagerDelegate delegate) {
-        if (!sInstance.compareAndSet(null, new AccountManagerHelper(delegate))) {
-            throw new IllegalStateException("AccountManagerHelper is already initialized!");
+        synchronized (sLock) {
+            assert sAccountManagerHelper == null;
+            sAccountManagerHelper = new AccountManagerHelper(delegate);
         }
     }
 
     /**
-     * Singleton instance getter. Singleton must be initialized before calling this
-     * (by initializeAccountManagerHelper or overrideAccountManagerHelperForTests).
+     * A getter method for AccountManagerHelper singleton which also initializes it if not wasn't
+     * already initialized.
      *
-     * @return a singleton instance
+     * @return a singleton instance of the AccountManagerHelper
      */
     public static AccountManagerHelper get() {
-        AccountManagerHelper instance = sInstance.get();
-        assert instance != null : "AccountManagerHelper is not initialized!";
-        return instance;
+        synchronized (sLock) {
+            if (sAccountManagerHelper == null) {
+                sAccountManagerHelper =
+                        new AccountManagerHelper(new SystemAccountManagerDelegate());
+            }
+        }
+        return sAccountManagerHelper;
     }
 
     /**
@@ -115,16 +120,9 @@ public class AccountManagerHelper {
     @VisibleForTesting
     public static void overrideAccountManagerHelperForTests(
             Context context, AccountManagerDelegate delegate) {
-        sInstance.set(new AccountManagerHelper(delegate));
-    }
-
-    /**
-     * Resets custom AccountManagerHelper set with {@link #overrideAccountManagerHelperForTests}.
-     * Only for use in Tests.
-     */
-    @VisibleForTesting
-    public static void resetAccountManagerHelperForTests() {
-        sInstance.set(null);
+        synchronized (sLock) {
+            sAccountManagerHelper = new AccountManagerHelper(delegate);
+        }
     }
 
     /**
