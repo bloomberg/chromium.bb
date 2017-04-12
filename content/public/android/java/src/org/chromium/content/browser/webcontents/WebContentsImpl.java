@@ -401,7 +401,7 @@ import java.util.UUID;
 
     @Override
     public void requestSmartClipExtract(int x, int y, int width, int height) {
-        assert mSmartClipCallback != null;
+        if (mSmartClipCallback == null) return;
         nativeRequestSmartClipExtract(
                 mNativeWebContentsAndroid, mSmartClipCallback, x, y, width, height);
     }

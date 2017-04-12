@@ -184,4 +184,32 @@ public class SmartClipProviderTest
         assertNotNull(mCallbackHelper.getText());
         assertNotNull(mCallbackHelper.getHtml());
     }
+
+    @MediumTest
+    @Feature({"SmartClip"})
+    @RetryOnFailure
+    public void testSmartClipNoHandlerDoesntCrash() throws InterruptedException, TimeoutException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Object scp =
+                        findSmartClipProvider(getActivity().findViewById(android.R.id.content));
+                assertNotNull(scp);
+                try {
+                    // Galaxy Note 4 has a bug where it doesn't always set the handler first; in
+                    // that case, we shouldn't crash: http://crbug.com/710147
+                    mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
+
+                    // Add a wait for a valid callback to make sure we have time to
+                    // hit the crash from the above call if any.
+                    mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
+                    mExtractSmartClipDataMethod.invoke(scp, 10, 20, 100, 70);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    fail();
+                }
+            }
+        });
+        mCallbackHelper.waitForCallback(0, 1); // call count: 0 --> 1
+    }
 }
