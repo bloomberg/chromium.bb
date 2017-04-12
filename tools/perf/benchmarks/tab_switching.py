@@ -9,9 +9,10 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Enabled('has tabs')
+#@benchmark.Enabled('has tabs')
 @benchmark.Disabled('mac-reference')  # http://crbug.com/612774
 @benchmark.Disabled('android')  # http://crbug.com/460084
+@benchmark.Disabled('all') # http://crbug.com/710524
 class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
