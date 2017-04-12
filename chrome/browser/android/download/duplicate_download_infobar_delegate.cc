@@ -19,6 +19,10 @@ bool DuplicateDownloadInfoBarDelegate::IsOffTheRecord() const {
   return false;
 }
 
+bool DuplicateDownloadInfoBarDelegate::DuplicateRequestExists() const {
+  return false;
+}
+
 base::string16 DuplicateDownloadInfoBarDelegate::GetMessageText() const {
   return base::string16();
 }

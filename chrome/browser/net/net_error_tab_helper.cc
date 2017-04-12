@@ -26,9 +26,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "base/guid.h"
-#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
-#include "components/offline_pages/core/background/request_coordinator.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #endif  // defined(OS_ANDROID)
 
@@ -292,15 +290,9 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
 
 #if defined(OS_ANDROID)
 void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
-  offline_pages::RequestCoordinator* request_coordinator =
-      offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  DCHECK(request_coordinator) << "No RequestCoordinator for SavePageLater";
-  offline_pages::RequestCoordinator::SavePageLaterParams params;
-  params.url = page_url;
-  params.client_id = offline_pages::ClientId(offline_pages::kAsyncNamespace,
-                                             base::GenerateGUID());
-  request_coordinator->SavePageLater(params);
+  offline_pages::OfflinePageUtils::ScheduleDownload(
+      web_contents(), offline_pages::kAsyncNamespace, page_url,
+      offline_pages::OfflinePageUtils::DownloadUIActionFlags::PROMPT_DUPLICATE);
 }
 #endif  // defined(OS_ANDROID)
 

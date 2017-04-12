@@ -5,14 +5,13 @@
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
@@ -73,6 +72,60 @@ void OnGetPagesByURLDone(
   // URL.
   callback.Run(selected_page_for_final_url ? selected_page_for_final_url
                                            : selected_page_for_original_url);
+}
+
+bool IsSupportedByDownload(content::BrowserContext* browser_context,
+                           const std::string& name_space) {
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+  DCHECK(offline_page_model);
+  ClientPolicyController* policy_controller =
+      offline_page_model->GetPolicyController();
+  DCHECK(policy_controller);
+  return policy_controller->IsSupportedByDownload(name_space);
+}
+
+void CheckDuplicateOngoingDownloads(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    const OfflinePageUtils::DuplicateCheckCallback& callback) {
+  RequestCoordinator* request_coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+  if (!request_coordinator)
+    return;
+
+  auto request_coordinator_continuation =
+      [](content::BrowserContext* browser_context, const GURL& url,
+         const OfflinePageUtils::DuplicateCheckCallback& callback,
+         std::vector<std::unique_ptr<SavePageRequest>> requests) {
+        base::Time latest_request_time;
+        for (auto& request : requests) {
+          if (IsSupportedByDownload(browser_context,
+                                    request->client_id().name_space) &&
+              request->url() == url &&
+              latest_request_time < request->creation_time()) {
+            latest_request_time = request->creation_time();
+          }
+        }
+
+        if (latest_request_time.is_null()) {
+          callback.Run(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND);
+        } else {
+          // Using CUSTOM_COUNTS instead of time-oriented histogram to record
+          // samples in seconds rather than milliseconds.
+          UMA_HISTOGRAM_CUSTOM_COUNTS(
+              "OfflinePages.DownloadRequestTimeSinceDuplicateRequested",
+              (base::Time::Now() - latest_request_time).InSeconds(),
+              base::TimeDelta::FromSeconds(1).InSeconds(),
+              base::TimeDelta::FromDays(7).InSeconds(), 50);
+
+          callback.Run(
+              OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND);
+        }
+      };
+
+  request_coordinator->GetAllRequests(base::Bind(
+      request_coordinator_continuation, browser_context, url, callback));
 }
 
 }  // namespace
@@ -166,68 +219,6 @@ bool OfflinePageUtils::CurrentlyShownInCustomTab(
 }
 
 // static
-void OfflinePageUtils::CheckExistenceOfPagesWithURL(
-    content::BrowserContext* browser_context,
-    const std::string name_space,
-    const GURL& offline_page_url,
-    const PagesExistCallback& callback) {
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  DCHECK(offline_page_model);
-  auto continuation = [](
-      const std::string& name_space,
-      const base::Callback<void(bool, const base::Time&)>& callback,
-      const std::vector<OfflinePageItem>& pages) {
-    base::Time latest_saved_time;
-    for (auto& page : pages) {
-      // TODO(fgorski): We should use policy to check for namespaces visible in
-      // UI.
-      if (page.client_id.name_space == name_space &&
-          latest_saved_time < page.creation_time) {
-        latest_saved_time = page.creation_time;
-      }
-    }
-    callback.Run(!latest_saved_time.is_null(), latest_saved_time);
-  };
-
-  offline_page_model->GetPagesByURL(
-      offline_page_url,
-      OfflinePageModel::URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
-      base::Bind(continuation, name_space, callback));
-}
-
-// static
-void OfflinePageUtils::CheckExistenceOfRequestsWithURL(
-    content::BrowserContext* browser_context,
-    const std::string name_space,
-    const GURL& offline_page_url,
-    const PagesExistCallback& callback) {
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
-  if (!request_coordinator)
-    return;
-
-  auto request_coordinator_continuation = [](
-      const std::string& name_space, const GURL& offline_page_url,
-      const PagesExistCallback& callback,
-      std::vector<std::unique_ptr<SavePageRequest>> requests) {
-    base::Time latest_request_time;
-    for (auto& request : requests) {
-      if (request->url() == offline_page_url &&
-          request->client_id().name_space == name_space &&
-          latest_request_time < request->creation_time()) {
-        latest_request_time = request->creation_time();
-      }
-    }
-    callback.Run(!latest_request_time.is_null(), latest_request_time);
-  };
-
-  request_coordinator->GetAllRequests(
-      base::Bind(request_coordinator_continuation, name_space, offline_page_url,
-                 callback));
-}
-
-// static
 bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
                                               const GURL& rhs) {
   GURL::Replacements remove_params;
@@ -240,27 +231,6 @@ bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
 }
 
 // static
-void OfflinePageUtils::StartOfflinePageDownload(
-    content::BrowserContext* context,
-    const GURL& url) {
-  RequestCoordinator* request_coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(context);
-
-  // TODO(dimich): Enable in Incognito when Android Downloads implement
-  // Incognito story.
-  if (!request_coordinator)
-    return;
-
-  RequestCoordinator::SavePageLaterParams params;
-  params.url = url;
-  params.client_id = ClientId(kDownloadNamespace, base::GenerateGUID());
-  request_coordinator->SavePageLater(params);
-
-  android::OfflinePageNotificationBridge notification_bridge;
-  notification_bridge.ShowDownloadingToast();
-}
-
-// static
 GURL OfflinePageUtils::GetOriginalURLFromWebContents(
     content::WebContents* web_contents) {
   content::NavigationEntry* entry =
@@ -268,6 +238,64 @@ GURL OfflinePageUtils::GetOriginalURLFromWebContents(
   if (!entry || entry->GetRedirectChain().size() <= 1)
     return GURL();
   return entry->GetRedirectChain().front();
+}
+
+// static
+void OfflinePageUtils::CheckDuplicateDownloads(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    const DuplicateCheckCallback& callback) {
+  // First check for finished downloads, that is, saved pages.
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context);
+  if (!offline_page_model)
+    return;
+
+  auto continuation = [](content::BrowserContext* browser_context,
+                         const GURL& url,
+                         const DuplicateCheckCallback& callback,
+                         const std::vector<OfflinePageItem>& pages) {
+    base::Time latest_saved_time;
+    for (const auto& offline_page_item : pages) {
+      if (IsSupportedByDownload(browser_context,
+                                offline_page_item.client_id.name_space) &&
+          latest_saved_time < offline_page_item.creation_time) {
+        latest_saved_time = offline_page_item.creation_time;
+      }
+    }
+    if (latest_saved_time.is_null()) {
+      // Then check for ongoing downloads, that is, requests.
+      CheckDuplicateOngoingDownloads(browser_context, url, callback);
+    } else {
+      // Using CUSTOM_COUNTS instead of time-oriented histogram to record
+      // samples in seconds rather than milliseconds.
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "OfflinePages.DownloadRequestTimeSinceDuplicateSaved",
+          (base::Time::Now() - latest_saved_time).InSeconds(),
+          base::TimeDelta::FromSeconds(1).InSeconds(),
+          base::TimeDelta::FromDays(7).InSeconds(), 50);
+
+      callback.Run(DuplicateCheckResult::DUPLICATE_PAGE_FOUND);
+    }
+  };
+
+  offline_page_model->GetPagesByURL(
+      url, OfflinePageModel::URLSearchMode::SEARCH_BY_ALL_URLS,
+      base::Bind(continuation, browser_context, url, callback));
+}
+
+// static
+void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
+                                        const std::string& name_space,
+                                        const GURL& url,
+                                        DownloadUIActionFlags ui_action) {
+  DCHECK(web_contents);
+
+  OfflinePageTabHelper* tab_helper =
+      OfflinePageTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+  tab_helper->ScheduleDownloadHelper(web_contents, name_space, url, ui_action);
 }
 
 }  // namespace offline_pages

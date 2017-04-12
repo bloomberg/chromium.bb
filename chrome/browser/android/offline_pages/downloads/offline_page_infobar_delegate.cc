@@ -17,6 +17,7 @@ namespace offline_pages {
 void OfflinePageInfoBarDelegate::Create(
     const base::Closure& confirm_continuation,
     const GURL& page_to_download,
+    bool exists_duplicate_request,
     content::WebContents* web_contents) {
   // The URL could be very long, especially since we are including query
   // parameters, path, etc.  Elide the URL to a shorter length because the
@@ -37,10 +38,10 @@ void OfflinePageInfoBarDelegate::Create(
   gfx::ElideString(formatted_url, kMaxLengthOfDisplayedPageUrl, &elided_url);
 
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(base::WrapUnique(
-          new OfflinePageInfoBarDelegate(confirm_continuation,
-                                         base::UTF16ToUTF8(elided_url),
-                                         page_to_download))));
+      ->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(
+          base::WrapUnique(new OfflinePageInfoBarDelegate(
+              confirm_continuation, base::UTF16ToUTF8(elided_url),
+              page_to_download, exists_duplicate_request))));
 }
 
 OfflinePageInfoBarDelegate::~OfflinePageInfoBarDelegate() {}
@@ -48,10 +49,12 @@ OfflinePageInfoBarDelegate::~OfflinePageInfoBarDelegate() {}
 OfflinePageInfoBarDelegate::OfflinePageInfoBarDelegate(
     const base::Closure& confirm_continuation,
     const std::string& page_name,
-    const GURL& page_to_download)
+    const GURL& page_to_download,
+    bool duplicate_request_exists)
     : confirm_continuation_(confirm_continuation),
       page_name_(page_name),
-      page_to_download_(page_to_download) {}
+      page_to_download_(page_to_download),
+      duplicate_request_exists_(duplicate_request_exists) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 OfflinePageInfoBarDelegate::GetIdentifier() const {
@@ -89,6 +92,10 @@ std::string OfflinePageInfoBarDelegate::GetPageURL() const {
 bool OfflinePageInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
   return InfoBarDelegate::ShouldExpire(details);
+}
+
+bool OfflinePageInfoBarDelegate::DuplicateRequestExists() const {
+  return duplicate_request_exists_;
 }
 
 OfflinePageInfoBarDelegate*

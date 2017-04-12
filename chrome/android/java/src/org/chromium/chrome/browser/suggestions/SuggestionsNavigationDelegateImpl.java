@@ -15,9 +15,9 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageNotificationBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -185,8 +185,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     }
 
     private void saveUrlForOffline(String url) {
-        OfflinePageNotificationBridge.showDownloadingToast();
-        OfflinePageBridge.getForProfile(mProfile).savePageLater(
-                url, "ntp_suggestions", true /* userRequested */);
+        OfflinePageBridge.getForProfile(mProfile).scheduleDownload(
+                mHost.getActiveTab().getWebContents(), "ntp_suggestions", url,
+                DownloadUiActionFlags.ALL);
     }
 }

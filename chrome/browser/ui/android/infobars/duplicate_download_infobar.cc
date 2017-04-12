@@ -38,7 +38,7 @@ DuplicateDownloadInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jobject> java_infobar(
       Java_DuplicateDownloadInfoBar_createInfoBar(
           env, j_file_path, delegate->IsOfflinePage(), j_page_url,
-          delegate->IsOffTheRecord()));
+          delegate->IsOffTheRecord(), delegate->DuplicateRequestExists()));
   return java_infobar;
 }
 

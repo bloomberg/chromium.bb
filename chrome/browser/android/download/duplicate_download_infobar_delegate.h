@@ -27,6 +27,9 @@ class DuplicateDownloadInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   virtual bool IsOffTheRecord() const;
 
+  // Whether the duplicate is an in-progress request or completed download.
+  virtual bool DuplicateRequestExists() const;
+
   // ConfirmInfoBarDelegate implementation.
   base::string16 GetMessageText() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;

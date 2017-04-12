@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
-import org.chromium.chrome.browser.offlinepages.ClientId;
+import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -205,10 +205,9 @@ public class DownloadUtils {
         if (tab.isShowingErrorPage()) {
             // The download needs to be scheduled to happen at later time due to current network
             // error.
-            ClientId clientId = ClientId.createGuidClientIdForNamespace(
-                    OfflinePageBridge.ASYNC_NAMESPACE);
             final OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
-            bridge.savePageLater(tab.getUrl(), clientId, true /* userRequested */);
+            bridge.scheduleDownload(tab.getWebContents(), OfflinePageBridge.ASYNC_NAMESPACE,
+                    tab.getUrl(), DownloadUiActionFlags.PROMPT_DUPLICATE);
         } else {
             // Otherwise, the download can be started immediately.
             final OfflinePageDownloadBridge bridge =

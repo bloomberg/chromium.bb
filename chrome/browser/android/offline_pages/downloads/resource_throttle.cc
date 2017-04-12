@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -26,8 +27,9 @@ void WillStartOfflineRequestOnUIThread(
   content::WebContents* web_contents = contents_getter.Run();
   if (!web_contents)
     return;
-  offline_pages::OfflinePageUtils::StartOfflinePageDownload(
-      web_contents->GetBrowserContext(), url);
+  offline_pages::OfflinePageUtils::ScheduleDownload(
+      web_contents, offline_pages::kDownloadNamespace, url,
+      offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL);
 }
 }  // namespace
 

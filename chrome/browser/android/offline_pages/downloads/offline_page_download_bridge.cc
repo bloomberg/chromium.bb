@@ -11,7 +11,6 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -152,67 +151,24 @@ void SavePageIfNotNavigatedAway(const GURL& url,
   notification_bridge.ShowDownloadingToast();
 }
 
-void RequestQueueDuplicateCheckDone(
-    const GURL& url,
-    const GURL& original_url,
-    const ScopedJavaGlobalRef<jobject>& j_tab_ref,
-    bool has_duplicates,
-    const base::Time& latest_request_time) {
-  if (has_duplicates) {
-    base::TimeDelta time_since_most_recent_duplicate =
-        base::Time::Now() - latest_request_time;
-    // Using CUSTOM_COUNTS instead of time-oriented histogram to record
-    // samples in seconds rather than milliseconds.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "OfflinePages.DownloadRequestTimeSinceDuplicateRequested",
-        time_since_most_recent_duplicate.InSeconds(),
-        base::TimeDelta::FromSeconds(1).InSeconds(),
-        base::TimeDelta::FromDays(7).InSeconds(), 50);
-
-    // TODO(fgorski): Additionally we could update existing request's expiration
-    // period, as it is still important. Alternative would be to actually take a
-    // snapshot on the spot, but that would only work if the page is loaded
-    // enough.
-    // This simply toasts that the item is downloading.
-    OfflinePageNotificationBridge notification_bridge;
-    notification_bridge.ShowDownloadingToast();
+void DuplicateCheckDone(const GURL& url,
+                        const GURL& original_url,
+                        const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+                        OfflinePageUtils::DuplicateCheckResult result) {
+  if (result == OfflinePageUtils::DuplicateCheckResult::NOT_FOUND) {
+    SavePageIfNotNavigatedAway(url, original_url, j_tab_ref);
     return;
   }
 
-  SavePageIfNotNavigatedAway(url, original_url, j_tab_ref);
-}
-
-void ModelDuplicateCheckDone(const GURL& url,
-                             const GURL& original_url,
-                             const ScopedJavaGlobalRef<jobject>& j_tab_ref,
-                             bool has_duplicates,
-                             const base::Time& latest_saved_time) {
   content::WebContents* web_contents = GetWebContentsFromJavaTab(j_tab_ref);
   if (!web_contents)
     return;
 
-  if (has_duplicates) {
-    base::TimeDelta time_since_most_recent_duplicate =
-        base::Time::Now() - latest_saved_time;
-    // Using CUSTOM_COUNTS instead of time-oriented histogram to record
-    // samples in seconds rather than milliseconds.
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "OfflinePages.DownloadRequestTimeSinceDuplicateSaved",
-        time_since_most_recent_duplicate.InSeconds(),
-        base::TimeDelta::FromSeconds(1).InSeconds(),
-        base::TimeDelta::FromDays(7).InSeconds(), 50);
-
-    OfflinePageInfoBarDelegate::Create(
-        base::Bind(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref),
-        url, web_contents);
-    return;
-  }
-
-  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetOriginalProfile(),
-      kDownloadNamespace, url, base::Bind(&RequestQueueDuplicateCheckDone, url,
-                                          original_url, j_tab_ref));
+  bool duplicate_request_exists =
+      result == OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND;
+  OfflinePageInfoBarDelegate::Create(
+      base::Bind(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref),
+      url, duplicate_request_exists, web_contents);
 }
 
 void ToJavaOfflinePageDownloadItemList(
@@ -387,9 +343,9 @@ void OfflinePageDownloadBridge::StartDownload(
 
   ScopedJavaGlobalRef<jobject> j_tab_ref(env, j_tab);
 
-  OfflinePageUtils::CheckExistenceOfPagesWithURL(
-      tab->GetProfile()->GetOriginalProfile(), kDownloadNamespace, url,
-      base::Bind(&ModelDuplicateCheckDone, url, original_url, j_tab_ref));
+  OfflinePageUtils::CheckDuplicateDownloads(
+      tab->GetProfile()->GetOriginalProfile(), url,
+      base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref));
 }
 
 void OfflinePageDownloadBridge::CancelDownload(

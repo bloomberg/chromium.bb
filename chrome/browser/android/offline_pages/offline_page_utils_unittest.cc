@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/browser/android/offline_pages/test_request_coordinator_builder.h"
@@ -31,6 +32,7 @@
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/offline_page_test_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,14 +50,17 @@ const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
 const char* kTestPage3ClientId = "7890";
 
-void HasDuplicatesCallback(bool* out_has_duplicates,
-                           base::Time* out_latest_saved_time,
-                           bool has_duplicates,
-                           const base::Time& latest_saved_time) {
-  DCHECK(out_has_duplicates);
-  DCHECK(out_latest_saved_time);
-  *out_has_duplicates = has_duplicates;
-  *out_latest_saved_time = latest_saved_time;
+void CheckDuplicateDownloadsCallback(
+    OfflinePageUtils::DuplicateCheckResult* out_result,
+    OfflinePageUtils::DuplicateCheckResult result) {
+  DCHECK(out_result);
+  *out_result = result;
+}
+
+void GetAllRequestsCallback(
+    std::vector<std::unique_ptr<SavePageRequest>>* out_requests,
+    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+  *out_requests = std::move(requests);
 }
 
 }  // namespace
@@ -75,6 +80,10 @@ class OfflinePageUtilsTest
                 const ClientId& client_id,
                 std::unique_ptr<OfflinePageArchiver> archiver);
 
+  // Return number of matches found.
+  int FindRequestByNamespaceAndURL(const std::string& name_space,
+                                   const GURL& url);
+
   // Necessary callbacks for the offline page model.
   void OnSavePageDone(SavePageResult result, int64_t offlineId);
   void OnClearAllDone();
@@ -85,6 +94,7 @@ class OfflinePageUtilsTest
   void SetLastPathCreatedByArchiver(const base::FilePath& file_path) override;
 
   TestingProfile* profile() { return &profile_; }
+  content::WebContents* web_contents() const { return web_contents_.get(); }
 
   int64_t offline_id() const { return offline_id_; }
 
@@ -99,6 +109,7 @@ class OfflinePageUtilsTest
   int64_t offline_id_;
   GURL url_;
   TestingProfile profile_;
+  std::unique_ptr<content::WebContents> web_contents_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -111,6 +122,11 @@ void OfflinePageUtilsTest::SetUp() {
   // TODO(jianli): Remove this once the feature is completely enabled.
   scoped_feature_list_.InitAndEnableFeature(
       offline_pages::kOfflineBookmarksFeature);
+
+  // Create a test web contents.
+  web_contents_.reset(content::WebContents::Create(
+      content::WebContents::CreateParams(profile())));
+  OfflinePageTabHelper::CreateForWebContents(web_contents_.get());
 
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -204,46 +220,80 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
   return archiver;
 }
 
-TEST_F(OfflinePageUtilsTest, CheckExistenceOfPagesWithURL) {
-  bool has_duplicates = false;
-  base::Time latest_saved_time;
-  // This page should be available.
-  OfflinePageUtils::CheckExistenceOfPagesWithURL(
-      profile(), kDownloadNamespace, kTestPage1Url,
-      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
-                 base::Unretained(&latest_saved_time)));
+int OfflinePageUtilsTest::FindRequestByNamespaceAndURL(
+    const std::string& name_space,
+    const GURL& url) {
+  RequestCoordinator* request_coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(profile());
+  std::vector<std::unique_ptr<SavePageRequest>> requests;
+  request_coordinator->GetAllRequests(
+      base::Bind(&GetAllRequestsCallback, base::Unretained(&requests)));
   RunUntilIdle();
-  EXPECT_TRUE(has_duplicates);
-  EXPECT_FALSE(latest_saved_time.is_null());
-  // This one should be missing
-  OfflinePageUtils::CheckExistenceOfPagesWithURL(
-      profile(), kDownloadNamespace, kTestPage3Url,
-      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
-                 base::Unretained(&latest_saved_time)));
-  RunUntilIdle();
-  EXPECT_FALSE(has_duplicates);
-  EXPECT_TRUE(latest_saved_time.is_null());
+
+  int matches = 0;
+  for (auto& request : requests) {
+    if (request->url() == url &&
+        request->client_id().name_space == name_space) {
+      matches++;
+    }
+  }
+  return matches;
 }
 
-TEST_F(OfflinePageUtilsTest, CheckExistenceOfRequestsWithURL) {
-  bool has_duplicates = false;
-  base::Time latest_saved_time;
-  // This page should be available.
-  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
-      profile(), kDownloadNamespace, kTestPage3Url,
-      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
-                 base::Unretained(&latest_saved_time)));
+TEST_F(OfflinePageUtilsTest, CheckDuplicateDownloads) {
+  OfflinePageUtils::DuplicateCheckResult result =
+      OfflinePageUtils::DuplicateCheckResult::NOT_FOUND;
+
+  // The duplicate page should be found for this.
+  OfflinePageUtils::CheckDuplicateDownloads(
+      profile(), kTestPage1Url,
+      base::Bind(&CheckDuplicateDownloadsCallback, base::Unretained(&result)));
   RunUntilIdle();
-  EXPECT_TRUE(has_duplicates);
-  EXPECT_FALSE(latest_saved_time.is_null());
-  // This one should be missing
-  OfflinePageUtils::CheckExistenceOfRequestsWithURL(
-      profile(), kDownloadNamespace, kTestPage1Url,
-      base::Bind(&HasDuplicatesCallback, base::Unretained(&has_duplicates),
-                 base::Unretained(&latest_saved_time)));
+  EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::DUPLICATE_PAGE_FOUND,
+            result);
+
+  // The duplicate request should be found for this.
+  OfflinePageUtils::CheckDuplicateDownloads(
+      profile(), kTestPage3Url,
+      base::Bind(&CheckDuplicateDownloadsCallback, base::Unretained(&result)));
   RunUntilIdle();
-  EXPECT_FALSE(has_duplicates);
-  EXPECT_TRUE(latest_saved_time.is_null());
+  EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND,
+            result);
+
+  // No duplicate should be found for this.
+  OfflinePageUtils::CheckDuplicateDownloads(
+      profile(), kTestPage4Url,
+      base::Bind(&CheckDuplicateDownloadsCallback, base::Unretained(&result)));
+  RunUntilIdle();
+  EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND, result);
+}
+
+TEST_F(OfflinePageUtilsTest, ScheduleDownload) {
+  // Pre-check.
+  ASSERT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage1Url));
+  ASSERT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage3Url));
+  ASSERT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage4Url));
+
+  // Re-downloading a page with duplicate page found.
+  OfflinePageUtils::ScheduleDownload(
+      web_contents(), kDownloadNamespace, kTestPage1Url,
+      OfflinePageUtils::DownloadUIActionFlags::NONE);
+  RunUntilIdle();
+  EXPECT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage1Url));
+
+  // Re-downloading a page with duplicate request found.
+  OfflinePageUtils::ScheduleDownload(
+      web_contents(), kDownloadNamespace, kTestPage3Url,
+      OfflinePageUtils::DownloadUIActionFlags::NONE);
+  RunUntilIdle();
+  EXPECT_EQ(2, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage3Url));
+
+  // Downloading a page with no duplicate found.
+  OfflinePageUtils::ScheduleDownload(
+      web_contents(), kDownloadNamespace, kTestPage4Url,
+      OfflinePageUtils::DownloadUIActionFlags::NONE);
+  RunUntilIdle();
+  EXPECT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage4Url));
 }
 
 TEST_F(OfflinePageUtilsTest, EqualsIgnoringFragment) {

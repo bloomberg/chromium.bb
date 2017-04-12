@@ -616,6 +616,21 @@ void OfflinePageBridge::UnregisterRecentTab(JNIEnv* env,
   ui_adapter_delegate->UnregisterTab(tab_id);
 }
 
+void OfflinePageBridge::ScheduleDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const JavaParamRef<jstring>& j_namespace,
+    const JavaParamRef<jstring>& j_url,
+    int ui_action) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  OfflinePageUtils::ScheduleDownload(
+      web_contents, ConvertJavaStringToUTF8(env, j_namespace),
+      GURL(ConvertJavaStringToUTF8(env, j_url)),
+      static_cast<OfflinePageUtils::DownloadUIActionFlags>(ui_action));
+}
+
 void OfflinePageBridge::NotifyIfDoneLoading() const {
   if (!offline_page_model_->is_loaded())
     return;

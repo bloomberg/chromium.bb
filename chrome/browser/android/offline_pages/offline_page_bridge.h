@@ -134,6 +134,13 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void UnregisterRecentTab(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            int tab_id);
+  void ScheduleDownload(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
+      const base::android::JavaParamRef<jstring>& j_namespace,
+      const base::android::JavaParamRef<jstring>& j_url,
+      int ui_action);
 
   base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
 

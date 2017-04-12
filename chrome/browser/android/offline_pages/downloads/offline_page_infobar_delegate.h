@@ -30,14 +30,15 @@ class OfflinePageInfoBarDelegate
   // shown for this file in the infobar text.
   static void Create(const base::Closure& confirm_continuation,
                      const GURL& page_to_download,
+                     bool exists_duplicate_request,
                      content::WebContents* web_contents);
   ~OfflinePageInfoBarDelegate() override;
 
  private:
-  OfflinePageInfoBarDelegate(
-      const base::Closure& confirm_continuation,
-      const std::string& page_name,
-      const GURL& page_to_download);
+  OfflinePageInfoBarDelegate(const base::Closure& confirm_continuation,
+                             const std::string& page_name,
+                             const GURL& page_to_download,
+                             bool duplicate_request_exists);
 
   // DuplicateDownloadInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -48,6 +49,7 @@ class OfflinePageInfoBarDelegate
   bool IsOfflinePage() const override;
   std::string GetPageURL() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
+  bool DuplicateRequestExists() const override;
   OfflinePageInfoBarDelegate* AsOfflinePageInfoBarDelegate() override;
 
   // Continuation called when the user chooses to create a new file.
@@ -55,6 +57,7 @@ class OfflinePageInfoBarDelegate
 
   std::string page_name_;
   GURL page_to_download_;
+  bool duplicate_request_exists_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageInfoBarDelegate);
 };

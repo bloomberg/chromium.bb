@@ -3586,7 +3586,6 @@ test("unit_tests") {
     sources += [
       # Offline pages are currently only on Android.
       "../browser/android/offline_pages/background_loader_offliner_unittest.cc",
-      "../browser/android/offline_pages/downloads/resource_throttle_unittest.cc",
       "../browser/android/offline_pages/offline_page_mhtml_archiver_unittest.cc",
       "../browser/android/offline_pages/offline_page_request_job_unittest.cc",
       "../browser/android/offline_pages/offline_page_utils_unittest.cc",

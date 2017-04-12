@@ -11,10 +11,6 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "url/gurl.h"
 
-namespace base {
-class Time;
-}
-
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -24,15 +20,35 @@ namespace offline_pages {
 struct OfflinePageHeader;
 struct OfflinePageItem;
 
-// Callback used for checking if specific |pages_exist| and what is the
-// |latest_saved_time| for those pages. The former being a basic return type,
-// while the latter is meant to be used as a helper to report UMA.
-using PagesExistCallback =
-    base::Callback<void(bool /* pages_exist */,
-                        const base::Time& /* latest_saved_time */)>;
-
 class OfflinePageUtils {
  public:
+  // The result of checking duplicate page or request.
+  enum class DuplicateCheckResult {
+    // Page with same URL is found.
+    DUPLICATE_PAGE_FOUND,
+    // Request with same URL is found.
+    DUPLICATE_REQUEST_FOUND,
+    // No page or request with same URL is found.
+    NOT_FOUND
+  };
+
+  // Controls the UI action that could be triggered during download.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.offlinepages
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DownloadUiActionFlags
+  enum class DownloadUIActionFlags {
+    NONE = 0x0,
+    // Shows an infobar to prompt the user for re-download when the duplicate
+    // page or request is found.
+    PROMPT_DUPLICATE = 0x1,
+    // Shows a toast when the new download starts.
+    SHOW_TOAST_ON_NEW_DOWNLOAD = 0x2,
+    // All actions.
+    ALL = 0xFFFF
+  };
+
+  // Callback to inform the duplicate checking result.
+  using DuplicateCheckCallback = base::Callback<void(DuplicateCheckResult)>;
+
   // Returns via callback an offline page related to |url|, if any. The
   // page is chosen based on creation date; a more recently created offline
   // page will be preferred over an older one. The offline page captured from
@@ -72,36 +88,27 @@ class OfflinePageUtils {
   // custom tab.
   static bool CurrentlyShownInCustomTab(content::WebContents* web_contents);
 
-  // Performs a check, whether pages with specified |url| and |name_space|
-  // already exist. Result is returned in a |callback|, where first parameter
-  // indicates whether offline pages exist, while second is a helper value to
-  // report UMA, indicating the time the latest existing page with such
-  // parameters was saved.
-  static void CheckExistenceOfPagesWithURL(
-      content::BrowserContext* browser_context,
-      const std::string name_space,
-      const GURL& url,
-      const PagesExistCallback& callback);
-
-  // Performs a check, whether requests with specified |url| and |name_space|
-  // already exist. Result is returned in a |callback|, where first parameter
-  // indicates whether requests exist, while second is a helper value to report
-  // UMA, indicating the time the latest existing request with such parameters
-  // was created.
-  static void CheckExistenceOfRequestsWithURL(
-      content::BrowserContext* browser_context,
-      const std::string name_space,
-      const GURL& url,
-      const PagesExistCallback& callback);
-
   static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
-
-  static void StartOfflinePageDownload(content::BrowserContext* context,
-                                       const GURL& url);
 
   // Returns original URL of the given web contents. Empty URL is returned if
   // no redirect occurred.
   static GURL GetOriginalURLFromWebContents(content::WebContents* web_contents);
+
+  // Checks for duplicates in all finished or ongoing downloads. Only pages and
+  // requests that could result in showing in Download UI are searched for
+  // |url| match. Result is returned in |callback|. See DuplicateCheckCallback
+  // for more details.
+  static void CheckDuplicateDownloads(content::BrowserContext* browser_context,
+                                      const GURL& url,
+                                      const DuplicateCheckCallback& callback);
+
+  // Schedules to download a page from |url| and categorize under |name_space|.
+  // The duplicate pages or requests will be checked. Note that |url| can be
+  // different from the one rendered in |web_contents|.
+  static void ScheduleDownload(content::WebContents* web_contents,
+                               const std::string& name_space,
+                               const GURL& url,
+                               DownloadUIActionFlags ui_action);
 };
 
 }  // namespace offline_pages

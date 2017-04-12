@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -48,6 +49,19 @@ class OfflinePageTabHelper :
   // during unit tests.
   const OfflinePageItem* GetOfflinePageForTest() const;
 
+  // Helper function which normally should only be called by
+  // OfflinePageUtils::ScheduleDownload to do the work. This is because we need
+  // to ensure |web_contents| is still valid after returning from the
+  // asynchronous call of duplicate checking function. The lifetime of
+  // OfflinePageTabHelper instance is tied with the associated |web_contents|
+  // and thus the callback will be automatically invalidated if |web_contents|
+  // is gone.
+  void ScheduleDownloadHelper(
+      content::WebContents* web_contents,
+      const std::string& name_space,
+      const GURL& url,
+      OfflinePageUtils::DownloadUIActionFlags ui_action);
+
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
 
@@ -78,6 +92,17 @@ class OfflinePageTabHelper :
       content::NavigationHandle* navigation_handle) override;
 
   void SelectPageForURLDone(const OfflinePageItem* offline_page);
+
+  void DuplicateCheckDoneForScheduleDownload(
+      content::WebContents* web_contents,
+      const std::string& name_space,
+      const GURL& url,
+      OfflinePageUtils::DownloadUIActionFlags ui_action,
+      OfflinePageUtils::DuplicateCheckResult result);
+  void DoDownloadPageLater(content::WebContents* web_contents,
+                           const std::string& name_space,
+                           const GURL& url,
+                           OfflinePageUtils::DownloadUIActionFlags ui_action);
 
   // The provisional info about the offline page being loaded. This is set when
   // the offline interceptor decides to serve the offline page and it will be
