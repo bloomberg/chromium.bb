@@ -308,6 +308,12 @@ static void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride,
   }
 }
 
+int get_filter_skip(int level) {
+  int filter_skip = level & 1;
+  if (level == 1) filter_skip = 0;
+  return filter_skip;
+}
+
 void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
                int ydec, int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
                int *dirinit, int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
@@ -321,11 +327,8 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
 
   int threshold = (level >> 1) << coeff_shift;
   int dering_damping = 5 + !pli + coeff_shift;
-  int filter_skip = level & 1;
-  if (level == 1) {
-    filter_skip = 0;
-    threshold = 31 << coeff_shift;
-  }
+  int filter_skip = get_filter_skip(level);
+  if (level == 1) threshold = 31 << coeff_shift;
 
   od_filter_dering_direction_func filter_dering_direction[] = {
     od_filter_dering_direction_4x4, od_filter_dering_direction_8x8

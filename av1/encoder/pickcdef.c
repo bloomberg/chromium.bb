@@ -376,12 +376,12 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int dirinit = 0;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
-      dering_count = sb_compute_dering_list(cm, sbr * MAX_MIB_SIZE,
-                                            sbc * MAX_MIB_SIZE, dlist);
       cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                           MAX_MIB_SIZE * sbc]
           ->mbmi.cdef_strength = -1;
-      if (dering_count == 0) continue;
+      if (sb_all_skip(cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE)) continue;
+      dering_count = sb_compute_dering_list(cm, sbr * MAX_MIB_SIZE,
+                                            sbc * MAX_MIB_SIZE, dlist, 1);
       for (pli = 0; pli < nplanes; pli++) {
         for (i = 0; i < OD_DERING_INBUF_SIZE; i++)
           inbuf[i] = OD_DERING_VERY_LARGE;

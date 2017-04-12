@@ -55,7 +55,7 @@ static int is_8x8_block_skip(MODE_INFO **grid, int mi_row, int mi_col,
 }
 
 int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                           dering_list *dlist) {
+                           dering_list *dlist, int filter_skip) {
   int r, c;
   int maxc, maxr;
   MODE_INFO **grid;
@@ -75,22 +75,33 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   const int c_step = mi_size_wide[BLOCK_8X8];
   const int r_shift = (r_step == 2);
   const int c_shift = (c_step == 2);
-  int all_skip = 1;
 
   assert(r_step == 1 || r_step == 2);
   assert(c_step == 1 || c_step == 2);
 
-  for (r = 0; r < maxr; r += r_step) {
-    for (c = 0; c < maxc; c += c_step) {
-      dlist[count].by = r >> r_shift;
-      dlist[count].bx = c >> c_shift;
-      dlist[count].skip =
-          is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride);
-      all_skip &= dlist[count].skip;
-      count++;
+  if (filter_skip) {
+    for (r = 0; r < maxr; r += r_step) {
+      for (c = 0; c < maxc; c += c_step) {
+        dlist[count].by = r >> r_shift;
+        dlist[count].bx = c >> c_shift;
+        dlist[count].skip =
+            is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride);
+        count++;
+      }
+    }
+  } else {
+    for (r = 0; r < maxr; r += r_step) {
+      for (c = 0; c < maxc; c += c_step) {
+        if (!is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride)) {
+          dlist[count].by = r >> r_shift;
+          dlist[count].bx = c >> c_shift;
+          dlist[count].skip = 0;
+          count++;
+        }
+      }
     }
   }
-  return all_skip ? 0 : count;
+  return count;
 }
 
 void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
@@ -275,7 +286,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       if ((level == 0 && clpf_strength == 0 && uv_level == 0 &&
            uv_clpf_strength == 0) ||
           (dering_count = sb_compute_dering_list(
-               cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE, dlist)) == 0) {
+               cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE, dlist,
+               get_filter_skip(level) || get_filter_skip(uv_level))) == 0) {
         dering_left = 0;
         continue;
       }
