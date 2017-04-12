@@ -201,11 +201,9 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
 
 - (BOOL)deleteSessionForBrowserState:(ios::ChromeBrowserState*)browserState
                           backupFile:(NSString*)file {
-  SessionServiceIOS* sessionService = [SessionServiceIOS sharedService];
   NSString* stashPath =
       base::SysUTF8ToNSString(browserState->GetStatePath().value());
-  NSString* sessionPath =
-      [sessionService sessionFilePathForDirectory:stashPath];
+  NSString* sessionPath = [SessionServiceIOS sessionPathForDirectory:stashPath];
   NSFileManager* fileManager = [NSFileManager defaultManager];
   if (![fileManager fileExistsAtPath:sessionPath])
     return NO;
@@ -262,7 +260,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _sessionRestored = YES;
   _infoBarBridge.reset();
   SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
-      loadWindowFromPath:[self sessionBackupPath]];
+      loadSessionWindowFromPath:[self sessionBackupPath]];
   if (sessionWindow) {
     breakpad_helper::WillStartCrashRestoration();
     return [_tabModel restoreSessionWindow:sessionWindow];
@@ -284,7 +282,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   _sessionRestored = YES;
 
   SessionWindowIOS* window = [[SessionServiceIOS sharedService]
-      loadWindowFromPath:[self sessionBackupPath]];
+      loadSessionWindowFromPath:[self sessionBackupPath]];
   DCHECK(window);
   NSArray* sessions = window.sessions;
   if (!sessions.count)

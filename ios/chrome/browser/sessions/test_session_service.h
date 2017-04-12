@@ -9,10 +9,14 @@
 
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 
-// Testing subclass of SessionService that immediately consumes and archives
-// to nowhere session windows passed into its
-// -saveWindow:forBrowserState:immediately: method.
+// Testing subclass of SessionService that immediately consumes session windows
+// passed to -saveSessionWindow:sessionPath:immediately: is consumed immediately
+// but only saved to disk if |performIO| is set to YES..
 @interface TestSessionService : SessionServiceIOS
+
+// If YES, then sessions are saved to disk, otherwise, data is discarded.
+@property(nonatomic, assign) BOOL performIO;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_TEST_SESSION_SERVICE_H_

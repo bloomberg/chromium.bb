@@ -362,9 +362,11 @@ void CleanCertificatePolicyCache(
   // a transitional state.
   if ((!self.currentTab && _webStateList->count()) || !_browserState)
     return;
-  [_sessionService saveWindow:self.windowForSavingSession
-              forBrowserState:_browserState
-                  immediately:immediately];
+  NSString* statePath =
+      base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
+  [_sessionService saveSessionWindow:self.windowForSavingSession
+                           directory:statePath
+                         immediately:immediately];
 }
 
 - (Tab*)tabAtIndex:(NSUInteger)index {

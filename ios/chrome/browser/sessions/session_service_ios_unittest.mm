@@ -10,18 +10,17 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#include "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#import "ios/web/public/crw_session_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,123 +37,175 @@ class SessionServiceTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    TestChromeBrowserState::Builder test_cbs_builder;
-    test_cbs_builder.SetPath(test_dir_.GetPath());
-    chrome_browser_state_ = test_cbs_builder.Build();
-    directory_name_ = [base::SysUTF8ToNSString(
-        chrome_browser_state_->GetStatePath().value()) copy];
+    ASSERT_TRUE(scoped_temp_directory_.CreateUniqueTempDir());
+    base::FilePath directory_name = scoped_temp_directory_.GetPath();
+    directory_name = directory_name.Append(FILE_PATH_LITERAL("sessions"));
+    directory_ = base::SysUTF8ToNSString(directory_name.AsUTF8Unsafe());
+
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        base::ThreadTaskRunnerHandle::Get();
+    session_service_ =
+        [[SessionServiceIOS alloc] initWithTaskRunner:task_runner];
   }
 
-  // Helper function to load a SessionWindowIOS from a given testdata
-  // |filename|.  Returns nil if there was an error loading the session.
-  SessionWindowIOS* LoadSessionFromTestDataFile(
-      const base::FilePath::StringType& filename) {
-    SessionServiceIOS* service = [SessionServiceIOS sharedService];
-    base::FilePath plist_path;
-    bool success = PathService::Get(ios::DIR_TEST_DATA, &plist_path);
-    EXPECT_TRUE(success);
-    if (!success) {
+  void TearDown() override {
+    session_service_ = nil;
+    PlatformTest::TearDown();
+  }
+
+  // Returns the path to serialized SessionWindowIOS from a testdata file named
+  // |filename| or nil if the file cannot be found.
+  NSString* SessionPathForTestData(const base::FilePath::CharType* filename) {
+    base::FilePath session_path;
+    if (!PathService::Get(ios::DIR_TEST_DATA, &session_path))
       return nil;
+
+    session_path = session_path.Append(FILE_PATH_LITERAL("sessions"));
+    session_path = session_path.Append(filename);
+    if (!base::PathExists(session_path))
+      return nil;
+
+    return base::SysUTF8ToNSString(session_path.AsUTF8Unsafe());
+  }
+
+  // Create a SessionWindowIOS with |tab_count| tabs.
+  SessionWindowIOS* CreateSessionWindow(NSUInteger tab_count) {
+    NSMutableArray<CRWSessionStorage*>* tabs = [NSMutableArray array];
+    while (tabs.count < tab_count) {
+      [tabs addObject:[[CRWSessionStorage alloc] init]];
     }
-
-    plist_path = plist_path.AppendASCII("sessions");
-    plist_path = plist_path.Append(filename);
-    EXPECT_TRUE(base::PathExists(plist_path));
-
-    NSString* path = base::SysUTF8ToNSString(plist_path.value());
-    return [service loadWindowFromPath:path];
+    return [[SessionWindowIOS alloc]
+        initWithSessions:[tabs copy]
+           selectedIndex:(tabs.count ? tabs.count - 1 : NSNotFound)];
   }
 
-  ios::ChromeBrowserState* chrome_browser_state() {
-    return chrome_browser_state_.get();
-  }
+  SessionServiceIOS* session_service() { return session_service_; }
 
-  NSString* directory_name() { return directory_name_; }
+  NSString* directory() { return directory_; }
 
  private:
-  base::ScopedTempDir test_dir_;
-  web::TestWebThreadBundle thread_bundle_;
-  std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state_;
-  NSString* directory_name_;
+  base::ScopedTempDir scoped_temp_directory_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  SessionServiceIOS* session_service_;
+  NSString* directory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionServiceTest);
 };
 
-TEST_F(SessionServiceTest, Singleton) {
-  SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  EXPECT_TRUE(service != nil);
-
-  SessionServiceIOS* another_service = [SessionServiceIOS sharedService];
-  EXPECT_TRUE(another_service != nil);
-
-  EXPECT_TRUE(service == another_service);
+TEST_F(SessionServiceTest, SessionPathForDirectory) {
+  EXPECT_NSEQ(@"session.plist",
+              [SessionServiceIOS sessionPathForDirectory:@""]);
 }
 
-TEST_F(SessionServiceTest, SaveWindowToDirectory) {
-  id session_window_mock =
-      [OCMockObject niceMockForClass:[SessionWindowIOS class]];
-  SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  [service performSaveWindow:session_window_mock toDirectory:directory_name()];
+TEST_F(SessionServiceTest, SaveSessionWindowToDirectory) {
+  [session_service() saveSessionWindow:CreateSessionWindow(0u)
+                             directory:directory()
+                           immediately:YES];
+
+  // Even if immediately is YES, the file is created by a task on the task
+  // runner passed to SessionServiceIOS initializer (which is the current
+  // thread task runner during test). Wait for the task to complete.
+  base::RunLoop().RunUntilIdle();
 
   NSFileManager* file_manager = [NSFileManager defaultManager];
-  EXPECT_TRUE([file_manager removeItemAtPath:directory_name() error:nullptr]);
+  EXPECT_TRUE([file_manager removeItemAtPath:directory() error:nullptr]);
 }
 
-TEST_F(SessionServiceTest, SaveWindowToDirectoryAlreadyExistent) {
-  id session_window_mock =
-      [OCMockObject niceMockForClass:[SessionWindowIOS class]];
-  EXPECT_TRUE([[NSFileManager defaultManager]
-            createDirectoryAtPath:directory_name()
-      withIntermediateDirectories:YES
-                       attributes:nil
-                            error:nullptr]);
+TEST_F(SessionServiceTest, SaveSessionWindowToExistingDirectory) {
+  ASSERT_TRUE([[NSFileManager defaultManager] createDirectoryAtPath:directory()
+                                        withIntermediateDirectories:YES
+                                                         attributes:nil
+                                                              error:nullptr]);
 
-  SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  [service performSaveWindow:session_window_mock toDirectory:directory_name()];
+  [session_service() saveSessionWindow:CreateSessionWindow(0u)
+                             directory:directory()
+                           immediately:YES];
+
+  // Even if immediately is YES, the file is created by a task on the task
+  // runner passed to SessionServiceIOS initializer (which is the current
+  // thread task runner during test). Wait for the task to complete.
+  base::RunLoop().RunUntilIdle();
 
   NSFileManager* file_manager = [NSFileManager defaultManager];
-  EXPECT_TRUE([file_manager removeItemAtPath:directory_name() error:nullptr]);
+  EXPECT_TRUE([file_manager removeItemAtPath:directory() error:nullptr]);
 }
 
-TEST_F(SessionServiceTest, LoadEmptyWindowFromDirectory) {
-  SessionServiceIOS* service = [SessionServiceIOS sharedService];
+TEST_F(SessionServiceTest, LoadSessionWindowFromDirectoryNoFile) {
   SessionWindowIOS* session_window =
-      [service loadWindowForBrowserState:chrome_browser_state()];
+      [session_service() loadSessionWindowFromDirectory:directory()];
   EXPECT_TRUE(session_window == nil);
 }
 
-TEST_F(SessionServiceTest, LoadWindowFromDirectory) {
-  SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  SessionWindowIOS* origSessionWindow = [[SessionWindowIOS alloc] init];
-  [service performSaveWindow:origSessionWindow toDirectory:directory_name()];
+TEST_F(SessionServiceTest, LoadSessionWindowFromDirectory) {
+  [session_service() saveSessionWindow:CreateSessionWindow(1u)
+                             directory:directory()
+                           immediately:YES];
+
+  // Even if immediately is YES, the file is created by a task on the task
+  // runner passed to SessionServiceIOS initializer (which is the current
+  // thread task runner during test). Wait for the task to complete.
+  base::RunLoop().RunUntilIdle();
 
   SessionWindowIOS* session_window =
-      [service loadWindowForBrowserState:chrome_browser_state()];
-  EXPECT_TRUE(session_window != nil);
-  EXPECT_EQ(NSNotFound, static_cast<NSInteger>(session_window.selectedIndex));
-  EXPECT_EQ(0U, session_window.sessions.count);
+      [session_service() loadSessionWindowFromDirectory:directory()];
+  EXPECT_EQ(1u, session_window.sessions.count);
+  EXPECT_EQ(0u, session_window.selectedIndex);
 }
 
-TEST_F(SessionServiceTest, LoadCorruptedWindow) {
+TEST_F(SessionServiceTest, LoadSessionWindowFromPath) {
+  [session_service() saveSessionWindow:CreateSessionWindow(1u)
+                             directory:directory()
+                           immediately:YES];
+
+  // Even if immediately is YES, the file is created by a task on the task
+  // runner passed to SessionServiceIOS initializer (which is the current
+  // thread task runner during test). Wait for the task to complete.
+  base::RunLoop().RunUntilIdle();
+
+  NSString* session_path =
+      [SessionServiceIOS sessionPathForDirectory:directory()];
+  NSString* renamed_path = [session_path stringByAppendingPathExtension:@"bak"];
+  ASSERT_NSNE(session_path, renamed_path);
+
+  // Rename the file.
+  ASSERT_TRUE([[NSFileManager defaultManager] moveItemAtPath:session_path
+                                                      toPath:renamed_path
+                                                       error:nil]);
+
   SessionWindowIOS* session_window =
-      LoadSessionFromTestDataFile(FILE_PATH_LITERAL("corrupted.plist"));
+      [session_service() loadSessionWindowFromPath:renamed_path];
+  EXPECT_EQ(1u, session_window.sessions.count);
+  EXPECT_EQ(0u, session_window.selectedIndex);
+}
+
+TEST_F(SessionServiceTest, LoadCorruptedSessionWindow) {
+  NSString* session_path =
+      SessionPathForTestData(FILE_PATH_LITERAL("corrupted.plist"));
+  ASSERT_NSNE(nil, session_path);
+  SessionWindowIOS* session_window =
+      [session_service() loadSessionWindowFromPath:session_path];
   EXPECT_TRUE(session_window == nil);
 }
 
 // TODO(crbug.com/661633): remove this once M67 has shipped (i.e. once more
 // than a year has passed since the introduction of the compatibility code).
 TEST_F(SessionServiceTest, LoadM57Session) {
+  NSString* session_path =
+      SessionPathForTestData(FILE_PATH_LITERAL("session_m57.plist"));
+  ASSERT_NSNE(nil, session_path);
   SessionWindowIOS* session_window =
-      LoadSessionFromTestDataFile(FILE_PATH_LITERAL("session_m57.plist"));
+      [session_service() loadSessionWindowFromPath:session_path];
   EXPECT_TRUE(session_window != nil);
 }
 
 // TODO(crbug.com/661633): remove this once M68 has shipped (i.e. once more
 // than a year has passed since the introduction of the compatibility code).
 TEST_F(SessionServiceTest, LoadM58Session) {
+  NSString* session_path =
+      SessionPathForTestData(FILE_PATH_LITERAL("session_m58.plist"));
+  ASSERT_NSNE(nil, session_path);
   SessionWindowIOS* session_window =
-      LoadSessionFromTestDataFile(FILE_PATH_LITERAL("session_m58.plist"));
+      [session_service() loadSessionWindowFromPath:session_path];
   EXPECT_TRUE(session_window != nil);
 }
 

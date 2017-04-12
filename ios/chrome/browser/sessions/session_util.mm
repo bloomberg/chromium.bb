@@ -13,10 +13,10 @@ namespace session_util {
 
 // Deletes the file containing the commands for the last session.
 void DeleteLastSession(web::BrowserState* browser_state) {
-  SessionServiceIOS* session_service = [SessionServiceIOS sharedService];
-  NSString* path =
-      base::SysUTF8ToNSString(browser_state->GetStatePath().value());
-  [session_service deleteLastSession:path];
+  NSString* state_path =
+      base::SysUTF8ToNSString(browser_state->GetStatePath().AsUTF8Unsafe());
+  [[SessionServiceIOS sharedService]
+      deleteLastSessionFileInDirectory:state_path];
 }
 
 }  // namespace session_util

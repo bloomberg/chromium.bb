@@ -4,14 +4,28 @@
 
 #import "ios/chrome/browser/sessions/test_session_service.h"
 
+#include "base/memory/ref_counted.h"
+#include "base/threading/thread_task_runner_handle.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @implementation TestSessionService
-- (void)saveWindow:(SessionWindowIOS*)window
-    forBrowserState:(ios::ChromeBrowserState*)browserState
-        immediately:(BOOL)immediately {
-  [NSKeyedArchiver archivedDataWithRootObject:window];
+
+@synthesize performIO = _performIO;
+
+- (instancetype)init {
+  return [super initWithTaskRunner:base::ThreadTaskRunnerHandle::Get()];
 }
+
+- (void)saveSessionWindow:(SessionWindowIOS*)sessionWindow
+                directory:(NSString*)directory
+              immediately:(BOOL)immediately {
+  NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
+  NSData* data = [NSKeyedArchiver archivedDataWithRootObject:sessionWindow];
+  if (self.performIO)
+    [self performSaveSessionData:data sessionPath:sessionPath];
+}
+
 @end

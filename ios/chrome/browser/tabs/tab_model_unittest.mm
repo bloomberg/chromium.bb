@@ -42,10 +42,6 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
-@interface TabModel (VisibleForTesting)
-- (SessionWindowIOS*)windowForSavingSession;
-@end
-
 // Defines a TabModelObserver for use in unittests.  This class can be used to
 // test if an observer method was called or not.
 @interface TabModelObserverPong : NSObject<TabModelObserver> {
@@ -84,20 +80,38 @@ class TabModelTest : public PlatformTest {
     chrome_browser_state_ = test_cbs_builder.Build();
 
     session_window_.reset([[SessionWindowIOS alloc] init]);
+
     // Create tab model with just a dummy session service so the async state
     // saving doesn't trigger unless actually wanted.
-    base::scoped_nsobject<TestSessionService> test_service(
-        [[TestSessionService alloc] init]);
-    tab_model_.reset([[TabModel alloc]
-        initWithSessionWindow:session_window_.get()
-               sessionService:test_service
-                 browserState:chrome_browser_state_.get()]);
-    [tab_model_ setWebUsageEnabled:NO];
-    [tab_model_ setPrimary:YES];
+    SetTabModel(
+        CreateTabModel([[[TestSessionService alloc] init] autorelease], nil));
   }
 
   ~TabModelTest() override {
     [tab_model_ browserStateDestroyed];
+  }
+
+  void SetTabModel(base::scoped_nsobject<TabModel> tab_model) {
+    if (tab_model_) {
+      @autoreleasepool {
+        [tab_model_ browserStateDestroyed];
+        tab_model_.reset();
+      }
+    }
+
+    tab_model_ = tab_model;
+  }
+
+  base::scoped_nsobject<TabModel> CreateTabModel(
+      SessionServiceIOS* session_service,
+      SessionWindowIOS* session_window) {
+    base::scoped_nsobject<TabModel> tab_model([[TabModel alloc]
+        initWithSessionWindow:session_window
+               sessionService:session_service
+                 browserState:chrome_browser_state_.get()]);
+    [tab_model setWebUsageEnabled:NO];
+    [tab_model setPrimary:YES];
+    return tab_model;
   }
 
  protected:
@@ -1091,6 +1105,12 @@ TEST_F(TabModelTest, PersistSelectionChange) {
   NSString* stashPath =
       base::SysUTF8ToNSString(chrome_browser_state_->GetStatePath().value());
 
+  // Reset the TabModel with a custom SessionServiceIOS (to control whether
+  // data is saved to disk).
+  base::scoped_nsobject<TestSessionService> test_session_service(
+      [[TestSessionService alloc] init]);
+  SetTabModel(CreateTabModel(test_session_service.get(), nil));
+
   [tab_model_ insertTabWithURL:GURL(kURL1)
                       referrer:web::Referrer()
                     transition:ui::PAGE_TRANSITION_TYPED
@@ -1124,27 +1144,18 @@ TEST_F(TabModelTest, PersistSelectionChange) {
 
   // Force state to flush to disk on the main thread so it can be immediately
   // tested below.
-  SessionWindowIOS* window = [tab_model_ windowForSavingSession];
-  [[SessionServiceIOS sharedService] performSaveWindow:window
-                                           toDirectory:stashPath];
-  [tab_model_ browserStateDestroyed];
-  tab_model_.reset();
+  [test_session_service setPerformIO:YES];
+  [tab_model_ saveSessionImmediately:YES];
+  [test_session_service setPerformIO:NO];
 
-  // Restoring TabModel session sends asynchronous tasks to IO thread, wait
-  // for them to complete after destroying the TabModel.
-  base::RunLoop().RunUntilIdle();
-
-  SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
-      loadWindowForBrowserState:chrome_browser_state_.get()];
+  NSString* state_path = base::SysUTF8ToNSString(
+      chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
+  SessionWindowIOS* session_window =
+      [test_session_service loadSessionWindowFromDirectory:state_path];
 
   // Create tab model from saved session.
-  base::scoped_nsobject<TestSessionService> test_service(
-      [[TestSessionService alloc] init]);
+  SetTabModel(CreateTabModel(test_session_service.get(), session_window));
 
-  tab_model_.reset([[TabModel alloc]
-      initWithSessionWindow:sessionWindow
-             sessionService:test_service
-               browserState:chrome_browser_state_.get()]);
   ASSERT_EQ(3u, [tab_model_ count]);
 
   EXPECT_EQ([tab_model_ tabAtIndex:1], [tab_model_ currentTab]);

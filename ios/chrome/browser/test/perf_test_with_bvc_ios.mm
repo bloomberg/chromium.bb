@@ -116,17 +116,19 @@ void PerfTestWithBVC::SetUp() {
       chrome_browser_state_.get());
 
   // Use the session to create a window which will contain the tab models.
-  SessionWindowIOS* sessionWindow = [[SessionServiceIOS sharedService]
-      loadWindowForBrowserState:chrome_browser_state_.get()];
+  NSString* state_path = base::SysUTF8ToNSString(
+      chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
+  SessionWindowIOS* session_window = [[SessionServiceIOS sharedService]
+      loadSessionWindowFromDirectory:state_path];
 
   // Tab models. The off-the-record (OTR) tab model is required for the stack
   // view controller, which is created in OpenStackView().
   tab_model_.reset([[TabModel alloc]
-      initWithSessionWindow:sessionWindow
+      initWithSessionWindow:session_window
              sessionService:[SessionServiceIOS sharedService]
                browserState:chrome_browser_state_.get()]);
   otr_tab_model_.reset([[TabModel alloc]
-      initWithSessionWindow:sessionWindow
+      initWithSessionWindow:session_window
              sessionService:[SessionServiceIOS sharedService]
                browserState:chrome_browser_state_
                                 ->GetOffTheRecordChromeBrowserState()]);

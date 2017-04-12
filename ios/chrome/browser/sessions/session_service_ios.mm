@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
@@ -69,21 +68,25 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 
 @end
 
-@interface SessionServiceIOS () {
+@implementation SessionServiceIOS {
   // The SequencedTaskRunner on which File IO operations are performed.
   scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 
-  // Maps save directories to the pending SessionWindow for the delayed
-  // save behavior.
-  NSMutableDictionary<NSString*, SessionWindowIOS*>* _pendingWindows;
+  // Maps session path to the pending session window for the delayed save
+  // behaviour.
+  NSMutableDictionary<NSString*, SessionWindowIOS*>* _pendingSessionWindows;
 }
 
-// Saves the session corresponding to |directory| on the background
-// task runner |_taskRunner|.
-- (void)performSaveToDirectoryInBackground:(NSString*)directory;
-@end
+#pragma mark - NSObject overrides
 
-@implementation SessionServiceIOS
+- (instancetype)init {
+  base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> taskRunner =
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+  return [self initWithTaskRunner:taskRunner];
+}
+
+#pragma mark - Public interface
 
 + (SessionServiceIOS*)sharedService {
   static SessionServiceIOS* singleton = nil;
@@ -93,124 +96,42 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   return singleton;
 }
 
-- (instancetype)init {
+- (instancetype)initWithTaskRunner:
+    (const scoped_refptr<base::SequencedTaskRunner>&)taskRunner {
+  DCHECK(taskRunner);
   self = [super init];
   if (self) {
-    _pendingWindows = [NSMutableDictionary dictionary];
-    base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
-    _taskRunner = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    _pendingSessionWindows = [NSMutableDictionary dictionary];
+    _taskRunner = taskRunner;
   }
   return self;
 }
 
-// Returns the path of the session file.
-- (NSString*)sessionFilePathForDirectory:(NSString*)directory {
-  return [directory stringByAppendingPathComponent:@"session.plist"];
-}
-
-// Do the work of saving on a background thread. Assumes |window| is threadsafe.
-- (void)performSaveToDirectoryInBackground:(NSString*)directory {
-  DCHECK(directory);
-  DCHECK([_pendingWindows objectForKey:directory] != nil);
-
-  // Put the window into a local var so it can be retained for the block, yet
-  // we can remove it from the dictionary to allow queuing another save.
-  SessionWindowIOS* localWindow = [_pendingWindows objectForKey:directory];
-  [_pendingWindows removeObjectForKey:directory];
-
-  _taskRunner->PostTask(
-      FROM_HERE, base::MakeCriticalClosure(base::BindBlockArc(^{
-        @try {
-          [self performSaveWindow:localWindow toDirectory:directory];
-        } @catch (NSException* e) {
-          // Do nothing.
-        }
-      })));
-}
-
-// Saves a SessionWindowIOS in a given directory. In case the directory doesn't
-// exists it will be automatically created.
-- (void)performSaveWindow:(SessionWindowIOS*)window
-              toDirectory:(NSString*)directory {
-  base::ThreadRestrictions::AssertIOAllowed();
-  NSFileManager* fileManager = [NSFileManager defaultManager];
-  BOOL isDir;
-  if (![fileManager fileExistsAtPath:directory isDirectory:&isDir]) {
-    NSError* error = nil;
-    BOOL result = [fileManager createDirectoryAtPath:directory
-                         withIntermediateDirectories:YES
-                                          attributes:nil
-                                               error:&error];
-    DCHECK(result);
-    if (!result) {
-      DLOG(ERROR) << "Error creating destination directory: "
-                  << base::SysNSStringToUTF8(directory) << ": "
-                  << base::SysNSStringToUTF8([error description]);
-      return;
-    }
-  } else {
-    DCHECK(isDir);
-    if (!isDir) {
-      DLOG(ERROR) << "Error creating destination directory: "
-                  << base::SysNSStringToUTF8(directory) << ": "
-                  << "file exists and is not a directory.";
-      return;
-    }
-  }
-
-  NSString* filename = [self sessionFilePathForDirectory:directory];
-  if (filename) {
-    BOOL result = [NSKeyedArchiver archiveRootObject:window toFile:filename];
-    DCHECK(result);
-    if (!result) {
-      DLOG(ERROR) << "Error writing session file to " << filename;
-      return;
-    }
-
-    // Encrypt the session file (mostly for Incognito, but can't hurt to
-    // always do it).
-    NSError* error = nil;
-    BOOL success = [[NSFileManager defaultManager]
-        setAttributes:@{NSFileProtectionKey : NSFileProtectionComplete}
-         ofItemAtPath:filename
-                error:&error];
-    if (!success) {
-      DLOG(ERROR) << "Error encrypting session file: "
-                  << base::SysNSStringToUTF8(filename) << ": "
-                  << base::SysNSStringToUTF8([error description]);
-    }
-  }
-}
-
-- (void)saveWindow:(SessionWindowIOS*)window
-    forBrowserState:(ios::ChromeBrowserState*)browserState
-        immediately:(BOOL)immediately {
-  NSString* stashPath =
-      base::SysUTF8ToNSString(browserState->GetStatePath().value());
-  BOOL hadPendingSession = [_pendingWindows objectForKey:stashPath] != nil;
-  [_pendingWindows setObject:window forKey:stashPath];
+- (void)saveSessionWindow:(SessionWindowIOS*)sessionWindow
+                directory:(NSString*)directory
+              immediately:(BOOL)immediately {
+  NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
+  BOOL hadPendingSession =
+      [_pendingSessionWindows objectForKey:sessionPath] != nil;
+  [_pendingSessionWindows setObject:sessionWindow forKey:sessionPath];
   if (immediately) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    [self performSaveToDirectoryInBackground:stashPath];
+    [self performSaveToPathInBackground:sessionPath];
   } else if (!hadPendingSession) {
-    // If there wasn't previously a delayed save pending for |stashPath|,
+    // If there wasn't previously a delayed save pending for |sessionPath|,
     // enqueue one now.
-    [self performSelector:@selector(performSaveToDirectoryInBackground:)
-               withObject:stashPath
+    [self performSelector:@selector(performSaveToPathInBackground:)
+               withObject:sessionPath
                afterDelay:kSaveDelay];
   }
 }
 
-- (SessionWindowIOS*)loadWindowForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
-  NSString* stashPath =
-      base::SysUTF8ToNSString(browserState->GetStatePath().value());
-  SessionWindowIOS* window =
-      [self loadWindowFromPath:[self sessionFilePathForDirectory:stashPath]];
-  return window;
+- (SessionWindowIOS*)loadSessionWindowFromDirectory:(NSString*)directory {
+  NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
+  return [self loadSessionWindowFromPath:sessionPath];
 }
 
-- (SessionWindowIOS*)loadWindowFromPath:(NSString*)sessionPath {
+- (SessionWindowIOS*)loadSessionWindowFromPath:(NSString*)sessionPath {
   @try {
     NSData* data = [NSData dataWithContentsOfFile:sessionPath];
     if (!data)
@@ -223,17 +144,15 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
     [unarchiver cr_registerCompatibilityAliases];
     return [unarchiver decodeObjectForKey:kRootObjectKey];
   } @catch (NSException* exception) {
-    DLOG(ERROR) << "Error loading session file: "
-                << base::SysNSStringToUTF8(sessionPath) << ": "
-                << base::SysNSStringToUTF8([exception reason]);
+    NOTREACHED() << "Error loading session file: "
+                 << base::SysNSStringToUTF8(sessionPath) << ": "
+                 << base::SysNSStringToUTF8([exception reason]);
     return nil;
   }
 }
 
-// Deletes the file containing the commands for the last session in the given
-// browserState directory.
-- (void)deleteLastSession:(NSString*)directory {
-  NSString* sessionPath = [self sessionFilePathForDirectory:directory];
+- (void)deleteLastSessionFileInDirectory:(NSString*)directory {
+  NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
   _taskRunner->PostTask(
       FROM_HERE, base::BindBlockArc(^{
         base::ThreadRestrictions::AssertIOAllowed();
@@ -247,6 +166,82 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
                        << base::SysNSStringToUTF8(sessionPath) << ": "
                        << base::SysNSStringToUTF8([error description]);
       }));
+}
+
++ (NSString*)sessionPathForDirectory:(NSString*)directory {
+  return [directory stringByAppendingPathComponent:@"session.plist"];
+}
+
+#pragma mark - Private methods
+
+// Do the work of saving on a background thread.
+- (void)performSaveToPathInBackground:(NSString*)sessionPath {
+  DCHECK(sessionPath);
+  DCHECK([_pendingSessionWindows objectForKey:sessionPath] != nil);
+
+  // Serialize to NSData on the main thread to avoid accessing potentially
+  // non-threadsafe objects on a background thread.
+  SessionWindowIOS* sessionWindow =
+      [_pendingSessionWindows objectForKey:sessionPath];
+  [_pendingSessionWindows removeObjectForKey:sessionPath];
+
+  @try {
+    NSData* sessionData =
+        [NSKeyedArchiver archivedDataWithRootObject:sessionWindow];
+    _taskRunner->PostTask(
+        FROM_HERE, base::MakeCriticalClosure(base::BindBlockArc(^{
+          [self performSaveSessionData:sessionData sessionPath:sessionPath];
+        })));
+  } @catch (NSException* exception) {
+    NOTREACHED() << "Error serializing session for path: "
+                 << base::SysNSStringToUTF8(sessionPath) << ": "
+                 << base::SysNSStringToUTF8([exception description]);
+    return;
+  }
+}
+
+@end
+
+@implementation SessionServiceIOS (SubClassing)
+
+- (void)performSaveSessionData:(NSData*)sessionData
+                   sessionPath:(NSString*)sessionPath {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+  NSString* directory = [sessionPath stringByDeletingLastPathComponent];
+
+  NSError* error = nil;
+  BOOL isDirectory = NO;
+  if (![fileManager fileExistsAtPath:directory isDirectory:&isDirectory]) {
+    isDirectory = YES;
+    if (![fileManager createDirectoryAtPath:directory
+                withIntermediateDirectories:YES
+                                 attributes:nil
+                                      error:&error]) {
+      NOTREACHED() << "Error creating destination directory: "
+                   << base::SysNSStringToUTF8(directory) << ": "
+                   << base::SysNSStringToUTF8([error description]);
+      return;
+    }
+  }
+
+  if (!isDirectory) {
+    NOTREACHED() << "Error creating destination directory: "
+                 << base::SysNSStringToUTF8(directory) << ": "
+                 << "file exists and is not a directory.";
+    return;
+  }
+
+  NSDataWritingOptions options =
+      NSDataWritingAtomic | NSDataWritingFileProtectionComplete;
+
+  if (![sessionData writeToFile:sessionPath options:options error:&error]) {
+    NOTREACHED() << "Error writing session file: "
+                 << base::SysNSStringToUTF8(sessionPath) << ": "
+                 << base::SysNSStringToUTF8([error description]);
+    return;
+  }
 }
 
 @end
