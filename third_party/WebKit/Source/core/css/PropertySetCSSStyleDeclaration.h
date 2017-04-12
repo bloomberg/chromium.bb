@@ -27,7 +27,7 @@
 #define PropertySetCSSStyleDeclaration_h
 
 #include "core/css/CSSStyleDeclaration.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

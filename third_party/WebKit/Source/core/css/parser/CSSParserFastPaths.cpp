@@ -16,7 +16,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
 

@@ -25,7 +25,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLStyleElement.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

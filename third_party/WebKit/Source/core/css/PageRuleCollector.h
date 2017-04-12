@@ -24,7 +24,7 @@
 #define PageRuleCollector_h
 
 #include "core/css/resolver/MatchResult.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

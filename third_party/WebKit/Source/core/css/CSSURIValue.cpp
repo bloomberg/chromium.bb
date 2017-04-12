@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/svg/SVGElementProxy.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

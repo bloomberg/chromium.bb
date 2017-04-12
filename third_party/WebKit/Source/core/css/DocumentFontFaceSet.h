@@ -27,8 +27,8 @@
 #define DocumentFontFaceSet_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "core/css/CSSCounterValue.h"
 
 #include "core/css/CSSMarkup.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

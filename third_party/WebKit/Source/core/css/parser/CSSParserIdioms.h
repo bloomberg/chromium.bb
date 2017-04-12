@@ -31,7 +31,7 @@
 #ifndef CSSParserIdioms_h
 #define CSSParserIdioms_h
 
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

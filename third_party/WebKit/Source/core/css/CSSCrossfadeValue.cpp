@@ -30,7 +30,7 @@
 #include "core/style/StyleFetchedImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 #include "platform/graphics/CrossfadeGeneratedImage.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

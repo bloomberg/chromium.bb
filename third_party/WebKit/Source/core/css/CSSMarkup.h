@@ -25,7 +25,7 @@
 #ifndef CSSMarkup_h
 #define CSSMarkup_h
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 // Helper functions for converting from CSSValues to text.
 

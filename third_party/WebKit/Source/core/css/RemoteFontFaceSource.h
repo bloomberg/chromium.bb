@@ -7,7 +7,7 @@
 
 #include "core/css/CSSFontFaceSource.h"
 #include "core/loader/resource/FontResource.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

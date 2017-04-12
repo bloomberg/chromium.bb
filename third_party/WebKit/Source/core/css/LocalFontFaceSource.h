@@ -6,8 +6,8 @@
 #define LocalFontFaceSource_h
 
 #include "core/css/CSSFontFaceSource.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

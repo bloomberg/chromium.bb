@@ -20,9 +20,9 @@
 
 #include "core/css/parser/CSSParserSelector.h"
 
-#include "core/css/CSSSelectorList.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/css/CSSSelectorList.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

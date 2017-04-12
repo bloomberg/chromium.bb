@@ -24,8 +24,8 @@
 #ifndef DataRef_h
 #define DataRef_h
 
-#include "wtf/Allocator.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

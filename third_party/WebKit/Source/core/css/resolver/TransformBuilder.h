@@ -33,7 +33,7 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformOperations.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -65,7 +65,7 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "platform/Length.h"
-#include "wtf/SizeAssertions.h"
+#include "platform/wtf/SizeAssertions.h"
 
 namespace blink {
 

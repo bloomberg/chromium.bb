@@ -22,8 +22,8 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParser.h"
-#include "wtf/SizeAssertions.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/SizeAssertions.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

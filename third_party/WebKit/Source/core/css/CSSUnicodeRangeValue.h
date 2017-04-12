@@ -27,7 +27,7 @@
 #define CSSUnicodeRangeValue_h
 
 #include "core/css/CSSValue.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

@@ -44,7 +44,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/TabSize.h"
 #include "platform/transforms/Rotation.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

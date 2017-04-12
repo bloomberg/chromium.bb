@@ -27,8 +27,8 @@
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

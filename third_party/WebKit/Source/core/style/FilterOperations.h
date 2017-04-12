@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/style/FilterOperation.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -27,9 +27,9 @@
 #define StyleScrollSnapData_h
 
 #include "platform/LengthPoint.h"
-#include "wtf/Allocator.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

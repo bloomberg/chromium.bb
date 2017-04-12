@@ -27,11 +27,11 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

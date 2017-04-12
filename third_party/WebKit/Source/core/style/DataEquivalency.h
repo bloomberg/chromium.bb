@@ -5,8 +5,8 @@
 #ifndef DataEquivalency_h
 #define DataEquivalency_h
 
-#include "wtf/RefPtr.h"
 #include <memory>
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

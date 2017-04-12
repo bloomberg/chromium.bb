@@ -28,7 +28,7 @@
 
 #include "core/css/CSSValue.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

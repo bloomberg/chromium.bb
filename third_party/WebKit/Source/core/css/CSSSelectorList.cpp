@@ -26,10 +26,10 @@
 
 #include "core/css/CSSSelectorList.h"
 
-#include "core/css/parser/CSSParserSelector.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/StringBuilder.h"
 #include <memory>
+#include "core/css/parser/CSSParserSelector.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace {
 // CSSSelector is one of the top types that consume renderer memory,

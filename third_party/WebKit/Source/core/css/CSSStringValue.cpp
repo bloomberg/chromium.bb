@@ -5,7 +5,7 @@
 #include "core/css/CSSStringValue.h"
 
 #include "core/css/CSSMarkup.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

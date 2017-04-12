@@ -26,6 +26,7 @@
 #ifndef ComputedStyle_h
 #define ComputedStyle_h
 
+#include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/ComputedStyleBase.h"
 #include "core/CoreExport.h"
@@ -71,11 +72,10 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/transforms/TransformOperations.h"
-#include "wtf/Forward.h"
-#include "wtf/LeakAnnotations.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 template <typename T, typename U>
 inline bool compareEqual(const T& t, const U& u) {

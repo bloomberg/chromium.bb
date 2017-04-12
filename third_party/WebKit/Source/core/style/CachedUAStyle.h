@@ -23,11 +23,11 @@
 #ifndef CachedUAStyle_h
 #define CachedUAStyle_h
 
-#include "core/style/ComputedStyle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/style/ComputedStyle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

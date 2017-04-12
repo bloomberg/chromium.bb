@@ -33,7 +33,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePair.h"
 #include "platform/Length.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

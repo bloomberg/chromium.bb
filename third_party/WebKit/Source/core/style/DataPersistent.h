@@ -5,10 +5,10 @@
 #ifndef DataPersistent_h
 #define DataPersistent_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

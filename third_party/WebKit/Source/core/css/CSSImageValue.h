@@ -25,7 +25,7 @@
 #include "core/css/CSSValue.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

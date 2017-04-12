@@ -33,7 +33,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "platform/graphics/Color.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

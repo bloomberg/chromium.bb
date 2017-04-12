@@ -27,8 +27,8 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheet.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

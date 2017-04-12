@@ -7,8 +7,8 @@
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSValuePool.h"
 #include "platform/Length.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

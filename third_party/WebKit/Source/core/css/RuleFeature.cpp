@@ -43,7 +43,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "wtf/BitVector.h"
+#include "platform/wtf/BitVector.h"
 
 namespace blink {
 

@@ -4,12 +4,12 @@
 
 #include "core/style/StylePath.h"
 
+#include <memory>
 #include "core/css/CSSPathValue.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/graphics/Path.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

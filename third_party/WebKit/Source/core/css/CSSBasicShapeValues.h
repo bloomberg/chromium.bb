@@ -34,9 +34,9 @@
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValuePair.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

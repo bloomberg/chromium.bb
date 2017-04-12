@@ -6,8 +6,8 @@
 #define CSSPropertyIDTemplates_h
 
 #include "core/CSSPropertyNames.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashTraits.h"
 
 namespace WTF {
 template <>

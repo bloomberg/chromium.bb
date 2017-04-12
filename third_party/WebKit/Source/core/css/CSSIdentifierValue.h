@@ -8,7 +8,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueIDMappings.h"
-#include "wtf/TypeTraits.h"
+#include "platform/wtf/TypeTraits.h"
 
 namespace blink {
 

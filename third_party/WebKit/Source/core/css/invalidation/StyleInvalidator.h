@@ -5,10 +5,10 @@
 #ifndef StyleInvalidator_h
 #define StyleInvalidator_h
 
+#include <memory>
 #include "core/css/invalidation/PendingInvalidations.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

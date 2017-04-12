@@ -43,7 +43,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-#include "wtf/TerminatedArrayBuilder.h"
+#include "platform/wtf/TerminatedArrayBuilder.h"
 
 namespace blink {
 

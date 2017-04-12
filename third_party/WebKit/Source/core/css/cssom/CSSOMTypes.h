@@ -7,7 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

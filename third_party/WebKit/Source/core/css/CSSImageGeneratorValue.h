@@ -30,8 +30,8 @@
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/heap/SelfKeepAlive.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

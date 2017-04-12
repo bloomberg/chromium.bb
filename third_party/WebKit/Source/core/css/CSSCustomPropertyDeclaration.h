@@ -7,8 +7,8 @@
 
 #include "core/css/CSSValue.h"
 #include "core/css/CSSVariableData.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -25,7 +25,7 @@
 
 #include "core/css/CSSFontFeatureValue.h"
 
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -26,7 +26,7 @@
 #define OutlineValue_h
 
 #include "core/style/BorderValue.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

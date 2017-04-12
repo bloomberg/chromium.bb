@@ -5,7 +5,7 @@
 #include "core/css/CSSContentDistributionValue.h"
 
 #include "core/css/CSSValueList.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

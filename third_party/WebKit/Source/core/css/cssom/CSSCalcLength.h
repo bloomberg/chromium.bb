@@ -5,10 +5,10 @@
 #ifndef CSSCalcLength_h
 #define CSSCalcLength_h
 
-#include "core/css/cssom/CSSLengthValue.h"
-#include "wtf/BitVector.h"
 #include <array>
 #include <bitset>
+#include "core/css/cssom/CSSLengthValue.h"
+#include "platform/wtf/BitVector.h"
 
 namespace blink {
 

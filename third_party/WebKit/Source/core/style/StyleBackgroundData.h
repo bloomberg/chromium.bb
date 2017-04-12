@@ -28,8 +28,8 @@
 #include "core/css/StyleColor.h"
 #include "core/style/FillLayer.h"
 #include "platform/graphics/Color.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

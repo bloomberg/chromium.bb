@@ -5,7 +5,7 @@
 #ifndef CSSAtRuleID_h
 #define CSSAtRuleID_h
 
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

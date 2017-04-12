@@ -31,10 +31,10 @@
 #ifndef StyleResolverStats_h
 #define StyleResolverStats_h
 
+#include <memory>
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -4,8 +4,8 @@
 
 #include "core/css/parser/CSSParserTokenRange.h"
 
-#include "wtf/StaticConstructors.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/StaticConstructors.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

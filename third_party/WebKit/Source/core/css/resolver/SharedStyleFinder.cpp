@@ -52,8 +52,8 @@
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

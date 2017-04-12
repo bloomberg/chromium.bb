@@ -9,7 +9,7 @@
 #include "core/style/StylePath.h"
 #include "platform/Length.h"
 #include "platform/LengthPoint.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

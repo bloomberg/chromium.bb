@@ -32,10 +32,10 @@
 #include "core/css/FontFace.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/fonts/UnicodeRangeSet.h"
-#include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

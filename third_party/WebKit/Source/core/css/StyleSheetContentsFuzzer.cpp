@@ -5,7 +5,7 @@
 #include "core/css/StyleSheetContents.h"
 
 #include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   blink::CSSParserContext* context =

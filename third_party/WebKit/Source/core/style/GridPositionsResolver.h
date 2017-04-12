@@ -6,7 +6,7 @@
 #define GridPositionsResolver_h
 
 #include "core/style/GridPosition.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

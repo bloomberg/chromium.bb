@@ -51,10 +51,10 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/wtf/HashMap.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/ShapeProperties.h"
 #include "public/platform/WebDisplayMode.h"
-#include "wtf/HashMap.h"
 
 namespace blink {
 

@@ -38,9 +38,9 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

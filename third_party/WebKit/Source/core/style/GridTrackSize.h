@@ -32,7 +32,7 @@
 #define GridTrackSize_h
 
 #include "core/style/GridLength.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

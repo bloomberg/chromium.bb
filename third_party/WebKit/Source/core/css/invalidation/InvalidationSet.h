@@ -31,15 +31,15 @@
 #ifndef InvalidationSet_h
 #define InvalidationSet_h
 
-#include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
 #include <memory>
+#include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

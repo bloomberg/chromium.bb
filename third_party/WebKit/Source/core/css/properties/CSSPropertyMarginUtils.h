@@ -6,7 +6,7 @@
 #define CSSPropertyMarginUtils_h
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

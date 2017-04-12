@@ -30,9 +30,9 @@
 
 #include "core/css/CSSPropertySourceData.h"
 
-#include "wtf/StaticConstructors.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/StaticConstructors.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

@@ -23,11 +23,11 @@
 #ifndef CSSSelector_h
 #define CSSSelector_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/RefCounted.h"
-#include <memory>
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 class CSSSelectorList;

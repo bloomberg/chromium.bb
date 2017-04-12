@@ -27,7 +27,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/StylePropertySet.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

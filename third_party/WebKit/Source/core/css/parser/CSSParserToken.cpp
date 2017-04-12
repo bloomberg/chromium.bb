@@ -4,12 +4,12 @@
 
 #include "core/css/parser/CSSParserToken.h"
 
+#include <limits.h>
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSPropertyParser.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringBuilder.h"
-#include <limits.h>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -24,14 +24,14 @@
 #define SVGComputedStyle_h
 
 #include "core/CoreExport.h"
-#include "core/style/DataRef.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style/DataRef.h"
 #include "core/style/SVGComputedStyleDefs.h"
 #include "core/style/StyleDifference.h"
 #include "platform/Length.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

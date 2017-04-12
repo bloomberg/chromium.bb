@@ -5,7 +5,7 @@
 #ifndef TextSizeAdjust_h
 #define TextSizeAdjust_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

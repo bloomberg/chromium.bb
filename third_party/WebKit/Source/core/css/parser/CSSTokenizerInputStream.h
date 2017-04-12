@@ -5,8 +5,8 @@
 #ifndef CSSTokenizerInputStream_h
 #define CSSTokenizerInputStream_h
 
-#include "wtf/text/StringView.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

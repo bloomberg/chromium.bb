@@ -4,6 +4,8 @@
 
 #include "core/css/parser/CSSParserImpl.h"
 
+#include <bitset>
+#include <memory>
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -30,9 +32,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/PtrUtil.h"
-#include <bitset>
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

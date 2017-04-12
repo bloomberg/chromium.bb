@@ -26,7 +26,7 @@
 #include "core/css/CSSValuePool.h"
 
 #include "platform/heap/Handle.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

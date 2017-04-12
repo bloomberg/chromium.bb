@@ -26,6 +26,8 @@
 
 #include "core/css/CSSGradientValue.h"
 
+#include <algorithm>
+#include <utility>
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSIdentifierValue.h"
@@ -40,10 +42,8 @@
 #include "platform/graphics/GradientGeneratedImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <utility>
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

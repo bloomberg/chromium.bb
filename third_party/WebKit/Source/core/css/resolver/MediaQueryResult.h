@@ -25,7 +25,7 @@
 #define MediaQueryResult_h
 
 #include "core/css/MediaQueryExp.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

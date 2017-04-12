@@ -25,13 +25,13 @@
 
 #include "core/css/CSSKeyframesRule.h"
 
+#include <memory>
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

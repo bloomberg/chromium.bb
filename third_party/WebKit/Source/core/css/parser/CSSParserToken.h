@@ -7,8 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

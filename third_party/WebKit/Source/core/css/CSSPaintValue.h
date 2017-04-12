@@ -10,7 +10,7 @@
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/css/CSSVariableData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

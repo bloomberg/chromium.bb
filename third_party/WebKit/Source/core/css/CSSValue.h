@@ -24,7 +24,7 @@
 #include "core/CoreExport.h"
 #include "core/style/DataEquivalency.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

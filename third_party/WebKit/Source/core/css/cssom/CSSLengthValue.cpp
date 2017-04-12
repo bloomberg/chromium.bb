@@ -9,7 +9,7 @@
 #include "core/css/cssom/CSSCalcDictionary.h"
 #include "core/css/cssom/CSSCalcLength.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

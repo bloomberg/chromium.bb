@@ -4,10 +4,10 @@
 
 #include "core/css/StyleRuleKeyframe.h"
 
+#include <memory>
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

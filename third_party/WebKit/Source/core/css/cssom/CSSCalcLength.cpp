@@ -9,7 +9,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSCalcDictionary.h"
 #include "core/css/cssom/CSSSimpleLength.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

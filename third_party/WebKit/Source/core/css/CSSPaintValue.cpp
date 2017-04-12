@@ -9,7 +9,7 @@
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/graphics/Image.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

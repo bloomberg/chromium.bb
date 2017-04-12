@@ -26,7 +26,7 @@
 #define CounterContent_h
 
 #include "core/style/ComputedStyleConstants.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

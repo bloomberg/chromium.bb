@@ -33,10 +33,10 @@
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TabSize.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefVector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefVector.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

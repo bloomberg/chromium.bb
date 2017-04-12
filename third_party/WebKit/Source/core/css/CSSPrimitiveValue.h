@@ -26,11 +26,11 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
-#include "wtf/BitVector.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/BitVector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

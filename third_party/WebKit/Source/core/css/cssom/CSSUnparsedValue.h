@@ -8,7 +8,7 @@
 #include "bindings/core/v8/StringOrCSSVariableReferenceValue.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

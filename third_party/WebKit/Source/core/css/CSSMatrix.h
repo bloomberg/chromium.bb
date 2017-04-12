@@ -26,10 +26,10 @@
 #ifndef CSSMatrix_h
 #define CSSMatrix_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

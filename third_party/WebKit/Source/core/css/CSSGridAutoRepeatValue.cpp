@@ -4,7 +4,7 @@
 
 #include "core/css/CSSGridAutoRepeatValue.h"
 
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

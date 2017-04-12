@@ -34,8 +34,8 @@
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceSetLoadEventInit.h"
 #include "core/events/Event.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

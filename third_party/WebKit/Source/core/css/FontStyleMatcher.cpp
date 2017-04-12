@@ -27,7 +27,7 @@
 #include "core/css/FontStyleMatcher.h"
 
 #include "core/css/CSSSegmentedFontFace.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 #include <stdlib.h>
 

@@ -33,7 +33,7 @@
 
 #include "core/css/CSSValue.h"
 #include "core/style/GridArea.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

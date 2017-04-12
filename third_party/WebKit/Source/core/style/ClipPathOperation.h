@@ -30,13 +30,13 @@
 #ifndef ClipPathOperation_h
 #define ClipPathOperation_h
 
+#include <memory>
 #include "core/style/BasicShapes.h"
 #include "core/svg/SVGElementProxy.h"
 #include "platform/graphics/Path.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

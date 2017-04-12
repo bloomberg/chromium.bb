@@ -35,7 +35,7 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/StyleImage.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

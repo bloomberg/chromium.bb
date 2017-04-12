@@ -28,7 +28,7 @@
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

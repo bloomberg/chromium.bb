@@ -27,8 +27,8 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSValuePool.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/SizeAssertions.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/SizeAssertions.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

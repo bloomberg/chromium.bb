@@ -33,11 +33,11 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
-#include "wtf/text/CString.h"
 #include <stdio.h>
+#include "platform/wtf/text/CString.h"
 #endif
 
 namespace blink {

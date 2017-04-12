@@ -31,13 +31,13 @@
 #ifndef ShadowList_h
 #define ShadowList_h
 
+#include <memory>
 #include "core/style/ShadowData.h"
 #include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/DrawLooperBuilder.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #define AnimatedStyleBuilder_h
 
 #include "core/CSSPropertyNames.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

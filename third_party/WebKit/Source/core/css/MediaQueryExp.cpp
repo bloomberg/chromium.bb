@@ -33,8 +33,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/Decimal.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

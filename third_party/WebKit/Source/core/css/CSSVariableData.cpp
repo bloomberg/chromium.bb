@@ -7,8 +7,8 @@
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

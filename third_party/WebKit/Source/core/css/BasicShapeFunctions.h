@@ -32,7 +32,7 @@
 
 #include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

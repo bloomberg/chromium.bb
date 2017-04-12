@@ -7,7 +7,7 @@
 #include <cmath>
 #include <memory>
 #include "core/css/CSSPrimitiveValue.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

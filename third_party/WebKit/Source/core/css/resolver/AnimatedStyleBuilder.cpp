@@ -58,7 +58,7 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 #include <type_traits>
 

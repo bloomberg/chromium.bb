@@ -23,6 +23,8 @@
 
 #include "core/style/ComputedStyle.h"
 
+#include <algorithm>
+#include <memory>
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSPaintValue.h"
@@ -52,12 +54,10 @@
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/SaturatedArithmetic.h"
-#include "wtf/SizeAssertions.h"
-#include <algorithm>
-#include <memory>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/SaturatedArithmetic.h"
+#include "platform/wtf/SizeAssertions.h"
 
 namespace blink {
 

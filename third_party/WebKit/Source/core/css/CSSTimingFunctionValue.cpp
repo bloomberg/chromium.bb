@@ -25,7 +25,7 @@
 
 #include "core/css/CSSTimingFunctionValue.h"
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

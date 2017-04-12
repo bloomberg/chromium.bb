@@ -33,8 +33,8 @@
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/RuleSet.h"
 #include "core/dom/TreeScope.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

@@ -39,7 +39,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/PlatformResourceLoader.h"
-#include "wtf/LeakAnnotations.h"
+#include "platform/wtf/LeakAnnotations.h"
 
 namespace blink {
 

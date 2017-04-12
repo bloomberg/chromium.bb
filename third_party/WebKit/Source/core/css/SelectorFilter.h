@@ -31,10 +31,10 @@
 #ifndef SelectorFilter_h
 #define SelectorFilter_h
 
-#include "core/dom/Element.h"
-#include "wtf/BloomFilter.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "core/dom/Element.h"
+#include "platform/wtf/BloomFilter.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef CSSPropertyCounterUtils_h
 #define CSSPropertyCounterUtils_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

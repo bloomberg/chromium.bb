@@ -49,8 +49,8 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextRun.h"
 #include "platform/text/WritingMode.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/WebBlendMode.h"
-#include "wtf/MathExtras.h"
 
 namespace blink {
 

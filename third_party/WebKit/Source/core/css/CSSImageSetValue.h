@@ -29,7 +29,7 @@
 #include "core/css/CSSValueList.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

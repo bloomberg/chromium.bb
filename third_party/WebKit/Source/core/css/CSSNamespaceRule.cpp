@@ -6,7 +6,7 @@
 
 #include "core/css/CSSMarkup.h"
 #include "core/css/StyleRuleNamespace.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

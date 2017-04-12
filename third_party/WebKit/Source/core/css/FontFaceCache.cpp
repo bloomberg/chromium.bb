@@ -36,7 +36,7 @@
 #include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

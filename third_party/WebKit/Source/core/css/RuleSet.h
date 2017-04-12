@@ -31,9 +31,9 @@
 #include "core/css/resolver/MediaQueryResult.h"
 #include "platform/heap/HeapLinkedStack.h"
 #include "platform/heap/HeapTerminatedArray.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/TerminatedArray.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/TerminatedArray.h"
 
 namespace blink {
 

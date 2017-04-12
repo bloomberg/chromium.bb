@@ -30,14 +30,14 @@
 
 #include "core/css/invalidation/InvalidationSet.h"
 
+#include <memory>
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/Compiler.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

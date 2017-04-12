@@ -5,12 +5,12 @@
 #ifndef CSSPathValue_h
 #define CSSPathValue_h
 
+#include <memory>
 #include "core/css/CSSValue.h"
 #include "core/style/StylePath.h"
 #include "core/svg/SVGPathByteStream.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

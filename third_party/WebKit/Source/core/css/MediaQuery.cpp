@@ -28,12 +28,12 @@
 
 #include "core/css/MediaQuery.h"
 
+#include <memory>
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/NonCopyingSort.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/NonCopyingSort.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

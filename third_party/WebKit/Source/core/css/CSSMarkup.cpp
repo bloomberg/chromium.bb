@@ -29,9 +29,9 @@
 #include "core/css/CSSMarkup.h"
 
 #include "core/css/parser/CSSParserIdioms.h"
-#include "wtf/HexNumber.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/HexNumber.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

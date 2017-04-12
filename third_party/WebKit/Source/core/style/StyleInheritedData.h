@@ -29,8 +29,8 @@
 #include "platform/Length.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/Color.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 
