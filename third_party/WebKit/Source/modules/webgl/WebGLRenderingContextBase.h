@@ -1111,7 +1111,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLint zoffset,
                      CanvasImageSource*,
                      const IntRect& source_sub_rectangle);
-  virtual bool CanUseTexImageByGPU(GLenum type);
+  bool CanUseTexImageByGPU(GLenum format, GLenum type);
 
   virtual WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams();
   virtual WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(

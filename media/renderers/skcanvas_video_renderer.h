@@ -64,16 +64,25 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
                                            void* rgb_pixels,
                                            size_t row_bytes);
 
+  enum SingleFrameCopyMode {
+    SingleFrameForVideoElementOrCanvas,
+    SingleFrameForWebGL
+  };
+
   // Copy the contents of texture of |video_frame| to texture |texture|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
-  // Assumes |texture| has already been allocated with the appropriate
-  // size and a compatible format, internal format and type; this is
-  // effectively a "TexSubImage" operation.
+  // |copy_mode| alters how the copy is done, and takes into consideration
+  // whether the caller will clip the texture to the frame's |visible_rect|,
+  // or expects this to be done internally.
   static void CopyVideoFrameSingleTextureToGLTexture(
       gpu::gles2::GLES2Interface* gl,
       VideoFrame* video_frame,
+      SingleFrameCopyMode copy_mode,
       unsigned int texture,
+      unsigned int internal_format,
+      unsigned int format,
+      unsigned int type,
       bool premultiply_alpha,
       bool flip_y);
 
@@ -82,15 +91,15 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // |level|, |internal_format|, |type| specify target texture |texture|.
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
   // |context_3d| has a GrContext that may be used during the copy.
-  // Assumes |texture| has already been allocated with the appropriate
-  // size and a compatible format, internal format and type; this is
-  // effectively a "TexSubImage" operation.
   // Returns true on success.
   bool CopyVideoFrameTexturesToGLTexture(
       const Context3D& context_3d,
       gpu::gles2::GLES2Interface* destination_gl,
       const scoped_refptr<VideoFrame>& video_frame,
       unsigned int texture,
+      unsigned int internal_format,
+      unsigned int format,
+      unsigned int type,
       bool premultiply_alpha,
       bool flip_y);
 
