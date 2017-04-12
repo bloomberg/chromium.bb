@@ -41,6 +41,9 @@ class PopupTimer {
   // subsequent calls to Start the timer will continue where it left off.
   void Pause();
 
+  // Returns whether the underlying timer is running or not.
+  bool IsRunning() { return timer_->IsRunning(); }
+
  private:
   // Notification ID for which this timer applies.
   const std::string id_;
