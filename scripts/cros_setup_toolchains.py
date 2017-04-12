@@ -53,6 +53,7 @@ TARGET_VERSION_MAP = {
         'gdb' : PACKAGE_NONE,
         'ex_go' : PACKAGE_NONE,
         'ex_compiler-rt': PACKAGE_NONE,
+        'ex_llvm-libunwind': PACKAGE_NONE,
     },
 }
 
@@ -66,8 +67,19 @@ CROSSDEV_GO_ARGS = ['--ex-pkg', 'dev-lang/go']
 # Enable llvm's compiler-rt for these targets.
 TARGET_COMPILER_RT_ENABLED = (
     'armv7a-cros-linux-gnueabi',
+    'aarch64-cros-linux-gnu',
 )
 CROSSDEV_COMPILER_RT_ARGS = ['--ex-pkg', 'sys-libs/compiler-rt']
+
+TARGET_LLVM_PKGS_ENABLED = (
+    'armv7a-cros-linux-gnueabi',
+    'aarch64-cros-linux-gnu',
+    'x86_64-cros-linux-gnu',
+)
+
+LLVM_PKGS_TABLE = {
+    'ex_llvm-libunwind' : ['--ex-pkg', 'sys-libs/llvm-libunwind'],
+}
 
 # Overrides for {gcc,binutils}-config, pick a package with particular suffix.
 CONFIG_TARGET_SUFFIXES = {
@@ -130,6 +142,9 @@ class Crossdev(object):
         cmd.extend(CROSSDEV_GO_ARGS)
       if target in TARGET_COMPILER_RT_ENABLED:
         cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
+      if target in TARGET_LLVM_PKGS_ENABLED:
+        for pkg in LLVM_PKGS_TABLE:
+          cmd.extend(LLVM_PKGS_TABLE[pkg])
       cmd.extend(['-t', target_tuple])
       # Catch output of crossdev.
       out = cros_build_lib.RunCommand(cmd, print_cmd=False,
@@ -188,6 +203,8 @@ class Crossdev(object):
           cmd.extend(CROSSDEV_GO_ARGS)
         elif pkg == 'ex_compiler-rt':
           cmd.extend(CROSSDEV_COMPILER_RT_ARGS)
+        elif pkg in LLVM_PKGS_TABLE:
+          cmd.extend(LLVM_PKGS_TABLE[pkg])
         elif pkg in cls.MANUAL_PKGS:
           pass
         else:
@@ -1204,6 +1221,13 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
+  # pylint: disable=global-statement
+  # Disable installing llvm pkgs till binary package is available
+  global TARGET_LLVM_PKGS_ENABLED
+  global TARGET_COMPILER_RT_ENABLED
+  if options.usepkg:
+    TARGET_LLVM_PKGS_ENABLED = ()
+    TARGET_COMPILER_RT_ENABLED = ('armv7a-cros-linux-gnueabi',)
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
