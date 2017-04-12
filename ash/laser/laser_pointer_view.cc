@@ -438,7 +438,8 @@ void LaserPointerView::UpdateTime() {
 
 void LaserPointerView::DidReceiveCompositorFrameAck(
     const cc::ReturnedResourceArray& resources) {
-  ReclaimResources(resources);
+  if (!resources.empty())
+    ReclaimResources(resources);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&LaserPointerView::OnDidDrawSurface,
