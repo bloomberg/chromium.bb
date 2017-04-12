@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_RECENT_CONTENT_H_
 #define COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_RECENT_CONTENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -25,7 +26,7 @@ class ClipboardRecentContent {
   static ClipboardRecentContent* GetInstance();
 
   // Sets the global instance of ClipboardRecentContent singleton.
-  static void SetInstance(ClipboardRecentContent* instance);
+  static void SetInstance(std::unique_ptr<ClipboardRecentContent> new_instance);
 
   // Returns true if the clipboard contains a recent URL that is appropriate to
   // be suggested and has not been supressed, and copies it in |url|.

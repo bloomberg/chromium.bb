@@ -21,7 +21,6 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 
 class AutocompleteControllerDelegate;
-class ClipboardRecentContent;
 class HistoryURLProvider;
 class KeywordProvider;
 class SearchProvider;
@@ -208,9 +207,6 @@ class AutocompleteController : public AutocompleteProviderListener {
   SearchProvider* search_provider_;
 
   ZeroSuggestProvider* zero_suggest_provider_;
-
-  // Used to build the ClipboardURLProvider.
-  std::unique_ptr<ClipboardRecentContent> clipboard_recent_content_;
 
   // Input passed to Start.
   AutocompleteInput input_;

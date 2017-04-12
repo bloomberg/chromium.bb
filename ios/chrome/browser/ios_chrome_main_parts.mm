@@ -151,8 +151,7 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
       kDummyExtensionScheme);
 
   // Ensure ClipboadRecentContentIOS is created.
-  ClipboardRecentContent::SetInstance(
-      CreateClipboardRecentContentIOS().release());
+  ClipboardRecentContent::SetInstance(CreateClipboardRecentContentIOS());
 
   // Ensure that the browser state is initialized.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();

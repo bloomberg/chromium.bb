@@ -24,7 +24,6 @@ const char* kAuthorizedSchemes[] = {
 ClipboardRecentContent::ClipboardRecentContent() {}
 
 ClipboardRecentContent::~ClipboardRecentContent() {
-  g_clipboard_recent_content = nullptr;
 }
 
 // static
@@ -33,8 +32,10 @@ ClipboardRecentContent* ClipboardRecentContent::GetInstance() {
 }
 
 // static
-void ClipboardRecentContent::SetInstance(ClipboardRecentContent* instance) {
-  g_clipboard_recent_content = instance;
+void ClipboardRecentContent::SetInstance(
+    std::unique_ptr<ClipboardRecentContent> new_instance) {
+  delete g_clipboard_recent_content;
+  g_clipboard_recent_content = new_instance.release();
 }
 
 // static

@@ -32,13 +32,14 @@
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
-#if !defined(OS_IOS)
-#include "components/open_from_clipboard/clipboard_recent_content_generic.h"
-#endif
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_IOS)
+#include "components/open_from_clipboard/clipboard_recent_content_generic.h"
+#endif
 
 namespace {
 
@@ -241,9 +242,8 @@ AutocompleteController::AutocompleteController(
     // iOS doesn't want/need to link in the implementation and the libraries
     // that would come with it.
     if (!ClipboardRecentContent::GetInstance()) {
-      clipboard_recent_content_ =
-          base::MakeUnique<ClipboardRecentContentGeneric>();
-      ClipboardRecentContent::SetInstance(clipboard_recent_content_.get());
+      ClipboardRecentContent::SetInstance(
+          base::MakeUnique<ClipboardRecentContentGeneric>());
     }
 #endif
     // ClipboardRecentContent can be null in iOS tests.  For non-iOS, we
