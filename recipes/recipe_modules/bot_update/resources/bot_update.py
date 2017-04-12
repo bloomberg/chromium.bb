@@ -44,6 +44,7 @@ CHROMIUM_GIT_HOST = 'https://chromium.googlesource.com'
 CHROMIUM_SRC_URL = CHROMIUM_GIT_HOST + '/chromium/src.git'
 
 BRANCH_HEADS_REFSPEC = '+refs/branch-heads/*'
+TAGS_REFSPEC = '+refs/tags/*'
 
 # Regular expression that matches a single commit footer line.
 COMMIT_FOOTER_ENTRY_RE = re.compile(r'([^:]+):\s+(.+)')
@@ -339,7 +340,8 @@ def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
         solutions, target_os, target_os_only, git_cache_dir))
 
 
-def gclient_sync(with_branch_heads, shallow, revisions, break_repo_locks):
+def gclient_sync(
+    with_branch_heads, with_tags, shallow, revisions, break_repo_locks):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -349,6 +351,8 @@ def gclient_sync(with_branch_heads, shallow, revisions, break_repo_locks):
          '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
     args += ['--with_branch_heads']
+  if with_tags:
+    args += ['--with_tags']
   if shallow:
     args += ['--shallow']
   if break_repo_locks:
@@ -815,8 +819,12 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
   # src, which contains the branch-head refspecs, is DEPSed in.
-  gclient_output = gclient_sync(BRANCH_HEADS_REFSPEC in refs, shallow,
-                                gc_revisions, break_repo_locks)
+  gclient_output = gclient_sync(
+      BRANCH_HEADS_REFSPEC in refs,
+      TAGS_REFSPEC in refs,
+      shallow,
+      gc_revisions,
+      break_repo_locks)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -937,6 +945,9 @@ def parse_args():
   parse.add_option('--with_branch_heads', action='store_true',
                     help='Always pass --with_branch_heads to gclient.  This '
                           'does the same thing as --refs +refs/branch-heads/*')
+  parse.add_option('--with_tags', action='store_true',
+                    help='Always pass --with_tags to gclient.  This '
+                          'does the same thing as --refs +refs/tags/*')
   parse.add_option('--git-cache-dir', help='Path to git cache directory.')
 
 
@@ -951,6 +962,10 @@ def parse_args():
   if options.with_branch_heads:
     options.refs.append(BRANCH_HEADS_REFSPEC)
     del options.with_branch_heads
+
+  if options.with_tags:
+    options.refs.append(TAGS_REFSPEC)
+    del options.with_tags
 
   try:
     if not options.revision_mapping_file:
