@@ -74,7 +74,6 @@ void CompositorFrameSinkSupport::ReturnResources(
     const ReturnedResourceArray& resources) {
   if (resources.empty())
     return;
-
   if (!ack_pending_count_ && client_) {
     client_->ReclaimResources(resources);
     return;

@@ -523,6 +523,8 @@ cc_static_library("test_support") {
     "test/fake_compositor_frame_sink.h",
     "test/fake_compositor_frame_sink_client.cc",
     "test/fake_compositor_frame_sink_client.h",
+    "test/fake_compositor_frame_sink_support_client.cc",
+    "test/fake_compositor_frame_sink_support_client.h",
     "test/fake_content_layer_client.cc",
     "test/fake_content_layer_client.h",
     "test/fake_external_begin_frame_source.cc",

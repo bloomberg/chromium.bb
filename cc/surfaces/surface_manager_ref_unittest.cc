@@ -8,9 +8,8 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,12 +28,6 @@ constexpr FrameSinkId kFrameSink1(1, 0);
 constexpr FrameSinkId kFrameSink2(2, 0);
 constexpr FrameSinkId kFrameSink3(3, 0);
 
-class StubSurfaceFactoryClient : public SurfaceFactoryClient {
- public:
-  void ReturnResources(const ReturnedResourceArray& resources) override {}
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
-};
-
 }  // namespace
 
 // Tests for reference tracking in SurfaceManager.
@@ -43,27 +36,38 @@ class SurfaceManagerRefTest : public testing::Test {
   SurfaceManager& manager() { return *manager_; }
 
   // Creates a new Surface with the provided |frame_sink_id| and |local_id|.
-  // Will first create a SurfaceFactory for |frame_sink_id| if necessary.
+  // Will first create a Surfacesupport for |frame_sink_id| if necessary.
   SurfaceId CreateSurface(const FrameSinkId& frame_sink_id, uint32_t local_id) {
     LocalSurfaceId local_surface_id(local_id,
                                     base::UnguessableToken::Deserialize(0, 1u));
-    GetFactory(frame_sink_id)
-        .SubmitCompositorFrame(local_surface_id, CompositorFrame(),
-                               SurfaceFactory::DrawCallback());
+    GetCompositorFrameSinkSupport(frame_sink_id)
+        .SubmitCompositorFrame(local_surface_id, CompositorFrame());
     return SurfaceId(frame_sink_id, local_surface_id);
   }
 
   // Destroy Surface with |surface_id|.
   void DestroySurface(const SurfaceId& surface_id) {
-    GetFactory(surface_id.frame_sink_id()).EvictSurface();
+    GetCompositorFrameSinkSupport(surface_id.frame_sink_id()).EvictFrame();
   }
 
-  SurfaceFactory& GetFactory(const FrameSinkId& frame_sink_id) {
-    auto& factory_ptr = factories_[frame_sink_id];
-    if (!factory_ptr)
-      factory_ptr = base::MakeUnique<SurfaceFactory>(frame_sink_id,
-                                                     manager_.get(), &client_);
-    return *factory_ptr;
+  CompositorFrameSinkSupport& GetCompositorFrameSinkSupport(
+      const FrameSinkId& frame_sink_id) {
+    auto& support_ptr = supports_[frame_sink_id];
+    if (!support_ptr) {
+      constexpr bool is_root = false;
+      constexpr bool handles_frame_sink_id_invalidation = true;
+      constexpr bool needs_sync_points = true;
+      support_ptr = CompositorFrameSinkSupport::Create(
+          nullptr, manager_.get(), frame_sink_id, is_root,
+          handles_frame_sink_id_invalidation, needs_sync_points);
+    }
+    return *support_ptr;
+  }
+
+  void DestroyCompositorFrameSinkSupport(const FrameSinkId& frame_sink_id) {
+    auto support_ptr = supports_.find(frame_sink_id);
+    ASSERT_NE(support_ptr, supports_.end());
+    supports_.erase(support_ptr);
   }
 
   void RemoveSurfaceReference(const SurfaceId& parent_id,
@@ -105,18 +109,17 @@ class SurfaceManagerRefTest : public testing::Test {
         SurfaceManager::LifetimeType::REFERENCES);
   }
   void TearDown() override {
-    for (auto& factory : factories_)
-      factory.second->EvictSurface();
-    factories_.clear();
+    for (auto& support : supports_)
+      support.second->EvictFrame();
+    supports_.clear();
     manager_.reset();
   }
 
   std::unordered_map<FrameSinkId,
-                     std::unique_ptr<SurfaceFactory>,
+                     std::unique_ptr<CompositorFrameSinkSupport>,
                      FrameSinkIdHash>
-      factories_;
+      supports_;
   std::unique_ptr<SurfaceManager> manager_;
-  StubSurfaceFactoryClient client_;
 };
 
 TEST_F(SurfaceManagerRefTest, AddReference) {
@@ -464,7 +467,7 @@ TEST_F(SurfaceManagerRefTest, InvalidateHasNoEffectOnSurfaceReferences) {
 
   // When |kFrameSink1| is invalidated it shouldn't change the surface
   // references.
-  manager().InvalidateFrameSinkId(kFrameSink1);
+  DestroyCompositorFrameSinkSupport(kFrameSink1);
   ASSERT_THAT(GetReferencesFor(id1), UnorderedElementsAre(parent_id));
 }
 
@@ -499,7 +502,7 @@ TEST_F(SurfaceManagerRefTest, TempReferencesWithClientCrash) {
   // If the parent client crashes then the CompositorFrameSink connection will
   // be closed and the FrameSinkId invalidated. The temporary reference
   // |kFrameSink1| owns to |id2a| will be removed.
-  manager().InvalidateFrameSinkId(kFrameSink1);
+  DestroyCompositorFrameSinkSupport(kFrameSink1);
   ASSERT_THAT(GetAllTempReferences(), UnorderedElementsAre(id1b));
 
   // If the parent has crashed then the window server will have already removed

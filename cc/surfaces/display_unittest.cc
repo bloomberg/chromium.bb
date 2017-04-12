@@ -14,13 +14,12 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
@@ -35,22 +34,6 @@ namespace cc {
 namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
-
-class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
- public:
-  FakeSurfaceFactoryClient() : begin_frame_source_(nullptr) {}
-
-  void ReturnResources(const ReturnedResourceArray& resources) override {}
-
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
-    begin_frame_source_ = begin_frame_source;
-  }
-
-  BeginFrameSource* begin_frame_source() { return begin_frame_source_; }
-
- private:
-  BeginFrameSource* begin_frame_source_;
-};
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
@@ -99,15 +82,16 @@ class TestDisplayScheduler : public DisplayScheduler {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : factory_(kArbitraryFrameSinkId, &manager_, &surface_factory_client_),
-        task_runner_(new base::NullTaskRunner) {
-    manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
-  }
+      : support_(CompositorFrameSinkSupport::Create(
+            nullptr,
+            &manager_,
+            kArbitraryFrameSinkId,
+            true /* is_root */,
+            true /* handles_frame_sink_id_invalidation */,
+            true /* needs_sync_points */)),
+        task_runner_(new base::NullTaskRunner) {}
 
-  ~DisplayTest() override {
-    manager_.InvalidateFrameSinkId(kArbitraryFrameSinkId);
-    factory_.EvictSurface();
-  }
+  ~DisplayTest() override { support_->EvictFrame(); }
 
   void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<TestWebGraphicsContext3D> context) {
@@ -144,13 +128,11 @@ class DisplayTest : public testing::Test {
     CompositorFrame frame;
     pass_list->swap(frame.render_pass_list);
 
-    factory_.SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                   SurfaceFactory::DrawCallback());
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
   SurfaceManager manager_;
-  FakeSurfaceFactoryClient surface_factory_client_;
-  SurfaceFactory factory_;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
   LocalSurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   TestSharedBitmapManager shared_bitmap_manager_;
@@ -352,8 +334,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass_list.swap(frame.render_pass_list);
     frame.metadata.latency_info.push_back(ui::LatencyInfo());
 
-    factory_.SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                   SurfaceFactory::DrawCallback());
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -382,8 +363,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     CompositorFrame frame;
     pass_list.swap(frame.render_pass_list);
 
-    factory_.SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                   SurfaceFactory::DrawCallback());
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);

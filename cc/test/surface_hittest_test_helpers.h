@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "cc/quads/render_pass.h"
-#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_hittest_delegate.h"
 #include "cc/surfaces/surface_id.h"
 #include "ui/gfx/geometry/insets.h"
@@ -24,12 +23,6 @@ namespace cc {
 class CompositorFrame;
 
 namespace test {
-
-class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
- public:
-  void ReturnResources(const ReturnedResourceArray& resources) override {}
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
-};
 
 void CreateSharedQuadState(RenderPass* pass,
                            const gfx::Transform& transform,
