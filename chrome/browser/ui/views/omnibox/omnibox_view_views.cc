@@ -705,6 +705,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TEXT_FIELD;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
   node_data->SetValue(GetText());
+  node_data->html_attributes.push_back(std::make_pair("type", "url"));
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;

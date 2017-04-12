@@ -62,6 +62,7 @@ cvox.BrailleBackground = function(opt_displayManagerForTest,
   /** @private {boolean} */
   this.frozen_ = false;
 };
+goog.addSingletonGetter(cvox.BrailleBackground);
 
 
 /** @override */

@@ -266,7 +266,8 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       var sel = node.options[selIndex];
       localStorage['brailleTable'] = sel.id;
       localStorage[node.id] = sel.id;
-      cvox.OptionsPage.getBrailleTranslatorManager().refresh();
+      cvox.OptionsPage.getBrailleTranslatorManager().refresh(
+          localStorage['brailleTable']);
     };
   };
 
@@ -297,7 +298,8 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       tableTypeButton.textContent =
           Msgs.getMsg('options_braille_table_type_8');
     }
-    cvox.OptionsPage.getBrailleTranslatorManager().refresh();
+    cvox.OptionsPage.getBrailleTranslatorManager().refresh(
+        localStorage['brailleTable']);
   };
   updateTableType(false);
 

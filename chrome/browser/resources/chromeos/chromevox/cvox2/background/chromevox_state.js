@@ -10,8 +10,10 @@
 
 goog.provide('ChromeVoxMode');
 goog.provide('ChromeVoxState');
+goog.provide('ChromeVoxStateObserver');
 
 goog.require('cursors.Cursor');
+goog.require('cursors.Range');
 
 /**
  * All possible modes ChromeVox can run.
@@ -22,6 +24,20 @@ ChromeVoxMode = {
   CLASSIC_COMPAT: 'classic_compat',
   NEXT: 'next',
   FORCE_NEXT: 'force_next'
+};
+
+/**
+ * An interface implemented by objects that want to observe ChromeVox state
+ * changes.
+ * @interface
+ */
+ChromeVoxStateObserver = function() {};
+
+ChromeVoxStateObserver.prototype = {
+  /**
+   * @param {cursors.Range} range The new range.
+   */
+  onCurrentRangeChanged: function(range) {}
 };
 
 /**
@@ -80,5 +96,15 @@ ChromeVoxState.prototype = {
   /**
    * @param {cursors.Range} newRange The new range.
    */
-  setCurrentRange: goog.abstractMethod,
+  setCurrentRange: goog.abstractMethod
+};
+
+/** @type {!Array<ChromeVoxStateObserver>} */
+ChromeVoxState.observers = [];
+
+/**
+ * @param {ChromeVoxStateObserver} observer
+ */
+ChromeVoxState.addObserver = function(observer) {
+  this.observers.push(observer);
 };

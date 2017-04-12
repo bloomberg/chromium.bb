@@ -15,6 +15,7 @@ goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
+goog.require('cvox.BrailleBackground');
 goog.require('cvox.ChromeVoxEditableTextBase');
 
 goog.scope(function() {
@@ -218,5 +219,36 @@ editing.TextEditHandler.createForNode = function(node) {
 
   return null;
 };
+
+/**
+ * An observer that reacts to ChromeVox range changes that modifies braille
+ * table output when over email or url text fields.
+ * @constructor
+ * @implements {ChromeVoxStateObserver}
+ */
+editing.EditingChromeVoxStateObserver = function() {
+  ChromeVoxState.addObserver(this);
+};
+
+editing.EditingChromeVoxStateObserver.prototype = {
+  __proto__: ChromeVoxStateObserver,
+
+  /** @override */
+  onCurrentRangeChanged: function(range) {
+    var inputType = range && range.start.node.inputType;
+    if (inputType == 'email' || inputType == 'url') {
+      cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+          localStorage['brailleTable8']);
+      return;
+    }
+    cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+        localStorage['brailleTable']);
+  }
+};
+
+/**
+ * @private {ChromeVoxStateObserver}
+ */
+editing.observer_ = new editing.EditingChromeVoxStateObserver();
 
 });

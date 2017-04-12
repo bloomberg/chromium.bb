@@ -303,7 +303,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
       // space for the cursor in edit fields.
       var expectedBrailleValues = [
         ' ed',
-        ' @ed',
+        ' @ed 8dot',
         ' pwded',
         ' #ed',
         {string_: '0 min:0 max:0 spnbtn'},

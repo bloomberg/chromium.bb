@@ -1633,8 +1633,8 @@
       <message desc="Describes an &lt;input&gt; element with type=email." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL">
         Edit text, email entry
       </message>
-      <message desc="Shown on a braille display for a text field that accept an email address as input. When translating, keep the @ sign and try to find an abbreviation for 'edit field'. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
-        @ed
+      <message desc="Shown on a braille display for a text field that accept an email address as input. When translating, keep the @ sign and try to find an abbreviation for 'edit field 8 dot' according to local conventions; 8 dot refers to the braille table chosen by the user that includes 8 dots in a braille cell appropriate for writing computer symbols. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
+        @ed 8dot
       </message>
       <message desc="Describes an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE">
         File selection
@@ -1681,8 +1681,8 @@
       <message desc="Describes an &lt;input&gt; element with type=url." name="IDS_CHROMEVOX_INPUT_TYPE_URL">
         Edit text, URL entry
       </message>
-      <message desc="Shown on a braille display to describe a text field for entering a URL. When translating, try to find a contracted form of the translation for 'url edit field' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
-        urled
+      <message desc="Shown on a braille display to describe a text field for entering a URL. When translating, try to find a contracted form of the translation for 'url edit field 8 dot' according to local conventions; 8 dot refers to the braille table chosen by the user that includes 8 dots in a braille cell appropriate for writing computer symbols. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
+        urled 8dot
       </message>
       <message desc="Describes an &lt;input&gt; element with type=week." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK">
         Week of the year control

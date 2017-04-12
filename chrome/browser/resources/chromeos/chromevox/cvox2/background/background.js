@@ -393,6 +393,9 @@ Background.prototype = {
       return;
 
     this.currentRange_ = newRange;
+    ChromeVoxState.observers.forEach(function(observer) {
+      observer.onCurrentRangeChanged(newRange);
+    });
     var oldMode = this.mode_;
     var newMode = this.getMode();
     if (oldMode != newMode) {

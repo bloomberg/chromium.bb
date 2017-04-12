@@ -154,7 +154,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
    * @type {cvox.BrailleBackground}
    * @private
    */
-  this.backgroundBraille_ = new cvox.BrailleBackground();
+  this.backgroundBraille_ = cvox.BrailleBackground.getInstance();
 
   this.tabsApiHandler_ = new cvox.TabsApiHandler();
 
