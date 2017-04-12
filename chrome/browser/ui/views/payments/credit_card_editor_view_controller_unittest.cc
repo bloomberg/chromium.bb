@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -28,7 +29,9 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJanuary) {
   test_clock.SetNow(kJanuary2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr, nullptr, nullptr));
+      new CreditCardEditorViewController(
+          nullptr, nullptr, nullptr, base::OnceClosure(),
+          base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(autofill::CREDIT_CARD_EXP_MONTH);
@@ -57,7 +60,9 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJune) {
   test_clock.SetNow(kJune2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr, nullptr, nullptr));
+      new CreditCardEditorViewController(
+          nullptr, nullptr, nullptr, base::OnceClosure(),
+          base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(autofill::CREDIT_CARD_EXP_MONTH);
@@ -85,7 +90,9 @@ TEST(CreditCardEditorViewControllerTest, ExpirationYear_From2017) {
   test_clock.SetNow(kJune2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr, nullptr, nullptr));
+      new CreditCardEditorViewController(
+          nullptr, nullptr, nullptr, base::OnceClosure(),
+          base::OnceCallback<void(const autofill::CreditCard&)>(), nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(

@@ -49,6 +49,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
 
   InvokePaymentRequestUI();
 
+  // No instruments are available.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(0U, request->state()->available_instruments().size());
+  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+
   OpenPaymentMethodScreen();
 
   OpenCreditCardEditorScreen();
@@ -82,6 +87,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
   EXPECT_EQ(base::ASCIIToUTF16("1111"), credit_card->LastFourDigits());
   EXPECT_EQ(base::ASCIIToUTF16("Bob Jones"),
             credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+
+  // One instrument is available and selected.
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(request->state()->available_instruments().back().get(),
+            request->state()->selected_instrument());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
@@ -306,6 +316,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
   InvokePaymentRequestUI();
 
+  // One instrument is available, but it's not selected.
+  PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(nullptr, request->state()->selected_instrument());
+
   OpenPaymentMethodScreen();
 
   ResetEventObserver(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -349,6 +364,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
   EXPECT_EQ(base::ASCIIToUTF16("4111111111111111"), credit_card->number());
   EXPECT_EQ(base::ASCIIToUTF16("Test User"),
             credit_card->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+
+  // Still have one instrument, but now it's selected.
+  EXPECT_EQ(1U, request->state()->available_instruments().size());
+  EXPECT_EQ(request->state()->available_instruments().back().get(),
+            request->state()->selected_instrument());
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {

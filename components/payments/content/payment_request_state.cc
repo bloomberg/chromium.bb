@@ -75,6 +75,27 @@ void PaymentRequestState::GeneratePaymentResponse() {
       selected_contact_profile_, this);
 }
 
+void PaymentRequestState::AddAutofillPaymentInstrument(
+    bool selected,
+    const autofill::CreditCard& card) {
+  std::string basic_card_network =
+      autofill::data_util::GetPaymentRequestData(card.type())
+          .basic_card_payment_type;
+  if (!spec_->supported_card_networks_set().count(basic_card_network))
+    return;
+
+  // AutofillPaymentInstrument makes a copy of |card| so it is effectively
+  // owned by this object.
+  std::unique_ptr<PaymentInstrument> instrument =
+      base::MakeUnique<AutofillPaymentInstrument>(
+          basic_card_network, card, shipping_profiles_, app_locale_,
+          payment_request_delegate_);
+  available_instruments_.push_back(std::move(instrument));
+
+  if (selected)
+    SetSelectedInstrument(available_instruments_.back().get());
+}
+
 void PaymentRequestState::SetSelectedShippingOption(
     const std::string& shipping_option_id) {
   // This will inform the merchant and will lead to them calling updateWith with
@@ -140,23 +161,8 @@ void PaymentRequestState::PopulateProfileCache() {
   // Create the list of available instruments.
   const std::vector<autofill::CreditCard*>& cards =
       personal_data_manager_->GetCreditCardsToSuggest();
-  const std::set<std::string>& supported_card_networks =
-      spec_->supported_card_networks_set();
-  for (autofill::CreditCard* card : cards) {
-    std::string basic_card_network =
-        autofill::data_util::GetPaymentRequestData(card->type())
-            .basic_card_payment_type;
-    if (!supported_card_networks.count(basic_card_network))
-      continue;
-
-    // Copy the credit cards as part of AutofillPaymentInstrument so they are
-    // indirectly owned by this object.
-    std::unique_ptr<PaymentInstrument> instrument =
-        base::MakeUnique<AutofillPaymentInstrument>(
-            basic_card_network, *card, shipping_profiles_, app_locale_,
-            payment_request_delegate_);
-    available_instruments_.push_back(std::move(instrument));
-  }
+  for (autofill::CreditCard* card : cards)
+    AddAutofillPaymentInstrument(/*selected=*/false, *card);
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {

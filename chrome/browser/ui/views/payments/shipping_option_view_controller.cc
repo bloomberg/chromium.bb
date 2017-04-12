@@ -66,6 +66,7 @@ ShippingOptionViewController::ShippingOptionViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog) {
+  spec->AddObserver(this);
   for (const auto& option : spec->details().shipping_options) {
     shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(
         option.get(), spec, state, &shipping_option_list_, dialog,
@@ -73,7 +74,9 @@ ShippingOptionViewController::ShippingOptionViewController(
   }
 }
 
-ShippingOptionViewController::~ShippingOptionViewController() {}
+ShippingOptionViewController::~ShippingOptionViewController() {
+  spec()->RemoveObserver(this);
+}
 
 void ShippingOptionViewController::OnSpecUpdated() {
   UpdateContentView();

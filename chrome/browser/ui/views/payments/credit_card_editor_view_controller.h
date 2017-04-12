@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
@@ -32,10 +33,13 @@ class CreditCardEditorViewController : public EditorViewController {
   // Additionally, |credit_card| could be nullptr if we are adding a card. Else,
   // it's a valid pointer to a card that needs to be updated, and which will
   // outlive this controller.
-  CreditCardEditorViewController(PaymentRequestSpec* spec,
-                                 PaymentRequestState* state,
-                                 PaymentRequestDialogView* dialog,
-                                 autofill::CreditCard* credit_card);
+  CreditCardEditorViewController(
+      PaymentRequestSpec* spec,
+      PaymentRequestState* state,
+      PaymentRequestDialogView* dialog,
+      base::OnceClosure on_edited,
+      base::OnceCallback<void(const autofill::CreditCard&)> on_added,
+      autofill::CreditCard* credit_card);
   ~CreditCardEditorViewController() override;
 
   // EditorViewController:
@@ -81,6 +85,12 @@ class CreditCardEditorViewController : public EditorViewController {
 
     DISALLOW_COPY_AND_ASSIGN(CreditCardValidationDelegate);
   };
+
+  // Called when |credit_card_to_edit_| was successfully edited.
+  base::OnceClosure on_edited_;
+  // Called when a new card was added. The const reference is short-lived, and
+  // the callee should make a copy.
+  base::OnceCallback<void(const autofill::CreditCard&)> on_added_;
 
   // If non-nullptr, a pointer to an object to be edited. Must outlive this
   // controller.

@@ -8,6 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -44,7 +47,7 @@ enum class PaymentMethodViewControllerTags : int {
 
 class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
  public:
-  // Does not take ownership of |instrument|, which  should not be null and
+  // Does not take ownership of |instrument|, which should not be null and
   // should outlive this object. |list| is the PaymentRequestItemList object
   // that will own this.
   PaymentMethodListItem(PaymentInstrument* instrument,
@@ -103,7 +106,13 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   void PerformSelectionFallback() override {
     switch (instrument_->type()) {
       case PaymentInstrument::Type::AUTOFILL:
+        // Since we are a list item, we only care about the on_edited callback.
         dialog_->ShowCreditCardEditor(
+            /*on_edited=*/base::BindOnce(
+                &PaymentRequestState::SetSelectedInstrument,
+                base::Unretained(state()), instrument_),
+            /*on_added=*/
+            base::OnceCallback<void(const autofill::CreditCard&)>(),
             static_cast<AutofillPaymentInstrument*>(instrument_)
                 ->credit_card());
         return;
@@ -126,7 +135,6 @@ PaymentMethodViewController::PaymentMethodViewController(
     : PaymentRequestSheetController(spec, state, dialog) {
   const std::vector<std::unique_ptr<PaymentInstrument>>& available_instruments =
       state->available_instruments();
-
   for (const std::unique_ptr<PaymentInstrument>& instrument :
        available_instruments) {
     std::unique_ptr<PaymentMethodListItem> item =
@@ -176,7 +184,13 @@ void PaymentMethodViewController::ButtonPressed(views::Button* sender,
   switch (sender->tag()) {
     case static_cast<int>(
         PaymentMethodViewControllerTags::ADD_CREDIT_CARD_BUTTON):
-      dialog()->ShowCreditCardEditor();
+      // Only provide the |on_added| callback, in response to this button.
+      dialog()->ShowCreditCardEditor(
+          /*on_edited=*/base::OnceClosure(),
+          /*on_added=*/
+          base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
+                         base::Unretained(state()), /*selected=*/true),
+          /*credit_card=*/nullptr);
       break;
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);

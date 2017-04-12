@@ -15,6 +15,7 @@
 
 namespace autofill {
 class AutofillProfile;
+class CreditCard;
 class PersonalDataManager;
 }  // namespace autofill
 
@@ -108,6 +109,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
   available_instruments() {
     return available_instruments_;
   }
+
+  // Creates and adds an AutofillPaymentInstrument, which makes a copy of
+  // |card|. |selected| indicates if the newly-created instrument should be
+  // selected, after which observers will be notified.
+  void AddAutofillPaymentInstrument(bool selected,
+                                    const autofill::CreditCard& card);
 
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.

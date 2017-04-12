@@ -220,11 +220,14 @@ void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
 }
 
 void PaymentRequestDialogView::ShowCreditCardEditor(
+    base::OnceClosure on_edited,
+    base::OnceCallback<void(const autofill::CreditCard&)> on_added,
     autofill::CreditCard* credit_card) {
   view_stack_->Push(
       CreateViewAndInstallController(
           base::MakeUnique<CreditCardEditorViewController>(
-              request_->spec(), request_->state(), this, credit_card),
+              request_->spec(), request_->state(), this, std::move(on_edited),
+              std::move(on_added), credit_card),
           &controller_map_),
       /* animate = */ true);
   if (observer_for_testing_)

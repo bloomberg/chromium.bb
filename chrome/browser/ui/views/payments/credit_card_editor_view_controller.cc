@@ -83,8 +83,12 @@ CreditCardEditorViewController::CreditCardEditorViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
+    base::OnceClosure on_edited,
+    base::OnceCallback<void(const autofill::CreditCard&)> on_added,
     autofill::CreditCard* credit_card)
     : EditorViewController(spec, state, dialog),
+      on_edited_(std::move(on_edited)),
+      on_added_(std::move(on_added)),
       credit_card_to_edit_(credit_card) {}
 
 CreditCardEditorViewController::~CreditCardEditorViewController() {}
@@ -207,6 +211,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
   if (!credit_card_to_edit_) {
     // Add the card (will not add a duplicate).
     state()->GetPersonalDataManager()->AddCreditCard(credit_card);
+    std::move(on_added_).Run(credit_card);
   } else {
     // We were in edit mode. Copy the data from the temporary object to retain
     // the edited object's other properties (use count, use date, guid, etc.).
@@ -225,6 +230,7 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
           locale);
     }
     state()->GetPersonalDataManager()->UpdateCreditCard(*credit_card_to_edit_);
+    std::move(on_edited_).Run();
   }
 
   return true;

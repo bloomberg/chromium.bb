@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/payments/content/payment_request_dialog.h"
@@ -99,7 +100,13 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowPaymentMethodSheet();
   void ShowShippingOptionSheet();
   // |credit_card| is the card to be edited, or nullptr for adding a card.
-  void ShowCreditCardEditor(autofill::CreditCard* credit_card = nullptr);
+  // |on_edited| is called when |credit_card| was successfully edited, and
+  // |on_added| is called when a new credit card was added (the reference is
+  // short-lived; callee should make a copy of the CreditCard object).
+  void ShowCreditCardEditor(
+      base::OnceClosure on_edited,
+      base::OnceCallback<void(const autofill::CreditCard&)> on_added,
+      autofill::CreditCard* credit_card = nullptr);
   // |profile| is the address to be edited, or nullptr for adding an address.
   void ShowShippingAddressEditor(autofill::AutofillProfile* profile = nullptr);
   void EditorViewUpdated();
