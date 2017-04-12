@@ -69,6 +69,8 @@ class ExternalLoader : public base::RefCountedThreadSafe<ExternalLoader> {
   // this task should invoke |LoadFinished| with a PostTask. This scheme of
   // posting tasks will avoid concurrent access and imply the necessary memory
   // barriers.
+  // TODO(lazyboy): To avoid |prefs_| getting unexpectedly overwritten before it
+  // is consumed, consider passing the prefs directly in LoadFinished().
   std::unique_ptr<base::DictionaryValue> prefs_;
 
  private:

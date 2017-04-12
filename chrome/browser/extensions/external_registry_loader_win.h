@@ -21,12 +21,15 @@ class ExternalRegistryLoader : public ExternalLoader {
 
   void StartLoading() override;
 
+  // Overridden to mock registry reading in unit tests.
+  virtual std::unique_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
+
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  std::unique_ptr<base::DictionaryValue> LoadPrefsOnFileThread();
   void LoadOnFileThread();
-  void CompleteLoadAndStartWatchingRegistry();
+  void CompleteLoadAndStartWatchingRegistry(
+      std::unique_ptr<base::DictionaryValue> prefs);
   void UpdatePrefsOnFileThread();
   void OnRegistryKeyChanged(base::win::RegKey* key);
 
