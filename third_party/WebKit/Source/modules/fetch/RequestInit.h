@@ -33,6 +33,7 @@ class RequestInit {
   Referrer referrer;
   String mode;
   String credentials;
+  String cache;
   String redirect;
   String integrity;
   RefPtr<EncodedFormData> attached_credential;

@@ -819,6 +819,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface Request
 [Worker]     attribute @@toStringTag
 [Worker]     getter bodyUsed
+[Worker]     getter cache
 [Worker]     getter credentials
 [Worker]     getter headers
 [Worker]     getter integrity

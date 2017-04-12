@@ -62,6 +62,7 @@ class MODULES_EXPORT Request final : public Body {
   String getReferrerPolicy() const;
   String mode() const;
   String credentials() const;
+  String cache() const;
   String redirect() const;
   String integrity() const;
 

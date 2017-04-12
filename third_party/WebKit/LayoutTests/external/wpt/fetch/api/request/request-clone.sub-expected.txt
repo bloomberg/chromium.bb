@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Check cloning a request assert_equals: Check cache attribute expected (string) "no-cache" but got (undefined) undefined
-PASS Check cloning a request copies the headers 
-Harness: the test ran to completion.
-

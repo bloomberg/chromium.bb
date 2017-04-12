@@ -46,6 +46,9 @@ RequestInit::RequestInit(ExecutionContext* context,
   are_any_members_set |= is_header_set;
 
   are_any_members_set |= DictionaryHelper::Get(options, "mode", mode);
+  if (RuntimeEnabledFeatures::fetchRequestCacheEnabled())
+    are_any_members_set |= DictionaryHelper::Get(options, "cache", cache);
+
   are_any_members_set |= DictionaryHelper::Get(options, "redirect", redirect);
   AtomicString referrer_string;
   bool is_referrer_string_set = DictionaryHelper::GetWithUndefinedCheck(

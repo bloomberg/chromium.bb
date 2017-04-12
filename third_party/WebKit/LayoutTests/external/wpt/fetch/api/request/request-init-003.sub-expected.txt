@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Check request values when initialized from Request assert_equals: Check cache attribute expected (string) "no-cache" but got (undefined) undefined
-FAIL Check request values when initialized from Request and init values assert_equals: Check cache attribute expected (string) "no-cache" but got (undefined) undefined
-FAIL Check request values when initialized from url string assert_equals: Check cache attribute expected (string) "default" but got (undefined) undefined
-FAIL Check request values when initialized from url and init values assert_equals: Check cache attribute expected (string) "no-cache" but got (undefined) undefined
-Harness: the test ran to completion.
-

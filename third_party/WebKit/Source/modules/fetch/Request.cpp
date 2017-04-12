@@ -45,11 +45,10 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetReferrer(original->GetReferrer());
   request->SetMode(original->Mode());
   request->SetCredentials(original->Credentials());
+  request->SetCacheMode(original->CacheMode());
   request->SetAttachedCredential(original->AttachedCredential());
   request->SetRedirect(original->Redirect());
   request->SetIntegrity(original->Integrity());
-  // FIXME: Set cache mode.
-  // TODO(yhirano): Set redirect mode.
   return request;
 }
 
@@ -260,9 +259,20 @@ Request* Request::CreateRequestWithRequestOrString(
       request->SetCredentials(WebURLRequest::kFetchCredentialsModeOmit);
   }
 
-  // TODO(yhirano): Implement the following step:
-  //   "If |init|'s cache member is present, set |request|'s cache mode to
-  //   it."
+  // "If |init|'s cache member is present, set |request|'s cache mode to it."
+  if (init.cache == "default") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeDefault);
+  } else if (init.cache == "no-store") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeNoStore);
+  } else if (init.cache == "reload") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeReload);
+  } else if (init.cache == "no-cache") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeNoCache);
+  } else if (init.cache == "force-cache") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeForceCache);
+  } else if (init.cache == "only-if-cached") {
+    request->SetCacheMode(WebURLRequest::kFetchRequestCacheModeOnlyIfCached);
+  }
 
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
@@ -639,6 +649,26 @@ String Request::credentials() const {
       return "password";
   }
   ASSERT_NOT_REACHED();
+  return "";
+}
+
+String Request::cache() const {
+  // "The cache attribute's getter must return request's cache mode."
+  switch (request_->CacheMode()) {
+    case WebURLRequest::kFetchRequestCacheModeDefault:
+      return "default";
+    case WebURLRequest::kFetchRequestCacheModeNoStore:
+      return "no-store";
+    case WebURLRequest::kFetchRequestCacheModeReload:
+      return "reload";
+    case WebURLRequest::kFetchRequestCacheModeNoCache:
+      return "no-cache";
+    case WebURLRequest::kFetchRequestCacheModeForceCache:
+      return "force-cache";
+    case WebURLRequest::kFetchRequestCacheModeOnlyIfCached:
+      return "only-if-cached";
+  }
+  NOTREACHED();
   return "";
 }
 

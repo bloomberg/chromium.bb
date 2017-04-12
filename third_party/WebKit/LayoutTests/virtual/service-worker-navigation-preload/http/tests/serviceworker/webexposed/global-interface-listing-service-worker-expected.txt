@@ -827,6 +827,7 @@ interface ReadableStream
     method tee
 interface Request
     getter bodyUsed
+    getter cache
     getter credentials
     getter headers
     getter integrity

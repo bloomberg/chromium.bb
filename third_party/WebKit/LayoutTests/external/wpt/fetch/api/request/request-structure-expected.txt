@@ -14,7 +14,7 @@ PASS Check referrer attribute
 PASS Check referrerPolicy attribute 
 PASS Check mode attribute 
 PASS Check credentials attribute 
-FAIL Check cache attribute assert_true: request has cache attribute expected true got false
+PASS Check cache attribute 
 PASS Check redirect attribute 
 PASS Check integrity attribute 
 PASS Check bodyUsed attribute 

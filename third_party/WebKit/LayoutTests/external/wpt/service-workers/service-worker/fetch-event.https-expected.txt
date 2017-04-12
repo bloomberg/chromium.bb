@@ -11,8 +11,8 @@ PASS Service Worker responds to fetch event with POST form
 PASS Multiple calls of respondWith must throw InvalidStateErrors 
 PASS Service Worker event.respondWith must set the used flag 
 PASS Service Worker should expose FetchEvent URL fragments. 
-FAIL Service Worker responds to fetch event with the correct cache types assert_unreached: unexpected rejection: assert_equals: expected "default" but got "" Reached unreachable code
-FAIL Service Worker should intercept EventSource assert_unreached: unexpected rejection: assert_equals: EventSource should bypass the http cache. expected (string) "no-store" but got (undefined) undefined Reached unreachable code
+FAIL Service Worker responds to fetch event with the correct cache types assert_unreached: unexpected rejection: assert_equals: expected "no-cache" but got "default" Reached unreachable code
+FAIL Service Worker should intercept EventSource assert_unreached: unexpected rejection: assert_equals: EventSource should bypass the http cache. expected "no-store" but got "default" Reached unreachable code
 PASS Service Worker responds to fetch event with the correct integrity_metadata 
 Harness: the test ran to completion.
 

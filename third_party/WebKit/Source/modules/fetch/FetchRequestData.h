@@ -66,6 +66,10 @@ class FetchRequestData final
   WebURLRequest::FetchCredentialsMode Credentials() const {
     return credentials_;
   }
+  void SetCacheMode(WebURLRequest::FetchRequestCacheMode cache_mode) {
+    cache_mode_ = cache_mode;
+  }
+  WebURLRequest::FetchRequestCacheMode CacheMode() const { return cache_mode_; }
   void SetRedirect(WebURLRequest::FetchRedirectMode redirect) {
     redirect_ = redirect;
   }
@@ -120,6 +124,10 @@ class FetchRequestData final
   // FIXME: Support m_synchronousFlag;
   WebURLRequest::FetchRequestMode mode_;
   WebURLRequest::FetchCredentialsMode credentials_;
+  // TODO(yiyix): |cache_mode_| is exposed but does not yet affect fetch
+  // behavior. We must transfer the mode to the network layer and service
+  // worker.
+  WebURLRequest::FetchRequestCacheMode cache_mode_;
   WebURLRequest::FetchRedirectMode redirect_;
   // FIXME: Support m_useURLCredentialsFlag;
   // FIXME: Support m_redirectCount;

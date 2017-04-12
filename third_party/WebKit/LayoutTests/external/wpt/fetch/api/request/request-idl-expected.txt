@@ -13,7 +13,7 @@ PASS Request interface: attribute referrer
 PASS Request interface: attribute referrerPolicy 
 PASS Request interface: attribute mode 
 PASS Request interface: attribute credentials 
-FAIL Request interface: attribute cache assert_true: The prototype object must have a property "cache" expected true got false
+PASS Request interface: attribute cache 
 PASS Request interface: attribute redirect 
 PASS Request interface: attribute integrity 
 PASS Request interface: operation clone() 
@@ -35,7 +35,7 @@ PASS Request interface: new Request("") must inherit property "referrer" with th
 PASS Request interface: new Request("") must inherit property "referrerPolicy" with the proper type (6) 
 PASS Request interface: new Request("") must inherit property "mode" with the proper type (7) 
 PASS Request interface: new Request("") must inherit property "credentials" with the proper type (8) 
-FAIL Request interface: new Request("") must inherit property "cache" with the proper type (9) assert_inherits: property "cache" not found in prototype chain
+PASS Request interface: new Request("") must inherit property "cache" with the proper type (9) 
 PASS Request interface: new Request("") must inherit property "redirect" with the proper type (10) 
 PASS Request interface: new Request("") must inherit property "integrity" with the proper type (11) 
 PASS Request interface: new Request("") must inherit property "clone" with the proper type (12) 

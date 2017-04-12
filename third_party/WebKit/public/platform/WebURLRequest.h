@@ -121,6 +121,15 @@ class WebURLRequest {
     kFetchCredentialsModePassword
   };
 
+  enum FetchRequestCacheMode {
+    kFetchRequestCacheModeDefault,
+    kFetchRequestCacheModeNoStore,
+    kFetchRequestCacheModeReload,
+    kFetchRequestCacheModeNoCache,
+    kFetchRequestCacheModeForceCache,
+    kFetchRequestCacheModeOnlyIfCached
+  };
+
   enum FetchRedirectMode {
     kFetchRedirectModeFollow,
     kFetchRedirectModeError,

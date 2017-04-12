@@ -412,6 +412,10 @@
       status: "experimental",
     },
     {
+      name:"FetchRequestCache",
+      status: "experimental",
+    },
+    {
       name: "FileAPIBlobClose",
       status: "experimental",
     },
