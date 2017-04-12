@@ -353,6 +353,16 @@ TEST_F(SiteSettingsHandlerTest, Patterns) {
   invalid.AppendString(bad_pattern);
   handler()->HandleIsPatternValid(&invalid);
   ValidatePattern(false, 2U);
+
+  // The wildcard pattern ('*') is a valid pattern, but not allowed to be
+  // entered in site settings as it changes the default setting.
+  // (crbug.com/709539).
+  base::ListValue invalid_wildcard;
+  std::string bad_pattern_wildcard("*");
+  invalid_wildcard.AppendString(kCallbackId);
+  invalid_wildcard.AppendString(bad_pattern_wildcard);
+  handler()->HandleIsPatternValid(&invalid_wildcard);
+  ValidatePattern(false, 3U);
 }
 
 TEST_F(SiteSettingsHandlerTest, Incognito) {

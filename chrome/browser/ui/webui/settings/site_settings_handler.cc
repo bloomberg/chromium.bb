@@ -596,7 +596,14 @@ void SiteSettingsHandler::HandleIsPatternValid(
 
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString(pattern_string);
-  ResolveJavascriptCallback(*callback_id, base::Value(pattern.IsValid()));
+  bool valid = pattern.IsValid();
+
+  // If the input is just '*' don't allow it, even though it's a valid pattern.
+  // This changes the default setting.
+  if (pattern == ContentSettingsPattern::Wildcard())
+    valid = false;
+
+  ResolveJavascriptCallback(*callback_id, base::Value(valid));
 }
 
 void SiteSettingsHandler::HandleUpdateIncognitoStatus(
