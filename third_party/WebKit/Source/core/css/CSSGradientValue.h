@@ -35,7 +35,6 @@
 namespace blink {
 
 class Color;
-class FloatPoint;
 class Gradient;
 
 enum CSSGradientType {
@@ -73,8 +72,8 @@ struct CSSGradientColorStop {
 
   DECLARE_TRACE();
 
-  Member<CSSPrimitiveValue> offset_;  // percentage | length | angle
-  Member<CSSValue> color_;
+  Member<const CSSPrimitiveValue> offset_;  // percentage | length | angle
+  Member<const CSSValue> color_;
 };
 
 }  // namespace blink
@@ -89,17 +88,12 @@ class CSSGradientValue : public CSSImageGeneratorValue {
  public:
   PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
 
-  void SetFirstX(CSSValue* val) { first_x_ = val; }
-  void SetFirstY(CSSValue* val) { first_y_ = val; }
-  void SetSecondX(CSSValue* val) { second_x_ = val; }
-  void SetSecondY(CSSValue* val) { second_y_ = val; }
-
   void AddStop(const CSSGradientColorStop& stop) {
     stops_.push_back(stop);
     is_cacheable_ = is_cacheable_ && stop.IsCacheable();
   }
 
-  unsigned StopCount() const { return stops_.size(); }
+  size_t StopCount() const { return stops_.size(); }
 
   bool IsRepeating() const { return repeating_; }
 
@@ -134,23 +128,9 @@ class CSSGradientValue : public CSSImageGeneratorValue {
                 const LayoutObject&);
   void AddDeprecatedStops(GradientDesc&, const LayoutObject&);
 
-  // Resolve points/radii to front end values.
-  FloatPoint ComputeEndPoint(CSSValue*,
-                             CSSValue*,
-                             const CSSToLengthConversionData&,
-                             const IntSize&);
-
   void AppendCSSTextForColorStops(StringBuilder&,
                                   bool requires_separator) const;
   void AppendCSSTextForDeprecatedColorStops(StringBuilder&) const;
-
-  // Points. Some of these may be null.
-  Member<CSSValue> first_x_;
-  Member<CSSValue> first_y_;
-
-  // TODO(fmalita): relocate these to subclasses which need them.
-  Member<CSSValue> second_x_;
-  Member<CSSValue> second_y_;
 
   // Stops
   HeapVector<CSSGradientColorStop, 2> stops_;
@@ -164,13 +144,17 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSGradientValue, IsGradientValue());
 
 class CSSLinearGradientValue final : public CSSGradientValue {
  public:
-  static CSSLinearGradientValue* Create(
+  static CSSGradientValue* Create(
+      const CSSValue* first_x,
+      const CSSValue* first_y,
+      const CSSValue* second_x,
+      const CSSValue* second_y,
+      const CSSPrimitiveValue* angle,
       CSSGradientRepeat repeat,
       CSSGradientType gradient_type = kCSSLinearGradient) {
-    return new CSSLinearGradientValue(repeat, gradient_type);
+    return new CSSLinearGradientValue(first_x, first_y, second_x, second_y,
+                                      angle, repeat, gradient_type);
   }
-
-  void SetAngle(CSSPrimitiveValue* val) { angle_ = val; }
 
   String CustomCSSText() const;
 
@@ -184,27 +168,60 @@ class CSSLinearGradientValue final : public CSSGradientValue {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSLinearGradientValue(CSSGradientRepeat repeat,
+  CSSLinearGradientValue(const CSSValue* first_x,
+                         const CSSValue* first_y,
+                         const CSSValue* second_x,
+                         const CSSValue* second_y,
+                         const CSSPrimitiveValue* angle,
+                         CSSGradientRepeat repeat,
                          CSSGradientType gradient_type = kCSSLinearGradient)
-      : CSSGradientValue(kLinearGradientClass, repeat, gradient_type) {}
+      : CSSGradientValue(kLinearGradientClass, repeat, gradient_type),
+        first_x_(first_x),
+        first_y_(first_y),
+        second_x_(second_x),
+        second_y_(second_y),
+        angle_(angle) {}
 
-  Member<CSSPrimitiveValue> angle_;  // may be null.
+  // Any of these may be null.
+  Member<const CSSValue> first_x_;
+  Member<const CSSValue> first_y_;
+  Member<const CSSValue> second_x_;
+  Member<const CSSValue> second_y_;
+  Member<const CSSPrimitiveValue> angle_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSLinearGradientValue, IsLinearGradientValue());
 
 class CSSRadialGradientValue final : public CSSGradientValue {
  public:
-  static CSSRadialGradientValue* Create(
+  static CSSGradientValue* Create(
+      const CSSValue* first_x,
+      const CSSValue* first_y,
+      const CSSPrimitiveValue* first_radius,
+      const CSSValue* second_x,
+      const CSSValue* second_y,
+      const CSSPrimitiveValue* second_radius,
       CSSGradientRepeat repeat,
       CSSGradientType gradient_type = kCSSRadialGradient) {
-    return new CSSRadialGradientValue(repeat, gradient_type);
+    return new CSSRadialGradientValue(first_x, first_y, first_radius, second_x,
+                                      second_y, second_radius, nullptr, nullptr,
+                                      nullptr, nullptr, repeat, gradient_type);
+  }
+
+  static CSSGradientValue* Create(const CSSValue* center_x,
+                                  const CSSValue* center_y,
+                                  const CSSIdentifierValue* shape,
+                                  const CSSIdentifierValue* sizing_behavior,
+                                  const CSSPrimitiveValue* horizontal_size,
+                                  const CSSPrimitiveValue* vertical_size,
+                                  CSSGradientRepeat repeat,
+                                  CSSGradientType gradient_type) {
+    return new CSSRadialGradientValue(
+        center_x, center_y, nullptr, center_x, center_y, nullptr, shape,
+        sizing_behavior, horizontal_size, vertical_size, repeat, gradient_type);
   }
 
   String CustomCSSText() const;
-
-  void SetFirstRadius(CSSPrimitiveValue* val) { first_radius_ = val; }
-  void SetSecondRadius(CSSPrimitiveValue* val) { second_radius_ = val; }
 
   void SetShape(CSSIdentifierValue* val) { shape_ = val; }
   void SetSizingBehavior(CSSIdentifierValue* val) { sizing_behavior_ = val; }
@@ -224,34 +241,58 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSRadialGradientValue(CSSGradientRepeat repeat,
+  CSSRadialGradientValue(const CSSValue* first_x,
+                         const CSSValue* first_y,
+                         const CSSPrimitiveValue* first_radius,
+                         const CSSValue* second_x,
+                         const CSSValue* second_y,
+                         const CSSPrimitiveValue* second_radius,
+                         const CSSIdentifierValue* shape,
+                         const CSSIdentifierValue* sizing_behavior,
+                         const CSSPrimitiveValue* horizontal_size,
+                         const CSSPrimitiveValue* vertical_size,
+                         CSSGradientRepeat repeat,
                          CSSGradientType gradient_type = kCSSRadialGradient)
-      : CSSGradientValue(kRadialGradientClass, repeat, gradient_type) {}
+      : CSSGradientValue(kRadialGradientClass, repeat, gradient_type),
+        first_x_(first_x),
+        first_y_(first_y),
+        second_x_(second_x),
+        second_y_(second_y),
+        first_radius_(first_radius),
+        second_radius_(second_radius),
+        shape_(shape),
+        sizing_behavior_(sizing_behavior),
+        end_horizontal_size_(horizontal_size),
+        end_vertical_size_(vertical_size) {}
 
-  // Resolve points/radii to front end values.
-  float ResolveRadius(CSSPrimitiveValue*,
-                      const CSSToLengthConversionData&,
-                      float* width_or_height = 0);
+  // Any of these may be null.
+  Member<const CSSValue> first_x_;
+  Member<const CSSValue> first_y_;
+  Member<const CSSValue> second_x_;
+  Member<const CSSValue> second_y_;
 
   // These may be null for non-deprecated gradients.
-  Member<CSSPrimitiveValue> first_radius_;
-  Member<CSSPrimitiveValue> second_radius_;
+  Member<const CSSPrimitiveValue> first_radius_;
+  Member<const CSSPrimitiveValue> second_radius_;
 
   // The below are only used for non-deprecated gradients. Any of them may be
   // null.
-  Member<CSSIdentifierValue> shape_;
-  Member<CSSIdentifierValue> sizing_behavior_;
+  Member<const CSSIdentifierValue> shape_;
+  Member<const CSSIdentifierValue> sizing_behavior_;
 
-  Member<CSSPrimitiveValue> end_horizontal_size_;
-  Member<CSSPrimitiveValue> end_vertical_size_;
+  Member<const CSSPrimitiveValue> end_horizontal_size_;
+  Member<const CSSPrimitiveValue> end_vertical_size_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, IsRadialGradientValue());
 
 class CSSConicGradientValue final : public CSSGradientValue {
  public:
-  static CSSConicGradientValue* Create(CSSGradientRepeat repeat) {
-    return new CSSConicGradientValue(repeat);
+  static CSSGradientValue* Create(const CSSValue* x,
+                                  const CSSValue* y,
+                                  const CSSPrimitiveValue* from_angle,
+                                  CSSGradientRepeat repeat) {
+    return new CSSConicGradientValue(x, y, from_angle, repeat);
   }
 
   String CustomCSSText() const;
@@ -261,17 +302,24 @@ class CSSConicGradientValue final : public CSSGradientValue {
                                       const IntSize&,
                                       const LayoutObject&);
 
-  void SetFromAngle(CSSPrimitiveValue* val) { from_angle_ = val; }
-
   bool Equals(const CSSConicGradientValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  CSSConicGradientValue(CSSGradientRepeat repeat)
-      : CSSGradientValue(kConicGradientClass, repeat, kCSSConicGradient) {}
+  CSSConicGradientValue(const CSSValue* x,
+                        const CSSValue* y,
+                        const CSSPrimitiveValue* from_angle,
+                        CSSGradientRepeat repeat)
+      : CSSGradientValue(kConicGradientClass, repeat, kCSSConicGradient),
+        x_(x),
+        y_(y),
+        from_angle_(from_angle) {}
 
-  Member<CSSPrimitiveValue> from_angle_;
+  // Any of these may be null.
+  Member<const CSSValue> x_;
+  Member<const CSSValue> y_;
+  Member<const CSSPrimitiveValue> from_angle_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSConicGradientValue, IsConicGradientValue());

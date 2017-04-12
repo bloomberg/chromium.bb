@@ -771,9 +771,10 @@ static float PositionFromValue(const CSSValue* value,
   return origin + sign * primitive_value->ComputeLength<float>(conversion_data);
 }
 
-FloatPoint CSSGradientValue::ComputeEndPoint(
-    CSSValue* horizontal,
-    CSSValue* vertical,
+// Resolve points/radii to front end values.
+static FloatPoint ComputeEndPoint(
+    const CSSValue* horizontal,
+    const CSSValue* vertical,
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size) {
   FloatPoint result;
@@ -804,10 +805,6 @@ void CSSGradientValue::GetStopColors(Vector<Color>& stop_colors,
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSGradientValue) {
-  visitor->Trace(first_x_);
-  visitor->Trace(first_y_);
-  visitor->Trace(second_x_);
-  visitor->Trace(second_y_);
   visitor->Trace(stops_);
   CSSImageGeneratorValue::TraceAfterDispatch(visitor);
 }
@@ -1068,6 +1065,10 @@ bool CSSLinearGradientValue::Equals(const CSSLinearGradientValue& other) const {
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue) {
+  visitor->Trace(first_x_);
+  visitor->Trace(first_y_);
+  visitor->Trace(second_x_);
+  visitor->Trace(second_y_);
   visitor->Trace(angle_);
   CSSGradientValue::TraceAfterDispatch(visitor);
 }
@@ -1226,10 +1227,12 @@ String CSSRadialGradientValue::CustomCSSText() const {
   return result.ToString();
 }
 
-float CSSRadialGradientValue::ResolveRadius(
-    CSSPrimitiveValue* radius,
-    const CSSToLengthConversionData& conversion_data,
-    float* width_or_height) {
+namespace {
+
+// Resolve points/radii to front end values.
+float ResolveRadius(const CSSPrimitiveValue* radius,
+                    const CSSToLengthConversionData& conversion_data,
+                    float* width_or_height = nullptr) {
   float result = 0;
   if (radius->IsNumber())
     result = radius->GetFloatValue() * conversion_data.Zoom();
@@ -1240,8 +1243,6 @@ float CSSRadialGradientValue::ResolveRadius(
 
   return clampTo<float>(std::max(result, 0.0f));
 }
-
-namespace {
 
 enum EndShapeType { kCircleEndShape, kEllipseEndShape };
 
@@ -1458,6 +1459,10 @@ bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSRadialGradientValue) {
+  visitor->Trace(first_x_);
+  visitor->Trace(first_y_);
+  visitor->Trace(second_x_);
+  visitor->Trace(second_y_);
   visitor->Trace(first_radius_);
   visitor->Trace(second_radius_);
   visitor->Trace(shape_);
@@ -1482,8 +1487,7 @@ String CSSConicGradientValue::CustomCSSText() const {
     wrote_something = true;
   }
 
-  wrote_something |=
-      AppendPosition(result, first_x_, first_y_, wrote_something);
+  wrote_something |= AppendPosition(result, x_, y_, wrote_something);
 
   AppendCSSTextForColorStops(result, wrote_something);
 
@@ -1500,10 +1504,10 @@ PassRefPtr<Gradient> CSSConicGradientValue::CreateGradient(
   const float angle = from_angle_ ? from_angle_->ComputeDegrees() : 0;
 
   const FloatPoint position(
-      first_x_ ? PositionFromValue(first_x_, conversion_data, size, true)
-               : size.Width() / 2,
-      first_y_ ? PositionFromValue(first_y_, conversion_data, size, false)
-               : size.Height() / 2);
+      x_ ? PositionFromValue(x_, conversion_data, size, true)
+         : size.Width() / 2,
+      y_ ? PositionFromValue(y_, conversion_data, size, false)
+         : size.Height() / 2);
 
   GradientDesc desc(position, position,
                     repeating_ ? kSpreadMethodRepeat : kSpreadMethodPad);
@@ -1517,14 +1521,15 @@ PassRefPtr<Gradient> CSSConicGradientValue::CreateGradient(
 }
 
 bool CSSConicGradientValue::Equals(const CSSConicGradientValue& other) const {
-  return repeating_ == other.repeating_ &&
-         DataEquivalent(first_x_, other.first_x_) &&
-         DataEquivalent(first_y_, other.first_y_) &&
+  return repeating_ == other.repeating_ && DataEquivalent(x_, other.x_) &&
+         DataEquivalent(y_, other.y_) &&
          DataEquivalent(from_angle_, other.from_angle_) &&
          stops_ == other.stops_;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSConicGradientValue) {
+  visitor->Trace(x_);
+  visitor->Trace(y_);
   visitor->Trace(from_angle_);
   CSSGradientValue::TraceAfterDispatch(visitor);
 }

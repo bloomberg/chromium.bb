@@ -875,57 +875,58 @@ static bool ConsumeDeprecatedGradientColorStop(CSSParserTokenRange& range,
 
 static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
                                            CSSParserMode css_parser_mode) {
-  CSSGradientValue* result = nullptr;
   CSSValueID id = args.ConsumeIncludingWhitespace().Id();
-  bool is_deprecated_radial_gradient = (id == CSSValueRadial);
-  if (is_deprecated_radial_gradient)
-    result = CSSRadialGradientValue::Create(kNonRepeating,
-                                            kCSSDeprecatedRadialGradient);
-  else if (id == CSSValueLinear)
-    result = CSSLinearGradientValue::Create(kNonRepeating,
-                                            kCSSDeprecatedLinearGradient);
-  if (!result || !ConsumeCommaIncludingWhitespace(args))
+  if (id != CSSValueRadial && id != CSSValueLinear)
     return nullptr;
-
-  CSSPrimitiveValue* point = ConsumeDeprecatedGradientPoint(args, true);
-  if (!point)
-    return nullptr;
-  result->SetFirstX(point);
-  point = ConsumeDeprecatedGradientPoint(args, false);
-  if (!point)
-    return nullptr;
-  result->SetFirstY(point);
 
   if (!ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
+  const CSSPrimitiveValue* first_x = ConsumeDeprecatedGradientPoint(args, true);
+  if (!first_x)
+    return nullptr;
+  const CSSPrimitiveValue* first_y =
+      ConsumeDeprecatedGradientPoint(args, false);
+  if (!first_y)
+    return nullptr;
+  if (!ConsumeCommaIncludingWhitespace(args))
+    return nullptr;
+
   // For radial gradients only, we now expect a numeric radius.
-  if (is_deprecated_radial_gradient) {
-    CSSPrimitiveValue* radius = ConsumeNumber(args, kValueRangeAll);
-    if (!radius || !ConsumeCommaIncludingWhitespace(args))
+  const CSSPrimitiveValue* first_radius = nullptr;
+  if (id == CSSValueRadial) {
+    first_radius = ConsumeNumber(args, kValueRangeAll);
+    if (!first_radius || !ConsumeCommaIncludingWhitespace(args))
       return nullptr;
-    ToCSSRadialGradientValue(result)->SetFirstRadius(radius);
   }
 
-  point = ConsumeDeprecatedGradientPoint(args, true);
-  if (!point)
+  const CSSPrimitiveValue* second_x =
+      ConsumeDeprecatedGradientPoint(args, true);
+  if (!second_x)
     return nullptr;
-  result->SetSecondX(point);
-  point = ConsumeDeprecatedGradientPoint(args, false);
-  if (!point)
+  const CSSPrimitiveValue* second_y =
+      ConsumeDeprecatedGradientPoint(args, false);
+  if (!second_y)
     return nullptr;
-  result->SetSecondY(point);
 
   // For radial gradients only, we now expect the second radius.
-  if (is_deprecated_radial_gradient) {
+  const CSSPrimitiveValue* second_radius = nullptr;
+  if (id == CSSValueRadial) {
     if (!ConsumeCommaIncludingWhitespace(args))
       return nullptr;
-    CSSPrimitiveValue* radius = ConsumeNumber(args, kValueRangeAll);
-    if (!radius)
+    second_radius = ConsumeNumber(args, kValueRangeAll);
+    if (!second_radius)
       return nullptr;
-    ToCSSRadialGradientValue(result)->SetSecondRadius(radius);
   }
 
+  CSSGradientValue* result =
+      (id == CSSValueRadial)
+          ? CSSRadialGradientValue::Create(
+                first_x, first_y, first_radius, second_x, second_y,
+                second_radius, kNonRepeating, kCSSDeprecatedRadialGradient)
+          : CSSLinearGradientValue::Create(first_x, first_y, second_x, second_y,
+                                           nullptr, kNonRepeating,
+                                           kCSSDeprecatedLinearGradient);
   CSSGradientColorStop stop;
   while (ConsumeCommaIncludingWhitespace(args)) {
     if (!ConsumeDeprecatedGradientColorStop(args, stop, css_parser_mode))
@@ -1006,8 +1007,6 @@ static bool ConsumeGradientColorStops(CSSParserTokenRange& range,
 static CSSValue* ConsumeDeprecatedRadialGradient(CSSParserTokenRange& args,
                                                  CSSParserMode css_parser_mode,
                                                  CSSGradientRepeat repeating) {
-  CSSRadialGradientValue* result =
-      CSSRadialGradientValue::Create(repeating, kCSSPrefixedRadialGradient);
   CSSValue* center_x = nullptr;
   CSSValue* center_y = nullptr;
   ConsumeOneOrTwoValuedPosition(args, css_parser_mode, UnitlessQuirk::kForbid,
@@ -1015,56 +1014,48 @@ static CSSValue* ConsumeDeprecatedRadialGradient(CSSParserTokenRange& args,
   if ((center_x || center_y) && !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
 
-  result->SetFirstX(center_x);
-  result->SetSecondX(center_x);
-  result->SetFirstY(center_y);
-  result->SetSecondY(center_y);
-
-  CSSIdentifierValue* shape =
+  const CSSIdentifierValue* shape =
       ConsumeIdent<CSSValueCircle, CSSValueEllipse>(args);
-  CSSIdentifierValue* size_keyword =
+  const CSSIdentifierValue* size_keyword =
       ConsumeIdent<CSSValueClosestSide, CSSValueClosestCorner,
                    CSSValueFarthestSide, CSSValueFarthestCorner,
                    CSSValueContain, CSSValueCover>(args);
   if (!shape)
     shape = ConsumeIdent<CSSValueCircle, CSSValueEllipse>(args);
-  result->SetShape(shape);
-  result->SetSizingBehavior(size_keyword);
 
   // Or, two lengths or percentages
+  const CSSPrimitiveValue* horizontal_size = nullptr;
+  const CSSPrimitiveValue* vertical_size = nullptr;
   if (!shape && !size_keyword) {
-    CSSPrimitiveValue* horizontal_size =
+    horizontal_size =
         ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeAll);
-    CSSPrimitiveValue* vertical_size = nullptr;
     if (horizontal_size) {
       vertical_size =
           ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeAll);
       if (!vertical_size)
         return nullptr;
       ConsumeCommaIncludingWhitespace(args);
-      result->SetEndHorizontalSize(horizontal_size);
-      result->SetEndVerticalSize(vertical_size);
     }
   } else {
     ConsumeCommaIncludingWhitespace(args);
   }
-  if (!ConsumeGradientColorStops(args, css_parser_mode, result,
-                                 ConsumeLengthOrPercent))
-    return nullptr;
 
-  return result;
+  CSSGradientValue* result = CSSRadialGradientValue::Create(
+      center_x, center_y, shape, size_keyword, horizontal_size, vertical_size,
+      repeating, kCSSPrefixedRadialGradient);
+  return ConsumeGradientColorStops(args, css_parser_mode, result,
+                                   ConsumeLengthOrPercent)
+             ? result
+             : nullptr;
 }
 
 static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
                                        CSSParserMode css_parser_mode,
                                        CSSGradientRepeat repeating) {
-  CSSRadialGradientValue* result =
-      CSSRadialGradientValue::Create(repeating, kCSSRadialGradient);
-
-  CSSIdentifierValue* shape = nullptr;
-  CSSIdentifierValue* size_keyword = nullptr;
-  CSSPrimitiveValue* horizontal_size = nullptr;
-  CSSPrimitiveValue* vertical_size = nullptr;
+  const CSSIdentifierValue* shape = nullptr;
+  const CSSIdentifierValue* size_keyword = nullptr;
+  const CSSPrimitiveValue* horizontal_size = nullptr;
+  const CSSPrimitiveValue* vertical_size = nullptr;
 
   // First part of grammar, the size/shape clause:
   // [ circle || <length> ] |
@@ -1109,20 +1100,17 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
     return nullptr;
   // Ellipses must have 0 or 2 length/percentages.
   if (shape && shape->GetValueID() == CSSValueEllipse && horizontal_size &&
-      !vertical_size)
+      !vertical_size) {
     return nullptr;
+  }
   // If there's only one size, it must be a length.
   if (!vertical_size && horizontal_size && horizontal_size->IsPercentage())
     return nullptr;
   if ((horizontal_size &&
        horizontal_size->IsCalculatedPercentageWithLength()) ||
-      (vertical_size && vertical_size->IsCalculatedPercentageWithLength()))
+      (vertical_size && vertical_size->IsCalculatedPercentageWithLength())) {
     return nullptr;
-
-  result->SetShape(shape);
-  result->SetSizingBehavior(size_keyword);
-  result->SetEndHorizontalSize(horizontal_size);
-  result->SetEndVerticalSize(vertical_size);
+  }
 
   CSSValue* center_x = nullptr;
   CSSValue* center_y = nullptr;
@@ -1132,58 +1120,58 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
                     center_y);
     if (!(center_x && center_y))
       return nullptr;
-    result->SetFirstX(center_x);
-    result->SetFirstY(center_y);
     // Right now, CSS radial gradients have the same start and end centers.
-    result->SetSecondX(center_x);
-    result->SetSecondY(center_y);
   }
 
   if ((shape || size_keyword || horizontal_size || center_x || center_y) &&
-      !ConsumeCommaIncludingWhitespace(args))
+      !ConsumeCommaIncludingWhitespace(args)) {
     return nullptr;
-  if (!ConsumeGradientColorStops(args, css_parser_mode, result,
-                                 ConsumeLengthOrPercent))
-    return nullptr;
-  return result;
+  }
+
+  CSSGradientValue* result = CSSRadialGradientValue::Create(
+      center_x, center_y, shape, size_keyword, horizontal_size, vertical_size,
+      repeating, kCSSRadialGradient);
+  return ConsumeGradientColorStops(args, css_parser_mode, result,
+                                   ConsumeLengthOrPercent)
+             ? result
+             : nullptr;
 }
 
 static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
                                        CSSParserMode css_parser_mode,
                                        CSSGradientRepeat repeating,
                                        CSSGradientType gradient_type) {
-  CSSLinearGradientValue* result =
-      CSSLinearGradientValue::Create(repeating, gradient_type);
-
   bool expect_comma = true;
-  CSSPrimitiveValue* angle = ConsumeAngle(args);
-  if (angle) {
-    result->SetAngle(angle);
-  } else if (gradient_type == kCSSPrefixedLinearGradient ||
-             ConsumeIdent<CSSValueTo>(args)) {
-    CSSIdentifierValue* end_x = ConsumeIdent<CSSValueLeft, CSSValueRight>(args);
-    CSSIdentifierValue* end_y = ConsumeIdent<CSSValueBottom, CSSValueTop>(args);
-    if (!end_x && !end_y) {
-      if (gradient_type == kCSSLinearGradient)
-        return nullptr;
-      end_y = CSSIdentifierValue::Create(CSSValueTop);
-      expect_comma = false;
-    } else if (!end_x) {
+  const CSSPrimitiveValue* angle = ConsumeAngle(args);
+  const CSSIdentifierValue* end_x = nullptr;
+  const CSSIdentifierValue* end_y = nullptr;
+  if (!angle) {
+    if (gradient_type == kCSSPrefixedLinearGradient ||
+        ConsumeIdent<CSSValueTo>(args)) {
       end_x = ConsumeIdent<CSSValueLeft, CSSValueRight>(args);
+      end_y = ConsumeIdent<CSSValueBottom, CSSValueTop>(args);
+      if (!end_x && !end_y) {
+        if (gradient_type == kCSSLinearGradient)
+          return nullptr;
+        end_y = CSSIdentifierValue::Create(CSSValueTop);
+        expect_comma = false;
+      } else if (!end_x) {
+        end_x = ConsumeIdent<CSSValueLeft, CSSValueRight>(args);
+      }
+    } else {
+      expect_comma = false;
     }
-
-    result->SetFirstX(end_x);
-    result->SetFirstY(end_y);
-  } else {
-    expect_comma = false;
   }
 
   if (expect_comma && !ConsumeCommaIncludingWhitespace(args))
     return nullptr;
-  if (!ConsumeGradientColorStops(args, css_parser_mode, result,
-                                 ConsumeLengthOrPercent))
-    return nullptr;
-  return result;
+
+  CSSGradientValue* result = CSSLinearGradientValue::Create(
+      end_x, end_y, nullptr, nullptr, angle, repeating, gradient_type);
+  return ConsumeGradientColorStops(args, css_parser_mode, result,
+                                   ConsumeLengthOrPercent)
+             ? result
+             : nullptr;
 }
 
 static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
@@ -1192,14 +1180,10 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   if (!RuntimeEnabledFeatures::conicGradientEnabled())
     return nullptr;
 
-  auto* result = CSSConicGradientValue::Create(repeating);
-
-  CSSPrimitiveValue* from_angle = nullptr;
+  const CSSPrimitiveValue* from_angle = nullptr;
   if (ConsumeIdent<CSSValueFrom>(args)) {
     if (!(from_angle = ConsumeAngle(args)))
       return nullptr;
-
-    result->SetFromAngle(from_angle);
   }
 
   CSSValue* center_x = nullptr;
@@ -1208,9 +1192,6 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
     if (!ConsumePosition(args, css_parser_mode, UnitlessQuirk::kForbid,
                          center_x, center_y))
       return nullptr;
-
-    result->SetFirstX(center_x);
-    result->SetFirstY(center_y);
   }
 
   // Comma separator required when fromAngle or position is present.
@@ -1219,11 +1200,12 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
     return nullptr;
   }
 
-  if (!ConsumeGradientColorStops(args, css_parser_mode, result,
-                                 ConsumeAngleOrPercent))
-    return nullptr;
-
-  return result;
+  CSSGradientValue* result =
+      CSSConicGradientValue::Create(center_x, center_y, from_angle, repeating);
+  return ConsumeGradientColorStops(args, css_parser_mode, result,
+                                   ConsumeAngleOrPercent)
+             ? result
+             : nullptr;
 }
 
 CSSValue* ConsumeImageOrNone(CSSParserTokenRange& range,
