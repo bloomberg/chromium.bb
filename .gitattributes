@@ -2,3 +2,5 @@
 *.vcproj        eol=crlf
 *.vsprops       eol=crlf
 *.vcxproj       eol=crlf
+*.mkv           -text -diff
+*.webm          -text -diff
