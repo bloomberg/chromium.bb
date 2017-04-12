@@ -515,8 +515,8 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
     DCHECK_EQ(image_fence_sync, flushed_fence_sync_release_ + 1);
   }
 
-  DCHECK(gpu::IsGpuMemoryBufferFormatSupported(gpu_memory_buffer->GetFormat(),
-                                               capabilities_));
+  DCHECK(gpu::IsImageFromGpuMemoryBufferFormatSupported(
+      gpu_memory_buffer->GetFormat(), capabilities_));
   DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
       gfx::Size(width, height), gpu_memory_buffer->GetFormat()));
   DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(

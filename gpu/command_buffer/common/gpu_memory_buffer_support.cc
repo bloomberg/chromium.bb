@@ -84,6 +84,7 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::RGBX_8888:
       return internalformat == GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_F16:
       return internalformat == GL_RGBA;
   }
 
@@ -91,8 +92,9 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
   return false;
 }
 
-bool IsGpuMemoryBufferFormatSupported(gfx::BufferFormat format,
-                                      const gpu::Capabilities& capabilities) {
+bool IsImageFromGpuMemoryBufferFormatSupported(
+    gfx::BufferFormat format,
+    const gpu::Capabilities& capabilities) {
   switch (format) {
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
@@ -117,6 +119,8 @@ bool IsGpuMemoryBufferFormatSupported(gfx::BufferFormat format,
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::YVU_420:
       return true;
+    case gfx::BufferFormat::RGBA_F16:
+      return capabilities.texture_half_float_linear;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
       // TODO(dcastagna): Determine ycbcr_420v_image on CrOS at runtime
@@ -150,6 +154,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::RGBA_F16:
       return true;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:

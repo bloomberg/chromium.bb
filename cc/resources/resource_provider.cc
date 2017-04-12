@@ -579,8 +579,8 @@ ResourceId ResourceProvider::CreateResource(
   DCHECK(!size.IsEmpty());
   switch (settings_.default_resource_type) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-      // GPU memory buffers don't support LUMINANCE_F16 or RGBA_F16 yet.
-      if (format != LUMINANCE_F16 && format != RGBA_F16) {
+      // GPU memory buffers don't support LUMINANCE_F16 yet.
+      if (format != LUMINANCE_F16) {
         return CreateGLTexture(
             size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER, format,
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, color_space);

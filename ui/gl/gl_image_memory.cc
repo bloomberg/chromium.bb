@@ -52,6 +52,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_F16:
       return true;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -79,6 +80,7 @@ bool IsCompressedFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_F16:
       return false;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -109,6 +111,7 @@ GLenum TextureFormat(gfx::BufferFormat format) {
       return GL_RG;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBA_F16:
       return GL_RGBA;
     case gfx::BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
@@ -137,6 +140,7 @@ GLenum DataFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::ATC:
@@ -169,6 +173,8 @@ GLenum DataType(gfx::BufferFormat format) {
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RG_88:
       return GL_UNSIGNED_BYTE;
+    case gfx::BufferFormat::RGBA_F16:
+      return GL_HALF_FLOAT_OES;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -196,6 +202,8 @@ GLint DataRowLength(size_t stride, gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
       return base::checked_cast<GLint>(stride) / 4;
+    case gfx::BufferFormat::RGBA_F16:
+      return base::checked_cast<GLint>(stride) / 8;
     case gfx::BufferFormat::R_8:
       return base::checked_cast<GLint>(stride);
     case gfx::BufferFormat::ATC:
@@ -309,6 +317,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RG_88: {
       size_t gles2_data_stride =

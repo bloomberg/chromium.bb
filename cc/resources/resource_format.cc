@@ -114,11 +114,12 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::RGBA_8888;
     case ETC1:
       return gfx::BufferFormat::ETC1;
+    case RGBA_F16:
+      return gfx::BufferFormat::RGBA_F16;
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
     case LUMINANCE_F16:
-    case RGBA_F16:
       break;
   }
   NOTREACHED();

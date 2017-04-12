@@ -40,6 +40,8 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
         return gfx::mojom::BufferFormat::BGRX_8888;
       case gfx::BufferFormat::BGRA_8888:
         return gfx::mojom::BufferFormat::BGRA_8888;
+      case gfx::BufferFormat::RGBA_F16:
+        return gfx::mojom::BufferFormat::RGBA_F16;
       case gfx::BufferFormat::YVU_420:
         return gfx::mojom::BufferFormat::YVU_420;
       case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -92,6 +94,9 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
         return true;
       case gfx::mojom::BufferFormat::BGRA_8888:
         *out = gfx::BufferFormat::BGRA_8888;
+        return true;
+      case gfx::mojom::BufferFormat::RGBA_F16:
+        *out = gfx::BufferFormat::RGBA_F16;
         return true;
       case gfx::mojom::BufferFormat::YVU_420:
         *out = gfx::BufferFormat::YVU_420;

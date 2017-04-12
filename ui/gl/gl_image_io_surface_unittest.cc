@@ -63,13 +63,15 @@ class GLImageIOSurfaceTestDelegate {
 using GLImageTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
 
 using GLImageRGBTestTypes =
     testing::Types<GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>>;
+                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
+                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageZeroInitializeTest,

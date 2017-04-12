@@ -1132,8 +1132,8 @@ void GpuCommandBufferStub::OnCreateImage(
     return;
   }
 
-  if (!gpu::IsGpuMemoryBufferFormatSupported(format,
-                                             decoder_->GetCapabilities())) {
+  if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
+          format, decoder_->GetCapabilities())) {
     LOG(ERROR) << "Format is not supported.";
     return;
   }

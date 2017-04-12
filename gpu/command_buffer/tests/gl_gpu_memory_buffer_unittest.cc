@@ -21,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/half_float.h"
 #include "ui/gl/gl_image.h"
 
 using testing::_;
@@ -116,6 +117,22 @@ void SetRow(gfx::BufferFormat format,
         buffer[i + 3] = pixel[3];
       }
       return;
+    case gfx::BufferFormat::RGBA_F16: {
+      float float_pixel[4] = {
+          pixel[0] / 255.f, pixel[1] / 255.f, pixel[2] / 255.f,
+          pixel[3] / 255.f,
+      };
+      uint16_t half_float_pixel[4];
+      gfx::FloatToHalfFloat(float_pixel, half_float_pixel, 4);
+      uint16_t* half_float_buffer = reinterpret_cast<uint16_t*>(buffer);
+      for (int i = 0; i < width * 4; i += 4) {
+        half_float_buffer[i + 0] = half_float_pixel[0];
+        half_float_buffer[i + 1] = half_float_pixel[1];
+        half_float_buffer[i + 2] = half_float_pixel[2];
+        half_float_buffer[i + 3] = half_float_pixel[3];
+      }
+      return;
+    }
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRX_8888:
@@ -147,6 +164,8 @@ GLenum InternalFormat(gfx::BufferFormat format) {
       return GL_RGBA;
     case gfx::BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
+    case gfx::BufferFormat::RGBA_F16:
+      return GL_RGBA;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRX_8888:
@@ -255,7 +274,8 @@ INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
                                           gfx::BufferFormat::BGR_565,
                                           gfx::BufferFormat::RGBA_4444,
                                           gfx::BufferFormat::RGBA_8888,
-                                          gfx::BufferFormat::BGRA_8888));
+                                          gfx::BufferFormat::BGRA_8888,
+                                          gfx::BufferFormat::RGBA_F16));
 
 }  // namespace gles2
 }  // namespace gpu

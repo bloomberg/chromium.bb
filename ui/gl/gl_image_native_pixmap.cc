@@ -67,6 +67,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       return false;
   }
@@ -101,6 +102,7 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
@@ -268,6 +270,7 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return GL_NONE;

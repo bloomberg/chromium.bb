@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ui/gfx/half_float.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -113,6 +114,25 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
         }
       }
       return;
+    case gfx::BufferFormat::RGBA_F16: {
+      DCHECK_EQ(0, plane);
+      float float_color[4] = {
+          color[0] / 255.f, color[1] / 255.f, color[2] / 255.f,
+          color[3] / 255.f,
+      };
+      uint16_t half_float_color[4];
+      gfx::FloatToHalfFloat(float_color, half_float_color, 4);
+      for (int y = 0; y < height; ++y) {
+        uint16_t* row = reinterpret_cast<uint16_t*>(data + y * stride);
+        for (int x = 0; x < width; ++x) {
+          row[x * 4 + 0] = half_float_color[0];
+          row[x * 4 + 1] = half_float_color[1];
+          row[x * 4 + 2] = half_float_color[2];
+          row[x * 4 + 3] = half_float_color[3];
+        }
+      }
+      return;
+    }
     case gfx::BufferFormat::YVU_420: {
       DCHECK_LT(plane, 3);
       DCHECK_EQ(0, height % 2);
