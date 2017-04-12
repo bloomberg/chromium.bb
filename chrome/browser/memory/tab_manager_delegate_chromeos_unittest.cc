@@ -13,7 +13,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/memory/tab_manager.h"
@@ -22,6 +21,7 @@
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/exo/shell_surface.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/wm/public/activation_client.h"
@@ -29,7 +29,14 @@
 
 namespace memory {
 
-using TabManagerDelegateTest = testing::Test;
+class TabManagerDelegateTest : public testing::Test {
+ public:
+  TabManagerDelegateTest() {}
+  ~TabManagerDelegateTest() override {}
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 namespace {
 constexpr bool kIsFocused = true;
@@ -168,7 +175,6 @@ class MockMemoryStat : public TabManagerDelegate::MemoryStat {
 };
 
 TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
-  base::MessageLoop message_loop;
   MockTabManagerDelegate tab_manager_delegate;
 
   std::vector<arc::ArcProcess> arc_processes;

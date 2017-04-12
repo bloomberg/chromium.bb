@@ -38,6 +38,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/process.mojom.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/exo/shell_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -580,13 +581,15 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
-
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";
 
   const std::vector<TabManagerDelegate::Candidate> candidates =
       GetSortedCandidates(tab_list, arc_processes);
 
   int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
+  bool killed_candidate = false;
+
   // Kill processes until the estimated amount of freed memory is sufficient to
   // bring the system memory back to a normal level.
   // The list is sorted by descending importance, so we go through the list
@@ -608,7 +611,9 @@ void TabManagerDelegate::LowMemoryKillImpl(
       if (KillArcProcess(it->app()->nspid())) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         MemoryKillsMonitor::LogLowMemoryKill("APP", estimated_memory_freed_kb);
-        VLOG(2) << "Killed " << *it;
+        MEMORY_LOG(ERROR) << "Killed " << *it << ", estimated "
+                          << estimated_memory_freed_kb << " KB freed";
+        killed_candidate = true;
       }
     } else {
       int64_t tab_id = it->tab()->tab_contents_id;
@@ -620,11 +625,18 @@ void TabManagerDelegate::LowMemoryKillImpl(
       if (KillTab(tab_id)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         MemoryKillsMonitor::LogLowMemoryKill("TAB", estimated_memory_freed_kb);
-        VLOG(2) << "Killed " << *it;
+        MEMORY_LOG(ERROR) << "Killed " << *it << ", estimated "
+                          << estimated_memory_freed_kb << " KB freed";
+        killed_candidate = true;
       }
     }
     if (target_memory_to_free_kb < 0)
       break;
+  }
+  if (!killed_candidate) {
+    MEMORY_LOG(ERROR) << "Low memory: Unable to kill any candidates. "
+                      << "Attempted to free " << target_memory_to_free_kb
+                      << " KB";
   }
 }
 
