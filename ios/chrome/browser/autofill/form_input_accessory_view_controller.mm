@@ -93,7 +93,6 @@ NSArray* FindDescendantToolbarItemsForActionName(UIView* root,
   return descendants;
 }
 
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
 NSArray* FindDescendantToolbarItemsForActionName(
     UITextInputAssistantItem* inputAssistantItem,
     NSString* actionName) {
@@ -117,7 +116,6 @@ NSArray* FindDescendantToolbarItemsForActionName(
 
   return toolbarItems;
 }
-#endif
 
 // Computes the frame of each part of the accessory view of the keyboard. It is
 // assumed that the keyboard has either two parts (when it is split) or one part

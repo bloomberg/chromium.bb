@@ -97,10 +97,7 @@ cr_keyCommandWithInput:(nonnull NSString*)input
       [self keyCommandWithInput:input
                   modifierFlags:modifierFlags
                          action:@selector(cr_handleKeyCommand:)];
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
-  if ([keyCommand respondsToSelector:@selector(discoverabilityTitle)])
-    keyCommand.discoverabilityTitle = discoveryTitle;
-#endif
+  keyCommand.discoverabilityTitle = discoveryTitle;
   keyCommand.cr_action = action;
   return keyCommand;
 }

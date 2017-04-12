@@ -62,11 +62,8 @@
 // Returns the currently visible keyboard accessory, or nil.
 - (UIView*)keyboardAccessory;
 
-// Returns the currently visible keyboard input assistant item, or nil. Only
-// valid on iOS 9 or above.
-#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+// Returns the currently visible keyboard input assistant item, or nil.
 - (UITextInputAssistantItem*)inputAssistantItem;
-#endif
 
 // Wrapper around the becomeFirstResponder method of the webview.
 - (BOOL)becomeFirstResponder;
