@@ -569,6 +569,7 @@
       'linux_chromium_headless_rel': 'headless_linux_release_trybot',
       'linux_chromium_ozone_compile_only_ng': 'ozone_linux_release_trybot',
       'linux_chromium_ozone_ng': 'ozone_linux_release_trybot',
+      'linux_layout_tests_slimming_paint_v2': 'release_trybot',
 
       # This is intentionally a release_bot and not a release_trybot;
       # enabling DCHECKs seems to cause flaky failures that don't show up
@@ -583,7 +584,6 @@
       # 'release_trybot' includes 'dcheck_always_on', which might cause
       # some layout test results to be different than for normal release
       # builds (and we only store baselines for release builds).
-      'linux_layout_tests_slimming_paint_v2': 'release_bot',
       'linux_layout_tests_layout_ng': 'release_bot',
 
       'linux_nacl_sdk_build': 'release_bot',
