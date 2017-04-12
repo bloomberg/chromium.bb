@@ -173,6 +173,7 @@ Polymer({
     this.style.right = '';
     this.style.top = '';
 
+    this.anchorElement_.scrollIntoViewIfNeeded();
     this.showModal();
 
     var rect = this.anchorElement_.getBoundingClientRect();
