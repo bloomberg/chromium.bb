@@ -547,6 +547,7 @@ void PaintController::CommitNewDisplayItems(
     item.key->SetDisplayItemsCached(current_cache_generation_);
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     DisplayItemClient::EndShouldKeepAliveAllClients(item.key);
+    DCHECK(current_subsequence_clients_.IsEmpty());
 #endif
   }
 

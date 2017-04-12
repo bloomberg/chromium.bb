@@ -15,14 +15,14 @@ SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context,
     : paint_controller_(context.GetPaintController()),
       client_(client),
       begin_subsequence_index_(0) {
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+  paint_controller_.BeginSubsequence(client_);
+#endif
+
   if (paint_controller_.DisplayItemConstructionIsDisabled())
     return;
 
   begin_subsequence_index_ = paint_controller_.NewDisplayItemList().size();
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-  paint_controller_.BeginSubsequence(client_);
-#endif
 }
 
 SubsequenceRecorder::~SubsequenceRecorder() {
