@@ -319,6 +319,13 @@ void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
     return;
   }
 
+  // We trust that |parent_id| either exists or is about to exist, since is not
+  // sent over IPC. We don't trust |child_id|, since it is sent over IPC.
+  if (surface_map_.count(child_id) == 0) {
+    DLOG(ERROR) << "No surface in map for " << child_id.ToString();
+    return;
+  }
+
   parent_to_child_refs_[parent_id].insert(child_id);
   child_to_parent_refs_[child_id].insert(parent_id);
 
@@ -461,14 +468,7 @@ void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
     // destroyed in SurfaceFactory and then if there are no references it will
     // be deleted during surface GC. A temporary reference, removed when a
     // real reference is received, is added to prevent this from happening.
-    auto it = child_to_parent_refs_.find(surface_info.id());
-    // TODO(fsamuel): Tests create empty sets and so we also need to check that
-    // they're not empty here. Ideally tests shouldn't do that and we shouldn't
-    // use array notation into maps in tests (see https://crbug.com/691115).
-    bool has_real_reference =
-        it != child_to_parent_refs_.end() && !it->second.empty();
-    if (!has_real_reference)
-      AddTemporaryReference(surface_info.id());
+    AddTemporaryReference(surface_info.id());
   }
 
   for (auto& observer : observer_list_)

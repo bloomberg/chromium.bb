@@ -85,10 +85,6 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
 
  private:
   // PendingFrameObserver implementation.
-  void OnReferencedSurfacesChanged(
-      Surface* surface,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDependenciesChanged(
       Surface* surface,

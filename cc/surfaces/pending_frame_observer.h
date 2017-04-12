@@ -19,12 +19,6 @@ class Surface;
 // changes should implement this class.
 class CC_SURFACES_EXPORT PendingFrameObserver {
  public:
-  // Called when one or both of the sets of referenced surfaces have changed.
-  virtual void OnReferencedSurfacesChanged(
-      Surface* surface,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces) = 0;
-
   // Called when a CompositorFrame within |surface| has activated.
   virtual void OnSurfaceActivated(Surface* surface) = 0;
 

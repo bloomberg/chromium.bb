@@ -54,8 +54,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
 
 void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
     const LocalSurfaceId& local_surface_id,
-    const std::vector<SurfaceId>* active_referenced_surfaces,
-    const std::vector<SurfaceId>* pending_referenced_surfaces) {
+    const std::vector<SurfaceId>* active_referenced_surfaces) {
   if (!surface_manager_->using_surface_references())
     return;
 
@@ -66,8 +65,7 @@ void CompositorFrameSinkSupport::ReferencedSurfacesChanged(
   // surface references includes references from both the pending and active
   // frame if any.
   reference_tracker_.UpdateReferences(local_surface_id,
-                                      active_referenced_surfaces,
-                                      pending_referenced_surfaces);
+                                      active_referenced_surfaces);
 
   UpdateSurfaceReferences(last_surface_id, local_surface_id);
 }

@@ -105,32 +105,26 @@ void SurfaceFactory::UnrefResources(const ReturnedResourceArray& resources) {
   holder_.UnrefResources(resources);
 }
 
-void SurfaceFactory::OnReferencedSurfacesChanged(
-    Surface* surface,
-    const std::vector<SurfaceId>* active_referenced_surfaces,
-    const std::vector<SurfaceId>* pending_referenced_surfaces) {
-  client_->ReferencedSurfacesChanged(surface->surface_id().local_surface_id(),
-                                     active_referenced_surfaces,
-                                     pending_referenced_surfaces);
-}
-
 void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface->HasActiveFrame());
-  if (seen_first_frame_activation_)
-    return;
+  if (!seen_first_frame_activation_) {
+    seen_first_frame_activation_ = true;
 
-  seen_first_frame_activation_ = true;
+    const CompositorFrame& frame = surface->GetActiveFrame();
+    // CompositorFrames might not be populated with a RenderPass in unit tests.
+    gfx::Size frame_size;
+    if (!frame.render_pass_list.empty())
+      frame_size = frame.render_pass_list.back()->output_rect.size();
 
-  const CompositorFrame& frame = surface->GetActiveFrame();
-  // CompositorFrames might not be populated with a RenderPass in unit tests.
-  gfx::Size frame_size;
-  if (!frame.render_pass_list.empty())
-    frame_size = frame.render_pass_list.back()->output_rect.size();
-
-  // SurfaceCreated only applies for the first Surface activation. Thus,
-  // SurfaceFactory stops observing new activations after the first one.
-  manager_->SurfaceCreated(SurfaceInfo(
-      surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
+    // SurfaceCreated only applies for the first Surface activation. Thus,
+    // SurfaceFactory stops observing new activations after the first one.
+    manager_->SurfaceCreated(SurfaceInfo(
+        surface->surface_id(), frame.metadata.device_scale_factor, frame_size));
+  }
+  // Fire SurfaceCreated first so that a temporary reference is added before it
+  // is potentially transformed into a real reference by the client.
+  client_->ReferencedSurfacesChanged(surface->surface_id().local_surface_id(),
+                                     surface->active_referenced_surfaces());
 }
 
 void SurfaceFactory::OnSurfaceDependenciesChanged(

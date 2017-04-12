@@ -51,8 +51,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // SurfaceFactoryClient implementation.
   void ReferencedSurfacesChanged(
       const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces) override;
+      const std::vector<SurfaceId>* active_referenced_surfaces) override;
   void ReturnResources(const ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,

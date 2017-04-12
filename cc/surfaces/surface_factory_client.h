@@ -21,8 +21,7 @@ class CC_SURFACES_EXPORT SurfaceFactoryClient {
 
   virtual void ReferencedSurfacesChanged(
       const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces) {}
+      const std::vector<SurfaceId>* active_referenced_surfaces) {}
 
   virtual void ReturnResources(const ReturnedResourceArray& resources) = 0;
 

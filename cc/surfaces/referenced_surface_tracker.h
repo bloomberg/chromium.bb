@@ -41,8 +41,7 @@ class CC_SURFACES_EXPORT ReferencedSurfaceTracker {
   // CompositorFrame.
   void UpdateReferences(
       const LocalSurfaceId& local_surface_id,
-      const std::vector<SurfaceId>* active_referenced_surfaces,
-      const std::vector<SurfaceId>* pending_referenced_surfaces);
+      const std::vector<SurfaceId>* active_referenced_surfaces);
 
  private:
   // Updates |referenced_surfaces_| based on a |new_referenced_surfaces| from a

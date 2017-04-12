@@ -109,7 +109,7 @@ class CC_EXPORT LayerTreeSettings {
 
   // Indicates that the LayerTreeHost should defer commits unless it has a valid
   // LocalSurfaceId set.
-  bool needs_valid_local_surface_id = false;
+  bool enable_surface_synchronization = false;
 };
 
 }  // namespace cc

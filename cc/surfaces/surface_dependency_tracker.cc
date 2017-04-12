@@ -103,11 +103,6 @@ const BeginFrameArgs& SurfaceDependencyTracker::LastUsedBeginFrameArgs() const {
 
 void SurfaceDependencyTracker::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-void SurfaceDependencyTracker::OnReferencedSurfacesChanged(
-    Surface* surface,
-    const std::vector<SurfaceId>* active_referenced_surfaces,
-    const std::vector<SurfaceId>* pending_referenced_surfaces) {}
-
 void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
   // If the surface being destroyed doesn't have a pending frame then we have
   // nothing to do here.

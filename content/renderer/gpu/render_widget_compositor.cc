@@ -369,7 +369,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.needs_valid_local_surface_id =
+  settings.enable_surface_synchronization =
       cmd.HasSwitch(cc::switches::kEnableSurfaceSynchronization);
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {

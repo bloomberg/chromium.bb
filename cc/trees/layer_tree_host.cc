@@ -363,7 +363,7 @@ void LayerTreeHost::WillCommit() {
 
 void LayerTreeHost::UpdateDeferCommitsInternal() {
   proxy_->SetDeferCommits(defer_commits_ ||
-                          (settings_.needs_valid_local_surface_id &&
+                          (settings_.enable_surface_synchronization &&
                            !local_surface_id_.is_valid()));
 }
 

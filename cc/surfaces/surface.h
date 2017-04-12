@@ -106,11 +106,6 @@ class CC_SURFACES_EXPORT Surface {
                          : nullptr;
   }
 
-  const std::vector<SurfaceId>* pending_referenced_surfaces() const {
-    return pending_frame_ ? &pending_frame_->metadata.referenced_surfaces
-                          : nullptr;
-  }
-
   const SurfaceDependencies& blocking_surfaces() const {
     return blocking_surfaces_;
   }

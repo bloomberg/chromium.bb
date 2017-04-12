@@ -63,7 +63,7 @@ TEST_F(ReferencedSurfaceTrackerTest, SetCurrentSurfaceId) {
   EXPECT_FALSE(tracker().current_surface_id().is_valid());
 
   // After setting current SurfaceId then current_surface_id() should be valid.
-  tracker().UpdateReferences(parent_id.local_surface_id(), nullptr, nullptr);
+  tracker().UpdateReferences(parent_id.local_surface_id(), nullptr);
   EXPECT_EQ(parent_id, tracker().current_surface_id());
 }
 
@@ -75,8 +75,7 @@ TEST_F(ReferencedSurfaceTrackerTest, RefSurface) {
   // First frame has a reference to |child_id1|, check that reference is added.
   std::vector<SurfaceId> active_referenced_surfaces = {child_id1};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
   EXPECT_THAT(tracker().references_to_add(), UnorderedElementsAre(reference));
   EXPECT_THAT(tracker().references_to_remove(), IsEmpty());
 }
@@ -89,16 +88,14 @@ TEST_F(ReferencedSurfaceTrackerTest, NoChangeToReferences) {
   // First frame has a reference to |child_id1|, check that reference is added.
   std::vector<SurfaceId> active_referenced_surfaces = {child_id1};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
   EXPECT_THAT(tracker().references_to_remove(), IsEmpty());
   EXPECT_THAT(tracker().references_to_add(), UnorderedElementsAre(reference));
 
   // Second frame has same reference, check that no references are added or
   // removed.
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
   EXPECT_THAT(tracker().references_to_remove(), IsEmpty());
   EXPECT_THAT(tracker().references_to_add(), IsEmpty());
 }
@@ -110,14 +107,12 @@ TEST_F(ReferencedSurfaceTrackerTest, UnrefSurface) {
 
   std::vector<SurfaceId> active_referenced_surfaces = {child_id1};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
 
   // Second frame no longer references |child_id1|, check that reference to is
   // removed.
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             nullptr /* active_referenced_surfaces */,
-                             nullptr /* pending_referenced_surfaces */);
+                             nullptr /* active_referenced_surfaces */);
   EXPECT_THAT(tracker().references_to_add(), IsEmpty());
   EXPECT_THAT(tracker().references_to_remove(),
               UnorderedElementsAre(reference));
@@ -133,8 +128,7 @@ TEST_F(ReferencedSurfaceTrackerTest, RefNewSurfaceForFrameSink) {
   // First frame has reference to |child_id1_first|.
   std::vector<SurfaceId> active_referenced_surfaces1 = {child_id1_first};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces1,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces1);
   EXPECT_THAT(tracker().references_to_add(),
               UnorderedElementsAre(reference_first));
 
@@ -143,8 +137,7 @@ TEST_F(ReferencedSurfaceTrackerTest, RefNewSurfaceForFrameSink) {
   // removed and second reference is added.
   std::vector<SurfaceId> active_referenced_surfaces2 = {child_id1_second};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces2,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces2);
   EXPECT_THAT(tracker().references_to_remove(),
               UnorderedElementsAre(reference_first));
   EXPECT_THAT(tracker().references_to_add(),
@@ -160,16 +153,14 @@ TEST_F(ReferencedSurfaceTrackerTest, UpdateParentSurfaceId) {
   // First frame references |child_id1|.
   std::vector<SurfaceId> active_referenced_surfaces = {child_id1};
   tracker().UpdateReferences(parent_id_first.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
   EXPECT_THAT(tracker().references_to_add(), SizeIs(1));
 
   // Second frame still reference |child_id1| but the parent SurfaceId has
   // changed. The new parent SurfaceId should have a reference added to
   // |child_id1|.
   tracker().UpdateReferences(parent_id_second.local_surface_id(),
-                             &active_referenced_surfaces,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces);
   EXPECT_THAT(tracker().references_to_add(), UnorderedElementsAre(reference));
   EXPECT_THAT(tracker().references_to_remove(), IsEmpty());
 }
@@ -184,8 +175,7 @@ TEST_F(ReferencedSurfaceTrackerTest, RefTwoThenUnrefOneSurface) {
   // First frame references both surfaces.
   std::vector<SurfaceId> active_referenced_surfaces1 = {child_id1, child_id2};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces1,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces1);
   EXPECT_THAT(tracker().references_to_add(),
               UnorderedElementsAre(reference1, reference2));
 
@@ -193,8 +183,7 @@ TEST_F(ReferencedSurfaceTrackerTest, RefTwoThenUnrefOneSurface) {
   // |child_id1| is removed.
   std::vector<SurfaceId> active_referenced_surfaces2 = {child_id2};
   tracker().UpdateReferences(parent_id.local_surface_id(),
-                             &active_referenced_surfaces2,
-                             nullptr /* pending_referenced_surfaces */);
+                             &active_referenced_surfaces2);
   EXPECT_THAT(tracker().references_to_remove(),
               UnorderedElementsAre(reference1));
   EXPECT_THAT(tracker().references_to_add(), IsEmpty());

@@ -73,7 +73,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   if (primary && fallback_surface_info_.id() != primary_surface_info_.id()) {
     primary->fallback_quad = CreateSurfaceDrawQuad(
         render_pass, SurfaceDrawQuadType::FALLBACK, fallback_surface_info_,
-        &append_quads_data->embedded_surfaces);
+        nullptr /* embedded_surfaces */);
   }
 }
 
@@ -121,7 +121,8 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_info.id(), surface_draw_quad_type, nullptr);
-  embedded_surfaces->push_back(surface_info.id());
+  if (embedded_surfaces)
+    embedded_surfaces->push_back(surface_info.id());
 
   return surface_draw_quad;
 }

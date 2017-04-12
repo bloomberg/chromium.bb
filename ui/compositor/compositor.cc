@@ -126,7 +126,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-  settings.needs_valid_local_surface_id =
+  settings.enable_surface_synchronization =
       command_line->HasSwitch(cc::switches::kEnableSurfaceSynchronization);
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();

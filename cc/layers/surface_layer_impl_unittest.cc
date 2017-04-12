@@ -240,8 +240,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  EXPECT_THAT(data.embedded_surfaces,
-              UnorderedElementsAre(surface_id1, surface_id2));
+  // The the primary SurfaceInfo will be added to embedded_surfaces.
+  EXPECT_THAT(data.embedded_surfaces, UnorderedElementsAre(surface_id1));
 
   ASSERT_EQ(2u, render_pass->quad_list.size());
   const SurfaceDrawQuad* surface_draw_quad1 =

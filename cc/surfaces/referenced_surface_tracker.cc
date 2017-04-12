@@ -20,8 +20,7 @@ ReferencedSurfaceTracker::~ReferencedSurfaceTracker() {}
 
 void ReferencedSurfaceTracker::UpdateReferences(
     const LocalSurfaceId& local_surface_id,
-    const std::vector<SurfaceId>* active_referenced_surfaces,
-    const std::vector<SurfaceId>* pending_referenced_surfaces) {
+    const std::vector<SurfaceId>* active_referenced_surfaces) {
   DCHECK(local_surface_id.is_valid());
 
   // Clear references to add/remove from the last frame.
@@ -41,11 +40,6 @@ void ReferencedSurfaceTracker::UpdateReferences(
   if (active_referenced_surfaces) {
     referenced_surface_set.insert(active_referenced_surfaces->begin(),
                                   active_referenced_surfaces->end());
-  }
-
-  if (pending_referenced_surfaces) {
-    referenced_surface_set.insert(pending_referenced_surfaces->begin(),
-                                  pending_referenced_surfaces->end());
   }
 
   ProcessNewReferences(referenced_surface_set);
