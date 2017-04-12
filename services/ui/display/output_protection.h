@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/public/interfaces/display/output_protection.mojom.h"
 

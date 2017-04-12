@@ -48,26 +48,6 @@ interface Service {
   OnStart(ServiceInfo info) => (Connector&? connector_request,
                                 associated ServiceControl&? control_request);
 
-  // Called when another service attempts to open a connection to this
-  // service. A service implements this method to complete the exchange
-  // of interface implementations with the remote service. See also
-  // documentation in service_manager.mojom for Connect(). The service
-  // originating the request is referred to as the "source" and the one
-  // receiving the "target".
-  //
-  // The Service must respond to acknowledge receipt of the request.
-  //
-  // Parameters:
-  //
-  //  source_info
-  //    Contains the source identity and interface provider specs.
-  //
-  //  interfaces
-  //    A request for an InterfaceProvider by which the source service may
-  //    seek to bind interface implementations exported by the target.
-  //
-  OnConnect(ServiceInfo source_info, InterfaceProvider&? interfaces) => ();
-
   // Called when a request to bind an interface is received from another
   // ("source") service. This is the result of that service calling
   // BindInterface() on a Connector. By the time this method is called, the
@@ -91,7 +71,6 @@ interface Service {
   //             the source's capability requirements to the target. This seems
   //             undesirable. The metadata supplied here should be germane to
   //             fulfilling this request and no more.
-  // TODO(beng): This should replace OnConnect().
   OnBindInterface(ServiceInfo source_info,
                   string interface_name,
                   handle<message_pipe> interface_pipe) => ();

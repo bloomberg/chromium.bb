@@ -8,11 +8,12 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -28,31 +29,38 @@ class ConnectTestClassApp
       public test::mojom::ConnectTestService,
       public test::mojom::ClassInterface {
  public:
-  ConnectTestClassApp() {}
+  ConnectTestClassApp()
+      : ref_factory_(base::Bind(&ConnectTestClassApp::HandleQuit,
+                                base::Unretained(this))) {
+    bindings_.set_connection_error_handler(base::Bind(
+        &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
+    class_interface_bindings_.set_connection_error_handler(base::Bind(
+        &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
+    registry_.AddInterface<test::mojom::ConnectTestService>(this);
+    registry_.AddInterface<test::mojom::ClassInterface>(this);
+  }
   ~ConnectTestClassApp() override {}
 
  private:
   // service_manager::Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface<test::mojom::ConnectTestService>(this);
-    registry->AddInterface<test::mojom::ClassInterface>(this);
-    inbound_connections_.insert(registry);
-    registry->AddConnectionLostClosure(
-        base::Bind(&ConnectTestClassApp::OnConnectionError,
-                   base::Unretained(this), registry));
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
   void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
+    refs_.push_back(ref_factory_.CreateRef());
     bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::ClassInterface>:
   void Create(const Identity& remote_identity,
               test::mojom::ClassInterfaceRequest request) override {
+    refs_.push_back(ref_factory_.CreateRef());
     class_interface_bindings_.AddBinding(this, std::move(request));
   }
 
@@ -69,17 +77,15 @@ class ConnectTestClassApp
     callback.Run("PONG");
   }
 
-  void OnConnectionError(InterfaceRegistry* registry) {
-    auto it = inbound_connections_.find(registry);
-    DCHECK(it != inbound_connections_.end());
-    inbound_connections_.erase(it);
-    if (inbound_connections_.empty())
-      context()->QuitNow();
-  }
+  void HandleQuit() { context()->QuitNow(); }
 
-  std::set<InterfaceRegistry*> inbound_connections_;
+  void HandleInterfaceClose() { refs_.pop_back(); }
+
+  BinderRegistry registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::ClassInterface> class_interface_bindings_;
+  ServiceContextRefFactory ref_factory_;
+  std::vector<std::unique_ptr<ServiceContextRef>> refs_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestClassApp);
 };

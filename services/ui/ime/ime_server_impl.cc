@@ -17,7 +17,7 @@ IMEServerImpl::~IMEServerImpl() {}
 void IMEServerImpl::Init(service_manager::Connector* connector,
                          bool is_test_config) {
   if (is_test_config)
-    connector->Connect("test_ime_driver");
+    connector->StartService("test_ime_driver");
   // For non test configs we assume a client registers with us.
 }
 

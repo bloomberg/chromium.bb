@@ -43,8 +43,9 @@ class ServiceTestClient : public Service {
 
  protected:
   void OnStart() override;
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   ServiceTest* test_;

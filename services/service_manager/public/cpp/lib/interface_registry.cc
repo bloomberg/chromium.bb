@@ -9,7 +9,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "services/service_manager/public/cpp/connection.h"
 
 namespace service_manager {
 namespace {

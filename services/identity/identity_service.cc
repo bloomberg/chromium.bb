@@ -5,7 +5,6 @@
 #include "services/identity/identity_service.h"
 
 #include "services/identity/identity_manager.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace identity {

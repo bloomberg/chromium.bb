@@ -23,7 +23,6 @@
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_info.h"
 #include "ui/gfx/native_widget_types.h"

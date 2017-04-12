@@ -62,7 +62,6 @@
 #include "media/media_features.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/display/display_switches.h"

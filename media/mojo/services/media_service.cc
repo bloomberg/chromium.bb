@@ -11,7 +11,6 @@
 #include "media/mojo/services/interface_factory_impl.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace media {

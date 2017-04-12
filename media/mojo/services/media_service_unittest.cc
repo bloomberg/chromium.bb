@@ -77,9 +77,8 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connection_ = connector()->Connect("media");
     media::mojom::MediaServicePtr media_service;
-    connection_->GetInterface(&media_service);
+    connector()->BindInterface("media", &media_service);
 
     auto registry =
         base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
@@ -148,7 +147,6 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   MOCK_METHOD0(ConnectionClosed, void());
 
  protected:
-  std::unique_ptr<service_manager::Connection> connection_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   mojom::InterfaceFactoryPtr interface_factory_;
@@ -202,7 +200,12 @@ TEST_F(MediaServiceTest, InitializeRenderer_InvalidConfig) {
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
 TEST_F(MediaServiceTest, Lifetime) {
-  connection_->SetConnectionLostClosure(
+  // The lifetime of the media service is controlled by the number of
+  // live InterfaceFactory impls, not MediaService impls, so this pipe should
+  // be closed when the last InterfaceFactory is destroyed.
+  media::mojom::MediaServicePtr media_service;
+  connector()->BindInterface("media", &media_service);
+  media_service.set_connection_error_handler(
       base::Bind(&MediaServiceTest::ConnectionClosed, base::Unretained(this)));
 
   // Disconnecting CDM and Renderer services doesn't terminate the app.

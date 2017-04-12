@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/switches.h"
 #include "services/tracing/public/interfaces/constants.mojom.h"

@@ -243,11 +243,13 @@ int MashRunner::RunServiceManagerInMain() {
 
   // Ping services that we know we want to launch on startup (UI service,
   // window manager, quick launch app).
-  context.connector()->Connect(ui::mojom::kServiceName);
-  context.connector()->Connect(content::mojom::kPackagedServicesServiceName);
+  context.connector()->StartService(ui::mojom::kServiceName);
+  context.connector()->StartService(
+      content::mojom::kPackagedServicesServiceName);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash)) {
-    context.connector()->Connect(mash::common::GetWindowManagerServiceName());
-    context.connector()->Connect(mash::quick_launch::mojom::kServiceName);
+    context.connector()->StartService(
+        mash::common::GetWindowManagerServiceName());
+    context.connector()->StartService(mash::quick_launch::mojom::kServiceName);
   }
 
   run_loop.Run();

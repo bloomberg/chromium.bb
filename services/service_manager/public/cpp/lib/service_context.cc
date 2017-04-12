@@ -7,15 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/lib/connector_impl.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -88,22 +81,6 @@ void ServiceContext::OnStart(const ServiceInfo& info,
   service_->OnStart();
 }
 
-void ServiceContext::OnConnect(
-    const ServiceInfo& source_info,
-    mojom::InterfaceProviderRequest interfaces,
-    const OnConnectCallback& callback) {
-  InterfaceProviderSpec source_spec, target_spec;
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           local_info_.interface_provider_specs, &target_spec);
-  GetInterfaceProviderSpec(mojom::kServiceManager_ConnectorSpec,
-                           source_info.interface_provider_specs, &source_spec);
-
-  // Acknowledge the request regardless of whether it's accepted.
-  callback.Run();
-
-  CallOnConnect(source_info, source_spec, target_spec, std::move(interfaces));
-}
-
 void ServiceContext::OnBindInterface(
     const ServiceInfo& source_info,
     const std::string& interface_name,
@@ -119,48 +96,11 @@ void ServiceContext::OnBindInterface(
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, private:
 
-void ServiceContext::CallOnConnect(const ServiceInfo& source_info,
-                                   const InterfaceProviderSpec& source_spec,
-                                   const InterfaceProviderSpec& target_spec,
-                                   mojom::InterfaceProviderRequest interfaces) {
-  auto registry =
-      base::MakeUnique<InterfaceRegistry>(mojom::kServiceManager_ConnectorSpec);
-  registry->Bind(std::move(interfaces), local_info_.identity, target_spec,
-                 source_info.identity, source_spec);
-
-  if (!service_->OnConnect(source_info, registry.get()))
-    return;
-
-  InterfaceRegistry* raw_registry = registry.get();
-  registry->AddConnectionLostClosure(base::Bind(
-      &ServiceContext::OnRegistryConnectionError, base::Unretained(this),
-      raw_registry));
-  connection_interface_registries_.insert(
-      std::make_pair(raw_registry, std::move(registry)));
-}
-
 void ServiceContext::OnConnectionError() {
   if (service_->OnServiceManagerConnectionLost()) {
     // CAUTION: May delete |this|.
     QuitNow();
   }
-}
-
-void ServiceContext::OnRegistryConnectionError(InterfaceRegistry* registry) {
-  // NOTE: We destroy the InterfaceRegistry asynchronously since it's calling
-  // into us from its own connection error handler which may continue to access
-  // the InterfaceRegistry's own state after we return.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ServiceContext::DestroyConnectionInterfaceRegistry,
-                 weak_factory_.GetWeakPtr(), registry));
-}
-
-void ServiceContext::DestroyConnectionInterfaceRegistry(
-    InterfaceRegistry* registry) {
-  auto it = connection_interface_registries_.find(registry);
-  CHECK(it != connection_interface_registries_.end());
-  connection_interface_registries_.erase(it);
 }
 
 }  // namespace service_manager

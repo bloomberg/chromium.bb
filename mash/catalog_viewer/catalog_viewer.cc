@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"

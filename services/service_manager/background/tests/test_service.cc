@@ -5,7 +5,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/background/tests/test.mojom.h"
 #include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -18,15 +18,16 @@ class TestClient : public Service,
                    public InterfaceFactory<mojom::TestService>,
                    public mojom::TestService {
  public:
-  TestClient() {}
+  TestClient() { registry_.AddInterface(this); }
   ~TestClient() override {}
 
  private:
   // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface(this);
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<mojom::TestService>:
@@ -42,6 +43,7 @@ class TestClient : public Service,
 
   void Quit() override { context()->RequestQuit(); }
 
+  BinderRegistry registry_;
   mojo::BindingSet<mojom::TestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClient);

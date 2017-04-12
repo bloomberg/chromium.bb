@@ -183,7 +183,6 @@
 #include "ppapi/features/features.h"
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/runner/common/client_util.h"

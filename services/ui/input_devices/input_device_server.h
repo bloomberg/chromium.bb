@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/events/devices/device_data_manager.h"

@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace file {

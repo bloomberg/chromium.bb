@@ -22,7 +22,6 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"

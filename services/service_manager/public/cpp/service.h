@@ -12,7 +12,6 @@
 
 namespace service_manager {
 
-class InterfaceRegistry;
 class ServiceContext;
 struct ServiceInfo;
 
@@ -27,16 +26,6 @@ class Service {
   // Manager has been established. No calls to OnConnect() or OnBindInterface()
   // will be made before this.
   virtual void OnStart();
-
-  // Called each time a connection to this service is brokered by the Service
-  // Manager. Implement this to expose interfaces to other services.
-  //
-  // Return true if the connection should succeed or false if the connection
-  // should be rejected.
-  //
-  // The default implementation returns false.
-  virtual bool OnConnect(const ServiceInfo& remote_info,
-                         InterfaceRegistry* registry);
 
   // Called when the service identified by |source_info| requests this service
   // bind a request for |interface_name|. If this method has been called, the
@@ -89,8 +78,6 @@ class ForwardingService : public Service {
 
   // Service:
   void OnStart() override;
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override;
   void OnBindInterface(const ServiceInfo& remote_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;

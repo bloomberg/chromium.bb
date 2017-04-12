@@ -66,7 +66,6 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
-#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
@@ -510,13 +509,8 @@ void ChildThreadImpl::Init(const Options& options) {
   // also for some edge cases where there is no ServiceManagerConnection, we do
   // not create the power monitor.
   if (!base::PowerMonitor::Get() && service_manager_connection_) {
-    std::unique_ptr<service_manager::Connection> device_connection =
-        service_manager_connection_->GetConnector()->Connect(
-            device::mojom::kServiceName);
     auto power_monitor_source =
-        base::MakeUnique<device::PowerMonitorBroadcastSource>(
-            device_connection->GetRemoteInterfaces());
-
+        base::MakeUnique<device::PowerMonitorBroadcastSource>(GetConnector());
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
   }

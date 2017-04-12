@@ -156,13 +156,9 @@ void Context::RunCommandLineApplication() {
 void Context::Run(const std::string& name) {
   service_manager_->SetInstanceQuitCallback(base::Bind(&OnInstanceQuit, name));
 
-  mojom::InterfaceProviderPtr remote_interfaces;
-  mojom::InterfaceProviderPtr local_interfaces;
-
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
-  params->set_remote_interfaces(mojo::MakeRequest(&remote_interfaces));
   service_manager_->Connect(std::move(params));
 }
 

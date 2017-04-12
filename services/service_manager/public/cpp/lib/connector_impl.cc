@@ -6,13 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/lib/connection_impl.h"
 
 namespace service_manager {
-
-namespace {
-void EmptyBindCallback(mojom::ConnectResult, const std::string&) {}
-}
 
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)), weak_factory_(this) {
@@ -32,6 +27,17 @@ void ConnectorImpl::OnConnectionError() {
   connector_.reset();
 }
 
+void ConnectorImpl::StartService(const Identity& identity) {
+  if (BindConnectorIfNecessary())
+    connector_->StartService(identity,
+                             base::Bind(&ConnectorImpl::StartServiceCallback,
+                                        weak_factory_.GetWeakPtr()));
+}
+
+void ConnectorImpl::StartService(const std::string& name) {
+  StartService(Identity(name, mojom::kInheritUserID));
+}
+
 void ConnectorImpl::StartService(
     const Identity& identity,
     mojom::ServicePtr service,
@@ -40,33 +46,11 @@ void ConnectorImpl::StartService(
     return;
 
   DCHECK(service.is_bound() && pid_receiver_request.is_pending());
-  connector_->StartService(identity,
-                           service.PassInterface().PassHandle(),
-                           std::move(pid_receiver_request));
-}
-
-std::unique_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
-  return Connect(Identity(name, mojom::kInheritUserID));
-}
-
-std::unique_ptr<Connection> ConnectorImpl::Connect(const Identity& target) {
-  if (!BindConnectorIfNecessary())
-    return nullptr;
-
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  mojom::InterfaceProviderPtr remote_interfaces;
-  mojom::InterfaceProviderRequest remote_request(&remote_interfaces);
-  std::unique_ptr<internal::ConnectionImpl> connection(
-      new internal::ConnectionImpl(target, Connection::State::PENDING));
-  std::unique_ptr<InterfaceProvider> remote_interface_provider(
-      new InterfaceProvider);
-  remote_interface_provider->Bind(std::move(remote_interfaces));
-  connection->SetRemoteInterfaces(std::move(remote_interface_provider));
-
-  connector_->Connect(target, std::move(remote_request),
-                      connection->GetConnectCallback());
-  return std::move(connection);
+  connector_->StartServiceWithProcess(
+      identity, service.PassInterface().PassHandle(),
+      std::move(pid_receiver_request),
+      base::Bind(&ConnectorImpl::StartServiceCallback,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ConnectorImpl::BindInterface(
@@ -86,7 +70,8 @@ void ConnectorImpl::BindInterface(
   }
 
   connector_->BindInterface(target, interface_name, std::move(interface_pipe),
-                            base::Bind(&EmptyBindCallback));
+                            base::Bind(&ConnectorImpl::StartServiceCallback,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 std::unique_ptr<Connector> ConnectorImpl::Clone() {
@@ -119,6 +104,15 @@ void ConnectorImpl::ClearBinderOverrides() {
   local_binder_overrides_.clear();
 }
 
+void ConnectorImpl::SetStartServiceCallback(
+    const Connector::StartServiceCallback& callback) {
+  start_service_callback_ = callback;
+}
+
+void ConnectorImpl::ResetStartServiceCallback() {
+  start_service_callback_.Reset();
+}
+
 bool ConnectorImpl::BindConnectorIfNecessary() {
   // Bind this object to the current thread the first time it is used to
   // connect.
@@ -140,6 +134,12 @@ bool ConnectorImpl::BindConnectorIfNecessary() {
   }
 
   return true;
+}
+
+void ConnectorImpl::StartServiceCallback(mojom::ConnectResult result,
+                                         const Identity& user_id) {
+  if (!start_service_callback_.is_null())
+    start_service_callback_.Run(result, user_id);
 }
 
 std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {

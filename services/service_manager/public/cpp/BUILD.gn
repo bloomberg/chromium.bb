@@ -13,7 +13,6 @@ static_library("sources") {
   sources = [
     "binder_registry.h",
     "connect.h",
-    "connection.h",
     "connector.h",
     "identity.h",
     "interface_binder.h",
@@ -25,8 +24,6 @@ static_library("sources") {
     "lib/binder_registry.cc",
     "lib/callback_binder.cc",
     "lib/callback_binder.h",
-    "lib/connection_impl.cc",
-    "lib/connection_impl.h",
     "lib/connector_impl.cc",
     "lib/connector_impl.h",
     "lib/identity.cc",

@@ -5,10 +5,11 @@
 #include "services/service_manager/public/cpp/identity.h"
 
 #include "base/guid.h"
+#include "services/service_manager/public/interfaces/connector.mojom.h"
 
 namespace service_manager {
 
-Identity::Identity() {}
+Identity::Identity() : Identity("", mojom::kInheritUserID, "") {}
 
 Identity::Identity(const std::string& name, const std::string& user_id)
     : Identity(name, user_id, "") {}

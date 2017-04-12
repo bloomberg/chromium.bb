@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"

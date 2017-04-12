@@ -44,7 +44,7 @@ const base::FilePath::CharType kCatalogFilename[] =
     FILE_PATH_LITERAL("mash_browser_tests_catalog.json");
 
 void ConnectToDefaultApps(service_manager::Connector* connector) {
-  connector->Connect(mash::session::mojom::kServiceName);
+  connector->StartService(mash::session::mojom::kServiceName);
 }
 
 class MashTestSuite : public ChromeTestSuite {

@@ -11,8 +11,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
@@ -31,14 +31,17 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   explicit ServiceTestClient(service_manager::test::ServiceTest* test)
       : service_manager::test::ServiceTestClient(test),
         io_thread_("DeviceServiceTestIOThread"),
-        file_thread_("DeviceServiceTestFileThread") {}
+        file_thread_("DeviceServiceTestFileThread") {
+    registry_.AddInterface<service_manager::mojom::ServiceFactory>(this);
+  }
   ~ServiceTestClient() override {}
 
  protected:
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
-    registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-    return true;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   void CreateService(service_manager::mojom::ServiceRequest request,
@@ -69,6 +72,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
  private:
   base::Thread io_thread_;
   base::Thread file_thread_;
+  service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   std::unique_ptr<service_manager::ServiceContext> device_service_context_;

@@ -9,7 +9,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 static_assert(

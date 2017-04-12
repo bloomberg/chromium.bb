@@ -24,7 +24,6 @@
 #include "services/ui/ws/test_change_tracker.h"
 #include "services/ui/ws/window_server_service_test_base.h"
 
-using service_manager::Connection;
 using mojo::InterfaceRequest;
 using service_manager::Service;
 using ui::mojom::WindowDataPtr;

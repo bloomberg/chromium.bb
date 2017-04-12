@@ -27,12 +27,6 @@ class ServiceImpl : public Service {
   ServiceImpl() {}
   ~ServiceImpl() override {}
 
-  // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    return false;
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
 };

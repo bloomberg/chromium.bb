@@ -8,22 +8,23 @@
 #include <memory>
 #include <string>
 
+#include "services/service_manager/public/interfaces/connector.mojom.h"
+
 namespace base {
 class Process;
 }
 
 namespace service_manager {
-class Connection;
 class Connector;
 class Identity;
 
 namespace test {
 
 // Starts the process @ |target_exe_name| and connects to it as |target| using
-// |connector|, returning the connection & the process.
+// |connector|, returning a ConnectResult for the StartService() call.
 // This blocks until the connection is established/rejected by the service
 // manager.
-std::unique_ptr<Connection> LaunchAndConnectToProcess(
+service_manager::mojom::ConnectResult LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity& target,
     service_manager::Connector* connector,

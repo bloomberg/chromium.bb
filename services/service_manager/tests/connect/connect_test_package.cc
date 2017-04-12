@@ -16,9 +16,9 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -30,6 +30,19 @@
 // the package's manifest and are thus registered with the PackageManager.
 
 namespace service_manager {
+namespace {
+
+void QuitLoop(base::RunLoop* loop,
+              mojom::ConnectResult* out_result,
+              Identity* out_resolved_identity,
+              mojom::ConnectResult result,
+              const Identity& resolved_identity) {
+  loop->Quit();
+  *out_result = result;
+  *out_resolved_identity = resolved_identity;
+}
+
+}  // namespace
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
@@ -60,30 +73,29 @@ class ProvidedService
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
+    registry_.AddInterface<test::mojom::ConnectTestService>(this);
+    registry_.AddInterface<test::mojom::BlockedInterface>(this);
+    registry_.AddInterface<test::mojom::UserIdTest>(this);
   }
-
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface<test::mojom::ConnectTestService>(this);
-    registry->AddInterface<test::mojom::BlockedInterface>(this);
-    registry->AddInterface<test::mojom::UserIdTest>(this);
-
-    test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
-    state->connection_remote_name = remote_info.identity.name();
-    state->connection_remote_userid = remote_info.identity.user_id();
-    state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
-
-    context()->connector()->BindInterface(remote_info.identity, &caller_);
-    caller_->ConnectionAccepted(std::move(state));
-
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
   void Create(const Identity& remote_identity,
               test::mojom::ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
+    test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
+    state->connection_remote_name = remote_identity.name();
+    state->connection_remote_userid = remote_identity.user_id();
+    state->initialize_local_name = context()->identity().name();
+    state->initialize_userid = context()->identity().user_id();
+
+    context()->connector()->BindInterface(remote_identity, &caller_);
+    caller_->ConnectionAccepted(std::move(state));
   }
 
   // InterfaceFactory<test::mojom::BlockedInterface>:
@@ -116,17 +128,19 @@ class ProvidedService
   void ConnectToClassAppAsDifferentUser(
       const service_manager::Identity& target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
-    std::unique_ptr<Connection> connection =
-        context()->connector()->Connect(target);
+    context()->connector()->StartService(target);
+    mojom::ConnectResult result;
+    Identity resolved_identity;
     {
       base::RunLoop loop;
-      connection->AddConnectionCompletedClosure(loop.QuitClosure());
+      Connector::TestApi test_api(context()->connector());
+      test_api.SetStartServiceCallback(
+          base::Bind(&QuitLoop, &loop, &result, &resolved_identity));
       base::MessageLoop::ScopedNestableTaskAllower allow(
           base::MessageLoop::current());
       loop.Run();
     }
-    callback.Run(static_cast<int32_t>(connection->GetResult()),
-                 connection->GetRemoteIdentity());
+    callback.Run(static_cast<int32_t>(result), resolved_identity);
   }
 
   // base::SimpleThread:
@@ -147,6 +161,7 @@ class ProvidedService
   const std::string title_;
   mojom::ServiceRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
+  BinderRegistry registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
   mojo::BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
@@ -172,13 +187,14 @@ class ConnectTestService
                    base::Unretained(this));
     bindings_.set_connection_error_handler(error_handler);
     service_factory_bindings_.set_connection_error_handler(error_handler);
+    registry_.AddInterface<ServiceFactory>(this);
+    registry_.AddInterface<test::mojom::ConnectTestService>(this);
   }
-
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface<ServiceFactory>(this);
-    registry->AddInterface<test::mojom::ConnectTestService>(this);
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   bool OnServiceManagerConnectionLost() override {
@@ -226,6 +242,7 @@ class ConnectTestService
 
   std::vector<std::unique_ptr<Service>> delegates_;
   mojo::BindingSet<mojom::ServiceFactory> service_factory_bindings_;
+  BinderRegistry registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   std::list<std::unique_ptr<ProvidedService>> provided_services_;
 

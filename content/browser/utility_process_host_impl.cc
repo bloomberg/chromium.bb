@@ -40,7 +40,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/ui_base_switches.h"
 

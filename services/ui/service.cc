@@ -18,7 +18,6 @@
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/c/main.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -58,7 +57,6 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-using service_manager::Connection;
 using mojo::InterfaceRequest;
 using ui::mojom::WindowServerTest;
 using ui::mojom::WindowTreeHostFactory;

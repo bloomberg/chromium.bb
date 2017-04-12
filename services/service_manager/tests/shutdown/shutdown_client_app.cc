@@ -6,9 +6,9 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -22,15 +22,18 @@ class ShutdownClientApp
       public mojom::ShutdownTestClientController,
       public mojom::ShutdownTestClient {
  public:
-  ShutdownClientApp() {}
+  ShutdownClientApp() {
+    registry_.AddInterface<mojom::ShutdownTestClientController>(this);
+  }
   ~ShutdownClientApp() override {}
 
  private:
   // service_manager::Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface<mojom::ShutdownTestClientController>(this);
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<mojom::ShutdownTestClientController>:
@@ -60,6 +63,7 @@ class ShutdownClientApp
     callback.Run();
   }
 
+  BinderRegistry registry_;
   mojo::BindingSet<mojom::ShutdownTestClientController> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownClientApp);

@@ -10,9 +10,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 
 namespace service_manager {
@@ -28,13 +28,6 @@ class ConnectParams {
   const Identity& source() const { return source_; }
   void set_target(const Identity& target) { target_ = target; }
   const Identity& target() const { return target_; }
-
-  void set_remote_interfaces(mojom::InterfaceProviderRequest value) {
-    remote_interfaces_ = std::move(value);
-  }
-  mojom::InterfaceProviderRequest TakeRemoteInterfaces() {
-    return std::move(remote_interfaces_);
-  }
 
   void set_client_process_info(
       mojom::ServicePtr service,
@@ -68,20 +61,15 @@ class ConnectParams {
     return std::move(interface_pipe_);
   }
 
-  void set_connect_callback(const mojom::Connector::ConnectCallback& value) {
-    connect_callback_ = value;
-  }
-  const mojom::Connector::ConnectCallback& connect_callback() const {
-    return connect_callback_;
+  void set_start_service_callback(
+      const Connector::StartServiceCallback& callback) {
+    start_service_callback_ = callback;
   }
 
-  void set_bind_interface_callback(
-      const mojom::Connector::BindInterfaceCallback& callback) {
-    bind_interface_callback_ = callback;
-  }
-  const mojom::Connector::BindInterfaceCallback&
-      bind_interface_callback() const {
-    return bind_interface_callback_;
+  void set_response_data(mojom::ConnectResult result,
+                         const Identity& resolved_identity) {
+    result_ = result;
+    resolved_identity_ = resolved_identity;
   }
 
  private:
@@ -91,13 +79,16 @@ class ConnectParams {
   // The identity of the application being connected to.
   Identity target_;
 
-  mojom::InterfaceProviderRequest remote_interfaces_;
   mojom::ServicePtr service_;
   mojom::PIDReceiverRequest pid_receiver_request_;
   std::string interface_name_;
   mojo::ScopedMessagePipeHandle interface_pipe_;
-  mojom::Connector::ConnectCallback connect_callback_;
-  mojom::Connector::BindInterfaceCallback bind_interface_callback_;
+  mojom::Connector::StartServiceCallback start_service_callback_;
+
+  // These values are supplied to the response callback for StartService()/
+  // BindInterface() etc. when the connection is completed.
+  mojom::ConnectResult result_ = mojom::ConnectResult::INVALID_ARGUMENT;
+  Identity resolved_identity_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };

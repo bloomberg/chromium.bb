@@ -205,7 +205,7 @@ class ServiceManagerConnection {
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     service_manager::Connector* connector = context_->connector();
-    connector->Connect("test_wm");
+    connector->StartService("test_wm");
     service_manager_connector_ = connector->Clone();
     service_manager_identity_ = context_->identity();
     wait->Signal();

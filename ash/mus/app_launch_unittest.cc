@@ -34,8 +34,8 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
 };
 
 TEST_F(AppLaunchTest, TestQuickLaunch) {
-  connector()->Connect(mojom::kServiceName);
-  connector()->Connect(mash::quick_launch::mojom::kServiceName);
+  connector()->StartService(mojom::kServiceName);
+  connector()->StartService(mash::quick_launch::mojom::kServiceName);
 
   ui::mojom::WindowServerTestPtr test_interface;
   connector()->BindInterface(ui::mojom::kServiceName, &test_interface);

@@ -188,8 +188,6 @@ class ServiceManager {
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 
-mojom::Connector::ConnectCallback EmptyConnectCallback();
-
 }  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_SERVICE_MANAGER_H_

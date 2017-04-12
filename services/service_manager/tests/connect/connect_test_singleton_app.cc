@@ -15,12 +15,6 @@ class ConnectTestSingletonApp : public Service {
   ~ConnectTestSingletonApp() override {}
 
  private:
-  // service_manager::Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    return true;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(ConnectTestSingletonApp);
 };
 

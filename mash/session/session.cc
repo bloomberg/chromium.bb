@@ -24,19 +24,20 @@ void Session::OnStart() {
   StartQuickLaunch();
 
   // Launch a chrome window for dev convience; don't do this in the long term.
-  context()->connector()->Connect(content::mojom::kPackagedServicesServiceName);
+  context()->connector()->StartService(
+      content::mojom::kPackagedServicesServiceName);
 }
 
 void Session::StartWindowManager() {
   // TODO(beng): monitor this service for death & bring down the whole system
   // if necessary.
-  context()->connector()->Connect(common::GetWindowManagerServiceName());
+  context()->connector()->StartService(common::GetWindowManagerServiceName());
 }
 
 void Session::StartQuickLaunch() {
   // TODO(beng): monitor this service for death & bring down the whole system
   // if necessary.
-  context()->connector()->Connect(quick_launch::mojom::kServiceName);
+  context()->connector()->StartService(quick_launch::mojom::kServiceName);
 }
 
 }  // namespace session

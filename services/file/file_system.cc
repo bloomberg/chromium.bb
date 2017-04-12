@@ -14,7 +14,6 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connection.h"
 
 namespace file {
 

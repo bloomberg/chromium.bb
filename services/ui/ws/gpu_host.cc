@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/ws/gpu_client.h"
 #include "services/ui/ws/gpu_host_delegate.h"

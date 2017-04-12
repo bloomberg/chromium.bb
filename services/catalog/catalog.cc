@@ -25,7 +25,6 @@
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/instance.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace catalog {

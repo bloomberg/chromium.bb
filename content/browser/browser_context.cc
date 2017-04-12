@@ -42,7 +42,6 @@
 #include "services/file/file_service.h"
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
@@ -150,11 +149,9 @@ void SetDownloadManager(BrowserContext* context,
 class BrowserContextServiceManagerConnectionHolder
     : public base::SupportsUserData::Data {
  public:
-  BrowserContextServiceManagerConnectionHolder(
-      std::unique_ptr<service_manager::Connection> connection,
+  explicit BrowserContextServiceManagerConnectionHolder(
       service_manager::mojom::ServiceRequest request)
-      : root_connection_(std::move(connection)),
-        service_manager_connection_(ServiceManagerConnection::Create(
+      : service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {}
   ~BrowserContextServiceManagerConnectionHolder() override {}
@@ -164,7 +161,6 @@ class BrowserContextServiceManagerConnectionHolder
   }
 
  private:
-  std::unique_ptr<service_manager::Connection> root_connection_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
@@ -442,9 +438,9 @@ void BrowserContext::Initialize(
         identity, std::move(service), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
 
+    service_manager_connection->GetConnector()->StartService(identity);
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
-            service_manager_connection->GetConnector()->Connect(identity),
             std::move(service_request));
     browser_context->SetUserData(kServiceManagerConnection, connection_holder);
 

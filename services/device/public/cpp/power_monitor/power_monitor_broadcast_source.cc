@@ -7,15 +7,18 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
 PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
-    service_manager::InterfaceProvider* interface_provider)
+    service_manager::Connector* connector)
     : last_reported_battery_power_state_(false), binding_(this) {
-  if (interface_provider) {
+  if (connector) {
     device::mojom::PowerMonitorPtr power_monitor;
-    interface_provider->GetInterface(mojo::MakeRequest(&power_monitor));
+    connector->BindInterface(device::mojom::kServiceName,
+                             mojo::MakeRequest(&power_monitor));
     power_monitor->AddClient(binding_.CreateInterfacePtrAndBind());
   }
 }

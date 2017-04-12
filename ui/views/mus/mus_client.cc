@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"

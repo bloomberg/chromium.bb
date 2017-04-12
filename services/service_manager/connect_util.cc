@@ -7,10 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/service_manager.h"
 
 namespace service_manager {
+
+namespace {
+
+void EmptyStartServiceCallback(mojom::ConnectResult result,
+                               const Identity& resolved_identity) {}
+}
 
 mojo::ScopedMessagePipeHandle BindInterface(
     ServiceManager* service_manager,
@@ -22,6 +29,7 @@ mojo::ScopedMessagePipeHandle BindInterface(
   params->set_target(target);
   mojo::MessagePipe pipe;
   params->set_interface_request_info(interface_name, std::move(pipe.handle1));
+  params->set_start_service_callback(base::Bind(&EmptyStartServiceCallback));
   service_manager->Connect(std::move(params));
   return std::move(pipe.handle0);
 }

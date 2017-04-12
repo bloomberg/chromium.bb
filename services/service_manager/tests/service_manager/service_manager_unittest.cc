@@ -24,8 +24,8 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
@@ -43,7 +43,9 @@ class ServiceManagerTestClient
       public test::mojom::CreateInstanceTest {
  public:
   explicit ServiceManagerTestClient(test::ServiceTest* test)
-      : test::ServiceTestClient(test), binding_(this) {}
+      : test::ServiceTestClient(test), binding_(this) {
+    registry_.AddInterface<test::mojom::CreateInstanceTest>(this);
+  }
   ~ServiceManagerTestClient() override {}
 
   const Identity& target_identity() const { return target_identity_; }
@@ -55,10 +57,11 @@ class ServiceManagerTestClient
 
  private:
   // test::ServiceTestClient:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override {
-    registry->AddInterface<test::mojom::CreateInstanceTest>(this);
-    return true;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    registry_.BindInterface(source_info.identity, interface_name,
+                            std::move(interface_pipe));
   }
 
   // InterfaceFactory<test::mojom::CreateInstanceTest>:
@@ -79,6 +82,7 @@ class ServiceManagerTestClient
   service_manager::Identity target_identity_;
   std::unique_ptr<base::RunLoop> wait_for_target_identity_loop_;
 
+  BinderRegistry registry_;
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerTestClient);
@@ -187,11 +191,9 @@ class ServiceManagerTest : public test::ServiceTest,
                                      service_manager::mojom::kInheritUserID);
     connector()->StartService(target, std::move(client),
                               MakeRequest(&receiver));
-    std::unique_ptr<service_manager::Connection> connection =
-        connector()->Connect(target);
-    connection->AddConnectionCompletedClosure(
-        base::Bind(&ServiceManagerTest::OnConnectionCompleted,
-                   base::Unretained(this)));
+    Connector::TestApi test_api(connector());
+    test_api.SetStartServiceCallback(base::Bind(
+        &ServiceManagerTest::OnConnectionCompleted, base::Unretained(this)));
 
     base::LaunchOptions options;
 #if defined(OS_WIN)
@@ -255,7 +257,7 @@ class ServiceManagerTest : public test::ServiceTest,
     }
   }
 
-  void OnConnectionCompleted() {}
+  void OnConnectionCompleted(mojom::ConnectResult, const Identity&) {}
 
   ServiceManagerTestClient* service_;
   mojo::Binding<mojom::ServiceManagerListener> binding_;
@@ -333,11 +335,9 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
         &OnServiceFailedToStartCallback,
         &failed_to_start, loop.QuitClosure()));
 
-    std::unique_ptr<Connection> embedder_connection =
-        connector()->Connect("service_manager_unittest_embedder");
+    connector()->StartService("service_manager_unittest_embedder");
     loop.Run();
     EXPECT_FALSE(failed_to_start);
-    EXPECT_FALSE(embedder_connection->IsPending());
     EXPECT_EQ(1, start_count);
     EXPECT_EQ("service_manager_unittest_embedder", service_name);
   }
@@ -355,11 +355,9 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
         &failed_to_start, loop.QuitClosure()));
 
     // Connect to the packaged singleton service.
-    std::unique_ptr<Connection> singleton_connection =
-        connector()->Connect("service_manager_unittest_singleton");
+    connector()->StartService("service_manager_unittest_singleton");
     loop.Run();
     EXPECT_FALSE(failed_to_start);
-    EXPECT_FALSE(singleton_connection->IsPending());
     EXPECT_EQ(1, start_count);
     EXPECT_EQ("service_manager_unittest_singleton", service_name);
   }

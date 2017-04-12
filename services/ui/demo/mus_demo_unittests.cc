@@ -40,7 +40,7 @@ class MusDemoTest : public service_manager::test::ServiceTest {
 }  // namespace
 
 TEST_F(MusDemoTest, CheckMusDemoDraws) {
-  connector()->Connect("mus_demo");
+  connector()->StartService("mus_demo");
 
   ::ui::mojom::WindowServerTestPtr test_interface;
   connector()->BindInterface(ui::mojom::kServiceName, &test_interface);

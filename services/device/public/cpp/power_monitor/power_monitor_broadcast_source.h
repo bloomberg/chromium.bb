@@ -9,7 +9,10 @@
 #include "base/power_monitor/power_monitor_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace device {
 
@@ -18,8 +21,7 @@ namespace device {
 class PowerMonitorBroadcastSource : public base::PowerMonitorSource,
                                     public device::mojom::PowerMonitorClient {
  public:
-  explicit PowerMonitorBroadcastSource(
-      service_manager::InterfaceProvider* interface_provider);
+  explicit PowerMonitorBroadcastSource(service_manager::Connector* connector);
   ~PowerMonitorBroadcastSource() override;
 
   void PowerStateChange(bool on_battery_power) override;

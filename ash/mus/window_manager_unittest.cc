@@ -87,7 +87,7 @@ TEST_F(MusWindowManagerTest, OpenWindow) {
 
   WindowTreeClientDelegate window_tree_delegate;
 
-  connector()->Connect(mojom::kServiceName);
+  connector()->StartService(mojom::kServiceName);
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.

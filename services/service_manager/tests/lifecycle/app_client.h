@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -29,8 +30,9 @@ class AppClient : public Service,
   void set_runner(ServiceRunner* runner) { runner_ = runner; }
 
   // Service:
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override;
+  void OnBindInterface(const ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool OnServiceManagerConnectionLost() override;
 
   // InterfaceFactory<LifecycleControl>:
@@ -49,6 +51,7 @@ class AppClient : public Service,
   void BindingLost();
 
   ServiceRunner* runner_ = nullptr;
+  BinderRegistry registry_;
   mojo::BindingSet<mojom::LifecycleControl> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(AppClient);

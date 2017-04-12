@@ -25,11 +25,11 @@ class ConnectorImpl : public Connector {
   void OnConnectionError();
 
   // Connector:
+  void StartService(const Identity& identity) override;
+  void StartService(const std::string& name) override;
   void StartService(const Identity& identity,
                     mojom::ServicePtr service,
                     mojom::PIDReceiverRequest pid_receiver_request) override;
-  std::unique_ptr<Connection> Connect(const std::string& name) override;
-  std::unique_ptr<Connection> Connect(const Identity& target) override;
   void BindInterface(const Identity& target,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -40,8 +40,14 @@ class ConnectorImpl : public Connector {
                                 const std::string& interface_name,
                                 const TestApi::Binder& binder) override;
   void ClearBinderOverrides() override;
+  void SetStartServiceCallback(const StartServiceCallback& callback) override;
+  void ResetStartServiceCallback() override;
 
   bool BindConnectorIfNecessary();
+
+  // Callback passed to mojom methods StartService()/BindInterface().
+  void StartServiceCallback(mojom::ConnectResult result,
+                            const Identity& user_id);
 
   using BinderOverrideMap = std::map<std::string, TestApi::Binder>;
 
@@ -51,8 +57,9 @@ class ConnectorImpl : public Connector {
   base::ThreadChecker thread_checker_;
 
   std::map<std::string, BinderOverrideMap> local_binder_overrides_;
+  Connector::StartServiceCallback start_service_callback_;
 
-  base::WeakPtrFactory<Connector> weak_factory_;
+  base::WeakPtrFactory<ConnectorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
 };

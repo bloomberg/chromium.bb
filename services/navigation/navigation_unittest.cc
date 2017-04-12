@@ -24,7 +24,7 @@ class NavigationTest : public service_manager::test::ServiceTest,
  protected:
    void SetUp() override {
      service_manager::test::ServiceTest::SetUp();
-     window_manager_connection_ = connector()->Connect("test_wm");
+     connector()->StartService("test_wm");
    }
 
   mojom::ViewClientPtr GetViewClient() {
@@ -66,7 +66,6 @@ class NavigationTest : public service_manager::test::ServiceTest,
   int load_count_ = 0;
   mojo::Binding<mojom::ViewClient> binding_;
   base::RunLoop* loop_ = nullptr;
-  std::unique_ptr<service_manager::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTest);
 };

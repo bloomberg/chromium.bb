@@ -6,7 +6,6 @@
 #define SERVICES_UI_WS_WINDOW_SERVER_SERVICE_TEST_BASE_H_
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/service_test.h"
 
 namespace ui {

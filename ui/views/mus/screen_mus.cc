@@ -8,7 +8,6 @@
 
 #include "ui/views/mus/screen_mus.h"
 
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/env.h"

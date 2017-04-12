@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_generator.h"
