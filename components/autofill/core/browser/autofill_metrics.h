@@ -351,6 +351,10 @@ class AutofillMetrics {
     USER_DID_EDIT_AUTOFILLED_FIELD,
     // Same as above, but only logged once per page load.
     USER_DID_EDIT_AUTOFILLED_FIELD_ONCE,
+
+    // User entered form data that appears to be a UPI Virtual Payment Address.
+    USER_DID_ENTER_UPI_VPA,
+
     NUM_USER_HAPPINESS_METRICS,
   };
 

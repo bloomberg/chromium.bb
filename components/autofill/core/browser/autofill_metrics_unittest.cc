@@ -852,6 +852,47 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
       GetFieldTypeGroupMetric(NAME_MIDDLE, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Test that we log UPI Virtual Payment Address.
+TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  // Heuristic value will match with Autocomplete attribute.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_LAST);
+  server_types.push_back(NAME_LAST);
+
+  // Heuristic value will NOT match with Autocomplete attribute.
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FIRST);
+  server_types.push_back(NAME_FIRST);
+
+  // Heuristic value will NOT match with Autocomplete attribute.
+  test::CreateTestFormField("Payment Address", "payment_address", "user@upi",
+                            "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(NO_SERVER_DATA);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->SubmitForm(form, TimeTicks::Now());
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UserHappiness", AutofillMetrics::USER_DID_ENTER_UPI_VPA, 1);
+}
+
 // Test that we do not log RAPPOR metrics when the number of mismatches is not
 // high enough.
 TEST_F(AutofillMetricsTest, Rappor_LowMismatchRate_NoMetricsReported) {

@@ -70,6 +70,10 @@ bool IsValidForType(const base::string16& value,
 // Returns the expected CVC length based on the |card_type|.
 size_t GetCvcLengthForCardType(const base::StringPiece card_type);
 
+// Returns true if |value| appears to be a UPI Virtual Payment Address.
+// https://upipayments.co.in/virtual-payment-address-vpa/
+bool IsUPIVirtualPaymentAddress(const base::string16& value);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_VALIDATION_H_

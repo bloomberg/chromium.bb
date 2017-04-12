@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/field_candidates.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_field.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
@@ -702,6 +703,10 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
     if (field->form_control_type == "password")
       continue;
 
+    if (IsUPIVirtualPaymentAddress(field->value)) {
+      AutofillMetrics::LogUserHappinessMetric(
+          AutofillMetrics::USER_DID_ENTER_UPI_VPA);
+    }
     // We count fields that were autofilled but later modified, regardless of
     // whether the data now in the field is recognized.
     if (field->previously_autofilled())

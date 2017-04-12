@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
@@ -319,6 +320,10 @@ size_t GetCvcLengthForCardType(const base::StringPiece card_type) {
     return AMEX_CVC_LENGTH;
 
   return GENERAL_CVC_LENGTH;
+}
+
+bool IsUPIVirtualPaymentAddress(const base::string16& value) {
+  return MatchesPattern(value, base::ASCIIToUTF16(kUPIVirtualPaymentAddressRe));
 }
 
 }  // namespace autofill

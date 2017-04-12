@@ -443,4 +443,50 @@ INSTANTIATE_TEST_CASE_P(
         GetCvcLengthForCardTypeCase{kUnionPay, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kVisaCard, GENERAL_CVC_LENGTH}));
 
+class AutofillIsUPIVirtualPaymentAddress
+    : public testing::TestWithParam<std::string> {};
+
+TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress) {
+  // Expected format is user@bank
+  EXPECT_TRUE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam())));
+
+  // Deviations should not match: bank, @bank, user@prefixbank, user@banksuffix.
+  EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam())));
+  EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16(GetParam() + "@")));
+  EXPECT_FALSE(IsUPIVirtualPaymentAddress(ASCIIToUTF16("@" + GetParam())));
+  EXPECT_FALSE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@invalid" + GetParam())));
+  EXPECT_FALSE(
+      IsUPIVirtualPaymentAddress(ASCIIToUTF16("user@" + GetParam() + ".com")));
+}
+
+INSTANTIATE_TEST_CASE_P(UPIVirtualPaymentAddress,
+                        AutofillIsUPIVirtualPaymentAddress,
+                        testing::Values("upi",
+                                        "allbank",
+                                        "andb",
+                                        "axisbank",
+                                        "barodampay",
+                                        "mahb",
+                                        "cnrb",
+                                        "csbpay",
+                                        "dcb",
+                                        "federal",
+                                        "hdfcbank",
+                                        "pockets",
+                                        "icici",
+                                        "idfcbank",
+                                        "indus",
+                                        "kbl",
+                                        "kaypay",
+                                        "pnb",
+                                        "sib",
+                                        "sbi",
+                                        "tjsp",
+                                        "uco",
+                                        "unionbank",
+                                        "united",
+                                        "vijb",
+                                        "ybl"));
+
 }  // namespace autofill

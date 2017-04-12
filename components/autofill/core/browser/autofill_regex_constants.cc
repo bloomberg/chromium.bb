@@ -309,5 +309,34 @@ const char kPhoneSuffixRe[] =
 const char kPhoneExtensionRe[] =
     "\\bext|ext\\b|extension"
     "|ramal";  // pt-BR, pt-PT
+const char kUPIVirtualPaymentAddressRe[] =
+    "^\\w+@("
+    "upi|"         // BHIM Bharat Interface for Money
+    "allbank|"     // Allahabad Bank UPI
+    "andb|"        // Andhra Bank ONE
+    "axisbank|"    // Axis Pay
+    "barodampay|"  // Baroda MPay
+    "mahb|"        // MAHAUPI
+    "cnrb|"        // Canara Bank UPI - Empower
+    "csbpay|"      // CSB UPI
+    "dcb|"         // DCB Bank
+    "federal|"     // Lotza
+    "hdfcbank|"    // HDFC Bank MobileBanking
+    "pockets|"     // Pockets- ICICI Bank
+    "icici|"       // Pockets- ICICI Bank
+    "idfcbank|"    // IDFC Bank UPI App
+    "indus|"       // Indus Pay
+    "kbl|"         // KBL Smartz
+    "kaypay|"      // KayPay
+    "pnb|"         // PNB UPI
+    "sib|"         // SIB M-Pay (UPI Pay)
+    "sbi|"         // SBI Pay
+    "tjsp|"        // TranZapp
+    "uco|"         // UCO UPI
+    "unionbank|"   // Union Bank UPI
+    "united|"      // United UPI
+    "vijb|"        // Vijaya UPI App
+    "ybl"          // Yes Pay
+    ")$";
 
 }  // namespace autofill
