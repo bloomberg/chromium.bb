@@ -390,6 +390,20 @@ NET_ERROR(WS_UPGRADE, -173)
 // visible, because the normal Read() method is used as a fallback.
 NET_ERROR(READ_IF_READY_NOT_IMPLEMENTED, -174)
 
+// This error is emitted if TLS 1.3 is enabled, connecting with it failed, but
+// retrying at a downgraded maximum version succeeded. This could mean:
+//
+// 1. This is a transient network error that will be resolved when the user
+//    reloads.
+//
+// 2. The user is behind a buggy network middlebox, firewall, or proxy which is
+//    interfering with TLS 1.3.
+//
+// 3. The server is buggy and does not implement TLS version negotiation
+//    correctly. TLS 1.3 was tweaked to avoid a common server bug here, so this
+//    is unlikely.
+NET_ERROR(SSL_VERSION_INTERFERENCE, -175)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

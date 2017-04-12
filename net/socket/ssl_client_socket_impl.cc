@@ -1066,6 +1066,11 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   if (result < 0)
     return result;
 
+  if (ssl_config_.version_interference_probe) {
+    DCHECK_LT(ssl_config_.version_max, TLS1_3_VERSION);
+    return ERR_SSL_VERSION_INTERFERENCE;
+  }
+
   SSLContext::GetInstance()->session_cache()->ResetLookupCount(
       GetSessionCacheKey());
   // Check that if token binding was negotiated, then extended master secret
@@ -1694,17 +1699,13 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
   std::string result = host_and_port_.ToString();
-  result.append("/");
+  result.push_back('/');
   result.append(ssl_session_cache_shard_);
 
-  result.append("/");
-  if (ssl_config_.deprecated_cipher_suites_enabled)
-    result.append("deprecated");
-
-  result.append("/");
-  if (ssl_config_.channel_id_enabled)
-    result.append("channelid");
-
+  result.push_back('/');
+  result.push_back(ssl_config_.deprecated_cipher_suites_enabled ? '1' : '0');
+  result.push_back(ssl_config_.channel_id_enabled ? '1' : '0');
+  result.push_back(ssl_config_.version_interference_probe ? '1' : '0');
   return result;
 }
 

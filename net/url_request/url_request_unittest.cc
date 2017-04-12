@@ -3423,8 +3423,10 @@ class TestSSLConfigService : public SSLConfigService {
         rev_checking_required_local_anchors_(
             rev_checking_required_local_anchors),
         token_binding_enabled_(token_binding_enabled),
-        min_version_(kDefaultSSLVersionMin) {}
+        min_version_(kDefaultSSLVersionMin),
+        max_version_(kDefaultSSLVersionMax) {}
 
+  void set_max_version(uint16_t version) { max_version_ = version; }
   void set_min_version(uint16_t version) { min_version_ = version; }
 
   // SSLConfigService:
@@ -3434,9 +3436,8 @@ class TestSSLConfigService : public SSLConfigService {
     config->verify_ev_cert = ev_enabled_;
     config->rev_checking_required_local_anchors =
         rev_checking_required_local_anchors_;
-    if (min_version_) {
-      config->version_min = min_version_;
-    }
+    config->version_min = min_version_;
+    config->version_max = max_version_;
     if (token_binding_enabled_) {
       config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
     }
@@ -3451,6 +3452,7 @@ class TestSSLConfigService : public SSLConfigService {
   const bool rev_checking_required_local_anchors_;
   const bool token_binding_enabled_;
   uint16_t min_version_;
+  uint16_t max_version_;
 };
 
 // TODO(svaldez): Update tests to use EmbeddedTestServer.
@@ -9369,10 +9371,21 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
 
 class HTTPSFallbackTest : public testing::Test {
  public:
-  HTTPSFallbackTest() : context_(true) {}
+  HTTPSFallbackTest()
+      : scoped_task_scheduler_(base::MessageLoop::current()), context_(true) {
+    ssl_config_service_ = new TestSSLConfigService(
+        true /* check for EV */, false /* online revocation checking */,
+        false /* require rev. checking for local anchors */,
+        false /* token binding enabled */);
+    context_.set_ssl_config_service(ssl_config_service_.get());
+  }
   ~HTTPSFallbackTest() override {}
 
  protected:
+  TestSSLConfigService* ssl_config_service() {
+    return ssl_config_service_.get();
+  }
+
   void DoFallbackTest(const SpawnedTestServer::SSLOptions& ssl_options) {
     DCHECK(!request_);
     context_.Init();
@@ -9391,15 +9404,25 @@ class HTTPSFallbackTest : public testing::Test {
     base::RunLoop().Run();
   }
 
+  void ExpectConnection(int version) {
+    EXPECT_EQ(1, delegate_.response_started_count());
+    EXPECT_NE(0, delegate_.bytes_received());
+    EXPECT_EQ(version, SSLConnectionStatusToVersion(
+                           request_->ssl_info().connection_status));
+  }
+
   void ExpectFailure(int error) {
     EXPECT_EQ(1, delegate_.response_started_count());
     EXPECT_EQ(error, delegate_.request_status());
   }
 
  private:
+  // Required by ChannelIDService.
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   TestDelegate delegate_;
   TestURLRequestContext context_;
   std::unique_ptr<URLRequest> request_;
+  scoped_refptr<TestSSLConfigService> ssl_config_service_;
 };
 
 // Tests the TLS 1.0 fallback doesn't happen.
@@ -9422,6 +9445,30 @@ TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
+}
+
+// Tests that TLS 1.3 interference results in a dedicated error code.
+TEST_F(HTTPSFallbackTest, TLSv1_3Interference) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_3;
+  ssl_config_service()->set_max_version(SSL_PROTOCOL_VERSION_TLS1_3);
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectFailure(ERR_SSL_VERSION_INTERFERENCE);
+}
+
+// Tests that disabling TLS 1.3 leaves TLS 1.3 interference unnoticed.
+TEST_F(HTTPSFallbackTest, TLSv1_3InterferenceDisableVersion) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_OK);
+  ssl_options.tls_intolerant =
+      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_3;
+  ssl_config_service()->set_max_version(SSL_PROTOCOL_VERSION_TLS1_2);
+
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_2);
 }
 
 class HTTPSSessionTest : public testing::Test {
