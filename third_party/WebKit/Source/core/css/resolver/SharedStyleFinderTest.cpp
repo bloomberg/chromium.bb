@@ -157,6 +157,25 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByFocus) {
   EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
 }
 
+TEST_F(SharedStyleFinderTest, AttributeAffectedByFocusWithin) {
+  SetBodyContent("<div id=a attr></div><div id=b></div>");
+
+  AddSelector("[attr]:focus-within");
+  FinishAddingSelectors();
+
+  Element* a = GetDocument().GetElementById("a");
+  Element* b = GetDocument().GetElementById("b");
+
+  ASSERT_TRUE(a);
+  ASSERT_TRUE(b);
+
+  EXPECT_FALSE(a->HasFocusWithin());
+  EXPECT_FALSE(b->HasFocusWithin());
+
+  EXPECT_TRUE(MatchesUncommonAttributeRuleSet(*a));
+  EXPECT_FALSE(MatchesUncommonAttributeRuleSet(*b));
+}
+
 TEST_F(SharedStyleFinderTest, AttributeAffectedByActive) {
   SetBodyContent("<div id=a attr></div><div id=b></div>");
 

@@ -2431,20 +2431,6 @@ crbug.com/668639 external/wpt/css/css-align-3/self-alignment/place-self-shorthan
 crbug.com/708121 external/wpt/css/css-align-3/distribution-values/space-evenly-001.html [ Failure ]
 
 # [selectors-4]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-001.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-002.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-003.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-004.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-005.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-006.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-007.html [ Failure ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-008.html [ Failure ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-009.html [ Failure ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-shadow-001.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-shadow-002.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-shadow-003.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-shadow-004.html [ Skip ]
-crbug.com/617371 external/wpt/css/selectors4/focus-within-shadow-005.html [ Skip ]
 crbug.com/706118 external/wpt/css/selectors4/hover-001-manual.html [ Skip ]
 crbug.com/576815 external/wpt/css/selectors4/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors4/selectors-dir-selector-rtl-001.html [ Failure ]
@@ -2455,9 +2441,6 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03a.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
-crbug.com/617371 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-1.html [ Skip ]
-crbug.com/617371 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-2.html [ Skip ]
-crbug.com/617371 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/focus-within-3.html [ Skip ]
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)

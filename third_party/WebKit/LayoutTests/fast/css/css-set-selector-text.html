@@ -88,6 +88,7 @@ testSelectorRoundTrip(":enabled");
 testSelectorRoundTrip(":first-child");
 testSelectorRoundTrip(":first-of-type");
 testSelectorRoundTrip(":focus");
+testSelectorRoundTrip(":focus-within");
 testSelectorRoundTrip(":hover");
 testSelectorRoundTrip(":indeterminate");
 testSelectorRoundTrip(":link");
@@ -148,6 +149,7 @@ testSelectorRoundTrip("a[b].c#d::-webkit-slider-thumb");
 debug('');
 
 testSelectorRoundTrip('input:not([type="file"]):focus');
+testSelectorRoundTrip('input:not([type="file"]):focus-within');
 testSelectorRoundTrip(':-webkit-any([type="file"])');
 testSelectorRoundTrip(':-webkit-any(:hover)');
 testSelectorRoundTrip('input:-webkit-any([type="file"],:hover,:focus):enabled');
@@ -164,6 +166,7 @@ testSelectorRoundTrip("|a");
 debug('');
 
 shouldBe("setThenReadSelectorText('input[type=file]:focus')", "'input[type=\"file\"]:focus'");
+shouldBe("setThenReadSelectorText('input[type=file]:focus-within')", "'input[type=\"file\"]:focus-within'");
 
 debug('');
 

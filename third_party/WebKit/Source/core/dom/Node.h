@@ -391,6 +391,9 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsFocused() const {
     return IsUserActionElement() && IsUserActionElementFocused();
   }
+  bool HasFocusWithin() const {
+    return IsUserActionElement() && IsUserActionElementHasFocusWithin();
+  }
 
   bool NeedsAttach() const {
     return GetStyleChangeType() == kNeedsReattachStyleChange;
@@ -478,6 +481,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   virtual void SetFocused(bool flag, WebFocusType);
+  virtual void SetHasFocusWithin(bool flag);
   virtual void SetActive(bool flag = true);
   virtual void SetDragged(bool flag);
   virtual void SetHovered(bool flag = true);
@@ -903,6 +907,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsUserActionElementDragged() const;
   bool IsUserActionElementHovered() const;
   bool IsUserActionElementFocused() const;
+  bool IsUserActionElementHasFocusWithin() const;
 
   void RecalcDistribution();
 

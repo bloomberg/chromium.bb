@@ -216,6 +216,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoHover:
     case kPseudoDrag:
     case kPseudoFocus:
+    case kPseudoFocusWithin:
     case kPseudoActive:
     case kPseudoChecked:
     case kPseudoEnabled:
@@ -333,6 +334,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"first-line", CSSSelector::kPseudoFirstLine},
     {"first-of-type", CSSSelector::kPseudoFirstOfType},
     {"focus", CSSSelector::kPseudoFocus},
+    {"focus-within", CSSSelector::kPseudoFocusWithin},
     {"future", CSSSelector::kPseudoFutureCue},
     {"horizontal", CSSSelector::kPseudoHorizontal},
     {"host", CSSSelector::kPseudoHost},
@@ -548,6 +550,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoFirstChild:
     case kPseudoFirstOfType:
     case kPseudoFocus:
+    case kPseudoFocusWithin:
     case kPseudoFullPageMedia:
     case kPseudoFullScreen:
     case kPseudoFullScreenAncestor:

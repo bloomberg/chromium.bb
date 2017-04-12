@@ -2351,6 +2351,10 @@ void Node::SetFocused(bool flag, WebFocusType focus_type) {
   GetDocument().UserActionElements().SetFocused(this, flag);
 }
 
+void Node::SetHasFocusWithin(bool flag) {
+  GetDocument().UserActionElements().SetHasFocusWithin(this, flag);
+}
+
 void Node::SetActive(bool flag) {
   GetDocument().UserActionElements().SetActive(this, flag);
 }
@@ -2386,6 +2390,11 @@ bool Node::IsUserActionElementHovered() const {
 bool Node::IsUserActionElementFocused() const {
   DCHECK(IsUserActionElement());
   return GetDocument().UserActionElements().IsFocused(this);
+}
+
+bool Node::IsUserActionElementHasFocusWithin() const {
+  DCHECK(IsUserActionElement());
+  return GetDocument().UserActionElements().HasFocusWithin(this);
 }
 
 void Node::SetCustomElementState(CustomElementState new_state) {

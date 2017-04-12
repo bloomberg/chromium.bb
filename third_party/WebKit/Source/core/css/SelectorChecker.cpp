@@ -914,6 +914,22 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         }
       }
       return MatchesFocusPseudoClass(element);
+    case CSSSelector::kPseudoFocusWithin:
+      if (mode_ == kSharingRules)
+        return true;
+      if (mode_ == kResolvingStyle) {
+        if (context.in_rightmost_compound) {
+          element_style_->SetAffectedByFocusWithin();
+        } else {
+          element_style_->SetUnique();
+          element.SetChildrenOrSiblingsAffectedByFocusWithin();
+        }
+      }
+      probe::forcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
+                              &force_pseudo_state);
+      if (force_pseudo_state)
+        return true;
+      return element.HasFocusWithin();
     case CSSSelector::kPseudoHover:
       if (mode_ == kSharingRules)
         return true;

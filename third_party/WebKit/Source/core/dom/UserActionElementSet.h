@@ -40,6 +40,9 @@ class UserActionElementSet final {
 
  public:
   bool IsFocused(const Node* node) { return HasFlags(node, kIsFocusedFlag); }
+  bool HasFocusWithin(const Node* node) {
+    return HasFlags(node, kHasFocusWithinFlag);
+  }
   bool IsActive(const Node* node) { return HasFlags(node, kIsActiveFlag); }
   bool IsInActiveChain(const Node* node) {
     return HasFlags(node, kInActiveChainFlag);
@@ -48,6 +51,9 @@ class UserActionElementSet final {
   bool IsHovered(const Node* node) { return HasFlags(node, kIsHoveredFlag); }
   void SetFocused(Node* node, bool enable) {
     SetFlags(node, enable, kIsFocusedFlag);
+  }
+  void SetHasFocusWithin(Node* node, bool enable) {
+    SetFlags(node, enable, kHasFocusWithinFlag);
   }
   void SetActive(Node* node, bool enable) {
     SetFlags(node, enable, kIsActiveFlag);
@@ -76,6 +82,7 @@ class UserActionElementSet final {
     kIsHoveredFlag = 1 << 2,
     kIsFocusedFlag = 1 << 3,
     kIsDraggedFlag = 1 << 4,
+    kHasFocusWithinFlag = 1 << 5,
   };
 
   void SetFlags(Node* node, bool enable, unsigned flags) {

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<input id="input">
+<script>
+  const input = document.getElementById("input");
+  input.focus();
+
+  async_test((t) => {
+    window.requestAnimationFrame(() => {
+      t.step(() => assert_true(input.matches(":focus"),
+                               "Check input mathces ':focus' after being focused"));
+      t.step(() => assert_true(input.matches(":focus-within"),
+                               "Check input mathces ':focus-within' after being focused"));
+
+      input.style.display = "none";
+      window.requestAnimationFrame(() => {
+        t.step(() => assert_false(input.matches(":focus"),
+                                  "Check input doesn't math ':focus' after getting 'display: none'"));
+        t.step(() => assert_false(input.matches(":focus-within"),
+                                  "Check input doesn't math ':focus-within' after getting 'display: none'"));
+        t.done();
+      });
+    });
+  }, "Test ':focus-within' after 'display:none'");
+</script>

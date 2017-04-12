@@ -38,6 +38,8 @@ NONPROPERTIES = [
     # Whether this style is affected by these pseudo-classes.
     {'name': 'AffectedByFocus', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False, 'default_value': False},
+    {'name': 'AffectedByFocusWithin', 'field_template': 'monotonic_flag',
+     'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'AffectedByHover', 'field_template': 'monotonic_flag',
      'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'AffectedByActive', 'field_template': 'monotonic_flag',

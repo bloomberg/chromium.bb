@@ -50,6 +50,7 @@ PASS setThenReadSelectorText(':enabled') is ':enabled'
 PASS setThenReadSelectorText(':first-child') is ':first-child'
 PASS setThenReadSelectorText(':first-of-type') is ':first-of-type'
 PASS setThenReadSelectorText(':focus') is ':focus'
+PASS setThenReadSelectorText(':focus-within') is ':focus-within'
 PASS setThenReadSelectorText(':hover') is ':hover'
 PASS setThenReadSelectorText(':indeterminate') is ':indeterminate'
 PASS setThenReadSelectorText(':link') is ':link'
@@ -96,6 +97,7 @@ PASS setThenReadSelectorText('a#b::-webkit-slider-thumb') is 'a#b::-webkit-slide
 PASS setThenReadSelectorText('a[b].c#d::-webkit-slider-thumb') is 'a[b].c#d::-webkit-slider-thumb'
 
 PASS setThenReadSelectorText('input:not([type="file"]):focus') is 'input:not([type="file"]):focus'
+PASS setThenReadSelectorText('input:not([type="file"]):focus-within') is 'input:not([type="file"]):focus-within'
 PASS setThenReadSelectorText(':-webkit-any([type="file"])') is ':-webkit-any([type="file"])'
 PASS setThenReadSelectorText(':-webkit-any(:hover)') is ':-webkit-any(:hover)'
 PASS setThenReadSelectorText('input:-webkit-any([type="file"],:hover,:focus):enabled') is 'input:-webkit-any([type="file"],:hover,:focus):enabled'
@@ -108,6 +110,7 @@ PASS setThenReadSelectorText('*:active') is ':active'
 PASS setThenReadSelectorText('|a') is '|a'
 
 PASS setThenReadSelectorText('input[type=file]:focus') is 'input[type="file"]:focus'
+PASS setThenReadSelectorText('input[type=file]:focus-within') is 'input[type="file"]:focus-within'
 
 PASS setThenReadSelectorText('a+b') is 'a + b'
 PASS setThenReadSelectorText('a~b') is 'a ~ b'

@@ -159,6 +159,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoHover,
     kPseudoDrag,
     kPseudoFocus,
+    kPseudoFocusWithin,
     kPseudoActive,
     kPseudoChecked,
     kPseudoEnabled,
@@ -531,7 +532,8 @@ inline const AtomicString& CSSSelector::SerializingValue() const {
 
 inline bool CSSSelector::IsUserActionPseudoClass() const {
   return pseudo_type_ == kPseudoHover || pseudo_type_ == kPseudoActive ||
-         pseudo_type_ == kPseudoFocus || pseudo_type_ == kPseudoDrag;
+         pseudo_type_ == kPseudoFocus || pseudo_type_ == kPseudoDrag ||
+         pseudo_type_ == kPseudoFocusWithin;
 }
 
 inline bool CSSSelector::IsIdClassOrAttributeSelector() const {

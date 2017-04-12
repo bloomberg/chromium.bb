@@ -173,6 +173,7 @@ bool IsUserActionPseudoClass(CSSSelector::PseudoType pseudo) {
   switch (pseudo) {
     case CSSSelector::kPseudoHover:
     case CSSSelector::kPseudoFocus:
+    case CSSSelector::kPseudoFocusWithin:
     case CSSSelector::kPseudoActive:
       return true;
     default:
@@ -442,6 +443,10 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   AtomicString value = token.Value().ToAtomicString().LowerASCII();
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, has_arguments);
+
+  if (!RuntimeEnabledFeatures::cssSelectorsFocusWithinEnabled() &&
+      selector->GetPseudoType() == CSSSelector::kPseudoFocusWithin)
+    return nullptr;
 
   if (selector->Match() == CSSSelector::kPseudoElement &&
       disallow_pseudo_elements_)

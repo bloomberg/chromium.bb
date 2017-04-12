@@ -37,7 +37,8 @@ UserActionElementSet::~UserActionElementSet() {}
 
 void UserActionElementSet::DidDetach(Element& element) {
   DCHECK(element.IsUserActionElement());
-  ClearFlags(&element, kIsActiveFlag | kInActiveChainFlag | kIsHoveredFlag);
+  ClearFlags(&element, kIsActiveFlag | kInActiveChainFlag | kIsHoveredFlag |
+                           kHasFocusWithinFlag);
 }
 
 bool UserActionElementSet::HasFlags(const Node* node, unsigned flags) const {

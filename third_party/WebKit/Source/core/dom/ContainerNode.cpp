@@ -1025,6 +1025,23 @@ void ContainerNode::FocusStateChanged() {
 
   LayoutTheme::GetTheme().ControlStateChanged(*GetLayoutObject(),
                                               kFocusControlState);
+  FocusWithinStateChanged();
+}
+
+void ContainerNode::FocusWithinStateChanged() {
+  if (GetComputedStyle() && GetComputedStyle()->AffectedByFocusWithin()) {
+    StyleChangeType change_type =
+        GetComputedStyle()->HasPseudoStyle(kPseudoIdFirstLetter)
+            ? kSubtreeStyleChange
+            : kLocalStyleChange;
+    SetNeedsStyleRecalc(change_type,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            StyleChangeReason::kPseudoClass,
+                            StyleChangeExtraData::g_focus_within));
+  }
+  if (IsElementNode() &&
+      ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin())
+    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
 }
 
 void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
@@ -1052,6 +1069,13 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
 
   FocusStateChanged();
 
+  UpdateDistribution();
+  for (ContainerNode* node = this; node;
+       node = FlatTreeTraversal::Parent(*node)) {
+    node->SetHasFocusWithin(received);
+    node->FocusWithinStateChanged();
+  }
+
   if (GetLayoutObject() || received)
     return;
 
@@ -1064,6 +1088,16 @@ void ContainerNode::SetFocused(bool received, WebFocusType focus_type) {
         kLocalStyleChange,
         StyleChangeReasonForTracing::CreateWithExtraData(
             StyleChangeReason::kPseudoClass, StyleChangeExtraData::g_focus));
+
+  if (IsElementNode() &&
+      ToElement(this)->ChildrenOrSiblingsAffectedByFocusWithin()) {
+    ToElement(this)->PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
+  } else {
+    SetNeedsStyleRecalc(kLocalStyleChange,
+                        StyleChangeReasonForTracing::CreateWithExtraData(
+                            StyleChangeReason::kPseudoClass,
+                            StyleChangeExtraData::g_focus_within));
+  }
 }
 
 void ContainerNode::SetActive(bool down) {
