@@ -26,6 +26,7 @@ test("ios_clean_chrome_unittests") {
     "//ios/clean/chrome/browser/ui/recent_tabs:unit_tests",
     "//ios/clean/chrome/browser/ui/tab_collection:unit_tests",
     "//ios/clean/chrome/browser/ui/tab_grid:unit_tests",
+    "//ios/clean/chrome/browser/ui/toolbar:unit_tests",
     "//ios/clean/chrome/browser/ui/web_contents:unit_tests",
   ]
 }

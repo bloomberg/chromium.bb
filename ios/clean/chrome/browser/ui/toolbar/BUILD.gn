@@ -59,3 +59,22 @@ source_set("toolbar_components_ui") {
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "toolbar_mediator_unittest.mm",
+  ]
+  deps = [
+    ":toolbar",
+    ":toolbar_ui",
+    "//base",
+    "//base/test:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
