@@ -273,7 +273,6 @@ class CC_EXPORT SoftwareImageDecodeCache
       const ImageKey& key,
       sk_sp<const SkImage> image);
 
-  void SanityCheckState(int line, bool lock_acquired);
   void RefImage(const ImageKey& key);
   void RefAtRasterImage(const ImageKey& key);
   void UnrefAtRasterImage(const ImageKey& key);

@@ -274,7 +274,6 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
         (new_image_fits_in_memory && decoded_it->second->Lock())) {
       RefImage(key);
       *task = nullptr;
-      SanityCheckState(__LINE__, true);
 
       // If the image wasn't locked, then we just succeeded in locking it.
       if (!image_was_locked) {
@@ -305,7 +304,6 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   if (existing_task) {
     RefImage(key);
     *task = existing_task;
-    SanityCheckState(__LINE__, true);
     return true;
   }
 
@@ -317,7 +315,6 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   if (!new_image_fits_in_memory && (decoded_images_ref_counts_.find(key) ==
                                     decoded_images_ref_counts_.end())) {
     *task = nullptr;
-    SanityCheckState(__LINE__, true);
     return false;
   }
 
@@ -327,7 +324,6 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   existing_task = make_scoped_refptr(
       new ImageDecodeTaskImpl(this, key, image, task_type, tracing_info));
   *task = existing_task;
-  SanityCheckState(__LINE__, true);
   return true;
 }
 
@@ -365,14 +361,11 @@ void SoftwareImageDecodeCache::UnrefImage(const DrawImage& image) {
     auto decoded_image_it = decoded_images_.Peek(key);
     // If we've never decoded the image before ref reached 0, then we wouldn't
     // have it in our cache. This would happen if we canceled tasks.
-    if (decoded_image_it == decoded_images_.end()) {
-      SanityCheckState(__LINE__, true);
+    if (decoded_image_it == decoded_images_.end())
       return;
-    }
     DCHECK(decoded_image_it->second->is_locked());
     decoded_image_it->second->Unlock();
   }
-  SanityCheckState(__LINE__, true);
 }
 
 void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
@@ -436,7 +429,6 @@ void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
   }
 
   decoded_images_.Put(key, std::move(decoded_image));
-  SanityCheckState(__LINE__, true);
 }
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
@@ -494,7 +486,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
     if (decoded_image->is_locked()) {
       RefImage(key);
       decoded_image->mark_used();
-      SanityCheckState(__LINE__, true);
       return DecodedDrawImage(
           decoded_image->image(), decoded_image->src_rect_offset(),
           GetScaleAdjustment(key), GetDecodedFilterQuality(key));
@@ -510,7 +501,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   if (at_raster_images_it != at_raster_decoded_images_.end()) {
     DCHECK(at_raster_images_it->second->is_locked());
     RefAtRasterImage(key);
-    SanityCheckState(__LINE__, true);
     DecodedImage* at_raster_decoded_image = at_raster_images_it->second.get();
     at_raster_decoded_image->mark_used();
     auto decoded_draw_image =
@@ -564,7 +554,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   DCHECK(decoded_image);
   DCHECK(decoded_image->is_locked());
   RefAtRasterImage(key);
-  SanityCheckState(__LINE__, true);
   decoded_image->mark_used();
   auto decoded_draw_image =
       DecodedDrawImage(decoded_image->image(), decoded_image->src_rect_offset(),
@@ -748,7 +737,6 @@ void SoftwareImageDecodeCache::DrawWithImageFinished(
     UnrefAtRasterImage(key);
   else
     UnrefImage(image);
-  SanityCheckState(__LINE__, false);
 }
 
 void SoftwareImageDecodeCache::RefAtRasterImage(const ImageKey& key) {
@@ -890,38 +878,6 @@ void SoftwareImageDecodeCache::DumpImageMemoryForCache(
     dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
                     locked_bytes);
   }
-}
-
-void SoftwareImageDecodeCache::SanityCheckState(int line, bool lock_acquired) {
-#if DCHECK_IS_ON()
-  if (!lock_acquired) {
-    base::AutoLock lock(lock_);
-    SanityCheckState(line, true);
-    return;
-  }
-
-  MemoryBudget budget(locked_images_budget_.total_limit_bytes());
-  for (const auto& image_pair : decoded_images_) {
-    const auto& key = image_pair.first;
-    const auto& image = image_pair.second;
-
-    auto ref_it = decoded_images_ref_counts_.find(key);
-    if (image->is_locked()) {
-      budget.AddUsage(key.locked_bytes());
-      DCHECK(ref_it != decoded_images_ref_counts_.end()) << line;
-    } else {
-      DCHECK(ref_it == decoded_images_ref_counts_.end() ||
-             pending_in_raster_image_tasks_.find(key) !=
-                 pending_in_raster_image_tasks_.end() ||
-             pending_out_of_raster_image_tasks_.find(key) !=
-                 pending_out_of_raster_image_tasks_.end())
-          << line;
-    }
-  }
-  DCHECK_GE(budget.AvailableMemoryBytes(),
-            locked_images_budget_.AvailableMemoryBytes())
-      << line;
-#endif  // DCHECK_IS_ON()
 }
 
 // SoftwareImageDecodeCacheKey
