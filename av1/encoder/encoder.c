@@ -4775,6 +4775,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
     ++cm->current_video_frame;
 
+#if CONFIG_EC_ADAPT
+    aom_free(tile_ctxs);
+    aom_free(cdf_ptrs);
+#endif
     return;
   }
 #endif  // CONFIG_EXT_REFS
@@ -4824,6 +4828,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
     ++cm->current_video_frame;
+#if CONFIG_EC_ADAPT
+    aom_free(tile_ctxs);
+    aom_free(cdf_ptrs);
+#endif
     return;
   }
 #else
@@ -4834,6 +4842,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
       ++cm->current_video_frame;
+#if CONFIG_EC_ADAPT
+      aom_free(tile_ctxs);
+      aom_free(cdf_ptrs);
+#endif
       return;
     }
   }
@@ -4924,7 +4936,13 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // Build the bitstream
   av1_pack_bitstream(cpi, dest, size);
 
-  if (skip_adapt) return;
+  if (skip_adapt) {
+#if CONFIG_EC_ADAPT
+    aom_free(tile_ctxs);
+    aom_free(cdf_ptrs);
+#endif
+    return;
+  }
 
 #if CONFIG_REFERENCE_BUFFER
   {
@@ -5024,6 +5042,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
     ++cm->current_video_frame;
+#if CONFIG_EC_ADAPT
+    aom_free(tile_ctxs);
+    aom_free(cdf_ptrs);
+#endif
     return;
   }
 #else
