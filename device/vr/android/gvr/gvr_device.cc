@@ -60,21 +60,21 @@ void GvrDevice::SubmitFrame(int16_t frame_index,
 }
 
 void GvrDevice::UpdateLayerBounds(int16_t frame_index,
-                                  mojom::VRLayerBoundsPtr left_bounds,
-                                  mojom::VRLayerBoundsPtr right_bounds,
+                                  mojom::VRLayerBoundsPtr left_bounds_ptr,
+                                  mojom::VRLayerBoundsPtr right_bounds_ptr,
                                   int16_t source_width,
                                   int16_t source_height) {
   GvrDelegate* delegate = GetGvrDelegate();
   if (!delegate)
     return;
 
-  gfx::RectF left_gvr_bounds(left_bounds->left, left_bounds->top,
-                             left_bounds->width, left_bounds->height);
-  gfx::RectF right_gvr_bounds(right_bounds->left, right_bounds->top,
-                              right_bounds->width, right_bounds->height);
+  gfx::RectF left_bounds(left_bounds_ptr->left, left_bounds_ptr->top,
+                         left_bounds_ptr->width, left_bounds_ptr->height);
+  gfx::RectF right_bounds(right_bounds_ptr->left, right_bounds_ptr->top,
+                          right_bounds_ptr->width, right_bounds_ptr->height);
   gfx::Size source_size(source_width, source_height);
-  delegate->UpdateWebVRTextureBounds(frame_index, left_gvr_bounds,
-                                     right_gvr_bounds, source_size);
+  delegate->UpdateWebVRTextureBounds(frame_index, left_bounds, right_bounds,
+                                     source_size);
 }
 
 void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {

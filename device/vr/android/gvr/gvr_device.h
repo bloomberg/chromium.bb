@@ -30,8 +30,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   void SubmitFrame(int16_t frame_index,
                    const gpu::MailboxHolder& mailbox) override;
   void UpdateLayerBounds(int16_t frame_index,
-                         mojom::VRLayerBoundsPtr left_bounds,
-                         mojom::VRLayerBoundsPtr right_bounds,
+                         mojom::VRLayerBoundsPtr left_bounds_ptr,
+                         mojom::VRLayerBoundsPtr right_bounds_ptr,
                          int16_t source_width,
                          int16_t source_height) override;
   void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) override;

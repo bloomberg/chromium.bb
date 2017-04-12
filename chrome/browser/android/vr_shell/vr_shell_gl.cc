@@ -150,6 +150,16 @@ void GvrMatToMatf(const gvr::Mat4f& in, vr::Mat4f* out) {
   *out = *reinterpret_cast<vr::Mat4f*>(const_cast<gvr::Mat4f*>(&in));
 }
 
+gvr::Rectf GvrRectFromGfxRect(gfx::RectF rect) {
+  // gvr::Rectf bottom/top are reverse of gfx::RectF bottom/top.
+  return {rect.x(), rect.x() + rect.width(), rect.y(), rect.bottom()};
+}
+
+gfx::RectF GfxRectFromGvrRect(gvr::Rectf rect) {
+  return gfx::RectF(rect.left, rect.bottom, rect.right - rect.left,
+                    rect.top - rect.bottom);
+}
+
 }  // namespace
 
 VrShellGl::VrShellGl(
@@ -775,14 +785,9 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
         break;
 
       const WebVrBounds& bounds = pending_bounds_.front().second;
-      const gfx::RectF& left = bounds.left_bounds;
-      const gfx::RectF& right = bounds.right_bounds;
-      gvr::Rectf gvr_left_bounds = {left.x(), left.x() + left.width(),
-                                    left.y() + left.height(), left.y()};
-      webvr_left_viewport_->SetSourceUv(gvr_left_bounds);
-      gvr::Rectf gvr_right_bounds = {right.x(), right.x() + right.width(),
-                                     right.y() + right.height(), right.y()};
-      webvr_right_viewport_->SetSourceUv(gvr_right_bounds);
+      webvr_left_viewport_->SetSourceUv(GvrRectFromGfxRect(bounds.left_bounds));
+      webvr_right_viewport_->SetSourceUv(
+          GvrRectFromGfxRect(bounds.right_bounds));
       DVLOG(1) << __FUNCTION__ << ": resize from pending_bounds to "
                << bounds.source_size.width() << "x"
                << bounds.source_size.height();
@@ -953,19 +958,17 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
     GvrMatToMatf(gvr_api_->GetEyeFromHeadMatrix(eye), &eye_matrix);
     vr::MatrixMul(eye_matrix, head_pose, &eye_view_matrix);
 
-    gvr::Rectf gvr_rect = buffer_viewport_->GetSourceUv();
-    gfx::RectF rect(gvr_rect.left, gvr_rect.top, gvr_rect.right - gvr_rect.left,
-                    gvr_rect.bottom - gvr_rect.top);
-    gfx::Rect pixel_rect = CalculatePixelSpaceRect(render_size, rect);
+    const gfx::RectF& rect =
+        GfxRectFromGvrRect(buffer_viewport_->GetSourceUv());
+    const gfx::Rect& pixel_rect = CalculatePixelSpaceRect(render_size, rect);
     glViewport(pixel_rect.x(), pixel_rect.y(), pixel_rect.width(),
                pixel_rect.height());
 
     vr::Mat4f render_matrix;
     vr::Mat4f perspective_matrix;
-    gvr::Rectf fov = buffer_viewport_->GetSourceFov();
     vr::PerspectiveMatrixFromView(
-        {fov.left, fov.top, fov.right - fov.left, fov.bottom - fov.top}, kZNear,
-        kZFar, &perspective_matrix);
+        GfxRectFromGvrRect(buffer_viewport_->GetSourceFov()), kZNear, kZFar,
+        &perspective_matrix);
     vr::MatrixMul(perspective_matrix, eye_view_matrix, &render_matrix);
 
     DrawElements(render_matrix, elementsInDrawOrder);
@@ -1204,12 +1207,8 @@ void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
                                          const gfx::RectF& right_bounds,
                                          const gfx::Size& source_size) {
   if (frame_index < 0) {
-    gvr::Rectf left = {left_bounds.x(), left_bounds.right(),
-                       left_bounds.bottom(), left_bounds.y()};
-    webvr_left_viewport_->SetSourceUv(left);
-    gvr::Rectf right = {right_bounds.x(), right_bounds.right(),
-                        right_bounds.bottom(), right_bounds.y()};
-    webvr_right_viewport_->SetSourceUv(right);
+    webvr_left_viewport_->SetSourceUv(GvrRectFromGfxRect(left_bounds));
+    webvr_right_viewport_->SetSourceUv(GvrRectFromGfxRect(right_bounds));
     CreateOrResizeWebVRSurface(source_size);
   } else {
     pending_bounds_.emplace(

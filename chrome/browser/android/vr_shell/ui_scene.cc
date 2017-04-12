@@ -452,22 +452,22 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
 
   DCHECK(!(element->lock_to_fov && element->parent_id != -1));
   float val;
-  ParseFloat(dict, "sizeX", &val);
-  element->size.set_x(val);
-  ParseFloat(dict, "sizeY", &val);
-  element->size.set_y(val);
-  ParseFloat(dict, "scaleX", &val);
-  element->scale.set_x(val);
-  ParseFloat(dict, "scaleY", &val);
-  element->scale.set_y(val);
-  ParseFloat(dict, "scaleZ", &val);
-  element->scale.set_z(val);
-  ParseFloat(dict, "translationX", &val);
-  element->translation.set_x(val);
-  ParseFloat(dict, "translationY", &val);
-  element->translation.set_y(val);
-  ParseFloat(dict, "translationZ", &val);
-  element->translation.set_z(val);
+  if (ParseFloat(dict, "sizeX", &val))
+    element->size.set_x(val);
+  if (ParseFloat(dict, "sizeY", &val))
+    element->size.set_y(val);
+  if (ParseFloat(dict, "scaleX", &val))
+    element->scale.set_x(val);
+  if (ParseFloat(dict, "scaleY", &val))
+    element->scale.set_y(val);
+  if (ParseFloat(dict, "scaleZ", &val))
+    element->scale.set_z(val);
+  if (ParseFloat(dict, "translationX", &val))
+    element->translation.set_x(val);
+  if (ParseFloat(dict, "translationY", &val))
+    element->translation.set_y(val);
+  if (ParseFloat(dict, "translationZ", &val))
+    element->translation.set_z(val);
   ParseFloat(dict, "rotationX", &element->rotation.x);
   ParseFloat(dict, "rotationY", &element->rotation.y);
   ParseFloat(dict, "rotationZ", &element->rotation.z);
