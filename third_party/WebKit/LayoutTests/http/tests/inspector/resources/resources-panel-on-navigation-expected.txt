@@ -52,14 +52,9 @@ Frames
   top
     Scripts
       console-test.js
-      console-test.js
-      indexeddb-test.js
       indexeddb-test.js
       inspector-test.js
-      inspector-test.js
       resources-test.js
-      resources-test.js
-    resources-panel-on-navigation.html
     resources-panel-on-navigation.html
 Visible view is a query view: false
 
