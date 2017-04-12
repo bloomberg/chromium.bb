@@ -28,9 +28,7 @@ void CopylessPasteServer::GetEntities(const GetEntitiesCallback& callback) {
     callback.Run(nullptr);
     return;
   }
-  // TODO(wychen): connect with CopylessPasteExtractor::extract() like:
-  // callback.Run(CopylessPasteExtractor::extract(*m_frame->document()));
-  callback.Run(nullptr);
+  callback.Run(CopylessPasteExtractor::extract(*frame_->GetDocument()));
 }
 
 }  // namespace blink
