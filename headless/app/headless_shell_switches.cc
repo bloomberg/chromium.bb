@@ -7,6 +7,11 @@
 namespace headless {
 namespace switches {
 
+// The background color to be used if the page doesn't specify one. Provided as
+// RGBA integer value in hex, e.g. 'ff0000ff' for red or '00000000' for
+// transparent.
+const char kDefaultBackgroundColor[] = "default-background-color";
+
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
@@ -49,6 +54,9 @@ const char kTimeout[] = "timeout";
 // rendering.
 const char kUseGL[] = "use-gl";
 
+// A string used to override the default user agent with a custom one.
+const char kUserAgent[] = "user-agent";
+
 // Directory where the browser stores the user profile.
 const char kUserDataDir[] = "user-data-dir";
 
@@ -62,9 +70,6 @@ const char kVirtualTimeBudget[] = "virtual-time-budget";
 
 // Sets the initial window size. Provided as string in the format "800,600".
 const char kWindowSize[] = "window-size";
-
-// A string used to override the default user agent with a custom one.
-const char kUserAgent[] = "user-agent";
 
 }  // namespace switches
 }  // namespace headless

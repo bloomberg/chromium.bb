@@ -9,6 +9,8 @@
 
 namespace headless {
 namespace switches {
+
+extern const char kDefaultBackgroundColor[];
 extern const char kCrashDumpsDir[];
 extern const char kDeterministicFetch[];
 extern const char kDumpDom[];
@@ -20,10 +22,10 @@ extern const char kRepl[];
 extern const char kScreenshot[];
 extern const char kTimeout[];
 extern const char kUseGL[];
+extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kVirtualTimeBudget[];
 extern const char kWindowSize[];
-extern const char kUserAgent[];
 
 // Switches which are replicated from content.
 using ::switches::kHostResolverRules;

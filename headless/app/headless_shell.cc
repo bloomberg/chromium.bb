@@ -136,8 +136,6 @@ void HeadlessShell::DevToolsTargetReady() {
   devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->Enable();
-  // Check if the document had already finished loading by the time we
-  // attached.
 
   devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
 
@@ -147,6 +145,28 @@ void HeadlessShell::DevToolsTargetReady() {
         headless::page::SetControlNavigationsParams::Builder()
             .SetEnabled(true)
             .Build());
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDefaultBackgroundColor)) {
+    std::string color_hex =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kDefaultBackgroundColor);
+    uint32_t color;
+    CHECK(base::HexStringToUInt(color_hex, &color))
+        << "Expected a hex value for --default-background-color=";
+    auto rgba = headless::dom::RGBA::Builder()
+                    .SetR((color & 0xff000000) >> 24)
+                    .SetG((color & 0x00ff0000) >> 16)
+                    .SetB((color & 0x0000ff00) >> 8)
+                    .SetA(color & 0x000000ff)
+                    .Build();
+    devtools_client_->GetEmulation()
+        ->GetExperimental()
+        ->SetDefaultBackgroundColorOverride(
+            headless::emulation::SetDefaultBackgroundColorOverrideParams::
+                Builder()
+                    .SetColor(std::move(rgba))
+                    .Build());
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -164,6 +184,8 @@ void HeadlessShell::DevToolsTargetReady() {
             .SetBudget(budget_ms)
             .Build());
   } else {
+    // Check if the document had already finished loading by the time we
+    // attached.
     PollReadyState();
   }
 
@@ -438,8 +460,18 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
                << "remote debug port is set.";
     return false;
   }
+  if (command_line.HasSwitch(switches::kDefaultBackgroundColor)) {
+    LOG(ERROR) << "Setting default background color is disabled "
+               << "when remote debugging is enabled.";
+    return false;
+  }
   if (command_line.HasSwitch(switches::kDumpDom)) {
     LOG(ERROR) << "Dump DOM is disabled when remote debugging is enabled.";
+    return false;
+  }
+  if (command_line.HasSwitch(switches::kPrintToPDF)) {
+    LOG(ERROR) << "Print to PDF is disabled "
+               << "when remote debugging is enabled.";
     return false;
   }
   if (command_line.HasSwitch(switches::kRepl)) {
@@ -449,11 +481,6 @@ bool ValidateCommandLine(const base::CommandLine& command_line) {
   }
   if (command_line.HasSwitch(switches::kScreenshot)) {
     LOG(ERROR) << "Capture screenshot is disabled "
-               << "when remote debugging is enabled.";
-    return false;
-  }
-  if (command_line.HasSwitch(switches::kPrintToPDF)) {
-    LOG(ERROR) << "Print to PDF is disabled "
                << "when remote debugging is enabled.";
     return false;
   }
