@@ -131,11 +131,6 @@ InfoBarDelegate::AsMediaStreamInfoBarDelegateAndroid() {
   return nullptr;
 }
 
-MediaThrottleInfoBarDelegate*
-    InfoBarDelegate::AsMediaThrottleInfoBarDelegate() {
-  return nullptr;
-}
-
 offline_pages::OfflinePageInfoBarDelegate*
 InfoBarDelegate::AsOfflinePageInfoBarDelegate() {
   return nullptr;

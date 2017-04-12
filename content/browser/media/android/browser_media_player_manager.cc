@@ -11,7 +11,6 @@
 #include "base/memory/singleton.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
-#include "content/browser/media/android/media_throttler.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -69,9 +68,13 @@ void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
 // static
 BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
     RenderFrameHost* rfh) {
-  if (g_factory)
-    return g_factory(rfh);
-  return new BrowserMediaPlayerManager(rfh);
+  // In chrome, |g_factory| should be set to create a RemoteMediaPlayerManager,
+  // since RegisterFactory() should be called from
+  // ChromeMainDelegateAndroid::BasicStartupComplete.
+  //
+  // In webview, no factory should be set, and returning a nullptr should be
+  // handled by the caller.
+  return g_factory != nullptr ? g_factory(rfh) : nullptr;
 }
 
 #if !defined(USE_AURA)
@@ -372,13 +375,12 @@ void BrowserMediaPlayerManager::OnStart(int player_id) {
   if (!player)
     return;
 
-  if (RequestDecoderResources(player_id, false)) {
-    StartInternal(player_id);
-  } else if (WebContentsDelegate* delegate = web_contents_->GetDelegate()){
-    delegate->RequestMediaDecodePermission(
-        web_contents_,
-        base::Bind(&BrowserMediaPlayerManager::OnPlaybackPermissionGranted,
-                   weak_ptr_factory_.GetWeakPtr(), player_id));
+  RequestDecoderResources(player_id, false);
+
+  player->Start();
+  if (fullscreen_player_id_ == player_id && fullscreen_player_is_released_) {
+    video_view_->OpenVideo();
+    fullscreen_player_is_released_ = false;
   }
 }
 
@@ -484,9 +486,6 @@ std::unique_ptr<MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
 
 bool BrowserMediaPlayerManager::RequestDecoderResources(
     int player_id, bool temporary) {
-  if (!MediaThrottler::GetInstance()->RequestDecoderResources())
-    return false;
-
   ActivePlayerMap::iterator it;
   // The player is already active, ignore it. A long running player should not
   // request temporary permissions.
@@ -525,7 +524,6 @@ void BrowserMediaPlayerManager::OnDecoderResourcesReleased(int player_id) {
     return;
 
   active_players_.erase(player_id);
-  MediaThrottler::GetInstance()->OnDecodeRequestFinished();
 }
 
 int BrowserMediaPlayerManager::RoutingID() {
@@ -543,26 +541,6 @@ void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(
 
 void BrowserMediaPlayerManager::ReleasePlayer(MediaPlayerAndroid* player) {
   player->Release();
-}
-
-void BrowserMediaPlayerManager::OnPlaybackPermissionGranted(
-    int player_id, bool granted) {
-  if (!granted)
-    return;
-
-  MediaThrottler::GetInstance()->Reset();
-  StartInternal(player_id);
-}
-
-void BrowserMediaPlayerManager::StartInternal(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (!player)
-    return;
-  player->Start();
-  if (fullscreen_player_id_ == player_id && fullscreen_player_is_released_) {
-    video_view_->OpenVideo();
-    fullscreen_player_is_released_ = false;
-  }
 }
 
 }  // namespace content

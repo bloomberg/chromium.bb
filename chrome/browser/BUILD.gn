@@ -2830,8 +2830,6 @@ split_static_library("browser") {
       "android/logo_bridge.h",
       "android/logo_service.cc",
       "android/logo_service.h",
-      "android/media/media_throttle_infobar_delegate.cc",
-      "android/media/media_throttle_infobar_delegate.h",
       "android/metrics/launch_metrics.cc",
       "android/metrics/launch_metrics.h",
       "android/metrics/uma_session_stats.cc",

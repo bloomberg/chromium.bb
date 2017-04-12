@@ -67,9 +67,6 @@ class TabWebContentsDelegateAndroid
   bool CheckMediaAccessPermission(content::WebContents* web_contents,
                                   const GURL& security_origin,
                                   content::MediaStreamType type) override;
-  void RequestMediaDecodePermission(
-      content::WebContents* web_contents,
-      const base::Callback<void(bool)>& callback) override;
   bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,

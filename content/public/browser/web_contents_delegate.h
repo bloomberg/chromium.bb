@@ -490,12 +490,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                               MediaStreamType type);
 
 #if defined(OS_ANDROID)
-  // Asks permission to decode media stream. After permission is determined,
-  // |callback| will be called with the result.
-  virtual void RequestMediaDecodePermission(
-      WebContents* web_contents,
-      const base::Callback<void(bool)>& callback);
-
   // Creates a view embedding the video view.
   virtual base::android::ScopedJavaLocalRef<jobject>
       GetContentVideoViewEmbedder();

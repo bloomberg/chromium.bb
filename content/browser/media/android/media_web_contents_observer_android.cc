@@ -115,44 +115,50 @@ bool MediaWebContentsObserverAndroid::OnMessageReceived(
 bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
+  // The only BMPM instance that is still currently used is the
+  // RemoteMediaPlayerManager, used in casting.
+  //
+  // In the webview case, casting is not supported, and GetMediaPlayerManager()
+  // will return a nullptr. It is safe to not handle the messages, since the
+  // only message we can receive is an unavoidable MediaPlayerHostMsg_Initialize
+  // that WMPI sends out in WebMediaPlayerImpl::DoLoad().
+  BrowserMediaPlayerManager* media_player_manager =
+      GetMediaPlayerManager(render_frame_host);
+
+  if (!media_player_manager)
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MediaWebContentsObserverAndroid, msg)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_EnterFullscreen,
-                        GetMediaPlayerManager(render_frame_host),
+                        media_player_manager,
                         BrowserMediaPlayerManager::OnEnterFullscreen)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Initialize,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Initialize, media_player_manager,
                         BrowserMediaPlayerManager::OnInitialize)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Start,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Start, media_player_manager,
                         BrowserMediaPlayerManager::OnStart)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Seek,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Seek, media_player_manager,
                         BrowserMediaPlayerManager::OnSeek)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Pause,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Pause, media_player_manager,
                         BrowserMediaPlayerManager::OnPause)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetVolume,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetVolume, media_player_manager,
                         BrowserMediaPlayerManager::OnSetVolume)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetPoster,
-                        GetMediaPlayerManager(render_frame_host),
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetPoster, media_player_manager,
                         BrowserMediaPlayerManager::OnSetPoster)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SuspendAndRelease,
-                        GetMediaPlayerManager(render_frame_host),
+                        media_player_manager,
                         BrowserMediaPlayerManager::OnSuspendAndReleaseResources)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyMediaPlayer,
-                        GetMediaPlayerManager(render_frame_host),
+                        media_player_manager,
                         BrowserMediaPlayerManager::OnDestroyPlayer)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_RequestRemotePlayback,
-                        GetMediaPlayerManager(render_frame_host),
+                        media_player_manager,
                         BrowserMediaPlayerManager::OnRequestRemotePlayback)
     IPC_MESSAGE_FORWARD(
-        MediaPlayerHostMsg_RequestRemotePlaybackControl,
-        GetMediaPlayerManager(render_frame_host),
+        MediaPlayerHostMsg_RequestRemotePlaybackControl, media_player_manager,
         BrowserMediaPlayerManager::OnRequestRemotePlaybackControl)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_RequestRemotePlaybackStop,
-                        GetMediaPlayerManager(render_frame_host),
+                        media_player_manager,
                         BrowserMediaPlayerManager::OnRequestRemotePlaybackStop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

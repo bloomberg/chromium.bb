@@ -13,7 +13,6 @@
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
-#include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -273,12 +272,6 @@ bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(
     content::MediaStreamType type) {
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(web_contents, security_origin, type);
-}
-
-void TabWebContentsDelegateAndroid::RequestMediaDecodePermission(
-    content::WebContents* web_contents,
-    const base::Callback<void(bool)>& callback) {
-  MediaThrottleInfoBarDelegate::Create(web_contents, callback);
 }
 
 bool TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(

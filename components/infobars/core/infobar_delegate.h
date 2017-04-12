@@ -23,7 +23,6 @@ class ThreeDAPIInfoBarDelegate;
 
 #if defined(OS_ANDROID)
 class MediaStreamInfoBarDelegateAndroid;
-class MediaThrottleInfoBarDelegate;
 
 namespace offline_pages {
 class OfflinePageInfoBarDelegate;
@@ -229,7 +228,6 @@ class InfoBarDelegate {
 #if defined(OS_ANDROID)
   virtual MediaStreamInfoBarDelegateAndroid*
   AsMediaStreamInfoBarDelegateAndroid();
-  virtual MediaThrottleInfoBarDelegate* AsMediaThrottleInfoBarDelegate();
   virtual offline_pages::OfflinePageInfoBarDelegate*
   AsOfflinePageInfoBarDelegate();
 #endif

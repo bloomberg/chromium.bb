@@ -208,12 +208,6 @@ std::string WebContentsDelegate::GetDefaultMediaDeviceID(
 }
 
 #if defined(OS_ANDROID)
-void WebContentsDelegate::RequestMediaDecodePermission(
-    WebContents* web_contents,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(false);
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsDelegate::GetContentVideoViewEmbedder() {
   return base::android::ScopedJavaLocalRef<jobject>();

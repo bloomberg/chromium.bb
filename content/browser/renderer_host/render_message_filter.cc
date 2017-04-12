@@ -80,10 +80,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/browser/media/android/media_throttler.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif

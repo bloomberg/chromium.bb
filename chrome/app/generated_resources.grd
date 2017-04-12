@@ -10406,19 +10406,6 @@ Tell us what happened exactly before you got the profile error message:
         </message>
       </if>
 
-      <!-- Media throttle infobar -->
-      <if expr="is_android">
-        <message name="IDS_MEDIA_THROTTLE_INFOBAR_TEXT" desc="Text to display on the info bar whenever user wants to playback a video after being throttled.">
-          Android is having trouble playing media.
-        </message>
-        <message name="IDS_MEDIA_THROTTLE_INFOBAR_BLOCK_BUTTON" desc="Label for choosing 'Block' on media throttle infobar.[CHAR-LIMIT=32]">
-          Wait
-        </message>
-        <message name="IDS_MEDIA_THROTTLE_INFOBAR_ALLOW_BUTTON" desc="Label for choosing 'Allow' on media throttle infobar. [CHAR-LIMIT=32]">
-          Try again
-        </message>
-      </if>
-
       <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE" desc="The title text that is used in the manage passwords bubble when the user has generated a password.">
         Password saved
       </message>

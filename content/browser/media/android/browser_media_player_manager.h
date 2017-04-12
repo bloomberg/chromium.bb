@@ -48,7 +48,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   static void RegisterMediaUrlInterceptor(
       media::MediaUrlInterceptor* media_url_interceptor);
 
-  // Returns a new instance using the registered factory if available.
+  // Returns a new instance using the registered factory.
+  // Returns nullptr if no factory was registered.
   static BrowserMediaPlayerManager* Create(RenderFrameHost* rfh);
 
 #if !defined(USE_AURA)
@@ -159,12 +160,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Instructs |player| to release its java player. This will not remove the
   // player from |players_|.
   void ReleasePlayer(media::MediaPlayerAndroid* player);
-
-  // Called when user approves media playback after being throttled.
-  void OnPlaybackPermissionGranted(int player_id, bool granted);
-
-  // Helper method to start playback.
-  void StartInternal(int player_id);
 
   RenderFrameHost* const render_frame_host_;
 
