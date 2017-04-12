@@ -1255,7 +1255,8 @@ void Shell::OnPrefServiceInitialized(
     std::unique_ptr<::PrefService> pref_service) {
   if (!instance_)
     return;
-  DCHECK(pref_service);
+  // |pref_service_| is null if can't connect to Chrome (as happens when
+  // running mash outside of chrome --mash and chrome isn't built).
   pref_service_ = std::move(pref_service);
 }
 
