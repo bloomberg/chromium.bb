@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="coverage-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
+<link rel="stylesheet" type="text/css" href="resources/long-mangled.css">
+
+<script>
+async function test()
+{
+    InspectorTest.startCoverage();
+    await InspectorTest.evaluateInPagePromise("performActions()");
+    await InspectorTest.stopCoverage();
+    var node = InspectorTest.findCoverageNodeForURL("long-mangled.css");
+    var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
+    var decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
+    coverageListView._revealSourceForNode(node);
+    await decoratePromise;
+    InspectorTest.addResult("The below should be formatted");
+    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+
+
+    node = InspectorTest.findCoverageNodeForURL("decorations-after-inplace-formatter.css");
+    decoratePromise = InspectorTest.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "decorate");
+    coverageListView._revealSourceForNode(node);
+    await decoratePromise;
+    InspectorTest.addResult("The below should NOT be formatted");
+    InspectorTest.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<p id="id">PASS</p>
+<body onload="runTest()">
+<p>Tests the CSS highlight in sources after the Pretty print formatting.</p>
+</body>
+</html>

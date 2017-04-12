@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<link rel="stylesheet" href="resources/style-formatter-obfuscated.css">
+
+<script>
+async function test()
+{
+    var uiSourceCode = await InspectorTest.waitForUISourceCode("style-formatter-obfuscated.css");
+    var formatData = await Sources.sourceFormatter.format(uiSourceCode);
+    var targetContent = await formatData.formattedSourceCode.requestContent();
+
+    InspectorTest.addResult(`Formatted:\n${targetContent}`);
+
+    var originalContent = await uiSourceCode.requestContent();
+    var styleHeader = Bindings.NetworkProject.styleHeaderForUISourceCode(uiSourceCode);
+    var text = new TextUtils.Text(originalContent);
+    var liveLocationsPool = new Bindings.LiveLocationPool();
+    var locationUpdateCount = 0;
+    var rawLocations = [];
+    var liveLocations = [];
+    for (var offset = originalContent.indexOf("{"); offset >= 0; offset = originalContent.indexOf("{", offset + 1)) {
+      var position = text.positionFromOffset(offset);
+      var rawLocation = new SDK.CSSLocation(styleHeader, position.lineNumber, position.columnNumber);
+      rawLocations.push(rawLocation);
+      liveLocations.push(Bindings.cssWorkspaceBinding.createLiveLocation(rawLocation, () => { locationUpdateCount++; }, liveLocationsPool));
+    }
+
+    InspectorTest.addResult("Location mapping with formatted source:");
+    dumpLocations();
+
+    Sources.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
+
+    InspectorTest.addResult("Location mapping without formatted source:");
+    dumpLocations();
+
+    InspectorTest.completeTest();
+
+    function dumpLocations() {
+      InspectorTest.addResult("Mapped locations:");
+      for (var rawLocation of rawLocations) {
+        var uiLocation = Bindings.cssWorkspaceBinding.rawLocationToUILocation(rawLocation);
+        InspectorTest.addResult(`${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
+      }
+      InspectorTest.addResult(`Live locations (updated: ${locationUpdateCount}):`);
+      for (var liveLocation of liveLocations) {
+        var uiLocation = liveLocation.uiLocation();
+        InspectorTest.addResult(`${uiLocation.lineNumber}:${uiLocation.columnNumber}`);
+      }
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>Tests how SourceFormatter handles CSS sources</p>
+</body>
+</html>

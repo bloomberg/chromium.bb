@@ -30,6 +30,17 @@ InspectorTest.dumpDecorations = async function(source)
     InspectorTest.dumpDecorationsInSourceFrame(sourceFrame);
 }
 
+InspectorTest.findCoverageNodeForURL = function(url)
+{
+    var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
+    var rootNode = coverageListView._dataGrid.rootNode();
+    for (var child of rootNode.children) {
+      if (child._coverageInfo.url().endsWith(url))
+        return child;
+    }
+    return null;
+}
+
 InspectorTest.dumpDecorationsInSourceFrame = function(sourceFrame)
 {
     var markerMap = new Map([['used', '+'], ['unused', '-'], ['mixed', '*']]);
