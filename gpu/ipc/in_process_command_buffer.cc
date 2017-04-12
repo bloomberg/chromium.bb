@@ -884,8 +884,8 @@ void InProcessCommandBuffer::OnWaitSyncTokenCompleted(
   mailbox_manager->PullTextureUpdates(sync_token);
   waiting_for_sync_point_ = false;
   executor_->SetScheduled(true);
-  QueueTask(false, base::Bind(&InProcessCommandBuffer::FlushOnGpuThread,
-                              gpu_thread_weak_ptr_, last_put_offset_));
+  service_->ScheduleTask(base::Bind(
+      &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));
 }
 
 void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
