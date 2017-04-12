@@ -363,7 +363,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 }
 
                 @Override
-                public void allTabsPendingClosure(List<Integer> tabIds) {
+                public void allTabsPendingClosure(List<Tab> tabs) {
                     NewTabPageUma.recordNTPImpression(
                             NewTabPageUma.NTP_IMPESSION_POTENTIAL_NOTAB);
                 }

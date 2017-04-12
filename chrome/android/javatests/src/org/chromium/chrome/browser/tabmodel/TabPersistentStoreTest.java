@@ -710,8 +710,8 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         final List<Integer> closedTabIds = new ArrayList<>();
         TabModelObserver closeObserver = new EmptyTabModelObserver() {
             @Override
-            public void allTabsPendingClosure(List<Integer> tabIds) {
-                for (Integer id : tabIds) closedTabIds.add(id);
+            public void allTabsPendingClosure(List<Tab> tabs) {
+                for (Tab tab : tabs) closedTabIds.add(tab.getId());
             }
         };
         regularModel.addObserver(closeObserver);

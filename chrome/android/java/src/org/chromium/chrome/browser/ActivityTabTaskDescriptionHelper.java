@@ -162,7 +162,7 @@ public class ActivityTabTaskDescriptionHelper {
             }
 
             @Override
-            public void allTabsPendingClosure(List<Integer> tabIds) {
+            public void allTabsPendingClosure(List<Tab> tabs) {
                 refreshSelectedTab();
             }
         };

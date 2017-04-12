@@ -295,7 +295,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void allTabsPendingClosure(List<Integer> tabIds) {
+            public void allTabsPendingClosure(List<Tab> tabs) {
                 updateTabCount();
                 refreshSelectedTab();
             }
