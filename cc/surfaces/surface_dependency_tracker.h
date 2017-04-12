@@ -87,6 +87,10 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
   // blockers.
   base::flat_set<SurfaceId> observed_surfaces_by_id_;
 
+  // The set of SurfaceIds to which corresponding CompositorFrames have not
+  // arrived by the time their deadline fired.
+  base::flat_set<SurfaceId> late_surfaces_by_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyTracker);
 };
 

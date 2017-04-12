@@ -1215,5 +1215,41 @@ TEST_F(CompositorFrameSinkSupportTest, OnlyBlockOnEmbeddedSurfaces) {
   EXPECT_THAT(GetChildReferences(display_id), UnorderedElementsAre(parent_id1));
 }
 
+// This test verifies that a late arriving CompositorFrame activates immediately
+// and does not trigger a new deadline.
+TEST_F(CompositorFrameSinkSupportTest, LateArrivingDependency) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame({parent_id1}));
+
+  EXPECT_TRUE(display_surface()->HasPendingFrame());
+  EXPECT_FALSE(display_surface()->HasActiveFrame());
+  EXPECT_TRUE(dependency_tracker().has_deadline());
+
+  // Advance BeginFrames to trigger a deadline. This activates the
+  // CompositorFrame submitted above.
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  for (int i = 0; i < 3; ++i) {
+    begin_frame_source()->TestOnBeginFrame(args);
+    EXPECT_TRUE(dependency_tracker().has_deadline());
+  }
+  begin_frame_source()->TestOnBeginFrame(args);
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+
+  // A late arriving CompositorFrame should activate immediately without
+  // scheduling a deadline and without waiting for dependencies to resolve.
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeCompositorFrame({child_id1}));
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+}
+
 }  // namespace test
 }  // namespace cc

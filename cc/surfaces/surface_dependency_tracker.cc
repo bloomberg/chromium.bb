@@ -38,8 +38,14 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
   DCHECK(surface->HasPendingFrame());
 
   const CompositorFrame& pending_frame = surface->GetPendingFrame();
-  bool needs_begin_frame =
-      pending_frame.metadata.can_activate_before_dependencies;
+  bool needs_deadline = pending_frame.metadata.can_activate_before_dependencies;
+
+  auto late_it = late_surfaces_by_id_.find(surface->surface_id());
+  if (needs_deadline && late_it != late_surfaces_by_id_.end()) {
+    late_surfaces_by_id_.erase(late_it);
+    surface->ActivatePendingFrameForDeadline();
+    return;
+  }
 
   // Referenced surface IDs that aren't currently known to the surface manager
   // or do not have an active CompsotiorFrame block this frame.
@@ -55,7 +61,7 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
     observed_surfaces_by_id_.insert(surface->surface_id());
   }
 
-  if (needs_begin_frame && !frames_since_deadline_set_)
+  if (needs_deadline && !frames_since_deadline_set_)
     frames_since_deadline_set_ = 0;
 }
 
@@ -73,6 +79,8 @@ void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
   if (++(*frames_since_deadline_set_) != kMaxBeginFrameCount)
     return;
 
+  late_surfaces_by_id_.clear();
+
   // Activate all surfaces that respect the deadline.
   // Copy the set of blocked surfaces here because that set can mutate as we
   // activate CompositorFrames: an activation can trigger further activations
@@ -89,8 +97,12 @@ void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
     }
     // Clear all tracked blockers for |blocked_surface|.
     for (const SurfaceId& blocking_surface_id :
-         blocked_surface->blocking_surfaces())
+         blocked_surface->blocking_surfaces()) {
+      // If we are not activating this blocker now, then it's late.
+      if (!blocked_surfaces_by_id.count(blocking_surface_id))
+        late_surfaces_by_id_.insert(blocking_surface_id);
       blocked_surfaces_from_dependency_[blocking_surface_id].erase(surface_id);
+    }
     blocked_surface->ActivatePendingFrameForDeadline();
   }
 
