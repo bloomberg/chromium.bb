@@ -563,8 +563,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 @property(nonatomic, assign, readonly, getter=isToolbarOnScreen)
     BOOL toolbarOnScreen;
 // Whether a new tab animation is occurring.
-@property(nonatomic, assign, readonly, getter=isInNewTabAnimation)
-    BOOL inNewTabAnimation;
+@property(nonatomic, assign, getter=isInNewTabAnimation) BOOL inNewTabAnimation;
 // Whether BVC prefers to hide the status bar. This value is used to determine
 // the response from the |prefersStatusBarHidden| method.
 @property(nonatomic, assign) BOOL hideStatusBar;
@@ -677,7 +676,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // Updates the toolbar display based on the current tab.
 - (void)updateToolbar;
 // Updates |dialogPresenter|'s |active| property to account for the BVC's
-// |active| and |visible| properties.
+// |active|, |visible|, and |inNewTabAnimation| properties.
 - (void)updateDialogPresenterActiveState;
 // Dismisses popups and modal dialogs that are displayed above the BVC upon size
 // changes (e.g. rotation, resizing,…) or when the accessibility escape gesture
@@ -1156,6 +1155,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   return [self headerHeight] - [self currentHeaderOffset] > 0;
 }
 
+- (void)setInNewTabAnimation:(BOOL)inNewTabAnimation {
+  if (_inNewTabAnimation == inNewTabAnimation)
+    return;
+  _inNewTabAnimation = inNewTabAnimation;
+  [self updateDialogPresenterActiveState];
+}
+
 - (BOOL)isInNewTabAnimation {
   return _inNewTabAnimation;
 }
@@ -1577,7 +1583,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     }
   };
 
-  _inNewTabAnimation = YES;
+  self.inNewTabAnimation = YES;
   if (!inBackground) {
     UIView* animationParentView = _contentArea;
     // Create the new page image, and load with the new tab page snapshot.
@@ -1601,7 +1607,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         newPage.frame.size.height - newPage.image.size.height, origin,
         _isOffTheRecord, NULL, ^{
           [newPage removeFromSuperview];
-          _inNewTabAnimation = NO;
+          self.inNewTabAnimation = NO;
           // Use the model's currentTab here because it is possible that it can
           // be reset to a new value before the new Tab animation finished (e.g.
           // if another Tab shows a dialog via |dialogPresenter|). However, that
@@ -1640,7 +1646,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         topCard, [_contentArea frame], IsPortrait(), ^{
           [background removeFromSuperview];
           [topCard removeFromSuperview];
-          _inNewTabAnimation = NO;
+          self.inNewTabAnimation = NO;
           // Resnapshot the top card if it has its own toolbar, as the toolbar
           // will be captured in the new tab animation, but isn't desired for
           // the stack view snapshots.
@@ -1891,7 +1897,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [self ensureViewCreated];
 
   DCHECK(_contentArea);
-  if (!_inNewTabAnimation) {
+  if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
     [self hideFindBarWithAnimation:NO];
 
@@ -1964,7 +1970,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)updateDialogPresenterActiveState {
-  self.dialogPresenter.active = self.active && self.viewVisible;
+  self.dialogPresenter.active =
+      self.active && self.viewVisible && !self.inNewTabAnimation;
 }
 
 - (void)dismissPopups {
@@ -2172,7 +2179,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   [self displayTab:tab isNewSelection:YES];
 
-  if (_expectingForegroundTab && !_inNewTabAnimation) {
+  if (_expectingForegroundTab && !self.inNewTabAnimation) {
     // Now that the new tab has been displayed, return to normal. Rather than
     // keep a reference to the previous tab, just turn off preview mode for all
     // tabs (since doing so is a no-op for the tabs that don't have it set).
@@ -4483,7 +4490,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 - (void)startVoiceSearch {
   // Delay Voice Search until new tab animations have finished.
-  if (_inNewTabAnimation) {
+  if (self.inNewTabAnimation) {
     _startVoiceSearchAfterNewTabAnimation = YES;
     return;
   }
