@@ -1256,6 +1256,14 @@ void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
       IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
 }
 
+// TODO(csharrison): This is only executed on Mac. It should also get the
+// updated UI with a checkbox.
+void ContentSettingSubresourceFilterBubbleModel::OnManageLinkClicked() {
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
+  driver_factory->OnReloadRequested();
+}
+
 void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
     bool is_checked) {
   if (is_checked)
@@ -1267,9 +1275,8 @@ void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
 
 void ContentSettingSubresourceFilterBubbleModel::OnDoneClicked() {
   if (is_checked_) {
-    subresource_filter::ContentSubresourceFilterDriverFactory* driver_factory =
-        subresource_filter::ContentSubresourceFilterDriverFactory::
-            FromWebContents(web_contents());
+    auto* driver_factory = subresource_filter::
+        ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
     driver_factory->OnReloadRequested();
   }
 }
