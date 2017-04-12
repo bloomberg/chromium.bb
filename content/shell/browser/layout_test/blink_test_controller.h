@@ -232,7 +232,7 @@ class BlinkTestController : public base::NonThreadSafe,
   base::FilePath temp_path_;
 
   Shell* main_window_;
-  std::unique_ptr<Shell> devtools_window_;
+  Shell* devtools_window_;
 
   std::unique_ptr<LayoutTestDevToolsBindings> devtools_bindings_;
 

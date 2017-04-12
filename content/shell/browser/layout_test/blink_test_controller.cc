@@ -247,6 +247,7 @@ BlinkTestController* BlinkTestController::Get() {
 
 BlinkTestController::BlinkTestController()
     : main_window_(NULL),
+      devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
       is_leak_detection_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -514,7 +515,9 @@ void BlinkTestController::DevToolsProcessCrashed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - devtools");
   devtools_bindings_.reset();
-  devtools_window_.reset();
+  if (devtools_window_)
+    devtools_window_->Close();
+  devtools_window_ = nullptr;
 }
 
 void BlinkTestController::WebContentsDestroyed() {
@@ -834,8 +837,8 @@ void BlinkTestController::OnShowDevTools(const std::string& settings,
   if (!devtools_window_) {
     ShellBrowserContext* browser_context =
         ShellContentBrowserClient::Get()->browser_context();
-    devtools_window_.reset(content::Shell::CreateNewWindow(
-        browser_context, GURL(), nullptr, initial_size_));
+    devtools_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
+                                                       nullptr, initial_size_);
   }
 
   devtools_bindings_.reset(LayoutTestDevToolsBindings::LoadDevTools(
@@ -914,8 +917,7 @@ void BlinkTestController::OnCloseRemainingWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
   for (size_t i = 0; i < open_windows.size(); ++i) {
-    if (open_windows[i] != main_window_ &&
-        open_windows[i] != devtools_window_.get())
+    if (open_windows[i] != main_window_ && open_windows[i] != devtools_window_)
       open_windows[i]->Close();
   }
   base::RunLoop().RunUntilIdle();
