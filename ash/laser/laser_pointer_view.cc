@@ -211,14 +211,15 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
       frame_sink_id_(aura::Env::GetInstance()
                          ->context_factory_private()
                          ->AllocateFrameSinkId()),
-      frame_sink_support_(this,
-                          aura::Env::GetInstance()
-                              ->context_factory_private()
-                              ->GetSurfaceManager(),
-                          frame_sink_id_,
-                          false /* is_root */,
-                          true /* handles_frame_sink_id_invalidation */,
-                          true /* needs_sync_points */),
+      frame_sink_support_(cc::CompositorFrameSinkSupport::Create(
+          this,
+          aura::Env::GetInstance()
+              ->context_factory_private()
+              ->GetSurfaceManager(),
+          frame_sink_id_,
+          false /* is_root */,
+          true /* handles_frame_sink_id_invalidation */,
+          true /* needs_sync_points */)),
       weak_ptr_factory_(this) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
@@ -378,22 +379,23 @@ void LaserPointerView::UpdateTime() {
 }
 
 void LaserPointerView::SetNeedsBeginFrame(bool needs_begin_frame) {
-  frame_sink_support_.SetNeedsBeginFrame(needs_begin_frame);
+  frame_sink_support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
 void LaserPointerView::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  frame_sink_support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
+  frame_sink_support_->SubmitCompositorFrame(local_surface_id,
+                                             std::move(frame));
 }
 
 void LaserPointerView::BeginFrameDidNotSwap(
     const cc::BeginFrameAck& begin_frame_ack) {
-  frame_sink_support_.BeginFrameDidNotSwap(begin_frame_ack);
+  frame_sink_support_->BeginFrameDidNotSwap(begin_frame_ack);
 }
 
 void LaserPointerView::EvictFrame() {
-  frame_sink_support_.EvictFrame();
+  frame_sink_support_->EvictFrame();
 }
 
 void LaserPointerView::DidReceiveCompositorFrameAck(

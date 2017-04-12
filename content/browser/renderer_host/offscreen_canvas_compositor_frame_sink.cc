@@ -18,12 +18,13 @@ OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
     : provider_(provider),
-      support_(this,
-               provider->GetSurfaceManager(),
-               frame_sink_id,
-               false /* is_root */,
-               true /* handles_frame_sink_id_invalidation */,
-               true /* needs_sync_points */),
+      support_(cc::CompositorFrameSinkSupport::Create(
+          this,
+          provider->GetSurfaceManager(),
+          frame_sink_id,
+          false /* is_root */,
+          true /* handles_frame_sink_id_invalidation */,
+          true /* needs_sync_points */)),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
@@ -32,12 +33,12 @@ OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
 }
 
 OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
-  provider_->OnCompositorFrameSinkClientDestroyed(support_.frame_sink_id());
+  provider_->OnCompositorFrameSinkClientDestroyed(support_->frame_sink_id());
 }
 
 void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
     bool needs_begin_frame) {
-  support_.SetNeedsBeginFrame(needs_begin_frame);
+  support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
@@ -45,16 +46,16 @@ void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
   // TODO(samans): This will need to do something similar to
   // GpuCompositorFrameSink.
-  support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void OffscreenCanvasCompositorFrameSink::BeginFrameDidNotSwap(
     const cc::BeginFrameAck& begin_frame_ack) {
-  support_.BeginFrameDidNotSwap(begin_frame_ack);
+  support_->BeginFrameDidNotSwap(begin_frame_ack);
 }
 
 void OffscreenCanvasCompositorFrameSink::EvictFrame() {
-  support_.EvictFrame();
+  support_->EvictFrame();
 }
 
 void OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck(
@@ -81,7 +82,7 @@ void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
 
 void OffscreenCanvasCompositorFrameSink::OnClientConnectionLost() {
   provider_->OnCompositorFrameSinkClientConnectionLost(
-      support_.frame_sink_id());
+      support_->frame_sink_id());
 }
 
 }  // namespace content

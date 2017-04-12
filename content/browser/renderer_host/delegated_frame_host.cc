@@ -834,12 +834,14 @@ void DelegatedFrameHost::UnlockResources() {
 
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   DCHECK(!support_);
+  constexpr bool is_root = false;
+  constexpr bool handles_frame_sink_id_invalidation = false;
+  constexpr bool needs_sync_points = true;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  support_ = base::MakeUnique<cc::CompositorFrameSinkSupport>(
+  support_ = cc::CompositorFrameSinkSupport::Create(
       this, factory->GetContextFactoryPrivate()->GetSurfaceManager(),
-      frame_sink_id_, false /* is_root */,
-      false /* handles_frame_sink_id_invalidation */,
-      true /* needs_sync_points */);
+      frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
+      needs_sync_points);
   if (compositor_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)

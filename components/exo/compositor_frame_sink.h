@@ -41,7 +41,7 @@ class CompositorFrameSink : public cc::CompositorFrameSinkSupportClient,
                        const gfx::Rect& damage_rect) override {}
 
  private:
-  cc::CompositorFrameSinkSupport support_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   CompositorFrameSinkHolder* const client_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSink);

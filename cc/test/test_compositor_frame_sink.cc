@@ -98,10 +98,12 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (display_context_shared_with_compositor && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
-  support_ = base::MakeUnique<CompositorFrameSinkSupport>(
-      this, surface_manager_.get(), frame_sink_id_, false /* is_root */,
-      true /* handles_frame_sink_id_invalidation */,
-      true /* needs_sync_points */);
+  constexpr bool is_root = false;
+  constexpr bool handles_frame_sink_id_invalidation = true;
+  constexpr bool needs_sync_points = true;
+  support_ = CompositorFrameSinkSupport::Create(
+      this, surface_manager_.get(), frame_sink_id_, is_root,
+      handles_frame_sink_id_invalidation, needs_sync_points);
   client_->SetBeginFrameSource(&external_begin_frame_source_);
 
   display_->Initialize(this, surface_manager_.get());

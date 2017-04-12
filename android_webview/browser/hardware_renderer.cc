@@ -260,11 +260,13 @@ void HardwareRenderer::ReturnResourcesToCompositor(
 }
 
 void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
+  constexpr bool is_root = false;
+  constexpr bool handles_frame_sink_id_invalidation = false;
+  constexpr bool needs_sync_points = true;
   support_.reset();
-  support_ = base::MakeUnique<cc::CompositorFrameSinkSupport>(
-      this, surfaces_->GetSurfaceManager(), frame_sink_id_, false /* is_root */,
-      false /* handles_frame_sink_id_invalidation */,
-      true /* needs_sync_points */);
+  support_ = cc::CompositorFrameSinkSupport::Create(
+      this, surfaces_->GetSurfaceManager(), frame_sink_id_, is_root,
+      handles_frame_sink_id_invalidation, needs_sync_points);
 }
 
 }  // namespace android_webview

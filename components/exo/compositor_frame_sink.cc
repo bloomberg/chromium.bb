@@ -18,12 +18,13 @@ namespace exo {
 CompositorFrameSink::CompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
                                          cc::SurfaceManager* surface_manager,
                                          CompositorFrameSinkHolder* client)
-    : support_(this,
-               surface_manager,
-               frame_sink_id,
-               false /* is_root */,
-               true /* handles_frame_sink_id_invalidation */,
-               true /* needs_sync_points */),
+    : support_(cc::CompositorFrameSinkSupport::Create(
+          this,
+          surface_manager,
+          frame_sink_id,
+          false /* is_root */,
+          true /* handles_frame_sink_id_invalidation */,
+          true /* needs_sync_points */)),
       client_(client) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}
@@ -32,22 +33,22 @@ CompositorFrameSink::~CompositorFrameSink() {}
 // cc::mojom::MojoCompositorFrameSink overrides:
 
 void CompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
-  support_.SetNeedsBeginFrame(needs_begin_frame);
+  support_->SetNeedsBeginFrame(needs_begin_frame);
 }
 
 void CompositorFrameSink::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  support_.SubmitCompositorFrame(local_surface_id, std::move(frame));
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void CompositorFrameSink::BeginFrameDidNotSwap(
     const cc::BeginFrameAck& begin_frame_ack) {
-  support_.BeginFrameDidNotSwap(begin_frame_ack);
+  support_->BeginFrameDidNotSwap(begin_frame_ack);
 }
 
 void CompositorFrameSink::EvictFrame() {
-  support_.EvictFrame();
+  support_->EvictFrame();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

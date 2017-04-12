@@ -92,7 +92,7 @@ class LaserPointerView : public views::View,
   bool needs_update_surface_ = false;
   bool pending_draw_surface_ = false;
   const cc::FrameSinkId frame_sink_id_;
-  cc::CompositorFrameSinkSupport frame_sink_support_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> frame_sink_support_;
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator id_allocator_;
   int next_resource_id_ = 1;

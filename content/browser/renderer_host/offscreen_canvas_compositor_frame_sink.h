@@ -48,7 +48,7 @@ class OffscreenCanvasCompositorFrameSink
 
   OffscreenCanvasCompositorFrameSinkProviderImpl* const provider_;
 
-  cc::CompositorFrameSinkSupport support_;
+  std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   cc::ReturnedResourceArray surface_returned_resources_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;

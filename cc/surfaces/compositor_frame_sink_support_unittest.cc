@@ -185,27 +185,27 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
+    constexpr bool is_root = true;
+    constexpr bool is_child_root = false;
+    constexpr bool handles_frame_sink_id_invalidation = true;
+    constexpr bool needs_sync_points = true;
     begin_frame_source_ =
         base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
     surface_manager_.SetDependencyTracker(
         base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_,
                                                    begin_frame_source_.get()));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kDisplayFrameSink,
-        true /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kParentFrameSink,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kChildFrameSink1,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kChildFrameSink2,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
+    supports_.push_back(CompositorFrameSinkSupport::Create(
+        &support_client_, &surface_manager_, kDisplayFrameSink, is_root,
+        handles_frame_sink_id_invalidation, needs_sync_points));
+    supports_.push_back(CompositorFrameSinkSupport::Create(
+        &support_client_, &surface_manager_, kParentFrameSink, is_child_root,
+        handles_frame_sink_id_invalidation, needs_sync_points));
+    supports_.push_back(CompositorFrameSinkSupport::Create(
+        &support_client_, &surface_manager_, kChildFrameSink1, is_child_root,
+        handles_frame_sink_id_invalidation, needs_sync_points));
+    supports_.push_back(CompositorFrameSinkSupport::Create(
+        &support_client_, &surface_manager_, kChildFrameSink2, is_child_root,
+        handles_frame_sink_id_invalidation, needs_sync_points));
 
     // Normally, the BeginFrameSource would be registered by the Display. We
     // register it here so that BeginFrames are received by the display support,

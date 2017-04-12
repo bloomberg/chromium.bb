@@ -28,19 +28,20 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     : public SurfaceFactoryClient,
       public BeginFrameObserver {
  public:
-  CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
-                             SurfaceManager* surface_manager,
-                             const FrameSinkId& frame_sink_id,
-                             bool is_root,
-                             bool handles_frame_sink_id_invalidation,
-                             bool needs_sync_points);
+  static std::unique_ptr<CompositorFrameSinkSupport> Create(
+      CompositorFrameSinkSupportClient* client,
+      SurfaceManager* surface_manager,
+      const FrameSinkId& frame_sink_id,
+      bool is_root,
+      bool handles_frame_sink_id_invalidation,
+      bool needs_sync_points);
 
   ~CompositorFrameSinkSupport() override;
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   Surface* current_surface_for_testing() {
-    return surface_factory_.current_surface_for_testing();
+    return surface_factory_->current_surface_for_testing();
   }
 
   const ReferencedSurfaceTracker& ReferenceTrackerForTesting() const {
@@ -66,6 +67,14 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void ForceReclaimResources();
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
+ protected:
+  CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
+                             const FrameSinkId& frame_sink_id,
+                             bool is_root,
+                             bool handles_frame_sink_id_invalidation);
+
+  void Init(SurfaceManager* surface_manager, bool needs_sync_points);
+
  private:
   // Update surface references with SurfaceManager for current CompositorFrame
   // that has |local_surface_id|. UpdateReferences() must be called on
@@ -88,11 +97,11 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   CompositorFrameSinkSupportClient* const client_;
 
-  SurfaceManager* const surface_manager_;
+  SurfaceManager* surface_manager_ = nullptr;
 
   const FrameSinkId frame_sink_id_;
 
-  SurfaceFactory surface_factory_;
+  std::unique_ptr<SurfaceFactory> surface_factory_;
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.
   int ack_pending_count_ = 0;

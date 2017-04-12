@@ -17,25 +17,19 @@
 
 namespace cc {
 
-CompositorFrameSinkSupport::CompositorFrameSinkSupport(
+// static
+std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     CompositorFrameSinkSupportClient* client,
     SurfaceManager* surface_manager,
     const FrameSinkId& frame_sink_id,
     bool is_root,
     bool handles_frame_sink_id_invalidation,
-    bool needs_sync_points)
-    : client_(client),
-      surface_manager_(surface_manager),
-      frame_sink_id_(frame_sink_id),
-      surface_factory_(frame_sink_id_, surface_manager_, this),
-      reference_tracker_(frame_sink_id),
-      is_root_(is_root),
-      handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
-      weak_factory_(this) {
-  surface_factory_.set_needs_sync_points(needs_sync_points);
-  if (handles_frame_sink_id_invalidation_)
-    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
-  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+    bool needs_sync_points) {
+  std::unique_ptr<CompositorFrameSinkSupport> support =
+      base::WrapUnique(new CompositorFrameSinkSupport(
+          client, frame_sink_id, is_root, handles_frame_sink_id_invalidation));
+  support->Init(surface_manager, needs_sync_points);
+  return support;
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
@@ -52,7 +46,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // SurfaceFactory's destructor will attempt to return resources which will
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
-  surface_factory_.EvictSurface();
+  surface_factory_->EvictSurface();
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
   if (handles_frame_sink_id_invalidation_)
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
@@ -110,7 +104,8 @@ void CompositorFrameSinkSupport::WillDrawSurface(
 }
 
 void CompositorFrameSinkSupport::EvictFrame() {
-  surface_factory_.EvictSurface();
+  DCHECK(surface_factory_);
+  surface_factory_->EvictSurface();
 }
 
 void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -137,6 +132,7 @@ void CompositorFrameSinkSupport::BeginFrameDidNotSwap(
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame) {
+  DCHECK(surface_factory_);
   ++ack_pending_count_;
 
   if (frame.metadata.begin_frame_ack.sequence_number <
@@ -150,7 +146,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   frame.metadata.begin_frame_ack.has_damage = true;
 
   BeginFrameAck ack = frame.metadata.begin_frame_ack;
-  surface_factory_.SubmitCompositorFrame(
+  surface_factory_->SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()));
@@ -219,12 +215,36 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 }
 
 void CompositorFrameSinkSupport::ForceReclaimResources() {
-  surface_factory_.ClearSurface();
+  DCHECK(surface_factory_);
+  surface_factory_->ClearSurface();
 }
 
 void CompositorFrameSinkSupport::ClaimTemporaryReference(
     const SurfaceId& surface_id) {
   surface_manager_->AssignTemporaryReference(surface_id, frame_sink_id_);
+}
+
+CompositorFrameSinkSupport::CompositorFrameSinkSupport(
+    CompositorFrameSinkSupportClient* client,
+    const FrameSinkId& frame_sink_id,
+    bool is_root,
+    bool handles_frame_sink_id_invalidation)
+    : client_(client),
+      frame_sink_id_(frame_sink_id),
+      reference_tracker_(frame_sink_id),
+      is_root_(is_root),
+      handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
+      weak_factory_(this) {}
+
+void CompositorFrameSinkSupport::Init(SurfaceManager* surface_manager,
+                                      bool needs_sync_points) {
+  surface_manager_ = surface_manager;
+  surface_factory_ =
+      base::MakeUnique<SurfaceFactory>(frame_sink_id_, surface_manager_, this);
+  if (handles_frame_sink_id_invalidation_)
+    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
+  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  surface_factory_->set_needs_sync_points(needs_sync_points);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
@@ -257,7 +277,8 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
     std::unique_ptr<CopyOutputRequest> request) {
-  surface_factory_.RequestCopyOfSurface(std::move(request));
+  DCHECK(surface_factory_);
+  surface_factory_->RequestCopyOfSurface(std::move(request));
 }
 
 }  // namespace cc
