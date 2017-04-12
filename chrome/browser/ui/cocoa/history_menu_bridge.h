@@ -138,6 +138,10 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // corresponding HistoryItem.
   HistoryItem* HistoryItemForMenuItem(NSMenuItem* item);
 
+  // Called by HistoryMenuCocoaController when the menu begins and ends
+  // tracking, to block updates when it is open.
+  void SetIsMenuOpen(bool flag);
+
   // I wish I has a "friend @class" construct. These are used by the HMCC
   // to access model information when responding to actions.
   history::HistoryService* service();
@@ -234,6 +238,10 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
   // has been scheduled but is waiting for the current one to finish.
   bool create_in_progress_;
   bool need_recreate_;
+
+  // In order to not jarringly refresh the menu while the user has it open,
+  // updates are blocked while the menu is tracking.
+  bool is_menu_open_;
 
   // The default favicon if a HistoryItem does not have one.
   base::scoped_nsobject<NSImage> default_favicon_;

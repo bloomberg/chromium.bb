@@ -68,4 +68,14 @@ using content::Referrer;
   [self openURLForItem:item];
 }
 
+// NSMenuDelegate:
+
+- (void)menuWillOpen:(NSMenu*)menu {
+  bridge_->SetIsMenuOpen(true);
+}
+
+- (void)menuDidClose:(NSMenu*)menu {
+  bridge_->SetIsMenuOpen(false);
+}
+
 @end  // HistoryMenuCocoaController

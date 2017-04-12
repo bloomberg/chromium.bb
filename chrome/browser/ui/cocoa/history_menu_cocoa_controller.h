@@ -11,7 +11,7 @@
 // Controller (MVC) for the history menu. All history menu item commands get
 // directed here. This class only responds to menu events, but the actual
 // creation and maintenance of the menu happens in the Bridge.
-@interface HistoryMenuCocoaController : NSObject {
+@interface HistoryMenuCocoaController : NSObject<NSMenuDelegate> {
  @private
   HistoryMenuBridge* bridge_;  // weak; owns us
 }
