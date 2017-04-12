@@ -586,7 +586,8 @@ ExtensionFunction::ResponseAction NetworkingPrivateStartConnectFunction::Run() {
       ->StartConnect(
           params->network_guid,
           base::Bind(&NetworkingPrivateStartConnectFunction::Success, this),
-          base::Bind(&NetworkingPrivateStartConnectFunction::Failure, this));
+          base::Bind(&NetworkingPrivateStartConnectFunction::Failure, this,
+                     params->network_guid));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -597,7 +598,19 @@ void NetworkingPrivateStartConnectFunction::Success() {
   Respond(NoArguments());
 }
 
-void NetworkingPrivateStartConnectFunction::Failure(const std::string& error) {
+void NetworkingPrivateStartConnectFunction::Failure(const std::string& guid,
+                                                    const std::string& error) {
+  // TODO(stevenjb): Temporary workaround to show the configuration UI.
+  // Eventually the caller (e.g. Settings) should handle any failures and
+  // show its own configuration UI. crbug.com/380937.
+  if (source_context_type() == Feature::WEBUI_CONTEXT) {
+    const NetworkingPrivateDelegate::UIDelegate* ui_delegate =
+        GetDelegate(browser_context())->ui_delegate();
+    if (ui_delegate && ui_delegate->HandleConnectFailed(guid, error)) {
+      Success();
+      return;
+    }
+  }
   Respond(Error(error));
 }
 

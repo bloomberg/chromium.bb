@@ -117,15 +117,6 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   void SetManagedActiveProxyValues(const std::string& guid,
                                    base::DictionaryValue* dictionary);
 
-  // Handles connection failures, possibly showing UI for configuration
-  // failures, then calls the appropriate callback.
-  void ConnectFailureCallback(
-      const std::string& guid,
-      const VoidCallback& success_callback,
-      const FailureCallback& failure_callback,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
-
   content::BrowserContext* browser_context_;
   base::WeakPtrFactory<NetworkingPrivateChromeOS> weak_ptr_factory_;
 

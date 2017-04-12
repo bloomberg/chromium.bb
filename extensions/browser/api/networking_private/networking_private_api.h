@@ -298,7 +298,7 @@ class NetworkingPrivateStartConnectFunction : public UIThreadExtensionFunction {
 
  private:
   void Success();
-  void Failure(const std::string& error);
+  void Failure(const std::string& guid, const std::string& error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateStartConnectFunction);
 };
