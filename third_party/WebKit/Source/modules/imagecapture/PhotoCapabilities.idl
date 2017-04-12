@@ -24,7 +24,7 @@ enum FillLightMode {
 };
 
 [
-    OriginTrialEnabled=ImageCapture,
+    RuntimeEnabled=ImageCapture,
 ] interface PhotoCapabilities {
   readonly attribute RedEyeReduction            redEyeReduction;
   readonly attribute MediaSettingsRange         imageHeight;

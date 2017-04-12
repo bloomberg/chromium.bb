@@ -38,19 +38,19 @@ dictionary MediaTrackConstraintSet {
     // https://w3c.github.io/mediacapture-image/#mediatrackconstraintset-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [OriginTrialEnabled=ImageCapture] ConstrainDOMString whiteBalanceMode;
-    [OriginTrialEnabled=ImageCapture] ConstrainDOMString exposureMode;
-    [OriginTrialEnabled=ImageCapture] ConstrainDOMString focusMode;
-    [OriginTrialEnabled=ImageCapture] ConstrainPoint2D   pointsOfInterest;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    exposureCompensation;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    colorTemperature;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    iso;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    brightness;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    contrast;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    saturation;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    sharpness;
-    [OriginTrialEnabled=ImageCapture] ConstrainDouble    zoom;
-    [OriginTrialEnabled=ImageCapture] ConstrainBoolean   torch;
+    [RuntimeEnabled=ImageCapture] ConstrainDOMString whiteBalanceMode;
+    [RuntimeEnabled=ImageCapture] ConstrainDOMString exposureMode;
+    [RuntimeEnabled=ImageCapture] ConstrainDOMString focusMode;
+    [RuntimeEnabled=ImageCapture] ConstrainPoint2D   pointsOfInterest;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    exposureCompensation;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    colorTemperature;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    iso;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    brightness;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    contrast;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    saturation;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    sharpness;
+    [RuntimeEnabled=ImageCapture] ConstrainDouble    zoom;
+    [RuntimeEnabled=ImageCapture] ConstrainBoolean   torch;
     // The "mandatory" and "_optional" members are retained for conformance
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
     Dictionary mandatory;

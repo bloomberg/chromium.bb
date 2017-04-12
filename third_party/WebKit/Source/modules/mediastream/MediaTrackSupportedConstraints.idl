@@ -37,17 +37,17 @@ dictionary MediaTrackSupportedConstraints {
     // https://w3c.github.io/mediacapture-image/#mediatracksupportedconstraints-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [OriginTrialEnabled=ImageCapture] boolean whiteBalanceMode = true;
-    [OriginTrialEnabled=ImageCapture] boolean exposureMode = true;
-    [OriginTrialEnabled=ImageCapture] boolean focusMode = true;
-    [OriginTrialEnabled=ImageCapture] boolean pointsOfInterest = true;
-    [OriginTrialEnabled=ImageCapture] boolean exposureCompensation = true;
-    [OriginTrialEnabled=ImageCapture] boolean colorTemperature = true;
-    [OriginTrialEnabled=ImageCapture] boolean iso = true;
-    [OriginTrialEnabled=ImageCapture] boolean brightness = true;
-    [OriginTrialEnabled=ImageCapture] boolean contrast = true;
-    [OriginTrialEnabled=ImageCapture] boolean saturation = true;
-    [OriginTrialEnabled=ImageCapture] boolean sharpness = true;
-    [OriginTrialEnabled=ImageCapture] boolean zoom = true;
-    [OriginTrialEnabled=ImageCapture] boolean torch = true;
+    [RuntimeEnabled=ImageCapture] boolean whiteBalanceMode = true;
+    [RuntimeEnabled=ImageCapture] boolean exposureMode = true;
+    [RuntimeEnabled=ImageCapture] boolean focusMode = true;
+    [RuntimeEnabled=ImageCapture] boolean pointsOfInterest = true;
+    [RuntimeEnabled=ImageCapture] boolean exposureCompensation = true;
+    [RuntimeEnabled=ImageCapture] boolean colorTemperature = true;
+    [RuntimeEnabled=ImageCapture] boolean iso = true;
+    [RuntimeEnabled=ImageCapture] boolean brightness = true;
+    [RuntimeEnabled=ImageCapture] boolean contrast = true;
+    [RuntimeEnabled=ImageCapture] boolean saturation = true;
+    [RuntimeEnabled=ImageCapture] boolean sharpness = true;
+    [RuntimeEnabled=ImageCapture] boolean zoom = true;
+    [RuntimeEnabled=ImageCapture] boolean torch = true;
 };

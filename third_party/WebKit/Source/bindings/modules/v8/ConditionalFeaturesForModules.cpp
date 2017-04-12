@@ -79,10 +79,6 @@ void InstallConditionalFeaturesForModules(
   } else if (wrapper_type_info == &V8Window::wrapperTypeInfo) {
     v8::Local<v8::Object> instance_object =
         script_state->GetContext()->Global();
-    if (OriginTrials::imageCaptureEnabled(execution_context)) {
-      V8WindowPartial::installImageCapture(isolate, world, instance_object,
-                                           prototype_object, interface_object);
-    }
     // Mimics the [SecureContext] extended attribute. Work-around for
     // https://crbug.com/695123.
     if (OriginTrials::webUSBEnabled(execution_context) &&
@@ -193,13 +189,6 @@ void InstallPendingConditionalFeatureForModules(
                                           v8::Local<v8::Object>(),
                                           prototype_object, interface_object);
     }
-    return;
-  }
-  if (feature == "ImageCapture") {
-    global_instance_object = script_state->GetContext()->Global();
-    V8WindowPartial::installImageCapture(isolate, world, global_instance_object,
-                                         v8::Local<v8::Object>(),
-                                         v8::Local<v8::Function>());
     return;
   }
   if (feature == "InstalledApp") {

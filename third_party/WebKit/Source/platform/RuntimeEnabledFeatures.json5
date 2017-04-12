@@ -491,8 +491,7 @@
     },
     {
       name: "ImageCapture",
-      origin_trial_feature_name: "ImageCapture",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ImageOrientation",

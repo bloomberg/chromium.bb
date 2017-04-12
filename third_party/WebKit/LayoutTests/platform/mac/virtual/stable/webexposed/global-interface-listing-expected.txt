@@ -3135,6 +3135,14 @@ interface ImageBitmapRenderingContext
     getter canvas
     method constructor
     method transferFromImageBitmap
+interface ImageCapture
+    attribute @@toStringTag
+    getter track
+    method constructor
+    method getPhotoCapabilities
+    method grabFrame
+    method setOptions
+    method takePhoto
 interface ImageData
     attribute @@toStringTag
     getter data
@@ -3376,6 +3384,12 @@ interface MediaRecorder : EventTarget
     setter onresume
     setter onstart
     setter onstop
+interface MediaSettingsRange
+    attribute @@toStringTag
+    getter max
+    getter min
+    getter step
+    method constructor
 interface MediaSource : EventTarget
     static method isTypeSupported
     attribute @@toStringTag
@@ -3437,8 +3451,10 @@ interface MediaStreamTrack : EventTarget
     getter onmute
     getter onunmute
     getter readyState
+    method applyConstraints
     method clone
     method constructor
+    method getCapabilities
     method getConstraints
     method getSettings
     method stop
@@ -3940,6 +3956,13 @@ interface Permissions
     attribute @@toStringTag
     method constructor
     method query
+interface PhotoCapabilities
+    attribute @@toStringTag
+    getter fillLightMode
+    getter imageHeight
+    getter imageWidth
+    getter redEyeReduction
+    method constructor
 interface Plugin
     attribute @@toStringTag
     getter description
