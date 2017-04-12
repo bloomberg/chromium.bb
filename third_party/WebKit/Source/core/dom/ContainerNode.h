@@ -30,8 +30,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/html/CollectionType.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

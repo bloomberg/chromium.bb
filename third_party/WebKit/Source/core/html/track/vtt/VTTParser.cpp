@@ -38,8 +38,8 @@
 #include "core/html/track/vtt/VTTScanner.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 #define TaskRunnerHelper_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashTraits.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashTraits.h"
 
 namespace blink {
 

@@ -27,14 +27,14 @@
 #ifndef ExecutionContextTask_h
 #define ExecutionContextTask_h
 
+#include <type_traits>
 #include "core/CoreExport.h"
 #include "platform/CrossThreadFunctional.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/WTFString.h"
-#include <type_traits>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -38,7 +38,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/text/LineEnding.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

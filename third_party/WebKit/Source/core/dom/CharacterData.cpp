@@ -32,7 +32,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
 #include "core/probe/CoreProbes.h"
-#include "wtf/CheckedNumeric.h"
+#include "platform/wtf/CheckedNumeric.h"
 
 namespace blink {
 

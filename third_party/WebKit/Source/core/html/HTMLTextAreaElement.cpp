@@ -50,8 +50,8 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

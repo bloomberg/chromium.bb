@@ -28,8 +28,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/Decimal.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace WTF {
 class TextEncoding;

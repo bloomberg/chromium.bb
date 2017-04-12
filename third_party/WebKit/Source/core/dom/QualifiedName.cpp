@@ -25,9 +25,9 @@
 #include "core/XLinkNames.h"
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashSet.h"
-#include "wtf/StaticConstructors.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/StaticConstructors.h"
 
 namespace blink {
 

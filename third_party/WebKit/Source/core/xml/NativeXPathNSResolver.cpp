@@ -27,7 +27,7 @@
 
 #include "core/XMLNames.h"
 #include "core/dom/Node.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

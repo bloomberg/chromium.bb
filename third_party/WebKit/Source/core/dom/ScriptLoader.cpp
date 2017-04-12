@@ -52,10 +52,10 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebCachePolicy.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
 
 namespace blink {
 

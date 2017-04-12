@@ -28,7 +28,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeTraversal.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace XPath {

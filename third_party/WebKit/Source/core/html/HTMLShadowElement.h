@@ -32,7 +32,7 @@
 #define HTMLShadowElement_h
 
 #include "core/dom/shadow/InsertionPoint.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

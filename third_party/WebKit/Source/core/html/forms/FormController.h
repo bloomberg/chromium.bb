@@ -23,13 +23,13 @@
 #ifndef FormController_h
 #define FormController_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicStringHash.h"
 #include <memory>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

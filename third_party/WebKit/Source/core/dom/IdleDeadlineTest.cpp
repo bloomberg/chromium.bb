@@ -5,9 +5,9 @@
 #include "core/dom/IdleDeadline.h"
 
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 namespace {

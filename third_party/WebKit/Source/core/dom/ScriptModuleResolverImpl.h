@@ -9,8 +9,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/ScriptModuleResolver.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

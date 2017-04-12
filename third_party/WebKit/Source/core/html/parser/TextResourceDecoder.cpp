@@ -27,9 +27,9 @@
 #include "core/html/parser/HTMLMetaCharsetParser.h"
 #include "platform/Language.h"
 #include "platform/text/TextEncodingDetector.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/TextEncodingRegistry.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/TextCodec.h"
+#include "platform/wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
 

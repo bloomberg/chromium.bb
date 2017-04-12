@@ -6,8 +6,8 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/typed_arrays/ArrayBufferView.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/typed_arrays/ArrayBufferView.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #include "core/dom/DocumentLifecycle.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 #if DCHECK_IS_ON()
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 namespace blink {

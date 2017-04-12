@@ -32,8 +32,8 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/api/LayoutTextFragmentItem.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/text/icu/UnicodeIcu.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/text/icu/UnicodeIcu.h"
 
 namespace blink {
 

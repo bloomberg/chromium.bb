@@ -4,9 +4,9 @@
 
 #include "core/dom/IncrementLoadEventDelayCount.h"
 
-#include "core/dom/Document.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "core/dom/Document.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

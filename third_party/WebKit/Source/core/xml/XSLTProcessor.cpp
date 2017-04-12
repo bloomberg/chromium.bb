@@ -33,7 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/xml/DocumentXSLT.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

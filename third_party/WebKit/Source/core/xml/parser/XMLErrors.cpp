@@ -34,7 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/xml/DocumentXSLT.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

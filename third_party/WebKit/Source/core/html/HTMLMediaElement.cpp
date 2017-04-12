@@ -88,6 +88,11 @@
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeFromURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
@@ -97,11 +102,6 @@
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
-#include "wtf/AutoReset.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
 
 #ifndef BLINK_MEDIA_LOG
 #define BLINK_MEDIA_LOG DVLOG(3)

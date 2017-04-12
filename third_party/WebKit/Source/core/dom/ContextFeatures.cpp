@@ -26,12 +26,12 @@
 
 #include "core/dom/ContextFeatures.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

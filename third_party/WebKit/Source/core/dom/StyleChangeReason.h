@@ -6,8 +6,8 @@
 #define StyleChangeReason_h
 
 #include "core/dom/QualifiedName.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

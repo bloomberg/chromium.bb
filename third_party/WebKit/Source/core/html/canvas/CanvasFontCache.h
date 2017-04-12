@@ -5,15 +5,15 @@
 #ifndef CanvasFontCache_h
 #define CanvasFontCache_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/css/StylePropertySet.h"
 #include "platform/fonts/Font.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebThread.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

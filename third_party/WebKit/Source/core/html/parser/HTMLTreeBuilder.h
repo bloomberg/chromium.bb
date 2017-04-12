@@ -31,12 +31,12 @@
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

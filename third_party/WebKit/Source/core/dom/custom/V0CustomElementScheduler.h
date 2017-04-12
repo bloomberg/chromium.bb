@@ -34,8 +34,8 @@
 #include "core/dom/custom/V0CustomElementCallbackQueue.h"
 #include "core/dom/custom/V0CustomElementLifecycleCallbacks.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

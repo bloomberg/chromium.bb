@@ -32,7 +32,7 @@
 #include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

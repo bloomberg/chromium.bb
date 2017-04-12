@@ -5,10 +5,10 @@
 #ifndef IncrementLoadEventDelayCount_h
 #define IncrementLoadEventDelayCount_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
 
 #include "core/xml/XSLTUnicodeSort.h"
 
-#include "wtf/text/Collator.h"
-#include "wtf/text/WTFString.h"
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
+#include "platform/wtf/text/Collator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

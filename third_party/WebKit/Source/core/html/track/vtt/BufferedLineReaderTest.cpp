@@ -30,10 +30,10 @@
 
 #include "core/html/track/vtt/BufferedLineReader.h"
 
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

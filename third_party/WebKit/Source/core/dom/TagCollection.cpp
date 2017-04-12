@@ -24,7 +24,7 @@
 #include "core/dom/TagCollection.h"
 
 #include "core/dom/NodeRareData.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

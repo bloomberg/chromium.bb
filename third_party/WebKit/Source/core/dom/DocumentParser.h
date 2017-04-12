@@ -24,10 +24,10 @@
 #ifndef DocumentParser_h
 #define DocumentParser_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

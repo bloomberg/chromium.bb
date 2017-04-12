@@ -31,9 +31,9 @@
 #ifndef V0CustomElementException_h
 #define V0CustomElementException_h
 
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

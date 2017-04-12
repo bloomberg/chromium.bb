@@ -36,8 +36,8 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
-#include "wtf/Forward.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

@@ -30,8 +30,8 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
 

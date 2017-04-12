@@ -21,9 +21,9 @@
 #include "core/dom/SpaceSplitString.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

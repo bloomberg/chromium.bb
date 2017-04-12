@@ -11,12 +11,12 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/RefCounted.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Functional.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

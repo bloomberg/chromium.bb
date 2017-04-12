@@ -23,7 +23,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/StyleEngineContext.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

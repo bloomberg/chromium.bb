@@ -27,7 +27,7 @@
 #define ClearButtonElement_h
 
 #include "core/html/HTMLDivElement.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -32,8 +32,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ChromeClient.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
-#include "wtf/text/StringBuilder.h"
 
 #if U_ICU_VERSION_MAJOR_NUM >= 59
 #include <unicode/char16ptr.h>

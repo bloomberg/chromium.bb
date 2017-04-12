@@ -29,7 +29,7 @@
 #include "core/dom/LiveNodeListBase.h"
 #include "core/html/CollectionItemsCache.h"
 #include "core/html/CollectionType.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

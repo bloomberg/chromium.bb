@@ -27,10 +27,10 @@
 #define DateTimeNumericFieldElement_h
 
 #include "core/html/shadow/DateTimeFieldElement.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

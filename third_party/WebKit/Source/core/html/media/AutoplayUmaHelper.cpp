@@ -10,8 +10,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Histogram.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

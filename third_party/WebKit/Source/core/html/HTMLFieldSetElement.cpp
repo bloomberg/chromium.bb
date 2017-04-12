@@ -31,7 +31,7 @@
 #include "core/html/HTMLLegendElement.h"
 #include "core/layout/LayoutFieldset.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

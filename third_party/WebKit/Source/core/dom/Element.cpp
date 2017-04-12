@@ -141,11 +141,11 @@
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/scroll/ScrollableArea.h"
-#include "wtf/BitVector.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/BitVector.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

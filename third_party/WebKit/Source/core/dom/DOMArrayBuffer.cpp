@@ -5,7 +5,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

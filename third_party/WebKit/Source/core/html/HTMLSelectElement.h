@@ -34,7 +34,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/forms/OptionList.h"
 #include "core/html/forms/TypeAhead.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

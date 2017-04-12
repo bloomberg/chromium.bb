@@ -28,7 +28,7 @@
 #define SandboxFlags_h
 
 #include "core/dom/SpaceSplitString.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

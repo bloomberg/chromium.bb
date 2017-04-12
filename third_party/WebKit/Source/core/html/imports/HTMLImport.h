@@ -33,8 +33,8 @@
 
 #include "core/html/imports/HTMLImportState.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/TreeNode.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/TreeNode.h"
 
 namespace blink {
 

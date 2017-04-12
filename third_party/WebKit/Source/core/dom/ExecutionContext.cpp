@@ -42,7 +42,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

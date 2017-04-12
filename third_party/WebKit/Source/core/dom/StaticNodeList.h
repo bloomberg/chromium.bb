@@ -31,7 +31,7 @@
 
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/dom/NodeList.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

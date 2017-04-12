@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

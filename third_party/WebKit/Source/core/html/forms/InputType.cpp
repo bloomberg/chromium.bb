@@ -74,7 +74,7 @@
 #include "platform/json/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -36,7 +36,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

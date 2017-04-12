@@ -31,7 +31,7 @@
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/layout/LayoutButton.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

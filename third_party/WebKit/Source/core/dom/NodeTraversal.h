@@ -31,7 +31,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

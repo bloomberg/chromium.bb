@@ -30,7 +30,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

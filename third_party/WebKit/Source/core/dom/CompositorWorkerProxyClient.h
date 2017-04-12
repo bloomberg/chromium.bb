@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/CompositorProxyClient.h"
 #include "core/workers/WorkerClients.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

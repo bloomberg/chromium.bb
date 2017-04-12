@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/typed_arrays/ArrayBuffer.h"
+#include "platform/wtf/typed_arrays/ArrayBuffer.h"
 
 namespace blink {
 

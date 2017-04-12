@@ -31,16 +31,16 @@
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 
 #include <memory>
 

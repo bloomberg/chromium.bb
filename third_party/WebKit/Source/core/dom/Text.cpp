@@ -40,8 +40,8 @@
 #include "core/layout/api/LayoutTextItem.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/svg/SVGForeignObjectElement.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

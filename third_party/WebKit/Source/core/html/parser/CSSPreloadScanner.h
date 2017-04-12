@@ -33,7 +33,7 @@
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceOwner.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

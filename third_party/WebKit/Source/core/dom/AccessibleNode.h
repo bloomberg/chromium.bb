@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

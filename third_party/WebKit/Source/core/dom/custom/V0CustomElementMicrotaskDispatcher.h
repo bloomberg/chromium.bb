@@ -6,8 +6,8 @@
 #define V0CustomElementMicrotaskDispatcher_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

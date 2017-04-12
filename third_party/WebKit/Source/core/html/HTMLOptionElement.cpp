@@ -40,8 +40,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

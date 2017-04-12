@@ -7,10 +7,10 @@
 #include "core/html/ImageData.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Functional.h"
 
 namespace blink {
 

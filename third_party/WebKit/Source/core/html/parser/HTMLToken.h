@@ -26,11 +26,11 @@
 #ifndef HTMLToken_h
 #define HTMLToken_h
 
+#include <memory>
 #include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

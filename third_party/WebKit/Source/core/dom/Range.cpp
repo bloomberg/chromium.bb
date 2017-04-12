@@ -53,8 +53,8 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/geometry/FloatQuad.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 #ifndef NDEBUG
 #include <stdio.h>
 #endif

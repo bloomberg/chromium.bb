@@ -40,10 +40,10 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/Compiler.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

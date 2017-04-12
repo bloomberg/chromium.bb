@@ -27,10 +27,10 @@
 #ifndef XPathParser_h
 #define XPathParser_h
 
+#include <memory>
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
-#include "wtf/Allocator.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

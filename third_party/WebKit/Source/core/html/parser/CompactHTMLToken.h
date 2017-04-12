@@ -27,10 +27,10 @@
 #define CompactHTMLToken_h
 
 #include "core/html/parser/HTMLToken.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/TextPosition.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -4,15 +4,15 @@
 
 #include "core/dom/custom/CustomElementReaction.h"
 
-#include "core/dom/custom/CustomElementReactionQueue.h"
-#include "core/dom/custom/CustomElementReactionStack.h"
-#include "platform/heap/Handle.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
 #include <initializer_list>
 #include <memory>
 #include <vector>
+#include "core/dom/custom/CustomElementReactionQueue.h"
+#include "core/dom/custom/CustomElementReactionStack.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

@@ -73,7 +73,7 @@
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

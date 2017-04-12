@@ -30,6 +30,7 @@
 #ifndef Document_h
 #define Document_h
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
@@ -60,11 +61,10 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
-#include <memory>
 
 namespace blink {
 

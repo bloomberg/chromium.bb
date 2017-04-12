@@ -11,7 +11,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

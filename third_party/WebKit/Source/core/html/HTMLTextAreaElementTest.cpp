@@ -4,8 +4,8 @@
 
 #include "core/html/HTMLTextAreaElement.h"
 
+#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

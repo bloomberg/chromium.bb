@@ -28,10 +28,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Deque.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

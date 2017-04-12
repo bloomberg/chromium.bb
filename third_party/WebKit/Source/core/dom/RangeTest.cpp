@@ -18,10 +18,10 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Compiler.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -22,7 +22,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

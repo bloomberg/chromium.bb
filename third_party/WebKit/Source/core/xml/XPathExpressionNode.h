@@ -30,9 +30,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/xml/XPathValue.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

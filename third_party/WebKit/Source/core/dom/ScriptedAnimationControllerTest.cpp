@@ -4,6 +4,7 @@
 
 #include "core/dom/ScriptedAnimationController.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/events/Event.h"
@@ -11,10 +12,9 @@
 #include "core/events/EventTarget.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Functional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Functional.h"
-#include <memory>
 
 namespace blink {
 

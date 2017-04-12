@@ -27,10 +27,10 @@
 
 #include "core/xml/XPathPredicate.h"
 
+#include <math.h>
 #include "core/xml/XPathFunctions.h"
 #include "core/xml/XPathUtil.h"
-#include "wtf/MathExtras.h"
-#include <math.h>
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

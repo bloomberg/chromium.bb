@@ -26,8 +26,8 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

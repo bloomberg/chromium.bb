@@ -32,8 +32,8 @@
 #define V0CustomElementDescriptor_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

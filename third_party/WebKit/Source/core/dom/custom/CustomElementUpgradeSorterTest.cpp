@@ -16,8 +16,8 @@
 #include "core/html/HTMLDocument.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

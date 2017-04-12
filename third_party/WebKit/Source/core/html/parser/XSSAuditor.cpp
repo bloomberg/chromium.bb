@@ -26,6 +26,7 @@
 
 #include "core/html/parser/XSSAuditor.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
@@ -43,9 +44,8 @@
 #include "core/loader/MixedContentChecker.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace {
 

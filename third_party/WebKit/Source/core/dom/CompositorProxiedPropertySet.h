@@ -5,11 +5,11 @@
 #ifndef CompositorProxiedPropertySet_h
 #define CompositorProxiedPropertySet_h
 
-#include "platform/graphics/CompositorMutableProperties.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/graphics/CompositorMutableProperties.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

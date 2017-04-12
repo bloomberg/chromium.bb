@@ -32,7 +32,7 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

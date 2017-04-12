@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/Element.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

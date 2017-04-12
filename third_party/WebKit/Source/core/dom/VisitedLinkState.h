@@ -34,7 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/LinkHash.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

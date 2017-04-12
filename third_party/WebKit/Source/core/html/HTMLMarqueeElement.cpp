@@ -22,6 +22,7 @@
 
 #include "core/html/HTMLMarqueeElement.h"
 
+#include <cstdlib>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8HTMLMarqueeElement.h"
 #include "core/CSSPropertyNames.h"
@@ -42,8 +43,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLStyleElement.h"
-#include "wtf/Noncopyable.h"
-#include <cstdlib>
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

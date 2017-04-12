@@ -32,12 +32,12 @@
 #define DocumentLifecycle_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
 
 #if DCHECK_IS_ON()
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 #endif
 
 namespace blink {

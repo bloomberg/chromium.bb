@@ -33,7 +33,7 @@
 #define CollectionItemsCache_h
 
 #include "core/dom/CollectionIndexCache.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

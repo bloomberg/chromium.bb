@@ -7,7 +7,7 @@
 
 #include "core/dom/custom/V0CustomElementMicrotaskStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

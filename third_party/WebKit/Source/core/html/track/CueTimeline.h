@@ -9,7 +9,7 @@
 #include "core/html/track/vtt/VTTCue.h"
 #include "platform/PODIntervalTree.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

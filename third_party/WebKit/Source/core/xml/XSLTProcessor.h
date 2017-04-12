@@ -27,8 +27,8 @@
 #include "core/dom/Node.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
 
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>

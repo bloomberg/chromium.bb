@@ -29,8 +29,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/events/ScopedEventQueue.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -27,12 +27,12 @@
 #ifndef SelectorQuery_h
 #define SelectorQuery_h
 
+#include <memory>
 #include "core/css/CSSSelectorList.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicStringHash.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

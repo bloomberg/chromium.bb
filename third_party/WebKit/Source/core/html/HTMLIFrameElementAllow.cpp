@@ -6,7 +6,7 @@
 
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/feature_policy/FeaturePolicy.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 using blink::WebFeaturePolicyFeature;
 

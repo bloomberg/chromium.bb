@@ -27,13 +27,13 @@
 #ifndef HTMLTokenizer_h
 #define HTMLTokenizer_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

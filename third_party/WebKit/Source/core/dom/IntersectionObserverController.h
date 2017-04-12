@@ -8,8 +8,8 @@
 #include "core/dom/IntersectionObserver.h"
 #include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/WeakPtr.h"
 
 // Design doc for IntersectionObserver implementation:
 //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ

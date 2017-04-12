@@ -29,10 +29,10 @@
 #include "core/CoreExport.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "platform/heap/Handle.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringImpl.h"
 
 namespace blink {
 

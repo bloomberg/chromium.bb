@@ -26,7 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/html/HTMLElement.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

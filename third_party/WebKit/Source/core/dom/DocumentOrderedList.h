@@ -31,7 +31,7 @@
 #define DocumentOrderedList_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/ListHashSet.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

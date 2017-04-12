@@ -34,7 +34,7 @@
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
 #include "core/xml/XPathVariableReference.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 void* yyFastMalloc(size_t size)
 {

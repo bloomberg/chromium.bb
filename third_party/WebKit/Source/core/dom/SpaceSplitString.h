@@ -21,10 +21,10 @@
 #ifndef SpaceSplitString_h
 #define SpaceSplitString_h
 
-#include "wtf/Allocator.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

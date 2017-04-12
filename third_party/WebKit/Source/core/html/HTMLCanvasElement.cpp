@@ -77,11 +77,11 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/CheckedNumeric.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
-#include "wtf/CheckedNumeric.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

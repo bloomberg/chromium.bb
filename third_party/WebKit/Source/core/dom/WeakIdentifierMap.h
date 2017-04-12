@@ -6,8 +6,8 @@
 #define WeakIdentifierMap_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

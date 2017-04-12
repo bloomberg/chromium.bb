@@ -39,7 +39,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/text/DateTimeFormat.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/DateMath.h"
+#include "platform/wtf/DateMath.h"
 
 namespace blink {
 

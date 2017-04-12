@@ -46,11 +46,11 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Assertions.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuffer.h"
-#include "wtf/text/UTF8.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuffer.h"
+#include "platform/wtf/text/UTF8.h"
 
 namespace blink {
 

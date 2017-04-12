@@ -4,12 +4,12 @@
 
 #include "core/dom/custom/CustomElementReactionQueue.h"
 
-#include "core/dom/custom/CustomElementReaction.h"
-#include "core/dom/custom/CustomElementReactionTestHelpers.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Functional.h"
 #include <initializer_list>
 #include <vector>
+#include "core/dom/custom/CustomElementReaction.h"
+#include "core/dom/custom/CustomElementReactionTestHelpers.h"
+#include "platform/wtf/Functional.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

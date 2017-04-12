@@ -31,6 +31,7 @@
 
 #include "core/html/forms/NumberInputType.h"
 
+#include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
@@ -42,8 +43,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/MathExtras.h"
-#include <limits>
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

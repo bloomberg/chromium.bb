@@ -12,7 +12,7 @@
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

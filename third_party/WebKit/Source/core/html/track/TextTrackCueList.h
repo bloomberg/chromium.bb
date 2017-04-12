@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/html/track/TextTrackCue.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

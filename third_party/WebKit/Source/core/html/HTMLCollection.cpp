@@ -36,7 +36,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/WindowNameCollection.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

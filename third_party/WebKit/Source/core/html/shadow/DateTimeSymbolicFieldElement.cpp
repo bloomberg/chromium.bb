@@ -29,8 +29,8 @@
 #include "platform/fonts/Font.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

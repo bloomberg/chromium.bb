@@ -33,8 +33,8 @@
 #include "platform/MemoryCoordinator.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceOwner.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

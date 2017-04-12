@@ -31,6 +31,7 @@
 
 #include "core/html/forms/RangeInputType.h"
 
+#include <limits>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
@@ -50,9 +51,8 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutSlider.h"
-#include "wtf/MathExtras.h"
-#include "wtf/NonCopyingSort.h"
-#include <limits>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 

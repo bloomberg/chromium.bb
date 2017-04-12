@@ -26,13 +26,13 @@
 #ifndef XSSAuditor_h
 #define XSSAuditor_h
 
+#include <memory>
 #include "core/html/parser/HTMLToken.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/text/SuffixTree.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/TextEncoding.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

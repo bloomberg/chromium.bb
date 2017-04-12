@@ -20,16 +20,16 @@
 
 #include "core/html/forms/FormController.h"
 
+#include <memory>
 #include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/FileChooser.h"
-#include "wtf/Deque.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

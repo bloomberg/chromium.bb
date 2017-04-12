@@ -49,7 +49,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/Color.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

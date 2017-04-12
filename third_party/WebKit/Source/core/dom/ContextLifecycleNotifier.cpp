@@ -28,7 +28,7 @@
 #include "core/dom/ContextLifecycleNotifier.h"
 
 #include "core/dom/SuspendableObject.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

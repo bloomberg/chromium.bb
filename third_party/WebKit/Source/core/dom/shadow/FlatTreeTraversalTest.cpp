@@ -4,6 +4,7 @@
 
 #include "core/dom/shadow/FlatTreeTraversal.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -14,11 +15,10 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Compiler.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

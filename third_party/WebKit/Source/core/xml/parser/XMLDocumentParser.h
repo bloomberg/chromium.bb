@@ -26,6 +26,8 @@
 #ifndef XMLDocumentParser_h
 #define XMLDocumentParser_h
 
+#include <libxml/tree.h>
+#include <memory>
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -33,13 +35,11 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/Compiler.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringHash.h"
-#include <libxml/tree.h>
-#include <memory>
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

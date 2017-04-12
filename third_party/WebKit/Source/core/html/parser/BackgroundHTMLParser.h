@@ -26,6 +26,7 @@
 #ifndef BackgroundHTMLParser_h
 #define BackgroundHTMLParser_h
 
+#include <memory>
 #include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -36,8 +37,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/TokenizedChunkQueue.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "wtf/WeakPtr.h"
-#include <memory>
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

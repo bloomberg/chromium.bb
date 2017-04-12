@@ -33,10 +33,10 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/custom/V0CustomElementDefinition.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

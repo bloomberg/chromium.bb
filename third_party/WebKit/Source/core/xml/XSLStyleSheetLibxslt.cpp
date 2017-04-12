@@ -21,6 +21,8 @@
 
 #include "core/xml/XSLStyleSheet.h"
 
+#include <libxml/uri.h>
+#include <libxslt/xsltutils.h>
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/TransformSource.h"
@@ -29,9 +31,7 @@
 #include "core/xml/XSLTProcessor.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "core/xml/parser/XMLParserInput.h"
-#include "wtf/text/CString.h"
-#include <libxml/uri.h>
-#include <libxslt/xsltutils.h>
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

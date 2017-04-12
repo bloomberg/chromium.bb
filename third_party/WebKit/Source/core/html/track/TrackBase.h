@@ -29,8 +29,8 @@
 #include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebMediaPlayer.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

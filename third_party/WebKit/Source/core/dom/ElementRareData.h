@@ -40,7 +40,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

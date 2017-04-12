@@ -15,7 +15,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLStyleElement.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

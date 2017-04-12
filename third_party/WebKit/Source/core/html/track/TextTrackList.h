@@ -31,8 +31,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

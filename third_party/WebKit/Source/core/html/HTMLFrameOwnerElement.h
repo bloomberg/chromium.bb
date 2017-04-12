@@ -28,7 +28,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/HashCountedSet.h"
+#include "platform/wtf/HashCountedSet.h"
 
 namespace blink {
 

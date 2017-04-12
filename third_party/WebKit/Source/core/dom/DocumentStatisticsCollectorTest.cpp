@@ -4,16 +4,16 @@
 
 #include "core/dom/DocumentStatisticsCollector.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebDistillability.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

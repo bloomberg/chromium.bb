@@ -28,7 +28,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageElement.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

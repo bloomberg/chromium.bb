@@ -27,7 +27,7 @@
 #ifndef XPathUtil_h
 #define XPathUtil_h
 
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

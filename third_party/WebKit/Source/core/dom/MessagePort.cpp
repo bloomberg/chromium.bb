@@ -38,10 +38,10 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebString.h"
-#include "wtf/Atomics.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

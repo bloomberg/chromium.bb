@@ -20,9 +20,9 @@
 #ifndef TransformSource_h
 #define TransformSource_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include <libxml/tree.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #include "core/html/HTMLDimension.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringToNumber.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringToNumber.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

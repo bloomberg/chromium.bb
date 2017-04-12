@@ -25,9 +25,9 @@
 
 #include "core/html/media/MediaFragmentURIParser.h"
 
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

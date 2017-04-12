@@ -9,7 +9,7 @@
 #include "core/dom/SuspendableObject.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

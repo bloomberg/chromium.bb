@@ -31,12 +31,12 @@
 #ifndef HTMLImportLoader_h
 #define HTMLImportLoader_h
 
+#include <memory>
 #include "core/dom/DocumentParserClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceOwner.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

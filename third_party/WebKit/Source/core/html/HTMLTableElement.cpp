@@ -46,7 +46,7 @@
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

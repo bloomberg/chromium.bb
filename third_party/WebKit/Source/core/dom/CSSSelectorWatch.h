@@ -35,10 +35,10 @@
 #include "core/css/StyleRule.h"
 #include "core/dom/Document.h"
 #include "platform/Timer.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

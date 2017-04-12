@@ -28,6 +28,7 @@
 #ifndef ExecutionContext_h
 #define ExecutionContext_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -37,9 +38,8 @@
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

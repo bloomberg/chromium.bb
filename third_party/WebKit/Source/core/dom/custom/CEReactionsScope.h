@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

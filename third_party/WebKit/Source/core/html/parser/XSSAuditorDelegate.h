@@ -26,13 +26,13 @@
 #ifndef XSSAuditorDelegate_h
 #define XSSAuditorDelegate_h
 
+#include <memory>
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/TextPosition.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

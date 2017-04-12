@@ -25,7 +25,7 @@
 #define NameNodeList_h
 
 #include "core/dom/LiveNodeList.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

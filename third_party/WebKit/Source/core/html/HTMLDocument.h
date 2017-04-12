@@ -25,7 +25,7 @@
 
 #include "core/dom/Document.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "wtf/HashCountedSet.h"
+#include "platform/wtf/HashCountedSet.h"
 
 namespace blink {
 

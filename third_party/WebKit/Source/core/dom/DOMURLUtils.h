@@ -29,7 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

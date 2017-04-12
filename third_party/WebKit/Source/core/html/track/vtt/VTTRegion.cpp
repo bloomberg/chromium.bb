@@ -39,8 +39,8 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTScanner.h"
+#include "platform/wtf/MathExtras.h"
 #include "public/platform/Platform.h"
-#include "wtf/MathExtras.h"
 
 #define VTT_LOG_LEVEL 3
 

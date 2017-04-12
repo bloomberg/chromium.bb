@@ -32,7 +32,7 @@
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

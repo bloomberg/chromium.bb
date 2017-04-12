@@ -30,7 +30,7 @@
 #include "core/html/forms/TypeAhead.h"
 
 #include "core/events/KeyboardEvent.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -32,8 +32,8 @@
 #define DistributedNodes_h
 
 #include "core/dom/Node.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -32,9 +32,9 @@
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLFormattingElementList.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -37,10 +37,10 @@
 #include "core/events/EventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

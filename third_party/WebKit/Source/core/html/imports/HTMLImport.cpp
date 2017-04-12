@@ -32,7 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/imports/HTMLImportStateResolver.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

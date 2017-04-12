@@ -31,8 +31,8 @@
 #include "core/xml/parser/SharedBufferReader.h"
 
 #include "platform/SharedBuffer.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 #include <algorithm>
 #include <cstring>

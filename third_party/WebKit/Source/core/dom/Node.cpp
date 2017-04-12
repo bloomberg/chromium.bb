@@ -102,11 +102,11 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

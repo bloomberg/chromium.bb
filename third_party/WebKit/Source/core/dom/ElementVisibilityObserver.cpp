@@ -7,7 +7,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/IntersectionObserverEntry.h"
 #include "core/frame/LocalFrame.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

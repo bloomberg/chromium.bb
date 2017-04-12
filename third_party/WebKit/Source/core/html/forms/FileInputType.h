@@ -37,7 +37,7 @@
 #include "core/html/forms/KeyboardClickableInputTypeView.h"
 #include "platform/FileChooser.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

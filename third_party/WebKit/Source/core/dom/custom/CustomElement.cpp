@@ -17,7 +17,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

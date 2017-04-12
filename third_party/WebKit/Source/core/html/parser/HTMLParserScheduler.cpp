@@ -28,11 +28,11 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/parser/HTMLDocumentParser.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

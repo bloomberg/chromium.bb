@@ -30,6 +30,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
@@ -44,12 +45,11 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/StyleEngineContext.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/AutoReset.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -50,8 +50,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

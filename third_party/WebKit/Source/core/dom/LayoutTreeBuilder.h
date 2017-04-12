@@ -33,7 +33,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

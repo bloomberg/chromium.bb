@@ -11,7 +11,7 @@
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/TextTrackCueList.h"
-#include "wtf/NonCopyingSort.h"
+#include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {
 

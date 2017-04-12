@@ -41,8 +41,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

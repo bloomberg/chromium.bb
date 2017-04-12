@@ -26,11 +26,11 @@
 
 #include "core/xml/XPathValue.h"
 
+#include <limits>
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathUtil.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include <limits>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 namespace XPath {

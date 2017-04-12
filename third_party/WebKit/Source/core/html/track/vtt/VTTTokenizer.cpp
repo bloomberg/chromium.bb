@@ -31,8 +31,8 @@
 #include "core/html/track/vtt/VTTTokenizer.h"
 
 #include "core/html/parser/MarkupTokenizerInlines.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

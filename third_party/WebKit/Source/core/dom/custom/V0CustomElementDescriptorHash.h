@@ -32,10 +32,10 @@
 #define V0CustomElementDescriptorHash_h
 
 #include "core/dom/custom/V0CustomElementDescriptor.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

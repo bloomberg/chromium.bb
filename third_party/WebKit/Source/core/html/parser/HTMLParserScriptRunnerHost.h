@@ -27,7 +27,7 @@
 #define HTMLParserScriptRunnerHost_h
 
 #include "core/CoreExport.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

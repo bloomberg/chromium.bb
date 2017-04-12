@@ -29,8 +29,8 @@
 #include "core/dom/Text.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"
-#include "wtf/AutoReset.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

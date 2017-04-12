@@ -29,7 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

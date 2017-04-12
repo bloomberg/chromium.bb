@@ -33,7 +33,7 @@
 #include "core/dom/URLSearchParams.h"
 #include "core/html/PublicURLManager.h"
 #include "platform/loader/fetch/MemoryCache.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

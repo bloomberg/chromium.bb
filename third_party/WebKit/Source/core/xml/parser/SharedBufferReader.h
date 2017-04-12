@@ -32,9 +32,9 @@
 #define SharedBufferReader_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

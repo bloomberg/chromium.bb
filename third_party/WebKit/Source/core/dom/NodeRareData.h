@@ -26,7 +26,7 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

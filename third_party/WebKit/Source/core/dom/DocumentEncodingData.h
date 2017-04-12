@@ -32,8 +32,8 @@
 #define DocumentEncodingData_h
 
 #include "platform/CrossThreadCopier.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 class TextResourceDecoder;

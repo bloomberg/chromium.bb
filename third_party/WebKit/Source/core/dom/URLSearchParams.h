@@ -12,8 +12,8 @@
 #include "bindings/core/v8/USVStringSequenceSequenceOrUSVStringOrURLSearchParams.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define ThrowOnDynamicMarkupInsertionCountIncrementer_h
 
 #include "core/dom/Document.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

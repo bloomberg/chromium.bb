@@ -32,12 +32,12 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/ColorBehavior.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/StringHash.h"
 
 namespace blink {
 

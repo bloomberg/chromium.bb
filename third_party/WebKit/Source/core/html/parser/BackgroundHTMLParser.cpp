@@ -25,6 +25,7 @@
 
 #include "core/html/parser/BackgroundHTMLParser.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -33,12 +34,11 @@
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextPosition.h"
 #include "public/platform/Platform.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Functional.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextPosition.h"
-#include <memory>
 
 namespace blink {
 

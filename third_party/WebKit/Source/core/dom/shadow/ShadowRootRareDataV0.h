@@ -32,7 +32,7 @@
 #define ShadowRootRareDataV0_h
 
 #include "core/dom/shadow/InsertionPoint.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

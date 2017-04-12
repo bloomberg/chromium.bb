@@ -25,7 +25,7 @@
 #define HTMLQuoteElement_h
 
 #include "core/html/HTMLElement.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

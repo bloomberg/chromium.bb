@@ -37,9 +37,9 @@
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/Deque.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

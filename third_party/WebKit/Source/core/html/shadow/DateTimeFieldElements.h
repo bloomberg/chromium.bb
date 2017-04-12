@@ -28,7 +28,7 @@
 
 #include "core/html/shadow/DateTimeNumericFieldElement.h"
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

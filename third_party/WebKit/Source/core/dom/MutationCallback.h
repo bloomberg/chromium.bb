@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

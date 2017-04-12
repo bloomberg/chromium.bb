@@ -33,9 +33,9 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathPath.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

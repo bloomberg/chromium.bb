@@ -41,9 +41,9 @@
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
 

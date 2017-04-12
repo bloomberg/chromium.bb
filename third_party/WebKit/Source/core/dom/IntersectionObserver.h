@@ -11,8 +11,8 @@
 #include "core/dom/IntersectionObserverEntry.h"
 #include "platform/Length.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

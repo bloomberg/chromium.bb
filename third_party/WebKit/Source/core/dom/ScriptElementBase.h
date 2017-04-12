@@ -24,9 +24,9 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextPosition.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 class Document;

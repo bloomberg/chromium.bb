@@ -25,8 +25,8 @@
 
 #include "core/html/track/TextTrackCueList.h"
 
-#include "wtf/StdLibExtras.h"
 #include <algorithm>
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

@@ -15,7 +15,7 @@
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "core/html/HTMLDocument.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 #include <utility>
 #include <vector>

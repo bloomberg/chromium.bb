@@ -29,7 +29,7 @@
 
 #include "core/html/track/vtt/VTTScanner.h"
 
-#include "wtf/text/StringToNumber.h"
+#include "platform/wtf/text/StringToNumber.h"
 
 namespace blink {
 

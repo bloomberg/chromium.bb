@@ -26,6 +26,7 @@
 #ifndef HTMLDocumentParser_h
 #define HTMLDocumentParser_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -44,11 +45,10 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "wtf/Deque.h"
-#include "wtf/RefPtr.h"
-#include "wtf/WeakPtr.h"
-#include "wtf/text/TextPosition.h"
-#include <memory>
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/WeakPtr.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

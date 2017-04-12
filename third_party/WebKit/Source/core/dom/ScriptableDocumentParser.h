@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/DecodedDataDocumentParser.h"
 #include "core/dom/ParserContentPolicy.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

@@ -31,9 +31,9 @@
 #include "core/html/parser/HTMLParserReentryPermit.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "wtf/Deque.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

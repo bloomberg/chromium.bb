@@ -27,7 +27,7 @@
 #define NativeXPathNSResolver_h
 
 #include "core/xml/XPathNSResolver.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

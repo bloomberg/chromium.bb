@@ -26,14 +26,14 @@
 #ifndef HTMLResourcePreloader_h
 #define HTMLResourcePreloader_h
 
+#include <memory>
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "platform/heap/Heap.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/TextPosition.h"
-#include <memory>
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

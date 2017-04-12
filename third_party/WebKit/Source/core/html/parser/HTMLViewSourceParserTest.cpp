@@ -7,8 +7,8 @@
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentParser.h"
 #include "core/html/HTMLViewSourceDocument.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

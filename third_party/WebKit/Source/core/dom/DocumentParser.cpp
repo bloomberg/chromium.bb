@@ -25,11 +25,11 @@
 
 #include "core/dom/DocumentParser.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "wtf/Assertions.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

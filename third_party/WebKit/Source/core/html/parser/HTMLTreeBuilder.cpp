@@ -26,6 +26,7 @@
 
 #include "core/html/parser/HTMLTreeBuilder.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/MathMLNames.h"
@@ -47,8 +48,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/text/CharacterNames.h"
-#include <memory>
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

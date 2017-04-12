@@ -10,8 +10,8 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/DragData.h"
+#include "platform/wtf/DateMath.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/DateMath.h"
 
 namespace blink {
 

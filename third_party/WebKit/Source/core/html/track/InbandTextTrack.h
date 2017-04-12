@@ -28,8 +28,8 @@
 
 #include "core/html/track/TextTrack.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebInbandTextTrackClient.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 class WebInbandTextTrack;

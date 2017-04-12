@@ -52,7 +52,7 @@
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

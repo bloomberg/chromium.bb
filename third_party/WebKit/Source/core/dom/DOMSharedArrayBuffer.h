@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferBase.h"
-#include "wtf/typed_arrays/ArrayBuffer.h"
+#include "platform/wtf/typed_arrays/ArrayBuffer.h"
 
 namespace blink {
 

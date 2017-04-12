@@ -33,7 +33,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/StyleColor.h"
 #include "core/layout/LayoutTheme.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

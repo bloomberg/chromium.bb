@@ -5,6 +5,7 @@
 #ifndef CanvasAsyncBlobCreator_h
 #define CanvasAsyncBlobCreator_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
@@ -12,10 +13,9 @@
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

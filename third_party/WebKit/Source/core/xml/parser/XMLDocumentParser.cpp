@@ -70,12 +70,12 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/AutoReset.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StringExtras.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/text/UTF8.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/UTF8.h"
 
 namespace blink {
 

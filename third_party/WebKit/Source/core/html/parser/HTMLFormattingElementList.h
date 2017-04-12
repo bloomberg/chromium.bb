@@ -27,9 +27,9 @@
 #define HTMLFormattingElementList_h
 
 #include "core/html/parser/HTMLStackItem.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

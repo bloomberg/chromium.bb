@@ -26,9 +26,9 @@
 #ifndef XMLDocumentParserScope_h
 #define XMLDocumentParserScope_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
 #include <libxml/xmlerror.h>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -29,7 +29,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

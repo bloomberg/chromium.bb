@@ -23,12 +23,12 @@
 #ifndef XSLStyleSheet_h
 #define XSLStyleSheet_h
 
+#include <libxml/tree.h>
+#include <libxslt/transform.h>
 #include "core/css/StyleSheet.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/PassRefPtr.h"
-#include <libxml/tree.h>
-#include <libxslt/transform.h>
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

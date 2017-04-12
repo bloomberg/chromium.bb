@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

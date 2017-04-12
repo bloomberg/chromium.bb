@@ -33,12 +33,12 @@
 #define DocumentOrderedMap_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringImpl.h"
 
 namespace blink {
 

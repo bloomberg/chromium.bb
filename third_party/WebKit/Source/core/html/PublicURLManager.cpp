@@ -29,8 +29,8 @@
 #include "core/html/URLRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

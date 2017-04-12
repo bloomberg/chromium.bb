@@ -8,7 +8,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 
 #include "platform/testing/FuzzedDataProvider.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

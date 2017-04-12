@@ -56,7 +56,7 @@
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

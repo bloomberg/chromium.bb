@@ -28,9 +28,9 @@
 #define HTMLElementStack_h
 
 #include "core/html/parser/HTMLStackItem.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

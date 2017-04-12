@@ -54,12 +54,12 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
-#include "wtf/AutoReset.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

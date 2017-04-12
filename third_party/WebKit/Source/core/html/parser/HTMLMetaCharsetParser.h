@@ -26,13 +26,13 @@
 #ifndef HTMLMetaCharsetParser_h
 #define HTMLMetaCharsetParser_h
 
+#include <memory>
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextCodec.h"
-#include "wtf/text/TextEncoding.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextCodec.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

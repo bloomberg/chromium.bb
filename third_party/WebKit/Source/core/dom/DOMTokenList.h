@@ -28,8 +28,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/SpaceSplitString.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

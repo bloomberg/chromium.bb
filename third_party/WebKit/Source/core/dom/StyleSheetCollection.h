@@ -35,8 +35,8 @@
 #include "core/CoreExport.h"
 #include "core/css/ActiveStyleSheets.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

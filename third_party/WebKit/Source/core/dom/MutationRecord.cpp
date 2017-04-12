@@ -34,7 +34,7 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

@@ -27,18 +27,18 @@
 #ifndef MessagePort_h
 #define MessagePort_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

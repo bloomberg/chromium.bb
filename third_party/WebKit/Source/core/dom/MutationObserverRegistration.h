@@ -36,9 +36,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

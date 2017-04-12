@@ -28,7 +28,7 @@
 
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

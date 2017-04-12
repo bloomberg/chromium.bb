@@ -27,8 +27,8 @@
 #define XPathNodeSet_h
 
 #include "core/dom/Node.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #define V0CustomElementObserver_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

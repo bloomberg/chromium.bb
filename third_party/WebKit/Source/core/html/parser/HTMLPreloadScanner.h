@@ -27,6 +27,7 @@
 #ifndef HTMLPreloadScanner_h
 #define HTMLPreloadScanner_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/dom/ViewportDescription.h"
@@ -35,9 +36,8 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

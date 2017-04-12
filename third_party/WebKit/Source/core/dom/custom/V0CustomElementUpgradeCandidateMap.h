@@ -34,9 +34,9 @@
 #include "core/dom/custom/V0CustomElementDescriptor.h"
 #include "core/dom/custom/V0CustomElementDescriptorHash.h"
 #include "core/dom/custom/V0CustomElementObserver.h"
-#include "wtf/HashMap.h"
-#include "wtf/LinkedHashSet.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/LinkedHashSet.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

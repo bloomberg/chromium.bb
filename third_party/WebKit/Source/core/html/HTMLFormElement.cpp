@@ -57,9 +57,9 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/AutoReset.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

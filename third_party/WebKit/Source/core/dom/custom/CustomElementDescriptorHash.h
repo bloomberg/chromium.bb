@@ -6,9 +6,9 @@
 #define CustomElementDescriptorHash_h
 
 #include "core/dom/custom/CustomElementDescriptor.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/custom/V0CustomElementCallbackQueue.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

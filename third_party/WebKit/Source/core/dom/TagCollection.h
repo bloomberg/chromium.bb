@@ -25,7 +25,7 @@
 #define TagCollection_h
 
 #include "core/html/HTMLCollection.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

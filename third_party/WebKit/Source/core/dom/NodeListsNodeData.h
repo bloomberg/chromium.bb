@@ -28,8 +28,8 @@
 #include "core/dom/TagCollection.h"
 #include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

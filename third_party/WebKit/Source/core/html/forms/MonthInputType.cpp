@@ -36,10 +36,10 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

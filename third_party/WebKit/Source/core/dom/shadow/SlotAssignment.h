@@ -8,9 +8,9 @@
 // #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentOrderedMap.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 

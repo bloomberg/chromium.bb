@@ -29,7 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/text/SegmentedString.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

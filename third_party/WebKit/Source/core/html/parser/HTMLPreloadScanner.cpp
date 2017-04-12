@@ -27,6 +27,7 @@
 
 #include "core/html/parser/HTMLPreloadScanner.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/css/MediaList.h"
@@ -51,8 +52,7 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
-#include "wtf/Optional.h"
-#include <memory>
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

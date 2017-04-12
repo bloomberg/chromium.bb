@@ -33,8 +33,8 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/html/parser/MarkupTokenizerInlines.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/Unicode.h"
 
 // Please don't use DEFINE_STATIC_LOCAL in this file. The HTMLTokenizer is used
 // from multiple threads and DEFINE_STATIC_LOCAL isn't threadsafe.

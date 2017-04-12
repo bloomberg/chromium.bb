@@ -34,8 +34,8 @@
 #include "core/dom/TreeScope.h"
 #include "core/xml/XPathUtil.h"
 #include "core/xml/XPathValue.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 #include <algorithm>
 #include <limits>

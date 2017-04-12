@@ -33,7 +33,7 @@
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

@@ -27,10 +27,10 @@
 #define TypeAhead_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Time.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Time.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

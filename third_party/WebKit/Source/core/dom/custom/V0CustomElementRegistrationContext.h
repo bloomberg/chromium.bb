@@ -36,7 +36,7 @@
 #include "core/dom/custom/V0CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElementUpgradeCandidateMap.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

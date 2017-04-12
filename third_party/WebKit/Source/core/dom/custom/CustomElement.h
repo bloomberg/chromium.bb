@@ -9,9 +9,9 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "platform/text/Character.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

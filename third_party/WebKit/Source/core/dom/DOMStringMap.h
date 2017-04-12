@@ -30,9 +30,9 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

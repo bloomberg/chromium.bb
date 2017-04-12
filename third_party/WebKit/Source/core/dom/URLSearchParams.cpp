@@ -8,7 +8,7 @@
 #include "core/dom/DOMURL.h"
 #include "platform/network/FormDataEncoder.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

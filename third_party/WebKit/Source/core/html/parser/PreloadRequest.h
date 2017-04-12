@@ -13,9 +13,9 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextPosition.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
 

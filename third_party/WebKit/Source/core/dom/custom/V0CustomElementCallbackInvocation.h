@@ -33,7 +33,7 @@
 
 #include "core/dom/custom/V0CustomElementLifecycleCallbacks.h"
 #include "core/dom/custom/V0CustomElementProcessingStep.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -20,11 +20,11 @@
 
 #include "core/html/forms/StepRange.h"
 
+#include <float.h>
 #include "core/HTMLNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
-#include <float.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

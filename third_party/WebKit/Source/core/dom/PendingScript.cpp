@@ -34,7 +34,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
-#include "wtf/CurrentTime.h"
+#include "platform/wtf/CurrentTime.h"
 
 namespace blink {
 

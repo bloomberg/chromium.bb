@@ -32,7 +32,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

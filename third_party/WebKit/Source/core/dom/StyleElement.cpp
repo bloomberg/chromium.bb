@@ -34,7 +34,7 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

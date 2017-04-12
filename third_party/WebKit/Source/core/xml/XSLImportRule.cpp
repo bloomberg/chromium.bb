@@ -28,7 +28,7 @@
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

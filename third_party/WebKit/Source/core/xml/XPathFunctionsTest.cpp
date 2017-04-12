@@ -9,8 +9,8 @@
 #include "core/xml/XPathPredicate.h"       // Number, StringExpression
 #include "core/xml/XPathValue.h"
 #include "platform/heap/Handle.h"  // HeapVector, Member, etc.
+#include "platform/wtf/Allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Allocator.h"
 
 #include <cmath>
 #include <limits>

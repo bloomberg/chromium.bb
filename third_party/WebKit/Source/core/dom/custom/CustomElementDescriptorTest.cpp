@@ -6,9 +6,9 @@
 
 #include "core/dom/custom/CustomElementDescriptorHash.h"
 #include "core/dom/custom/CustomElementTestHelpers.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

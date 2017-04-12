@@ -33,8 +33,8 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/StaticNodeList.h"
-#include "wtf/HashMap.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

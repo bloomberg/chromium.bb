@@ -67,8 +67,8 @@
 #include "platform/text/BidiResolver.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRunIterator.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

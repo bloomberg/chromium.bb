@@ -41,7 +41,7 @@
 #include "core/page/ValidationMessageClient.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/text/BidiTextRun.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -25,13 +25,13 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 
 #include "core/HTMLNames.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/StringToNumber.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/StringToNumber.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 #include <limits>
 

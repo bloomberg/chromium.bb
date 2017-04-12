@@ -34,7 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/V0CustomElementProcessingStep.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

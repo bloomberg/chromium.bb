@@ -5,9 +5,9 @@
 #include "core/dom/IdleDeadline.h"
 
 #include "core/timing/PerformanceBase.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

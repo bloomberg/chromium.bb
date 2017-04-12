@@ -35,7 +35,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextFeatures.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

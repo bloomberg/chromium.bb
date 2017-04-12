@@ -5,13 +5,13 @@
 #ifndef TokenizedChunkQueue_h
 #define TokenizedChunkQueue_h
 
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "wtf/Deque.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "core/html/parser/HTMLDocumentParser.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 
-#include "wtf/BitVector.h"
+#include "platform/wtf/BitVector.h"
 
 namespace blink {
 

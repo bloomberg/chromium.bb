@@ -27,8 +27,8 @@
 #define MediaFragmentURIParser_h
 
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

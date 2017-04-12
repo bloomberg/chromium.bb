@@ -31,8 +31,8 @@
 #define TextLinkColors_h
 
 #include "platform/graphics/Color.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
