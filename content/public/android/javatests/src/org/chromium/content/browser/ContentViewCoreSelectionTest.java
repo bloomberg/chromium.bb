@@ -33,6 +33,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             + "content=\"width=device-width, initial-scale=1.1, maximum-scale=1.5\" /></head>"
             + "<body><form action=\"about:blank\">"
             + "<input id=\"empty_input_text\" type=\"text\" />"
+            + "<br/><input id=\"whitespace_input_text\" type=\"text\" value=\" \" />"
             + "<br/><input id=\"input_text\" type=\"text\" value=\"SampleInputText\" />"
             + "<br/><textarea id=\"textarea\" rows=\"2\" cols=\"20\">SampleTextArea</textarea>"
             + "<br/><input id=\"password\" type=\"password\" value=\"SamplePassword\" size=\"10\"/>"
@@ -197,6 +198,28 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         DOMUtils.longPressNode(mContentViewCore, "disabled_text");
         waitForPastePopupStatus(false);
         waitForInsertion(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupNoSelectAllEmptyInput() throws Throwable {
+        // Clipboard has to be non-empty for this test to work on SDK < M.
+        copyStringToClipboard("SampleTextToCopy");
+        DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        assertFalse(mSelectionPopupController.canSelectAll());
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupCanSelectAllNonEmptyInput() throws Throwable {
+        // Clipboard has to be non-empty for this test to work on SDK < M.
+        copyStringToClipboard("SampleTextToCopy");
+        DOMUtils.longPressNode(mContentViewCore, "whitespace_input_text");
+        waitForPastePopupStatus(true);
+        waitForInsertion(true);
+        assertTrue(mSelectionPopupController.canSelectAll());
     }
 
     /*

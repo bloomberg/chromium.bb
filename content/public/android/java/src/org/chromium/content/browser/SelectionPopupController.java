@@ -102,6 +102,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mEditable;
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
+    private boolean mCanSelectAllForPastePopup;
 
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
@@ -251,13 +252,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return actionMode;
     }
 
-    void createAndShowPastePopup(int x, int y) {
+    void createAndShowPastePopup(int x, int y, boolean canSelectAll) {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
 
         if (!supportsFloatingActionMode() && !canPaste()) return;
         destroyPastePopup();
+        mCanSelectAllForPastePopup = canSelectAll;
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
             public void paste() {
@@ -268,6 +270,16 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             @Override
             public boolean canPaste() {
                 return SelectionPopupController.this.canPaste();
+            }
+
+            @Override
+            public void selectAll() {
+                SelectionPopupController.this.selectAll();
+            }
+
+            @Override
+            public boolean canSelectAll() {
+                return SelectionPopupController.this.canSelectAll();
             }
         };
         Context windowContext = mWindowAndroid.getContext().get();
@@ -738,6 +750,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @VisibleForTesting
     public boolean isInsertion() {
         return mIsInsertion;
+    }
+
+    /**
+     * @return true if the current selection can select all.
+     */
+    @VisibleForTesting
+    public boolean canSelectAll() {
+        return mCanSelectAllForPastePopup;
     }
 
     /**

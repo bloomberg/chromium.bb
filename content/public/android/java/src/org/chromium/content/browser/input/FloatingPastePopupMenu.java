@@ -108,7 +108,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             mode.setSubtitle(null);
             SelectionPopupController.initializeMenu(mContext, mode, menu);
             if (!mDelegate.canPaste()) menu.removeItem(R.id.select_action_menu_paste);
-            menu.removeItem(R.id.select_action_menu_select_all);
+            if (!mDelegate.canSelectAll()) menu.removeItem(R.id.select_action_menu_select_all);
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_share);
@@ -124,6 +124,10 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             if (item.getItemId() == R.id.select_action_menu_paste) {
                 mDelegate.paste();
+                mode.finish();
+            }
+            if (item.getItemId() == R.id.select_action_menu_select_all) {
+                mDelegate.selectAll();
                 mode.finish();
             }
             return true;

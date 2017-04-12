@@ -13,7 +13,7 @@ public interface PastePopupMenu {
      */
     public interface PastePopupMenuDelegate {
         /**
-         * Called to initiate a paste after the popup has been tapped.
+         * Called to initiate a paste after the paste option has been tapped.
          */
         void paste();
 
@@ -21,6 +21,16 @@ public interface PastePopupMenu {
          * @return Whether clipboard is nonempty.
          */
         boolean canPaste();
+
+        /**
+         * Called to initiate a select all after the select all option has been tapped.
+         */
+        void selectAll();
+
+        /**
+         * @return Whether the select all option should be shown.
+         */
+        boolean canSelectAll();
     }
 
     /**

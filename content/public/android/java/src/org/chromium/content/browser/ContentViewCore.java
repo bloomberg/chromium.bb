@@ -1783,8 +1783,8 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void showPastePopup(int x, int y) {
-        mSelectionPopupController.createAndShowPastePopup(x, y);
+    private void showPastePopup(int x, int y, boolean canSelectAll) {
+        mSelectionPopupController.createAndShowPastePopup(x, y, canSelectAll);
     }
 
     private void destroyPastePopup() {

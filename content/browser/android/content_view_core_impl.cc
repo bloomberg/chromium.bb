@@ -53,6 +53,7 @@
 #include "jni/ContentViewCore_jni.h"
 #include "jni/DragEvent_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -75,6 +76,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using blink::WebContextMenuData;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using ui::MotionEventAndroid;
@@ -630,8 +632,11 @@ bool ContentViewCoreImpl::ShowPastePopup(const ContextMenuParams& params) {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
+  const bool can_select_all =
+      !!(params.edit_flags & WebContextMenuData::kCanSelectAll);
   Java_ContentViewCore_showPastePopup(env, obj, params.selection_start.x(),
-                                      params.selection_start.y());
+                                      params.selection_start.y(),
+                                      can_select_all);
   return true;
 }
 
