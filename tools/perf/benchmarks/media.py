@@ -66,8 +66,6 @@ class _MediaTBMv2Benchmark(perf_benchmark.PerfBenchmark):
     category_filter.AddIncludedCategory('rail')
 
     options = timeline_based_measurement.Options(category_filter)
-    options.config.enable_atrace_trace = True
-    options.config.atrace_config.categories = ['sched']
     options.config.enable_battor_trace = True
     options.SetTimelineBasedMetrics(['powerMetric', 'cpuTimeMetric'])
     return options
@@ -142,10 +140,7 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    # crbug.com/707286: This benchmark is having issues with devices other
-    # than Nexus 5X. Disabling on those devices until we figure out the cause.
-    return (cls.IsSvelte(possible_browser) or
-            possible_browser.platform.GetDeviceTypeName() != 'Nexus 5X')
+    return cls.IsSvelte(possible_browser)
 
   @classmethod
   def Name(cls):
