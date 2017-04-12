@@ -276,8 +276,8 @@ class CORE_EXPORT InspectorNetworkAgent final
   HashSet<String> frames_with_scheduled_navigation_;
   HashSet<String> frames_with_scheduled_client_navigation_;
 
-  HeapHashSet<Member<XMLHttpRequest>> replay_xh_rs_;
-  HeapHashSet<Member<XMLHttpRequest>> replay_xh_rs_to_be_deleted_;
+  HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_;
+  HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_to_be_deleted_;
   TaskRunnerTimer<InspectorNetworkAgent> remove_finished_replay_xhr_timer_;
 };
 

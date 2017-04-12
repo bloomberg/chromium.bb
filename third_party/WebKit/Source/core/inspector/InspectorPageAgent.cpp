@@ -472,7 +472,7 @@ Response InspectorPageAgent::stopLoading() {
 
 static void CachedResourcesForDocument(Document* document,
                                        HeapVector<Member<Resource>>& result,
-                                       bool skip_xh_rs) {
+                                       bool skip_xhrs) {
   const ResourceFetcher::DocumentResourceMap& all_resources =
       document->Fetcher()->AllResources();
   for (const auto& resource : all_resources) {
@@ -484,7 +484,7 @@ static void CachedResourcesForDocument(Document* document,
     // agent), fonts that were referenced in CSS but never used/downloaded, etc.
     if (cached_resource->StillNeedsLoad())
       continue;
-    if (cached_resource->GetType() == Resource::kRaw && skip_xh_rs)
+    if (cached_resource->GetType() == Resource::kRaw && skip_xhrs)
       continue;
     result.push_back(cached_resource);
   }
@@ -507,15 +507,15 @@ HeapVector<Member<Document>> InspectorPageAgent::ImportsForFrame(
 }
 
 static HeapVector<Member<Resource>> CachedResourcesForFrame(LocalFrame* frame,
-                                                            bool skip_xh_rs) {
+                                                            bool skip_xhrs) {
   HeapVector<Member<Resource>> result;
   Document* root_document = frame->GetDocument();
   HeapVector<Member<Document>> loaders =
       InspectorPageAgent::ImportsForFrame(frame);
 
-  CachedResourcesForDocument(root_document, result, skip_xh_rs);
+  CachedResourcesForDocument(root_document, result, skip_xhrs);
   for (size_t i = 0; i < loaders.size(); ++i)
-    CachedResourcesForDocument(loaders[i], result, skip_xh_rs);
+    CachedResourcesForDocument(loaders[i], result, skip_xhrs);
 
   return result;
 }

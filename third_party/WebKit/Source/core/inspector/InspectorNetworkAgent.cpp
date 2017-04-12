@@ -550,8 +550,8 @@ InspectorNetworkAgent::~InspectorNetworkAgent() {}
 DEFINE_TRACE(InspectorNetworkAgent) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(resources_data_);
-  visitor->Trace(replay_xh_rs_);
-  visitor->Trace(replay_xh_rs_to_be_deleted_);
+  visitor->Trace(replay_xhrs_);
+  visitor->Trace(replay_xhrs_to_be_deleted_);
   visitor->Trace(pending_xhr_replay_data_);
   InspectorBaseAgent::Trace(visitor);
 }
@@ -937,10 +937,10 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
 }
 
 void InspectorNetworkAgent::DelayedRemoveReplayXHR(XMLHttpRequest* xhr) {
-  if (!replay_xh_rs_.Contains(xhr))
+  if (!replay_xhrs_.Contains(xhr))
     return;
-  replay_xh_rs_to_be_deleted_.insert(xhr);
-  replay_xh_rs_.erase(xhr);
+  replay_xhrs_to_be_deleted_.insert(xhr);
+  replay_xhrs_.erase(xhr);
   remove_finished_replay_xhr_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
 
@@ -1387,7 +1387,7 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
   xhr->SendForInspectorXHRReplay(xhr_replay_data->FormData(),
                                  IGNORE_EXCEPTION_FOR_TESTING);
 
-  replay_xh_rs_.insert(xhr);
+  replay_xhrs_.insert(xhr);
   return Response::OK();
 }
 
@@ -1550,7 +1550,7 @@ bool InspectorNetworkAgent::CacheDisabled() {
 }
 
 void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {
-  replay_xh_rs_to_be_deleted_.Clear();
+  replay_xhrs_to_be_deleted_.Clear();
 }
 
 InspectorNetworkAgent::InspectorNetworkAgent(InspectedFrames* inspected_frames)
