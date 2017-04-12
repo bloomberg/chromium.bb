@@ -34,7 +34,7 @@ FilterEffect::FilterEffect(Filter* filter)
       clips_to_bounds_(true),
       origin_tainted_(false),
       operating_color_space_(kColorSpaceLinearRGB) {
-  ASSERT(filter_);
+  DCHECK(filter_);
 }
 
 FilterEffect::~FilterEffect() {}

@@ -81,7 +81,7 @@ class Canvas2DLayerBridgePtr {
   }
 
   void operator=(PassRefPtr<Canvas2DLayerBridge> layer_bridge) {
-    ASSERT(!layer_bridge_);
+    DCHECK(!layer_bridge_);
     layer_bridge_ = layer_bridge;
   }
 

@@ -76,9 +76,9 @@ bool ParseCompositeAndBlendOperator(const String& s,
 }
 
 String CompositeOperatorName(CompositeOperator op, WebBlendMode blend_op) {
-  ASSERT(op >= 0);
-  ASSERT(op < kNumCompositeOperatorNames);
-  ASSERT(blend_op >= 0);
+  DCHECK_GE(op, 0);
+  DCHECK_LT(op, kNumCompositeOperatorNames);
+  DCHECK_GE(blend_op, 0);
   if (blend_op != kWebBlendModeNormal)
     return kBlendOperatorNames[blend_op];
   return kCompositeOperatorNames[op];
@@ -101,8 +101,8 @@ bool ParseLineCap(const String& s, LineCap& cap) {
 }
 
 String LineCapName(LineCap cap) {
-  ASSERT(cap >= 0);
-  ASSERT(cap < 3);
+  DCHECK_GE(cap, 0);
+  DCHECK_LT(cap, 3);
   const char* const kNames[3] = {"butt", "round", "square"};
   return kNames[cap];
 }
@@ -124,15 +124,15 @@ bool ParseLineJoin(const String& s, LineJoin& join) {
 }
 
 String LineJoinName(LineJoin join) {
-  ASSERT(join >= 0);
-  ASSERT(join < 3);
+  DCHECK_GE(join, 0);
+  DCHECK_LT(join, 3);
   const char* const kNames[3] = {"miter", "round", "bevel"};
   return kNames[join];
 }
 
 String TextAlignName(TextAlign align) {
-  ASSERT(align >= 0);
-  ASSERT(align < 5);
+  DCHECK_GE(align, 0);
+  DCHECK_LT(align, 5);
   const char* const kNames[5] = {"start", "end", "left", "center", "right"};
   return kNames[align];
 }
@@ -162,8 +162,8 @@ bool ParseTextAlign(const String& s, TextAlign& align) {
 }
 
 String TextBaselineName(TextBaseline baseline) {
-  ASSERT(baseline >= 0);
-  ASSERT(baseline < 6);
+  DCHECK_GE(baseline, 0);
+  DCHECK_LT(baseline, 6);
   const char* const kNames[6] = {"alphabetic", "top",         "middle",
                                  "bottom",     "ideographic", "hanging"};
   return kNames[baseline];

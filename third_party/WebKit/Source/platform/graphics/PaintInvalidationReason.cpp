@@ -67,7 +67,7 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
     case kPaintInvalidationDelayedFull:
       return "delayed full";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

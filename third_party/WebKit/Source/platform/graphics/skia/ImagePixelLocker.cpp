@@ -14,7 +14,7 @@ namespace {
 bool InfoIsCompatible(const SkImageInfo& info,
                       SkAlphaType alpha_type,
                       SkColorType color_type) {
-  ASSERT(alpha_type != kUnknown_SkAlphaType);
+  DCHECK_NE(alpha_type, kUnknown_SkAlphaType);
 
   if (info.colorType() != color_type)
     return false;

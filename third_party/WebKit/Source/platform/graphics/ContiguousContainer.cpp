@@ -40,7 +40,7 @@ class ContiguousContainerBase::Buffer {
   bool IsEmpty() const { return UsedCapacity() == 0; }
 
   void* Allocate(size_t object_size) {
-    ASSERT(UnusedCapacity() >= object_size);
+    DCHECK_GE(UnusedCapacity(), object_size);
     ANNOTATE_CHANGE_SIZE(begin_, capacity_, UsedCapacity(),
                          UsedCapacity() + object_size);
     void* result = end_;
@@ -49,7 +49,8 @@ class ContiguousContainerBase::Buffer {
   }
 
   void DeallocateLastObject(void* object) {
-    RELEASE_ASSERT(begin_ <= object && object < end_);
+    CHECK_LE(begin_, object);
+    CHECK_LT(object, end_);
     ANNOTATE_CHANGE_SIZE(begin_, capacity_, UsedCapacity(),
                          static_cast<char*>(object) - begin_);
     end_ = static_cast<char*>(object);
@@ -105,7 +106,7 @@ void ContiguousContainerBase::ReserveInitialCapacity(size_t buffer_size,
 
 void* ContiguousContainerBase::Allocate(size_t object_size,
                                         const char* type_name) {
-  ASSERT(object_size <= max_object_size_);
+  DCHECK_LE(object_size, max_object_size_);
 
   Buffer* buffer_for_alloc = nullptr;
   if (!buffers_.IsEmpty()) {
@@ -168,7 +169,7 @@ ContiguousContainerBase::Buffer*
 ContiguousContainerBase::AllocateNewBufferForNextAllocation(
     size_t buffer_size,
     const char* type_name) {
-  ASSERT(buffers_.IsEmpty() || end_index_ == buffers_.size() - 1);
+  DCHECK(buffers_.IsEmpty() || end_index_ == buffers_.size() - 1);
   std::unique_ptr<Buffer> new_buffer =
       WTF::MakeUnique<Buffer>(buffer_size, type_name);
   Buffer* buffer_to_return = new_buffer.get();

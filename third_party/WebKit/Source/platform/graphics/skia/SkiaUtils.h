@@ -101,7 +101,7 @@ inline WindRule SkFillTypeToWindRule(SkPath::FillType fill_type) {
     case SkPath::kEvenOdd_FillType:
       return static_cast<WindRule>(fill_type);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
   return RULE_NONZERO;

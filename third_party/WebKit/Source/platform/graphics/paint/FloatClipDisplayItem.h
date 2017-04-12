@@ -19,7 +19,7 @@ class PLATFORM_EXPORT FloatClipDisplayItem final
                        const FloatRect& clip_rect)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
         clip_rect_(clip_rect) {
-    ASSERT(IsFloatClipType(type));
+    DCHECK(IsFloatClipType(type));
   }
 
   void Replay(GraphicsContext&) const override;
@@ -44,7 +44,7 @@ class PLATFORM_EXPORT EndFloatClipDisplayItem final
  public:
   EndFloatClipDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(IsEndFloatClipType(type));
+    DCHECK(IsEndFloatClipType(type));
   }
 
   void Replay(GraphicsContext&) const override;

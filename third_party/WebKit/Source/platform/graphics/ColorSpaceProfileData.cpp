@@ -95,13 +95,15 @@ struct bt601ColorProfile {
 namespace blink {
 
 void Bt709ColorProfileData(Vector<char>& data) {
-  ASSERT(WTF::IsMainThread() && data.IsEmpty());
+  DCHECK(WTF::IsMainThread());
+  DCHECK(data.IsEmpty());
 
   data.Append(bt709ColorProfile::data(), bt709ColorProfile::size());
 }
 
 void Bt601ColorProfileData(Vector<char>& data) {
-  ASSERT(WTF::IsMainThread() && data.IsEmpty());
+  DCHECK(WTF::IsMainThread());
+  DCHECK(data.IsEmpty());
 
   data.Append(bt601ColorProfile::data(), bt601ColorProfile::size());
 }

@@ -86,7 +86,7 @@ String PointModeName(SkCanvas::PointMode mode) {
     case SkCanvas::kPolygon_PointMode:
       return "Polygon";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -130,7 +130,7 @@ String RrectTypeName(SkRRect::Type type) {
     case SkRRect::kComplex_Type:
       return "Complex";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -146,7 +146,7 @@ String RadiusName(SkRRect::Corner corner) {
     case SkRRect::kLowerLeft_Corner:
       return "lowerLeftRadius";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   }
 }
@@ -175,7 +175,7 @@ String FillTypeName(SkPath::FillType type) {
     case SkPath::kInverseEvenOdd_FillType:
       return "InverseEvenOdd";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -189,7 +189,7 @@ String ConvexityName(SkPath::Convexity convexity) {
     case SkPath::kConcave_Convexity:
       return "Concave";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -211,7 +211,7 @@ VerbParams SegmentParams(SkPath::Verb verb) {
     case SkPath::kDone_Verb:
       return VerbParams("Done", 0, 0);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return VerbParams("?", 0, 0);
   };
 }
@@ -229,8 +229,8 @@ std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
     VerbParams verb_params = SegmentParams(verb);
     std::unique_ptr<JSONObject> path_point_item = JSONObject::Create();
     path_point_item->SetString("verb", verb_params.name);
-    ASSERT(verb_params.point_count + verb_params.point_offset <=
-           WTF_ARRAY_LENGTH(points));
+    DCHECK_LE(verb_params.point_count + verb_params.point_offset,
+              WTF_ARRAY_LENGTH(points));
     path_point_item->SetArray(
         "points", ArrayForSkPoints(verb_params.point_count,
                                    points + verb_params.point_offset));
@@ -258,7 +258,7 @@ String ColorTypeName(SkColorType color_type) {
     case kN32_SkColorType:
       return "ARGB8888";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -366,7 +366,7 @@ String FilterQualityName(SkFilterQuality filter_quality) {
     case kHigh_SkFilterQuality:
       return "High";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -380,7 +380,7 @@ String TextAlignName(SkPaint::Align align) {
     case SkPaint::kRight_Align:
       return "Right";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -394,7 +394,7 @@ String StrokeCapName(SkPaint::Cap cap) {
     case SkPaint::kSquare_Cap:
       return "Square";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -408,7 +408,7 @@ String StrokeJoinName(SkPaint::Join join) {
     case SkPaint::kBevel_Join:
       return "Bevel";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -422,7 +422,7 @@ String StyleName(SkPaint::Style style) {
     case SkPaint::kStrokeAndFill_Style:
       return "StrokeAndFill";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -438,7 +438,7 @@ String TextEncodingName(SkPaint::TextEncoding encoding) {
     case SkPaint::kGlyphID_TextEncoding:
       return "GlyphID";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -454,7 +454,7 @@ String HintingName(SkPaint::Hinting hinting) {
     case SkPaint::kFull_Hinting:
       return "Full";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   };
 }
@@ -543,7 +543,7 @@ String StringForText(const void* text,
           reinterpret_cast<const char*>(text_data), byte_length * 2);
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "?";
   }
 }

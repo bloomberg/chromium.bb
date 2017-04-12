@@ -19,13 +19,13 @@ DisplayItem& DisplayItemList::AppendByMoving(DisplayItem& item) {
 #ifndef NDEBUG
   String original_debug_string = item.AsDebugString();
 #endif
-  ASSERT(item.HasValidClient());
+  DCHECK(item.HasValidClient());
   DisplayItem& result =
       ContiguousContainer::AppendByMoving(item, item.DerivedSize());
   // ContiguousContainer::appendByMoving() calls an in-place constructor
   // on item which replaces it with a tombstone/"dead display item" that
   // can be safely destructed but should never be used.
-  ASSERT(!item.HasValidClient());
+  DCHECK(!item.HasValidClient());
 #ifndef NDEBUG
   // Save original debug string in the old item to help debugging.
   item.SetClientDebugString(original_debug_string);

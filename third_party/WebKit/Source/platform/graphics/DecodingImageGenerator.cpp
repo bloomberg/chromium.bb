@@ -120,7 +120,8 @@ bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& size_info,
                                              void* planes[3]) {
   // YUV decoding does not currently support progressive decoding. See comment
   // in ImageFrameGenerator.h.
-  ASSERT(can_yuv_decode_ && all_data_received_);
+  DCHECK(can_yuv_decode_);
+  DCHECK(all_data_received_);
 
   TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", "frame index",
                static_cast<int>(frame_index_));

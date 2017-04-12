@@ -54,7 +54,7 @@ class InterceptingCanvasBase : public SkCanvas {
     }
 
     ~CanvasInterceptorBase() {
-      ASSERT(canvas_->call_nesting_depth_ > 0);
+      DCHECK_GT(canvas_->call_nesting_depth_, 0u);
       if (!--canvas_->call_nesting_depth_)
         canvas_->call_count_++;
     }

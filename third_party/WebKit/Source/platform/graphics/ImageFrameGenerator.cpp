@@ -144,7 +144,7 @@ bool ImageFrameGenerator::DecodeAndScale(SegmentReader* data,
 
   // This implementation does not support scaling so check the requested size.
   SkISize scaled_size = SkISize::Make(info.width(), info.height());
-  ASSERT(full_size_ == scaled_size);
+  DCHECK(full_size_ == scaled_size);
 
   // It is okay to allocate ref-counted ExternalMemoryAllocator on the stack,
   // because 1) it contains references to memory that will be invalid after
@@ -160,8 +160,8 @@ bool ImageFrameGenerator::DecodeAndScale(SegmentReader* data,
 
   // Check to see if the decoder has written directly to the pixel memory
   // provided. If not, make a copy.
-  ASSERT(bitmap.width() == scaled_size.width());
-  ASSERT(bitmap.height() == scaled_size.height());
+  DCHECK_EQ(bitmap.width(), scaled_size.width());
+  DCHECK_EQ(bitmap.height(), scaled_size.height());
   SkAutoLockPixels bitmap_lock(bitmap);
   if (bitmap.getPixels() != pixels)
     CopyPixels(pixels, row_bytes, bitmap.getPixels(), bitmap.rowBytes(), info);
@@ -191,20 +191,20 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
       data, true, ImageDecoder::kAlphaPremultiplied, decoder_color_behavior_);
   // getYUVComponentSizes was already called and was successful, so
   // ImageDecoder::create must succeed.
-  ASSERT(decoder);
+  DCHECK(decoder);
 
   std::unique_ptr<ImagePlanes> image_planes =
       WTF::MakeUnique<ImagePlanes>(planes, row_bytes);
   decoder->SetImagePlanes(std::move(image_planes));
 
-  ASSERT(decoder->CanDecodeToYUV());
+  DCHECK(decoder->CanDecodeToYUV());
 
   if (decoder->DecodeToYUV()) {
     SetHasAlpha(0, false);  // YUV is always opaque
     return true;
   }
 
-  ASSERT(decoder->Failed());
+  DCHECK(decoder->Failed());
   yuv_decoding_failed_ = true;
   return false;
 }
@@ -224,7 +224,7 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
   MutexLocker lock(decode_mutex_);
   const bool resume_decoding =
       ImageDecodingStore::Instance().LockDecoder(this, full_size_, &decoder);
-  ASSERT(!resume_decoding || decoder);
+  DCHECK(!resume_decoding || decoder);
 
   SkBitmap full_size_image;
   bool complete = Decode(data, all_data_received, index, &decoder,
@@ -294,12 +294,14 @@ bool ImageFrameGenerator::Decode(SegmentReader* data,
                                  ImageDecoder** decoder,
                                  SkBitmap* bitmap,
                                  SkBitmap::Allocator* allocator) {
-  ASSERT(decode_mutex_.Locked());
+#if DCHECK_IS_ON()
+  DCHECK(decode_mutex_.Locked());
+#endif
   TRACE_EVENT2("blink", "ImageFrameGenerator::decode", "width",
                full_size_.width(), "height", full_size_.height());
 
   // Try to create an ImageDecoder if we are not given one.
-  ASSERT(decoder);
+  DCHECK(decoder);
   bool new_decoder = false;
   bool should_call_set_data = true;
   if (!*decoder) {
@@ -362,8 +364,8 @@ bool ImageFrameGenerator::Decode(SegmentReader* data,
 
   SkBitmap full_size_bitmap = frame->Bitmap();
   if (!full_size_bitmap.isNull()) {
-    ASSERT(full_size_bitmap.width() == full_size_.width() &&
-           full_size_bitmap.height() == full_size_.height());
+    DCHECK_EQ(full_size_bitmap.width(), full_size_.width());
+    DCHECK_EQ(full_size_bitmap.height(), full_size_.height());
     SetHasAlpha(index, !full_size_bitmap.isOpaque());
   }
 

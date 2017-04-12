@@ -54,7 +54,7 @@ class PLATFORM_EXPORT GraphicsContextStateSaver final {
   }
 
   void Save() {
-    ASSERT(!save_and_restore_);
+    DCHECK(!save_and_restore_);
     context_.Save();
     save_and_restore_ = true;
   }
@@ -66,7 +66,7 @@ class PLATFORM_EXPORT GraphicsContextStateSaver final {
   }
 
   void Restore() {
-    ASSERT(save_and_restore_);
+    DCHECK(save_and_restore_);
     context_.Restore();
     save_and_restore_ = false;
   }

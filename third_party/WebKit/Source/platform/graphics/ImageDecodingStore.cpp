@@ -45,9 +45,9 @@ ImageDecodingStore::ImageDecodingStore()
 ImageDecodingStore::~ImageDecodingStore() {
 #if DCHECK_IS_ON()
   SetCacheLimitInBytes(0);
-  ASSERT(!decoder_cache_map_.size());
-  ASSERT(!ordered_cache_list_.size());
-  ASSERT(!decoder_cache_key_map_.size());
+  DCHECK(!decoder_cache_map_.size());
+  DCHECK(!ordered_cache_list_.size());
+  DCHECK(!decoder_cache_key_map_.size());
 #endif
 }
 
@@ -60,7 +60,7 @@ ImageDecodingStore& ImageDecodingStore::Instance() {
 bool ImageDecodingStore::LockDecoder(const ImageFrameGenerator* generator,
                                      const SkISize& scaled_size,
                                      ImageDecoder** decoder) {
-  ASSERT(decoder);
+  DCHECK(decoder);
 
   MutexLocker lock(mutex_);
   DecoderCacheMap::iterator iter = decoder_cache_map_.Find(
@@ -71,7 +71,7 @@ bool ImageDecodingStore::LockDecoder(const ImageFrameGenerator* generator,
   DecoderCacheEntry* cache_entry = iter->value.get();
 
   // There can only be one user of a decoder at a time.
-  ASSERT(!cache_entry->UseCount());
+  DCHECK(!cache_entry->UseCount());
   cache_entry->IncrementUseCount();
   *decoder = cache_entry->CachedDecoder();
   return true;
@@ -101,7 +101,7 @@ void ImageDecodingStore::InsertDecoder(const ImageFrameGenerator* generator,
       DecoderCacheEntry::Create(generator, std::move(decoder));
 
   MutexLocker lock(mutex_);
-  ASSERT(!decoder_cache_map_.Contains(new_cache_entry->CacheKey()));
+  DCHECK(!decoder_cache_map_.Contains(new_cache_entry->CacheKey()));
   InsertCacheInternal(std::move(new_cache_entry), &decoder_cache_map_,
                       &decoder_cache_key_map_);
 }
@@ -116,7 +116,7 @@ void ImageDecodingStore::RemoveDecoder(const ImageFrameGenerator* generator,
     SECURITY_DCHECK(iter != decoder_cache_map_.end());
 
     CacheEntry* cache_entry = iter->value.get();
-    ASSERT(cache_entry->UseCount());
+    DCHECK(cache_entry->UseCount());
     cache_entry->DecrementUseCount();
 
     // Delete only one decoder cache entry. Ownership of the cache entry
@@ -242,12 +242,12 @@ void ImageDecodingStore::RemoveFromCacheInternal(
     V* identifier_map,
     Vector<std::unique_ptr<CacheEntry>>* deletion_list) {
   const size_t cache_entry_bytes = cache_entry->MemoryUsageInBytes();
-  ASSERT(heap_memory_usage_in_bytes_ >= cache_entry_bytes);
+  DCHECK_GE(heap_memory_usage_in_bytes_, cache_entry_bytes);
   heap_memory_usage_in_bytes_ -= cache_entry_bytes;
 
   // Remove entry from identifier map.
   typename V::iterator iter = identifier_map->Find(cache_entry->Generator());
-  ASSERT(iter != identifier_map->end());
+  DCHECK(iter != identifier_map->end());
   iter->value.erase(cache_entry->CacheKey());
   if (!iter->value.size())
     identifier_map->erase(iter);
@@ -270,7 +270,7 @@ void ImageDecodingStore::RemoveFromCacheInternal(
                             &decoder_cache_map_, &decoder_cache_key_map_,
                             deletion_list);
   } else {
-    ASSERT(false);
+    DCHECK(false);
   }
 }
 
@@ -290,9 +290,9 @@ void ImageDecodingStore::RemoveCacheIndexedByGeneratorInternal(
 
   // For each cache identifier find the corresponding CacheEntry and remove it.
   for (size_t i = 0; i < cache_identifier_list.size(); ++i) {
-    ASSERT(cache_map->Contains(cache_identifier_list[i]));
+    DCHECK(cache_map->Contains(cache_identifier_list[i]));
     const auto& cache_entry = cache_map->at(cache_identifier_list[i]);
-    ASSERT(!cache_entry->UseCount());
+    DCHECK(!cache_entry->UseCount());
     RemoveFromCacheInternal(cache_entry, cache_map, identifier_map,
                             deletion_list);
   }

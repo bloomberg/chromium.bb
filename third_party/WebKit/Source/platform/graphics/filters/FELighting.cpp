@@ -119,7 +119,7 @@ sk_sp<SkImageFilter> FELighting::CreateImageFilter() {
           std::move(input), &rect);
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }

@@ -19,7 +19,7 @@ class PLATFORM_EXPORT BeginScrollDisplayItem final
                          const IntSize& current_offset)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
         current_offset_(current_offset) {
-    ASSERT(IsScrollType(type));
+    DCHECK(IsScrollType(type));
   }
 
   void Replay(GraphicsContext&) const override;
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT EndScrollDisplayItem final : public PairedEndDisplayItem {
  public:
   EndScrollDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(IsEndScrollType(type));
+    DCHECK(IsEndScrollType(type));
   }
 
   void Replay(GraphicsContext&) const override;

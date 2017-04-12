@@ -53,10 +53,10 @@ AffineTransform ImageOrientation::TransformFromDefault(
     case kOriginLeftBottom:
       return AffineTransform(0, -1, 1, 0, 0, h);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return AffineTransform();
 }
 

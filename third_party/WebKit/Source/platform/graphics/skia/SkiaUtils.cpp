@@ -76,7 +76,7 @@ static const SkBlendMode kGMapBlendOpsToXfermodeModes[] = {
 
 SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
                                             WebBlendMode blend_mode) {
-  ASSERT(op == kCompositeSourceOver || blend_mode == kWebBlendModeNormal);
+  DCHECK(op == kCompositeSourceOver || blend_mode == kWebBlendModeNormal);
   if (blend_mode != kWebBlendModeNormal) {
     if (static_cast<uint8_t>(blend_mode) >=
         SK_ARRAY_COUNT(kGMapBlendOpsToXfermodeModes)) {
@@ -311,7 +311,7 @@ void DrawFocusRingPrimitive(const PrimitiveType&,
                             PaintCanvas*,
                             const PaintFlags&,
                             float corner_radius) {
-  ASSERT_NOT_REACHED();  // Missing an explicit specialization?
+  NOTREACHED();  // Missing an explicit specialization?
 }
 
 template <>

@@ -21,7 +21,7 @@ class PLATFORM_EXPORT ClipDisplayItem final : public PairedBeginDisplayItem {
                   const IntRect& clip_rect)
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
         clip_rect_(clip_rect) {
-    ASSERT(IsClipType(type));
+    DCHECK(IsClipType(type));
   }
 
   ClipDisplayItem(const DisplayItemClient& client,
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
  public:
   EndClipDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(IsEndClipType(type));
+    DCHECK(IsEndClipType(type));
   }
 
   void Replay(GraphicsContext&) const override;

@@ -1158,7 +1158,7 @@ void GraphicsLayer::didChangeScrollbarsHidden(bool hidden) {
 }
 
 PaintController& GraphicsLayer::GetPaintController() {
-  RELEASE_ASSERT(DrawsContent());
+  CHECK(DrawsContent());
   if (!paint_controller_)
     paint_controller_ = PaintController::Create();
   return *paint_controller_;

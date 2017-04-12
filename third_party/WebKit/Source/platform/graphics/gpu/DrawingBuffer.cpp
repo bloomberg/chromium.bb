@@ -78,7 +78,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
     PreserveDrawingBuffer preserve,
     WebGLVersion web_gl_version,
     ChromiumImageUsage chromium_image_usage) {
-  ASSERT(context_provider);
+  DCHECK(context_provider);
 
   if (g_should_fail_drawing_buffer_creation_for_testing) {
     g_should_fail_drawing_buffer_creation_for_testing = false;
@@ -91,7 +91,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
     // This might be the first time we notice that the GL context is lost.
     return nullptr;
   }
-  ASSERT(extensions_util->SupportsExtension("GL_OES_packed_depth_stencil"));
+  DCHECK(extensions_util->SupportsExtension("GL_OES_packed_depth_stencil"));
   extensions_util->EnsureExtensionEnabled("GL_OES_packed_depth_stencil");
   bool multisample_supported =
       want_antialiasing &&
@@ -186,7 +186,7 @@ void DrawingBuffer::SetBufferClearNeeded(bool flag) {
   if (preserve_drawing_buffer_ == kDiscard) {
     buffer_clear_needed_ = flag;
   } else {
-    ASSERT(!buffer_clear_needed_);
+    DCHECK(!buffer_clear_needed_);
   }
 }
 
@@ -270,7 +270,7 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
     // 4. Here.
     return false;
   }
-  ASSERT(!is_hidden_);
+  DCHECK(!is_hidden_);
   if (!contents_changed_)
     return false;
 
@@ -788,7 +788,7 @@ void DrawingBuffer::ClearPlatformLayer() {
 }
 
 void DrawingBuffer::BeginDestruction() {
-  ASSERT(!destruction_in_progress_);
+  DCHECK(!destruction_in_progress_);
   destruction_in_progress_ = true;
 
   ClearPlatformLayer();
@@ -1051,7 +1051,7 @@ bool DrawingBuffer::PaintRenderingResultsToImageData(
     WTF::ArrayBufferContents& contents) {
   ScopedStateRestorer scoped_state_restorer(this);
 
-  ASSERT(!premultiplied_alpha_);
+  DCHECK(!premultiplied_alpha_);
   width = size().Width();
   height = size().Height();
 
@@ -1120,7 +1120,7 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
       pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
     }
   } else if (op != WebGLImageConversion::kAlphaDoNothing) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 }
 

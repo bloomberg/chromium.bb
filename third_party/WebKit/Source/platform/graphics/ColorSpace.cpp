@@ -94,7 +94,7 @@ const uint8_t* GetConversionLUT(ColorSpace dst_color_space,
   if (dst_color_space == kColorSpaceDeviceRGB)
     return GetDeviceRgbLUT();
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

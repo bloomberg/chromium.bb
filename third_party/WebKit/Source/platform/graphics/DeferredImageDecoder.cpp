@@ -313,8 +313,8 @@ sk_sp<SkImage> DeferredImageDecoder::CreateFrameImageAtIndex(
     size_t index,
     bool known_to_be_opaque) {
   const SkISize& decoded_size = frame_generator_->GetFullSize();
-  ASSERT(decoded_size.width() > 0);
-  ASSERT(decoded_size.height() > 0);
+  DCHECK_GT(decoded_size.width(), 0);
+  DCHECK_GT(decoded_size.height(), 0);
 
   sk_sp<SkROBuffer> ro_buffer(rw_buffer_->newRBufferSnapshot());
   RefPtr<SegmentReader> segment_reader =

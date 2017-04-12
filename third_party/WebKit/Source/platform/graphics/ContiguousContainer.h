@@ -204,7 +204,7 @@ class ContiguousContainer : public ContiguousContainerBase {
   }
 
   void RemoveLast() {
-    ASSERT(!IsEmpty());
+    DCHECK(!IsEmpty());
     Last().~BaseElementType();
     ContiguousContainerBase::RemoveLast();
   }
@@ -225,7 +225,7 @@ class ContiguousContainer : public ContiguousContainerBase {
   // Appends a new element using memcpy, then default-constructs a base
   // element in its place. Use with care.
   BaseElementType& AppendByMoving(BaseElementType& item, size_t size) {
-    ASSERT(size >= sizeof(BaseElementType));
+    DCHECK_GE(size, sizeof(BaseElementType));
     void* new_item = AlignedAllocate(size);
     memcpy(new_item, static_cast<void*>(&item), size);
     new (&item) BaseElementType;

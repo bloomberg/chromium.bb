@@ -56,7 +56,7 @@ Image::Image(ImageObserver* observer)
 Image::~Image() {}
 
 Image* Image::NullImage() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_REF(Image, null_image, (BitmapImage::Create()));
   return null_image;
 }

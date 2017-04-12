@@ -112,14 +112,14 @@ class PLATFORM_EXPORT ImageDecodingStore final {
     CacheEntry(const ImageFrameGenerator* generator, int use_count)
         : generator_(generator), use_count_(use_count), prev_(0), next_(0) {}
 
-    virtual ~CacheEntry() { ASSERT(!use_count_); }
+    virtual ~CacheEntry() { DCHECK(!use_count_); }
 
     const ImageFrameGenerator* Generator() const { return generator_; }
     int UseCount() const { return use_count_; }
     void IncrementUseCount() { ++use_count_; }
     void DecrementUseCount() {
       --use_count_;
-      ASSERT(use_count_ >= 0);
+      DCHECK_GE(use_count_, 0);
     }
 
     // FIXME: getSafeSize() returns the size in bytes truncated to a 32-bit

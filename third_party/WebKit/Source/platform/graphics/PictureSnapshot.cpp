@@ -83,7 +83,7 @@ class SkiaImageDecoder final : public SkImageDeserializer {
 
 PassRefPtr<PictureSnapshot> PictureSnapshot::Load(
     const Vector<RefPtr<TilePictureStream>>& tiles) {
-  ASSERT(!tiles.IsEmpty());
+  DCHECK(!tiles.IsEmpty());
   Vector<sk_sp<SkPicture>> pictures;
   pictures.ReserveCapacity(tiles.size());
   FloatRect union_rect;

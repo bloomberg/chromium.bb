@@ -65,7 +65,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA8_S;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_UNSIGNED_BYTE:
@@ -96,7 +96,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA8;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_SHORT:
@@ -112,7 +112,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
         case GL_RGBA_INTEGER:
           dst_format = WebGLImageConversion::kDataFormatRGBA16_S;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_UNSIGNED_SHORT:
@@ -133,7 +133,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA16;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_INT:
@@ -151,7 +151,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA32_S;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_UNSIGNED_INT:
@@ -172,7 +172,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRGBA32;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
@@ -198,7 +198,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA16F;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_FLOAT:  // OES_texture_float
@@ -226,7 +226,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
           dst_format = WebGLImageConversion::kDataFormatRA32F;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
       break;
     case GL_UNSIGNED_SHORT_4_4_4_4:
@@ -251,7 +251,7 @@ WebGLImageConversion::DataFormat GetDataFormat(GLenum destination_format,
       dst_format = WebGLImageConversion::kDataFormatRGBA2_10_10_10;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return dst_format;
 }
@@ -401,7 +401,7 @@ unsigned short ConvertFloatToHalfFloat(float f) {
 // Pixel unpacking routines.
 template <int format, typename SourceType, typename DstType>
 void Unpack(const SourceType*, DstType*, unsigned) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 template <>
@@ -660,7 +660,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA2_10_10_10, uint32_t, float>(
 
 template <int format, int alphaOp, typename SourceType, typename DstType>
 void Pack(const SourceType*, DstType*, unsigned) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 template <>
@@ -2266,7 +2266,7 @@ class FormatConverter {
     unpacked_intermediate_src_data_ = WrapArrayUnique(
         new uint8_t[src_sub_rectangle_.Width() * kMaxNumberOfComponents *
                     kMaxBytesPerComponent]);
-    ASSERT(unpacked_intermediate_src_data_.get());
+    DCHECK(unpacked_intermediate_src_data_.get());
   }
 
   void Convert(WebGLImageConversion::DataFormat src_format,
@@ -2319,7 +2319,7 @@ void FormatConverter::Convert(WebGLImageConversion::DataFormat src_format,
     FORMATCONVERTER_CASE_SRCFORMAT(
         WebGLImageConversion::kDataFormatRGBA2_10_10_10)
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 #undef FORMATCONVERTER_CASE_SRCFORMAT
 }
@@ -2361,7 +2361,7 @@ void FormatConverter::Convert(WebGLImageConversion::DataFormat dst_format,
     FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRG16F)
     FORMATCONVERTER_CASE_DSTFORMAT(WebGLImageConversion::kDataFormatRG32F)
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
 #undef FORMATCONVERTER_CASE_DSTFORMAT
@@ -2379,7 +2379,7 @@ void FormatConverter::Convert(WebGLImageConversion::AlphaOp alpha_op) {
     FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::kAlphaDoPremultiply)
     FORMATCONVERTER_CASE_ALPHAOP(WebGLImageConversion::kAlphaDoUnmultiply)
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 #undef FORMATCONVERTER_CASE_ALPHAOP
 }
@@ -2416,11 +2416,11 @@ void FormatConverter::Convert() {
   // try to return immediately in these cases to avoid generating useless code.
   if (SrcFormat == DstFormat &&
       alphaOp == WebGLImageConversion::kAlphaDoNothing) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (!IsFloatFormat<DstFormat>::value && IsFloatFormat<SrcFormat>::value) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
 
@@ -2430,25 +2430,25 @@ void FormatConverter::Convert() {
       WebGLImageConversion::SrcFormatComeFromDOMElementOrImageData(SrcFormat);
   if (!src_format_comes_from_dom_element_or_image_data &&
       SrcFormat != DstFormat) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   // Likewise, only textures uploaded from DOM elements or ImageData can
   // possibly need to be unpremultiplied.
   if (!src_format_comes_from_dom_element_or_image_data &&
       alphaOp == WebGLImageConversion::kAlphaDoUnmultiply) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if (src_format_comes_from_dom_element_or_image_data &&
       alphaOp == WebGLImageConversion::kAlphaDoUnmultiply &&
       !SupportsConversionFromDomElements<DstFormat>::value) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   if ((!HasAlpha(SrcFormat) || !HasColor(SrcFormat) || !HasColor(DstFormat)) &&
       alphaOp != WebGLImageConversion::kAlphaDoNothing) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
   // If converting DOM element data to UNSIGNED_INT_5_9_9_9_REV or
@@ -2458,7 +2458,7 @@ void FormatConverter::Convert() {
       SrcFormat != DstFormat &&
       (DstFormat == WebGLImageConversion::kDataFormatRGB5999 ||
        DstFormat == WebGLImageConversion::kDataFormatRGB10F11F11F)) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return;
   }
 
@@ -2471,7 +2471,7 @@ void FormatConverter::Convert() {
   const bool kTrivialUnpack = SrcFormat == kIntermFormat;
   const bool kTrivialPack = DstFormat == kIntermFormat &&
                             alphaOp == WebGLImageConversion::kAlphaDoNothing;
-  ASSERT(!kTrivialUnpack || !kTrivialPack);
+  DCHECK(!kTrivialUnpack || !kTrivialPack);
 
   const SrcType* src_row_start =
       static_cast<const SrcType*>(static_cast<const void*>(
@@ -2635,12 +2635,14 @@ GLenum WebGLImageConversion::ComputeImageSizeInBytes(
     unsigned* image_size_in_bytes,
     unsigned* padding_in_bytes,
     unsigned* skip_size_in_bytes) {
-  ASSERT(image_size_in_bytes);
-  ASSERT(params.alignment == 1 || params.alignment == 2 ||
+  DCHECK(image_size_in_bytes);
+  DCHECK(params.alignment == 1 || params.alignment == 2 ||
          params.alignment == 4 || params.alignment == 8);
-  ASSERT(params.row_length >= 0 && params.image_height >= 0);
-  ASSERT(params.skip_pixels >= 0 && params.skip_rows >= 0 &&
-         params.skip_images >= 0);
+  DCHECK_GE(params.row_length, 0);
+  DCHECK_GE(params.image_height, 0);
+  DCHECK_GE(params.skip_pixels, 0);
+  DCHECK_GE(params.skip_rows, 0);
+  DCHECK_GE(params.skip_images, 0);
   if (width < 0 || height < 0 || depth < 0)
     return GL_INVALID_VALUE;
   if (!width || !height || !depth) {
@@ -2752,7 +2754,7 @@ WebGLImageConversion::ImageExtractor::ImageExtractor(
 void WebGLImageConversion::ImageExtractor::ExtractImage(
     bool premultiply_alpha,
     bool ignore_color_space) {
-  ASSERT(!image_pixel_locker_);
+  DCHECK(!image_pixel_locker_);
 
   if (!image_)
     return;
@@ -2809,7 +2811,8 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
   image_source_unpack_alignment_ =
       0;  // FIXME: this seems to always be zero - why use at all?
 
-  ASSERT(skia_image->width() && skia_image->height());
+  DCHECK(skia_image->width());
+  DCHECK(skia_image->height());
   image_width_ = skia_image->width();
   image_height_ = skia_image->height();
 

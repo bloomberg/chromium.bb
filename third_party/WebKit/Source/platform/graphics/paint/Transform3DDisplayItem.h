@@ -22,7 +22,7 @@ class PLATFORM_EXPORT BeginTransform3DDisplayItem final
       : PairedBeginDisplayItem(client, type, sizeof(*this)),
         transform_(transform),
         transform_origin_(transform_origin) {
-    ASSERT(DisplayItem::IsTransform3DType(type));
+    DCHECK(DisplayItem::IsTransform3DType(type));
   }
 
   void Replay(GraphicsContext&) const override;
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
  public:
   EndTransform3DDisplayItem(const DisplayItemClient& client, Type type)
       : PairedEndDisplayItem(client, type, sizeof(*this)) {
-    ASSERT(DisplayItem::IsEndTransform3DType(type));
+    DCHECK(DisplayItem::IsEndTransform3DType(type));
   }
 
   void Replay(GraphicsContext&) const override;

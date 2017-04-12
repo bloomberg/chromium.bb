@@ -232,7 +232,7 @@ class PLATFORM_EXPORT DisplayItem {
   virtual void Replay(GraphicsContext&) const {}
 
   const DisplayItemClient& Client() const {
-    ASSERT(client_);
+    DCHECK(client_);
     return *client_;
   }
   Type GetType() const { return type_; }
@@ -267,12 +267,12 @@ class PLATFORM_EXPORT DisplayItem {
                   "Categories " #Category1 " and " #Category2                 \
                   " should have same number of enum values. See comments of " \
                   "DisplayItem::Type");                                       \
-    ASSERT(Is##Category1##Type(type));                                        \
+    DCHECK(Is##Category1##Type(type));                                        \
     return static_cast<Type>(type - k##Category1##First +                     \
                              k##Category2##First);                            \
   }                                                                           \
   static Type category2##TypeTo##Category1##Type(Type type) {                 \
-    ASSERT(Is##Category2##Type(type));                                        \
+    DCHECK(Is##Category2##Type(type));                                        \
     return static_cast<Type>(type - k##Category2##First +                     \
                              k##Category1##First);                            \
   }

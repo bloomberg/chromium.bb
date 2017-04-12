@@ -47,7 +47,7 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
     case DisplayItem::kPaintPhaseMax:
       return "PaintPhaseClippingMask";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return "Unknown";
   }
 }
@@ -62,9 +62,9 @@ static WTF::String PaintPhaseAsDebugString(int paint_phase) {
   case DisplayItem::k##DisplayItemName:    \
     return #DisplayItemName
 
-#define DEFAULT_CASE      \
-  default:                \
-    ASSERT_NOT_REACHED(); \
+#define DEFAULT_CASE \
+  default:           \
+    NOTREACHED();    \
     return "Unknown"
 
 static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {

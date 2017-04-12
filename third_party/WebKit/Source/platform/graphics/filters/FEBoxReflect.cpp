@@ -22,7 +22,7 @@ FloatRect FEBoxReflect::MapEffect(const FloatRect& rect) const {
 TextStream& FEBoxReflect::ExternalRepresentation(TextStream& ts,
                                                  int indent) const {
   // Only called for SVG layout tree printing.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ts;
 }
 

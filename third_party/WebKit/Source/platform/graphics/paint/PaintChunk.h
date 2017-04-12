@@ -37,7 +37,7 @@ struct PaintChunk {
   }
 
   size_t size() const {
-    ASSERT(end_index >= begin_index);
+    DCHECK_GE(end_index, begin_index);
     return end_index - begin_index;
   }
 

@@ -62,7 +62,7 @@ void DrawLooperBuilder::AddShadow(const FloatSize& offset,
                                   const Color& color,
                                   ShadowTransformMode shadow_transform_mode,
                                   ShadowAlphaMode shadow_alpha_mode) {
-  ASSERT(blur >= 0);
+  DCHECK_GE(blur, 0);
 
   // Detect when there's no effective shadow.
   if (!color.Alpha())
@@ -80,7 +80,7 @@ void DrawLooperBuilder::AddShadow(const FloatSize& offset,
       info.fColorMode = SkBlendMode::kSrc;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (blur)

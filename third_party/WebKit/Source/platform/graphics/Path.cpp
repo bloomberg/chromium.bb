@@ -364,9 +364,12 @@ void Path::AddEllipse(const FloatPoint& p,
                       float start_angle,
                       float end_angle,
                       bool anticlockwise) {
-  ASSERT(EllipseIsRenderable(start_angle, end_angle));
-  ASSERT(start_angle >= 0 && start_angle < twoPiFloat);
-  ASSERT((anticlockwise && (start_angle - end_angle) >= 0) ||
+#if DCHECK_IS_ON()
+  DCHECK(EllipseIsRenderable(start_angle, end_angle));
+#endif
+  DCHECK_GE(start_angle, 0);
+  DCHECK_LT(start_angle, twoPiFloat);
+  DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
   SkScalar cx = WebCoreFloatToSkScalar(p.X());
@@ -425,9 +428,12 @@ void Path::AddEllipse(const FloatPoint& p,
                       float start_angle,
                       float end_angle,
                       bool anticlockwise) {
-  ASSERT(EllipseIsRenderable(start_angle, end_angle));
-  ASSERT(start_angle >= 0 && start_angle < twoPiFloat);
-  ASSERT((anticlockwise && (start_angle - end_angle) >= 0) ||
+#if DCHECK_IS_ON()
+  DCHECK(EllipseIsRenderable(start_angle, end_angle));
+#endif
+  DCHECK_GE(start_angle, 0);
+  DCHECK_LT(start_angle, twoPiFloat);
+  DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
   if (!rotation) {
@@ -439,7 +445,7 @@ void Path::AddEllipse(const FloatPoint& p,
   // Add an arc after the relevant transform.
   AffineTransform ellipse_transform =
       AffineTransform::Translation(p.X(), p.Y()).RotateRadians(rotation);
-  ASSERT(ellipse_transform.IsInvertible());
+  DCHECK(ellipse_transform.IsInvertible());
   AffineTransform inverse_ellipse_transform = ellipse_transform.Inverse();
   Transform(inverse_ellipse_transform);
   AddEllipse(FloatPoint::Zero(), radius_x, radius_y, start_angle, end_angle,

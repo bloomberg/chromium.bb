@@ -65,7 +65,7 @@ class GraphicsLayerTest : public testing::Test {
         clip_layer_->PlatformLayer());
     platform_layer_ = graphics_layer_->PlatformLayer();
     layer_tree_view_ = WTF::WrapUnique(new WebLayerTreeViewImplForTesting);
-    ASSERT(layer_tree_view_);
+    DCHECK(layer_tree_view_);
     layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
     layer_tree_view_->RegisterViewportLayers(
         scroll_elasticity_layer_->PlatformLayer(), clip_layer_->PlatformLayer(),

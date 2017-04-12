@@ -23,21 +23,21 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
       layer_(std::move(layer)),
       location_(location),
       bounds_(bounds) {
-  ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-  ASSERT(IsForeignLayerType(type));
-  ASSERT(layer_);
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(IsForeignLayerType(type));
+  DCHECK(layer_);
 }
 
 ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {}
 
 void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void ForeignLayerDisplayItem::AppendToWebDisplayItemList(
     const IntRect&,
     WebDisplayItemList*) const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 bool ForeignLayerDisplayItem::DrawsContent() const {
