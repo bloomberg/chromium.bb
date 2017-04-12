@@ -76,8 +76,8 @@ class AddressNormalizer : public autofill::LoadRulesListener {
  private:
   // Called when the validation rules for the |region_code| have finished
   // loading. Implementation of the LoadRulesListener interface.
-  void OnAddressRulesLoaded(const std::string& region_code,
-                            bool success) override;
+  void OnAddressValidationRulesLoaded(const std::string& region_code,
+                                      bool success) override;
 
   // Map associating a region code to pending normalizations.
   std::map<std::string, std::vector<std::unique_ptr<Request>>>

@@ -198,11 +198,6 @@ public class EditorFieldModel {
         return result;
     }
 
-    /** Constructs a dropdown field model. */
-    public static EditorFieldModel createDropdown() {
-        return new EditorFieldModel(INPUT_TYPE_HINT_DROPDOWN);
-    }
-
     /**
      * Constructs a dropdown field model.
      *
@@ -337,15 +332,9 @@ public class EditorFieldModel {
         return mValueIconGenerator;
     }
 
-    /** @return Whether the input is a text field. */
-    public boolean isTextField() {
+    private boolean isTextField() {
         return mInputTypeHint >= INPUT_TYPE_HINT_MIN_INCLUSIVE
                 && mInputTypeHint < INPUT_TYPE_HINT_MAX_TEXT_INPUT_EXCLUSIVE;
-    }
-
-    /** @return Whether the input is a dropdown field. */
-    public boolean isDropdownField() {
-        return mInputTypeHint == INPUT_TYPE_HINT_DROPDOWN;
     }
 
     /** @return The type of input, for example, INPUT_TYPE_HINT_PHONE. */

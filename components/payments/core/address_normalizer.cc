@@ -153,8 +153,9 @@ void AddressNormalizer::StartAddressNormalization(
   }
 }
 
-void AddressNormalizer::OnAddressRulesLoaded(const std::string& region_code,
-                                             bool success) {
+void AddressNormalizer::OnAddressValidationRulesLoaded(
+    const std::string& region_code,
+    bool success) {
   // Check if an address normalization is pending.
   auto it = pending_normalization_.find(region_code);
   if (it != pending_normalization_.end()) {
