@@ -23,8 +23,12 @@ service_test("service_unittests") {
   ]
 
   if (is_android) {
-    # Some tests need to initialize V8.
-    deps += [ "//v8:v8_external_startup_data_assets" ]
+    deps += [
+      "//services/device:java",
+
+      # Some tests need to initialize V8.
+      "//v8:v8_external_startup_data_assets",
+    ]
   } else {
     # NOTE: We do not currently support standalone service binaries on Android,
     # so any tests which use the ServiceTest framework to connect to standalone
@@ -38,6 +42,7 @@ service_test("service_unittests") {
 catalog("service_unittests_catalog") {
   testonly = true
   catalog_deps = [
+    "//services/device:tests_catalog",
     "//services/preferences:tests_catalog",
     "//services/video_capture:tests_catalog",
   ]

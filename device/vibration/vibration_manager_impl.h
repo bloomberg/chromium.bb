@@ -14,6 +14,9 @@ class VibrationManagerImpl {
  public:
   DEVICE_VIBRATION_EXPORT static void Create(
       mojo::InterfaceRequest<mojom::VibrationManager> request);
+
+  DEVICE_VIBRATION_EXPORT static int64_t milli_seconds_for_testing_;
+  DEVICE_VIBRATION_EXPORT static bool cancelled_for_testing_;
 };
 
 }  // namespace device

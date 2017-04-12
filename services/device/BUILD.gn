@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -13,7 +14,10 @@ if (is_android) {
 source_set("lib") {
   # This should be visible only to embedders of the Device Service, and the
   # dependence should only be for the purpose of embedding the Device Service.
-  visibility = [ "//content/browser" ]
+  visibility = [
+    ":test_support",
+    "//content/browser",
+  ]
   sources = [
     "device_service.cc",
     "device_service.h",
@@ -23,6 +27,7 @@ source_set("lib") {
     "//base",
     "//device/battery:mojo_bindings",
     "//device/sensors",
+    "//device/sensors/public/interfaces",
     "//device/vibration:mojo_bindings",
     "//device/wake_lock",
     "//services/device/fingerprint",
@@ -53,11 +58,14 @@ source_set("tests") {
   sources = [
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
+    "vibration/vibration_manager_impl_unittest.cc",
   ]
 
   deps = [
+    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//device/vibration:mojo_bindings",
     "//mojo/public/cpp/bindings",
     "//services/device/power_monitor",
     "//services/device/public/cpp/power_monitor",
@@ -70,15 +78,51 @@ source_set("tests") {
   }
 
   if (is_android) {
-    deps += [ ":device_service_jni_headers" ]
+    deps += [
+      ":device_service_jni_headers",
+      "//device/vibration/android:vibration_jni_headers",
+    ]
   } else {
-    deps += [ "//device/battery" ]
+    deps += [
+      "//device/battery",
+      "//device/vibration",
+    ]
   }
 }
 
 service_manifest("manifest") {
   name = "device"
   source = "manifest.json"
+}
+
+service_manifest("unittest_manifest") {
+  name = "device_unittests"
+  source = "unittest_manifest.json"
+  packaged_services = [ ":manifest" ]
+}
+
+catalog("tests_catalog") {
+  testonly = true
+  embedded_services = [ ":unittest_manifest" ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "device_service_test_base.cc",
+    "device_service_test_base.h",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/public/cpp/bindings",
+    "//services/device/public/interfaces:constants",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp:sources",
+  ]
 }
 
 if (is_android) {
@@ -95,7 +139,12 @@ if (is_android) {
     # //content/public/android:* here actually wants to identify the
     # //content/public/android:content_java target and all of its generated
     # targets which also need to see this target as well.
-    visibility = [ "//content/public/android:*" ]
+    # //services:* identifies //services:service_unittests and all of its
+    # generated targets.
+    visibility = [
+      "//content/public/android:*",
+      "//services:*",
+    ]
     java_files = [ "android/java/src/org/chromium/services/device/InterfaceRegistrar.java" ]
     deps = [
       "//base:base_java",
