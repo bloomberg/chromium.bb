@@ -329,7 +329,6 @@ SigninScreenHandler::SigninScreenHandler(
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->AddObserver(this);
-  OnAllowedInputMethodsChanged();
   allowed_input_methods_subscription_ =
       chromeos::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kDeviceLoginScreenInputMethods,
@@ -1377,6 +1376,7 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
   webui_visible_ = true;
   if (preferences_changed_delayed_)
     OnPreferencesChanged();
+  OnAllowedInputMethodsChanged();
 }
 
 void SigninScreenHandler::HandleCancelPasswordChangedFlow(
@@ -1603,6 +1603,7 @@ bool SigninScreenHandler::IsGuestSigninAllowed() const {
 
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
+  EnforcePolicyInputMethods(std::string());
   gaia_screen_handler_->ShowGaiaAsync();
 }
 
@@ -1624,6 +1625,9 @@ void SigninScreenHandler::OnFeedbackFinished() {
 }
 
 void SigninScreenHandler::OnAllowedInputMethodsChanged() {
+  if (!webui_visible_)
+    return;
+
   if (focused_pod_account_id_) {
     std::string user_input_method =
         GetUserLastInputMethod(focused_pod_account_id_->GetUserEmail());

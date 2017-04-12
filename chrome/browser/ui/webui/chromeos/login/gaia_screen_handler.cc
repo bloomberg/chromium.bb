@@ -877,8 +877,13 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     SigninScreenHandler::SetUserInputMethod(populated_email_,
                                             gaia_ime_state.get());
   } else {
-    std::vector<std::string> input_methods =
-        imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
+    std::vector<std::string> input_methods;
+    if (gaia_ime_state->GetAllowedInputMethods().empty()) {
+      input_methods =
+          imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
+    } else {
+      input_methods = gaia_ime_state->GetAllowedInputMethods();
+    }
     const std::string owner_im = SigninScreenHandler::GetUserLastInputMethod(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     const std::string system_im = g_browser_process->local_state()->GetString(
