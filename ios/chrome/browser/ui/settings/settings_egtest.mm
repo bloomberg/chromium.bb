@@ -51,6 +51,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 
@@ -188,7 +192,7 @@ void SetCertificate() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         net::ChannelIDStore* channel_id_store =
@@ -206,7 +210,6 @@ void SetCertificate() {
                            base::Bind(&CheckCertificate, getter, semaphore));
 
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  dispatch_release(semaphore);
 }
 
 // Fetching channel id is expected to complete immediately in this test, so a
@@ -224,7 +227,7 @@ bool IsCertificateCleared() {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browserState->GetRequestContext();
   web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE, base::BindBlock(^{
+      web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
         net::ChannelIDService* channel_id_service =
             getter->GetURLRequestContext()->channel_id_service();
         std::unique_ptr<crypto::ECPrivateKey> dummy_key;
@@ -233,7 +236,6 @@ bool IsCertificateCleared() {
         dispatch_semaphore_signal(semaphore);
       }));
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  dispatch_release(semaphore);
   return result == net::ERR_FILE_NOT_FOUND;
 }
 
@@ -672,8 +674,9 @@ bool IsCertificateCleared() {
 
   // Restore the Clear Browsing Data checkmarks prefs to their default state
   // in Teardown.
+  __weak SettingsTestCase* weakSelf = self;
   [self setTearDownHandler:^{
-    [self restoreClearBrowsingDataCheckmarksToDefault];
+    [weakSelf restoreClearBrowsingDataCheckmarksToDefault];
   }];
 
   // Clear all cookies.
@@ -701,8 +704,9 @@ bool IsCertificateCleared() {
       password_manager::prefs::kPasswordManagerSavingEnabled);
 
   [self enablePasswordManagement];
+  __weak SettingsTestCase* weakSelf = self;
   [self setTearDownHandler:^{
-    [self passwordsTearDown:defaultPasswordManagerSavingPref];
+    [weakSelf passwordsTearDown:defaultPasswordManagerSavingPref];
   }];
 
   // Clear passwords and check that none are saved.
@@ -756,8 +760,9 @@ bool IsCertificateCleared() {
   SetCertificate();
   // Restore the Clear Browsing Data checkmarks prefs to their default state in
   // Teardown.
+  __weak SettingsTestCase* weakSelf = self;
   [self setTearDownHandler:^{
-    [self restoreClearBrowsingDataCheckmarksToDefault];
+    [weakSelf restoreClearBrowsingDataCheckmarksToDefault];
   }];
   GREYAssertFalse(IsCertificateCleared(), @"Failed to set certificate.");
   [self clearCookiesAndSiteData];
@@ -949,8 +954,9 @@ bool IsCertificateCleared() {
       password_manager::prefs::kPasswordManagerSavingEnabled);
 
   [self enablePasswordManagement];
+  __weak SettingsTestCase* weakSelf = self;
   [self setTearDownHandler:^{
-    [self passwordsTearDown:defaultPasswordManagerSavingPref];
+    [weakSelf passwordsTearDown:defaultPasswordManagerSavingPref];
   }];
 
   [self loadFormAndLogin];

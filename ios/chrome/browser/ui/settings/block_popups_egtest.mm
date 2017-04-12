@@ -31,6 +31,10 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using chrome_test_util::NavigationBarDoneButton;
 
 namespace {
@@ -204,7 +208,7 @@ class ScopedBlockPopupsException {
   chrome_test_util::AssertMainTabCount(1U);
 
   // Request popup and make sure the popup opened in a new tab.
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
   chrome_test_util::AssertMainTabCount(2U);
@@ -236,7 +240,7 @@ class ScopedBlockPopupsException {
   // Request popup, then make sure it was blocked and an infobar was displayed.
   // The window.open() call is run via async JS, so the infobar may not open
   // immediately.
-  NSError* error = nil;
+  __unsafe_unretained NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
 
