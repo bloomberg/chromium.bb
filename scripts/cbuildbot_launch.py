@@ -16,6 +16,7 @@ branch, but not on TOT.
 from __future__ import print_function
 
 import os
+import stat
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import sync_stages
@@ -70,6 +71,19 @@ def CleanBuildroot(branchname, buildroot):
   #   2) osutils.RmDir('.cache')
   #   3) EmptyDir(buildroot, excludes=['.repo'])
   #   4) rm -rf buildroot
+
+  # TODO(dgarrett): Replace this block with fix for crbug.com/711048
+  try:
+    # Fix for bad checkouts from crbug.com/710900
+    st = os.stat(buildroot)
+    if not bool(st.st_mode & stat.S_IRGRP):
+      osutils.RmDir(buildroot, sudo=True)
+  except OSError:
+    # If the directory doesn't exist, the permissions will be okay.
+    pass
+
+  # Ensure buildroot exists.
+  osutils.SafeMakedirs(buildroot)
 
   state_file = os.path.join(buildroot, '.cbuildbot_launch_state')
   new_state = branchname or 'TOT'
@@ -176,9 +190,6 @@ def main(argv):
   branchname = options.branch
   buildroot = options.buildroot
   git_cache_dir = options.git_cache_dir
-
-  # Ensure buildroot exists.
-  osutils.SafeMakedirs(buildroot)
 
   # Sometimes, we have to cleanup things that can break cbuildbot, especially
   # on the branch.

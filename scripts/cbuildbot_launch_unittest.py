@@ -203,24 +203,28 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
     """Create standard buildroot contents for cleanup."""
-    self.state = os.path.join(self.tempdir, '.cbuildbot_launch_state')
-    self.repo = os.path.join(self.tempdir, '.repo/repo')
-    self.chroot = os.path.join(self.tempdir, 'chroot/chroot')
-    self.general = os.path.join(self.tempdir, 'general/general')
+    self.root = os.path.join(self.tempdir, 'buildroot')
+    self.state = os.path.join(self.root, '.cbuildbot_launch_state')
+    self.repo = os.path.join(self.root, '.repo/repo')
+    self.chroot = os.path.join(self.root, 'chroot/chroot')
+    self.general = os.path.join(self.root, 'general/general')
     # TODO: Add .cache, and distfiles.
 
-  def populateBuildroot(self, state=None):
+  def populateBuildroot(self, state=None, group_readable=True):
     """Create standard buildroot contents for cleanup."""
+    buildroot_mode = 0o775 if group_readable else 0o700
+    osutils.SafeMakedirs(self.root, mode=buildroot_mode)
+
     if state:
       osutils.WriteFile(self.state, state)
 
     # Create files.
     for f in (self.repo, self.chroot, self.general):
-      osutils.Touch(os.path.join(self.tempdir, f), makedirs=True)
+      osutils.Touch(f, makedirs=True)
 
-  def testBuildrootEmpty(self):
+  def testNoBuildroot(self):
     """Test CleanBuildroot with no history."""
-    cbuildbot_launch.CleanBuildroot(None, self.tempdir)
+    cbuildbot_launch.CleanBuildroot(None, self.root)
 
     self.assertEqual(osutils.ReadFile(self.state), 'TOT')
 
@@ -228,7 +232,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with no state information."""
     self.populateBuildroot()
 
-    cbuildbot_launch.CleanBuildroot(None, self.tempdir)
+    cbuildbot_launch.CleanBuildroot(None, self.root)
 
     self.assertEqual(osutils.ReadFile(self.state), 'TOT')
     self.assertExists(self.repo)
@@ -239,7 +243,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with a change in branches."""
     self.populateBuildroot('branchA')
 
-    cbuildbot_launch.CleanBuildroot('branchB', self.tempdir)
+    cbuildbot_launch.CleanBuildroot('branchB', self.root)
 
     self.assertEqual(osutils.ReadFile(self.state), 'branchB')
     self.assertExists(self.repo)
@@ -250,9 +254,21 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with no change in branch."""
     self.populateBuildroot('branchA')
 
-    cbuildbot_launch.CleanBuildroot('branchA', self.tempdir)
+    cbuildbot_launch.CleanBuildroot('branchA', self.root)
 
     self.assertEqual(osutils.ReadFile(self.state), 'branchA')
     self.assertExists(self.repo)
     self.assertExists(self.chroot)
     self.assertExists(self.general)
+
+
+  def testBuildrootNotGroupReadable(self):
+    """Test CleanBuildroot with no state information."""
+    self.populateBuildroot(group_readable=False)
+
+    cbuildbot_launch.CleanBuildroot(None, self.root)
+
+    self.assertEqual(osutils.ReadFile(self.state), 'TOT')
+    self.assertNotExists(self.repo)
+    self.assertNotExists(self.chroot)
+    self.assertNotExists(self.general)
