@@ -6,7 +6,12 @@
     </table>
 </object>
 <script>
-    window.setInterval(function(){
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+    var count = 0;
+    var id = window.setInterval(function(){
             var oe = document.getElementsByTagName("*");
             for (var i = 0; i < oe.length; i++) {
                 var o = oe.item(i);
@@ -14,6 +19,11 @@
                     p = o.parentNode;
                     p.replaceChild(document.createTextNode("PASS"), o)
                 }
+            }
+            if (++count === 2) {
+                window.clearInterval(id);
+                if (window.testRunner)
+                    testRunner.notifyDone();
             }
             });
 </script>
