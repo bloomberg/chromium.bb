@@ -147,8 +147,8 @@ bool AwMetricsServiceClientImpl::IsConsentGiven() {
 void AwMetricsServiceClientImpl::SetMetricsEnabled(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // For now, UMA is only enabled on future versions.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+  // For now, UMA is only enabled on Android N+.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
       base::android::SDK_VERSION_NOUGAT) {
     return;
   }
