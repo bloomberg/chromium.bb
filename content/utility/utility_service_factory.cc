@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "content/child/child_process.h"
 #include "content/network/network_service.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -60,6 +61,7 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
           switches::kEnableNetworkService)) {
     ServiceInfo network_info;
     network_info.factory = base::Bind(&NetworkService::CreateNetworkService);
+    network_info.task_runner = ChildProcess::current()->io_task_runner();
     services->insert(
         std::make_pair(content::mojom::kNetworkServiceName, network_info));
   }

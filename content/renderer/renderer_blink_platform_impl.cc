@@ -306,13 +306,29 @@ void RendererBlinkPlatformImpl::Shutdown() {
 
 blink::WebURLLoader* RendererBlinkPlatformImpl::CreateURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  if (!url_loader_factory_ && child_thread)
-    child_thread->channel()->GetRemoteAssociatedInterface(&url_loader_factory_);
+
+  mojom::URLLoaderFactory* factory =
+      url_loader_factory_ ? url_loader_factory_.get()
+                          : network_service_url_loader_factory_.get();
+  if (!factory && child_thread) {
+    bool network_service_enabled =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableNetworkService);
+    if (network_service_enabled) {
+      connector_->BindInterface(mojom::kNetworkServiceName,
+                                &network_service_url_loader_factory_);
+      factory = network_service_url_loader_factory_.get();
+    } else {
+      child_thread->channel()->GetRemoteAssociatedInterface(
+          &url_loader_factory_);
+      factory = url_loader_factory_.get();
+    }
+  }
+
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new content::WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : nullptr,
-      url_loader_factory_.get());
+      child_thread ? child_thread->resource_dispatcher() : nullptr, factory);
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::CurrentThread() {

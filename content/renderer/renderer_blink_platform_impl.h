@@ -304,6 +304,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
 
+  // Only used when network service is enabled.
+  mojom::URLLoaderFactoryPtr network_service_url_loader_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };
 

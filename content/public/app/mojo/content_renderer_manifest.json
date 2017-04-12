@@ -29,6 +29,7 @@
           "device:time_zone_monitor",
           "device:vibration"
         ],
+        "network": [ "url_loader" ],
         "ui": [
           "discardable_memory",
           "gpu_client"
