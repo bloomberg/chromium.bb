@@ -67,6 +67,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "request_desktop_mobile_site_egtest.mm",
     "tools_popup_menu_egtest.mm",
   ]
   deps = [

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONTEXT_H_
-#define IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONTEXT_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONFIGURATION_H_
+#define IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONFIGURATION_H_
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -54,4 +54,4 @@ enum class UserAgentType : short;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONTEXT_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_MENU_CONFIGURATION_H_

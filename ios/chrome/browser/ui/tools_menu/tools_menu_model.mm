@@ -15,10 +15,6 @@
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/public/user_agent.h"
 
-// TODO(crbug.com/678047) Remove this switch when request mobile site
-// functionality is implemented.
-#define HIDE_REQUEST_MOBILE_SITE_CELL
-
 // Menu items can be marked as visible or not when Incognito is enabled.
 // The following bits are used for |visibility| field in |MenuItemInfo|.
 const NSInteger kVisibleIncognitoOnly = 1 << 0;
@@ -64,6 +60,9 @@ const MenuItemInfo itemInfoList[] = {
   { IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, kToolsMenuRequestDesktopId,
     IDC_REQUEST_DESKTOP_SITE,             ToolbarTypeWebAll,
     0,                                    nil },
+  { IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, kToolsMenuRequestMobileId,
+    IDC_REQUEST_MOBILE_SITE,              ToolbarTypeWebAll,
+    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
     IDC_READER_MODE,                      ToolbarTypeWebAll,
     0,                                    nil },
@@ -104,19 +103,9 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
     // flag should stick when going backward and which cell should be visible
     // when navigating to native pages).
     case IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE:
-#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
-      return true;
-#else
       return (configuration.userAgentType != web::UserAgentType::DESKTOP);
-#endif
     case IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE:
-// TODO(crbug.com/678047) Remove this switch when request mobile site
-// functionality is implemented.
-#ifdef HIDE_REQUEST_MOBILE_SITE_CELL
-      return false;
-#else
       return (configuration.userAgentType == web::UserAgentType::DESKTOP);
-#endif
     default:
       return true;
   }

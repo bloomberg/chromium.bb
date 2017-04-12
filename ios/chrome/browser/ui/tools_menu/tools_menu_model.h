@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 // Total number of possible menu items.
-const int kToolsMenuNumberOfItems = 15;
+const int kToolsMenuNumberOfItems = 16;
 
 // Initialization table for all possible commands to initialize the
 // tools menu at run time. Data initialized into this structure is not mutable.

@@ -724,13 +724,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
 // Evaluates Javascript asynchronously using the current page context.
 - (void)openJavascript:(NSString*)javascript;
-
-// Sets the desktop user agent flag and reloads the current page.
-- (void)enableDesktopUserAgent;
-
-// Sets the desktop user agent flag and reloads the current page.
-- (void)enableMobileUserAgent;
-
 // Helper methods used by ShareToDelegate methods.
 // Shows an alert with the given title and message id.
 - (void)showErrorAlert:(int)titleMessageId message:(int)messageId;
@@ -4059,10 +4052,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [[_model currentTab] switchToReaderMode];
       break;
     case IDC_REQUEST_DESKTOP_SITE:
-      [self enableDesktopUserAgent];
+      [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::DESKTOP];
       break;
     case IDC_REQUEST_MOBILE_SITE:
-      [self enableMobileUserAgent];
+      [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
       break;
     case IDC_SHOW_TOOLS_MENU: {
       [self showToolsMenuPopup];
@@ -4269,16 +4262,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                   referrer:web::Referrer()
               inBackground:NO
                   appendTo:kCurrentTab];
-}
-
-- (void)enableDesktopUserAgent {
-  [[_model currentTab] reloadForDesktopUserAgent];
-}
-
-// TODO(crbug.com/692303): Implement the actual functionality of
-// "Request Mobile Site", and also refactoring the user agent related function
-// names to improve readability.
-- (void)enableMobileUserAgent {
 }
 
 - (void)resetAllWebViews {

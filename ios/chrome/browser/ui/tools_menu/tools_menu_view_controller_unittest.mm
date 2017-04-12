@@ -69,19 +69,19 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeMOBILE) {
   EXPECT_FALSE(mobile_item);
 }
 
-// Tests that "Request Desktop Site" is visible and not enabled, and
-// "Request Mobile Site" is invisible when the current page is a web page and
-// uses DESKTOP user agent.
+// Tests that "Request Desktop Site" is invisible, and "Request Mobile Site" is
+// visible and enabled when the current page is a web page and uses DESKTOP user
+// agent.
 TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeDESKTOP) {
   [configuration_ setUserAgentType:web::UserAgentType::DESKTOP];
   [controller_ initializeMenuWithConfiguration:configuration_.get()];
 
   ToolsMenuViewItem* desktop_item =
       GetToolsMenuViewItemWithTag(IDC_REQUEST_DESKTOP_SITE);
-  ASSERT_TRUE(desktop_item);
-  EXPECT_FALSE(desktop_item.active);
+  EXPECT_FALSE(desktop_item);
 
   ToolsMenuViewItem* mobile_item =
       GetToolsMenuViewItemWithTag(IDC_REQUEST_MOBILE_SITE);
-  EXPECT_FALSE(mobile_item);
+  ASSERT_TRUE(mobile_item);
+  EXPECT_TRUE(mobile_item.active);
 }

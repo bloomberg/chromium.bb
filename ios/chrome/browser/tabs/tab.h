@@ -12,6 +12,7 @@
 
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #include "ios/net/request_tracker.h"
+#include "ios/web/public/user_agent.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ui/base/page_transition_types.h"
 
@@ -238,9 +239,10 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // current content.
 - (void)switchToReaderMode;
 
-// Remove the UIWebView and reload the current url.  Used by request desktop
-// so the updated user agent is used.
-- (void)reloadForDesktopUserAgent;
+// Loads the original url of the last non-redirect item (including non-history
+// items). Used by request desktop/mobile site so that the updated user agent is
+// used.
+- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
 
 // Ensures the toolbar visibility matches |visible|.
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
