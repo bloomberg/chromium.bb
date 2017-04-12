@@ -1,60 +1,83 @@
-# Use Visual Studio Code on Chromium code base
+# Visual Studio Code Dev
+
+Visual Studio Code is a free, lightweight and powerful code editor for Windows,
+Mac and Linux, based on Electron/Chromium. It has built-in support for
+JavaScript, TypeScript and Node.js and a rich extension ecosystem that adds
+intellisense, debugging, syntax highlighting etc. for many languages (C++,
+Python, Go). It works without too much setup. Get started
+[here](https://code.visualstudio.com/docs).
+
+It is NOT a full-fledged IDE like Visual Studio. The two are completely
+separate products. The only commonality with Visual Studio is that both are
+from Microsoft.
+
+Here's what works well:
+
+*   Editing code works well especially when you get used to the [keyboard
+    shortcuts](https://code.visualstudio.com/docs/customization/keybindings).
+    VS Code is very responsive and can handle even big code bases like Chromium.
+*   Git integration is a blast. Built-in side-by-side view, local commit and
+    even extensions for
+    [history](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
+    and
+    [blame view](https://marketplace.visualstudio.com/items?itemName=ryu1kn.annotator).
+*   [Debugging](https://code.visualstudio.com/Docs/editor/debugging) works
+    well, even though startup times can be fairly high (~40 seconds with
+    gdb on Linux, much lower on Windows). You can step through code, inspect
+    variables, view call stacks for multiple threads etc.
+*   Opening files and searching solution-wide works well now after having
+    problems in earlier versions.
+*   Building works well. Build tools are easy to integrate. Warnings and errors
+    are displayed on a separate page and you can click to jump to the
+    corresponding line of code.
 
 [TOC]
 
-[Visual Studio Code](http://code.visualstudio.com/)
-([Wikipedia](https://en.wikipedia.org/wiki/Visual_Studio_Code)) is a
-multi-platform code editor that is itself based on Electron which is based on 
-Chromium. Visual Studio Code has a growing community and base of installable 
-extensions and themes. It works without too much setup.
+## Updating This Page
 
-## Install extensions
+Please keep this doc up-to-date. VS Code is still in active development and
+subject to changes. This doc is checked into the Chromium git repo, so if you
+make changes, read the [documentation
+guidelines](https://chromium.googlesource.com/chromium/src/+/lkgr/docs/documentation_guidelines.md)
+and [submit a change list](https://www.chromium.org/developers/contributing-code).
 
-`F1` paste 
-`ext install cpptools you-complete-me clang-format chromium-codesearch` 
-then enter. For more extensions: 
-https://marketplace.visualstudio.com/search?target=vscode
+All file paths and commands have been tested on Linux. Windows and Mac might
+require a slightly different setup (e.g. `Ctrl` -> `Cmd`). Please update this
+page accordingly.
 
-Highly recommend you also install your favorite keymap. 
+## Setup
 
-An Example to install eclipse keymaps `ext install vscode-eclipse-keybindings`. 
-You can search keymaps here. 
-https://marketplace.visualstudio.com/search?target=vscode&category=Keymaps
+### Installation
 
+Follow the steps on https://code.visualstudio.com/docs/setup/setup-overview. To
+run it on Linux, just navigate to `chromium/src` folder and type `code .` in a
+terminal. The argument to `code` is the base directory of the workspace. VS
+Code does not require project or solution files. However, it does store
+workspace settings in a `.vscode` folder in your base directory.
 
-## Settings
+### Useful Extensions
 
-Open Settings `File/Code - Preferences - Settings` and add the following 
-settings.
+Up to now, you have a basic version of VS Code without much language support.
+Next, we will install some useful extensions. Jump to the extensions window
+(`Ctrl+Shift+X`) and install these extensions, you will most likely use them
+every day:
 
-```
-{
-  "editor.tabSize": 2,
-  "editor.rulers": [80],
-  "[cpp]": {
-    "editor.quickSuggestions": true
-  },
-  // Exclude
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/.DS_Store": true,
-    "**/out": true
-  },
-  // YCM
-  "ycmd.path": "<your_ycmd_path>",
-  "ycmd.global_extra_config": 
-      "<your_chromium_path>/src/tools/vim/chromium.ycm_extra_conf.py",
-  "ycmd.confirm_extra_conf": false,
-  "ycmd.use_imprecise_get_type": true,
-  // clang-format
-  "clang-format.executable": "<your_depot_tools>/clang-format",
-  "clang-format.style": "file"
-}
-```
+*   ***C/C++*** -
+    Intellisense, code formatting, debugging.
+*   ***Python*** -
+    Linting, intellisense, code formatting, refactoring, debugging, snippets.
+*   ***Toggle Header/Source*** -
+    Toggles between .cc and .h with `F4`. The C/C++ extension supports this as
+    well through `Alt+O`. Last time I checked this was very laggy, but they
+    might have improved it since, so this extension might not be necessary.
+*   ***Protobuf support*** -
+    Syntax highlighting for .proto files.
+*   ***you-complete-me*** -
+    YouCompleteMe code completion for VS Code. It works fairly well in Chromium.
+*   ***Rewrap*** -
+    Wrap lines at 80 characters with `Alt+Q`.
 
-### Install auto-completion engine(ycmd)
+To install You-Complete-Me, enter these commands in a terminal:
 
 ```
 $ git clone https://github.com/Valloric/ycmd.git ~/.ycmd
@@ -62,23 +85,392 @@ $ cd ~/.ycmd
 $ ./build.py --clang-completer
 ```
 
-## Work flow
+The following extensions might be useful for you as well:
 
-1. `ctrl+p` open file.
-2. `ctrl+o` goto symbol. `ctrl+l` goto line.
-3. <code>ctrl+`</code> toggle terminal.
-4. `F1` - `CodeSearchOpen` open current line in code search on chrome.
-5. `F1` - `CodeSearchReferences` open XRef Infomation of current symbol.
-6. Use right click menu call `go to definition` or `peek definition`.
-7. Use right click menu call `find all references`.
+*   ***Annotator*** -
+    Git blame view.
+*   ***Git History (git log)*** -
+    Git history view.
+*   ***chromium-codesearch*** -
+    Code search (CS) integration, see [Chromium Code
+    Search](https://cs.chromium.org/), in particular *open current line in CS*,
+    *show references* and *go to definition*. Very useful for existing code. By
+    design, won't work for code not checked in yet. Overrides default C/C++
+    functionality. Had some issues last time I tried (extensions stopped
+    working), so use with care.
+*   ***change-case*** -
+    Quickly change the case of the current selection or current word.
+*   ***Instant Markdown*** -
+    Instant markdown (.md) preview in your browser as you type. This document
+    was written with this extension!
+*   ***Clang-Format*** -
+    Format your code using clang-format. The C/C++ extension already supports
+    format-on-save (see `C_Cpp.clang_format_formatOnSave` setting). This
+    extension adds the ability to format a document or the current selection on
+    demand.
 
-## Tips
+Also be sure to take a look at the
+[VS Code marketplace](https://marketplace.visualstudio.com/VSCode) to check out other
+useful extensions.
 
-### On laptop
+### Color Scheme
+Press `Ctrl+Shift+P, color, Enter` to pick a color scheme for the editor. There
+are also tons of [color schemes available for download on the
+marketplace](https://marketplace.visualstudio.com/search?target=VSCode&category=Themes&sortBy=Downloads).
 
-Because we use ycmd to enable auto completion. We can disable CPP autocomplete 
-and index to save battery. We can also disable git status autorefresh to save
-battery.
+### Usage Tips
+*   `Ctrl+P` opens a search box to find and open a file.
+*   `F1` or `Ctrl+Shift+P` opens a search box to find a command (e.g. Tasks: Run
+    Task).
+*   `Ctrl+K, Ctrl+S` opens the key bindings editor.
+*   ``Ctrl+` `` toggles the built-in terminal.
+*   `Ctrl+Shift+M` toggles the problems view (linter warnings, compile errors
+    and warnings). You'll swicth a lot between terminal and problem view during
+    compilation.
+*   `Alt+O` switches between the source/header file.
+*   `Ctrl+G` jumps to a line.
+*   `F12` jumps to the definition of the symbol at the cursor (also available on
+    right-click context menu).
+*   `Shift+F12` or `F1, CodeSearchReferences, Return` shows all references of
+    the symbol at the cursor.
+*   `F1, CodeSearchOpen, Return` opens the current file in Code Search.
+*   `Ctrl+D` selects the word at the cursor. Pressing it multiple times
+    multi-selects the next occurrences, so typing in one types in all of them,
+    and `Ctrl+U` deselects the last occurrence.
+*   `Ctrl+K, Z` enters Zen Mode, a fullscreen editing mode with nothing but the
+    current editor visible.
+*   `Ctrl+X` without anything selected cuts the current line. `Ctrl+V` pastes
+    the line.
+
+## Setup For Chromium
+
+VS Code is configured via JSON files. This paragraph contains JSON configuration
+files that are useful for Chromium development, in particular. See [VS Code
+documentation](https://code.visualstudio.com/docs/customization/overview) for an
+introduction to VS Code customization.
+
+### Workspace Settings
+Open the file chromium/src/.vscode/settings.json and add the following settings.
+Remember to replace `<full_path_to_your_home>`!
+
+```
+{
+  // Default tab size of 2.
+  "editor.tabSize": 2,
+  // Do not figure out tab size from opening a file.
+  "editor.detectIndentation": false,
+  // Add a line at 80 characters.
+  "editor.rulers": [80],
+  // Optional: Highlight current line at the left of the editor.
+  "editor.renderLineHighlight": "gutter",
+  // Optional: Don't automatically add closing brackets. It gets in the way.
+  "editor.autoClosingBrackets": false,
+  // Optional: Enable a tiny 30k feet view of your doc.
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 80,
+  "editor.minimap.renderCharacters": false,
+  // Trim tailing whitespace on save.
+  "files.trimTrailingWhitespace": true,
+  // Optional: Do not open files in 'preview' mode. Opening a new file in can
+  //           replace an existing one in preview mode, which can be confusing.
+  "workbench.editor.enablePreview": false,
+  // Optional: Same for files opened from quick open (Ctrl+P).
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+
+  "files.associations": {
+    // Adds xml syntax highlighting for grd files.
+    "*.grd" : "xml",
+    // Optional: .gn and .gni are not JavaScript, but at least it gives some
+    // approximate syntax highlighting. Ignore the linter warnings!
+    "*.gni" : "javascript",
+    "*.gn" : "javascript"
+  },
+
+  "files.exclude": {
+    // Ignore build output folders.
+    "out*/**": true
+  },
+
+  // Wider author column for annotator extension.
+  "annotator.annotationColumnWidth": "24em",
+
+  // C++ clang format settings.
+  "C_Cpp.clang_format_path": "<full_path_to_your_home>/depot_tools/clang-format",
+  "C_Cpp.clang_format_sortIncludes": true,
+  "C_Cpp.clang_format_formatOnSave": true,
+
+  // YouCompleteMe
+  "ycmd.path": "<full_path_to_your_home>/.vim/bundle/YouCompleteMe/third_party/ycmd",
+  "ycmd.global_extra_config": "<full_path_to_your_home>/chromium/src/tools/vim/.ycm_extra_conf.py",
+  "ycmd.confirm_extra_conf": false,
+}
+```
+
+### Tasks
+Next, we'll tell VS Code how to compile our code and how to read warnings and
+errors from the build output. Copy the code below to
+chromium/src/.vscode/tasks.json. This will provide 5 tasks to do basic things.
+You might have to adjust the commands to your situation and needs.
+
+```
+{
+  "version": "0.1.0",
+  "_runner": "terminal",
+  "showOutput": "always",
+  "echoCommand": true,
+  "tasks": [
+  {
+    "taskName": "1-build_chrome_debug",
+    "command": "ninja -C out/Debug -j 2000 chrome",
+    "isShellCommand": true,
+    "isTestCommand": true,
+    "problemMatcher": {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    }
+  },
+  {
+    "taskName": "2-build_chrome_release",
+    "command": "ninja -C out/Release -j 2000 chrome",
+    "isShellCommand": true,
+    "isBuildCommand": true,
+    "problemMatcher": {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    }
+  },
+  {
+    "taskName": "3-build_all_debug",
+    "command": "ninja -C out/Debug -j 2000",
+    "isShellCommand": true,
+    "problemMatcher": {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    }
+  },
+  {
+    "taskName": "4-build_all_release",
+    "command": "ninja -C out/Release -j 2000",
+    "isShellCommand": true,
+    "problemMatcher": {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    }
+  },
+  {
+    "taskName": "5-build_test_debug",
+    "command": "ninja -C out/Debug -j 2000 unit_tests components_unittests browser_tests",
+    "isShellCommand": true,
+    "problemMatcher": {
+      "owner": "cpp",
+      "fileLocation": ["relative", "${workspaceRoot}"],
+      "pattern": {
+        "regexp": "^../../(.*):(\\d+):(\\d+):\\s+(warning|\\w*\\s?error):\\s+(.*)$",
+        "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+      }
+    }
+  }]
+}
+```
+
+### Launch Commands
+Launch commands are the equivalent of `F5` in Visual Studio: They launch some
+program or a debugger. Optionally, they can run some task defined in
+`tasks.json`. Launch commands can be run from the debug view (`Ctrl+Shift+D`).
+Copy the code below to chromium/src/.vscode/launch.json and adjust them to
+your situation and needs.
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+  {
+    "name": "Chrome Debug",
+    "type": "cppdbg",
+    "request": "launch",
+    "targetArchitecture": "x64",
+    "program": "${workspaceRoot}/out/Debug/chrome",
+    "args": [],  // Optional command line args
+    "preLaunchTask": "1-build_chrome_debug",
+    "stopAtEntry": false,
+    "cwd": "${workspaceRoot}",
+    "environment": [],
+    "externalConsole": true
+  },
+  {
+    "name": "Chrome Release",
+    "type": "cppdbg",
+    "request": "launch",
+    "targetArchitecture": "x64",
+    "program": "${workspaceRoot}/out/Release/chrome",
+    "args": [],  // Optional command line args
+    "preLaunchTask": "2-build_chrome_release",
+    "stopAtEntry": false,
+    "cwd": "${workspaceRoot}",
+    "environment": [],
+    "externalConsole": true
+  },
+  {
+    "name": "Custom Test Debug",
+    "type": "cppdbg",
+    "request": "launch",
+    "targetArchitecture": "x64",
+    "program": "${workspaceRoot}/out/Debug/unit_tests",
+    "args": ["--gtest_filter=*",
+              "--single_process",
+              "--ui-test-action-max-timeout=1000000",
+              "--test-launcher-timeout=1000000"],
+    "preLaunchTask": "5-build_test_debug",
+    "stopAtEntry": false,
+    "cwd": "${workspaceRoot}",
+    "environment": [],
+    "externalConsole": true
+  },
+  {
+    "name": "Attach Debug",
+    "type": "cppdbg",
+    "request": "launch",
+    "targetArchitecture": "x64",
+    "program": "${workspaceRoot}/out/Debug/chrome",
+    "args": ["--remote-debugging-port=2224"],
+    "stopAtEntry": false,
+    "cwd": "${workspaceRoot}",
+    "environment": [],
+    "externalConsole": false
+  }]
+}
+```
+
+### Key Bindings
+To edit key bindings, press `Ctrl+K, Ctrl+S`. You'll see the defaults on the
+left and your overrides on the right stored in the file `keybindings.json`. To
+change a key binding, copy the corresponding key binding to the right. It's
+fairly self-explanatory.
+
+You can bind any command to a key, even commands specified by extensions like
+`CodeSearchOpen`. For instance, to bind `CodeSearchOpen` to `F2` to , simply add
+`{ "key": "F2", "command": "cs.open" },`.
+Note that the command title `CodeSearchOpen` won't work. You have to get the
+actual command name from the [package.json
+file](https://github.com/chaopeng/vscode-chromium-codesearch/blob/master/package.json)
+of the extension.
+
+If you are used to other editors, you can also install your favorite keymap.
+For instance, to install eclipse keymaps, install the
+`vscode-eclipse-keybindings` extension. More keymaps can be found
+[in the marketplace](https://marketplace.visualstudio.com/search?target=vscode&category=Keymaps).
+
+Here are some key bindings that are likely to be useful for you:
+
+```
+// Place your key bindings in this file to overwrite the defaults
+[
+// Run the task marked as "isTestCommand": true, see tasks.json.
+{ "key": "ctrl+shift+t",       "command": "workbench.action.tasks.test" },
+// Jump to the previous change in the built-in diff tool.
+{ "key": "ctrl+up",            "command": "workbench.action.compareEditor.previousChange" },
+// Jump to the next change in the built-in diff tool.
+{ "key": "ctrl+down",          "command": "workbench.action.compareEditor.nextChange" },
+// Jump to previous location in the editor (useful to get back from viewing a symbol definition).
+{ "key": "alt+left",           "command": "workbench.action.navigateBack" },
+// Jump to next location in the editor.
+{ "key": "alt+right",          "command": "workbench.action.navigateForward" },
+// Get a blame view of the current file. Requires the annotator extension.
+{ "key": "ctrl+alt+a",         "command": "annotator.annotate" },
+// Toggle header/source with the Toggle Header/Source extension (overrides the
+// key binding from the C/C++ extension as I found it to be slow).
+{ "key": "alt+o",              "command": "togglehs.toggleHS" },
+// Quickly run a task, see tasks.json. Since we named them 1-, 2- etc., it is
+// suffucient to press the corresponding number.
+{ "key": "ctrl+r",             "command": "workbench.action.tasks.runTask",
+                                  "when": "!inDebugMode" },
+// The following keybindings are useful on laptops with small keyboards such as
+// Chromebooks that don't provide all keys.
+{ "key": "shift+alt+down",     "command": "cursorColumnSelectDown",
+                                  "when": "editorTextFocus" },
+{ "key": "shift+alt+left",     "command": "cursorColumnSelectLeft",
+                                  "when": "editorTextFocus" },
+{ "key": "shift+alt+pagedown", "command": "cursorColumnSelectPageDown",
+                                  "when": "editorTextFocus" },
+{ "key": "shift+alt+pageup",   "command": "cursorColumnSelectPageUp",
+                                  "when": "editorTextFocus" },
+{ "key": "shift+alt+right",    "command": "cursorColumnSelectRight",
+                                  "when": "editorTextFocus" },
+{ "key": "shift+alt+up",       "command": "cursorColumnSelectUp",
+                                  "when": "editorTextFocus" },
+{ "key": "alt+down",           "command": "scrollPageDown",
+                                  "when": "editorTextFocus" },
+{ "key": "alt+up",             "command": "scrollPageUp",
+                                  "when": "editorTextFocus" },
+{ "key": "alt+backspace",      "command": "deleteRight",
+                                  "when": "editorTextFocus && !editorReadonly" },
+{ "key": "ctrl+right",         "command": "cursorEnd",
+                                  "when": "editorTextFocus" },
+{ "key": "ctrl+shift+right",   "command": "cursorEndSelect",
+                                  "when": "editorTextFocus" },
+{ "key": "ctrl+left",          "command": "cursorHome",
+                                  "when": "editorTextFocus" },
+{ "key": "ctrl+shift+left",    "command": "cursorHomeSelect",
+                                  "when": "editorTextFocus" },
+]
+```
+
+### Tips
+
+#### The `out` folder
+Automatically generated code is put into a subfolder of out/, which means that
+these files are ignored by VS Code (see files.exclude above) and cannot be
+opened e.g. from quick-open (`Ctrl+P`). On Linux, you can create a symlink as a
+work-around:
+```
+  cd ~/chromium/src
+  mkdir _out
+  ln -s ../out/Debug/gen _out/gen
+```
+We picked _out since it is already in .gitignore, so it won't show up in git
+status.
+
+Note: As of version 1.9, VS Code does not support negated glob commands, but
+once it does, you can use
+```
+"!out/Debug/gen/**": true
+```
+in files.exclude instead of the symlink.
+
+#### Using VS Code as git editor
+Add `[core] editor = "code --wait"` to your `~/.gitconfig` file in order to use
+VS Code as editor for git commit messages etc. Note that the editor starts up
+significantly slower than nano or vim. To use VS Code as merge tool, add
+`[merge] tool = code`.
+
+#### Task Names
+Note that we named the tasks `1-build_chrome_debug`, `2-build_chrome_release`
+etc. This allows you to quickly execute tasks by pressing their number:
+Press `Ctrl+P` and enter `task <n>`, where `<n>` is the number of the task. You
+can also create a keyboard shortcut for running a task. `File > Preferences >
+Keyboard Shortcuts` and add `{ "key": "ctrl+r", "command":
+"workbench.action.tasks.runTask", "when": "!inDebugMode" }`. Then it's
+sufficient to press `Ctrl+R` and enter `<n>`.
+
+#### Working on Laptop
+Because autocomplete is provided by the You-Complete-Me extension, consider
+disabling C/C++ autocomplete and indexing to save battery. In addition, you
+might want to disable git status autorefresh as well.
 
 ```
 "git.autorefresh": false,
@@ -86,13 +478,6 @@ battery.
 "C_Cpp.addWorkspaceRootToIncludePath": false
 ```
 
-### Enable Sublime-like minimap
-
-```
-"editor.minimap.enabled": true,
-"editor.minimap.renderCharacters": false
-```
-
 ### More
-
-https://github.com/Microsoft/vscode-tips-and-tricks/blob/master/README.md
+More tips and tricks can be found
+[here](https://github.com/Microsoft/vscode-tips-and-tricks/blob/master/README.md).
