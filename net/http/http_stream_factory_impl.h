@@ -174,7 +174,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   // Adds the count of JobControllers that are not completed to UMA histogram if
   // the count is a multiple of 100: 100, 200, 400, etc. Break down
   // JobControllers count based on the type of JobController.
-  void AddJobControllerCountToHistograms() const;
+  void AddJobControllerCountToHistograms();
 
   HttpNetworkSession* const session_;
 
@@ -195,6 +195,9 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   SpdySessionRequestMap spdy_session_request_map_;
 
   const bool for_websockets_;
+
+  // The count of JobControllers that was most recently logged to histograms.
+  size_t last_logged_job_controller_count_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryImpl);
 };

@@ -103,7 +103,8 @@ HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
                                              bool for_websockets)
     : session_(session),
       job_factory_(new DefaultJobFactory()),
-      for_websockets_(for_websockets) {}
+      for_websockets_(for_websockets),
+      last_logged_job_controller_count_(0) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
   DCHECK(spdy_session_request_map_.empty());
@@ -356,11 +357,15 @@ bool HttpStreamFactoryImpl::ProxyServerSupportsPriorities(
       scheme_host_port);
 }
 
-void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() const {
+void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() {
   // Only log the count of JobControllers when the count is hitting one of the
-  // boundaries which is a multiple of 100: 100, 200, 300, etc.
-  if (job_controller_set_.size() < 100 || job_controller_set_.size() % 100 != 0)
+  // boundaries for the first time which is a multiple of 100: 100, 200, 300,
+  // etc.
+  if (job_controller_set_.size() % 100 != 0 ||
+      job_controller_set_.size() <= last_logged_job_controller_count_) {
     return;
+  }
+  last_logged_job_controller_count_ = job_controller_set_.size();
 
   UMA_HISTOGRAM_COUNTS_1M("Net.JobControllerSet.CountOfJobController",
                           job_controller_set_.size());
