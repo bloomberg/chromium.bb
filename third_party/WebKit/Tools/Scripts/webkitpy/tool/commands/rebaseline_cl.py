@@ -36,6 +36,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             optparse.make_option(
                 '--no-trigger-jobs', dest='trigger_jobs', action='store_false', default=True,
                 help='Do not trigger any try jobs.'),
+            optparse.make_option(
+                '--fill-missing', dest='fill_missing', action='store_true', default=False,
+                help='If some platforms have no try job results, use results from try job results of other platforms.'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
@@ -73,7 +76,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.info('Please re-run webkit-patch rebaseline-cl once all pending try jobs have finished.')
             return 1
 
-        if builders_with_no_results:
+        if builders_with_no_results and not options.fill_missing:
             # TODO(qyearsley): Support trying to continue as long as there are
             # some results from some builder; see http://crbug.com/673966.
             _log.error('The following builders have no results:')
@@ -95,6 +98,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             test_baseline_set = self._make_test_baseline_set(
                 builds_to_results,
                 only_changed_tests=options.only_changed_tests)
+
+        if options.fill_missing:
+            self.fill_in_missing_results(test_baseline_set)
 
         _log.debug('Rebaselining: %s', test_baseline_set)
 
@@ -220,3 +226,37 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         except (ValueError, KeyError):
             _log.warning('Unexpected retry summary content:\n%s', content)
             return None
+
+    def fill_in_missing_results(self, test_baseline_set):
+        """Modifies test_baseline_set to guarantee that there are entries for
+        all ports for all tests to rebaseline.
+
+        For each test prefix, if there is an entry missing for some port,
+        then an entry should be added for that port using a build that is
+        available. For example, if there's no entry for the port "win-win7",
+        then an entry might be added for "win-win7" using a build on
+        a Win10 builder which does have results.
+        """
+        all_ports = {self._tool.builders.port_name_for_builder_name(b) for b in self._try_bots()}
+        for test_prefix in test_baseline_set.test_prefixes():
+            build_port_pairs = test_baseline_set.build_port_pairs(test_prefix)
+            missing_ports = all_ports - {p for _, p in build_port_pairs}
+            if not missing_ports:
+                continue
+            _log.info('For %s:', test_prefix)
+            for port in missing_ports:
+                build = self._choose_fill_in_build(port, build_port_pairs)
+                _log.info('Using %s to supply results for %s.', build, port)
+                test_baseline_set.add(test_prefix, build, port)
+        return test_baseline_set
+
+    def _choose_fill_in_build(self, _, build_port_pairs):
+        """Returns a Build to use to supply results for the given port.
+
+        Ideally, this should return a build for a similar port so that the
+        results from the selected build may also be correct for the target port.
+        """
+        # TODO(qyearsley): Decide what build to use for a given port
+        # in a more sophisticated way, such that a build with a
+        # "similar" port will be used when available.
+        return build_port_pairs[0][0]

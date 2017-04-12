@@ -149,6 +149,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'results_directory': None,
             'verbose': False,
             'trigger_jobs': False,
+            'fill_missing': False,
         }
         options.update(kwargs)
         return optparse.Values(dict(**options))
@@ -338,4 +339,21 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'ERROR: Aborting: there are unstaged baselines:\n',
             'ERROR:   /mock-checkout/third_party/WebKit/LayoutTests/my-test-expected.txt\n',
+        ])
+
+    def test_fill_in_missing_results(self):
+        test_baseline_set = TestBaselineSet(self.tool)
+        test_baseline_set.add('fast/dom/prototype-taco.html', Build('MOCK Try Linux', 100))
+        test_baseline_set.add('fast/dom/prototype-taco.html', Build('MOCK Try Win', 200))
+        self.command.fill_in_missing_results(test_baseline_set)
+        self.assertEqual(
+            test_baseline_set.build_port_pairs('fast/dom/prototype-taco.html'),
+            [
+                (Build(builder_name='MOCK Try Linux', build_number=100), 'test-linux-trusty'),
+                (Build(builder_name='MOCK Try Win', build_number=200), 'test-win-win7'),
+                (Build(builder_name='MOCK Try Linux', build_number=100), 'test-mac-mac10.11'),
+            ])
+        self.assertLog([
+            'INFO: For fast/dom/prototype-taco.html:\n',
+            'INFO: Using Build(builder_name=\'MOCK Try Linux\', build_number=100) to supply results for test-mac-mac10.11.\n',
         ])

@@ -1187,3 +1187,15 @@ class TestBaselineSetTest(unittest.TestCase):
             ('<TestBaselineSet with:\n'
              '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None), test-mac-mac10.12\n'
              '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None), test-win-win10>'))
+
+    def test_getters(self):
+        test_baseline_set = TestBaselineSet(host=self.host)
+        test_baseline_set.add('a/x.html', Build('MOCK Mac10.12'))
+        test_baseline_set.add('a/x.html', Build('MOCK Win10'))
+        self.assertEqual(test_baseline_set.test_prefixes(), ['a/x.html'])
+        self.assertEqual(
+            test_baseline_set.build_port_pairs('a/x.html'),
+            [
+                (Build(builder_name='MOCK Mac10.12'), 'test-mac-mac10.12'),
+                (Build(builder_name='MOCK Win10'), 'test-win-win10')
+            ])

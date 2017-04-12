@@ -175,6 +175,13 @@ class TestBaselineSet(object):
                 '\n  '.join('%s: %s, %s' % triple for triple in self._iter_combinations()) +
                 '>')
 
+    def test_prefixes(self):
+        return sorted(self._test_prefix_map)
+
+    def build_port_pairs(self, test_prefix):
+        # Return a copy in case the caller modifies the returned list.
+        return list(self._test_prefix_map[test_prefix])
+
     def add(self, test_prefix, build, port_name=None):
         """Adds an entry for baselines to download for some set of tests.
 
