@@ -1468,6 +1468,14 @@ TEST_F(CredentialManagerImplTest, ZeroClickAfterMigratingHttpCredential) {
                                CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
+TEST_F(CredentialManagerImplTest, MigrateWithEmptyStore) {
+  // HTTP scheme is valid for localhost. Nothing should crash.
+  NavigateAndCommit(GURL("http://127.0.0.1:8000/"));
+
+  std::vector<GURL> federations;
+  ExpectZeroClickSignInFailure(false, true, federations);
+}
+
 TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
   PasswordStore::FormDigest synthesized =
       cm_service_impl_->GetSynthesizedFormForOrigin();

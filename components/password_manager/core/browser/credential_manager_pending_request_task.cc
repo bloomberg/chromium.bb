@@ -131,7 +131,8 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  if (results.empty()) {
+  // localhost is a secure origin but not https.
+  if (results.empty() && origin_.SchemeIs(url::kHttpsScheme)) {
     // Try to migrate the HTTP passwords and process them later.
     http_migrator_ = base::MakeUnique<HttpPasswordStoreMigrator>(
         origin_, delegate_->client(), this);
