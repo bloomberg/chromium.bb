@@ -26,8 +26,8 @@ DEFINE_TRACE({{v8_class}}) {
          if method.idl_type == 'boolean' else 'return' %}{# void #}
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     {{return_default}};
   if (!m_scriptState->ContextIsValid())
     {{return_default}};

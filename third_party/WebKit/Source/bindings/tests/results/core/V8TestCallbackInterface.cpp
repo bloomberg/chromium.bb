@@ -37,8 +37,8 @@ DEFINE_TRACE(V8TestCallbackInterface) {
 void V8TestCallbackInterface::voidMethod() {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -59,8 +59,8 @@ void V8TestCallbackInterface::voidMethod() {
 bool V8TestCallbackInterface::booleanMethod() {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return true;
   if (!m_scriptState->ContextIsValid())
     return true;
@@ -84,8 +84,8 @@ bool V8TestCallbackInterface::booleanMethod() {
 void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -107,8 +107,8 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -130,8 +130,8 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
 void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -153,8 +153,8 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -176,8 +176,8 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
@@ -200,8 +200,8 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) {
   ExecutionContext* executionContext =
       ExecutionContext::From(m_scriptState.Get());
-  if (!executionContext || executionContext->IsContextSuspended() ||
-      executionContext->IsContextDestroyed())
+  DCHECK(!executionContext->IsContextSuspended());
+  if (!executionContext || executionContext->IsContextDestroyed())
     return;
   if (!m_scriptState->ContextIsValid())
     return;
