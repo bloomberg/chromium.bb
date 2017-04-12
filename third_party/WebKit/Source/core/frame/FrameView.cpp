@@ -739,7 +739,7 @@ void FrameView::AdjustViewSize() {
 
   const IntPoint origin(-rect.X(), -rect.Y());
   if (ScrollOrigin() != origin) {
-    ScrollableArea::SetScrollOrigin(origin);
+    SetScrollOrigin(origin);
     // setContentSize (below) also calls updateScrollbars so we can avoid
     // updating scrollbars twice by skipping the call here when the content
     // size does not change.
@@ -4348,10 +4348,8 @@ void FrameView::UpdateScrollbars() {
 
 void FrameView::AdjustScrollOffsetFromUpdateScrollbars() {
   ScrollOffset clamped = ClampScrollOffset(GetScrollOffset());
-  if (clamped != GetScrollOffset() || ScrollOriginChanged()) {
-    ScrollableArea::SetScrollOffset(clamped, kClampingScroll);
-    ResetScrollOriginChanged();
-  }
+  if (clamped != GetScrollOffset() || ScrollOriginChanged())
+    SetScrollOffset(clamped, kClampingScroll);
 }
 
 void FrameView::ScrollContentsIfNeeded() {
@@ -4532,6 +4530,18 @@ void FrameView::PositionScrollbarLayers() {
   PositionScrollbarLayer(LayerForHorizontalScrollbar(), HorizontalScrollbar());
   PositionScrollbarLayer(LayerForVerticalScrollbar(), VerticalScrollbar());
   PositionScrollCornerLayer(LayerForScrollCorner(), ScrollCornerRect());
+}
+
+bool FrameView::UpdateAfterCompositingChange() {
+  if (ScrollOriginChanged()) {
+    // If the scroll origin changed, we need to update the layer position on
+    // the compositor since the offset itself might not have changed.
+    LayoutViewItem layout_view_item = this->GetLayoutViewItem();
+    if (!layout_view_item.IsNull() && layout_view_item.UsesCompositing())
+      layout_view_item.Compositor()->FrameViewDidScroll();
+    ResetScrollOriginChanged();
+  }
+  return false;
 }
 
 bool FrameView::UserInputScrollable(ScrollbarOrientation orientation) const {

@@ -436,6 +436,7 @@ class CORE_EXPORT FrameView final
   GraphicsLayer* LayerForScrollCorner() const override;
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override;
+  bool UpdateAfterCompositingChange() override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   FrameViewBase* GetFrameViewBase() override;

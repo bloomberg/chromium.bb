@@ -11611,6 +11611,32 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 }
 
+TEST_F(WebFrameSimTest, ScrollOriginChangeUpdatesLayerPositions) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(
+      "<!DOCTYPE html>"
+      "<body dir='rtl'>"
+      "  <div style='width:1px; height:1px; position:absolute; left:-10000px'>"
+      "  </div>"
+      "</body>");
+
+  Compositor().BeginFrame();
+  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ASSERT_EQ(10000, area->ScrollOrigin().X());
+  ASSERT_EQ(10000, area->LayerForScrolling()->GetPosition().X());
+
+  // Removing the overflowing element removes all overflow so the scroll origin
+  // implicitly is reset to (0, 0).
+  GetDocument().QuerySelector("div")->remove();
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(0, area->ScrollOrigin().X());
+  EXPECT_EQ(0, area->LayerForScrolling()->GetPosition().X());
+}
+
 TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   class LoadingObserverFrameClient
       : public FrameTestHelpers::TestWebFrameClient {

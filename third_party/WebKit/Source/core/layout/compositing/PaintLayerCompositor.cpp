@@ -412,6 +412,8 @@ void PaintLayerCompositor::UpdateIfNeeded() {
         for (ScrollableArea* scrollable_area : *scrollable_areas)
           layers_changed |= scrollable_area->UpdateAfterCompositingChange();
       }
+      layers_changed |=
+          layout_view_.GetFrameView()->UpdateAfterCompositingChange();
     }
 
     if (layers_changed) {
