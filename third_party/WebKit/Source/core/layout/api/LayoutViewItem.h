@@ -52,12 +52,6 @@ class LayoutViewItem : public LayoutBlockItem {
     return ToView()->HitTestNoLifecycleUpdate(result);
   }
 
-  IntRect SelectionBounds() { return ToView()->SelectionBounds(); }
-
-  void InvalidatePaintForSelection() {
-    return ToView()->InvalidatePaintForSelection();
-  }
-
   //    bool hitTest(HitTestResult&);
   //    bool hitTestNoLifecycleUpdate(HitTestResult&);
 

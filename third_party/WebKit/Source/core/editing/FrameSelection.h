@@ -252,6 +252,9 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
+  void LayoutSelectionStartEnd(int& start_pos, int& end_pos);
+  void ClearLayoutSelection();
+
   DECLARE_TRACE();
 
  private:

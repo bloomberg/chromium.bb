@@ -148,22 +148,10 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint&) const override;
 
-  enum SelectionPaintInvalidationMode {
-    kPaintInvalidationNewXOROld,
-    kPaintInvalidationNewMinusOld
-  };
-  void SetSelection(
-      LayoutObject* start,
-      int start_pos,
-      LayoutObject*,
-      int end_pos,
-      SelectionPaintInvalidationMode = kPaintInvalidationNewXOROld);
   void ClearSelection();
   bool HasPendingSelection() const;
   void CommitPendingSelection();
-  IntRect SelectionBounds();
   void SelectionStartEnd(int& start_pos, int& end_pos);
-  void InvalidatePaintForSelection();
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const override;
@@ -290,25 +278,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
   UntracedMember<FrameView> frame_view_;
-
-  // The current selection represented as 2 boundaries.
-  // Selection boundaries are represented in LayoutView by a tuple
-  // (LayoutObject, DOM node offset).
-  // See http://www.w3.org/TR/dom/#range for more information.
-  //
-  // |m_selectionStartPos| and |m_selectionEndPos| are only valid for
-  // |Text| node without 'transform' or 'first-letter'.
-  //
-  // Those are used for selection painting and paint invalidation upon
-  // selection change.
-  LayoutObject* selection_start_;
-  LayoutObject* selection_end_;
-
-  // TODO(yosin): Clarify the meaning of these variables. editing/ passes
-  // them as offsets in the DOM tree  but layout uses them as offset in the
-  // layout tree.
-  int selection_start_pos_;
-  int selection_end_pos_;
 
   // The page logical height.
   // This is only used during printing to split the content into pages.

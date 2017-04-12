@@ -435,9 +435,7 @@ void FrameSelection::DocumentAttached(Document* document) {
 void FrameSelection::ContextDestroyed(Document* document) {
   granularity_ = kCharacterGranularity;
 
-  LayoutViewItem view = frame_->ContentLayoutItem();
-  if (!view.IsNull())
-    view.ClearSelection();
+  layout_selection_->OnDocumentShutdown();
 
   frame_->GetEditor().ClearTypingStyle();
 }
@@ -709,7 +707,7 @@ void FrameSelection::FocusedOrActiveStateChanged() {
   // we have to update places those colors were painted.
   LayoutViewItem view = GetDocument().GetLayoutViewItem();
   if (!view.IsNull())
-    view.InvalidatePaintForSelection();
+    layout_selection_->InvalidatePaintForSelection();
 
   // Caret appears in the active frame.
   if (active_and_focused)
@@ -886,7 +884,7 @@ LayoutRect FrameSelection::UnclippedBounds() const {
     return LayoutRect();
 
   view->UpdateLifecycleToLayoutClean();
-  return LayoutRect(layout_view.SelectionBounds());
+  return LayoutRect(layout_selection_->SelectionBounds());
 }
 
 static inline HTMLFormElement* AssociatedFormElement(HTMLElement& element) {
@@ -1145,6 +1143,14 @@ Range* FrameSelection::DocumentCachedRange() const {
 
 void FrameSelection::ClearDocumentCachedRange() {
   selection_editor_->ClearDocumentCachedRange();
+}
+
+void FrameSelection::LayoutSelectionStartEnd(int& start_pos, int& end_pos) {
+  layout_selection_->SelectionStartEnd(start_pos, end_pos);
+}
+
+void FrameSelection::ClearLayoutSelection() {
+  layout_selection_->ClearSelection();
 }
 
 }  // namespace blink

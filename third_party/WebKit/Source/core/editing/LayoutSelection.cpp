@@ -32,7 +32,12 @@
 namespace blink {
 
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
-    : frame_selection_(&frame_selection), has_pending_selection_(false) {}
+    : frame_selection_(&frame_selection),
+      has_pending_selection_(false),
+      selection_start_(nullptr),
+      selection_end_(nullptr),
+      selection_start_pos_(-1),
+      selection_end_pos_(-1) {}
 
 const VisibleSelection& LayoutSelection::GetVisibleSelection() const {
   return frame_selection_->ComputeVisibleSelectionInDOMTree();
@@ -127,7 +132,7 @@ void LayoutSelection::Commit(LayoutView& layout_view) {
       CreateVisibleSelection(CalcVisibleSelection(original_selection));
 
   if (!selection.IsRange()) {
-    layout_view.ClearSelection();
+    ClearSelection();
     return;
   }
 
@@ -159,9 +164,16 @@ void LayoutSelection::Commit(LayoutView& layout_view) {
     return;
   DCHECK(layout_view == start_layout_object->View());
   DCHECK(layout_view == end_layout_object->View());
-  layout_view.SetSelection(start_layout_object,
-                           start_pos.ComputeEditingOffset(), end_layout_object,
-                           end_pos.ComputeEditingOffset());
+  SetSelection(start_layout_object, start_pos.ComputeEditingOffset(),
+               end_layout_object, end_pos.ComputeEditingOffset());
+}
+
+void LayoutSelection::OnDocumentShutdown() {
+  has_pending_selection_ = false;
+  selection_start_ = nullptr;
+  selection_end_ = nullptr;
+  selection_start_pos_ = -1;
+  selection_end_pos_ = -1;
 }
 
 DEFINE_TRACE(LayoutSelection) {
