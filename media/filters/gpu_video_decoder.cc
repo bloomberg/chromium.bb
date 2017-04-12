@@ -184,20 +184,6 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
   cb.Run(success);
 }
 
-// static
-void ReleaseMailboxTrampoline(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const VideoFrame::ReleaseMailboxCB& release_mailbox_cb,
-    const gpu::SyncToken& release_sync_token) {
-  if (task_runner->BelongsToCurrentThread()) {
-    release_mailbox_cb.Run(release_sync_token);
-    return;
-  }
-
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(release_mailbox_cb, release_sync_token));
-}
-
 std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
@@ -673,11 +659,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTextures(
       pixel_format_, mailbox_holders,
-      base::Bind(
-          &ReleaseMailboxTrampoline, factories_->GetTaskRunner(),
-          base::Bind(&GpuVideoDecoder::ReleaseMailbox,
-                     weak_factory_.GetWeakPtr(), factories_,
-                     picture.picture_buffer_id(), pb.client_texture_ids())),
+      // Always post ReleaseMailbox to avoid deadlock with the compositor when
+      // releasing video frames on the media thread; http://crbug.com/710209.
+      BindToCurrentLoop(base::Bind(
+          &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
+          factories_, picture.picture_buffer_id(), pb.client_texture_ids())),
       pb.size(), visible_rect, natural_size, timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
