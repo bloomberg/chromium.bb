@@ -36,7 +36,7 @@
 
 namespace blink {
 
-static bool IsErrorStatusCode(int status_code) {
+static bool IsHTTPErrorStatusCode(int status_code) {
   return status_code >= 400;
 }
 
@@ -138,7 +138,8 @@ void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
 
   // Mark loaded resources or resources without the buffer as loaded.
   if (cached_resource_->IsLoaded() || !cached_resource_->ResourceBuffer()) {
-    if (!IsErrorStatusCode(cached_resource_->GetResponse().HttpStatusCode())) {
+    if (!IsHTTPErrorStatusCode(
+            cached_resource_->GetResponse().HttpStatusCode())) {
       String content;
       bool base64_encoded;
       if (InspectorPageAgent::CachedResourceContent(cached_resource_, &content,
