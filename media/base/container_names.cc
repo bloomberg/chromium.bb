@@ -1090,32 +1090,20 @@ static bool ValidMpegAudioFrameHeader(const uint8_t* header,
   return (bitrate > 0 && sampling_rate > 0);
 }
 
-// Extract a size encoded the MP3 way.
-static int GetMp3HeaderSize(const uint8_t* buffer, int buffer_size) {
-  DCHECK_GE(buffer_size, 9);
-  int size = ((buffer[6] & 0x7f) << 21) + ((buffer[7] & 0x7f) << 14) +
-             ((buffer[8] & 0x7f) << 7) + (buffer[9] & 0x7f) + 10;
-  if (buffer[5] & 0x10)  // Footer added?
-    size += 10;
-  return size;
-}
-
 // Additional checks for a MP3 container.
-static bool CheckMp3(const uint8_t* buffer, int buffer_size, bool seenHeader) {
-  RCHECK(buffer_size >= 10);  // Must be enough to read the initial header.
-
-  int framesize;
+static bool CheckMp3(const uint8_t* buffer, int buffer_size) {
+  // This function assumes that the ID3 header is not present in the file and
+  // simply checks for several valid MPEG audio buffers after skipping any
+  // optional padding characters.
   int numSeen = 0;
   int offset = 0;
-  if (seenHeader) {
-    offset = GetMp3HeaderSize(buffer, buffer_size);
-  } else {
-    // Skip over leading 0's.
-    while (offset < buffer_size && buffer[offset] == 0)
-      ++offset;
-  }
+
+  // Skip over any padding (0's).
+  while (offset < buffer_size && buffer[offset] == 0)
+    ++offset;
 
   while (offset + 3 < buffer_size) {
+    int framesize;
     RCHECK(ValidMpegAudioFrameHeader(
         buffer + offset, buffer_size - offset, &framesize));
 
@@ -1600,9 +1588,7 @@ static MediaContainerName LookupContainerByFirst4(const uint8_t* buffer,
       return CONTAINER_SWF;
 
     case TAG('I','D','3',0):
-      if (CheckMp3(buffer, buffer_size, true))
-        return CONTAINER_MP3;
-      break;
+      return CONTAINER_MP3;
   }
 
   // Maybe the first 2 characters are something we can use.
@@ -1624,8 +1610,8 @@ static MediaContainerName LookupContainerByFirst4(const uint8_t* buffer,
       break;
   }
 
-  // Check if the file is in MP3 format without the header.
-  if (CheckMp3(buffer, buffer_size, false))
+  // Check if the file is in MP3 format without the ID3 header.
+  if (CheckMp3(buffer, buffer_size))
     return CONTAINER_MP3;
 
   return CONTAINER_UNKNOWN;

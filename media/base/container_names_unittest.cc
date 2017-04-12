@@ -173,7 +173,10 @@ TEST(ContainerNamesTest, FileCheckWEBM) {
 }
 
 TEST(ContainerNamesTest, FileCheckMP3) {
+  TestFile(CONTAINER_MP3, GetTestDataFilePath("bear-audio-10s-CBR-no-TOC.mp3"));
+  TestFile(CONTAINER_MP3, GetTestDataFilePath("id3_png_test.mp3"));
   TestFile(CONTAINER_MP3, GetTestDataFilePath("id3_test.mp3"));
+  TestFile(CONTAINER_MP3, GetTestDataFilePath("midstream_config_change.mp3"));
   TestFile(CONTAINER_MP3, GetTestDataFilePath("sfx.mp3"));
 }
 
