@@ -245,7 +245,7 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ContactDetails_All) {
 
   // Check that all the expected values were set.
   EXPECT_EQ("John H. Doe", response()->payer_name.value());
-  EXPECT_EQ("16502111111", response()->payer_phone.value());
+  EXPECT_EQ("+16502111111", response()->payer_phone.value());
   EXPECT_EQ("johndoe@hades.com", response()->payer_email.value());
 }
 
@@ -264,6 +264,24 @@ TEST_F(PaymentResponseHelperTest, GeneratePaymentResponse_ContactDetails_Some) {
   EXPECT_EQ("John H. Doe", response()->payer_name.value());
   EXPECT_FALSE(response()->payer_phone.has_value());
   EXPECT_FALSE(response()->payer_email.has_value());
+}
+
+// Tests the the generated PaymentResponse has the correct values for the
+// contact details when all values are requested.
+TEST_F(PaymentResponseHelperTest,
+       GeneratePaymentResponse_ContactPhoneIsFormatted) {
+  // Request one contact detail value.
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_payer_phone = true;
+  test_address()->SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                             base::UTF8ToUTF16("(515) 123-1234"));
+  RecreateSpecWithOptions(std::move(options));
+
+  PaymentResponseHelper helper("en-US", spec(), test_instrument(),
+                               test_address(), test_address(), this);
+
+  // Check that the phone was formatted.
+  EXPECT_EQ("+15151231234", response()->payer_phone.value());
 }
 
 }  // namespace payments

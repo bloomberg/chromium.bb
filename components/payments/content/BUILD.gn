@@ -26,6 +26,7 @@ static_library("content") {
     "//components/payments/core",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
+    "//third_party/libphonenumber",
   ]
 }
 

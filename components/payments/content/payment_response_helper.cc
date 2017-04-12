@@ -9,8 +9,15 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "third_party/libphonenumber/phonenumber_api.h"
 
 namespace payments {
+
+namespace {
+
+using ::i18n::phonenumbers::PhoneNumberUtil;
+
+}  // namespace
 
 PaymentResponseHelper::PaymentResponseHelper(
     const std::string& app_locale,
@@ -112,10 +119,28 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
   }
   if (spec_->request_payer_phone()) {
     DCHECK(selected_contact_profile_);
-    // TODO(crbug.com/705945): Format phone number according to spec.
-    payment_response->payer_phone =
-        base::UTF16ToUTF8(selected_contact_profile_->GetRawInfo(
-            autofill::PHONE_HOME_WHOLE_NUMBER));
+
+    // Try to format the phone number to the E.164 format to send in the Payment
+    // Response, as defined in the Payment Request spec. If it's not possible,
+    // send the original. More info at:
+    // https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm
+    // TODO(sebsg): Move this code to a reusable location.
+    const std::string original_number =
+        base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
+            autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+            app_locale_));
+    i18n::phonenumbers::PhoneNumber parsed_number;
+    PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
+    if (phone_number_util->Parse(original_number, "US", &parsed_number) ==
+        ::i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+      std::string formatted_number;
+      phone_number_util->Format(parsed_number,
+                                PhoneNumberUtil::PhoneNumberFormat::E164,
+                                &formatted_number);
+      payment_response->payer_phone = formatted_number;
+    } else {
+      payment_response->payer_phone = original_number;
+    }
   }
 
   delegate_->OnPaymentResponseReady(std::move(payment_response));

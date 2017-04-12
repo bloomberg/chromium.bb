@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
   ExpectBodyContains(std::vector<base::string16>{
       base::UTF8ToUTF16("\"payerName\": \"John H. Doe\""),
       base::UTF8ToUTF16("\"payerEmail\": \"johndoe@hades.com\""),
-      base::UTF8ToUTF16("\"payerPhone\": \"16502111111\"")});
+      base::UTF8ToUTF16("\"payerPhone\": \"+16502111111\"")});
 }
 
 class PaymentRequestPaymentResponseOneContactDetailTest
