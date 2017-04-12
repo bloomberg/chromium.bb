@@ -700,16 +700,17 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _upload_calls(cls, similarity, find_copies, private):
-    return (cls._git_base_calls(similarity, find_copies) +
+    return (cls._rietveld_git_base_calls(similarity, find_copies) +
             cls._git_upload_calls(private))
 
   @classmethod
-  def _upload_no_rev_calls(cls, similarity, find_copies):
-    return (cls._git_base_calls(similarity, find_copies) +
-            cls._git_upload_no_rev_calls())
+  def _rietveld_upload_no_rev_calls(cls, similarity, find_copies):
+    return (cls._rietveld_git_base_calls(similarity, find_copies) + [
+      ((['git', 'config', 'core.editor'],), ''),
+    ])
 
   @classmethod
-  def _git_base_calls(cls, similarity, find_copies):
+  def _rietveld_git_base_calls(cls, similarity, find_copies):
     if similarity is None:
       similarity = '50'
       similarity_call = ((['git', 'config',
@@ -766,12 +767,6 @@ class TestGitCl(TestCase):
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
       ((['git', 'config', 'rietveld.bug-prefix'],), ''),
-    ]
-
-  @classmethod
-  def _git_upload_no_rev_calls(cls):
-    return [
-      ((['git', 'config', 'core.editor'],), ''),
     ]
 
   @classmethod
@@ -976,7 +971,7 @@ class TestGitCl(TestCase):
   def test_reviewer_send_mail_no_rev(self):
     # Fails without a reviewer.
     stdout = StringIO.StringIO()
-    self.calls = self._upload_no_rev_calls(None, None) + [
+    self.calls = self._rietveld_upload_no_rev_calls(None, None) + [
         ((['DieWithError', 'Must specify reviewers to send email.'],),
           SystemExitMock())
     ]
