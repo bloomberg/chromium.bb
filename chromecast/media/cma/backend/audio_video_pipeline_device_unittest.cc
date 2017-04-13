@@ -729,7 +729,8 @@ void AudioVideoPipelineDeviceTest::Start() {
 
   backend_->Start(kStartPts);
   int64_t current_pts = backend()->GetCurrentPts();
-  EXPECT_TRUE(kStartPts || current_pts == std::numeric_limits<int64_t>::min());
+  EXPECT_TRUE(current_pts == kStartPts ||
+              current_pts == std::numeric_limits<int64_t>::min());
   last_pts_ = current_pts;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -778,7 +779,7 @@ void AudioVideoPipelineDeviceTest::OnEndOfStream() {
 
 void AudioVideoPipelineDeviceTest::MonitorLoop() {
   // Backend is stopped, no need to monitor the loop any more.
-  if (stopped_)
+  if (stopped_ || !backend_)
     return;
 
   // Run checks while playing (once).
