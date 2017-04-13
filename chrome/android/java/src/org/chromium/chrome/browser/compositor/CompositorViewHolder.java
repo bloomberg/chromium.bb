@@ -961,7 +961,7 @@ public class CompositorViewHolder extends FrameLayout
      * {@link CompositorViewHolder} so that VR can take ownership of Chrome's rendering.
      * @return The detached {@link TabModelSelector}.
      */
-    public TabModelSelector detachForVR() {
+    public TabModelSelector detachForVr() {
         if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         TabModelSelector selector = mTabModelSelector;
         mTabModelSelector = null;
@@ -976,7 +976,7 @@ public class CompositorViewHolder extends FrameLayout
      * so that it can take back ownership of Chrome's rendering.
      * @param tabModelSelector
      */
-    public void onExitVR(TabModelSelector tabModelSelector) {
+    public void onExitVr(TabModelSelector tabModelSelector) {
         getCompositorView().setVisibility(View.VISIBLE);
         attachToTabModelSelector(tabModelSelector);
     }

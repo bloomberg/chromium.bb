@@ -234,7 +234,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         enterVrTapAndWait(mWebContents);
-        assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVR());
+        assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
         endTest(mWebContents);
     }
 

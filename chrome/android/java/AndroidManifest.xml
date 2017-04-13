@@ -36,6 +36,7 @@ by a child template that "extends" this file.
     {% endif %}
     <uses-permission-sdk-m android:name="android.permission.BLUETOOTH"/>
     <uses-permission-sdk-m android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission-sdk-m android:name="android.permission.REORDER_TASKS"/>
     <uses-permission-sdk-m android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -365,41 +366,7 @@ by a child template that "extends" this file.
             {% block supports_video_persistence %}
             {% endblock %}
             >
-            <!--
-              See the VRChromeTabbedActivity alias below for an explanation of this dummy intent
-              filter. We need to add these filters here as well, or non-presenting webVR pages will
-              trigger a daydream incompatible app message.
-            -->
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.dummy.action" />
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                <category android:name="com.google.intent.category.CARDBOARD" />
-            </intent-filter>
         </activity>
-
-        {% if enable_vr == "true" %}
-        <!--
-            TODO(mthiesse): Temporarily skip ChromeLauncherActivity when returning from Daydream
-            DON flow to avoid polluting metrics.
-        -->
-        <activity-alias android:name="org.chromium.chrome.browser.VRChromeTabbedActivity"
-            android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
-            android:enableVrMode="@string/gvr_vr_mode_component">
-            <!--
-              Daydream api categorizes an activity to three categories: Cardboard only, hybrid
-              or Daydream. It does so by testing if intents can be resolved by the activity
-              that requests it.
-              In Chrome, CTA is the activity that uses Daydream api and we want to be in hybrid
-              category. So add an intent filter that could pass Daydream tests here.
-            -->
-            <intent-filter>
-                <action android:name="org.chromium.chrome.browser.dummy.action" />
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                <category android:name="com.google.intent.category.CARDBOARD" />
-            </intent-filter>
-        </activity-alias>
-        {% endif %}
-
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
              android:theme="@style/TabbedModeTheme"
              android:exported="false"

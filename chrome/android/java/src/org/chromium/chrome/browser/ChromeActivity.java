@@ -853,7 +853,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
 
         VideoPersister.getInstance().cleanup(this);
-        VrShellDelegate.maybeRegisterVREntryHook(this);
+        VrShellDelegate.maybeRegisterVrEntryHook(this);
     }
 
     @Override
@@ -869,7 +869,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
         ContentViewCore cvc = getContentViewCore();
         if (cvc != null) cvc.onPause();
-        VrShellDelegate.maybeUnregisterVREntryHook(this);
+        VrShellDelegate.maybeUnregisterVrEntryHook(this);
         markSessionEnd();
         super.onPauseWithNative();
     }
@@ -2131,15 +2131,25 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
     }
 
+    @Override
+    public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
+        if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
+        if (requestCode == VrShellDelegate.EXIT_VR_RESULT) {
+            VrShellDelegate.onExitVrResult(resultCode);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Called when VR mode is entered using this activity. 2D UI components that steal focus or
      * draw over VR contents should be hidden in this call.
      */
-    public void onEnterVR() {}
+    public void onEnterVr() {}
 
     /**
      * Called when VR mode using this activity is exited. Any state set for VR should be restored
      * in this call, including showing 2D UI that was hidden.
      */
-    public void onExitVR() {}
+    public void onExitVr() {}
 }

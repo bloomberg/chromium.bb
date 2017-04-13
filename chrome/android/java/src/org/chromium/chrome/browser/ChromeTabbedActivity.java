@@ -267,13 +267,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         @Override
         public boolean isShowingBrowserControlsEnabled() {
-            if (VrShellDelegate.isInVR()) return false;
+            if (VrShellDelegate.isInVr()) return false;
             return super.isShowingBrowserControlsEnabled();
         }
 
         @Override
         public boolean isHidingBrowserControlsEnabled() {
-            if (VrShellDelegate.isInVR()) return true;
+            if (VrShellDelegate.isInVr()) return true;
             return super.isHidingBrowserControlsEnabled();
         }
     }
@@ -444,7 +444,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @SuppressLint("NewApi")
     private boolean shouldDestroyIncognitoProfile() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
-        if (VrShellDelegate.isInVR()) return false; // VR uses an incognito profile for rendering.
+        if (VrShellDelegate.isInVr()) return false; // VR uses an incognito profile for rendering.
 
         Context context = ContextUtils.getApplicationContext();
         ActivityManager manager =
@@ -578,10 +578,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
             }
-            if (VrShellDelegate.isDaydreamVrIntent(intent)) {
-                // TODO(mthiesse): Move this into ChromeActivity. crbug.com/688611
-                VrShellDelegate.enterVRFromIntent(intent);
-            } else if (ShortcutHelper.isShowToastIntent(intent)) {
+            if (ShortcutHelper.isShowToastIntent(intent)) {
                 ShortcutHelper.showAddedToHomescreenToastFromIntent(intent);
             }
         } finally {
@@ -817,12 +814,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             mIntentWithEffect = false;
             if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null) {
-                if (VrShellDelegate.isDaydreamVrIntent(intent)) {
-                    // TODO(mthiesse): Improve startup when started from a VR intent.
-                    //     crbug.com/668541
-                    // TODO(mthiesse): Move this into ChromeActivity. crbug.com/688611
-                    VrShellDelegate.enterVRIfNecessary();
-                } else if (!mIntentHandler.shouldIgnoreIntent(intent)) {
+                if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
                 }
 
@@ -899,10 +891,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     launchFirstRunExperience();
                 }
             }
-            return true;
-        } else if (requestCode == VrShellDelegate.EXIT_VR_RESULT) {
-            // TODO(mthiesse): Move this into ChromeActivity. crbug.com/688611
-            VrShellDelegate.onExitVRResult(resultCode);
             return true;
         }
         return false;
@@ -1468,7 +1456,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
         } else if (id == R.id.enter_vr_id) {
-            VrShellDelegate.enterVRIfNecessary();
+            VrShellDelegate.enterVrIfNecessary();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -1941,14 +1929,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     @Override
-    public void onEnterVR() {
-        super.onEnterVR();
+    public void onEnterVr() {
+        super.onEnterVr();
         mControlContainer.setVisibility(View.INVISIBLE);
     }
 
     @Override
-    public void onExitVR() {
-        super.onExitVR();
+    public void onExitVr() {
+        super.onExitVr();
         mControlContainer.setVisibility(View.VISIBLE);
 
         // We prevent the incognito profile from being destroyed while in VR, so upon exiting VR we

@@ -65,13 +65,13 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         VrUtils.forceEnterVr();
         if (supported) {
             VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
-            assertTrue(VrShellDelegate.isInVR());
+            assertTrue(VrShellDelegate.isInVr());
         } else {
             assertFalse(mockApi.getLaunchInVrCalled());
-            assertFalse(VrShellDelegate.isInVR());
+            assertFalse(VrShellDelegate.isInVr());
         }
         VrUtils.forceExitVr(mDelegate);
-        assertFalse(VrShellDelegate.isInVR());
+        assertFalse(VrShellDelegate.isInVr());
     }
 
     private void enterExitVrModeImage(boolean supported) throws IOException {
@@ -117,9 +117,9 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
         VrUtils.simNfc(getActivity());
         if (supported) {
             VrUtils.waitForVrSupported(POLL_TIMEOUT_LONG_MS);
-            assertTrue(VrShellDelegate.isInVR());
+            assertTrue(VrShellDelegate.isInVr());
         } else {
-            assertFalse(VrShellDelegate.isInVR());
+            assertFalse(VrShellDelegate.isInVr());
         }
         VrUtils.forceExitVr(mDelegate);
         // TODO(bsheedy): Figure out why NFC tests cause the next test to fail
@@ -210,7 +210,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 CompositorViewHolder compositorViewHolder = (CompositorViewHolder)
                         getActivity().findViewById(R.id.compositor_view_holder);
-                selector.set(compositorViewHolder.detachForVR());
+                selector.set(compositorViewHolder.detachForVr());
                 oldWidth.set(cvc.getViewportWidthPix());
 
                 ViewGroup.LayoutParams layoutParams = compositorViewHolder.getLayoutParams();
@@ -236,7 +236,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
             public void run() {
                 CompositorViewHolder compositorViewHolder = (CompositorViewHolder) getActivity()
                         .findViewById(R.id.compositor_view_holder);
-                compositorViewHolder.onExitVR(selector.get());
+                compositorViewHolder.onExitVr(selector.get());
             }
         });
 

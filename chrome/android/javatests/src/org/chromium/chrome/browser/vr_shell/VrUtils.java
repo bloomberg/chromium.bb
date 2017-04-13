@@ -54,7 +54,7 @@ public class VrUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrShellDelegate.enterVRIfNecessary();
+                VrShellDelegate.enterVrIfNecessary();
             }
         });
     }
@@ -67,7 +67,7 @@ public class VrUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                vrDelegate.shutdownVR(false /* isPausing */, false /* showTransition */);
+                vrDelegate.shutdownVr(false /* isPausing */, false /* showTransition */);
             }
         });
     }
@@ -121,7 +121,7 @@ public class VrUtils {
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return VrShellDelegate.isInVR();
+                return VrShellDelegate.isInVr();
             }
         }), timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }

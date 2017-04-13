@@ -156,7 +156,7 @@ public class VrShellImpl
         getUiLayout().setCloseButtonListener(new Runnable() {
             @Override
             public void run() {
-                mDelegate.shutdownVR(false /* isPausing */, false /* showTransition */);
+                mDelegate.shutdownVr(false /* isPausing */, false /* showTransition */);
             }
         });
 
@@ -355,7 +355,7 @@ public class VrShellImpl
     private void swapToForegroundTab() {
         Tab tab = mActivity.getActivityTab();
         if (tab == mTab) return;
-        if (!mDelegate.canEnterVR(tab)) {
+        if (!mDelegate.canEnterVr(tab)) {
             forceExitVr();
             return;
         }
@@ -391,7 +391,7 @@ public class VrShellImpl
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
-        mDelegate.shutdownVR(false /* isPausing */, true /* showTransition */);
+        mDelegate.shutdownVr(false /* isPausing */, true /* showTransition */);
     }
 
     @CalledByNative
