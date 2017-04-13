@@ -726,6 +726,15 @@
       }
     },
     {
+      "command": "toggleBrailleTable",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 71]
+        }
+      }
+    },
+    {
       "command": "viewGraphicAsBraille",
       "sequence": {
         "cvoxModifier": true,

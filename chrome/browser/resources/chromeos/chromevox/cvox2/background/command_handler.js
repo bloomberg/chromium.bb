@@ -178,6 +178,27 @@ CommandHandler.onCommand = function(command) {
       cvox.BrailleCaptionsBackground.setActive(
           !cvox.BrailleCaptionsBackground.isEnabled());
       return false;
+    case 'toggleBrailleTable':
+      var brailleTableType = localStorage['brailleTableType'];
+      var output = '';
+      if (brailleTableType == 'brailleTable6') {
+        brailleTableType = 'brailleTable8';
+
+        // This label reads "switch to 8 dot braille".
+        output = '@OPTIONS_BRAILLE_TABLE_TYPE_6';
+      } else {
+        brailleTableType = 'brailleTable6';
+
+        // This label reads "switch to 6 dot braille".
+        output = '@OPTIONS_BRAILLE_TABLE_TYPE_8';
+      }
+
+      localStorage['brailleTable'] = localStorage[brailleTableType];
+      localStorage['brailleTableType'] = brailleTableType;
+      cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+          localStorage[brailleTableType]);
+      new Output().format(output).go();
+      return false;
     case 'toggleChromeVoxVersion':
       if (!ChromeVoxState.instance.toggleNext())
         return false;

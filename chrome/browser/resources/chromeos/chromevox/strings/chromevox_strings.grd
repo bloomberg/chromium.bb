@@ -2727,6 +2727,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Description of a command that toggles text to speech feedback on or off." name="IDS_CHROMEVOX_SPEECH_ON_OFF_DESCRIPTION">
         Toggle speech on or off
       </message>
+      <message desc="Description of a command that toggles between 6 and 8 dot braille." name="IDS_CHROMEVOX_TOGGLE_BRAILLE_TABLE">
+        Toggle between 6 and 8 dot braille
+      </message>
     </messages>
   </release>
 </grit>

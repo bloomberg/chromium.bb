@@ -192,7 +192,7 @@ cvox.BrailleTranslatorManager.prototype = {
       this.tables_ = tables;
 
       // Initial refresh; set options from user preferences.
-      this.refresh(localStorage['brailleTable'], localStorage['brailleTable8']);
+      this.refresh(localStorage['brailleTable']);
     }.bind(this));
   },
 

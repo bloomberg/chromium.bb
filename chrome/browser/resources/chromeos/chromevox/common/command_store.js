@@ -352,7 +352,12 @@ cvox.CommandStore.CMD_WHITELIST = {
   'darkenScreen': {
     msgId: 'darken_screen',
     category: 'help_commands'
-},
+  },
+
+  'toggleBrailleTable': {
+    msgId: 'toggle_braille_table',
+    category: 'help_commands'
+  },
 
   'toggleKeyboardHelp': {announce: false,
                          disallowContinuation: true,

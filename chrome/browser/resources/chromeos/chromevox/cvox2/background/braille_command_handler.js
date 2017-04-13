@@ -141,6 +141,9 @@ BrailleCommandHandler.init_ = function() {
 
   // s.
   map([2, 3, 4], 'toggleSpeechOnOrOff');
+
+  // g.
+  map([1, 2, 4, 5], 'toggleBrailleTable');
 };
 
 BrailleCommandHandler.init_();
