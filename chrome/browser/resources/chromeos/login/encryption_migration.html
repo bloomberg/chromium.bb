@@ -25,12 +25,21 @@
             String TBD.
           </div>
         </div>
-        <div class="bottom-buttons flex layout horizontal">
-          <div class="flex"></div>
-          <oobe-text-button on-tap="onSkip_">Skip</oobe-text-button>
-          <oobe-text-button inverse on-tap="onUpgrade_">Upgrade
-          </oobe-text-button>
-        </div>
+        <template is="dom-if" if="[[!isEnoughBattery]]">
+          <div class="footer flex layout vertical">
+            <div>Battery too low for update. <span>[[batteryPercent]]</span>%
+            </div>
+            <div>Please plug your Chromebook into a power source.</div>
+          </div>
+        </template>
+        <template is="dom-if" if="[[!isResuming]]">
+          <div class="bottom-buttons flex layout horizontal">
+            <div class="flex"></div>
+            <oobe-text-button on-tap="onSkip_">Skip</oobe-text-button>
+            <oobe-text-button inverse on-tap="onUpgrade_"
+                disabled="[[isMigrationAccepted]]">Upgrade</oobe-text-button>
+          </div>
+        </template>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isMigrating_(uiState)]]">

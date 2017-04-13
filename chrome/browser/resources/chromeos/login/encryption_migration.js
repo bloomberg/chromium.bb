@@ -50,6 +50,30 @@ Polymer({
       type: Boolean,
       value: false
     },
+
+    /**
+     * Battery level.
+     */
+    batteryPercent: {
+      type: Number,
+      value: 0
+    },
+
+    /**
+     * True if the battery level is enough to start migration.
+     */
+    isEnoughBattery: {
+      type: Boolean,
+      value: true
+    },
+
+    /**
+     * True if the user already accepted the migration.
+     */
+    isMigrationAccepted: {
+      type: Boolean,
+      value: false
+    },
   },
 
   /**
@@ -120,6 +144,7 @@ Polymer({
    * @private
    */
   onUpgrade_: function() {
+    this.isMigrationAccepted = true;
     this.fire('upgrade');
   },
 

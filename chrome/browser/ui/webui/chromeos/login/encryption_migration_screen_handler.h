@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
@@ -15,7 +16,8 @@ namespace chromeos {
 
 // WebUI implementation of EncryptionMigrationScreenView
 class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
-                                         public BaseScreenHandler {
+                                         public BaseScreenHandler,
+                                         public PowerManagerClient::Observer {
  public:
   EncryptionMigrationScreenHandler();
   ~EncryptionMigrationScreenHandler() override;
@@ -49,6 +51,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
 
+  // PowerManagerClient::Observer implementation:
+  void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
+
   // Handlers for JS API callbacks.
   void HandleStartMigration();
   void HandleSkipMigration();
@@ -60,6 +65,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // Requests cryptohome to start encryption migration.
   void CheckAvailableStorage();
   void OnGetAvailableStorage(int64_t size);
+  void WaitBatteryAndMigrate();
   void StartMigration();
 
   // Handlers for cryptohome API callbacks.
@@ -83,6 +89,13 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
 
   // True if the system should resume the previous incomplete migration.
   bool should_resume_ = false;
+
+  // The current battery level.
+  double current_battery_percent_ = 0.0;
+
+  // True if the migration should start immediately once the battery level gets
+  // sufficient.
+  bool should_migrate_on_enough_battery_ = false;
 
   base::WeakPtrFactory<EncryptionMigrationScreenHandler> weak_ptr_factory_;
 

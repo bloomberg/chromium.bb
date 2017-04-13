@@ -9,6 +9,7 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
       'setUIState',
       'setMigrationProgress',
       'setIsResuming',
+      'setBatteryPercent',
     ],
 
     /**
@@ -66,6 +67,17 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
      */
     setIsResuming: function(isResuming) {
       $('encryption-migration-element').isResuming = isResuming;
+    },
+
+    /**
+     * Updates battery level of the device.
+     * @param {number} batteryPercent Battery level in percent.
+     * @param {boolean} isEnoughBattery True if the battery is enough.
+     */
+    setBatteryPercent: function(batteryPercent, isEnoughBattery) {
+      $('encryption-migration-element').batteryPercent =
+          Math.floor(batteryPercent);
+      $('encryption-migration-element').isEnoughBattery = isEnoughBattery;
     },
   };
 });
