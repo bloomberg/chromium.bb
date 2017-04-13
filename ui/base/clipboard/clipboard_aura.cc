@@ -24,6 +24,7 @@
 namespace ui {
 
 namespace {
+
 const char kMimeTypeFilename[] = "chromium/filename";
 const char kMimeTypeBitmap[] = "image/bmp";
 const size_t kMaxClipboardSize = 1;
@@ -298,10 +299,7 @@ class AuraClipboard {
   // True if the data on top of the clipboard stack has format |format|.
   bool HasFormat(AuraClipboardFormat format) const {
     const ClipboardData* data = GetData();
-    if (!data)
-      return false;
-
-    return data->format() & format;
+    return data ? data->format() & format : false;
   }
 
   void AddToListEnsuringSize(std::unique_ptr<ClipboardData> data) {
@@ -325,28 +323,24 @@ class AuraClipboard {
   DISALLOW_COPY_AND_ASSIGN(AuraClipboard);
 };
 
-AuraClipboard* aura_clipboard = NULL;
+AuraClipboard* g_aura_clipboard = NULL;
 
 AuraClipboard* GetClipboard() {
-  if (!aura_clipboard)
-    aura_clipboard = new AuraClipboard();
-  return aura_clipboard;
+  if (!g_aura_clipboard)
+    g_aura_clipboard = new AuraClipboard();
+  return g_aura_clipboard;
 }
 
 void DeleteClipboard() {
-  if (aura_clipboard)
-    delete aura_clipboard;
-  aura_clipboard = NULL;
+  delete g_aura_clipboard;
+  g_aura_clipboard = NULL;
 }
 
 // Helper class to build a ClipboardData object and write it to clipboard.
 class ClipboardDataBuilder {
  public:
   static void CommitToClipboard() {
-    // Make sure there is always a valid ClipboardData object attached to
-    // current_data_.
-    GetCurrentData();
-    GetClipboard()->WriteData(std::move(current_data_));
+    GetClipboard()->WriteData(TakeCurrentData());
   }
 
   static void WriteText(const char* text_data, size_t text_len) {
@@ -397,14 +391,21 @@ class ClipboardDataBuilder {
  private:
   static ClipboardData* GetCurrentData() {
     if (!current_data_)
-      current_data_.reset(new ClipboardData);
-    return current_data_.get();
+      current_data_ = new ClipboardData;
+    return current_data_;
   }
 
-  static std::unique_ptr<ClipboardData> current_data_;
+  static std::unique_ptr<ClipboardData> TakeCurrentData() {
+    std::unique_ptr<ClipboardData> data = base::WrapUnique(GetCurrentData());
+    current_data_ = nullptr;
+    return data;
+  }
+  // This is a raw pointer instead of a std::unique_ptr to avoid adding a
+  // static initializer.
+  static ClipboardData* current_data_;
 };
 
-std::unique_ptr<ClipboardData> ClipboardDataBuilder::current_data_;
+ClipboardData* ClipboardDataBuilder::current_data_ = nullptr;
 
 }  // namespace
 
@@ -551,20 +552,16 @@ bool ClipboardAura::IsFormatAvailable(const FormatType& format,
   if (GetPlainTextFormatType().Equals(format) ||
       GetUrlFormatType().Equals(format))
     return clipboard->IsFormatAvailable(TEXT);
-  else if (GetHtmlFormatType().Equals(format))
+  if (GetHtmlFormatType().Equals(format))
     return clipboard->IsFormatAvailable(HTML);
-  else if (GetRtfFormatType().Equals(format))
+  if (GetRtfFormatType().Equals(format))
     return clipboard->IsFormatAvailable(RTF);
-  else if (GetBitmapFormatType().Equals(format))
+  if (GetBitmapFormatType().Equals(format))
     return clipboard->IsFormatAvailable(BITMAP);
-  else if (GetWebKitSmartPasteFormatType().Equals(format))
+  if (GetWebKitSmartPasteFormatType().Equals(format))
     return clipboard->IsFormatAvailable(WEB);
-  else {
-    const ClipboardData* data = clipboard->GetData();
-    if (data && data->custom_data_format() == format.ToString())
-      return true;
-  }
-  return false;
+  const ClipboardData* data = clipboard->GetData();
+  return data && data->custom_data_format() == format.ToString();
 }
 
 void ClipboardAura::Clear(ClipboardType type) {
