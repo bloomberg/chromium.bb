@@ -36,13 +36,13 @@ class DataStoreImpl : public DataStore {
 
   Status Delete(base::StringPiece key) override;
 
+  // Deletes the LevelDB and recreates it. This method is called if any DB call
+  // returns a |CORRUPTED| status or the database is cleared.
+  Status RecreateDB() override;
+
  private:
   // Opens the underlying LevelDB for read and write.
   Status OpenDB();
-
-  // Deletes the LevelDB and recreates it. This method is called if any DB call
-  // returns a |CORRUPTED| status.
-  void RecreateDB();
 
   // The underlying LevelDB used by this implementation.
   std::unique_ptr<leveldb::DB> db_;

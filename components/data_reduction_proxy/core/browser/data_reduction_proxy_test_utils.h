@@ -261,6 +261,8 @@ class TestDataStore : public data_reduction_proxy::DataStore {
 
   DataStore::Status Delete(base::StringPiece key) override;
 
+  DataStore::Status RecreateDB() override;
+
   std::map<std::string, std::string>* map() { return &map_; }
 
  private:

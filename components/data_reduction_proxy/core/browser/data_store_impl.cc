@@ -117,7 +117,9 @@ DataStore::Status DataStoreImpl::OpenDB() {
   leveldb::Options options;
   options.create_if_missing = true;
   options.paranoid_checks = true;
-  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  // Deletes to buckets not found are stored in the log. Use a new log so that
+  // these log entries are deleted.
+  options.reuse_logs = false;
   std::string db_name = profile_path_.Append(kDBName).AsUTF8Unsafe();
   leveldb::DB* dbptr = nullptr;
   Status status =
@@ -144,14 +146,13 @@ DataStore::Status DataStoreImpl::OpenDB() {
   return status;
 }
 
-void DataStoreImpl::RecreateDB() {
+DataStore::Status DataStoreImpl::RecreateDB() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  LOG(WARNING) << "Deleting corrupt Data Reduction Proxy LevelDB";
   db_.reset(nullptr);
   base::DeleteFile(profile_path_.Append(kDBName), true);
 
-  OpenDB();
+  return OpenDB();
 }
 
 }  // namespace data_reduction_proxy

@@ -152,10 +152,16 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
 }
 
 void DataUsageStore::DeleteHistoricalDataUsage() {
-  for (int i = 0; i < kNumDataUsageBuckets; ++i)
-    db_->Delete(DbKeyForBucketIndex(i));
+  std::string current_index_string;
+  DataStore::Status index_read_status =
+      db_->Get(kCurrentBucketIndexKey, &current_index_string);
 
-  db_->Delete(kCurrentBucketIndexKey);
+  // If the index doesn't exist, then no buckets have been written and the
+  // data usage doesn't need to be deleted.
+  if (index_read_status != DataStore::Status::OK)
+    return;
+
+  db_->RecreateDB();
 }
 
 void DataUsageStore::DeleteBrowsingHistory(const base::Time& start,

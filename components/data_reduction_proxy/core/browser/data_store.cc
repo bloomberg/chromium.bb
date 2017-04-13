@@ -28,4 +28,8 @@ DataStore::Status DataStore::Delete(base::StringPiece key) {
   return DataStore::Status::OK;
 }
 
+DataStore::Status DataStore::RecreateDB() {
+  return DataStore::Status::OK;
+}
+
 }  // namespace data_reduction_proxy

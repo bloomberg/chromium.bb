@@ -36,6 +36,9 @@ class DataStore {
 
   virtual Status Delete(base::StringPiece key);
 
+  // Deletes the LevelDB and recreates it.
+  virtual Status RecreateDB();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DataStore);
 };

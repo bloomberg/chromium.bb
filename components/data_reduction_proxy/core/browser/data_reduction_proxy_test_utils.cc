@@ -287,6 +287,12 @@ DataStore::Status TestDataStore::Delete(base::StringPiece key) {
   return OK;
 }
 
+DataStore::Status TestDataStore::RecreateDB() {
+  map_.clear();
+
+  return OK;
+}
+
 DataReductionProxyTestContext::Builder::Builder()
     : params_flags_(DataReductionProxyParams::kPromoAllowed),
       params_definitions_(TestDataReductionProxyParams::HAS_EVERYTHING),
