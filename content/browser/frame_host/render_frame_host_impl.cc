@@ -108,6 +108,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -1911,6 +1912,12 @@ void RenderFrameHostImpl::DisableBeforeUnloadHangMonitorForTesting() {
 
 bool RenderFrameHostImpl::IsBeforeUnloadHangMonitorDisabledForTesting() {
   return !beforeunload_timeout_;
+}
+
+bool RenderFrameHostImpl::IsFeatureEnabled(
+    blink::WebFeaturePolicyFeature feature) {
+  return feature_policy_ && feature_policy_->IsFeatureEnabledForOrigin(
+                                feature, GetLastCommittedOrigin());
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {

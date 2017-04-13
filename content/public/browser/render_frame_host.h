@@ -20,6 +20,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace blink {
+enum class WebFeaturePolicyFeature;
+}
+
 namespace base {
 class Value;
 }
@@ -246,6 +250,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // timeout skips the dialog.
   virtual void DisableBeforeUnloadHangMonitorForTesting() = 0;
   virtual bool IsBeforeUnloadHangMonitorDisabledForTesting() = 0;
+
+  virtual bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) = 0;
 
  private:
   // This interface should only be implemented inside content.

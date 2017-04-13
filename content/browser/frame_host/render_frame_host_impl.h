@@ -189,6 +189,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ResumeBlockedRequestsForFrame() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
+  bool IsFeatureEnabled(blink::WebFeaturePolicyFeature feature) override;
 
   // mojom::FrameHost
   void GetInterfaceProvider(
