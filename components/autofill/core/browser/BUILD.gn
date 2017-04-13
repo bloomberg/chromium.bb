@@ -183,6 +183,12 @@ static_library("browser") {
     ]
   }
 
+  if (!is_android) {
+    sources += [
+      "ui/save_card_bubble_controller.h",
+    ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
@@ -251,6 +257,13 @@ static_library("test_support") {
     "test_personal_data_manager.cc",
     "test_personal_data_manager.h",
   ]
+
+  if (!is_android) {
+    sources += [
+      "ui/mock_save_card_bubble_controller.cc",
+      "ui/mock_save_card_bubble_controller.h",
+    ]
+  }
 
   public_deps = [
     ":browser",

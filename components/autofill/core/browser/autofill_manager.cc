@@ -51,6 +51,7 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -242,6 +243,7 @@ AutofillManager::AutofillManager(
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
       user_did_accept_upload_prompt_(false),
+      should_cvc_be_requested_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -1044,13 +1046,16 @@ void AutofillManager::OnDidGetUploadDetails(
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message),
+        should_cvc_be_requested_,
         base::Bind(&AutofillManager::OnUserDidAcceptUpload,
                    weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
-    AutofillMetrics::LogCardUploadDecisionMetric(
-        AutofillMetrics::UPLOAD_OFFERED);
-    LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+    AutofillMetrics::CardUploadDecisionMetric card_upload_decision_metric =
+        should_cvc_be_requested_ ? AutofillMetrics::UPLOAD_OFFERED_NO_CVC
+                                 : AutofillMetrics::UPLOAD_OFFERED;
+    AutofillMetrics::LogCardUploadDecisionMetric(card_upload_decision_metric);
+    LogCardUploadDecisionUkm(card_upload_decision_metric);
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -1110,6 +1115,13 @@ void AutofillManager::OnUserDidAcceptUpload() {
   user_did_accept_upload_prompt_ = true;
   if (!upload_request_.risk_data.empty()) {
     upload_request_.app_locale = app_locale_;
+    // If the upload request does not have card CVC, populate it with the
+    // value provided by the user:
+    if (upload_request_.cvc.empty()) {
+      DCHECK(client_->GetSaveCardBubbleController());
+      upload_request_.cvc =
+          client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
+    }
     payments_client_->UploadCard(upload_request_);
   }
 }
@@ -1118,6 +1130,13 @@ void AutofillManager::OnDidGetUploadRiskData(const std::string& risk_data) {
   upload_request_.risk_data = risk_data;
   if (user_did_accept_upload_prompt_) {
     upload_request_.app_locale = app_locale_;
+    // If the upload request does not have card CVC, populate it with the
+    // value provided by the user:
+    if (upload_request_.cvc.empty()) {
+      DCHECK(client_->GetSaveCardBubbleController());
+      upload_request_.cvc =
+          client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
+    }
     payments_client_->UploadCard(upload_request_);
   }
 }
@@ -1210,9 +1229,11 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     // because if only one of the two is missing, it may be fixable.
 
     // Check for a CVC to determine whether we can prompt the user to upload
-    // their card. If no CVC is present, do nothing. We could fall back to a
-    // local save but we believe that sometimes offering upload and sometimes
-    // offering local save is a confusing user experience.
+    // their card. If no CVC is present and the experiment is off, do nothing.
+    // We could fall back to a local save but we believe that sometimes offering
+    // upload and sometimes offering local save is a confusing user experience.
+    // If no CVC and the experiment is on, request CVC from the user in the
+    // bubble and save using the provided value.
     for (const auto& field : submitted_form) {
       if (field->Type().GetStorableType() == CREDIT_CARD_VERIFICATION_CODE &&
           IsValidCreditCardSecurityCode(field->value,
@@ -1237,14 +1258,19 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 
     // Both the CVC and address checks are done.  Conform to the legacy order of
     // reporting on CVC then address.
+    should_cvc_be_requested_ = false;
     if (upload_request_.cvc.empty()) {
-      AutofillMetrics::LogCardUploadDecisionMetric(
-          AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
-      LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
-      pending_upload_request_url_ = GURL();
-      CollectRapportSample(submitted_form.source_url(),
-                           "Autofill.CardUploadNotOfferedNoCvc");
-      return;
+      if (IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled()) {
+        should_cvc_be_requested_ = true;
+      } else {
+        AutofillMetrics::LogCardUploadDecisionMetric(
+            AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+        LogCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+        pending_upload_request_url_ = GURL();
+        CollectRapportSample(submitted_form.source_url(),
+                             "Autofill.CardUploadNotOfferedNoCvc");
+        return;
+      }
     }
     if (!get_profiles_succeeded) {
       DCHECK(get_profiles_decision_metric != AutofillMetrics::UPLOAD_OFFERED);

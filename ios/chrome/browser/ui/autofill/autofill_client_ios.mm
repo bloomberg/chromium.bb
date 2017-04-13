@@ -84,6 +84,10 @@ ukm::UkmService* AutofillClientIOS::GetUkmService() {
   return GetApplicationContext()->GetUkmService();
 }
 
+SaveCardBubbleController* AutofillClientIOS::GetSaveCardBubbleController() {
+  return nullptr;
+}
+
 void AutofillClientIOS::ShowAutofillSettings() {
   NOTREACHED();
 }
@@ -120,6 +124,7 @@ void AutofillClientIOS::ConfirmSaveCreditCardLocally(
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
+    bool should_cvc_be_requested,
     const base::Closure& callback) {
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       base::MakeUnique<AutofillSaveCardInfoBarDelegateMobile>(

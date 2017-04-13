@@ -2484,6 +2484,11 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::kAutofillCreditCardLastUsedDateDisplay,
          kAutofillCreditCardLastUsedDateFeatureVariations,
          "AutofillCreditCardLastUsedDate")},
+    {"enable-autofill-credit-card-upload-cvc-prompt",
+     flag_descriptions::kEnableAutofillCreditCardUploadCvcPrompt,
+     flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamRequestCvcIfMissing)},
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",
      flag_descriptions::kWindows10CustomTitlebarName,

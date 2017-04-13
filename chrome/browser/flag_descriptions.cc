@@ -2453,6 +2453,13 @@ const char kEnableAutofillCreditCardLastUsedDateDisplay[] =
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
+const char kEnableAutofillCreditCardUploadCvcPrompt[] =
+    "Enable requesting missing CVC during Autofill credit card upload";
+
+const char kEnableAutofillCreditCardUploadCvcPromptDescription[] =
+    "If enabled, requests missing CVC when offering to upload credit cards to "
+    "Google Payments.";
+
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
 
 const char kGoogleBrandedContextMenuName[] =

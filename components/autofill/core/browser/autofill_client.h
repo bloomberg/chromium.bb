@@ -49,6 +49,7 @@ class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
 class PersonalDataManager;
+class SaveCardBubbleController;
 struct Suggestion;
 
 // A client interface that needs to be supplied to the Autofill component by the
@@ -110,8 +111,12 @@ class AutofillClient : public RiskDataLoader {
   // Gets the RapporServiceImpl associated with the client (for metrics).
   virtual rappor::RapporServiceImpl* GetRapporServiceImpl() = 0;
 
-  // Gets the UKM service assiciated with this client (for metrics).
+  // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmService* GetUkmService() = 0;
+
+  // Gets the SaveCardBubbleController instance associated with the client.
+  // May return nullptr if the save card bubble has not been shown yet.
+  virtual SaveCardBubbleController* GetSaveCardBubbleController() = 0;
 
   // Causes the Autofill settings UI to be shown.
   virtual void ShowAutofillSettings() = 0;
@@ -129,10 +134,12 @@ class AutofillClient : public RiskDataLoader {
                                             const base::Closure& callback) = 0;
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
-  // contents of |legal_message| to the user.
+  // contents of |legal_message| to the user. Display a CVC field in the bubble
+  // if |should_cvc_be_requested| is true.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
+      bool should_cvc_be_requested,
       const base::Closure& callback) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.

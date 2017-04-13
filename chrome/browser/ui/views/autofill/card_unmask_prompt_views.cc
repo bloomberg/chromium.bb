@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
@@ -436,12 +437,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       input_row_->child_at(i)->SetVisible(false);
   }
 
-  cvc_input_ = new views::Textfield();
-  cvc_input_->set_placeholder_text(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
+  cvc_input_ = CreateCvcTextfield();
   cvc_input_->set_controller(this);
-  cvc_input_->set_default_width_in_chars(8);
-  cvc_input_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
   input_row_->AddChildView(cvc_input_);
 
   views::ImageView* cvc_image = new views::ImageView();

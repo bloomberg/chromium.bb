@@ -87,6 +87,11 @@ ukm::UkmService* AwAutofillClient::GetUkmService() {
   return nullptr;
 }
 
+autofill::SaveCardBubbleController*
+AwAutofillClient::GetSaveCardBubbleController() {
+  return nullptr;
+}
+
 autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
   return nullptr;
 }
@@ -251,6 +256,7 @@ void AwAutofillClient::ConfirmSaveCreditCardLocally(
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
+    bool should_cvc_be_requested,
     const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

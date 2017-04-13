@@ -29,6 +29,7 @@ extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillUkmLogging;
+extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 extern const char kAutofillCreditCardPopupSettingsSuggestionValueKey[];
 extern const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[];
@@ -103,6 +104,10 @@ unsigned int GetPopupMargin();
 
 // Returns whether the feature to log UKMs is enabled.
 bool IsUkmLoggingEnabled();
+
+// Returns whether the experiment is enabled where Chrome Upstream requests CVC
+// in the offer to save bubble if it was not detected during the checkout flow.
+bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled();
 
 }  // namespace autofill
 

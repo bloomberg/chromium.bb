@@ -69,7 +69,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     return new SaveCardBubbleTestBrowserWindow();
   }
 
-  void SetLegalMessage(const std::string& message_json) {
+  void SetLegalMessage(const std::string& message_json,
+                       bool should_cvc_be_requested = false) {
     std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
@@ -77,6 +78,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     std::unique_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
     controller()->ShowBubbleForUpload(CreditCard(), std::move(legal_message),
+                                      should_cvc_be_requested,
                                       base::Bind(&SaveCardCallback));
   }
 
@@ -85,13 +87,14 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
                                          base::Bind(&SaveCardCallback));
   }
 
-  void ShowUploadBubble() {
+  void ShowUploadBubble(bool should_cvc_be_requested = false) {
     SetLegalMessage(
         "{"
         "  \"line\" : [ {"
         "     \"template\": \"This is the entire message.\""
         "  } ]"
-        "}");
+        "}",
+        should_cvc_be_requested);
   }
 
   void CloseAndReshowBubble() {
@@ -140,6 +143,18 @@ TEST_F(SaveCardBubbleControllerImplTest, LegalMessageLinesEmptyOnLocalSave) {
   EXPECT_TRUE(controller()->GetLegalMessageLines().empty());
 }
 
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestCvcFromUserWhenFalse) {
+  ShowUploadBubble();
+  EXPECT_FALSE(controller()->ShouldRequestCvcFromUser());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestCvcFromUserWhenTrue) {
+  ShowUploadBubble(true /* should_cvc_be_requested */);
+  EXPECT_TRUE(controller()->ShouldRequestCvcFromUser());
+}
+
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_ShowBubble) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
@@ -164,9 +179,22 @@ TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_ShowBubble) {
                   Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, Metrics_Upload_FirstShow_ShowBubble) {
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Upload_FirstShow_ShowBubble_NotRequestCvc) {
   base::HistogramTester histogram_tester;
   ShowUploadBubble();
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.SaveCreditCardPrompt.Upload.FirstShow"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       Metrics_Upload_FirstShow_ShowBubble_RequestCvc) {
+  base::HistogramTester histogram_tester;
+  ShowUploadBubble(true /* should_cvc_be_requested */);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(

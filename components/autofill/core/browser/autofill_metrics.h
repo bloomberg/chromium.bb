@@ -124,6 +124,9 @@ class AutofillMetrics {
     // were otherwise valid nor whether we would have been able to get upload
     // details.
     UPLOAD_NOT_OFFERED_CONFLICTING_NAMES,
+    // No CVC was detected, but valid addresses and names were.  Upload is still
+    // possible if the user manually enters CVC, so upload was offered.
+    UPLOAD_OFFERED_NO_CVC,
     NUM_CARD_UPLOAD_DECISION_METRICS,
   };
 

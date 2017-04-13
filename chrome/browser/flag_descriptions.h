@@ -2664,6 +2664,14 @@ extern const char kEnableAutofillCreditCardLastUsedDateDisplay[];
 // card in autofill.
 extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 
+// Name for the flag to enable requesting CVC in the credit card upload "offer
+// to save" bubble if it was not already detected in the submitted form.
+extern const char kEnableAutofillCreditCardUploadCvcPrompt[];
+
+// Description for the flag to enable requesting CVC in the credit card upload
+// offer to save bubble if it was not detected during the checkout flow.
+extern const char kEnableAutofillCreditCardUploadCvcPromptDescription[];
+
 #if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
 
 // Name for the flag to enable Google branding in the context menu.

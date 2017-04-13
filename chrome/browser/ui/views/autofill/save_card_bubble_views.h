@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_SAVE_CARD_BUBBLE_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace content {
 class WebContents;
@@ -19,6 +20,7 @@ class WebContents;
 namespace views {
 class Link;
 class StyledLabel;
+class Textfield;
 }
 
 namespace autofill {
@@ -29,7 +31,8 @@ namespace autofill {
 class SaveCardBubbleViews : public SaveCardBubbleView,
                             public LocationBarBubbleDelegateView,
                             public views::LinkListener,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::TextfieldController {
  public:
   // Bubble will be anchored to |anchor_view|.
   SaveCardBubbleViews(views::View* anchor_view,
@@ -49,6 +52,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldDefaultButtonBeBlue() const override;
 
   // views::View
@@ -66,15 +70,22 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
                               const gfx::Range& range,
                               int event_flags) override;
 
+  // views::TextfieldController
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+
  private:
   ~SaveCardBubbleViews() override;
 
   std::unique_ptr<views::View> CreateMainContentView();
+  std::unique_ptr<views::View> CreateRequestCvcView();
 
   // views::BubbleDialogDelegateView
   void Init() override;
 
   SaveCardBubbleController* controller_;  // Weak reference.
+
+  views::Textfield* cvc_textfield_;
 
   views::Link* learn_more_link_;
 

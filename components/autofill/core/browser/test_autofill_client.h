@@ -36,6 +36,7 @@ class TestAutofillClient : public AutofillClient {
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporServiceImpl* GetRapporServiceImpl() override;
   ukm::UkmService* GetUkmService() override;
+  SaveCardBubbleController* GetSaveCardBubbleController() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
@@ -46,6 +47,7 @@ class TestAutofillClient : public AutofillClient {
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
+      bool should_cvc_be_requested,
       const base::Closure& callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    const base::Closure& callback) override;
@@ -97,6 +99,9 @@ class TestAutofillClient : public AutofillClient {
   std::unique_ptr<FakeIdentityProvider> identity_provider_;
   std::unique_ptr<rappor::TestRapporServiceImpl> rappor_service_;
   ukm::UkmServiceTestingHarness ukm_service_test_harness_;
+#if !defined(OS_ANDROID)
+  std::unique_ptr<SaveCardBubbleController> save_card_bubble_controller_;
+#endif
   GURL form_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);

@@ -8,9 +8,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
+#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -21,14 +22,16 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
 namespace {
 
-// Fixed width of the bubble.
+// Fixed width of the bubble, in dip.
 const int kBubbleWidth = 395;
 
 std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
@@ -50,6 +53,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          SaveCardBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
+      cvc_textfield_(nullptr),
       learn_more_link_(nullptr) {
   DCHECK(controller);
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -92,7 +96,8 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 
 bool SaveCardBubbleViews::Accept() {
   if (controller_)
-    controller_->OnSaveButton();
+    controller_->OnSaveButton(cvc_textfield_ ? cvc_textfield_->text()
+                                             : base::string16());
   return true;
 }
 
@@ -200,6 +205,10 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 
+  // Optionally add CVC request field if CVC was missing.
+  if (controller_->ShouldRequestCvcFromUser())
+    view->AddChildView(CreateRequestCvcView().release());
+
   // Optionally add label that will contain an explanation for upload.
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
@@ -210,6 +219,42 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   }
 
   return view;
+}
+
+std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
+  std::unique_ptr<View> request_cvc_view = base::MakeUnique<views::View>();
+  request_cvc_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, views::kRelatedButtonHSpacing));
+
+  DCHECK(!cvc_textfield_);
+  cvc_textfield_ = CreateCvcTextfield();
+  cvc_textfield_->set_controller(this);
+  request_cvc_view->AddChildView(cvc_textfield_);
+
+  views::ImageView* cvc_image = new views::ImageView();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  cvc_image->SetImage(
+      rb.GetImageSkiaNamed(controller_->GetCvcImageResourceId()));
+  request_cvc_view->AddChildView(cvc_image);
+
+  request_cvc_view->AddChildView(new views::Label(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC)));
+  return request_cvc_view;
+}
+
+bool SaveCardBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    return true;
+
+  DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
+  return !cvc_textfield_ ||
+         controller_->InputCvcIsValid(cvc_textfield_->text());
+}
+
+void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
+                                          const base::string16& new_contents) {
+  DCHECK_EQ(cvc_textfield_, sender);
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 void SaveCardBubbleViews::Init() {

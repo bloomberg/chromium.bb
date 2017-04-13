@@ -34,6 +34,8 @@ const base::Feature kAutofillCreditCardLastUsedDateDisplay{
     "AutofillCreditCardLastUsedDateDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUkmLogging{"AutofillUkmLogging",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamRequestCvcIfMissing{
+    "AutofillUpstreamRequestCvcIfMissing", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
 const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
@@ -227,6 +229,14 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 
 bool IsUkmLoggingEnabled() {
   return base::FeatureList::IsEnabled(kAutofillUkmLogging);
+}
+
+bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kAutofillUpstreamRequestCvcIfMissing);
+#endif
 }
 
 }  // namespace autofill

@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,6 +49,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
     const base::Closure& save_card_callback) {
   is_uploading_ = false;
   is_reshow_ = false;
+  should_cvc_be_requested_ = false;
   legal_message_lines_.clear();
 
   AutofillMetrics::LogSaveCardPromptMetric(
@@ -61,9 +64,11 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
 void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
+    bool should_cvc_be_requested,
     const base::Closure& save_card_callback) {
   is_uploading_ = true;
   is_reshow_ = false;
+  should_cvc_be_requested_ = should_cvc_be_requested;
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
       is_reshow_);
@@ -121,7 +126,28 @@ const CreditCard SaveCardBubbleControllerImpl::GetCard() const {
   return card_;
 }
 
-void SaveCardBubbleControllerImpl::OnSaveButton() {
+int SaveCardBubbleControllerImpl::GetCvcImageResourceId() const {
+  return card_.type() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
+                                              : IDR_CREDIT_CARD_CVC_HINT;
+}
+
+bool SaveCardBubbleControllerImpl::ShouldRequestCvcFromUser() const {
+  return should_cvc_be_requested_;
+}
+
+base::string16 SaveCardBubbleControllerImpl::GetCvcEnteredByUser() const {
+  DCHECK(!cvc_entered_by_user_.empty());
+  return cvc_entered_by_user_;
+}
+
+void SaveCardBubbleControllerImpl::OnSaveButton(const base::string16& cvc) {
+  if (!cvc.empty()) {
+    // Record the CVC entered by the user so it can be sent in the final
+    // request.
+    DCHECK(ShouldRequestCvcFromUser());
+    DCHECK(InputCvcIsValid(cvc));
+    base::TrimWhitespace(cvc, base::TRIM_ALL, &cvc_entered_by_user_);
+  }
   save_card_callback_.Run();
   save_card_callback_.Reset();
   AutofillMetrics::LogSaveCardPromptMetric(
@@ -157,6 +183,13 @@ void SaveCardBubbleControllerImpl::OnBubbleClosed() {
 const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()
     const {
   return legal_message_lines_;
+}
+
+bool SaveCardBubbleControllerImpl::InputCvcIsValid(
+    const base::string16& input_text) const {
+  base::string16 trimmed_text;
+  base::TrimWhitespace(input_text, base::TRIM_ALL, &trimmed_text);
+  return IsValidCreditCardSecurityCode(trimmed_text, card_.type());
 }
 
 base::TimeDelta SaveCardBubbleControllerImpl::Elapsed() const {

@@ -1032,6 +1032,11 @@ class AutofillManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUkmLogging);
   }
 
+  void EnableAutofillUpstreamRequestCvcIfMissingExperimentAndUkmLogging() {
+    scoped_feature_list_.InitWithFeatures(
+        {kAutofillUpstreamRequestCvcIfMissing, kAutofillUkmLogging}, {});
+  }
+
   void ExpectUniqueFillableFormParsedUkm() {
     ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
 
@@ -4838,6 +4843,145 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+}
+
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_UploadCreditCard_NoCvcFieldOnForm \
+  DISABLED_UploadCreditCard_NoCvcFieldOnForm
+#else
+#define MAYBE_UploadCreditCard_NoCvcFieldOnForm \
+  UploadCreditCard_NoCvcFieldOnForm
+#endif
+TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoCvcFieldOnForm) {
+  EnableAutofillUpstreamRequestCvcIfMissingExperimentAndUkmLogging();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
+  // Remove the profiles that were created in the TestPersonalDataManager
+  // constructor because they would result in conflicting names that would
+  // prevent the upload.
+  personal_data_.ClearAutofillProfiles();
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.  Note that CVC field is missing.
+  FormData credit_card_form;
+  credit_card_form.name = ASCIIToUTF16("MyForm");
+  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Month", "ccmonth", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Year", "ccyear", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+
+  base::HistogramTester histogram_tester;
+
+  // Upload should still happen as long as the user provides CVC in the bubble.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
+                                      AutofillMetrics::UPLOAD_OFFERED_NO_CVC,
+                                      1);
+  // Verify that the correct UKM was logged.
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED_NO_CVC);
+}
+
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_UploadCreditCard_NoCvcFieldOnFormExperimentOff \
+  DISABLED_UploadCreditCard_NoCvcFieldOnFormExperimentOff
+#else
+#define MAYBE_UploadCreditCard_NoCvcFieldOnFormExperimentOff \
+  UploadCreditCard_NoCvcFieldOnFormExperimentOff
+#endif
+TEST_F(AutofillManagerTest,
+       MAYBE_UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
+  EnableUkmLogging();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+
+  // Remove the profiles that were created in the TestPersonalDataManager
+  // constructor because they would result in conflicting names that would
+  // prevent the upload.
+  personal_data_.ClearAutofillProfiles();
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.  Note that CVC field is missing.
+  FormData credit_card_form;
+  credit_card_form.name = ASCIIToUTF16("MyForm");
+  credit_card_form.origin = GURL("https://myform.com/form.html");
+  credit_card_form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Card Name", "cardname", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Month", "ccmonth", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+  test::CreateTestFormField("Expiration Year", "ccyear", "", "text", &field);
+  credit_card_form.fields.push_back(field);
+
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+
+  base::HistogramTester histogram_tester;
+
+  // Neither a local save nor an upload should happen in this case.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+
+  // Verify that the correct histogram entry (and only that) was logged.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.CardUploadDecisionExpanded",
+      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
+  // Verify that the correct UKM was logged.
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+
+  rappor::TestRapporServiceImpl* rappor_service =
+      autofill_client_.test_rappor_service();
+  EXPECT_EQ(1, rappor_service->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_service->GetRecordedSampleForMetric(
+      "Autofill.CardUploadNotOfferedNoCvc", &sample, &type));
+  EXPECT_EQ("myform.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.

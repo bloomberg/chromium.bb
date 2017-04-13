@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -32,8 +32,11 @@ class SaveCardBubbleControllerImpl
   // Sets up the controller for upload and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed. The contents of |legal_message| will be displayed in the bubble.
+  // A field requesting CVC will appear in the bubble if
+  // |should_cvc_be_requested| is true.
   void ShowBubbleForUpload(const CreditCard& card,
                            std::unique_ptr<base::DictionaryValue> legal_message,
+                           bool should_cvc_be_requested,
                            const base::Closure& save_card_callback);
 
   void HideBubble();
@@ -49,13 +52,21 @@ class SaveCardBubbleControllerImpl
   base::string16 GetWindowTitle() const override;
   base::string16 GetExplanatoryMessage() const override;
   const CreditCard GetCard() const override;
-  void OnSaveButton() override;
+  int GetCvcImageResourceId() const override;
+  bool ShouldRequestCvcFromUser() const override;
+  base::string16 GetCvcEnteredByUser() const override;
+  void OnSaveButton(const base::string16& cvc = base::string16()) override;
   void OnCancelButton() override;
   void OnLearnMoreClicked() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnBubbleClosed() override;
 
   const LegalMessageLines& GetLegalMessageLines() const override;
+
+  // Used to check if an entered CVC value is a valid CVC for the current card.
+  // Valid CVCs are a certain length for their card type (4 for AMEX, 3
+  // otherwise) and are comprised only of numbers.
+  bool InputCvcIsValid(const base::string16& input_text) const override;
 
  protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
@@ -88,10 +99,16 @@ class SaveCardBubbleControllerImpl
   base::Closure save_card_callback_;
 
   // Governs whether the upload or local save version of the UI should be shown.
-  bool is_uploading_;
+  bool is_uploading_{false};
 
   // Whether ReshowBubble() has been called since ShowBubbleFor*() was called.
-  bool is_reshow_;
+  bool is_reshow_{false};
+
+  // Whether the upload save version of the UI should ask the user for CVC.
+  bool should_cvc_be_requested_{false};
+
+  // The value of the CVC entered by the user (if it was requested).
+  base::string16 cvc_entered_by_user_;
 
   // Contains the details of the card that will be saved if the user accepts.
   CreditCard card_;

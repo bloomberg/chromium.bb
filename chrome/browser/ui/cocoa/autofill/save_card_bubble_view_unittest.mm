@@ -8,11 +8,12 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -33,17 +34,16 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
   }
 
   // SaveCardBubbleController:
-  base::string16 GetWindowTitle() const override { return base::string16(); }
+  MOCK_CONST_METHOD0(GetWindowTitle, base::string16());
+  MOCK_CONST_METHOD0(GetExplanatoryMessage, base::string16());
+  MOCK_CONST_METHOD0(GetCard, const CreditCard());
+  MOCK_CONST_METHOD0(GetCvcImageResourceId, int());
+  MOCK_CONST_METHOD0(ShouldRequestCvcFromUser, bool());
+  MOCK_CONST_METHOD0(GetCvcEnteredByUser, base::string16());
 
-  base::string16 GetExplanatoryMessage() const override {
-    return base::string16();
+  void OnSaveButton(const base::string16& cvc) override {
+    on_save_button_was_called_ = true;
   }
-
-  const CreditCard GetCard() const override {
-    return CreditCard();
-  }
-
-  void OnSaveButton() override { on_save_button_was_called_ = true; }
   void OnCancelButton() override { on_cancel_button_was_called_ = true; }
   void OnLearnMoreClicked() override { on_learn_more_was_called_ = true; }
   void OnLegalMessageLinkClicked(const GURL& url) override {
@@ -55,6 +55,8 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
   const LegalMessageLines& GetLegalMessageLines() const override {
     return lines_;
   }
+
+  MOCK_CONST_METHOD1(InputCvcIsValid, bool(const base::string16& input_text));
 
   // Testing state.
   bool on_save_button_was_called() { return on_save_button_was_called_; }

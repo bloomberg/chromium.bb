@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/test_autofill_client.h"
+#if !defined(OS_ANDROID)
+#include "components/autofill/core/browser/ui/mock_save_card_bubble_controller.h"
+#endif
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
@@ -12,6 +15,9 @@ TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
       identity_provider_(new FakeIdentityProvider(token_service_.get())),
       rappor_service_(new rappor::TestRapporServiceImpl()),
+#if !defined(OS_ANDROID)
+      save_card_bubble_controller_(new MockSaveCardBubbleController()),
+#endif
       form_origin_(GURL("https://example.test")) {}
 
 TestAutofillClient::~TestAutofillClient() {
@@ -45,6 +51,14 @@ ukm::UkmService* TestAutofillClient::GetUkmService() {
   return ukm_service_test_harness_.test_ukm_service();
 }
 
+SaveCardBubbleController* TestAutofillClient::GetSaveCardBubbleController() {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  return save_card_bubble_controller_.get();
+#endif
+}
+
 void TestAutofillClient::ShowAutofillSettings() {
 }
 
@@ -65,6 +79,7 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
+    bool should_cvc_be_requested,
     const base::Closure& callback) {
   callback.Run();
 }
