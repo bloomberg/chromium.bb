@@ -152,7 +152,7 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // Helper for RunUpdate() that determines its parameters.
   void PostRunUpdate();
 
-  // Called on a timer to invoke RunUpdateJumpListUserVisiblePriority() after
+  // Called on a timer to invoke RunUpdateJumpList() after
   // requests storms have subsided.
   void DeferredRunUpdate();
 
