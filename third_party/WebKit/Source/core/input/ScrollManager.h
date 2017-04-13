@@ -111,6 +111,9 @@ class CORE_EXPORT ScrollManager
   void RecomputeScrollChain(const Node& start_node,
                             std::deque<int>& scroll_chain);
 
+  uint32_t ComputeNonCompositedMainThreadScrollingReasons();
+  void RecordNonCompositedMainThreadScrollingReasons(const WebGestureDevice);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
