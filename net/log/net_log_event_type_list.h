@@ -2232,6 +2232,9 @@ EVENT_TYPE(SERVICE_WORKER_FETCH_EVENT)
 // }
 EVENT_TYPE(SERVICE_WORKER_SCRIPT_LOAD_UNHANDLED_REQUEST_ERROR)
 
+// This event is emitted when a navigation preload request is created.
+EVENT_TYPE(SERVICE_WORKER_NAVIGATION_PRELOAD_REQUEST)
+
 // ------------------------------------------------------------------------
 // Global events
 // ------------------------------------------------------------------------

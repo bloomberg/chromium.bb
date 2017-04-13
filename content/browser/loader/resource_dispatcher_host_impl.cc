@@ -102,6 +102,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/log/net_log_with_source.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
@@ -1226,6 +1227,15 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       is_navigation_stream_request ? request_data.resource_body_stream_url
                                    : request_data.url,
       request_data.priority, nullptr);
+
+  // Log that this request is a service worker navigation preload request here,
+  // since navigation preload machinery has no access to netlog.
+  // TODO(falken): Figure out how mojom::URLLoaderClient can
+  // access the request's netlog.
+  if (requester_info->IsNavigationPreload()) {
+    new_request->net_log().AddEvent(
+        net::NetLogEventType::SERVICE_WORKER_NAVIGATION_PRELOAD_REQUEST);
+  }
 
   // PlzNavigate: Always set the method to GET when gaining access to the
   // stream that contains the response body of a navigation. Otherwise the data
