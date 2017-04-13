@@ -1433,21 +1433,11 @@ void Range::CheckExtractPrecondition(ExceptionState& exception_state) {
 }
 
 Node* Range::FirstNode() const {
-  if (start_.Container().IsCharacterDataNode())
-    return &start_.Container();
-  if (Node* child = NodeTraversal::ChildAt(start_.Container(), start_.Offset()))
-    return child;
-  if (!start_.Offset())
-    return &start_.Container();
-  return NodeTraversal::NextSkippingChildren(start_.Container());
+  return StartPosition().NodeAsRangeFirstNode();
 }
 
 Node* Range::PastLastNode() const {
-  if (end_.Container().IsCharacterDataNode())
-    return NodeTraversal::NextSkippingChildren(end_.Container());
-  if (Node* child = NodeTraversal::ChildAt(end_.Container(), end_.Offset()))
-    return child;
-  return NodeTraversal::NextSkippingChildren(end_.Container());
+  return EndPosition().NodeAsRangePastLastNode();
 }
 
 IntRect Range::BoundingBox() const {
