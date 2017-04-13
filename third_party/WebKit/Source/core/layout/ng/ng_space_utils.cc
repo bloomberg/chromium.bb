@@ -88,7 +88,7 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
     case EClear::kBoth:
       return OptionalMax<LayoutUnit>(left_offset, right_offset);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return WTF::kNullopt;
 }

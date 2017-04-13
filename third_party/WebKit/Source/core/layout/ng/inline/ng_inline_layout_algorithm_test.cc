@@ -131,7 +131,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
 
   LayoutText* layout_text =
       ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  ASSERT(layout_text->HasTextBoxes());
+  DCHECK(layout_text->HasTextBoxes());
 
   ASSERT_EQ(4UL, text_fragments.size());
 
@@ -181,7 +181,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
   )HTML");
   LayoutText* layout_text =
       ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  ASSERT(layout_text->HasTextBoxes());
+  DCHECK(layout_text->HasTextBoxes());
 
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   // 30 == narrow-float's width.
@@ -219,7 +219,7 @@ TEST_F(NGInlineLayoutAlgorithmTest,
   )HTML");
   LayoutText* layout_text =
       ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  ASSERT(layout_text->HasTextBoxes());
+  DCHECK(layout_text->HasTextBoxes());
 
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   EXPECT_EQ(LayoutUnit(), inline_text_box1->X());
@@ -292,7 +292,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
   )HTML");
   LayoutText* layout_text =
       ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  ASSERT(layout_text->HasTextBoxes());
+  DCHECK(layout_text->HasTextBoxes());
 
   InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
   // 45 = sum of left's inline margins: 40 + left's width: 5
