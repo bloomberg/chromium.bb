@@ -84,9 +84,6 @@ GpuMemoryBufferImplNativePixmap::CreateFromHandle(
 bool GpuMemoryBufferImplNativePixmap::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-#if defined(OS_LINUX)
-  return false;
-#endif
   return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 

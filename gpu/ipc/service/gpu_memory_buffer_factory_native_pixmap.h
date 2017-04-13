@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
-#define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
+#ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_NATIVE_PIXMAP_H_
+#define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_NATIVE_PIXMAP_H_
 
 #include <unordered_map>
 #include <utility>
@@ -22,12 +22,12 @@ class GLImage;
 
 namespace gpu {
 
-class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
+class GPU_EXPORT GpuMemoryBufferFactoryNativePixmap
     : public GpuMemoryBufferFactory,
       public ImageFactory {
  public:
-  GpuMemoryBufferFactoryOzoneNativePixmap();
-  ~GpuMemoryBufferFactoryOzoneNativePixmap() override;
+  GpuMemoryBufferFactoryNativePixmap();
+  ~GpuMemoryBufferFactoryNativePixmap() override;
 
   // Overridden from GpuMemoryBufferFactory:
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
@@ -64,9 +64,9 @@ class GPU_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
   NativePixmapMap native_pixmaps_;
   base::Lock native_pixmaps_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryOzoneNativePixmap);
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryNativePixmap);
 };
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_OZONE_NATIVE_PIXMAP_H_
+#endif  // GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_NATIVE_PIXMAP_H_

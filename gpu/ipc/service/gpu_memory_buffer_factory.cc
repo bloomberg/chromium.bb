@@ -12,8 +12,8 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
+#if defined(OS_LINUX)
+#include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
 #endif
 
 namespace gpu {
@@ -24,8 +24,8 @@ GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(OS_MACOSX)
   return base::WrapUnique(new GpuMemoryBufferFactoryIOSurface);
 #endif
-#if defined(USE_OZONE)
-  return base::WrapUnique(new GpuMemoryBufferFactoryOzoneNativePixmap);
+#if defined(OS_LINUX)
+  return base::WrapUnique(new GpuMemoryBufferFactoryNativePixmap);
 #endif
   return nullptr;
 }

@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
 
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
+
+#if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+#endif
 
 namespace gpu {
 
-GpuMemoryBufferFactoryOzoneNativePixmap::
-    GpuMemoryBufferFactoryOzoneNativePixmap() {}
+GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap() {}
 
-GpuMemoryBufferFactoryOzoneNativePixmap::
-    ~GpuMemoryBufferFactoryOzoneNativePixmap() {}
+GpuMemoryBufferFactoryNativePixmap::~GpuMemoryBufferFactoryNativePixmap() {}
 
 gfx::GpuMemoryBufferHandle
-GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
+GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
+#if defined(USE_OZONE)
   scoped_refptr<gfx::NativePixmap> pixmap =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
@@ -52,9 +53,13 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
   }
 
   return new_handle;
+#else
+  NOTIMPLEMENTED();
+  return gfx::GpuMemoryBufferHandle();
+#endif
 }
 
-void GpuMemoryBufferFactoryOzoneNativePixmap::DestroyGpuMemoryBuffer(
+void GpuMemoryBufferFactoryNativePixmap::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
   base::AutoLock lock(native_pixmaps_lock_);
@@ -62,12 +67,12 @@ void GpuMemoryBufferFactoryOzoneNativePixmap::DestroyGpuMemoryBuffer(
   native_pixmaps_.erase(key);
 }
 
-ImageFactory* GpuMemoryBufferFactoryOzoneNativePixmap::AsImageFactory() {
+ImageFactory* GpuMemoryBufferFactoryNativePixmap::AsImageFactory() {
   return this;
 }
 
 scoped_refptr<gl::GLImage>
-GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
+GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -90,10 +95,16 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
 
   // Create new pixmap from handle if one doesn't already exist.
   if (!pixmap) {
+#if defined(USE_OZONE)
     pixmap = ui::OzonePlatform::GetInstance()
                  ->GetSurfaceFactoryOzone()
                  ->CreateNativePixmapFromHandle(surface_handle, size, format,
                                                 handle.native_pixmap_handle);
+#else
+    // TODO(j.isorce): implement this to enable glCreateImageCHROMIUM on Linux.
+    // On going in http://codereview.chromium.org/2705213005, crbug.com/584248.
+    NOTIMPLEMENTED();
+#endif
     if (!pixmap.get()) {
       DLOG(ERROR) << "Failed to create pixmap from handle";
       return nullptr;
@@ -117,15 +128,19 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateImageForGpuMemoryBuffer(
 }
 
 scoped_refptr<gl::GLImage>
-GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
+GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     unsigned internalformat) {
-  scoped_refptr<gfx::NativePixmap> pixmap =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format,
-                               gfx::BufferUsage::SCANOUT);
+  scoped_refptr<gfx::NativePixmap> pixmap;
+#if defined(USE_OZONE)
+  pixmap = ui::OzonePlatform::GetInstance()
+               ->GetSurfaceFactoryOzone()
+               ->CreateNativePixmap(gpu::kNullSurfaceHandle, size, format,
+                                    gfx::BufferUsage::SCANOUT);
+#else
+  NOTIMPLEMENTED();
+#endif
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.ToString() << " format "
                << static_cast<int>(format);
@@ -141,7 +156,7 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateAnonymousImage(
   return image;
 }
 
-unsigned GpuMemoryBufferFactoryOzoneNativePixmap::RequiredTextureType() {
+unsigned GpuMemoryBufferFactoryNativePixmap::RequiredTextureType() {
   return GL_TEXTURE_EXTERNAL_OES;
 }
 

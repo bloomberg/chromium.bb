@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
+#if defined(OS_LINUX)
+#include "ui/gfx/client_native_pixmap_factory.h"
 #endif
 
 namespace gpu {
@@ -17,7 +17,7 @@ gfx::GpuMemoryBufferType GetNativeGpuMemoryBufferType() {
 #if defined(OS_MACOSX)
   return gfx::IO_SURFACE_BUFFER;
 #endif
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   return gfx::NATIVE_PIXMAP;
 #endif
   return gfx::EMPTY_BUFFER;
@@ -47,7 +47,7 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
   return false;
 #endif
 
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
   if (!gfx::ClientNativePixmapFactory::GetInstance()) {
     // unittests don't have to set ClientNativePixmapFactory.
     return false;

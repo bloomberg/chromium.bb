@@ -112,16 +112,16 @@ target(link_target_type, "ipc_service_sources") {
     libs += [ "android" ]
   }
   if (is_linux) {
-    sources += [ "image_transport_surface_linux.cc" ]
+    sources += [
+      "gpu_memory_buffer_factory_native_pixmap.cc",
+      "gpu_memory_buffer_factory_native_pixmap.h",
+      "image_transport_surface_linux.cc",
+    ]
   }
   if (use_x11) {
     sources += [ "x_util.h" ]
   }
   if (use_ozone) {
-    sources += [
-      "gpu_memory_buffer_factory_ozone_native_pixmap.cc",
-      "gpu_memory_buffer_factory_ozone_native_pixmap.h",
-    ]
     deps += [ "//ui/ozone" ]
   }
 }
@@ -177,8 +177,10 @@ test("gpu_ipc_service_unittests") {
   if (is_mac) {
     sources += [ "gpu_memory_buffer_factory_io_surface_unittest.cc" ]
   }
+  if (is_linux) {
+    sources += [ "gpu_memory_buffer_factory_native_pixmap_unittest.cc" ]
+  }
   if (use_ozone) {
-    sources += [ "gpu_memory_buffer_factory_ozone_native_pixmap_unittest.cc" ]
     deps += [ "//ui/ozone" ]
   }
 }
