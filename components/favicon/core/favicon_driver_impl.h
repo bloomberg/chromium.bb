@@ -75,9 +75,7 @@ class FaviconDriverImpl : public FaviconDriver,
   bookmarks::BookmarkModel* bookmark_model_;
 
   // FaviconHandlers used to download the different kind of favicons.
-  // |touch_icon_handler_| may be null depending on the platform and variations.
-  std::unique_ptr<FaviconHandler> favicon_handler_;
-  std::unique_ptr<FaviconHandler> touch_icon_handler_;
+  std::vector<std::unique_ptr<FaviconHandler>> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconDriverImpl);
 };

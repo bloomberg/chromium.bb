@@ -115,7 +115,7 @@ class FaviconHandler {
         const gfx::Image& image) = 0;
   };
 
-  // |delegate| must not be nullptr and must outlive this class.
+  // |service| and |delegate| must not be nullptr and must outlive this class.
   FaviconHandler(FaviconService* service,
                  Delegate* delegate,
                  FaviconDriverObserver::NotificationIconType handler_type);

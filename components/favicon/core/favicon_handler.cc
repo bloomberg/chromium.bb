@@ -205,14 +205,11 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   // Request the favicon from the history service. In parallel to this the
   // renderer is going to notify us (well WebContents) when the favicon url is
   // available.
-  if (service_) {
-    service_->GetFaviconForPageURL(
-        url_, icon_types_, preferred_icon_size(),
-        base::Bind(
-            &FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
-            base::Unretained(this)),
-        &cancelable_task_tracker_);
-  }
+  service_->GetFaviconForPageURL(
+      url_, icon_types_, preferred_icon_size(),
+      base::Bind(&FaviconHandler::OnFaviconDataForInitialURLFromFaviconService,
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 bool FaviconHandler::UpdateFaviconCandidate(
@@ -243,7 +240,7 @@ bool FaviconHandler::UpdateFaviconCandidate(
 void FaviconHandler::SetFavicon(const GURL& icon_url,
                                 const gfx::Image& image,
                                 favicon_base::IconType icon_type) {
-  if (service_ && ShouldSaveFavicon())
+  if (ShouldSaveFavicon())
     service_->SetFavicons(url_, icon_url, icon_type, image);
 
   NotifyFaviconUpdated(icon_url, icon_type, image);
@@ -359,8 +356,7 @@ void FaviconHandler::OnDidDownloadFavicon(
 
   if (bitmaps.empty() && http_status_code == 404) {
     DVLOG(1) << "Failed to Download Favicon:" << image_url;
-    if (service_)
-      service_->UnableToDownloadFavicon(image_url);
+    service_->UnableToDownloadFavicon(image_url);
   }
 
   bool request_next_icon = true;
@@ -465,7 +461,7 @@ void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
   if (redownload_icons_) {
     // We have the mapping, but the favicon is out of date. Download it now.
     ScheduleDownload(icon_url, icon_type);
-  } else if (service_) {
+  } else {
     // We don't know the favicon, but we may have previously downloaded the
     // favicon for another page that shares the same favicon. Ask for the
     // favicon given the favicon URL.
@@ -525,7 +521,7 @@ void FaviconHandler::ScheduleDownload(const GURL& image_url,
   DCHECK(image_url.is_valid());
   // Note that CancelableCallback starts cancelled.
   DCHECK(download_request_.IsCancelled()) << "More than one ongoing download";
-  if (service_ && service_->WasUnableToDownloadFavicon(image_url)) {
+  if (service_->WasUnableToDownloadFavicon(image_url)) {
     DVLOG(1) << "Skip Failed FavIcon: " << image_url;
     OnDidDownloadFavicon(icon_type, 0, 0, image_url, std::vector<SkBitmap>(),
                          std::vector<gfx::Size>());
