@@ -26,6 +26,7 @@
 
       /* Upper-left corner */
       #technology {
+        --iron-icon-fill-color: #5a5a5a;
         height: 20px;
         left: 0;
         position: absolute;
@@ -35,11 +36,12 @@
 
       /* Lower-right corner */
       #secure {
-        height: 20px;
+        --iron-icon-fill-color: #5a5a5a;
+        height: 8px;
         left: 16px;
         position: absolute;
         top: 16px;
-        width: 20px;
+        width: 8px;
       }
 
       /* Images */
@@ -131,7 +133,7 @@
         icon="[[getTechnology_(networkState)]]">
     </iron-icon>
     <iron-icon id="secure" hidden="[[!showSecure_(networkState)]]"
-        icon="network:badge-secure">
+        icon="network8:badge-secure">
     </iron-icon>
   </template>
   <script src="cr_network_icon.js"></script>
