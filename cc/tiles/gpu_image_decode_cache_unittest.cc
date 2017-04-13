@@ -117,7 +117,13 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageSmallerScale) {
   cache.UnrefImage(another_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageLowerQuality) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageLowerQuality DISABLED_GetTaskForImageLowerQuality
+#else
+#define MAYBE_GetTaskForImageLowerQuality GetTaskForImageLowerQuality
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLowerQuality) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -149,7 +155,14 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageLowerQuality) {
   cache.UnrefImage(another_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageDifferentImage) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageDifferentImage \
+  DISABLED_GetTaskForImageDifferentImage
+#else
+#define MAYBE_GetTaskForImageDifferentImage GetTaskForImageDifferentImage
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageDifferentImage) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -189,7 +202,13 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageDifferentImage) {
   cache.UnrefImage(second_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageLargerScale) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageLargerScale DISABLED_GetTaskForImageLargerScale
+#else
+#define MAYBE_GetTaskForImageLargerScale GetTaskForImageLargerScale
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLargerScale) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -240,7 +259,15 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageLargerScale) {
   cache.UnrefImage(third_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageLargerScaleNoReuse) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageLargerScaleNoReuse \
+  DISABLED_GetTaskForImageLargerScaleNoReuse
+#else
+#define MAYBE_GetTaskForImageLargerScaleNoReuse \
+  GetTaskForImageLargerScaleNoReuse
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLargerScaleNoReuse) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -289,7 +316,13 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageLargerScaleNoReuse) {
   cache.UnrefImage(third_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageHigherQuality) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageHigherQuality DISABLED_GetTaskForImageHigherQuality
+#else
+#define MAYBE_GetTaskForImageHigherQuality GetTaskForImageHigherQuality
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageHigherQuality) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -327,7 +360,15 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageHigherQuality) {
   cache.UnrefImage(second_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageAlreadyDecodedAndLocked) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageAlreadyDecodedAndLocked \
+  DISABLED_GetTaskForImageAlreadyDecodedAndLocked
+#else
+#define MAYBE_GetTaskForImageAlreadyDecodedAndLocked \
+  GetTaskForImageAlreadyDecodedAndLocked
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyDecodedAndLocked) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -373,7 +414,15 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageAlreadyDecodedAndLocked) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageAlreadyDecodedNotLocked) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageAlreadyDecodedNotLocked \
+  DISABLED_GetTaskForImageAlreadyDecodedNotLocked
+#else
+#define MAYBE_GetTaskForImageAlreadyDecodedNotLocked \
+  GetTaskForImageAlreadyDecodedNotLocked
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyDecodedNotLocked) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -419,7 +468,14 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageAlreadyDecodedNotLocked) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageAlreadyUploaded) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageAlreadyUploaded \
+  DISABLED_GetTaskForImageAlreadyUploaded
+#else
+#define MAYBE_GetTaskForImageAlreadyUploaded GetTaskForImageAlreadyUploaded
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyUploaded) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -503,7 +559,16 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledGetsNewTask) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageCanceledWhileReffedGetsNewTask \
+  DISABLED_GetTaskForImageCanceledWhileReffedGetsNewTask
+#else
+#define MAYBE_GetTaskForImageCanceledWhileReffedGetsNewTask \
+  GetTaskForImageCanceledWhileReffedGetsNewTask
+#endif
+TEST(GpuImageDecodeCacheTest,
+     MAYBE_GetTaskForImageCanceledWhileReffedGetsNewTask) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -555,7 +620,15 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, NoTaskForImageAlreadyFailedDecoding) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_NoTaskForImageAlreadyFailedDecoding \
+  DISABLED_NoTaskForImageAlreadyFailedDecoding
+#else
+#define MAYBE_NoTaskForImageAlreadyFailedDecoding \
+  NoTaskForImageAlreadyFailedDecoding
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_NoTaskForImageAlreadyFailedDecoding) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -589,7 +662,13 @@ TEST(GpuImageDecodeCacheTest, NoTaskForImageAlreadyFailedDecoding) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetDecodedImageForDraw DISABLED_GetDecodedImageForDraw
+#else
+#define MAYBE_GetDecodedImageForDraw GetDecodedImageForDraw
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDraw) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -694,7 +773,15 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetDecodedImageForDrawLargerScale \
+  DISABLED_GetDecodedImageForDrawLargerScale
+#else
+#define MAYBE_GetDecodedImageForDrawLargerScale \
+  GetDecodedImageForDrawLargerScale
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawLargerScale) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -753,7 +840,15 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   cache.UnrefImage(larger_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetDecodedImageForDrawHigherQuality \
+  DISABLED_GetDecodedImageForDrawHigherQuality
+#else
+#define MAYBE_GetDecodedImageForDrawHigherQuality \
+  GetDecodedImageForDrawHigherQuality
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawHigherQuality) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -810,7 +905,14 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
   cache.UnrefImage(higher_quality_draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetDecodedImageForDrawNegative \
+  DISABLED_GetDecodedImageForDrawNegative
+#else
+#define MAYBE_GetDecodedImageForDrawNegative GetDecodedImageForDrawNegative
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawNegative) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -847,7 +949,15 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetLargeScaledDecodedImageForDraw \
+  DISABLED_GetLargeScaledDecodedImageForDraw
+#else
+#define MAYBE_GetLargeScaledDecodedImageForDraw \
+  GetLargeScaledDecodedImageForDraw
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetLargeScaledDecodedImageForDraw) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -886,7 +996,15 @@ TEST(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   EXPECT_FALSE(cache.DiscardableIsLockedForTesting(draw_image));
 }
 
-TEST(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_AtRasterUsedDirectlyIfSpaceAllows \
+  DISABLED_AtRasterUsedDirectlyIfSpaceAllows
+#else
+#define MAYBE_AtRasterUsedDirectlyIfSpaceAllows \
+  AtRasterUsedDirectlyIfSpaceAllows
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_AtRasterUsedDirectlyIfSpaceAllows) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -931,8 +1049,16 @@ TEST(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   cache.UnrefImage(draw_image);
 }
 
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetDecodedImageForDrawAtRasterDecodeMultipleTimes \
+  DISABLED_GetDecodedImageForDrawAtRasterDecodeMultipleTimes
+#else
+#define MAYBE_GetDecodedImageForDrawAtRasterDecodeMultipleTimes \
+  GetDecodedImageForDrawAtRasterDecodeMultipleTimes
+#endif
 TEST(GpuImageDecodeCacheTest,
-     GetDecodedImageForDrawAtRasterDecodeMultipleTimes) {
+     MAYBE_GetDecodedImageForDrawAtRasterDecodeMultipleTimes) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -1091,7 +1217,14 @@ TEST(GpuImageDecodeCacheTest, CanceledTasksDoNotCountAgainstBudget) {
   EXPECT_EQ(0u, cache.GetBytesUsedForTesting());
 }
 
-TEST(GpuImageDecodeCacheTest, ShouldAggressivelyFreeResources) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_ShouldAggressivelyFreeResources \
+  DISABLED_ShouldAggressivelyFreeResources
+#else
+#define MAYBE_ShouldAggressivelyFreeResources ShouldAggressivelyFreeResources
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_ShouldAggressivelyFreeResources) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -1155,7 +1288,15 @@ TEST(GpuImageDecodeCacheTest, ShouldAggressivelyFreeResources) {
   }
 }
 
-TEST(GpuImageDecodeCacheTest, OrphanedImagesFreeOnReachingZeroRefs) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OrphanedImagesFreeOnReachingZeroRefs \
+  DISABLED_OrphanedImagesFreeOnReachingZeroRefs
+#else
+#define MAYBE_OrphanedImagesFreeOnReachingZeroRefs \
+  OrphanedImagesFreeOnReachingZeroRefs
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_OrphanedImagesFreeOnReachingZeroRefs) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -1212,7 +1353,15 @@ TEST(GpuImageDecodeCacheTest, OrphanedImagesFreeOnReachingZeroRefs) {
             cache.GetDrawImageSizeForTesting(second_draw_image));
 }
 
-TEST(GpuImageDecodeCacheTest, OrphanedZeroRefImagesImmediatelyDeleted) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OrphanedZeroRefImagesImmediatelyDeleted \
+  DISABLED_OrphanedZeroRefImagesImmediatelyDeleted
+#else
+#define MAYBE_OrphanedZeroRefImagesImmediatelyDeleted \
+  OrphanedZeroRefImagesImmediatelyDeleted
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_OrphanedZeroRefImagesImmediatelyDeleted) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
@@ -1262,7 +1411,13 @@ TEST(GpuImageDecodeCacheTest, OrphanedZeroRefImagesImmediatelyDeleted) {
             cache.GetDrawImageSizeForTesting(second_draw_image));
 }
 
-TEST(GpuImageDecodeCacheTest, QualityCappedAtMedium) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_QualityCappedAtMedium DISABLED_QualityCappedAtMedium
+#else
+#define MAYBE_QualityCappedAtMedium QualityCappedAtMedium
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_QualityCappedAtMedium) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());

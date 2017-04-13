@@ -560,7 +560,13 @@ TEST_F(VideoRendererImplTest, ReinitializeForAnotherStream) {
   InitializeRenderer(&new_stream, false, true);
 }
 
-TEST_F(VideoRendererImplTest, DestroyWhileInitializing) {
+// crbug.com/697171.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DestroyWhileInitializing DISABLED_DestroyWhileInitializing
+#else
+#define MAYBE_DestroyWhileInitializing DestroyWhileInitializing
+#endif
+TEST_F(VideoRendererImplTest, MAYBE_DestroyWhileInitializing) {
   CallInitialize(&demuxer_stream_, NewExpectedStatusCB(PIPELINE_ERROR_ABORT),
                  false, PIPELINE_OK);
   Destroy();
