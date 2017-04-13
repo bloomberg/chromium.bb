@@ -133,6 +133,7 @@ if (is_android) {
       "category.h",
       "category_info.h",
       "category_status.h",
+      "content_suggestions_service.cc",
     ]
   }
 }

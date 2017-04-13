@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -25,6 +26,27 @@
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
+
+namespace {
+
+// Enumeration listing all possible outcomes for fetch attempts of favicons for
+// content suggestions. Used for UMA histograms, so do not change existing
+// values. Insert new values at the end, and update the histogram definition.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
+enum class FaviconFetchResult {
+  SUCCESS_CACHED = 0,
+  SUCCESS_FETCHED = 1,
+  FAILURE = 2,
+  COUNT = 3
+};
+
+void RecordFaviconFetchResult(FaviconFetchResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.ContentSuggestions.ArticleFaviconFetchResult", result,
+      FaviconFetchResult::COUNT);
+}
+
+}  // namespace
 
 ContentSuggestionsService::ContentSuggestionsService(
     State state,
@@ -148,6 +170,7 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
   if (position == suggestions->end() || !large_icon_service_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, gfx::Image()));
+    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
@@ -175,6 +198,11 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     const favicon_base::LargeIconImageResult& result) {
   if (!result.image.IsEmpty()) {
     callback.Run(result.image);
+    // The icon is from cache if we haven't gone to Google server yet. The icon
+    // is freshly fetched, otherwise.
+    RecordFaviconFetchResult(continue_to_google_server
+                                 ? FaviconFetchResult::SUCCESS_CACHED
+                                 : FaviconFetchResult::SUCCESS_FETCHED);
     return;
   }
 
@@ -182,8 +210,10 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
       (result.fallback_icon_style &&
        !result.fallback_icon_style->is_default_background_color)) {
     // We cannot download from the server if there is some small icon in the
-    // cache (resulting in non-default bakground color) or if we already did so.
+    // cache (resulting in non-default background color) or if we already did
+    // so.
     callback.Run(gfx::Image());
+    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
@@ -205,6 +235,7 @@ void ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished(
     bool success) {
   if (!success) {
     callback.Run(gfx::Image());
+    RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 

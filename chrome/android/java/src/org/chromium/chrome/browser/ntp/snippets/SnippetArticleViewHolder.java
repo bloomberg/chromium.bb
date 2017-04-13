@@ -205,14 +205,15 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         // from moving later.
         setDefaultFaviconOnView();
         try {
+            long faviconFetchStartTimeMs = SystemClock.elapsedRealtime();
             URI pageUrl = new URI(mArticle.mUrl);
             if (!article.isArticle() || !SnippetsConfig.isFaviconsFromNewServerEnabled()) {
                 // The old code path. Remove when the experiment is successful.
                 // Currently, we have to use this for non-articles, due to privacy.
-                fetchFaviconFromLocalCache(pageUrl, true);
+                fetchFaviconFromLocalCache(pageUrl, true, faviconFetchStartTimeMs);
             } else {
                 // The new code path.
-                fetchFaviconFromLocalCacheOrGoogleServer();
+                fetchFaviconFromLocalCacheOrGoogleServer(faviconFetchStartTimeMs);
             }
         } catch (URISyntaxException e) {
             // Do nothing, stick to the default favicon.
@@ -402,27 +403,52 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
     }
 
-    private void fetchFaviconFromLocalCacheOrGoogleServer() {
+    private void fetchFaviconFromLocalCacheOrGoogleServer(final long faviconFetchStartTimeMs) {
         // Set the desired size to 0 to specify we do not want to resize in c++, we'll resize here.
         mUiDelegate.getSuggestionsSource().fetchSuggestionFavicon(mArticle,
                 PUBLISHER_FAVICON_MINIMUM_SIZE_PX, /* desiredSizePx */ 0, new Callback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap image) {
+                        recordFaviconFetchTime(faviconFetchStartTimeMs);
                         if (image == null) return;
                         setFaviconOnView(image);
                     }
                 });
     }
 
-    private void fetchFaviconFromLocalCache(final URI snippetUri, final boolean fallbackToService) {
+    private void recordFaviconFetchTime(long faviconFetchStartTimeMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "NewTabPage.ContentSuggestions.ArticleFaviconFetchTime",
+                SystemClock.elapsedRealtime() - faviconFetchStartTimeMs, TimeUnit.MILLISECONDS);
+    }
+
+    private void recordFaviconFetchResult(
+            @FaviconFetchResult int result, long faviconFetchStartTimeMs) {
+        // Record the histogram for articles only to have a fair comparision.
+        if (!mArticle.isArticle()) return;
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.ContentSuggestions.ArticleFaviconFetchResult", result,
+                FaviconFetchResult.COUNT);
+        recordFaviconFetchTime(faviconFetchStartTimeMs);
+    }
+
+    private void fetchFaviconFromLocalCache(final URI snippetUri, final boolean fallbackToService,
+            final long faviconFetchStartTimeMs) {
         mUiDelegate.getLocalFaviconImageForURL(
                 getSnippetDomain(snippetUri), mPublisherFaviconSizePx, new FaviconImageCallback() {
                     @Override
                     public void onFaviconAvailable(Bitmap image, String iconUrl) {
                         if (image != null) {
                             setFaviconOnView(image);
+                            recordFaviconFetchResult(fallbackToService
+                                            ? FaviconFetchResult.SUCCESS_CACHED
+                                            : FaviconFetchResult.SUCCESS_FETCHED,
+                                    faviconFetchStartTimeMs);
                         } else if (fallbackToService) {
-                            fetchFaviconFromService(snippetUri);
+                            if (!fetchFaviconFromService(snippetUri, faviconFetchStartTimeMs)) {
+                                recordFaviconFetchResult(
+                                        FaviconFetchResult.FAILURE, faviconFetchStartTimeMs);
+                            }
                         }
                         // Else do nothing, we already have the placeholder set.
                     }
@@ -431,10 +457,11 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("DefaultLocale")
-    private void fetchFaviconFromService(final URI snippetUri) {
-        if (!mUseFaviconService) return;
+    private boolean fetchFaviconFromService(
+            final URI snippetUri, final long faviconFetchStartTimeMs) {
+        if (!mUseFaviconService) return false;
         int sizePx = getFaviconServiceSupportedSize();
-        if (sizePx == 0) return;
+        if (sizePx == 0) return false;
 
         // Replace the default icon by another one from the service when it is fetched.
         mUiDelegate.ensureIconIsAvailable(
@@ -443,11 +470,17 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 /*useLargeIcon=*/false, /*isTemporary=*/true, new IconAvailabilityCallback() {
                     @Override
                     public void onIconAvailabilityChecked(boolean newlyAvailable) {
-                        if (!newlyAvailable) return;
+                        if (!newlyAvailable) {
+                            recordFaviconFetchResult(
+                                    FaviconFetchResult.FAILURE, faviconFetchStartTimeMs);
+                            return;
+                        }
                         // The download succeeded, the favicon is in the cache; fetch it.
-                        fetchFaviconFromLocalCache(snippetUri, /*fallbackToService=*/false);
+                        fetchFaviconFromLocalCache(
+                                snippetUri, /*fallbackToService=*/false, faviconFetchStartTimeMs);
                     }
                 });
+        return true;
     }
 
     private int getFaviconServiceSupportedSize() {
