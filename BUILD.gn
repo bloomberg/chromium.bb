@@ -696,7 +696,10 @@ group("gn_all") {
   }
 
   if (is_android) {
-    deps += [ "//build/android/gyp/test:hello_world" ]
+    deps += [
+      "//build/android/gyp/test:hello_world",
+      "//chrome/test/vr/perf/latency:motopho_latency_test",
+    ]
   }
 
   if (is_linux && use_ozone) {

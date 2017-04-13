@@ -161,6 +161,15 @@
     "label": "//ui/aura:aura_unittests",
     "type": "windowed_test_launcher",
   },
+  "motopho_latency_test": {
+    "label": "//chrome/test/vr/perf/latency/:motopho_latency_test",
+    "type": "script",
+    "script": "//chrome/test/vr/perf/latency/run_latency_test.py",
+    "args": [
+      "--output-dir=${ISOLATED_OUTDIR}",
+      "-v",
+    ],
+  },
   "base_junit_tests": {
     "label": "//base:base_junit_tests",
     "type": "junit_test",
