@@ -2205,23 +2205,6 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
   }
 }
 
-// TODO(phajdan.jr): Clean up after we no longer need
-// to workaround http://crbug.com/139744.
-#if !defined(USE_SYSTEM_ZLIB)
-TEST_P(SpdyFramerTest, CreateHeadersCompressed) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-
-  {
-    SpdyHeadersIR headers_ir(1);
-    headers_ir.SetHeader("bar", "foo");
-    headers_ir.SetHeader("foo", "bar");
-    SpdySerializedFrame frame(SpdyFramerPeer::SerializeHeaders(
-        &framer, headers_ir, use_output_ ? &output_ : nullptr));
-    // Deflate compression doesn't apply to HPACK.
-  }
-}
-#endif  // !defined(USE_SYSTEM_ZLIB)
-
 TEST_P(SpdyFramerTest, CreateWindowUpdate) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
 
