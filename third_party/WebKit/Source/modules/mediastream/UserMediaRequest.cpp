@@ -31,6 +31,8 @@
 
 #include "modules/mediastream/UserMediaRequest.h"
 
+#include <type_traits>
+
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -49,10 +51,259 @@
 
 namespace blink {
 
-static WebMediaConstraints ParseOptions(
-    ExecutionContext* context,
-    const BooleanOrMediaTrackConstraints& options,
-    MediaErrorState& error_state) {
+namespace {
+
+template <typename NumericConstraint>
+bool SetUsesNumericConstraint(
+    const WebMediaTrackConstraintSet& set,
+    NumericConstraint WebMediaTrackConstraintSet::*field) {
+  return (set.*field).HasExact() || (set.*field).HasIdeal() ||
+         (set.*field).HasMin() || (set.*field).HasMax();
+}
+
+template <typename DiscreteConstraint>
+bool SetUsesDiscreteConstraint(
+    const WebMediaTrackConstraintSet& set,
+    DiscreteConstraint WebMediaTrackConstraintSet::*field) {
+  return (set.*field).HasExact() || (set.*field).HasIdeal();
+}
+
+template <typename NumericConstraint>
+bool RequestUsesNumericConstraint(
+    const WebMediaConstraints& constraints,
+    NumericConstraint WebMediaTrackConstraintSet::*field) {
+  if (SetUsesNumericConstraint(constraints.Basic(), field))
+    return true;
+  for (const auto& advanced_set : constraints.Advanced()) {
+    if (SetUsesNumericConstraint(advanced_set, field))
+      return true;
+  }
+  return false;
+}
+
+template <typename DiscreteConstraint>
+bool RequestUsesDiscreteConstraint(
+    const WebMediaConstraints& constraints,
+    DiscreteConstraint WebMediaTrackConstraintSet::*field) {
+  static_assert(
+      std::is_same<decltype(field),
+                   StringConstraint WebMediaTrackConstraintSet::*>::value ||
+          std::is_same<decltype(field),
+                       BooleanConstraint WebMediaTrackConstraintSet::*>::value,
+      "Must use StringConstraint or BooleanConstraint");
+  if (SetUsesDiscreteConstraint(constraints.Basic(), field))
+    return true;
+  for (const auto& advanced_set : constraints.Advanced()) {
+    if (SetUsesDiscreteConstraint(advanced_set, field))
+      return true;
+  }
+  return false;
+}
+
+class FeatureCounter {
+  WTF_MAKE_NONCOPYABLE(FeatureCounter);
+
+ public:
+  FeatureCounter(ExecutionContext* context)
+      : context_(context), is_unconstrained_(true) {}
+  void Count(UseCounter::Feature feature) {
+    UseCounter::Count(context_, feature);
+    is_unconstrained_ = false;
+  }
+  bool IsUnconstrained() { return is_unconstrained_; }
+
+ private:
+  Persistent<ExecutionContext> context_;
+  bool is_unconstrained_;
+};
+
+void CountAudioConstraintUses(ExecutionContext* context,
+                              const WebMediaConstraints& constraints) {
+  FeatureCounter counter(context);
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::sample_rate)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsSampleRate);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::sample_size)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsSampleSize);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::echo_cancellation)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsEchoCancellation);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::latency)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsLatency);
+  }
+  if (RequestUsesNumericConstraint(
+          constraints, &WebMediaTrackConstraintSet::channel_count)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsChannelCount);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::device_id)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsDeviceIdAudio);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::disable_local_echo)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsDisableLocalEcho);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::group_id)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGroupIdAudio);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::media_stream_source)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsMediaStreamSourceAudio);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::render_to_associated_sink)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsRenderToAssociatedSink);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::hotword_enabled)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsHotwordEnabled);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_echo_cancellation)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogEchoCancellation);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_experimental_echo_cancellation)) {
+    counter.Count(
+        UseCounter::kMediaStreamConstraintsGoogExperimentalEchoCancellation);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_auto_gain_control)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogAutoGainControl);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_experimental_auto_gain_control)) {
+    counter.Count(
+        UseCounter::kMediaStreamConstraintsGoogExperimentalAutoGainControl);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_noise_suppression)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogNoiseSuppression);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_highpass_filter)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogHighpassFilter);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_typing_noise_detection)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogTypingNoiseDetection);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_experimental_noise_suppression)) {
+    counter.Count(
+        UseCounter::kMediaStreamConstraintsGoogExperimentalNoiseSuppression);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_beamforming)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogBeamforming);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_array_geometry)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogArrayGeometry);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_audio_mirroring)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogAudioMirroring);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_da_echo_cancellation)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogDAEchoCancellation);
+  }
+
+  UseCounter::Count(context, UseCounter::kMediaStreamConstraintsAudio);
+  if (counter.IsUnconstrained()) {
+    UseCounter::Count(context,
+                      UseCounter::kMediaStreamConstraintsAudioUnconstrained);
+  }
+}
+
+void CountVideoConstraintUses(ExecutionContext* context,
+                              const WebMediaConstraints& constraints) {
+  FeatureCounter counter(context);
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::width)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsWidth);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::height)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsHeight);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::aspect_ratio)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsAspectRatio);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::frame_rate)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsFrameRate);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::facing_mode)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsFacingMode);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::device_id)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsDeviceIdVideo);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::group_id)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGroupIdVideo);
+  }
+  if (RequestUsesDiscreteConstraint(constraints,
+                                    &WebMediaTrackConstraintSet::video_kind)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsVideoKind);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::depth_near)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsDepthNear);
+  }
+  if (RequestUsesNumericConstraint(constraints,
+                                   &WebMediaTrackConstraintSet::depth_far)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsDepthFar);
+  }
+  if (RequestUsesNumericConstraint(
+          constraints, &WebMediaTrackConstraintSet::focal_length_x)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsFocalLengthX);
+  }
+  if (RequestUsesNumericConstraint(
+          constraints, &WebMediaTrackConstraintSet::focal_length_y)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsFocalLengthY);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::media_stream_source)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsMediaStreamSourceVideo);
+  }
+  if (RequestUsesDiscreteConstraint(
+          constraints, &WebMediaTrackConstraintSet::goog_noise_reduction)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogNoiseReduction);
+  }
+  if (RequestUsesNumericConstraint(
+          constraints,
+          &WebMediaTrackConstraintSet::goog_power_line_frequency)) {
+    counter.Count(UseCounter::kMediaStreamConstraintsGoogPowerLineFrequency);
+  }
+
+  UseCounter::Count(context, UseCounter::kMediaStreamConstraintsVideo);
+  if (counter.IsUnconstrained()) {
+    UseCounter::Count(context,
+                      UseCounter::kMediaStreamConstraintsVideoUnconstrained);
+  }
+}
+
+WebMediaConstraints ParseOptions(ExecutionContext* context,
+                                 const BooleanOrMediaTrackConstraints& options,
+                                 MediaErrorState& error_state) {
   WebMediaConstraints constraints;
 
   Dictionary constraints_dictionary;
@@ -70,6 +321,8 @@ static WebMediaConstraints ParseOptions(
 
   return constraints;
 }
+
+}  // namespace
 
 UserMediaRequest* UserMediaRequest::Create(
     ExecutionContext* context,
@@ -93,6 +346,11 @@ UserMediaRequest* UserMediaRequest::Create(
         "At least one of audio and video must be requested");
     return nullptr;
   }
+
+  if (!audio.IsNull())
+    CountAudioConstraintUses(context, audio);
+  if (!video.IsNull())
+    CountVideoConstraintUses(context, video);
 
   return new UserMediaRequest(context, controller, audio, video,
                               success_callback, error_callback);
