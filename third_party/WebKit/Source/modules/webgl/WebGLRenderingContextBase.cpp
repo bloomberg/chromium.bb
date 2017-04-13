@@ -1060,7 +1060,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       is_oes_texture_float_formats_types_added_(false),
       is_oes_texture_half_float_formats_types_added_(false),
       is_web_gl_depth_texture_formats_types_added_(false),
-      is_ex_ts_rgb_formats_types_added_(false),
+      is_ext_srgb_formats_types_added_(false),
       version_(version) {
   ASSERT(context_provider);
 
@@ -1254,7 +1254,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   is_oes_texture_float_formats_types_added_ = false;
   is_oes_texture_half_float_formats_types_added_ = false;
   is_web_gl_depth_texture_formats_types_added_ = false;
-  is_ex_ts_rgb_formats_types_added_ = false;
+  is_ext_srgb_formats_types_added_ = false;
 
   supported_internal_formats_.clear();
   ADD_VALUES_TO_SET(supported_internal_formats_, kSupportedFormatsES2);
@@ -6666,7 +6666,7 @@ void WebGLRenderingContextBase::AddExtensionSupportedFormatsTypes() {
     is_web_gl_depth_texture_formats_types_added_ = true;
   }
 
-  if (!is_ex_ts_rgb_formats_types_added_ && ExtensionEnabled(kEXTsRGBName)) {
+  if (!is_ext_srgb_formats_types_added_ && ExtensionEnabled(kEXTsRGBName)) {
     ADD_VALUES_TO_SET(supported_internal_formats_,
                       kSupportedInternalFormatsEXTsRGB);
     ADD_VALUES_TO_SET(supported_tex_image_source_internal_formats_,
@@ -6674,7 +6674,7 @@ void WebGLRenderingContextBase::AddExtensionSupportedFormatsTypes() {
     ADD_VALUES_TO_SET(supported_formats_, kSupportedFormatsEXTsRGB);
     ADD_VALUES_TO_SET(supported_tex_image_source_formats_,
                       kSupportedFormatsEXTsRGB);
-    is_ex_ts_rgb_formats_types_added_ = true;
+    is_ext_srgb_formats_types_added_ = true;
   }
 }
 

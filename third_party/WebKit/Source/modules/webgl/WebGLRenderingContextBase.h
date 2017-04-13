@@ -937,7 +937,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool is_oes_texture_float_formats_types_added_;
   bool is_oes_texture_half_float_formats_types_added_;
   bool is_web_gl_depth_texture_formats_types_added_;
-  bool is_ex_ts_rgb_formats_types_added_;
+  bool is_ext_srgb_formats_types_added_;
 
   std::set<GLenum> supported_internal_formats_;
   std::set<GLenum> supported_tex_image_source_internal_formats_;
