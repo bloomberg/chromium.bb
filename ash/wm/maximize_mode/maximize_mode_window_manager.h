@@ -71,6 +71,9 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
+  // Tell all managing windows not to handle WM events.
+  void SetIgnoreWmEventsForExit();
+
  protected:
   friend class MaximizeModeController;
 

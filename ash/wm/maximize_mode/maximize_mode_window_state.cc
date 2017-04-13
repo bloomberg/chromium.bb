@@ -121,6 +121,11 @@ void MaximizeModeWindowState::SetDeferBoundsUpdates(bool defer_bounds_updates) {
 
 void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
                                         const wm::WMEvent* event) {
+  // Ignore events that are sent during the exit transition.
+  if (ignore_wm_events_) {
+    return;
+  }
+
   switch (event->type()) {
     case wm::WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());

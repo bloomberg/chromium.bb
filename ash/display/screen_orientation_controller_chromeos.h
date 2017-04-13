@@ -113,7 +113,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // ShellObserver:
   void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  void OnMaximizeModeEnding() override;
 
  private:
   friend class test::ScreenOrientationControllerTestApi;

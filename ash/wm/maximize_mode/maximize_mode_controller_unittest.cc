@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
@@ -23,6 +24,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
@@ -643,6 +645,27 @@ TEST_F(MaximizeModeControllerTest, ForceTouchViewModeTest) {
   SetTabletMode(false);
   EXPECT_TRUE(IsMaximizeModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
+}
+
+TEST_F(MaximizeModeControllerTest, RestoreAfterExit) {
+  UpdateDisplay("1000x600");
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 900, 300)));
+  maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
+  Shell::Get()->screen_orientation_controller()->SetLockToRotation(
+      display::Display::ROTATE_90);
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  EXPECT_EQ(display::Display::ROTATE_90, display.rotation());
+  EXPECT_LT(display.size().width(), display.size().height());
+  maximize_mode_controller()->EnableMaximizeModeWindowManager(false);
+  display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  // Sanity checks.
+  EXPECT_EQ(display::Display::ROTATE_0, display.rotation());
+  EXPECT_GT(display.size().width(), display.size().height());
+
+  // The bounds should be restored to the original bounds, and
+  // should not be clamped by the portrait display in touch view.
+  EXPECT_EQ(gfx::Rect(10, 10, 900, 300), w1->bounds());
 }
 
 }  // namespace ash

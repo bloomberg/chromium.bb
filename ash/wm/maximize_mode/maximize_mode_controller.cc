@@ -168,6 +168,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     });
 
   } else {
+    maximize_mode_window_manager_->SetIgnoreWmEventsForExit();
     Shell::Get()->NotifyMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
     ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);

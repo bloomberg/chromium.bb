@@ -196,6 +196,12 @@ void MaximizeModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
   // Nothing to do here.
 }
 
+void MaximizeModeWindowManager::SetIgnoreWmEventsForExit() {
+  for (auto& pair : window_state_map_) {
+    pair.second->set_ignore_wm_events(true);
+  }
+}
+
 MaximizeModeWindowManager::MaximizeModeWindowManager()
     : backdrops_hidden_(false) {
   // The overview mode needs to be ended before the maximize mode is started. To

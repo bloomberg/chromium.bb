@@ -30,6 +30,8 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   MaximizeModeWindowState(WmWindow* window, MaximizeModeWindowManager* creator);
   ~MaximizeModeWindowState() override;
 
+  void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
+
   // Leaves the maximize mode by reverting to previous state object.
   void LeaveMaximizeMode(wm::WindowState* window_state);
 
@@ -79,6 +81,9 @@ class MaximizeModeWindowState : public wm::WindowState::State {
 
   // If true, do not update bounds.
   bool defer_bounds_updates_;
+
+  // If true, the state will not process events.
+  bool ignore_wm_events_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowState);
 };

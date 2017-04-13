@@ -326,7 +326,7 @@ void ScreenOrientationController::OnMaximizeModeStarted() {
     observer.OnUserRotationLockChanged();
 }
 
-void ScreenOrientationController::OnMaximizeModeEnded() {
+void ScreenOrientationController::OnMaximizeModeEnding() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   ShellPort::Get()->RemoveDisplayObserver(this);
   if (!display::Display::HasInternalDisplay())
