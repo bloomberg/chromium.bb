@@ -86,7 +86,6 @@ def create_event_measure_whitelist(name):
             or name == 'MutationEvents'
             or name == 'PageTransitionEvent'
             or name == 'PopStateEvent'
-            or name == 'ProgressEvent'
             or name == 'StorageEvent'
             or name == 'SVGEvents'
             or name == 'TextEvent'

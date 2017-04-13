@@ -108,11 +108,6 @@
     shouldBeTrue("document.createEvent('PopStateEvent') instanceof window.Event");
     shouldBeTrue("document.createEvent('PopStateEvent').constructor === window.PopStateEvent");
 
-    // ProgressEvent
-    shouldBeTrue("document.createEvent('ProgressEvent') instanceof window.ProgressEvent");
-    shouldBeTrue("document.createEvent('ProgressEvent') instanceof window.Event");
-    shouldBeTrue("document.createEvent('ProgressEvent').constructor === window.ProgressEvent");
-
     // TextEvent
     shouldBeTrue("document.createEvent('TextEvent') instanceof window.TextEvent");
     shouldBeTrue("document.createEvent('TextEvent') instanceof window.UIEvent");

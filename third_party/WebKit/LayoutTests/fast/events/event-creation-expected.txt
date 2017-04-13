@@ -72,9 +72,6 @@ PASS document.createEvent('PageTransitionEvent').constructor === window.PageTran
 PASS document.createEvent('PopStateEvent') instanceof window.PopStateEvent is true
 PASS document.createEvent('PopStateEvent') instanceof window.Event is true
 PASS document.createEvent('PopStateEvent').constructor === window.PopStateEvent is true
-PASS document.createEvent('ProgressEvent') instanceof window.ProgressEvent is true
-PASS document.createEvent('ProgressEvent') instanceof window.Event is true
-PASS document.createEvent('ProgressEvent').constructor === window.ProgressEvent is true
 PASS document.createEvent('TextEvent') instanceof window.TextEvent is true
 PASS document.createEvent('TextEvent') instanceof window.UIEvent is true
 PASS document.createEvent('TextEvent') instanceof window.Event is true

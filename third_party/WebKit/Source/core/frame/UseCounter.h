@@ -895,7 +895,6 @@ class CORE_EXPORT UseCounter {
     kDocumentCreateEventMutationEvent = 1173,
     kDocumentCreateEventPageTransitionEvent = 1174,
     kDocumentCreateEventPopStateEvent = 1176,
-    kDocumentCreateEventProgressEvent = 1177,
     kDocumentCreateEventTextEvent = 1182,
     kDocumentCreateEventTransitionEvent = 1183,
     kDocumentCreateEventWheelEvent = 1184,

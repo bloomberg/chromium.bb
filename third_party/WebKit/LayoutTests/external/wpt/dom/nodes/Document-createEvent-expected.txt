@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 331 tests; 304 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 331 tests; 305 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
 PASS animationevent should be an alias for AnimationEvent. 
@@ -292,9 +292,7 @@ PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "Presentation
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionAvailableEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PresentationConnectionCloseEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PresentationConnectionCloseEvents" 
-FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ProgressEvent" assert_throws: function "function () {
-        var evt = document.createEvent(eventInterface);
-      }" did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ProgressEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ProgressEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "PromiseRejectionEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "PromiseRejectionEvents" 
