@@ -92,6 +92,7 @@ source_set("stack_view") {
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/common",
+    "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//net",

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 #import "base/ios/weak_nsobject.h"
 #import "base/logging.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #include "ios/web/public/user_agent.h"
 
 @implementation ToolsMenuConfiguration {

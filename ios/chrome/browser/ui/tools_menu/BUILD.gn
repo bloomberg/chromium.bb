@@ -6,8 +6,6 @@ source_set("tools_menu") {
   sources = [
     "reading_list_menu_view_item.h",
     "reading_list_menu_view_item.mm",
-    "tools_menu_configuration.h",
-    "tools_menu_configuration.mm",
     "tools_menu_constants.h",
     "tools_menu_constants.mm",
     "tools_menu_model.h",
@@ -36,6 +34,7 @@ source_set("tools_menu") {
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web:user_agent",
@@ -58,6 +57,7 @@ source_set("unit_tests") {
     ":tools_menu",
     "//base",
     "//ios/chrome/browser/ui/commands:commands",
+    "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/web:user_agent",
     "//testing/gtest",
   ]

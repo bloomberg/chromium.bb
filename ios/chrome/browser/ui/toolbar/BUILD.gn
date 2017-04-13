@@ -100,6 +100,7 @@ source_set("toolbar") {
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/shared/chrome/browser/ui/omnibox",
+    "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",

@@ -12,9 +12,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 using base::UserMetricsAction;
 
