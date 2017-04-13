@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -28,6 +27,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -49,11 +52,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrar;
 
   // The observable boolean that binds to the "Disable Popups" setting state.
-  base::scoped_nsobject<ContentSettingBackedBoolean> _disablePopupsSetting;
+  ContentSettingBackedBoolean* _disablePopupsSetting;
 
   // Updatable Items
-  base::scoped_nsobject<CollectionViewDetailItem> _blockPopupsDetailItem;
-  base::scoped_nsobject<CollectionViewDetailItem> _translateDetailItem;
+  CollectionViewDetailItem* _blockPopupsDetailItem;
+  CollectionViewDetailItem* _translateDetailItem;
 }
 
 // Returns the value for the default setting with ID |settingID|.
@@ -85,10 +88,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     HostContentSettingsMap* settingsMap =
         ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
-    _disablePopupsSetting.reset([[ContentSettingBackedBoolean alloc]
+    _disablePopupsSetting = [[ContentSettingBackedBoolean alloc]
         initWithHostContentSettingsMap:settingsMap
                              settingID:CONTENT_SETTINGS_TYPE_POPUPS
-                              inverted:YES]);
+                              inverted:YES];
     [_disablePopupsSetting setObserver:self];
 
     [self loadModel];
@@ -98,7 +101,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   [_disablePopupsSetting setObserver:nil];
-  [super dealloc];
 }
 
 - (instancetype)init {
@@ -118,33 +120,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)blockPopupsItem {
-  _blockPopupsDetailItem.reset([[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeSettingsBlockPopups]);
+  _blockPopupsDetailItem = [[CollectionViewDetailItem alloc]
+      initWithType:ItemTypeSettingsBlockPopups];
   NSString* subtitle = [_disablePopupsSetting value]
                            ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                            : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _blockPopupsDetailItem.get().text =
-      l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
-  _blockPopupsDetailItem.get().detailText = subtitle;
-  _blockPopupsDetailItem.get().accessoryType =
+  _blockPopupsDetailItem.text = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
+  _blockPopupsDetailItem.detailText = subtitle;
+  _blockPopupsDetailItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
-  _blockPopupsDetailItem.get().accessibilityTraits |=
-      UIAccessibilityTraitButton;
+  _blockPopupsDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _blockPopupsDetailItem;
 }
 
 - (CollectionViewItem*)translateItem {
-  _translateDetailItem.reset([[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeSettingsTranslate]);
+  _translateDetailItem =
+      [[CollectionViewDetailItem alloc] initWithType:ItemTypeSettingsTranslate];
   BOOL enabled = browserState_->GetPrefs()->GetBoolean(prefs::kEnableTranslate);
   NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _translateDetailItem.get().text =
-      l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
-  _translateDetailItem.get().detailText = subtitle;
-  _translateDetailItem.get().accessoryType =
+  _translateDetailItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
+  _translateDetailItem.detailText = subtitle;
+  _translateDetailItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
-  _translateDetailItem.get().accessibilityTraits |= UIAccessibilityTraitButton;
+  _translateDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _translateDetailItem;
 }
 
@@ -163,16 +162,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
-      base::scoped_nsobject<UIViewController> controller(
+      UIViewController* controller =
           [[BlockPopupsCollectionViewController alloc]
-              initWithBrowserState:browserState_]);
+              initWithBrowserState:browserState_];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
     case ItemTypeSettingsTranslate: {
-      base::scoped_nsobject<UIViewController> controller(
-          [[TranslateCollectionViewController alloc]
-              initWithPrefs:browserState_->GetPrefs()]);
+      UIViewController* controller = [[TranslateCollectionViewController alloc]
+          initWithPrefs:browserState_->GetPrefs()];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
@@ -186,7 +184,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     BOOL enabled = browserState_->GetPrefs()->GetBoolean(preferenceName);
     NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _translateDetailItem.get().detailText = subtitle;
+    _translateDetailItem.detailText = subtitle;
     [self reconfigureCellsForItems:@[ _translateDetailItem ]
            inSectionWithIdentifier:SectionIdentifierSettings];
   }
@@ -195,13 +193,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _disablePopupsSetting.get());
+  DCHECK_EQ(observableBoolean, _disablePopupsSetting);
 
   NSString* subtitle = [_disablePopupsSetting value]
                            ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                            : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   // Update the item.
-  _blockPopupsDetailItem.get().detailText = subtitle;
+  _blockPopupsDetailItem.detailText = subtitle;
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _blockPopupsDetailItem ]

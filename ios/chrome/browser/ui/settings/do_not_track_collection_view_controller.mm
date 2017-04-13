@@ -18,6 +18,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -73,8 +77,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)switchItem {
-  CollectionViewSwitchItem* item = [[[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeSwitch] autorelease];
+  CollectionViewSwitchItem* item =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSwitch];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_DO_NOT_TRACK_MOBILE);
   item.on = _doNotTrackEnabled.GetValue();
   return item;
@@ -87,8 +91,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       GURL(kDoNotTrackLearnMoreURL),
       GetApplicationContext()->GetApplicationLocale());
 
-  CollectionViewFooterItem* item = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooter] autorelease];
+  CollectionViewFooterItem* item =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
   item.text = footerText;
   item.linkURL = learnMoreURL;
   item.linkDelegate = self;

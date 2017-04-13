@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/contextual_search_collection_view_controller.h"
 
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
@@ -19,6 +18,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -36,8 +39,7 @@ typedef NS_ENUM(NSUInteger, ItemType) {
 
 @interface ContextualSearchCollectionViewController () {
   // Permissions interface for Touch-to-Search.
-  base::scoped_nsobject<TouchToSearchPermissionsMediator>
-      _touchToSearchPermissions;
+  TouchToSearchPermissionsMediator* _touchToSearchPermissions;
 }
 
 // Returns the switch item to use for the touch to search setting.
@@ -60,7 +62,7 @@ typedef NS_ENUM(NSUInteger, ItemType) {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE);
-    _touchToSearchPermissions.reset([touchToSearchPermissions retain]);
+    _touchToSearchPermissions = touchToSearchPermissions;
     self.collectionViewAccessibilityIdentifier = @"Contextual Search";
     [self loadModel];
   }
@@ -68,9 +70,8 @@ typedef NS_ENUM(NSUInteger, ItemType) {
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  return [self
-      initWithPermissions:[[[TouchToSearchPermissionsMediator alloc]
-                              initWithBrowserState:browserState] autorelease]];
+  return [self initWithPermissions:[[TouchToSearchPermissionsMediator alloc]
+                                       initWithBrowserState:browserState]];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -89,8 +90,8 @@ typedef NS_ENUM(NSUInteger, ItemType) {
 }
 
 - (CollectionViewSwitchItem*)touchToSearchSwitchItem {
-  CollectionViewSwitchItem* item = [[[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeTouchToSearchSwitch] autorelease];
+  CollectionViewSwitchItem* item = [[CollectionViewSwitchItem alloc]
+      initWithType:ItemTypeTouchToSearchSwitch];
   item.text = l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE);
   item.on =
       ([_touchToSearchPermissions preferenceState] != TouchToSearch::DISABLED);
@@ -107,8 +108,8 @@ typedef NS_ENUM(NSUInteger, ItemType) {
       GURL(l10n_util::GetStringUTF8(IDS_IOS_CONTEXTUAL_SEARCH_LEARN_MORE_URL)),
       GetApplicationContext()->GetApplicationLocale());
 
-  CollectionViewFooterItem* item = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooter] autorelease];
+  CollectionViewFooterItem* item =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
   item.text = footerText;
   item.linkURL = learnMoreURL;
   item.linkDelegate = self;

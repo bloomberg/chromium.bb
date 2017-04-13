@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
@@ -26,6 +24,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -47,23 +49,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface PasswordDetailsCollectionViewController () {
   // The username to which the saved password belongs.
-  base::scoped_nsobject<NSString> _username;
+  NSString* _username;
   // The saved password.
-  base::scoped_nsobject<NSString> _password;
+  NSString* _password;
   // Whether the password is shown in plain text form or in obscured form.
   BOOL _plainTextPasswordShown;
   // The password form.
   autofill::PasswordForm _passwordForm;
   // Instance of the parent view controller needed in order to update the
   // password list when a password is deleted.
-  base::WeakNSProtocol<id<PasswordDetailsCollectionViewControllerDelegate>>
-      _weakDelegate;
+  __weak id<PasswordDetailsCollectionViewControllerDelegate> _weakDelegate;
   // Module containing the reauthentication mechanism for viewing and copying
   // passwords.
-  base::WeakNSProtocol<id<ReauthenticationProtocol>>
-      _weakReauthenticationModule;
+  __weak id<ReauthenticationProtocol> _weakReauthenticationModule;
   // The password item.
-  base::scoped_nsobject<PasswordDetailsItem> _passwordItem;
+  PasswordDetailsItem* _passwordItem;
 }
 
 @end
@@ -82,11 +82,11 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   DCHECK(reauthenticationModule);
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    _weakDelegate.reset(delegate);
-    _weakReauthenticationModule.reset(reauthenticationModule);
+    _weakDelegate = delegate;
+    _weakReauthenticationModule = reauthenticationModule;
     _passwordForm = passwordForm;
-    _username.reset([username copy]);
-    _password.reset([password copy]);
+    _username = [username copy];
+    _password = [password copy];
     self.title =
         [PasswordDetailsCollectionViewController simplifyOrigin:origin];
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -119,32 +119,31 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   CollectionViewModel* model = self.collectionViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierUsername];
-  CollectionViewTextItem* usernameHeader = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* usernameHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   usernameHeader.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
   usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:usernameHeader
       forSectionWithIdentifier:SectionIdentifierUsername];
   PasswordDetailsItem* usernameItem =
-      [[[PasswordDetailsItem alloc] initWithType:ItemTypeUsername] autorelease];
+      [[PasswordDetailsItem alloc] initWithType:ItemTypeUsername];
   usernameItem.text = _username;
   usernameItem.showingText = YES;
   [model addItem:usernameItem
       toSectionWithIdentifier:SectionIdentifierUsername];
 
   [model addSectionWithIdentifier:SectionIdentifierPassword];
-  CollectionViewTextItem* passwordHeader = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* passwordHeader =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   passwordHeader.text =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:passwordHeader
       forSectionWithIdentifier:SectionIdentifierPassword];
-  _passwordItem.reset(
-      [[PasswordDetailsItem alloc] initWithType:ItemTypePassword]);
-  _passwordItem.get().text = _password;
-  _passwordItem.get().showingText = NO;
+  _passwordItem = [[PasswordDetailsItem alloc] initWithType:ItemTypePassword];
+  _passwordItem.text = _password;
+  _passwordItem.showingText = NO;
   [model addItem:_passwordItem
       toSectionWithIdentifier:SectionIdentifierPassword];
 
@@ -160,30 +159,29 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 #pragma mark - Items
 
 - (CollectionViewItem*)passwordCopyButtonItem {
   CollectionViewTextItem* item =
-      [[[CollectionViewTextItem alloc] initWithType:ItemTypeCopy] autorelease];
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeCopy];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
 
 - (CollectionViewItem*)showHidePasswordButtonItem {
-  CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeShowHide] autorelease];
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
 
 - (CollectionViewItem*)deletePasswordButtonItem {
-  CollectionViewTextItem* item = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeDelete] autorelease];
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeDelete];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
   item.textColor = [[MDCPalette cr_redPalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -220,18 +218,17 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   }
 
   if ([_weakReauthenticationModule canAttemptReauth]) {
-    base::WeakNSObject<PasswordDetailsCollectionViewController> weakSelf(self);
+    __weak PasswordDetailsCollectionViewController* weakSelf = self;
     void (^showPasswordHandler)(BOOL) = ^(BOOL success) {
-      base::scoped_nsobject<PasswordDetailsCollectionViewController> strongSelf(
-          [weakSelf retain]);
+      PasswordDetailsCollectionViewController* strongSelf = weakSelf;
       if (!strongSelf || !success)
         return;
-      PasswordDetailsItem* passwordItem = strongSelf.get()->_passwordItem.get();
+      PasswordDetailsItem* passwordItem = strongSelf->_passwordItem;
       passwordItem.showingText = YES;
       [strongSelf reconfigureCellsForItems:@[ passwordItem ]
                    inSectionWithIdentifier:SectionIdentifierPassword];
       [[strongSelf collectionView].collectionViewLayout invalidateLayout];
-      strongSelf.get()->_plainTextPasswordShown = YES;
+      strongSelf->_plainTextPasswordShown = YES;
       [strongSelf toggleShowHideButton];
     };
 
@@ -246,7 +243,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   if (!_plainTextPasswordShown) {
     return;
   }
-  _passwordItem.get().showingText = NO;
+  _passwordItem.showingText = NO;
   [self reconfigureCellsForItems:@[ _passwordItem ]
          inSectionWithIdentifier:SectionIdentifierPassword];
   [self.collectionView.collectionViewLayout invalidateLayout];
@@ -266,15 +263,14 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
               l10n_util::GetNSString(
                   IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)];
   } else if ([_weakReauthenticationModule canAttemptReauth]) {
-    base::WeakNSObject<PasswordDetailsCollectionViewController> weakSelf(self);
+    __weak PasswordDetailsCollectionViewController* weakSelf = self;
     void (^copyPasswordHandler)(BOOL) = ^(BOOL success) {
-      base::scoped_nsobject<PasswordDetailsCollectionViewController> strongSelf(
-          [weakSelf retain]);
+      PasswordDetailsCollectionViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
       if (success) {
         UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-        generalPasteboard.string = strongSelf.get()->_password;
+        generalPasteboard.string = strongSelf->_password;
         TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
         [strongSelf showCopyPasswordResultToast:
                         l10n_util::GetNSString(

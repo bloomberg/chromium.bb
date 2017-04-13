@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -20,6 +18,10 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // The accessibility identifier of the Import Data cell.
 NSString* const kImportDataImportCellId = @"kImportDataImportCellId";
@@ -43,13 +45,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @implementation ImportDataCollectionViewController {
-  base::WeakNSProtocol<id<ImportDataControllerDelegate>> _delegate;
-  base::scoped_nsobject<NSString> _fromEmail;
-  base::scoped_nsobject<NSString> _toEmail;
+  __weak id<ImportDataControllerDelegate> _delegate;
+  NSString* _fromEmail;
+  NSString* _toEmail;
   BOOL _isSignedIn;
   ShouldClearData _shouldClearData;
-  base::scoped_nsobject<CollectionViewDetailItem> _importDataItem;
-  base::scoped_nsobject<CollectionViewDetailItem> _keepDataSeparateItem;
+  CollectionViewDetailItem* _importDataItem;
+  CollectionViewDetailItem* _keepDataSeparateItem;
 }
 
 #pragma mark Initialization
@@ -62,9 +64,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(toEmail);
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    _delegate.reset(delegate);
-    _fromEmail.reset([fromEmail copy]);
-    _toEmail.reset([toEmail copy]);
+    _delegate = delegate;
+    _fromEmail = [fromEmail copy];
+    _toEmail = [toEmail copy];
     _isSignedIn = isSignedIn;
     _shouldClearData = isSignedIn ? SHOULD_CLEAR_DATA_CLEAR_DATA
                                   : SHOULD_CLEAR_DATA_MERGE_DATA;
@@ -73,12 +75,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
             ? l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SWITCH)
             : l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
     [self setShouldHideDoneButton:YES];
-    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(
                           IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON)
                 style:UIBarButtonItemStyleDone
                target:self
-               action:@selector(didTapContinue)] autorelease];
+               action:@selector(didTapContinue)];
     [self loadModel];
   }
   return self;
@@ -95,8 +97,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierDisclaimer];
 
   [model addSectionWithIdentifier:SectionIdentifierOptions];
-  _importDataItem.reset([[self importDataItem] retain]);
-  _keepDataSeparateItem.reset([[self keepDataSeparateItem] retain]);
+  _importDataItem = [self importDataItem];
+  _keepDataSeparateItem = [self keepDataSeparateItem];
   if (_isSignedIn) {
     [model addItem:_keepDataSeparateItem
         toSectionWithIdentifier:SectionIdentifierOptions];
@@ -114,15 +116,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)descriptionItem {
   CardMultilineItem* item =
-      [[[CardMultilineItem alloc] initWithType:ItemTypeFooter] autorelease];
+      [[CardMultilineItem alloc] initWithType:ItemTypeFooter];
   item.text = l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                                       base::SysNSStringToUTF16(_fromEmail));
   return item;
 }
 
 - (CollectionViewDetailItem*)importDataItem {
-  CollectionViewDetailItem* item = [[[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeOptionImportData] autorelease];
+  CollectionViewDetailItem* item =
+      [[CollectionViewDetailItem alloc] initWithType:ItemTypeOptionImportData];
   item.cellClass = [ImportDataMultilineDetailCell class];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_TITLE);
   item.detailText =
@@ -135,8 +137,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewDetailItem*)keepDataSeparateItem {
-  CollectionViewDetailItem* item = [[[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeOptionKeepDataSeparate] autorelease];
+  CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc]
+      initWithType:ItemTypeOptionKeepDataSeparate];
   item.cellClass = [ImportDataMultilineDetailCell class];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_KEEP_TITLE);
   if (_isSignedIn) {
@@ -189,10 +191,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Updates the UI based on the value of |_shouldClearData|.
 - (void)updateUI {
   BOOL importDataSelected = _shouldClearData == SHOULD_CLEAR_DATA_MERGE_DATA;
-  _importDataItem.get().accessoryType =
-      importDataSelected ? MDCCollectionViewCellAccessoryCheckmark
-                         : MDCCollectionViewCellAccessoryNone;
-  _keepDataSeparateItem.get().accessoryType =
+  _importDataItem.accessoryType = importDataSelected
+                                      ? MDCCollectionViewCellAccessoryCheckmark
+                                      : MDCCollectionViewCellAccessoryNone;
+  _keepDataSeparateItem.accessoryType =
       importDataSelected ? MDCCollectionViewCellAccessoryNone
                          : MDCCollectionViewCellAccessoryCheckmark;
   [self reconfigureCellsForItems:@[ _importDataItem, _keepDataSeparateItem ]
