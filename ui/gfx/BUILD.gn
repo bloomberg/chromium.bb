@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//device/vr/features.gni")
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
@@ -330,8 +331,8 @@ component("gfx") {
     sources -= [ "canvas_notimplemented.cc" ]
   }
 
-  # Desktop only.
-  if (use_aura || (!is_ios && !is_android)) {
+  # Desktop and Android+VR only.
+  if (use_aura || (!is_ios && !is_android) || (is_android && enable_vr)) {
     sources += [
       "paint_vector_icon.cc",
       "paint_vector_icon.h",

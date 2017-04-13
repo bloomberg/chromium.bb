@@ -30,6 +30,12 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "mailbox_to_surface_bridge.h",
       "non_presenting_gvr_delegate.cc",
       "non_presenting_gvr_delegate.h",
+      "textures/insecure_content_permanent_texture.cc",
+      "textures/insecure_content_permanent_texture.h",
+      "textures/insecure_content_transient_texture.cc",
+      "textures/insecure_content_transient_texture.h",
+      "textures/ui_texture.cc",
+      "textures/ui_texture.h",
       "ui_element.cc",
       "ui_element.h",
       "ui_interface.cc",
@@ -89,6 +95,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//ui/display",
       "//ui/gl",
       "//ui/gl/init",
+      "//ui/vector_icons",
     ]
 
     libs = [
