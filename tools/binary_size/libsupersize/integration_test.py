@@ -71,7 +71,7 @@ class IntegrationTest(unittest.TestCase):
   def test_Archive(self):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       _RunApp('archive', temp_file.name, '--output-directory', _TEST_DATA_DIR,
-              '--map-file', _TEST_MAP_PATH, '--elf-file', '')
+              '--map-file', _TEST_MAP_PATH)
       size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing the .map.
     expected_size_info = self._CloneSizeInfo()
@@ -90,7 +90,7 @@ class IntegrationTest(unittest.TestCase):
     # Just tests that it doesn't crash.
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       _RunApp('archive', temp_file.name, '--no-source-paths',
-              '--map-file', _TEST_MAP_PATH, '--elf-file', '')
+              '--map-file', _TEST_MAP_PATH)
       archive.LoadAndPostProcessSizeInfo(temp_file.name)
 
   @_CompareWithGolden

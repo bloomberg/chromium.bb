@@ -77,11 +77,9 @@ class _Session(object):
 
     if len(size_infos) == 1:
       self._variables['size_info'] = size_infos[0]
-      self._variables['symbols'] = size_infos[0].symbols
     else:
       for i, size_info in enumerate(size_infos):
         self._variables['size_info%d' % (i + 1)] = size_info
-        self._variables['symbols%d' % (i + 1)] = size_info.symbols
 
   def _PrintFunc(self, obj, verbose=False, recursive=False, use_pager=None,
                  to_file=None):
@@ -150,19 +148,19 @@ class _Session(object):
         'Print(size_info, verbose=True)',
         '',
         '# Show two levels of .text, grouped by first two subdirectories',
-        'text_syms = symbols.WhereInSection("t")',
+        'text_syms = size_info.symbols.WhereInSection("t")',
         'by_path = text_syms.GroupBySourcePath(depth=2)',
         'Print(by_path.WhereBiggerThan(1024))',
         '',
         '# Show all non-vtable generated symbols',
-        'generated_syms = symbols.WhereIsGenerated()',
+        'generated_syms = size_info.symbols.WhereIsGenerated()',
         'Print(generated_syms.WhereNameMatches(r"vtable").Inverted())',
         '',
         '# Show all symbols that have "print" in their name or path, except',
         '# those within components/.',
         '# Note: Could have also used Inverted(), as above.',
         '# Note: Use "help(ExpandRegex)" for more about what {{_print_}} does.',
-        'print_syms = symbols.WhereMatches(r"{{_print_}}")',
+        'print_syms = size_info.symbols.WhereMatches(r"{{_print_}}")',
         'Print(print_syms - print_syms.WherePathMatches(r"^components/"))',
         '',
         '# Diff two .size files and save result to a file:',

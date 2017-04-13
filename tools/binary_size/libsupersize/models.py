@@ -31,7 +31,9 @@ import match_util
 
 
 METADATA_GIT_REVISION = 'git_revision'
+METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
+METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "Machine" field from readelf -h
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'

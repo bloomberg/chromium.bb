@@ -11,9 +11,13 @@ import datetime
 import gzip
 import logging
 import os
+import multiprocessing
+import posixpath
 import re
 import subprocess
 import sys
+import tempfile
+import zipfile
 
 import describe
 import file_format
@@ -205,12 +209,16 @@ def _ClusterSymbols(symbols):
   Groups include:
    * Symbols that have [clone] in their name (created by compiler optimization).
    * Star symbols (such as "** merge strings", and "** symbol gap")
+
+  To view created groups:
+    Print(size_info.symbols.Filter(lambda s: s.IsGroup()), recursive=True)
   """
   # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
   # Example name suffixes:
-  #     [clone .part.322]
-  #     [clone .isra.322]
-  #     [clone .constprop.1064]
+  #     [clone .part.322]  # GCC
+  #     [clone .isra.322]  # GCC
+  #     [clone .constprop.1064]  # GCC
+  #     [clone .11064]  # clang
 
   # Step 1: Create name map, find clones, collect star syms into replacements.
   logging.debug('Creating name -> symbol map')
@@ -351,6 +359,9 @@ def CreateSizeInfo(map_path, lazy_paths=None, no_source_paths=False,
     _PostProcessSizeInfo(size_info)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
+    # Padding is reported in size coverage logs.
+    if raw_only:
+      _CalculatePadding(size_info.raw_symbols)
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.info(line)
   logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
@@ -386,6 +397,12 @@ def _SectionSizesFromElf(elf_path, tool_prefix):
   return section_sizes
 
 
+def _ArchFromElf(elf_path, tool_prefix):
+  args = [tool_prefix + 'readelf', '-h', elf_path]
+  stdout = subprocess.check_output(args)
+  return re.search('Machine:\s*(\S+)', stdout).group(1)
+
+
 def _ParseGnArgs(args_path):
   """Returns a list of normalized "key=value" strings."""
   args = {}
@@ -399,15 +416,30 @@ def _ParseGnArgs(args_path):
   return ["%s=%s" % x for x in sorted(args.iteritems())]
 
 
+def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
+  """Returns a tuple of (build_id, section_sizes)."""
+  with zipfile.ZipFile(apk_path) as apk, \
+       tempfile.NamedTemporaryFile() as f:
+    f.write(apk.read(apk_so_path))
+    f.flush()
+    build_id = BuildIdFromElf(f.name, tool_prefix)
+    section_sizes = _SectionSizesFromElf(f.name, tool_prefix)
+    return build_id, section_sizes
+
+
 def AddArguments(parser):
   parser.add_argument('size_file', help='Path to output .size file.')
-  parser.add_argument('--elf-file', required=True,
+  parser.add_argument('--apk-file',
+                      help='.apk file to measure. When set, --elf-file will be '
+                            'derived (if unset). Providing the .apk allows '
+                            'for the size of packed relocations to be recorded')
+  parser.add_argument('--elf-file',
                       help='Path to input ELF file. Currently used for '
-                           'capturing metadata. Pass "" to skip '
-                           'metadata collection.')
+                           'capturing metadata.')
   parser.add_argument('--map-file',
                       help='Path to input .map(.gz) file. Defaults to '
-                           '{{elf_file}}.map(.gz)?')
+                           '{{elf_file}}.map(.gz)?. If given without '
+                           '--elf-file, no size metadata will be recorded.')
   parser.add_argument('--no-source-paths', action='store_true',
                       help='Do not use .ninja files to map '
                            'object_path -> source_path')
@@ -421,26 +453,47 @@ def Run(args, parser):
   if not args.size_file.endswith('.size'):
     parser.error('size_file must end with .size')
 
-  if args.map_file:
-    if (not args.map_file.endswith('.map')
-        and not args.map_file.endswith('.map.gz')):
+  elf_path = args.elf_file
+  map_path = args.map_file
+  apk_path = args.apk_file
+  any_input = apk_path or elf_path or map_path
+  if not any_input:
+    parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
+  lazy_paths = paths.LazyPaths(args=args, input_file=any_input)
+
+  if apk_path:
+    with zipfile.ZipFile(apk_path) as z:
+      lib_infos = [f for f in z.infolist()
+                   if f.filename.endswith('.so') and f.file_size > 0]
+    assert lib_infos, 'APK has no .so files.'
+    # TODO(agrieve): Add support for multiple .so files, and take into account
+    #     secondary architectures.
+    apk_so_path = max(lib_infos, key=lambda x:x.file_size).filename
+    logging.debug('Sub-apk path=%s', apk_so_path)
+    if not elf_path:
+      elf_path = os.path.join(
+          lazy_paths.output_directory, 'lib.unstripped',
+          os.path.basename(apk_so_path.replace('crazy.', '')))
+      logging.debug('Detected --elf-file=%s', elf_path)
+
+  if map_path:
+    if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
       parser.error('Expected --map-file to end with .map or .map.gz')
-    map_file_path = args.map_file
   else:
-    map_file_path = args.elf_file + '.map'
-    if not os.path.exists(map_file_path):
-      map_file_path += '.gz'
-    if not os.path.exists(map_file_path):
+    map_path = elf_path + '.map'
+    if not os.path.exists(map_path):
+      map_path += '.gz'
+    if not os.path.exists(map_path):
       parser.error('Could not find .map(.gz)? file. Use --map-file.')
 
-  lazy_paths = paths.LazyPaths(args=args, input_file=args.elf_file)
   metadata = None
-  if args.elf_file:
+  if elf_path:
     logging.debug('Constructing metadata')
-    git_rev = _DetectGitRevision(os.path.dirname(args.elf_file))
-    build_id = BuildIdFromElf(args.elf_file, lazy_paths.tool_prefix)
+    git_rev = _DetectGitRevision(os.path.dirname(elf_path))
+    architecture = _ArchFromElf(elf_path, lazy_paths.tool_prefix)
+    build_id = BuildIdFromElf(elf_path, lazy_paths.tool_prefix)
     timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
-        args.elf_file))
+        elf_path))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
     gn_args = _ParseGnArgs(os.path.join(lazy_paths.output_directory, 'args.gn'))
 
@@ -449,25 +502,54 @@ def Run(args, parser):
 
     metadata = {
         models.METADATA_GIT_REVISION: git_rev,
-        models.METADATA_MAP_FILENAME: relative_to_out(map_file_path),
-        models.METADATA_ELF_FILENAME: relative_to_out(args.elf_file),
+        models.METADATA_MAP_FILENAME: relative_to_out(map_path),
+        models.METADATA_ELF_ARCHITECTURE: architecture,
+        models.METADATA_ELF_FILENAME: relative_to_out(elf_path),
         models.METADATA_ELF_MTIME: timestamp,
         models.METADATA_ELF_BUILD_ID: build_id,
         models.METADATA_GN_ARGS: gn_args,
     }
 
-  size_info = CreateSizeInfo(map_file_path, lazy_paths,
-                             no_source_paths=args.no_source_paths,
-                             raw_only=True)
+    if apk_path:
+      metadata[models.METADATA_APK_FILENAME] = relative_to_out(apk_path)
+      # Extraction takes around 1 second, so do it in parallel.
+      pool_of_one = multiprocessing.Pool(1)
+      apk_elf_result = pool_of_one.apply_async(
+          _ElfInfoFromApk, (apk_path, apk_so_path, lazy_paths.tool_prefix))
+      pool_of_one.close()
+
+  size_info = CreateSizeInfo(
+      map_path, lazy_paths, no_source_paths=args.no_source_paths, raw_only=True)
 
   if metadata:
     size_info.metadata = metadata
     logging.debug('Validating section sizes')
-    elf_section_sizes = _SectionSizesFromElf(args.elf_file,
-                                             lazy_paths.tool_prefix)
+    elf_section_sizes = _SectionSizesFromElf(elf_path, lazy_paths.tool_prefix)
     for k, v in elf_section_sizes.iteritems():
       assert v == size_info.section_sizes.get(k), (
           'ELF file and .map file do not match.')
+
+    if apk_path:
+      logging.debug('Extracting section sizes from .so within .apk')
+      unstripped_section_sizes = size_info.section_sizes
+      apk_build_id, size_info.section_sizes = apk_elf_result.get()
+      assert apk_build_id == build_id, (
+          'BuildID for %s within %s did not match the one at %s' %
+          (apk_so_path, apk_path, elf_path))
+
+      packed_section_name = None
+      if architecture == 'ARM':
+        packed_section_name = '.rel.dyn'
+      elif architecture == 'AArch64':
+        packed_section_name = '.rela.dyn'
+
+      if packed_section_name:
+        logging.debug('Recording size of unpacked relocations')
+        if packed_section_name not in size_info.section_sizes:
+          logging.warning('Packed section not present: %s', packed_section_name)
+        else:
+          size_info.section_sizes['%s (unpacked)' % packed_section_name] = (
+              unstripped_section_sizes.get(packed_section_name))
 
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
