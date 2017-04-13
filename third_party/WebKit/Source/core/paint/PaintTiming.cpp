@@ -67,7 +67,7 @@ void PaintTiming::MarkFirstTextPaint() {
   first_text_paint_ = MonotonicallyIncreasingTime();
   SetFirstContentfulPaint(first_text_paint_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "rail,devtools.timeline", "firstTextPaint",
+      "loading,rail,devtools.timeline", "firstTextPaint",
       TraceEvent::ToTraceTimestamp(first_text_paint_), "frame", GetFrame());
   NotifyPaintTimingChanged();
 }
@@ -78,7 +78,7 @@ void PaintTiming::MarkFirstImagePaint() {
   first_image_paint_ = MonotonicallyIncreasingTime();
   SetFirstContentfulPaint(first_image_paint_);
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "rail,devtools.timeline", "firstImagePaint",
+      "loading,rail,devtools.timeline", "firstImagePaint",
       TraceEvent::ToTraceTimestamp(first_image_paint_), "frame", GetFrame());
   NotifyPaintTimingChanged();
 }
@@ -96,7 +96,7 @@ void PaintTiming::SetFirstMeaningfulPaint(double stamp) {
   DCHECK_EQ(first_meaningful_paint_, 0.0);
   first_meaningful_paint_ = stamp;
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "rail,devtools.timeline", "firstMeaningfulPaint",
+      "loading,rail,devtools.timeline", "firstMeaningfulPaint",
       TraceEvent::ToTraceTimestamp(first_meaningful_paint_), "frame",
       GetFrame());
   NotifyPaintTimingChanged();
@@ -140,7 +140,7 @@ void PaintTiming::SetFirstPaint(double stamp) {
   if (performance)
     performance->AddFirstPaintTiming(first_paint_);
 
-  TRACE_EVENT_INSTANT1("rail,devtools.timeline", "firstPaint",
+  TRACE_EVENT_INSTANT1("loading,rail,devtools.timeline", "firstPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
 }
 
@@ -152,7 +152,7 @@ void PaintTiming::SetFirstContentfulPaint(double stamp) {
   Performance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstContentfulPaintTiming(first_contentful_paint_);
-  TRACE_EVENT_INSTANT1("rail,devtools.timeline", "firstContentfulPaint",
+  TRACE_EVENT_INSTANT1("loading,rail,devtools.timeline", "firstContentfulPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
 }
 
