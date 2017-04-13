@@ -37,6 +37,15 @@ static INLINE int av1_preserve_existing_gf(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_REFS
 }
 
+void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
+#if CONFIG_SUPERTX
+                       const int supertx_enabled,
+#endif
+#if CONFIG_LV_MAP
+                       int block,
+#endif
+                       aom_writer *w);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

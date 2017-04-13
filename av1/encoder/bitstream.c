@@ -1419,12 +1419,15 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_PALETTE
 
-static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
-                          const MB_MODE_INFO *const mbmi,
+void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
-                          const int supertx_enabled,
+                       const int supertx_enabled,
 #endif
-                          aom_writer *w) {
+#if CONFIG_LV_MAP
+                       int block,
+#endif
+                       aom_writer *w) {
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_VAR_TX
   const TX_SIZE tx_size = is_inter ? mbmi->min_tx_size : mbmi->tx_size;
@@ -1435,6 +1438,13 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 #else
   FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+
+#if !CONFIG_LV_MAP
+  TX_TYPE tx_type = mbmi->tx_type;
+#else
+  // Only y plane's tx_type is transmitted
+  TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
 #endif
 
   if (!FIXED_TX_TYPE) {
@@ -1453,31 +1463,31 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       const int eset =
           get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       if (is_inter) {
-        assert(ext_tx_used_inter[eset][mbmi->tx_type]);
+        assert(ext_tx_used_inter[eset][tx_type]);
         if (eset > 0) {
 #if CONFIG_EC_MULTISYMBOL
-          aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
+          aom_write_symbol(w, av1_ext_tx_inter_ind[eset][tx_type],
                            ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
                            ext_tx_cnt_inter[eset]);
 #else
           av1_write_token(w, av1_ext_tx_inter_tree[eset],
                           ec_ctx->inter_ext_tx_prob[eset][square_tx_size],
-                          &ext_tx_inter_encodings[eset][mbmi->tx_type]);
+                          &ext_tx_inter_encodings[eset][tx_type]);
 #endif
         }
       } else if (ALLOW_INTRA_EXT_TX) {
-        assert(ext_tx_used_intra[eset][mbmi->tx_type]);
+        assert(ext_tx_used_intra[eset][tx_type]);
         if (eset > 0) {
 #if CONFIG_EC_MULTISYMBOL
           aom_write_symbol(
-              w, av1_ext_tx_intra_ind[eset][mbmi->tx_type],
+              w, av1_ext_tx_intra_ind[eset][tx_type],
               ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
               ext_tx_cnt_intra[eset]);
 #else
           av1_write_token(
               w, av1_ext_tx_intra_tree[eset],
               ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
-              &ext_tx_intra_encodings[eset][mbmi->tx_type]);
+              &ext_tx_intra_encodings[eset][tx_type]);
 #endif
         }
       }
@@ -1493,16 +1503,16 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       if (is_inter) {
 #if CONFIG_EC_MULTISYMBOL
-        aom_write_symbol(w, av1_ext_tx_ind[mbmi->tx_type],
+        aom_write_symbol(w, av1_ext_tx_ind[tx_type],
                          ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES);
 #else
         av1_write_token(w, av1_ext_tx_tree, ec_ctx->inter_ext_tx_prob[tx_size],
-                        &ext_tx_encodings[mbmi->tx_type]);
+                        &ext_tx_encodings[tx_type]);
 #endif
       } else {
 #if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(
-            w, av1_ext_tx_ind[mbmi->tx_type],
+            w, av1_ext_tx_ind[tx_type],
             ec_ctx->intra_ext_tx_cdf[tx_size]
                                     [intra_mode_to_tx_type_context[mbmi->mode]],
             TX_TYPES);
@@ -1512,7 +1522,7 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
             ec_ctx
                 ->intra_ext_tx_prob[tx_size]
                                    [intra_mode_to_tx_type_context[mbmi->mode]],
-            &ext_tx_encodings[mbmi->tx_type]);
+            &ext_tx_encodings[tx_type]);
 #endif
       }
     }
@@ -1545,8 +1555,8 @@ static void write_intra_uv_mode(FRAME_CONTEXT *frame_ctx,
 #endif
 }
 
-static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
-                                const int mi_row, const int mi_col,
+static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
+                                const int mi_col,
 #if CONFIG_SUPERTX
                                 int supertx_enabled,
 #endif
@@ -1567,6 +1577,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if !CONFIG_REF_MV
   nmv_context *nmvc = &ec_ctx->nmvc;
 #endif
+  const MODE_INFO *mi = xd->mi[0];
 
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &cm->fc->seg;
@@ -1926,26 +1937,27 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
-  write_tx_type(cm, xd, mbmi,
+#if !CONFIG_LV_MAP
+  av1_write_tx_type(cm, xd,
 #if CONFIG_SUPERTX
-                supertx_enabled,
+                    supertx_enabled,
 #endif
-                w);
+                    w);
+#endif  // !CONFIG_LV_MAP
 }
 
 #if CONFIG_DELTA_Q
 static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd, const int mi_row,
-                              const int mi_col, MODE_INFO **mi_8x8,
-                              aom_writer *w) {
+                              const int mi_col, aom_writer *w) {
   int skip;
 #else
 static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
                               const int mi_row, const int mi_col,
-                              MODE_INFO **mi_8x8, aom_writer *w) {
+                              aom_writer *w) {
 #endif
   const struct segmentation *const seg = &cm->seg;
   struct segmentation_probs *const segp = &cm->fc->seg;
-  const MODE_INFO *const mi = mi_8x8[0];
+  const MODE_INFO *const mi = xd->mi[0];
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -2032,11 +2044,13 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
     write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
-  write_tx_type(cm, xd, mbmi,
+#if !CONFIG_LV_MAP
+  av1_write_tx_type(cm, xd,
 #if CONFIG_SUPERTX
-                0,
+                    0,
 #endif
-                w);
+                    w);
+#endif  // !CONFIG_LV_MAP
 }
 
 #if CONFIG_SUPERTX
@@ -2120,7 +2134,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
 
   if (frame_is_intra_only(cm)) {
-    write_mb_modes_kf(cm, xd, mi_row, mi_col, xd->mi, w);
+    write_mb_modes_kf(cm, xd, mi_row, mi_col, w);
   } else {
 #if CONFIG_VAR_TX
     xd->above_txfm_context = cm->above_txfm_context + mi_col;
@@ -2157,7 +2171,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
              m->mbmi.ref_frame[0], m->mbmi.ref_frame[1]);
     }
 #endif  // 0
-    pack_inter_mode_mvs(cpi, m, mi_row, mi_col,
+    pack_inter_mode_mvs(cpi, mi_row, mi_col,
 #if CONFIG_SUPERTX
                         supertx_enabled,
 #endif
