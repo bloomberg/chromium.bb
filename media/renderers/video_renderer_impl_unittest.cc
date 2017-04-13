@@ -71,7 +71,8 @@ class VideoRendererImplTest : public testing::Test {
   VideoRendererImplTest()
       : tick_clock_(new base::SimpleTestTickClock()),
         decoder_(nullptr),
-        demuxer_stream_(DemuxerStream::VIDEO) {
+        demuxer_stream_(DemuxerStream::VIDEO),
+        expect_init_success_(true) {
     null_video_sink_.reset(new NullVideoSink(
         false, base::TimeDelta::FromSecondsD(1.0 / 60),
         base::Bind(&MockCB::FrameReceived, base::Unretained(&mock_cb_)),
@@ -560,13 +561,7 @@ TEST_F(VideoRendererImplTest, ReinitializeForAnotherStream) {
   InitializeRenderer(&new_stream, false, true);
 }
 
-// crbug.com/711318.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DestroyWhileInitializing DISABLED_DestroyWhileInitializing
-#else
-#define MAYBE_DestroyWhileInitializing DestroyWhileInitializing
-#endif
-TEST_F(VideoRendererImplTest, MAYBE_DestroyWhileInitializing) {
+TEST_F(VideoRendererImplTest, DestroyWhileInitializing) {
   CallInitialize(&demuxer_stream_, NewExpectedStatusCB(PIPELINE_ERROR_ABORT),
                  false, PIPELINE_OK);
   Destroy();
