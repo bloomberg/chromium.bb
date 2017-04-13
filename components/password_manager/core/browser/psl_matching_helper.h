@@ -33,8 +33,20 @@ enum class MatchResult {
   FEDERATED_PSL_MATCH,
 };
 
-// For testing.
+#if defined(UNIT_TEST)
 std::ostream& operator<<(std::ostream& out, MatchResult result);
+
+// Returns true iff |form_signon_realm| designates a federated credential for
+// |origin|. It doesn't check the port because |form_signon_realm| doesn't have
+// it.
+bool IsFederatedRealm(const std::string& form_signon_realm, const GURL& origin);
+
+// Returns true iff |form_signon_realm| and |form_origin| designate a federated
+// PSL matching credential for the |origin|.
+bool IsFederatedPSLMatch(const std::string& form_signon_realm,
+                         const GURL& form_origin,
+                         const GURL& origin);
+#endif
 
 // Returns what type of match applies to |form| and |form_digest|.
 MatchResult GetMatchResult(const autofill::PasswordForm& form,
@@ -62,13 +74,6 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 // registry-controlled domain part.
 std::string GetRegistryControlledDomain(const GURL& signon_realm);
 
-// Returns true iff |signon_realm| designates a federated credential for the
-// |origin|.
-bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin);
-
-// Returns true iff |signon_realm| designates a federated PSL matching
-// credential for the |origin|.
-bool IsFederatedPSLMatch(const std::string& signon_realm, const GURL& origin);
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PSL_MATCHING_HELPER_H_

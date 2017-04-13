@@ -431,6 +431,37 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   EXPECT_THAT(result, UnorderedElementsAre(Pointee(form), Pointee(form2)));
 }
 
+TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
+  PasswordForm form;
+  form.origin = GURL("http://localhost/");
+  form.signon_realm = "federation://localhost/accounts.google.com";
+  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.type = PasswordForm::TYPE_API;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  PasswordForm form_with_port(form);
+  form_with_port.origin = GURL("http://localhost:8080/");
+  form_with_port.signon_realm = "federation://localhost/accounts.google.com";
+
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  EXPECT_EQ(AddChangeForForm(form_with_port), db().AddLogin(form_with_port));
+
+  // Match twice.
+  PasswordStore::FormDigest form_request(PasswordForm::SCHEME_HTML,
+                                         "http://localhost/",
+                                         GURL("http://localhost/"));
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form)));
+
+  // Match against the mobile site.
+  form_request.origin = GURL("http://localhost:8080/");
+  form_request.signon_realm = "http://localhost:8080/";
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form_with_port)));
+}
+
 TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);

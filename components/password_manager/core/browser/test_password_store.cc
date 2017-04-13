@@ -86,17 +86,26 @@ std::vector<std::unique_ptr<autofill::PasswordForm>>
 TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> matched_forms;
   for (const auto& elements : stored_passwords_) {
+    // The code below doesn't support PSL federated credential. It's doable but
+    // no test need it so far.
     const bool realm_matches = elements.first == form.signon_realm;
     const bool realm_psl_matches =
         IsPublicSuffixDomainMatch(elements.first, form.signon_realm);
     if (realm_matches || realm_psl_matches ||
         (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
-         password_manager::IsFederatedMatch(elements.first, form.origin))) {
+         password_manager::IsFederatedRealm(elements.first, form.origin))) {
       const bool is_psl = !realm_matches && realm_psl_matches;
       for (const auto& stored_form : elements.second) {
-        matched_forms.push_back(
-            base::MakeUnique<autofill::PasswordForm>(stored_form));
-        matched_forms.back()->is_public_suffix_match = is_psl;
+        // Repeat the condition above with an additional check for origin.
+        if (realm_matches || realm_psl_matches ||
+            (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+             stored_form.origin.GetOrigin() == form.origin.GetOrigin() &&
+             password_manager::IsFederatedRealm(stored_form.signon_realm,
+                                                form.origin))) {
+          matched_forms.push_back(
+              base::MakeUnique<autofill::PasswordForm>(stored_form));
+          matched_forms.back()->is_public_suffix_match = is_psl;
+        }
       }
     }
   }
