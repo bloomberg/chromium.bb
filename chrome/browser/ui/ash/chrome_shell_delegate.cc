@@ -339,6 +339,16 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
+  void OnTwoFingerTouchStart() override {
+    DCHECK(AccessibilityManager::Get());
+    AccessibilityManager::Get()->OnTwoFingerTouchStart();
+  }
+
+  void OnTwoFingerTouchStop() override {
+    DCHECK(AccessibilityManager::Get());
+    AccessibilityManager::Get()->OnTwoFingerTouchStop();
+  }
+
   bool ShouldToggleSpokenFeedbackViaTouch() override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->ShouldToggleSpokenFeedbackViaTouch();

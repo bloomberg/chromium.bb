@@ -109,6 +109,7 @@ void TouchAccessibilityEnabler::HandleTouchEvent(const ui::TouchEvent& event) {
     state_ = TWO_FINGERS_DOWN;
     two_finger_start_time_ = Now();
     StartTimer();
+    delegate_->OnTwoFingerTouchStart();
   }
 }
 
@@ -130,8 +131,10 @@ void TouchAccessibilityEnabler::StartTimer() {
 }
 
 void TouchAccessibilityEnabler::CancelTimer() {
-  if (timer_.IsRunning())
+  if (timer_.IsRunning()) {
     timer_.Stop();
+    delegate_->OnTwoFingerTouchStop();
+  }
 }
 
 void TouchAccessibilityEnabler::OnTimer() {

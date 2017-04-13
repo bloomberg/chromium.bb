@@ -26,17 +26,25 @@ class MockTouchAccessibilityEnablerDelegate
   MockTouchAccessibilityEnablerDelegate() {}
   ~MockTouchAccessibilityEnablerDelegate() override {}
 
+  void OnTwoFingerTouchStart() override { started_ = true; }
+
+  void OnTwoFingerTouchStop() override { stopped_ = true; }
+
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override {
     ++feedback_progress_sound_count_;
   }
   void ToggleSpokenFeedback() override { toggle_spoken_feedback_ = true; }
 
+  bool started() { return started_; }
+  bool stopped() { return stopped_; }
   size_t feedback_progress_sound_count() const {
     return feedback_progress_sound_count_;
   }
   bool toggle_spoken_feedback() const { return toggle_spoken_feedback_; }
 
  private:
+  bool started_ = false;
+  bool stopped_ = false;
   size_t feedback_progress_sound_count_ = 0;
   bool toggle_spoken_feedback_ = false;
 
@@ -138,6 +146,8 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
   EXPECT_FALSE(delegate_.toggle_spoken_feedback());
+  EXPECT_TRUE(delegate_.started());
+  EXPECT_FALSE(delegate_.stopped());
 
   enabler_->TriggerOnTimerForTesting();
   EXPECT_FALSE(delegate_.toggle_spoken_feedback());
@@ -145,6 +155,8 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
   simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(5000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_TRUE(delegate_.toggle_spoken_feedback());
+  EXPECT_TRUE(delegate_.started());
+  EXPECT_FALSE(delegate_.stopped());
 }
 
 TEST_F(TouchAccessibilityEnablerTest, ThreeFingersCancelsDetection) {
@@ -156,11 +168,15 @@ TEST_F(TouchAccessibilityEnablerTest, ThreeFingersCancelsDetection) {
   generator_->PressTouchId(2);
 
   EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
+  EXPECT_TRUE(delegate_.started());
+  EXPECT_FALSE(delegate_.stopped());
 
   generator_->set_current_location(gfx::Point(33, 56));
   generator_->PressTouchId(3);
 
   EXPECT_TRUE(enabler_->IsInWaitForNoFingersForTesting());
+  EXPECT_TRUE(delegate_.started());
+  EXPECT_TRUE(delegate_.stopped());
 }
 
 TEST_F(TouchAccessibilityEnablerTest, MovingFingerPastSlopCancelsDetection) {

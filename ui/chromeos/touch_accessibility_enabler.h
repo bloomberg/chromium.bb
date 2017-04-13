@@ -30,6 +30,13 @@ class TouchAccessibilityEnablerDelegate {
  public:
   virtual ~TouchAccessibilityEnablerDelegate() {}
 
+  // Called when we first detect two fingers are held down.
+  virtual void OnTwoFingerTouchStart() {}
+
+  // Called when the user is no longer holding down two fingers (including
+  // releasing one, holding down three, or moving them).
+  virtual void OnTwoFingerTouchStop() {}
+
   // While the user holds down two fingers on a touch screen, which is the
   // gesture to enable spoken feedback (if held down long enough), play a sound
   // every "tick" (approximately every half-second) to warn the user something

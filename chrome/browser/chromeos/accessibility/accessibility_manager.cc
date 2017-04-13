@@ -598,6 +598,32 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
   return media::SoundsManager::Get()->Play(sound_key);
 }
 
+void AccessibilityManager::OnTwoFingerTouchStart() {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile());
+  CHECK(event_router);
+
+  auto event_args = base::MakeUnique<base::ListValue>();
+  auto event = base::MakeUnique<extensions::Event>(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_START,
+      extensions::api::accessibility_private::OnTwoFingerTouchStart::kEventName,
+      std::move(event_args));
+  event_router->BroadcastEvent(std::move(event));
+}
+
+void AccessibilityManager::OnTwoFingerTouchStop() {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile());
+  CHECK(event_router);
+
+  auto event_args = base::MakeUnique<base::ListValue>();
+  auto event = base::MakeUnique<extensions::Event>(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_STOP,
+      extensions::api::accessibility_private::OnTwoFingerTouchStop::kEventName,
+      std::move(event_args));
+  event_router->BroadcastEvent(std::move(event));
+}
+
 bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 #if 1
   // Temporarily disabling this feature until UI feedback is fixed.

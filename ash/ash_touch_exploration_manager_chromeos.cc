@@ -104,6 +104,16 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
     UpdateTouchExplorationState();
 }
 
+void AshTouchExplorationManager::OnTwoFingerTouchStart() {
+  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+  delegate->OnTwoFingerTouchStart();
+}
+
+void AshTouchExplorationManager::OnTwoFingerTouchStop() {
+  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+  delegate->OnTwoFingerTouchStart();
+}
+
 void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
