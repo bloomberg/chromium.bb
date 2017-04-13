@@ -340,6 +340,10 @@ class ImageRepCocoa : public ImageRep {
 // The Storage class acts similarly to the pixels in a SkBitmap: the Image
 // class holds a refptr instance of Storage, which in turn holds all the
 // ImageReps. This way, the Image can be cheaply copied.
+//
+// This class is deliberately not RefCountedThreadSafe. Making it so does not
+// solve threading issues, as gfx::Image and its internal classes are
+// themselves not threadsafe.
 class ImageStorage : public base::RefCounted<ImageStorage> {
  public:
   ImageStorage(Image::RepresentationType default_type)
