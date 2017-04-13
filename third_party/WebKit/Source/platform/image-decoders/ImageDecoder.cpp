@@ -521,19 +521,30 @@ SkColorSpaceXform* ImageDecoder::ColorTransform() {
   source_to_target_color_transform_needs_update_ = false;
   source_to_target_color_transform_ = nullptr;
 
-  if (!color_behavior_.IsTransformToTargetColorSpace())
+  if (color_behavior_.IsIgnore()) {
     return nullptr;
-
-  sk_sp<SkColorSpace> src_color_space = embedded_color_space_;
-  if (!src_color_space) {
-    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
-      src_color_space = SkColorSpace::MakeSRGB();
-    else
-      return nullptr;
   }
 
-  sk_sp<SkColorSpace> dst_color_space =
-      color_behavior_.TargetColorSpace().ToSkColorSpace();
+  sk_sp<SkColorSpace> src_color_space = nullptr;
+  sk_sp<SkColorSpace> dst_color_space = nullptr;
+  if (color_behavior_.IsTransformToTargetColorSpace()) {
+    if (!embedded_color_space_) {
+      return nullptr;
+    }
+
+    src_color_space = embedded_color_space_;
+    dst_color_space = color_behavior_.TargetColorSpace().ToSkColorSpace();
+  } else {
+    DCHECK(color_behavior_.IsTag());
+    src_color_space = embedded_color_space_;
+    if (!src_color_space) {
+      src_color_space = SkColorSpace::MakeSRGB();
+    }
+
+    // This will most likely be equal to the |src_color_space|.
+    // In that case, we skip the xform when we check for equality below.
+    dst_color_space = ColorSpaceForSkImages();
+  }
 
   if (SkColorSpace::Equals(src_color_space.get(), dst_color_space.get())) {
     return nullptr;
@@ -548,8 +559,26 @@ sk_sp<SkColorSpace> ImageDecoder::ColorSpaceForSkImages() const {
   if (!color_behavior_.IsTag())
     return nullptr;
 
-  if (embedded_color_space_)
-    return embedded_color_space_;
+  if (embedded_color_space_) {
+    SkColorSpaceTransferFn fn;
+    if (embedded_color_space_->isNumericalTransferFn(&fn)) {
+      // The embedded color space is supported by Skia.
+      return embedded_color_space_;
+    }
+
+    // In the rare case that the embedded color space is unsupported, xform at
+    // decode time.
+    SkMatrix44 to_xyz_d50(SkMatrix44::kUninitialized_Constructor);
+    if (embedded_color_space_->toXYZD50(&to_xyz_d50)) {
+      // Preserve the gamut, but convert to a standard transfer function.
+      return SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
+                                   to_xyz_d50);
+    }
+
+    // For color spaces without an identifiable gamut, just fall through to
+    // sRGB.
+  }
+
   return SkColorSpace::MakeSRGB();
 }
 

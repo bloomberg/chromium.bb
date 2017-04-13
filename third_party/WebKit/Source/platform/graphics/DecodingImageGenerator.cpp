@@ -70,32 +70,88 @@ SkData* DecodingImageGenerator::onRefEncodedData(GrContext* ctx) {
   return data_->GetAsSkData().release();
 }
 
-bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
+static void doColorSpaceXform(const SkImageInfo& dst_info,
+                              void* pixels,
+                              size_t row_bytes,
+                              SkColorSpace* src_color_space) {
+  TRACE_EVENT0("blink", "DecodingImageGenerator::getPixels - apply xform");
+  std::unique_ptr<SkColorSpaceXform> xform =
+      SkColorSpaceXform::New(src_color_space, dst_info.colorSpace());
+
+  uint32_t* row = reinterpret_cast<uint32_t*>(pixels);
+  for (int y = 0; y < dst_info.height(); y++) {
+    SkColorSpaceXform::ColorFormat format =
+        SkColorSpaceXform::kRGBA_8888_ColorFormat;
+    if (kN32_SkColorType == kBGRA_8888_SkColorType) {
+      format = SkColorSpaceXform::kBGRA_8888_ColorFormat;
+    }
+    SkAlphaType alpha_type =
+        dst_info.isOpaque() ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType;
+    bool xformed =
+        xform->apply(format, row, format, row, dst_info.width(), alpha_type);
+    DCHECK(xformed);
+
+    // To be compatible with dst space blending, premultiply in the dst space.
+    if (kPremul_SkAlphaType == dst_info.alphaType()) {
+      for (int x = 0; x < dst_info.width(); x++) {
+        row[x] =
+            SkPreMultiplyARGB(SkGetPackedA32(row[x]), SkGetPackedR32(row[x]),
+                              SkGetPackedG32(row[x]), SkGetPackedB32(row[x]));
+      }
+    }
+
+    row = reinterpret_cast<uint32_t*>(
+        (reinterpret_cast<uint8_t*>(row) + row_bytes));
+  }
+}
+
+bool DecodingImageGenerator::onGetPixels(const SkImageInfo& dst_info,
                                          void* pixels,
                                          size_t row_bytes,
-                                         SkPMColor table[],
-                                         int* table_count) {
+                                         SkPMColor*,
+                                         int*) {
   TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index",
                static_cast<int>(frame_index_));
 
   // Implementation doesn't support scaling yet, so make sure we're not given a
   // different size.
-  if (info.width() != getInfo().width() || info.height() != getInfo().height())
+  if (dst_info.dimensions() != getInfo().dimensions()) {
     return false;
+  }
 
-  if (info.colorType() != getInfo().colorType()) {
-    // blink::ImageFrame may have changed the owning SkBitmap to
-    // kOpaque_SkAlphaType after fully decoding the image frame, so if we see a
-    // request for opaque, that is ok even if our initial alpha type was not
-    // opaque.
+  if (dst_info.colorType() != kN32_SkColorType) {
     return false;
+  }
+
+  // Skip the check for alphaType.  blink::ImageFrame may have changed the
+  // owning SkBitmap to kOpaque_SkAlphaType after fully decoding the image
+  // frame, so if we see a request for opaque, that is ok even if our initial
+  // alpha type was not opaque.
+
+  // Pass decodeColorSpace to the decoder.  That is what we can expect the
+  // output to be.
+  SkColorSpace* decode_color_space = getInfo().colorSpace();
+  SkImageInfo decode_info =
+      dst_info.makeColorSpace(sk_ref_sp(decode_color_space));
+
+  const bool needs_color_xform =
+      decode_color_space && dst_info.colorSpace() &&
+      !SkColorSpace::Equals(decode_color_space, dst_info.colorSpace());
+  ImageDecoder::AlphaOption alpha_option = ImageDecoder::kAlphaPremultiplied;
+  if (needs_color_xform && !decode_info.isOpaque()) {
+    alpha_option = ImageDecoder::kAlphaNotPremultiplied;
+    decode_info = decode_info.makeAlphaType(kUnpremul_SkAlphaType);
   }
 
   PlatformInstrumentation::WillDecodeLazyPixelRef(uniqueID());
   bool decoded = frame_generator_->DecodeAndScale(
-      data_.Get(), all_data_received_, frame_index_, getInfo(), pixels,
-      row_bytes);
+      data_.Get(), all_data_received_, frame_index_, decode_info, pixels,
+      row_bytes, alpha_option);
   PlatformInstrumentation::DidDecodeLazyPixelRef();
+
+  if (decoded && needs_color_xform) {
+    doColorSpaceXform(dst_info, pixels, row_bytes, decode_color_space);
+  }
 
   return decoded;
 }

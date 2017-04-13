@@ -130,12 +130,14 @@ ImageFrameGenerator::~ImageFrameGenerator() {
   ImageDecodingStore::Instance().RemoveCacheIndexedByGenerator(this);
 }
 
-bool ImageFrameGenerator::DecodeAndScale(SegmentReader* data,
-                                         bool all_data_received,
-                                         size_t index,
-                                         const SkImageInfo& info,
-                                         void* pixels,
-                                         size_t row_bytes) {
+bool ImageFrameGenerator::DecodeAndScale(
+    SegmentReader* data,
+    bool all_data_received,
+    size_t index,
+    const SkImageInfo& info,
+    void* pixels,
+    size_t row_bytes,
+    ImageDecoder::AlphaOption alpha_option) {
   if (decode_failed_)
     return false;
 
@@ -151,8 +153,9 @@ bool ImageFrameGenerator::DecodeAndScale(SegmentReader* data,
   // returning (i.e. a pointer to |pixels|) and therefore 2) should not live
   // longer than the call to the current method.
   ExternalMemoryAllocator external_allocator(info, pixels, row_bytes);
-  SkBitmap bitmap = TryToResumeDecode(data, all_data_received, index,
-                                      scaled_size, &external_allocator);
+  SkBitmap bitmap =
+      TryToResumeDecode(data, all_data_received, index, scaled_size,
+                        &external_allocator, alpha_option);
   DCHECK(external_allocator.unique());  // Verify we have the only ref-count.
 
   if (bitmap.isNull())
@@ -214,7 +217,8 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
     bool all_data_received,
     size_t index,
     const SkISize& scaled_size,
-    SkBitmap::Allocator* allocator) {
+    SkBitmap::Allocator* allocator,
+    ImageDecoder::AlphaOption alpha_option) {
   TRACE_EVENT1("blink", "ImageFrameGenerator::tryToResumeDecode", "frame index",
                static_cast<int>(index));
 
@@ -222,13 +226,13 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
 
   // Lock the mutex, so only one thread can use the decoder at once.
   MutexLocker lock(decode_mutex_);
-  const bool resume_decoding =
-      ImageDecodingStore::Instance().LockDecoder(this, full_size_, &decoder);
+  const bool resume_decoding = ImageDecodingStore::Instance().LockDecoder(
+      this, full_size_, alpha_option, &decoder);
   DCHECK(!resume_decoding || decoder);
 
   SkBitmap full_size_image;
   bool complete = Decode(data, all_data_received, index, &decoder,
-                         &full_size_image, allocator);
+                         &full_size_image, allocator, alpha_option);
 
   if (!decoder)
     return SkBitmap();
@@ -293,7 +297,8 @@ bool ImageFrameGenerator::Decode(SegmentReader* data,
                                  size_t index,
                                  ImageDecoder** decoder,
                                  SkBitmap* bitmap,
-                                 SkBitmap::Allocator* allocator) {
+                                 SkBitmap::Allocator* allocator,
+                                 ImageDecoder::AlphaOption alpha_option) {
 #if DCHECK_IS_ON()
   DCHECK(decode_mutex_.Locked());
 #endif
@@ -310,8 +315,7 @@ bool ImageFrameGenerator::Decode(SegmentReader* data,
       *decoder = image_decoder_factory_->Create().release();
 
     if (!*decoder) {
-      *decoder = ImageDecoder::Create(data, all_data_received,
-                                      ImageDecoder::kAlphaPremultiplied,
+      *decoder = ImageDecoder::Create(data, all_data_received, alpha_option,
                                       decoder_color_behavior_)
                      .release();
       // The newly created decoder just grabbed the data.  No need to reset it.

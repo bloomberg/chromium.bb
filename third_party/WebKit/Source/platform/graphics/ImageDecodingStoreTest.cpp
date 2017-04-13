@@ -83,8 +83,9 @@ TEST_F(ImageDecodingStoreTest, insertDecoder) {
   EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 
   ImageDecoder* test_decoder;
-  EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(generator_.Get(), size,
-                                                         &test_decoder));
+  EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
+      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      &test_decoder));
   EXPECT_TRUE(test_decoder);
   EXPECT_EQ(ref_decoder, test_decoder);
   ImageDecodingStore::Instance().UnlockDecoder(generator_.Get(), test_decoder);
@@ -137,7 +138,8 @@ TEST_F(ImageDecodingStoreTest, decoderInUseNotEvicted) {
 
   ImageDecoder* test_decoder;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
-      generator_.Get(), SkISize::Make(2, 2), &test_decoder));
+      generator_.Get(), SkISize::Make(2, 2), ImageDecoder::kAlphaPremultiplied,
+      &test_decoder));
 
   EvictOneCache();
   EvictOneCache();
@@ -162,15 +164,17 @@ TEST_F(ImageDecodingStoreTest, removeDecoder) {
   EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 
   ImageDecoder* test_decoder;
-  EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(generator_.Get(), size,
-                                                         &test_decoder));
+  EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
+      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      &test_decoder));
   EXPECT_TRUE(test_decoder);
   EXPECT_EQ(ref_decoder, test_decoder);
   ImageDecodingStore::Instance().RemoveDecoder(generator_.Get(), test_decoder);
   EXPECT_FALSE(ImageDecodingStore::Instance().CacheEntries());
 
-  EXPECT_FALSE(ImageDecodingStore::Instance().LockDecoder(generator_.Get(),
-                                                          size, &test_decoder));
+  EXPECT_FALSE(ImageDecodingStore::Instance().LockDecoder(
+      generator_.Get(), size, ImageDecoder::kAlphaPremultiplied,
+      &test_decoder));
 }
 
 }  // namespace blink

@@ -82,7 +82,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                       size_t index,
                       const SkImageInfo&,
                       void* pixels,
-                      size_t row_bytes);
+                      size_t row_bytes,
+                      ImageDecoder::AlphaOption);
 
   // Decodes YUV components directly into the provided memory planes. Must not
   // be called unless getYUVComponentSizes has been called and returned true.
@@ -126,14 +127,16 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                              bool all_data_received,
                              size_t index,
                              const SkISize& scaled_size,
-                             SkBitmap::Allocator*);
+                             SkBitmap::Allocator*,
+                             ImageDecoder::AlphaOption);
   // This method should only be called while m_decodeMutex is locked.
   bool Decode(SegmentReader*,
               bool all_data_received,
               size_t index,
               ImageDecoder**,
               SkBitmap*,
-              SkBitmap::Allocator*);
+              SkBitmap::Allocator*,
+              ImageDecoder::AlphaOption);
 
   const SkISize full_size_;
 

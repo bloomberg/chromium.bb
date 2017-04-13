@@ -59,12 +59,13 @@ ImageDecodingStore& ImageDecodingStore::Instance() {
 
 bool ImageDecodingStore::LockDecoder(const ImageFrameGenerator* generator,
                                      const SkISize& scaled_size,
+                                     ImageDecoder::AlphaOption alpha_option,
                                      ImageDecoder** decoder) {
   DCHECK(decoder);
 
   MutexLocker lock(mutex_);
   DecoderCacheMap::iterator iter = decoder_cache_map_.Find(
-      DecoderCacheEntry::MakeCacheKey(generator, scaled_size));
+      DecoderCacheEntry::MakeCacheKey(generator, scaled_size, alpha_option));
   if (iter == decoder_cache_map_.end())
     return false;
 

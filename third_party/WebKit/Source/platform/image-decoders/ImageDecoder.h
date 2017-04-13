@@ -226,6 +226,10 @@ class PLATFORM_EXPORT ImageDecoder {
   // Transformation from embedded color space to target color space.
   SkColorSpaceXform* ColorTransform();
 
+  AlphaOption GetAlphaOption() const {
+    return premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
+  }
+
   // Sets the "decode failure" flag.  For caller convenience (since so
   // many callers want to return false after calling this), returns false
   // to enable easy tailcalling.  Subclasses may override this to also
