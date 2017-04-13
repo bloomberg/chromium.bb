@@ -174,8 +174,10 @@ class EulaState : public web_resource::EulaAcceptedNotifier::Observer {
 
   // EulaAcceptedNotifier::Observer implementation.
   void OnEulaAccepted() override {
-    // Emulate a browser foregrounded event.
-    scheduler_->OnBrowserForegrounded();
+    // Emulate a persistent fetch - we really want to fetch, initially!
+    // TODO(jkrcal): Find a cleaner solution. This is somewhat hacky and can
+    // mess up with metrics.
+    scheduler_->OnPersistentSchedulerWakeUp();
   }
 
  private:
