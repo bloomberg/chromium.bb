@@ -1761,14 +1761,10 @@ crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
-crbug.com/705125 http/tests/streams/readable-streams/cancel.html [ Failure ]
-crbug.com/705125 http/tests/streams/readable-streams/templated.html [ Failure ]
 crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
-crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/cancel.html [ Failure ]
-crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/templated.html [ Failure ]
 
 # This test breaks when the feature introduced in the bug is enabled. We keep
 # this tested without the feature by using the virtual test. See
