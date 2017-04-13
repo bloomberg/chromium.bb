@@ -33,6 +33,10 @@
 #include "headless/embedded_resource_pak.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "components/crash/content/app/crashpad.h"
+#endif
+
 namespace headless {
 namespace {
 // Keep in sync with content/common/content_constants_internal.h.
@@ -159,16 +163,17 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   g_headless_crash_client.Pointer()->set_crash_dumps_dir(
       browser_->options()->crash_dumps_dir);
 
-#if !defined(OS_MACOSX)
+#if defined(HEADLESS_USE_BREAKPAD)
   if (!browser_->options()->enable_crash_reporter) {
     DCHECK(!breakpad::IsCrashReporterEnabled());
     return;
   }
-#if defined(HEADLESS_USE_BREAKPAD)
   if (process_type != switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
+#elif defined(OS_MACOSX)
+  const bool browser_process = process_type.empty();
+  crash_reporter::InitializeCrashpad(browser_process, process_type);
 #endif  // defined(HEADLESS_USE_BREAKPAD)
-#endif  // !defined(OS_MACOSX)
 }
 
 void HeadlessContentMainDelegate::PreSandboxStartup() {
@@ -181,10 +186,8 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #else
   if (command_line.HasSwitch(switches::kEnableLogging))
     InitLogging(command_line);
-#endif
-#if !defined(OS_MACOSX)
+#endif  // defined(OS_WIN)
   InitCrashReporter(command_line);
-#endif
   InitializeResourceBundle();
 }
 
