@@ -4002,6 +4002,7 @@ interface PopStateEvent : Event
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
+    getter receiver
     method constructor
     setter defaultRequest
 interface PresentationAvailability : EventTarget
@@ -4037,6 +4038,16 @@ interface PresentationConnectionCloseEvent : Event
     attribute @@toStringTag
     getter message
     getter reason
+    method constructor
+interface PresentationConnectionList : EventTarget
+    attribute @@toStringTag
+    getter connections
+    getter onconnectionavailable
+    method constructor
+    setter onconnectionavailable
+interface PresentationReceiver
+    attribute @@toStringTag
+    getter connectionList
     method constructor
 interface PresentationRequest : EventTarget
     attribute @@toStringTag

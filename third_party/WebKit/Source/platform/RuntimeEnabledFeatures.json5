@@ -779,7 +779,7 @@
     },
     {
       name: "PresentationReceiver",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PrintBrowser",
