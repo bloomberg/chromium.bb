@@ -362,11 +362,16 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
           break;
         }
         case TileDrawInfo::SOLID_COLOR_MODE: {
-          SolidColorDrawQuad* quad =
-              render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-          quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
-                       draw_info.solid_color(), false);
-          ValidateQuadResources(quad);
+          float alpha =
+              (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
+              shared_quad_state->opacity;
+          if (alpha >= std::numeric_limits<float>::epsilon()) {
+            SolidColorDrawQuad* quad =
+                render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+            quad->SetNew(shared_quad_state, geometry_rect,
+                         visible_geometry_rect, draw_info.solid_color(), false);
+            ValidateQuadResources(quad);
+          }
           has_draw_quad = true;
           break;
         }

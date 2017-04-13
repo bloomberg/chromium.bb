@@ -31,6 +31,17 @@ gfx::Rect GetQuadBoundsInScreen(const cc::DrawQuad* quad) {
       quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
 }
 
+bool FindAnyQuad(const cc::CompositorFrame& frame,
+                 const gfx::Rect& screen_rect) {
+  DCHECK_EQ(1u, frame.render_pass_list.size());
+  const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+  for (const auto* quad : quad_list) {
+    if (GetQuadBoundsInScreen(quad) == screen_rect)
+      return true;
+  }
+  return false;
+}
+
 bool FindColorQuad(const cc::CompositorFrame& frame,
                    const gfx::Rect& screen_rect,
                    SkColor color) {
@@ -140,7 +151,8 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
     ASSERT_EQ(1u, frame.render_pass_list.size());
     EXPECT_FALSE(FindColorQuad(frame, kTileBounds, SK_ColorBLACK));
 
-    // Instead, there will be some solid-color quads for the widget.
+    // Any solid-color quads for the widget are transparent and will be
+    // optimized away.
     const gfx::Rect top_left(widget_bound.origin(), tile_size);
     const gfx::Rect top_right(
         top_left.top_right(),
@@ -151,10 +163,10 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
     const gfx::Rect bottom_right(
         top_left.bottom_right(),
         gfx::Size(top_right.width(), bottom_left.height()));
-    EXPECT_TRUE(FindColorQuad(frame, top_left, SK_ColorTRANSPARENT));
-    EXPECT_TRUE(FindColorQuad(frame, top_right, SK_ColorTRANSPARENT));
-    EXPECT_TRUE(FindColorQuad(frame, bottom_left, SK_ColorTRANSPARENT));
-    EXPECT_TRUE(FindColorQuad(frame, bottom_right, SK_ColorTRANSPARENT));
+    EXPECT_FALSE(FindAnyQuad(frame, top_left));
+    EXPECT_FALSE(FindAnyQuad(frame, top_right));
+    EXPECT_FALSE(FindAnyQuad(frame, bottom_left));
+    EXPECT_FALSE(FindAnyQuad(frame, bottom_right));
 
     // And there will be a content quad for the window caption.
     gfx::Rect caption_bound(widget_bound);

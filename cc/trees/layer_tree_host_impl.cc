@@ -1191,7 +1191,8 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
       break;
     }
 
-    if (pass->quad_list.empty() && pass->copy_requests.empty()) {
+    if (pass->quad_list.empty() && pass->copy_requests.empty() &&
+        pass->filters.IsEmpty() && pass->background_filters.IsEmpty()) {
       // Remove the pass and decrement |i| to counter the for loop's increment,
       // so we don't skip the next pass in the loop.
       frame->render_passes.erase(frame->render_passes.begin() + i);

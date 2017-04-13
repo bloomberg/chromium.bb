@@ -34,6 +34,11 @@ void SolidColorLayerImpl::AppendSolidQuads(
     const gfx::Rect& visible_layer_rect,
     SkColor color,
     AppendQuadsData* append_quads_data) {
+  float alpha =
+      (SkColorGetA(color) * (1.0f / 255.0f)) * shared_quad_state->opacity;
+  DCHECK_EQ(SkBlendMode::kSrcOver, shared_quad_state->blend_mode);
+  if (alpha < std::numeric_limits<float>::epsilon())
+    return;
   // We create a series of smaller quads instead of just one large one so that
   // the culler can reduce the total pixels drawn.
   int right = visible_layer_rect.right();

@@ -8278,6 +8278,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   root->SetPosition(gfx::PointF());
   root->SetBounds(gfx::Size(10, 10));
   root->SetDrawsContent(true);
+  root->SetBackgroundColor(SK_ColorRED);
   root->test_properties()->force_render_surface = true;
 
   // Child layer is in the bottom right corner.
@@ -8286,6 +8287,7 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   child->SetPosition(gfx::PointF(9.f, 9.f));
   child->SetBounds(gfx::Size(1, 1));
   child->SetDrawsContent(true);
+  child->SetBackgroundColor(SK_ColorRED);
   root->test_properties()->AddChild(std::move(child));
 
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));

@@ -266,7 +266,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     host_impl()->active_tree()->SetDeviceScaleFactor(device_scale_factor);
   }
 
-  void TestQuadsForSolidColor(bool test_for_solid);
+  void TestQuadsForSolidColor(bool test_for_solid, bool partial_opaque);
 };
 
 class NoLowResPictureLayerImplTest : public PictureLayerImplTest {
@@ -4273,7 +4273,8 @@ void GetClientDataAndUpdateInvalidation(RecordingSource* recording_source,
                                           painter_reported_memory_usage);
 }
 
-void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
+void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid,
+                                                  bool partial_opaque) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
   gfx::Size tile_size(100, 100);
@@ -4292,6 +4293,10 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
   client.set_fill_with_nonsolid_color(!test_for_solid);
+  PaintFlags flags;
+  flags.setColor(SK_ColorRED);
+  if (test_for_solid)
+    client.add_draw_rect(layer_rect, flags);
 
   Region invalidation(layer_rect);
 
@@ -4315,11 +4320,27 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
     host_impl()->tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
   }
 
+  if (partial_opaque) {
+    std::vector<Tile*> high_res_tiles =
+        active_layer()->HighResTiling()->AllTilesForTesting();
+    size_t i = 0;
+    for (std::vector<Tile*>::iterator tile_it = high_res_tiles.begin();
+         tile_it != high_res_tiles.end() && i < 5; ++tile_it, ++i) {
+      Tile* tile = *tile_it;
+      TileDrawInfo& draw_info = tile->draw_info();
+      draw_info.SetSolidColorForTesting(0);
+    }
+  }
+
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData data;
   active_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
   active_layer()->AppendQuads(render_pass.get(), &data);
   active_layer()->DidDraw(nullptr);
+
+  // Transparent quads should be eliminated.
+  if (partial_opaque)
+    EXPECT_EQ(4u, render_pass->quad_list.size());
 
   DrawQuad::Material expected = test_for_solid
                                     ? DrawQuad::Material::SOLID_COLOR
@@ -4328,11 +4349,15 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
 }
 
 TEST_F(PictureLayerImplTest, DrawSolidQuads) {
-  TestQuadsForSolidColor(true);
+  TestQuadsForSolidColor(true, false);
 }
 
 TEST_F(PictureLayerImplTest, DrawNonSolidQuads) {
-  TestQuadsForSolidColor(false);
+  TestQuadsForSolidColor(false, false);
+}
+
+TEST_F(PictureLayerImplTest, DrawTransparentQuads) {
+  TestQuadsForSolidColor(false, true);
 }
 
 TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {

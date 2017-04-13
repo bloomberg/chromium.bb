@@ -884,6 +884,11 @@ class LayerTreeHostCopyRequestTestCountTextures
     copy_layer_ = FakePictureLayer::Create(&copy_client_);
     copy_layer_->SetBounds(gfx::Size(10, 10));
     copy_client_.set_bounds(copy_layer_->bounds());
+    PaintFlags flags;
+    flags.setColor(SK_ColorRED);
+    // Ensure the layer isn't completely transparent so the RenderPass isn't
+    // optimized away.
+    copy_client_.add_draw_rect(gfx::Rect(0, 0, 10, 10), flags);
     // Doing a copy makes the layer have a render surface which can cause
     // texture allocations. So get those allocations out of the way in the
     // first frame by forcing it to have a render surface.
