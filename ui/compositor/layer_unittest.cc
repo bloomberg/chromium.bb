@@ -2202,15 +2202,9 @@ class TestMetricsReporter : public ui::AnimationMetricsReporter {
   DISALLOW_COPY_AND_ASSIGN(TestMetricsReporter);
 };
 
-// https://crbug.com/709080
-#if defined(OS_WIN)
-#define MAYBE_ReportMetrics DISABLED_ReportMetrics
-#else
-#define MAYBE_ReportMetrics ReportMetrics
-#endif
 // Starts an animation and tests that incrementing compositor frame count can
 // be used to report animation smoothness metrics.
-TEST_F(LayerWithRealCompositorTest, MAYBE_ReportMetrics) {
+TEST_F(LayerWithRealCompositorTest, ReportMetrics) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   GetCompositor()->SetRootLayer(root.get());
   LayerAnimator* animator = root->GetAnimator();
