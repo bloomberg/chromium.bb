@@ -458,7 +458,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             mChevronView.setVisibility(
                     mDisplayMode == DISPLAY_MODE_EXPANDABLE ? VISIBLE : GONE);
         } else {
-            // Show the edit button and hide the chevron and the summary.
+            // Show the edit button and hide the chevron.
             boolean isButtonAllowed = mDisplayMode == DISPLAY_MODE_EXPANDABLE
                     || mDisplayMode == DISPLAY_MODE_NORMAL;
             mChevronView.setVisibility(GONE);
@@ -677,6 +677,13 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             breakdownParams.gravity = Gravity.END;
             mainSectionLayout.addView(mBreakdownLayout, breakdownParams);
+
+            // Sets the summary right text view takes the same available space as the summary left
+            // text view.
+            LinearLayout.LayoutParams rightTextViewLayoutParams =
+                    (LinearLayout.LayoutParams) getSummaryRightTextView().getLayoutParams();
+            rightTextViewLayoutParams.width = 0;
+            rightTextViewLayoutParams.weight = 1f;
         }
 
         /**
@@ -699,6 +706,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             ApiCompatibilityUtils.setTextAlignment(mUpdatedView, TEXT_ALIGNMENT_TEXT_END);
             mUpdatedView.setTextColor(ApiCompatibilityUtils.getColor(
                     context.getResources(), R.color.google_green_700));
+            ApiCompatibilityUtils.setMarginStart(updatedLayoutParams,
+                    context.getResources().getDimensionPixelSize(
+                            R.dimen.payments_section_small_spacing));
             ApiCompatibilityUtils.setMarginEnd(
                     updatedLayoutParams, context.getResources().getDimensionPixelSize(
                                                  R.dimen.payments_section_small_spacing));
@@ -831,6 +841,23 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             }
 
             return valueBuilder;
+        }
+
+        @Override
+        public void setDisplayMode(int displayMode) {
+            // Displays the summary left text view in at most three lines if in focus mode,
+            // otherwise display it in a single line.
+            if (displayMode == DISPLAY_MODE_FOCUSED) {
+                setSummaryProperties(TruncateAt.END, false /* leftIsSingleLine */,
+                        null /* rightTruncate */, false /* rightIsSingleLine */);
+                getSummaryLeftTextView().setMaxLines(3);
+            } else {
+                setSummaryProperties(TruncateAt.END, true /* leftIsSingleLine */,
+                        null /* rightTruncate */, false /* rightIsSingleLine */);
+                getSummaryLeftTextView().setMaxLines(1);
+            }
+
+            super.setDisplayMode(displayMode);
         }
 
         @Override
