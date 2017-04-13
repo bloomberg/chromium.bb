@@ -17,16 +17,19 @@ static_library("browser") {
     "google_util.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//components/data_use_measurement/core",
     "//components/keyed_service/core",
+    "//net",
+    "//url",
+  ]
+
+  deps = [
+    "//components/data_use_measurement/core",
     "//components/pref_registry",
     "//components/prefs",
     "//components/strings",
     "//components/url_formatter",
-    "//net",
-    "//url",
   ]
 }
 
