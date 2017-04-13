@@ -5,6 +5,7 @@
 #include "platform/graphics/gpu/SharedGpuContext.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
@@ -125,6 +126,14 @@ bool SharedGpuContext::IsValidWithoutRestoring() {
     return false;
   return this_ptr->context_provider_->ContextGL()
              ->GetGraphicsResetStatusKHR() == GL_NO_ERROR;
+}
+
+bool SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() {
+  if (!IsValid())
+    return kNoSharedContext;
+  SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
+  return this_ptr->context_provider_->GetCapabilities()
+      .software_to_accelerated_canvas_upgrade;
 }
 
 }  // blink

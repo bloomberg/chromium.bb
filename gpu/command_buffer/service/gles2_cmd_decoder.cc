@@ -3812,6 +3812,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       kGpuFeatureStatusEnabled;
   caps.disable_webgl_rgb_multisampling_usage =
       workarounds().disable_webgl_rgb_multisampling_usage;
+  caps.software_to_accelerated_canvas_upgrade =
+      !workarounds().disable_software_to_accelerated_canvas_upgrade;
   caps.emulate_rgb_buffer_with_rgba =
       workarounds().disable_gl_rgb_format;
 

@@ -209,6 +209,8 @@
          use_gpu_driver_workaround_for_testing)              \
   GPU_OP(DISALLOW_LARGE_INSTANCED_DRAW,                      \
          disallow_large_instanced_draw)                      \
+  GPU_OP(DISABLE_SOFTWARE_TO_ACCELERATED_CANVAS_UPGRADE,     \
+         disable_software_to_accelerated_canvas_upgrade)     \
 // clang-format on
 
 namespace gpu {

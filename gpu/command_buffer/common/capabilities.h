@@ -168,6 +168,10 @@ struct GPU_EXPORT Capabilities {
   // work around this. See https://crbug.com/449150 for an example.
   bool emulate_rgb_buffer_with_rgba = false;
 
+  // When true, is safe to convert a canvas from software to accelerated.
+  // See https://crbug.com/710029.
+  bool software_to_accelerated_canvas_upgrade = true;
+
   int major_version = 2;
   int minor_version = 0;
 };

@@ -34,6 +34,9 @@ class PLATFORM_EXPORT SharedGpuContext {
   Gl();                    // May re-create context if context was lost
   static GrContext* Gr();  // May re-create context if context was lost
   static bool IsValid();   // May re-create context if context was lost
+  // May re-create context if context was lost
+  static bool AllowSoftwareToAcceleratedCanvasUpgrade();
+
   static bool IsValidWithoutRestoring();
   typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()>
       ContextProviderFactory;

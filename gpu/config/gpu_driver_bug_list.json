@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.2",
+  "version": "10.3",
   "entries": [
     {
       "id": 1,
@@ -2349,6 +2349,18 @@
       "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "disallow_large_instanced_draw"
+      ]
+    },
+    {
+      "id": 222,
+      "description": "Software to Accelerated canvas update breaks Linux AMD",
+      "cr_bugs": [710029],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_software_to_accelerated_canvas_upgrade"
       ]
     }
   ],
