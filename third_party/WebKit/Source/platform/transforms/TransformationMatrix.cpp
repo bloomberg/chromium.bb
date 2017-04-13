@@ -72,19 +72,6 @@ namespace blink {
 // to be held responsible. Basically, don't be a jerk, and remember that
 // anything free comes with no guarantee.
 
-// A clarification about the storage of matrix elements
-//
-// This class uses a 2 dimensional array internally to store the elements of the
-// matrix.  The first index into the array refers to the column that the element
-// lies in; the second index refers to the row.
-//
-// In other words, this is the layout of the matrix:
-//
-// | matrix_[0][0] matrix_[1][0] matrix_[2][0] matrix_[3][0] |
-// | matrix_[0][1] matrix_[1][1] matrix_[2][1] matrix_[3][1] |
-// | matrix_[0][2] matrix_[1][2] matrix_[2][2] matrix_[3][2] |
-// | matrix_[0][3] matrix_[1][3] matrix_[2][3] matrix_[3][3] |
-
 typedef double Vector4[4];
 typedef double Vector3[3];
 
@@ -1203,8 +1190,8 @@ TransformationMatrix& TransformationMatrix::Translate3d(double tx,
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::TranslateRight(double tx,
-                                                           double ty) {
+TransformationMatrix& TransformationMatrix::PostTranslate(double tx,
+                                                          double ty) {
   if (tx != 0) {
     matrix_[0][0] += matrix_[0][3] * tx;
     matrix_[1][0] += matrix_[1][3] * tx;
@@ -1222,10 +1209,10 @@ TransformationMatrix& TransformationMatrix::TranslateRight(double tx,
   return *this;
 }
 
-TransformationMatrix& TransformationMatrix::TranslateRight3d(double tx,
-                                                             double ty,
-                                                             double tz) {
-  TranslateRight(tx, ty);
+TransformationMatrix& TransformationMatrix::PostTranslate3d(double tx,
+                                                            double ty,
+                                                            double tz) {
+  PostTranslate(tx, ty);
   if (tz != 0) {
     matrix_[0][2] += matrix_[0][3] * tz;
     matrix_[1][2] += matrix_[1][3] * tz;
@@ -1262,7 +1249,7 @@ TransformationMatrix& TransformationMatrix::ApplyPerspective(double p) {
 TransformationMatrix& TransformationMatrix::ApplyTransformOrigin(double x,
                                                                  double y,
                                                                  double z) {
-  TranslateRight3d(x, y, z);
+  PostTranslate3d(x, y, z);
   Translate3d(-x, -y, -z);
   return *this;
 }
@@ -1278,32 +1265,37 @@ TransformationMatrix& TransformationMatrix::Zoom(double zoom_factor) {
 }
 
 // Calculates *this = *this * mat.
-// Note: A * B means that the transforms represented by A happen first, and
-// then the transforms represented by B. That is, the matrix A * B corresponds
-// to a CSS transform list <transform-function-A> <transform-function-B>.
-// Some branches of this function may make use of the fact that
-// transpose(A * B) == transpose(B) * transpose(A); remember that
-// matrix_[a][b] is matrix element row b, col a.
-// FIXME: As of 2016-05-04, the ARM64 branch is NOT triggered by tests on the CQ
-// bots, see crbug.com/477892 and crbug.com/584508.
+// Note: As we are using the column vector convention, i.e. T * P,
+// (lhs * rhs) * P = lhs * (rhs * P)
+// That means from the perspective of the transformed object, the combined
+// transform is equal to applying the rhs(mat) first, then lhs(*this) second.
+// For example:
+// TransformationMatrix lhs; lhs.Rotate(90.f);
+// TransformationMatrix rhs; rhs.Translate(12.f, 34.f);
+// TransformationMatrix prod = lhs;
+// prod.Multiply(rhs);
+// lhs.MapPoint(rhs.MapPoint(p)) == prod.MapPoint(p)
+// Also 'prod' corresponds to CSS transform:rotateZ(90deg)translate(12px,34px).
+// TODO(crbug.com/584508): As of 2017-04-11, the ARM64 CQ bots skip
+// blink_platform_unittests, therefore the ARM64 branch is not tested by CQ.
 TransformationMatrix& TransformationMatrix::Multiply(
     const TransformationMatrix& mat) {
 #if CPU(ARM64)
-  double* right_matrix = &(matrix_[0][0]);
-  const double* left_matrix = &(mat.matrix_[0][0]);
+  double* left_matrix = &(matrix_[0][0]);
+  const double* right_matrix = &(mat.matrix_[0][0]);
   asm volatile(
+      // Load this->matrix_ to v24 - v31.
       // Load mat.matrix_ to v16 - v23.
-      // Load this.matrix_ to v24 - v31.
-      // Result: this = mat * this
-      // | v0, v1 |   | v16, v17 |   | v24, v25 |
-      // | v2, v3 | = | v18, v19 | * | v26, v27 |
-      // | v4, v5 |   | v20, v21 |   | v28, v29 |
-      // | v6, v7 |   | v22, v23 |   | v30, v31 |
-      "mov x9, %[right_matrix]   \t\n"
-      "ld1 {v16.2d - v19.2d}, [%[left_matrix]], 64  \t\n"
-      "ld1 {v20.2d - v23.2d}, [%[left_matrix]]      \t\n"
-      "ld1 {v24.2d - v27.2d}, [%[right_matrix]], 64 \t\n"
-      "ld1 {v28.2d - v31.2d}, [%[right_matrix]]     \t\n"
+      // Result: *this = *this * mat
+      // | v0 v2 v4 v6 |   | v24 v26 v28 v30 |   | v16 v18 v20 v22 |
+      // |             | = |                 | * |                 |
+      // | v1 v3 v5 v7 |   | v25 v27 v29 v31 |   | v17 v19 v21 v23 |
+      // |             |   |                 |   |                 |
+      "mov x9, %[left_matrix]   \t\n"
+      "ld1 {v16.2d - v19.2d}, [%[right_matrix]], 64  \t\n"
+      "ld1 {v20.2d - v23.2d}, [%[right_matrix]]      \t\n"
+      "ld1 {v24.2d - v27.2d}, [%[left_matrix]], 64 \t\n"
+      "ld1 {v28.2d - v31.2d}, [%[left_matrix]]     \t\n"
 
       "fmul v0.2d, v24.2d, v16.d[0]  \t\n"
       "fmul v1.2d, v25.2d, v16.d[0]  \t\n"
@@ -1343,95 +1335,95 @@ TransformationMatrix& TransformationMatrix::Multiply(
 
       "st1 {v0.2d - v3.2d}, [x9], 64 \t\n"
       "st1 {v4.2d - v7.2d}, [x9]     \t\n"
-      : [left_matrix] "+r"(left_matrix), [right_matrix] "+r"(right_matrix)
+      : [right_matrix] "+r"(right_matrix), [left_matrix] "+r"(left_matrix)
       :
       : "memory", "x9", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",
         "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v0", "v1",
         "v2", "v3", "v4", "v5", "v6", "v7");
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  v2f64 v_left_m0, v_left_m1, v_left_m2, v_left_m3, v_left_m4, v_left_m5,
-      v_left_m6, v_left_m7;
   v2f64 v_right_m0, v_right_m1, v_right_m2, v_right_m3, v_right_m4, v_right_m5,
       v_right_m6, v_right_m7;
+  v2f64 v_left_m0, v_left_m1, v_left_m2, v_left_m3, v_left_m4, v_left_m5,
+      v_left_m6, v_left_m7;
   v2f64 v_tmp_m0, v_tmp_m1, v_tmp_m2, v_tmp_m3;
 
-  v_right_m0 = LD_DP(&(matrix_[0][0]));
-  v_right_m1 = LD_DP(&(matrix_[0][2]));
-  v_right_m2 = LD_DP(&(matrix_[1][0]));
-  v_right_m3 = LD_DP(&(matrix_[1][2]));
-  v_right_m4 = LD_DP(&(matrix_[2][0]));
-  v_right_m5 = LD_DP(&(matrix_[2][2]));
-  v_right_m6 = LD_DP(&(matrix_[3][0]));
-  v_right_m7 = LD_DP(&(matrix_[3][2]));
+  v_left_m0 = LD_DP(&(matrix_[0][0]));
+  v_left_m1 = LD_DP(&(matrix_[0][2]));
+  v_left_m2 = LD_DP(&(matrix_[1][0]));
+  v_left_m3 = LD_DP(&(matrix_[1][2]));
+  v_left_m4 = LD_DP(&(matrix_[2][0]));
+  v_left_m5 = LD_DP(&(matrix_[2][2]));
+  v_left_m6 = LD_DP(&(matrix_[3][0]));
+  v_left_m7 = LD_DP(&(matrix_[3][2]));
 
-  v_left_m0 = LD_DP(&(mat.matrix_[0][0]));
-  v_left_m2 = LD_DP(&(mat.matrix_[0][2]));
-  v_left_m4 = LD_DP(&(mat.matrix_[1][0]));
-  v_left_m6 = LD_DP(&(mat.matrix_[1][2]));
+  v_right_m0 = LD_DP(&(mat.matrix_[0][0]));
+  v_right_m2 = LD_DP(&(mat.matrix_[0][2]));
+  v_right_m4 = LD_DP(&(mat.matrix_[1][0]));
+  v_right_m6 = LD_DP(&(mat.matrix_[1][2]));
 
-  v_left_m1 = (v2f64)__msa_splati_d((v2i64)v_left_m0, 1);
-  v_left_m0 = (v2f64)__msa_splati_d((v2i64)v_left_m0, 0);
-  v_left_m3 = (v2f64)__msa_splati_d((v2i64)v_left_m2, 1);
-  v_left_m2 = (v2f64)__msa_splati_d((v2i64)v_left_m2, 0);
-  v_left_m5 = (v2f64)__msa_splati_d((v2i64)v_left_m4, 1);
-  v_left_m4 = (v2f64)__msa_splati_d((v2i64)v_left_m4, 0);
-  v_left_m7 = (v2f64)__msa_splati_d((v2i64)v_left_m6, 1);
-  v_left_m6 = (v2f64)__msa_splati_d((v2i64)v_left_m6, 0);
+  v_right_m1 = (v2f64)__msa_splati_d((v2i64)v_right_m0, 1);
+  v_right_m0 = (v2f64)__msa_splati_d((v2i64)v_right_m0, 0);
+  v_right_m3 = (v2f64)__msa_splati_d((v2i64)v_right_m2, 1);
+  v_right_m2 = (v2f64)__msa_splati_d((v2i64)v_right_m2, 0);
+  v_right_m5 = (v2f64)__msa_splati_d((v2i64)v_right_m4, 1);
+  v_right_m4 = (v2f64)__msa_splati_d((v2i64)v_right_m4, 0);
+  v_right_m7 = (v2f64)__msa_splati_d((v2i64)v_right_m6, 1);
+  v_right_m6 = (v2f64)__msa_splati_d((v2i64)v_right_m6, 0);
 
-  v_tmp_m0 = v_left_m0 * v_right_m0;
-  v_tmp_m1 = v_left_m0 * v_right_m1;
-  v_tmp_m0 += v_left_m1 * v_right_m2;
-  v_tmp_m1 += v_left_m1 * v_right_m3;
-  v_tmp_m0 += v_left_m2 * v_right_m4;
-  v_tmp_m1 += v_left_m2 * v_right_m5;
-  v_tmp_m0 += v_left_m3 * v_right_m6;
-  v_tmp_m1 += v_left_m3 * v_right_m7;
+  v_tmp_m0 = v_right_m0 * v_left_m0;
+  v_tmp_m1 = v_right_m0 * v_left_m1;
+  v_tmp_m0 += v_right_m1 * v_left_m2;
+  v_tmp_m1 += v_right_m1 * v_left_m3;
+  v_tmp_m0 += v_right_m2 * v_left_m4;
+  v_tmp_m1 += v_right_m2 * v_left_m5;
+  v_tmp_m0 += v_right_m3 * v_left_m6;
+  v_tmp_m1 += v_right_m3 * v_left_m7;
 
-  v_tmp_m2 = v_left_m4 * v_right_m0;
-  v_tmp_m3 = v_left_m4 * v_right_m1;
-  v_tmp_m2 += v_left_m5 * v_right_m2;
-  v_tmp_m3 += v_left_m5 * v_right_m3;
-  v_tmp_m2 += v_left_m6 * v_right_m4;
-  v_tmp_m3 += v_left_m6 * v_right_m5;
-  v_tmp_m2 += v_left_m7 * v_right_m6;
-  v_tmp_m3 += v_left_m7 * v_right_m7;
+  v_tmp_m2 = v_right_m4 * v_left_m0;
+  v_tmp_m3 = v_right_m4 * v_left_m1;
+  v_tmp_m2 += v_right_m5 * v_left_m2;
+  v_tmp_m3 += v_right_m5 * v_left_m3;
+  v_tmp_m2 += v_right_m6 * v_left_m4;
+  v_tmp_m3 += v_right_m6 * v_left_m5;
+  v_tmp_m2 += v_right_m7 * v_left_m6;
+  v_tmp_m3 += v_right_m7 * v_left_m7;
 
-  v_left_m0 = LD_DP(&(mat.matrix_[2][0]));
-  v_left_m2 = LD_DP(&(mat.matrix_[2][2]));
-  v_left_m4 = LD_DP(&(mat.matrix_[3][0]));
-  v_left_m6 = LD_DP(&(mat.matrix_[3][2]));
+  v_right_m0 = LD_DP(&(mat.matrix_[2][0]));
+  v_right_m2 = LD_DP(&(mat.matrix_[2][2]));
+  v_right_m4 = LD_DP(&(mat.matrix_[3][0]));
+  v_right_m6 = LD_DP(&(mat.matrix_[3][2]));
 
   ST_DP(v_tmp_m0, &(matrix_[0][0]));
   ST_DP(v_tmp_m1, &(matrix_[0][2]));
   ST_DP(v_tmp_m2, &(matrix_[1][0]));
   ST_DP(v_tmp_m3, &(matrix_[1][2]));
 
-  v_left_m1 = (v2f64)__msa_splati_d((v2i64)v_left_m0, 1);
-  v_left_m0 = (v2f64)__msa_splati_d((v2i64)v_left_m0, 0);
-  v_left_m3 = (v2f64)__msa_splati_d((v2i64)v_left_m2, 1);
-  v_left_m2 = (v2f64)__msa_splati_d((v2i64)v_left_m2, 0);
-  v_left_m5 = (v2f64)__msa_splati_d((v2i64)v_left_m4, 1);
-  v_left_m4 = (v2f64)__msa_splati_d((v2i64)v_left_m4, 0);
-  v_left_m7 = (v2f64)__msa_splati_d((v2i64)v_left_m6, 1);
-  v_left_m6 = (v2f64)__msa_splati_d((v2i64)v_left_m6, 0);
+  v_right_m1 = (v2f64)__msa_splati_d((v2i64)v_right_m0, 1);
+  v_right_m0 = (v2f64)__msa_splati_d((v2i64)v_right_m0, 0);
+  v_right_m3 = (v2f64)__msa_splati_d((v2i64)v_right_m2, 1);
+  v_right_m2 = (v2f64)__msa_splati_d((v2i64)v_right_m2, 0);
+  v_right_m5 = (v2f64)__msa_splati_d((v2i64)v_right_m4, 1);
+  v_right_m4 = (v2f64)__msa_splati_d((v2i64)v_right_m4, 0);
+  v_right_m7 = (v2f64)__msa_splati_d((v2i64)v_right_m6, 1);
+  v_right_m6 = (v2f64)__msa_splati_d((v2i64)v_right_m6, 0);
 
-  v_tmp_m0 = v_left_m0 * v_right_m0;
-  v_tmp_m1 = v_left_m0 * v_right_m1;
-  v_tmp_m0 += v_left_m1 * v_right_m2;
-  v_tmp_m1 += v_left_m1 * v_right_m3;
-  v_tmp_m0 += v_left_m2 * v_right_m4;
-  v_tmp_m1 += v_left_m2 * v_right_m5;
-  v_tmp_m0 += v_left_m3 * v_right_m6;
-  v_tmp_m1 += v_left_m3 * v_right_m7;
+  v_tmp_m0 = v_right_m0 * v_left_m0;
+  v_tmp_m1 = v_right_m0 * v_left_m1;
+  v_tmp_m0 += v_right_m1 * v_left_m2;
+  v_tmp_m1 += v_right_m1 * v_left_m3;
+  v_tmp_m0 += v_right_m2 * v_left_m4;
+  v_tmp_m1 += v_right_m2 * v_left_m5;
+  v_tmp_m0 += v_right_m3 * v_left_m6;
+  v_tmp_m1 += v_right_m3 * v_left_m7;
 
-  v_tmp_m2 = v_left_m4 * v_right_m0;
-  v_tmp_m3 = v_left_m4 * v_right_m1;
-  v_tmp_m2 += v_left_m5 * v_right_m2;
-  v_tmp_m3 += v_left_m5 * v_right_m3;
-  v_tmp_m2 += v_left_m6 * v_right_m4;
-  v_tmp_m3 += v_left_m6 * v_right_m5;
-  v_tmp_m2 += v_left_m7 * v_right_m6;
-  v_tmp_m3 += v_left_m7 * v_right_m7;
+  v_tmp_m2 = v_right_m4 * v_left_m0;
+  v_tmp_m3 = v_right_m4 * v_left_m1;
+  v_tmp_m2 += v_right_m5 * v_left_m2;
+  v_tmp_m3 += v_right_m5 * v_left_m3;
+  v_tmp_m2 += v_right_m6 * v_left_m4;
+  v_tmp_m3 += v_right_m6 * v_left_m5;
+  v_tmp_m2 += v_right_m7 * v_left_m6;
+  v_tmp_m3 += v_right_m7 * v_left_m7;
 
   ST_DP(v_tmp_m0, &(matrix_[2][0]));
   ST_DP(v_tmp_m1, &(matrix_[2][2]));
@@ -1445,7 +1437,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   __m128d matrix_block_e = _mm_load_pd(&(matrix_[2][0]));
   __m128d matrix_block_g = _mm_load_pd(&(matrix_[3][0]));
 
-  // First row.
+  // First column.
   __m128d other_matrix_first_param = _mm_set1_pd(mat.matrix_[0][0]);
   __m128d other_matrix_second_param = _mm_set1_pd(mat.matrix_[0][1]);
   __m128d other_matrix_third_param = _mm_set1_pd(mat.matrix_[0][2]);
@@ -1478,7 +1470,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp3);
   _mm_store_pd(&matrix_[0][2], accumulator);
 
-  // Second row.
+  // Second column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[1][0]);
   other_matrix_second_param = _mm_set1_pd(mat.matrix_[1][1]);
   other_matrix_third_param = _mm_set1_pd(mat.matrix_[1][2]);
@@ -1506,7 +1498,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp3);
   _mm_store_pd(&matrix_[1][2], accumulator);
 
-  // Third row.
+  // Third column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[2][0]);
   other_matrix_second_param = _mm_set1_pd(mat.matrix_[2][1]);
   other_matrix_third_param = _mm_set1_pd(mat.matrix_[2][2]);
@@ -1534,7 +1526,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp3);
   _mm_store_pd(&matrix_[2][2], accumulator);
 
-  // Fourth row.
+  // Fourth column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[3][0]);
   other_matrix_second_param = _mm_set1_pd(mat.matrix_[3][1]);
   other_matrix_third_param = _mm_set1_pd(mat.matrix_[3][2]);

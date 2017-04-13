@@ -94,6 +94,162 @@ TEST(TransformationMatrixTest, Multiplication) {
   EXPECT_EQ(expected_atimes_b, a);
 }
 
+TEST(TransformationMatrixTest, BasicOperations) {
+  // Just some arbitrary matrix that introduces no rounding, and is unlikely
+  // to commute with other operations.
+  TransformationMatrix m(2.f, 3.f, 5.f, 0.f, 7.f, 11.f, 13.f, 0.f, 17.f, 19.f,
+                         23.f, 0.f, 29.f, 31.f, 37.f, 1.f);
+
+  FloatPoint3D p(41.f, 43.f, 47.f);
+
+  EXPECT_EQ(FloatPoint3D(1211.f, 1520.f, 1882.f), m.MapPoint(p));
+
+  {
+    TransformationMatrix n;
+    n.Scale(2.f);
+    EXPECT_EQ(FloatPoint3D(82.f, 86.f, 47.f), n.MapPoint(p));
+
+    TransformationMatrix mn = m;
+    mn.Scale(2.f);
+    EXPECT_EQ(mn.MapPoint(p), m.MapPoint(n.MapPoint(p)));
+  }
+
+  {
+    TransformationMatrix n;
+    n.ScaleNonUniform(2.f, 3.f);
+    EXPECT_EQ(FloatPoint3D(82.f, 129.f, 47.f), n.MapPoint(p));
+
+    TransformationMatrix mn = m;
+    mn.ScaleNonUniform(2.f, 3.f);
+    EXPECT_EQ(mn.MapPoint(p), m.MapPoint(n.MapPoint(p)));
+  }
+
+  {
+    TransformationMatrix n;
+    n.Scale3d(2.f, 3.f, 4.f);
+    EXPECT_EQ(FloatPoint3D(82.f, 129.f, 188.f), n.MapPoint(p));
+
+    TransformationMatrix mn = m;
+    mn.Scale3d(2.f, 3.f, 4.f);
+    EXPECT_EQ(mn.MapPoint(p), m.MapPoint(n.MapPoint(p)));
+  }
+
+  {
+    TransformationMatrix n;
+    n.Rotate(90.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(-43.f, 41.f, 47.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.Rotate(90.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    TransformationMatrix n;
+    n.Rotate3d(10.f, 10.f, 10.f, 120.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(47.f, 41.f, 43.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.Rotate3d(10.f, 10.f, 10.f, 120.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    TransformationMatrix n;
+    n.Translate(5.f, 6.f);
+    EXPECT_EQ(FloatPoint3D(46.f, 49.f, 47.f), n.MapPoint(p));
+
+    TransformationMatrix mn = m;
+    mn.Translate(5.f, 6.f);
+    EXPECT_EQ(mn.MapPoint(p), m.MapPoint(n.MapPoint(p)));
+  }
+
+  {
+    TransformationMatrix n;
+    n.Translate3d(5.f, 6.f, 7.f);
+    EXPECT_EQ(FloatPoint3D(46.f, 49.f, 54.f), n.MapPoint(p));
+
+    TransformationMatrix mn = m;
+    mn.Translate3d(5.f, 6.f, 7.f);
+    EXPECT_EQ(mn.MapPoint(p), m.MapPoint(n.MapPoint(p)));
+  }
+
+  {
+    TransformationMatrix nm = m;
+    nm.PostTranslate(5.f, 6.f);
+    EXPECT_EQ(nm.MapPoint(p), m.MapPoint(p) + FloatPoint3D(5.f, 6.f, 0.f));
+  }
+
+  {
+    TransformationMatrix nm = m;
+    nm.PostTranslate3d(5.f, 6.f, 7.f);
+    EXPECT_EQ(nm.MapPoint(p), m.MapPoint(p) + FloatPoint3D(5.f, 6.f, 7.f));
+  }
+
+  {
+    TransformationMatrix n;
+    n.Skew(45.f, -45.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(84.f, 2.f, 47.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.Skew(45.f, -45.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    TransformationMatrix n;
+    n.SkewX(45.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(84.f, 43.f, 47.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.SkewX(45.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    TransformationMatrix n;
+    n.SkewY(45.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(41.f, 84.f, 47.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.SkewY(45.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    TransformationMatrix n;
+    n.ApplyPerspective(94.f);
+    EXPECT_FLOAT_EQ(0.f,
+                    (FloatPoint3D(82.f, 86.f, 94.f) - n.MapPoint(p)).length());
+
+    TransformationMatrix mn = m;
+    mn.ApplyPerspective(94.f);
+    EXPECT_FLOAT_EQ(0.f, (mn.MapPoint(p) - m.MapPoint(n.MapPoint(p))).length());
+  }
+
+  {
+    FloatPoint3D origin(5.f, 6.f, 7.f);
+    TransformationMatrix n = m;
+    n.ApplyTransformOrigin(origin);
+    EXPECT_EQ(m.MapPoint(p - origin) + origin, n.MapPoint(p));
+  }
+
+  {
+    TransformationMatrix n = m;
+    n.Zoom(2.f);
+    FloatPoint3D expectation = p;
+    expectation.Scale(0.5f, 0.5f, 0.5f);
+    expectation = m.MapPoint(expectation);
+    expectation.Scale(2.f, 2.f, 2.f);
+    EXPECT_EQ(expectation, n.MapPoint(p));
+  }
+}
+
 TEST(TransformationMatrixTest, ToString) {
   TransformationMatrix zeros(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0] (degenerate)",

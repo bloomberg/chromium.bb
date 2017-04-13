@@ -49,12 +49,13 @@ TransformState& TransformState::operator=(const TransformState& other) {
 }
 
 void TransformState::TranslateTransform(const LayoutSize& offset) {
-  if (direction_ == kApplyTransformDirection)
-    accumulated_transform_->TranslateRight(offset.Width().ToDouble(),
-                                           offset.Height().ToDouble());
-  else
+  if (direction_ == kApplyTransformDirection) {
+    accumulated_transform_->PostTranslate(offset.Width().ToDouble(),
+                                          offset.Height().ToDouble());
+  } else {
     accumulated_transform_->Translate(offset.Width().ToDouble(),
                                       offset.Height().ToDouble());
+  }
 }
 
 void TransformState::TranslateMappedCoordinates(const LayoutSize& offset) {

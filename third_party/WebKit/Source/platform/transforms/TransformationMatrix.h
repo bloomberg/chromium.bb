@@ -50,13 +50,26 @@ struct Rotation;
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
 
-// TransformationMatrix must not be allocated on Oilpan's heap since
-// Oilpan doesn't (yet) have an ability to allocate the TransformationMatrix
-// with 16-byte alignment. PartitionAlloc has the ability.
 class PLATFORM_EXPORT TransformationMatrix {
+  // TransformationMatrix must not be allocated on Oilpan's heap since
+  // Oilpan doesn't (yet) have an ability to allocate the TransformationMatrix
+  // with 16-byte alignment. PartitionAlloc has the ability.
   USING_FAST_MALLOC(TransformationMatrix);
 
  public:
+// Throughout this class, we will be speaking in column vector convention.
+// i.e. Applying a transform T to point P is T * P.
+// The elements of the matrix and the vector looks like:
+// | scale_x  skew_y_x skew_z_x translate_x |   | x |
+// | skew_x_y scale_y  skew_z_y translate_y | * | y |
+// | skew_x_z skew_y_z scale_z  translate_z |   | z |
+// | persp_x  persp_y  persp_z  persp_w     |   | w |
+// Internally the matrix is stored as a 2-dimensional array in col-major order.
+// In other words, this is the layout of the matrix:
+// | matrix_[0][0] matrix_[1][0] matrix_[2][0] matrix_[3][0] |
+// | matrix_[0][1] matrix_[1][1] matrix_[2][1] matrix_[3][1] |
+// | matrix_[0][2] matrix_[1][2] matrix_[2][2] matrix_[3][2] |
+// | matrix_[0][3] matrix_[1][3] matrix_[2][3] matrix_[3][3] |
 #if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
   typedef WTF_ALIGNED(double, Matrix4[4][4], 16);
 #else
@@ -252,6 +265,11 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   void TransformBox(FloatBox&) const;
 
+  // Important: These indices are spoken in col-major order. i.e.:
+  // | M11() M21() M31() M41() |
+  // | M12() M22() M32() M42() |
+  // | M13() M23() M33() M43() |
+  // | M14() M24() M34() M44() |
   double M11() const { return matrix_[0][0]; }
   void SetM11(double f) { matrix_[0][0] = f; }
   double M12() const { return matrix_[0][1]; }
@@ -322,9 +340,12 @@ class PLATFORM_EXPORT TransformationMatrix {
   TransformationMatrix& Translate(double tx, double ty);
   TransformationMatrix& Translate3d(double tx, double ty, double tz);
 
-  // translation added with a post-multiply
-  TransformationMatrix& TranslateRight(double tx, double ty);
-  TransformationMatrix& TranslateRight3d(double tx, double ty, double tz);
+  // Append translation after existing operations. i.e.
+  // TransformationMatrix t2 = t1;
+  // t2.PostTranslate(x, y);
+  // t2.MapPoint(p) == t1.MapPoint(p) + FloatPoint(x, y)
+  TransformationMatrix& PostTranslate(double tx, double ty);
+  TransformationMatrix& PostTranslate3d(double tx, double ty, double tz);
 
   TransformationMatrix& Skew(double angle_x, double angle_y);
   TransformationMatrix& SkewX(double angle) { return Skew(angle, 0); }

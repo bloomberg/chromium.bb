@@ -1383,8 +1383,8 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   if (ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
-    t.TranslateRight(adjustment_for_skipped_ancestor.Width().ToFloat(),
-                     adjustment_for_skipped_ancestor.Height().ToFloat());
+    t.PostTranslate(adjustment_for_skipped_ancestor.Width().ToFloat(),
+                    adjustment_for_skipped_ancestor.Height().ToFloat());
     geometry_map.Push(this, t, flags, LayoutSize());
   } else {
     container_offset += adjustment_for_skipped_ancestor;

@@ -815,7 +815,7 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
   TransformationMatrix transform(
       paint_layer_.RenderableTransform(painting_info.GetGlobalPaintFlags()));
   IntPoint rounded_delta = RoundedIntPoint(delta);
-  transform.TranslateRight(rounded_delta.X(), rounded_delta.Y());
+  transform.PostTranslate(rounded_delta.X(), rounded_delta.Y());
   LayoutSize adjusted_sub_pixel_accumulation =
       painting_info.sub_pixel_accumulation + (delta - rounded_delta);
 

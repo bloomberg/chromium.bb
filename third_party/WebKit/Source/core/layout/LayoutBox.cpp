@@ -1207,14 +1207,14 @@ bool LayoutBox::MapVisualRectToContainer(
     transform.Multiply(Layer()->CurrentTransform());
 
   // 2. Container offset.
-  transform.TranslateRight(container_offset.X().ToFloat(),
-                           container_offset.Y().ToFloat());
+  transform.PostTranslate(container_offset.X().ToFloat(),
+                          container_offset.Y().ToFloat());
 
   // 3. Container scroll offset.
   if (container_object->IsBox() && container_object != ancestor &&
       container_object->HasOverflowClip()) {
     IntSize offset = -ToLayoutBox(container_object)->ScrolledContentOffset();
-    transform.TranslateRight(offset.Width(), offset.Height());
+    transform.PostTranslate(offset.Width(), offset.Height());
   }
 
   // 4. Perspective applied by container.

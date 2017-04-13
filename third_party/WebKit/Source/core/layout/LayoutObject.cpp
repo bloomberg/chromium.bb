@@ -2306,8 +2306,8 @@ void LayoutObject::GetTransformFromContainer(
   if (layer && layer->Transform())
     transform.Multiply(layer->CurrentTransform());
 
-  transform.TranslateRight(offset_in_container.Width().ToFloat(),
-                           offset_in_container.Height().ToFloat());
+  transform.PostTranslate(offset_in_container.Width().ToFloat(),
+                          offset_in_container.Height().ToFloat());
 
   if (container_object && container_object->HasLayer() &&
       container_object->Style()->HasPerspective()) {
