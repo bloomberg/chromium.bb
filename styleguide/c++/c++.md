@@ -30,12 +30,6 @@ separate [C++11 use in Chromium](https://chromium-cpp.appspot.com/) page.
   * "Chromium" is the name of the project, not the product, and should never
     appear in code, variable names, API names etc. Use "Chrome" instead.
 
-  * Though the Google C++ Style Guide now says to use `kConstantNaming` for
-    enums, Chromium was written using `MACRO_STYLE` naming. In enums that are
-    actually enumerations (i.e. have multiple values), continue to use this
-    style for consistency. Use `kConstantNaming` when using the "enum hack" to
-    define a single constant, as you would for a const int or the like.
-
   * Functions used only for testing should be restricted to test-only scenarios
     either by `#ifdefing` them appropriately (e.g. `#if defined(UNIT_TEST)`) or
     by naming them with a `ForTesting` suffix. The latter will be checked at
