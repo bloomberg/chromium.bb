@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
+#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -34,43 +35,6 @@ namespace {
 
 static const char kWebUrl[] = "http://www.chromium.org";
 static const char kNativeUrl[] = "chrome://version";
-
-namespace {
-
-class ToolbarTestWebState : public web::TestWebState {
- public:
-  ToolbarTestWebState() : loading_progress_(0) {}
-
-  double GetLoadingProgress() const override { return loading_progress_; }
-  void set_loading_progress(double loading_progress) {
-    loading_progress_ = loading_progress;
-  }
-
- private:
-  double loading_progress_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarTestWebState);
-};
-
-class ToolbarTestNavigationManager : public web::TestNavigationManager {
- public:
-  ToolbarTestNavigationManager()
-      : can_go_back_(false), can_go_forward_(false) {}
-
-  bool CanGoBack() const override { return can_go_back_; }
-  bool CanGoForward() const override { return can_go_forward_; }
-
-  void set_can_go_back(bool can_go_back) { can_go_back_ = can_go_back; }
-  void set_can_go_forward(bool can_go_forward) {
-    can_go_forward_ = can_go_forward;
-  }
-
- private:
-  bool can_go_back_;
-  bool can_go_forward_;
-};
-
-}  // namespace
 
 class ToolbarModelImplIOSTest : public PlatformTest {
  protected:
