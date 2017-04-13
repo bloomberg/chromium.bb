@@ -190,6 +190,7 @@ class ScreenRotationAnimationMetricsReporter
 ScreenRotationAnimator::ScreenRotationAnimator(int64_t display_id)
     : display_id_(display_id),
       screen_rotation_state_(IDLE),
+      rotation_request_id_(0),
       metrics_reporter_(
           base::MakeUnique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
@@ -241,6 +242,12 @@ ScreenRotationAnimator::CreateAfterCopyCallback(
 void ScreenRotationAnimator::OnRootLayerCopiedBeforeRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
     std::unique_ptr<cc::CopyOutputResult> result) {
+  DCHECK(rotation_request->id <= rotation_request_id_);
+  // The |rotation_request_id_| changed since last copy request, which means a
+  // new rotation stated, we need to ignore this copy result.
+  if (rotation_request->id < rotation_request_id_)
+    return;
+
   // In the following cases, abort rotation:
   // 1) if the display was removed,
   // 2) the copy request has been canceled or failed. It would fail if,
@@ -249,7 +256,6 @@ void ScreenRotationAnimator::OnRootLayerCopiedBeforeRotation(
   // shutdown.
   if (!IsDisplayIdValid(display_id_) || result->IsEmpty()) {
     ProcessAnimationQueue();
-    rotation_request.reset();
     return;
   }
 
@@ -369,8 +375,6 @@ void ScreenRotationAnimator::AnimateRotation(
     animator->set_disable_timer_for_test(true);
   animation_sequence->SetAnimationMetricsReporter(metrics_reporter_.get());
   animator->StartAnimation(animation_sequence.release());
-
-  rotation_request.reset();
 }
 
 void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
@@ -378,11 +382,14 @@ void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
   if (GetCurrentScreenRotation(display_id_) == new_rotation)
     return;
 
+  rotation_request_id_++;
   std::unique_ptr<ScreenRotationRequest> rotation_request =
-      base::MakeUnique<ScreenRotationRequest>(new_rotation, source);
+      base::MakeUnique<ScreenRotationRequest>(rotation_request_id_,
+                                              new_rotation, source);
 
   switch (screen_rotation_state_) {
     case IDLE:
+    case COPY_REQUESTED:
       StartRotationAnimation(std::move(rotation_request));
       break;
     case ROTATING:
@@ -391,10 +398,6 @@ void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
       // OnLayerAnimation(Ended|Aborted) methods should be called after
       // |StopAnimating()|.
       StopAnimating();
-      break;
-    case COPY_REQUESTED:
-      // TODO(wutao): We need to handle this otherwise the device will be in
-      // inconsistent state.
       break;
   }
 }
@@ -413,10 +416,11 @@ void ScreenRotationAnimator::ProcessAnimationQueue() {
   screen_rotation_state_ = IDLE;
   old_layer_tree_owner_.reset();
   if (last_pending_request_ && IsDisplayIdValid(display_id_)) {
-    std::unique_ptr<ScreenRotationRequest> rotation_request =
-        std::move(last_pending_request_);
-    Rotate(rotation_request->new_rotation, rotation_request->source);
-    rotation_request.reset();
+    display::Display::Rotation new_rotation =
+        last_pending_request_->new_rotation;
+    display::Display::RotationSource source = last_pending_request_->source;
+    last_pending_request_.reset();
+    Rotate(new_rotation, source);
     return;
   }
 

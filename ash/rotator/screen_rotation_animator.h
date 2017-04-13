@@ -64,9 +64,11 @@ class ASH_EXPORT ScreenRotationAnimator {
   using CopyCallback =
       base::Callback<void(std::unique_ptr<cc::CopyOutputResult> result)>;
   struct ScreenRotationRequest {
-    ScreenRotationRequest(display::Display::Rotation to_rotation,
+    ScreenRotationRequest(int64_t id,
+                          display::Display::Rotation to_rotation,
                           display::Display::RotationSource from_source)
-        : new_rotation(to_rotation), source(from_source) {}
+        : id(id), new_rotation(to_rotation), source(from_source) {}
+    int64_t id;
     display::Display::Rotation new_rotation;
     display::Display::RotationSource source;
   };
@@ -122,6 +124,10 @@ class ASH_EXPORT ScreenRotationAnimator {
     IDLE,
   };
   ScreenRotationState screen_rotation_state_;
+
+  // Rotation request id, used to ignore copy request callback if we decide to
+  // cancel the previous rotation request.
+  int64_t rotation_request_id_;
 
   std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
   // Only set in unittest to disable animation timers.
