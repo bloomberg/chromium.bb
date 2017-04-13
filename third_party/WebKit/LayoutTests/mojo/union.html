@@ -53,7 +53,7 @@ define([
     var message = builder.finish();
 
     var messageValidator = new validator.Validator(message);
-    var err = structClass.validate(messageValidator, codec.kMessageHeaderSize);
+    var err = structClass.validate(messageValidator, codec.kMessageV0HeaderSize);
     assert_equals(err, validator.validationError.NONE);
 
     var reader = new codec.MessageReader(message);
@@ -152,7 +152,7 @@ define([
     var message = builder.finish();
 
     var messageValidator = new validator.Validator(message);
-    return structClass.validate(messageValidator, codec.kMessageHeaderSize);
+    return structClass.validate(messageValidator, codec.kMessageV0HeaderSize);
   }
 
   test(() => {

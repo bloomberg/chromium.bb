@@ -212,6 +212,7 @@ const char kScriptCommandPrefix[] = "webui";
 
   // Look for built-in scripts first.
   std::map<std::string, int> resource_map{
+      {mojo::kAssociatedBindingsModuleName, IDR_MOJO_ASSOCIATED_BINDINGS_JS},
       {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
       {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
       {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},

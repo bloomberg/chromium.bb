@@ -4,7 +4,8 @@
 
 define("mojo/public/js/validator", [
   "mojo/public/js/codec",
-], function(codec) {
+  "mojo/public/js/interface_types",
+], function(codec, types) {
 
   var validationError = {
     NONE: 'VALIDATION_ERROR_NONE',
@@ -16,6 +17,9 @@ define("mojo/public/js/validator", [
     UNEXPECTED_INVALID_HANDLE: 'VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE',
     ILLEGAL_POINTER: 'VALIDATION_ERROR_ILLEGAL_POINTER',
     UNEXPECTED_NULL_POINTER: 'VALIDATION_ERROR_UNEXPECTED_NULL_POINTER',
+    ILLEGAL_INTERFACE_ID: 'VALIDATION_ERROR_ILLEGAL_INTERFACE_ID',
+    UNEXPECTED_INVALID_INTERFACE_ID:
+        'VALIDATION_ERROR_UNEXPECTED_INVALID_INTERFACE_ID',
     MESSAGE_HEADER_INVALID_FLAGS:
         'VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS',
     MESSAGE_HEADER_MISSING_REQUEST_ID:
@@ -93,6 +97,16 @@ define("mojo/public/js/validator", [
         cls === codec.NullableInterfaceRequest;
   }
 
+  function isAssociatedInterfaceClass(cls) {
+    return cls === codec.AssociatedInterfacePtrInfo ||
+        cls === codec.NullableAssociatedInterfacePtrInfo;
+  }
+
+  function isAssociatedInterfaceRequestClass(cls) {
+    return cls === codec.AssociatedInterfaceRequest ||
+        cls === codec.NullableAssociatedInterfaceRequest;
+  }
+
   function isNullable(type) {
     return type === codec.NullableString || type === codec.NullableHandle ||
         type === codec.NullableInterface ||
@@ -105,14 +119,19 @@ define("mojo/public/js/validator", [
     this.message = message;
     this.offset = 0;
     this.handleIndex = 0;
+    this.associatedEndpointHandleIndex = 0;
+    this.payloadInterfaceIds = null;
+    this.offsetLimit = this.message.buffer.byteLength;
   }
-
-  Object.defineProperty(Validator.prototype, "offsetLimit", {
-    get: function() { return this.message.buffer.byteLength; }
-  });
 
   Object.defineProperty(Validator.prototype, "handleIndexLimit", {
     get: function() { return this.message.handles.length; }
+  });
+
+  Object.defineProperty(Validator.prototype, "associatedHandleIndexLimit", {
+    get: function() {
+      return this.payloadInterfaceIds ? this.payloadInterfaceIds.length : 0;
+    }
   });
 
   // True if we can safely allocate a block of bytes from start to
@@ -152,6 +171,21 @@ define("mojo/public/js/validator", [
     return true;
   };
 
+  Validator.prototype.claimAssociatedEndpointHandle = function(index) {
+    if (index === codec.kEncodedInvalidHandleValue) {
+      return true;
+    }
+
+    if (index < this.associatedEndpointHandleIndex ||
+        index >= this.associatedHandleIndexLimit) {
+      return false;
+    }
+
+    // This is safe because handle indices are uint32.
+    this.associatedEndpointHandleIndex = index + 1;
+    return true;
+  };
+
   Validator.prototype.validateEnum = function(offset, enumClass) {
     // Note: Assumes that enums are always 32 bits! But this matches
     // mojom::generate::pack::PackedField::GetSizeForKind, so it should be okay.
@@ -172,12 +206,38 @@ define("mojo/public/js/validator", [
     return validationError.NONE;
   };
 
+  Validator.prototype.validateAssociatedEndpointHandle = function(offset,
+      nullable) {
+    var index = this.message.buffer.getUint32(offset);
+
+    if (index === codec.kEncodedInvalidHandleValue) {
+      return nullable ? validationError.NONE :
+          validationError.UNEXPECTED_INVALID_INTERFACE_ID;
+    }
+
+    if (!this.claimAssociatedEndpointHandle(index)) {
+      return validationError.ILLEGAL_INTERFACE_ID;
+    }
+
+    return validationError.NONE;
+  };
+
   Validator.prototype.validateInterface = function(offset, nullable) {
     return this.validateHandle(offset, nullable);
   };
 
   Validator.prototype.validateInterfaceRequest = function(offset, nullable) {
     return this.validateHandle(offset, nullable);
+  };
+
+  Validator.prototype.validateAssociatedInterface = function(offset,
+      nullable) {
+    return this.validateAssociatedEndpointHandle(offset, nullable);
+  };
+
+  Validator.prototype.validateAssociatedInterfaceRequest = function(
+      offset, nullable) {
+    return this.validateAssociatedEndpointHandle(offset, nullable);
   };
 
   Validator.prototype.validateStructHeader = function(offset, minNumBytes) {
@@ -223,33 +283,64 @@ define("mojo/public/js/validator", [
     return fieldVersion <= structVersion;
   };
 
-  // TODO(wangjimmy): Add support for v2 messages.
   Validator.prototype.validateMessageHeader = function() {
-
-    var err = this.validateStructHeader(0, codec.kMessageHeaderSize);
-    if (err != validationError.NONE)
+    var err = this.validateStructHeader(0, codec.kMessageV0HeaderSize);
+    if (err != validationError.NONE) {
       return err;
+    }
 
     var numBytes = this.message.getHeaderNumBytes();
     var version = this.message.getHeaderVersion();
 
     var validVersionAndNumBytes =
-        (version == 0 && numBytes == codec.kMessageHeaderSize) ||
-        (version == 1 &&
-         numBytes == codec.kMessageWithRequestIDHeaderSize) ||
-        (version > 1 &&
-         numBytes >= codec.kMessageWithRequestIDHeaderSize);
-    if (!validVersionAndNumBytes)
+        (version == 0 && numBytes == codec.kMessageV0HeaderSize) ||
+        (version == 1 && numBytes == codec.kMessageV1HeaderSize) ||
+        (version == 2 && numBytes == codec.kMessageV2HeaderSize) ||
+        (version > 2 && numBytes >= codec.kMessageV2HeaderSize);
+
+    if (!validVersionAndNumBytes) {
       return validationError.UNEXPECTED_STRUCT_HEADER;
+    }
 
     var expectsResponse = this.message.expectsResponse();
     var isResponse = this.message.isResponse();
 
-    if (version == 0 && (expectsResponse || isResponse))
+    if (version == 0 && (expectsResponse || isResponse)) {
       return validationError.MESSAGE_HEADER_MISSING_REQUEST_ID;
+    }
 
-    if (isResponse && expectsResponse)
+    if (isResponse && expectsResponse) {
       return validationError.MESSAGE_HEADER_INVALID_FLAGS;
+    }
+
+    if (version < 2) {
+      return validationError.NONE;
+    }
+
+    var err = this.validateArrayPointer(
+        codec.kMessagePayloadInterfaceIdsPointerOffset,
+        codec.Uint32.encodedSize, codec.Uint32, true, [0], 0);
+
+    if (err != validationError.NONE) {
+      return err;
+    }
+
+    this.payloadInterfaceIds = this.message.getPayloadInterfaceIds();
+    if (this.payloadInterfaceIds) {
+      for (var interfaceId of this.payloadInterfaceIds) {
+        if (!types.isValidInterfaceId(interfaceId) ||
+            types.isMasterInterfaceId(interfaceId)) {
+          return validationError.ILLEGAL_INTERFACE_ID;
+        }
+      }
+    }
+
+    // Set offset to the start of the payload and offsetLimit to the start of
+    // the payload interface Ids so that payload can be validated using the
+    // same messageValidator.
+    this.offset = this.message.getHeaderNumBytes();
+    this.offsetLimit = this.decodePointer(
+        codec.kMessagePayloadInterfaceIdsPointerOffset);
 
     return validationError.NONE;
   };
@@ -451,6 +542,12 @@ define("mojo/public/js/validator", [
     if (isInterfaceRequestClass(elementType))
       return this.validateInterfaceRequestElements(
           elementsOffset, numElements, nullable);
+    if (isAssociatedInterfaceClass(elementType))
+      return this.validateAssociatedInterfaceElements(
+          elementsOffset, numElements, nullable);
+    if (isAssociatedInterfaceRequestClass(elementType))
+      return this.validateAssociatedInterfaceRequestElements(
+          elementsOffset, numElements, nullable);
     if (isStringClass(elementType))
       return this.validateArrayElements(
           elementsOffset, numElements, codec.Uint8, nullable, [0], 0);
@@ -504,6 +601,33 @@ define("mojo/public/js/validator", [
       var err = this.validateInterfaceRequest(elementOffset, nullable);
       if (err != validationError.NONE)
         return err;
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateAssociatedInterfaceElements =
+      function(offset, numElements, nullable) {
+    var elementSize = codec.AssociatedInterfacePtrInfo.prototype.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateAssociatedInterface(elementOffset, nullable);
+      if (err != validationError.NONE) {
+        return err;
+      }
+    }
+    return validationError.NONE;
+  };
+
+  Validator.prototype.validateAssociatedInterfaceRequestElements =
+      function(offset, numElements, nullable) {
+    var elementSize = codec.AssociatedInterfaceRequest.encodedSize;
+    for (var i = 0; i < numElements; i++) {
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateAssociatedInterfaceRequest(elementOffset,
+          nullable);
+      if (err != validationError.NONE) {
+        return err;
+      }
     }
     return validationError.NONE;
   };

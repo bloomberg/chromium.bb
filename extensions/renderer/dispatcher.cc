@@ -740,6 +740,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
     {"webViewEvents", IDR_WEB_VIEW_EVENTS_JS},
     {"webViewInternal", IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
 
+    {mojo::kAssociatedBindingsModuleName, IDR_MOJO_ASSOCIATED_BINDINGS_JS},
     {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
     {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
     {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},

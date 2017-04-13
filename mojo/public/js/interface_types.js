@@ -31,6 +31,15 @@ define("mojo/public/js/interface_types", [
     this.version = 0;
   };
 
+  function AssociatedInterfacePtrInfo(interfaceEndpointHandle, version) {
+    this.interfaceEndpointHandle = interfaceEndpointHandle;
+    this.version = version;
+  }
+
+  AssociatedInterfacePtrInfo.prototype.isValid = function() {
+    return this.interfaceEndpointHandle.isValid();
+  };
+
   // ---------------------------------------------------------------------------
 
   function InterfaceRequest(handle) {
@@ -49,6 +58,14 @@ define("mojo/public/js/interface_types", [
     this.handle = null;
   };
 
+  function AssociatedInterfaceRequest(interfaceEndpointHandle) {
+    this.interfaceEndpointHandle = interfaceEndpointHandle;
+  }
+
+  AssociatedInterfaceRequest.prototype.isValid = function() {
+    return this.interfaceEndpointHandle.isValid();
+  };
+
   function isMasterInterfaceId(interfaceId) {
     return interfaceId === kMasterInterfaceId;
   }
@@ -60,6 +77,8 @@ define("mojo/public/js/interface_types", [
   var exports = {};
   exports.InterfacePtrInfo = InterfacePtrInfo;
   exports.InterfaceRequest = InterfaceRequest;
+  exports.AssociatedInterfacePtrInfo = AssociatedInterfacePtrInfo;
+  exports.AssociatedInterfaceRequest = AssociatedInterfaceRequest;
   exports.isMasterInterfaceId = isMasterInterfaceId;
   exports.isValidInterfaceId = isValidInterfaceId;
   exports.kInvalidInterfaceId = kInvalidInterfaceId;

@@ -62,6 +62,7 @@ scoped_refptr<base::RefCountedMemory> GetBuiltinModuleData(
     const char* path;
     const int id;
   } kBuiltinModuleResources[] = {
+      {mojo::kAssociatedBindingsModuleName, IDR_MOJO_ASSOCIATED_BINDINGS_JS},
       {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
       {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
       {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},

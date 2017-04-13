@@ -15,6 +15,7 @@ group("bindings") {
   data = [
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
     "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.js",
+    "associated_bindings.js",
     "bindings.js",
     "buffer.js",
     "codec.js",

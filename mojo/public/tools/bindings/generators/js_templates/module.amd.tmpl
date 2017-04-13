@@ -42,6 +42,7 @@ define("{{module.path}}", [
          "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
        module.path !=
          "mojo/public/interfaces/bindings/pipe_control_messages.mojom" %}
+    "mojo/public/js/associated_bindings",
     "mojo/public/js/bindings",
 {%-   endif %}
     "mojo/public/js/codec",
@@ -55,7 +56,7 @@ define("{{module.path}}", [
          "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
        module.path !=
          "mojo/public/interfaces/bindings/pipe_control_messages.mojom" -%}
-bindings, {% endif -%}
+associatedBindings, bindings, {% endif -%}
 codec, core, validator
 {%-   for import in imports -%}
     , {{import.unique_name}}

@@ -28,6 +28,14 @@ err = messageValidator.validateInterface({{offset}}, {{field|validate_nullable_p
 // validate {{name}}
 err = messageValidator.validateInterfaceRequest({{offset}}, {{field|validate_nullable_params}})
 {{_check_err()}}
+{%-   elif field|is_associated_interface_field %}
+// validate {{name}}
+err = messageValidator.validateAssociatedInterface({{offset}}, {{field|validate_nullable_params}});
+{{_check_err()}}
+{%-   elif field|is_associated_interface_request_field %}
+// validate {{name}}
+err = messageValidator.validateAssociatedInterfaceRequest({{offset}}, {{field|validate_nullable_params}})
+{{_check_err()}}
 {%-   elif field|is_handle_field %}
 // validate {{name}}
 err = messageValidator.validateHandle({{offset}}, {{field|validate_nullable_params}})

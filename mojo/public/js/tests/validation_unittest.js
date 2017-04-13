@@ -6,6 +6,7 @@ define([
     "console",
     "file",
     "gin/test/expect",
+    "mojo/public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom",
     "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",
     "mojo/public/js/bindings",
     "mojo/public/js/buffer",
@@ -16,6 +17,7 @@ define([
 ], function(console,
             file,
             expect,
+            testAssociatedInterface,
             testInterface,
             bindings,
             buffer,
@@ -270,6 +272,12 @@ define([
         testInterface.BoundsCheckTestInterface.validateResponse]);
   }
 
+  function testAssociatedConformanceMessageValidation() {
+    testMessageValidation("associated_conformance_", [
+        testAssociatedInterface.AssociatedConformanceTestInterface
+                               .validateRequest]);
+  }
+
   function testIntegratedMessageValidation(testFilesPattern, endpoint) {
     var testFiles = getMessageTestFiles(testFilesPattern);
     expect(testFiles.length).toBeGreaterThan(0);
@@ -321,6 +329,7 @@ define([
   }
 
   expect(checkTestMessageParser()).toBeNull();
+  testAssociatedConformanceMessageValidation();
   testConformanceMessageValidation();
   testBoundsCheckMessageValidation();
   testResponseConformanceMessageValidation();

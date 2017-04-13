@@ -67,8 +67,10 @@ def JavaScriptDefaultValue(field):
     return "new %sPtr()" % JavaScriptType(field.kind)
   if mojom.IsInterfaceRequestKind(field.kind):
     return "new bindings.InterfaceRequest()"
-  if mojom.IsAssociatedKind(field.kind):
-    return "null"
+  if mojom.IsAssociatedInterfaceKind(field.kind):
+    return "new associatedBindings.AssociatedInterfacePtrInfo()"
+  if mojom.IsAssociatedInterfaceRequestKind(field.kind):
+    return "new associatedBindings.AssociatedInterfaceRequest()"
   if mojom.IsEnumKind(field.kind):
     return "0"
   raise Exception("No valid default: %s" % field)
@@ -134,9 +136,13 @@ def CodecType(kind):
         "NullableInterfaceRequest" if mojom.IsNullableKind(kind)
                                    else "InterfaceRequest")
   if mojom.IsAssociatedInterfaceKind(kind):
-    return "codec.AssociatedInterfaceNotSupported"
+    return "codec.%s" % (
+        "NullableAssociatedInterfacePtrInfo" if mojom.IsNullableKind(kind)
+                                             else "AssociatedInterfacePtrInfo")
   if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "codec.AssociatedInterfaceRequestNotSupported"
+    return "codec.%s" % (
+        "NullableAssociatedInterfaceRequest" if mojom.IsNullableKind(kind)
+                                             else "AssociatedInterfaceRequest")
   if mojom.IsEnumKind(kind):
     return "new codec.Enum(%s)" % JavaScriptType(kind)
   if mojom.IsMapKind(kind):
@@ -310,6 +316,12 @@ def IsInterfaceField(field):
 def IsInterfaceRequestField(field):
   return mojom.IsInterfaceRequestKind(field.kind)
 
+def IsAssociatedInterfaceField(field):
+  return mojom.IsAssociatedInterfaceKind(field.kind)
+
+def IsAssociatedInterfaceRequestField(field):
+  return mojom.IsAssociatedInterfaceRequestKind(field.kind)
+
 def IsUnionField(field):
   return mojom.IsUnionKind(field.kind)
 
@@ -340,6 +352,8 @@ class Generator(generator.Generator):
     "has_callbacks": mojom.HasCallbacks,
     "is_any_handle_or_interface_field": IsAnyHandleOrInterfaceField,
     "is_array_pointer_field": IsArrayPointerField,
+    "is_associated_interface_field": IsAssociatedInterfaceField,
+    "is_associated_interface_request_field": IsAssociatedInterfaceRequestField,
     "is_bool_field": IsBoolField,
     "is_enum_field": IsEnumField,
     "is_handle_field": IsHandleField,
