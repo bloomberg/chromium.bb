@@ -1228,10 +1228,7 @@ queue_event(struct wl_display *display, int len)
 		return 0;
 
 	proxy = wl_map_lookup(&display->objects, id);
-	if (proxy == WL_ZOMBIE_OBJECT) {
-		wl_connection_consume(display->connection, size);
-		return size;
-	} else if (proxy == NULL) {
+	if (!proxy || proxy == WL_ZOMBIE_OBJECT) {
 		wl_connection_consume(display->connection, size);
 		return size;
 	}
