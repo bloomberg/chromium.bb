@@ -178,8 +178,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // Only used if the result type will be a cursor.
   IndexedDB::CursorType cursor_type_ = IndexedDB::kCursorKeyAndValue;
   WebIDBCursorDirection cursor_direction_ = kWebIDBCursorDirectionNext;
-  // When a cursor is continued/advanced, m_result is cleared and
-  // m_pendingCursor holds it.
+  // When a cursor is continued/advanced, |result_| is cleared and
+  // |pendingCursor_| holds it.
   Member<IDBCursor> pending_cursor_;
   // New state is not applied to the cursor object until the event is
   // dispatched.

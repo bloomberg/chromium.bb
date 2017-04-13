@@ -198,7 +198,7 @@ class MODULES_EXPORT IDBTransaction final
   // Transactions may not access object stores outside their scope.
   //
   // The scope of versionchange transactions is the entire database. We
-  // represent this case with an empty m_scope, because copying all the store
+  // represent this case with an empty |scope_|, because copying all the store
   // names would waste both time and memory.
   //
   // Using object store names to represent a transaction's scope is safe

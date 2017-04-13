@@ -81,7 +81,7 @@ class MODULES_EXPORT IDBDatabaseCallbacks
   // object.
   // Oilpan: We'd like to delete an IDBDatabase object by a
   // GC. WebIDBDatabaseCallbacks can survive the GC, and IDBDatabaseCallbacks
-  // can survive too. m_database should be a weak reference to avoid that an
+  // can survive too. |database_| should be a weak reference to avoid that an
   // IDBDatabase survives the GC with the IDBDatabaseCallbacks.
   WeakMember<IDBDatabase> database_;
 

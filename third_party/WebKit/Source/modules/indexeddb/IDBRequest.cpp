@@ -539,7 +539,7 @@ void IDBRequest::EnqueueEvent(Event* event) {
     return;
 
   DCHECK(ready_state_ == PENDING || did_fire_upgrade_needed_event_)
-      << "When queueing event " << event->type() << ", m_readyState was "
+      << "When queueing event " << event->type() << ", ready_state_ was "
       << ready_state_;
 
   EventQueue* event_queue = GetExecutionContext()->GetEventQueue();
