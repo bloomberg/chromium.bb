@@ -46,7 +46,8 @@
         </paper-button>
         <template is="dom-if" if="[[!canChangeChannel_]]">
           <cr-policy-indicator
-              name="[[getChangeChannelIndicatorSourceName_(canChangeChannel_)]]"
+              indicator-source-name="[[getChangeChannelIndicatorSourceName_(
+                  canChangeChannel_)]]"
               indicator-type="[[getChangeChannelIndicatorType_(
                   canChangeChannel_)]]">
           </cr-policy-indicator>
