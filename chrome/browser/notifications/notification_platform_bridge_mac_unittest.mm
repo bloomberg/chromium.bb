@@ -255,15 +255,17 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayProgress) {
                                         alert_dispatcher()));
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
-  NSArray* notifications = [notification_center() deliveredNotifications];
 
-  EXPECT_EQ(1u, [notifications count]);
+  // Progress notifications are considered alerts
+  EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
+  NSArray* displayedAlerts = [alert_dispatcher() alerts];
+  ASSERT_EQ(1u, [displayedAlerts count]);
 
-  NSUserNotification* delivered_notification = [notifications objectAtIndex:0];
+  NSDictionary* deliveredNotification = [displayedAlerts objectAtIndex:0];
   base::string16 expected =
       base::FormatPercent(kSamplePercent) + base::UTF8ToUTF16(" - Title");
   EXPECT_NSEQ(base::SysUTF16ToNSString(expected),
-              [delivered_notification title]);
+              [deliveredNotification objectForKey:@"title"]);
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestCloseNotification) {

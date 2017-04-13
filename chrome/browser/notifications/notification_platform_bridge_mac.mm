@@ -182,6 +182,7 @@ void NotificationPlatformBridgeMac::Display(
 
   [builder
       setTitle:base::SysUTF16ToNSString(CreateNotificationTitle(notification))];
+
   [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
 
   bool requires_attribution =
@@ -246,7 +247,8 @@ void NotificationPlatformBridgeMac::Display(
   // Send persistent notifications to the XPC service so they
   // can be displayed as alerts. Chrome itself can only display
   // banners.
-  if (notification.never_timeout()) {
+  // Progress Notifications are always considered persistent.
+  if (notification.never_timeout() || notification.progress() > 0) {
     NSDictionary* dict = [builder buildDictionary];
     [alert_dispatcher_ dispatchNotification:dict];
   } else {

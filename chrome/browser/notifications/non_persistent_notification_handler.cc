@@ -42,7 +42,6 @@ void NonPersistentNotificationHandler::OpenSettings(Profile* profile) {
 void NonPersistentNotificationHandler::RegisterNotification(
     const std::string& notification_id,
     NotificationDelegate* delegate) {
-  DCHECK_EQ(notifications_.count(notification_id), 0u);
   notifications_[notification_id] =
       scoped_refptr<NotificationDelegate>(delegate);
 }
