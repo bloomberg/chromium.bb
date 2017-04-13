@@ -75,12 +75,13 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
 
     /** Called when the SearchActivity has finished initialization. */
     void onDeferredStartup(boolean isVoiceSearchIntent) {
+        SearchWidgetProvider.updateCachedVoiceSearchAvailability(isVoiceSearchEnabled());
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
     }
 
     /** Begins a new query. */
     void beginQuery(boolean isVoiceSearchIntent) {
-        if (isVoiceSearchIntent) {
+        if (isVoiceSearchEnabled() && isVoiceSearchIntent) {
             startVoiceRecognition();
         } else {
             focusTextBox();

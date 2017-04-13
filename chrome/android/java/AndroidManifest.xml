@@ -698,8 +698,7 @@ by a child template that "extends" this file.
 
         {% if channel in ['canary', 'default'] %}
         <!-- Search widget -->
-        <receiver android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider"
-            android:process=":search_widget">
+        <receiver android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -715,7 +714,7 @@ by a child template that "extends" this file.
 
         <!-- Search Activity -->
         <activity android:name="org.chromium.chrome.browser.searchwidget.SearchActivity"
-            android:theme="@style/MainTheme"
+            android:theme="@style/SearchActivityTheme"
             android:label="Search"
             android:exported="false"
             android:launchMode="singleTask"

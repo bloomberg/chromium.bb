@@ -7,20 +7,17 @@ package org.chromium.chrome.browser.searchwidget;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
@@ -171,22 +168,12 @@ public class SearchActivity extends AsyncInitializationActivity
         // resending a queued query after the user deleted it.
         if (TextUtils.isEmpty(url)) return;
 
-        // Fix up the URL and send it to a tab.
+        // Fix up the URL and send it to the full browser.
         String fixedUrl = UrlFormatter.fixupUrl(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-
-        boolean useHerbTab = ContextUtils.getAppSharedPreferences().getBoolean(
-                SearchWidgetProvider.PREF_USE_HERB_TAB, false);
-        if (useHerbTab) {
-            intent = ChromeLauncherActivity.createCustomTabActivityIntent(this, intent, true);
-            intent.putExtra(CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE,
-                    CustomTabsIntent.SHOW_PAGE_TITLE);
-        } else {
-            intent.setPackage(getPackageName());
-            IntentHandler.addTrustedIntentExtras(intent);
-        }
-
+        intent.setPackage(getPackageName());
+        IntentHandler.addTrustedIntentExtras(intent);
         IntentUtils.safeStartActivity(this, intent,
                 ActivityOptionsCompat
                         .makeCustomAnimation(this, android.R.anim.fade_in, android.R.anim.fade_out)

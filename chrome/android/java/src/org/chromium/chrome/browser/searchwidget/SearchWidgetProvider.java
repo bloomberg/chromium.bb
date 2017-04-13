@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ContextUtils;
@@ -23,13 +24,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
- * Widget that lets the user search using the default search engine in Chrome.
+ * Widget that lets the user search using their default search engine.
+ *
  * Because this is a BroadcastReceiver, it dies immediately after it runs.  A new one is created
  * for each new broadcast.
  */
@@ -59,20 +60,19 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     static final String EXTRA_START_VOICE_SEARCH =
             "org.chromium.chrome.browser.searchwidget.START_VOICE_SEARCH";
 
+    private static final String PREF_IS_VOICE_SEARCH_AVAILABLE =
+            "org.chromium.chrome.browser.searchwidget.IS_VOICE_SEARCH_AVAILABLE";
     private static final String PREF_SEARCH_ENGINE_SHORTNAME =
             "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
-    static final String PREF_USE_HERB_TAB = "org.chromium.chrome.browser.searchwidget.USE_HERB_TAB";
 
     private static final String TAG = "searchwidget";
     private static final Object OBSERVER_LOCK = new Object();
 
     private static SearchWidgetTemplateUrlServiceObserver sObserver;
-    private static String sCachedSearchEngineName;
 
     /**
      * Creates the singleton instance of the observer that will monitor for search engine changes.
-     * The native library and the browser process must have been fully loaded before calling this,
-     * after {@link AsyncInitializationActivity#finishNativeInitialization}.
+     * The native library and the browser process must have been fully loaded before calling this.
      */
     public static void initialize() {
         ThreadUtils.assertOnUiThread();
@@ -84,13 +84,19 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             sObserver = new SearchWidgetTemplateUrlServiceObserver();
 
             TemplateUrlService service = TemplateUrlService.getInstance();
+            service.registerLoadListener(sObserver);
             service.addObserver(sObserver);
-            if (!service.isLoaded()) {
-                service.registerLoadListener(sObserver);
-                service.load();
-            }
+            if (!service.isLoaded()) service.load();
         }
-        updateCachedEngineName();
+    }
+
+    /** Nukes all cached information and forces all widgets to start with a blank slate. */
+    public static void reset() {
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.remove(PREF_IS_VOICE_SEARCH_AVAILABLE);
+        editor.remove(PREF_SEARCH_ENGINE_SHORTNAME);
+        editor.apply();
+        updateAllWidgets();
     }
 
     @Override
@@ -98,13 +104,11 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         if (IntentHandler.isIntentChromeOrFirstParty(intent)) {
             if (ACTION_START_TEXT_QUERY.equals(intent.getAction())) {
                 startSearchActivity(context, false);
-                return;
             } else if (ACTION_START_VOICE_QUERY.equals(intent.getAction())) {
                 startSearchActivity(context, true);
-                return;
+            } else if (ACTION_UPDATE_ALL_WIDGETS.equals(intent.getAction())) {
+                performUpdate(context);
             }
-        } else if (ACTION_UPDATE_ALL_WIDGETS.equals(intent.getAction())) {
-            performUpdate(context);
             return;
         }
         super.onReceive(context, intent);
@@ -115,13 +119,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
         // Launch the SearchActivity.
         Intent searchIntent = new Intent();
-        searchIntent.setClassName(context, SearchActivity.class.getName());
+        searchIntent.setClass(context, SearchActivity.class);
         searchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         searchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         searchIntent.putExtra(EXTRA_START_VOICE_SEARCH, startVoiceSearch);
 
-        Bundle optionsBundle;
-        optionsBundle =
+        Bundle optionsBundle =
                 ActivityOptionsCompat.makeCustomAnimation(context, R.anim.activity_open_enter, 0)
                         .toBundle();
         context.startActivity(searchIntent, optionsBundle);
@@ -130,20 +133,29 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         performUpdate(context, ids);
-        super.onUpdate(context, manager, ids);
     }
 
-    private void performUpdate(Context context) {
+    private static void performUpdate(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         performUpdate(context, getAllSearchWidgetIds(manager));
     }
 
-    private void performUpdate(Context context, int[] ids) {
-        for (int id : ids) updateWidget(context, id);
+    private static void performUpdate(Context context, int[] ids) {
+        if (ids.length == 0) return;
+
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        boolean isVoiceSearchAvailable = prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true);
+        String engineName = prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null);
+
+        for (int id : ids) {
+            RemoteViews views = createWidgetViews(context, id, engineName, isVoiceSearchAvailable);
+            manager.updateAppWidget(id, views);
+        }
     }
 
-    private void updateWidget(Context context, int id) {
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+    private static RemoteViews createWidgetViews(
+            Context context, int id, String engineName, boolean isVoiceSearchAvailable) {
         RemoteViews views =
                 new RemoteViews(context.getPackageName(), R.layout.search_widget_template);
 
@@ -154,74 +166,72 @@ public class SearchWidgetProvider extends AppWidgetProvider {
                 PendingIntent.getBroadcast(
                         context, 0, textIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
-        Intent voiceIntent = createStartQueryIntent(context, ACTION_START_VOICE_QUERY, id);
-        views.setOnClickPendingIntent(R.id.microphone_icon,
-                PendingIntent.getBroadcast(
-                        context, 0, voiceIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        // If voice search is available, clicking on the microphone triggers a voice query.
+        if (isVoiceSearchAvailable) {
+            Intent voiceIntent = createStartQueryIntent(context, ACTION_START_VOICE_QUERY, id);
+            views.setOnClickPendingIntent(R.id.microphone_icon,
+                    PendingIntent.getBroadcast(
+                            context, 0, voiceIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+            views.setViewVisibility(R.id.microphone_icon, View.VISIBLE);
+        } else {
+            views.setViewVisibility(R.id.microphone_icon, View.GONE);
+        }
 
         // Update what string is displayed by the widget.
-        String engineName = getCachedEngineName();
         String text = TextUtils.isEmpty(engineName)
                 ? context.getString(R.string.search_widget_default)
                 : context.getString(R.string.search_with_product, engineName);
         views.setTextViewText(R.id.title, text);
 
-        manager.updateAppWidget(id, views);
+        return views;
     }
 
-    /** Force all widgets to update their state. */
-    static void updateAllWidgets() {
-        Intent intent = new Intent(ACTION_UPDATE_ALL_WIDGETS);
-        intent.setPackage(ContextUtils.getApplicationContext().getPackageName());
-        ContextUtils.getApplicationContext().sendBroadcast(intent);
-    }
-
-    /** Updates the name of the user's default search engine that is cached in SharedPreferences. */
-    static void updateCachedEngineName() {
-        assert LibraryLoader.isInitialized();
-
-        // Getting an instance of the TemplateUrlService requires that the native library be
-        // loaded, but the TemplateUrlService itself needs to be initialized.
-        TemplateUrlService service = TemplateUrlService.getInstance();
-        if (!service.isLoaded()) return;
-
-        String engineName = service.getDefaultSearchEngineTemplateUrl().getShortName();
-        if (!TextUtils.equals(sCachedSearchEngineName, engineName)) {
-            sCachedSearchEngineName = engineName;
-
-            SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
-            editor.putString(PREF_SEARCH_ENGINE_SHORTNAME, engineName);
-            editor.apply();
-
+    /** Caches whether or not a voice search is possible. */
+    static void updateCachedVoiceSearchAvailability(boolean isVoiceSearchAvailable) {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        if (prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true) != isVoiceSearchAvailable) {
+            prefs.edit().putBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, isVoiceSearchAvailable).apply();
             updateAllWidgets();
         }
     }
 
     /**
-     * Returns the cached name of the user's default search engine.  Caching it in SharedPreferences
-     * prevents us from having to load the native library and the TemplateUrlService.
-     *
-     * @return The cached name of the user's default search engine.
+     * Updates the name of the user's default search engine that is cached in SharedPreferences.
+     * Caching it in SharedPreferences prevents us from having to load the native library and the
+     * TemplateUrlService whenever the widget is updated.
      */
-    private static String getCachedEngineName() {
-        if (sCachedSearchEngineName != null) return sCachedSearchEngineName;
+    private static void updateCachedEngineName() {
+        assert LibraryLoader.isInitialized();
+
+        // Getting an instance of the TemplateUrlService requires that the native library be
+        // loaded, but the TemplateUrlService itself needs to be initialized.
+        TemplateUrlService service = TemplateUrlService.getInstance();
+        assert service.isLoaded();
+        String engineName = service.getDefaultSearchEngineTemplateUrl().getShortName();
 
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        sCachedSearchEngineName = prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null);
-        return sCachedSearchEngineName;
+        if (!TextUtils.equals(prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null), engineName)) {
+            prefs.edit().putString(PREF_SEARCH_ENGINE_SHORTNAME, engineName).apply();
+            updateAllWidgets();
+        }
     }
 
-    /** Get the IDs of all of Chrome's search widgets. */
+    /** Get the IDs of all existing search widgets. */
     private static int[] getAllSearchWidgetIds(AppWidgetManager manager) {
         return manager.getAppWidgetIds(new ComponentName(
                 ContextUtils.getApplicationContext(), SearchWidgetProvider.class.getName()));
     }
 
     /** Creates a trusted Intent that lets the user begin performing queries. */
-    private Intent createStartQueryIntent(Context context, String action, int widgetId) {
+    private static Intent createStartQueryIntent(Context context, String action, int widgetId) {
         Intent intent = new Intent(action, Uri.parse(String.valueOf(widgetId)));
-        intent.setClass(context, getClass());
+        intent.setClass(context, SearchWidgetProvider.class);
         IntentHandler.addTrustedIntentExtras(intent);
         return intent;
+    }
+
+    /** Immediately updates all widgets. */
+    private static void updateAllWidgets() {
+        performUpdate(ContextUtils.getApplicationContext());
     }
 }
