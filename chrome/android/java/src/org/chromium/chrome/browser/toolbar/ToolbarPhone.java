@@ -157,7 +157,7 @@ public class ToolbarPhone extends ToolbarLayout
     // mode.  0 = entirely in normal mode and 1.0 = entirely in TabSwitcher mode.  In between values
     // can be used for animating between the two view modes.
     @ViewDebug.ExportedProperty(category = "chrome")
-    private float mTabSwitcherModePercent;
+    protected float mTabSwitcherModePercent;
 
     // Used to clip the toolbar during the fade transition into and out of TabSwitcher mode.  Only
     // used when |mAnimateNormalToolbar| is false.

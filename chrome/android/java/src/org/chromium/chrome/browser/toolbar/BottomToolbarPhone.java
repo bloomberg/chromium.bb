@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -263,11 +264,18 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateToolbarBackground(ColorUtils.getColorWithOverlay(
                 getTabThemeColor(), tabSwitcherThemeColor, progress));
 
-        // Don't use transparency for accessibility mode.
-        if (!mAccessibilityEnabled) {
+        // Don't use transparency for accessibility mode or low-end devices since the
+        // {@link OverviewListLayout} will be used instead of the normal tab switcher.
+        if (!mAccessibilityEnabled && !SysUtils.isLowEndDevice()) {
             float alphaTransition = 1f - TAB_SWITCHER_TOOLBAR_ALPHA;
             mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
         }
+    }
+
+    @Override
+    public void finishAnimations() {
+        super.finishAnimations();
+        drawTabSwitcherFadeAnimation(true, mTabSwitcherModePercent);
     }
 
     @Override
