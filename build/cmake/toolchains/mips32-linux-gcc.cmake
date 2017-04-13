@@ -40,6 +40,8 @@ elseif (ENABLE_MSA)
 endif ()
 
 if ("${CROSS}" STREQUAL "")
+  # TODO(tomfinegan): Make it possible to turn this off. The $CROSS prefix
+  # won't be desired on a mips host.
   # Default cross compiler prefix to something that might work for an
   # unoptimized build.
   set(CROSS mips-linux-gnu-)
