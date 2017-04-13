@@ -6,10 +6,8 @@
 
 #include "base/format_macros.h"
 #import "base/ios/block_types.h"
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -31,8 +29,13 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 using ::AutofillTypeFromAutofillUIType;
@@ -89,8 +92,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD ||
       _creditCard.record_type() == autofill::CreditCard::MASKED_SERVER_CARD) {
     GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl(0);
-    base::scoped_nsobject<OpenUrlCommand> command(
-        [[OpenUrlCommand alloc] initWithURLFromChrome:paymentsURL]);
+    OpenUrlCommand* command =
+        [[OpenUrlCommand alloc] initWithURLFromChrome:paymentsURL];
     [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
     [self chromeExecuteCommand:command];
 
@@ -141,8 +144,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL isEditing = self.editor.editing;
 
   [model addSectionWithIdentifier:SectionIdentifierFields];
-  AutofillEditItem* cardholderNameitem = [[[AutofillEditItem alloc]
-      initWithType:ItemTypeCardholderName] autorelease];
+  AutofillEditItem* cardholderNameitem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
   cardholderNameitem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
   cardholderNameitem.textFieldValue = autofill::GetCreditCardName(
@@ -154,7 +157,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Card number (PAN).
   AutofillEditItem* cardNumberitem =
-      [[[AutofillEditItem alloc] initWithType:ItemTypeCardNumber] autorelease];
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
   cardNumberitem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
   // Never show full card number for Wallet cards, even if copied locally.
@@ -170,8 +173,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration month.
-  AutofillEditItem* expirationMonthItem = [[[AutofillEditItem alloc]
-      initWithType:ItemTypeExpirationMonth] autorelease];
+  AutofillEditItem* expirationMonthItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
   expirationMonthItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
   expirationMonthItem.textFieldValue =
@@ -182,8 +185,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration year.
-  AutofillEditItem* expirationYearItem = [[[AutofillEditItem alloc]
-      initWithType:ItemTypeExpirationYear] autorelease];
+  AutofillEditItem* expirationYearItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
   expirationYearItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
   expirationYearItem.textFieldValue =
@@ -196,8 +199,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD) {
     // Add CopiedToChrome cell in its own section.
     [model addSectionWithIdentifier:SectionIdentifierCopiedToChrome];
-    CopiedToChromeItem* copiedToChromeItem = [[[CopiedToChromeItem alloc]
-        initWithType:ItemTypeCopiedToChrome] autorelease];
+    CopiedToChromeItem* copiedToChromeItem =
+        [[CopiedToChromeItem alloc] initWithType:ItemTypeCopiedToChrome];
     [model addItem:copiedToChromeItem
         toSectionWithIdentifier:SectionIdentifierCopiedToChrome];
   }

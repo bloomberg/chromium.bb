@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -24,6 +23,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -49,7 +52,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PrefChangeRegistrar _prefChangeRegistrarApplicationContext;
 
   // Updatable Items
-  base::scoped_nsobject<CollectionViewDetailItem> _preloadWebpagesDetailItem;
+  CollectionViewDetailItem* _preloadWebpagesDetailItem;
 }
 
 // Helpers to create collection view items.
@@ -102,22 +105,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
       currentLabelForPreference:_browserState->GetPrefs()
                        basePref:prefs::kNetworkPredictionEnabled
                        wifiPref:prefs::kNetworkPredictionWifiOnly];
-  _preloadWebpagesDetailItem.reset(
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypePreload]);
+  _preloadWebpagesDetailItem =
+      [[CollectionViewDetailItem alloc] initWithType:ItemTypePreload];
 
-  _preloadWebpagesDetailItem.get().text =
+  _preloadWebpagesDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
-  _preloadWebpagesDetailItem.get().detailText = detailText;
-  _preloadWebpagesDetailItem.get().accessoryType =
+  _preloadWebpagesDetailItem.detailText = detailText;
+  _preloadWebpagesDetailItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
-  _preloadWebpagesDetailItem.get().accessibilityTraits |=
-      UIAccessibilityTraitButton;
+  _preloadWebpagesDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _preloadWebpagesDetailItem;
 }
 
 - (CollectionViewItem*)footerItem {
-  CollectionViewFooterItem* item = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooter] autorelease];
+  CollectionViewFooterItem* item =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
 
   item.text = l10n_util::GetNSString(
       IDS_IOS_BANDWIDTH_MANAGEMENT_DESCRIPTION_LEARN_MORE);
@@ -148,12 +150,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (type == ItemTypePreload) {
     NSString* preloadTitle =
         l10n_util::GetNSString(IDS_IOS_OPTIONS_PRELOAD_WEBPAGES);
-    base::scoped_nsobject<UIViewController> controller(
+    UIViewController* controller =
         [[DataplanUsageCollectionViewController alloc]
             initWithPrefs:_browserState->GetPrefs()
                  basePref:prefs::kNetworkPredictionEnabled
                  wifiPref:prefs::kNetworkPredictionWifiOnly
-                    title:preloadTitle]);
+                    title:preloadTitle];
     [self.navigationController pushViewController:controller animated:YES];
   }
 }
@@ -210,7 +212,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          basePref:prefs::kNetworkPredictionEnabled
                          wifiPref:prefs::kNetworkPredictionWifiOnly];
 
-    _preloadWebpagesDetailItem.get().detailText = detailText;
+    _preloadWebpagesDetailItem.detailText = detailText;
 
     [self reconfigureCellsForItems:@[ _preloadWebpagesDetailItem ]
            inSectionWithIdentifier:SectionIdentifierActions];

@@ -25,7 +25,8 @@ bundle_data("resources") {
   ]
 }
 
-source_set("settings") {
+source_set("settings_arc") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "about_chrome_collection_view_controller.h",
     "about_chrome_collection_view_controller.mm",
@@ -48,6 +49,106 @@ source_set("settings") {
     "block_popups_collection_view_controller.mm",
     "clear_browsing_data_collection_view_controller.h",
     "clear_browsing_data_collection_view_controller.mm",
+  ]
+  deps = [
+    ":resources",
+    "//base",
+    "//base:i18n",
+    "//components/autofill/core/browser",
+    "//components/autofill/core/common",
+    "//components/autofill/ios/browser",
+    "//components/browser_sync",
+    "//components/browsing_data/core",
+    "//components/content_settings/core/browser",
+    "//components/content_settings/core/common",
+    "//components/google/core/browser",
+    "//components/handoff",
+    "//components/history/core/browser",
+    "//components/image_fetcher/ios",
+    "//components/keyed_service/core",
+    "//components/metrics",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
+    "//components/physical_web/data_source",
+    "//components/prefs",
+    "//components/resources",
+    "//components/search_engines",
+    "//components/signin/core/browser",
+    "//components/signin/core/common",
+    "//components/signin/ios/browser",
+    "//components/strings",
+    "//components/sync",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//components/url_formatter",
+    "//components/version_info",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/autofill",
+    "//ios/chrome/browser/autofill:autofill_internal",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/history",
+    "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
+    "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/payments/cells",
+    "//ios/chrome/browser/physical_web",
+    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/store_kit",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/translate",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication:authentication_arc",
+    "//ios/chrome/browser/ui/authentication:authentication_ui",
+    "//ios/chrome/browser/ui/autofill",
+    "//ios/chrome/browser/ui/autofill:autofill_ui",
+    "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/content_suggestions/cells",
+    "//ios/chrome/browser/ui/contextual_search",
+    "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/keyboard",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/settings/utils",
+    "//ios/chrome/browser/ui/sync",
+    "//ios/chrome/browser/voice",
+    "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/voice",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+  public_deps = [
+    "//ios/chrome/browser/ui/collection_view/cells",
+  ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
+  libs = [
+    "CoreLocation.framework",
+    "LocalAuthentication.framework",
+    "StoreKit.framework",
+    "UIKit.framework",
+  ]
+}
+
+source_set("settings") {
+  sources = [
     "content_settings_collection_view_controller.h",
     "content_settings_collection_view_controller.mm",
     "contextual_search_collection_view_controller.h",
@@ -187,9 +288,13 @@ source_set("settings") {
     "//url",
   ]
   public_deps = [
+    ":settings_arc",
     "//ios/chrome/browser/ui/collection_view/cells",
   ]
-  allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
+  allow_circular_includes_from = [
+    "//ios/chrome/browser/ui/authentication",
+    ":settings_arc",
+  ]
   libs = [
     "CoreLocation.framework",
     "LocalAuthentication.framework",

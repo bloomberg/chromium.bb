@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -54,6 +52,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kSettingsAccountsId = @"kSettingsAccountsId";
 NSString* const kSettingsHeaderId = @"kSettingsHeaderId";
 NSString* const kSettingsAccountsSignoutCellId =
@@ -88,23 +90,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
-  base::scoped_nsobject<SigninInteractionController>
-      _signinInteractionController;
+  SigninInteractionController* _signinInteractionController;
   // Modal alert for sign out.
-  base::scoped_nsobject<AlertCoordinator> _alertCoordinator;
+  AlertCoordinator* _alertCoordinator;
   // Whether an authentication operation is in progress (e.g switch accounts,
   // sign out).
   BOOL _authenticationOperationInProgress;
   // Whether the view controller is currently being dismissed and new dismiss
   // requests should be ignored.
   BOOL _isBeingDismissed;
-  base::WeakNSObject<UIViewController> _settingsDetails;
-  base::scoped_nsobject<ResizedAvatarCache> _avatarCache;
+  __weak UIViewController* _settingsDetails;
+  ResizedAvatarCache* _avatarCache;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
 
   // Enable lookup of item corresponding to a given identity GAIA ID string.
-  base::scoped_nsobject<NSDictionary<NSString*, CollectionViewItem*>>
-      _identityMap;
+  NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
 }
 
 // Stops observing browser state services. This is required during the shutdown
@@ -139,7 +139,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                name:kSwitchAccountDidFinishNotification
              object:nil];
     self.collectionViewAccessibilityIdentifier = kSettingsAccountsId;
-    _avatarCache.reset([[ResizedAvatarCache alloc] init]);
+    _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
     [self loadModel];
@@ -150,7 +150,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)stopBrowserStateServiceObservers {
@@ -199,7 +198,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
 
   NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
-      [[[NSMutableDictionary alloc] init] autorelease];
+      [[NSMutableDictionary alloc] init];
 
   // Account cells.
   ProfileOAuth2TokenService* oauth2_service =
@@ -219,7 +218,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];
   }
-  _identityMap.reset([mutableIdentityMap retain]);
+  _identityMap = mutableIdentityMap;
 
   [model addItem:[self addAccountItem]
       toSectionWithIdentifier:SectionIdentifierAccounts];
@@ -239,8 +238,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Model objects
 
 - (CollectionViewItem*)header {
-  CollectionViewTextItem* header = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* header =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_DESCRIPTION);
   header.accessibilityIdentifier = kSettingsHeaderId;
   header.textColor = [[MDCPalette greyPalette] tint500];
@@ -248,8 +247,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* item = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeAccount] autorelease];
+  CollectionViewAccountItem* item =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:item withIdentity:identity];
   return item;
 }
@@ -263,8 +262,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)addAccountItem {
-  CollectionViewAccountItem* item = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeAddAccount] autorelease];
+  CollectionViewAccountItem* item =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAddAccount];
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
   item.image = [UIImage imageNamed:@"settings_accounts_add_account"];
@@ -273,7 +272,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)syncItem {
   AccountControlItem* item =
-      [[[AccountControlItem alloc] initWithType:ItemTypeSync] autorelease];
+      [[AccountControlItem alloc] initWithType:ItemTypeSync];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_TITLE);
   item.accessibilityIdentifier = kSettingsAccountsSyncCellId;
   [self updateSyncItem:item];
@@ -315,8 +314,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)googleActivityControlsItem {
-  AccountControlItem* item = [[[AccountControlItem alloc]
-      initWithType:ItemTypeGoogleActivityControls] autorelease];
+  AccountControlItem* item =
+      [[AccountControlItem alloc] initWithType:ItemTypeGoogleActivityControls];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE);
   item.detailText =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_DESCRIPTION);
@@ -328,8 +327,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)signOutItem {
-  CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeSignOut] autorelease];
+  CollectionViewTextItem* item =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeSignOut];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT);
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   item.accessibilityIdentifier = kSettingsAccountsSignoutCellId;
@@ -417,7 +416,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self popViewIfSignedOut];
   if (![self authService]->IsAuthenticated() && _settingsDetails) {
     [_settingsDetails dismissViewControllerAnimated:YES completion:nil];
-    _settingsDetails.reset();
+    _settingsDetails = nil;
   }
 }
 
@@ -433,10 +432,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  base::scoped_nsobject<UIViewController> controllerToPush(
+  UIViewController* controllerToPush =
       [[SyncSettingsCollectionViewController alloc]
             initWithBrowserState:_browserState
-          allowSwitchSyncAccount:YES]);
+          allowSwitchSyncAccount:YES];
   [self.navigationController pushViewController:controllerToPush animated:YES];
 }
 
@@ -445,14 +444,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   base::RecordAction(base::UserMetricsAction(
       "Signin_AccountSettings_GoogleActivityControlsClicked"));
-  base::scoped_nsobject<UINavigationController> settingsDetails(
+  UINavigationController* settingsDetails =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->NewWebAndAppSettingDetails(
-              [self authService]->GetAuthenticatedIdentity(), self));
+              [self authService]->GetAuthenticatedIdentity(), self);
   UIImage* closeIcon = [ChromeIcon closeIcon];
   SEL action = @selector(closeGoogleActivitySettings:);
-  [settingsDetails.get().topViewController navigationItem].leftBarButtonItem =
+  [settingsDetails.topViewController navigationItem].leftBarButtonItem =
       [ChromeIcon templateBarButtonItemWithImage:closeIcon
                                           target:self
                                           action:action];
@@ -460,7 +459,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Keep a weak reference on the settings details, to be able to dismiss it
   // when the primary account is removed.
-  _settingsDetails.reset(settingsDetails);
+  _settingsDetails = settingsDetails;
 }
 
 - (void)closeGoogleActivitySettings:(id)sender {
@@ -478,17 +477,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // in-progress.
     return;
   }
-  _signinInteractionController.reset([[SigninInteractionController alloc]
+  _signinInteractionController = [[SigninInteractionController alloc]
           initWithBrowserState:_browserState
       presentingViewController:self.navigationController
          isPresentedOnSettings:YES
              signInAccessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_SETTINGS]);
+                                   ACCESS_POINT_SETTINGS];
 
   // |_authenticationOperationInProgress| is reset when the signin interaction
   // controller is dismissed.
   _authenticationOperationInProgress = YES;
-  base::WeakNSObject<AccountsCollectionViewController> weakSelf(self);
+  __weak AccountsCollectionViewController* weakSelf = self;
   [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
     [weakSelf handleDidAddAccount:success];
   }
@@ -496,11 +495,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
-  _signinInteractionController.reset();
+  _signinInteractionController = nil;
   [self handleAuthenticationOperationDidFinish];
   if (success && _closeSettingsOnAddAccount) {
-    base::scoped_nsobject<GenericChromeCommand> closeSettingsCommand(
-        [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_SETTINGS]);
+    GenericChromeCommand* closeSettingsCommand =
+        [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_SETTINGS];
     [self chromeExecuteCommand:closeSettingsCommand];
   }
 }
@@ -508,10 +507,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAccountDetails:(ChromeIdentity*)identity {
   if ([_alertCoordinator isVisible])
     return;
-  base::scoped_nsobject<UIViewController> accountDetails(
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->NewAccountDetails(identity, self));
+  UIViewController* accountDetails = ios::GetChromeBrowserProvider()
+                                         ->GetChromeIdentityService()
+                                         ->NewAccountDetails(identity, self);
   if (!accountDetails) {
     // Failed to create a new account details. Ignored.
     return;
@@ -520,7 +518,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Keep a weak reference on the account details, to be able to dismiss it
   // when the primary account is removed.
-  _settingsDetails.reset(accountDetails);
+  _settingsDetails = accountDetails;
 }
 
 - (void)showDisconnect {
@@ -549,15 +547,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     continueButtonTitle = l10n_util::GetNSString(
         IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   }
-  _alertCoordinator.reset([[AlertCoordinator alloc]
-      initWithBaseViewController:self
-                           title:title
-                         message:message]);
+  _alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:self
+                                                     title:title
+                                                   message:message];
 
   [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                                action:nil
                                 style:UIAlertActionStyleCancel];
-  base::WeakNSObject<AccountsCollectionViewController> weakSelf(self);
+  __weak AccountsCollectionViewController* weakSelf = self;
   [_alertCoordinator addItemWithTitle:continueButtonTitle
                                action:^{
                                  [weakSelf handleDisconnect];
@@ -635,8 +633,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)openURL:(NSURL*)url
               view:(UIView*)view
     viewController:(UIViewController*)viewController {
-  base::scoped_nsobject<OpenUrlCommand> command(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:net::GURLWithNSURL(url)]);
+  OpenUrlCommand* command =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:net::GURLWithNSURL(url)];
   [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
   [self chromeExecuteCommand:command];
 }

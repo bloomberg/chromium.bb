@@ -6,11 +6,14 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -33,8 +36,8 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 @interface AutofillEditCollectionViewController ()<
     AutofillEditAccessoryDelegate> {
-  base::scoped_nsobject<AutofillEditCell> _currentEditingCell;
-  base::scoped_nsobject<AutofillEditAccessoryView> _accessoryView;
+  AutofillEditCell* _currentEditingCell;
+  AutofillEditAccessoryView* _accessoryView;
 }
 @end
 
@@ -46,8 +49,7 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
     return nil;
   }
 
-  _accessoryView.reset(
-      [[AutofillEditAccessoryView alloc] initWithDelegate:self]);
+  _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
   [self setShouldHideDoneButton:YES];
   [self updateEditButton];
   return self;
@@ -72,7 +74,6 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -109,7 +110,7 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 - (void)textFieldDidBeginEditing:(UITextField*)textField {
   AutofillEditCell* cell = AutofillEditCellForTextField(textField);
-  _currentEditingCell.reset([cell retain]);
+  _currentEditingCell = cell;
   [textField setInputAccessoryView:_accessoryView];
   [self updateAccessoryViewButtonState];
 }
@@ -118,7 +119,7 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
   AutofillEditCell* cell = AutofillEditCellForTextField(textField);
   DCHECK(_currentEditingCell == cell);
   [textField setInputAccessoryView:nil];
-  _currentEditingCell.reset(nil);
+  _currentEditingCell = nil;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {

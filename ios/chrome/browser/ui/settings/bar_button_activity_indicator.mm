@@ -4,18 +4,21 @@
 
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation BarButtonActivityIndicator {
-  base::scoped_nsobject<UIActivityIndicatorView> activityIndicator_;
+  UIActivityIndicatorView* activityIndicator_;
 }
 
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    activityIndicator_.reset([[UIActivityIndicatorView alloc]
-        initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray]);
+    activityIndicator_ = [[UIActivityIndicatorView alloc]
+        initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     [activityIndicator_ setBackgroundColor:[UIColor clearColor]];
     [activityIndicator_ setHidesWhenStopped:YES];
     [activityIndicator_ startAnimating];
@@ -26,7 +29,6 @@
 
 - (void)dealloc {
   [activityIndicator_ stopAnimating];
-  [super dealloc];
 }
 
 - (void)layoutSubviews {

@@ -8,11 +8,9 @@
 #include <string>
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
@@ -60,6 +58,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 NSString* const kClearBrowsingDataCollectionViewId =
     @"kClearBrowsingDataCollectionViewId";
@@ -207,18 +209,16 @@ const int kMaxTimesHistoryNoticeShown = 1;
         kClearBrowsingDataCollectionViewId;
 
     if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-      base::WeakNSObject<ClearBrowsingDataCollectionViewController> weakSelf(
-          self);
+      __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
       void (^dataClearedCallback)(
           const IOSChromeBrowsingDataRemover::NotificationDetails&) =
           ^(const IOSChromeBrowsingDataRemover::NotificationDetails& details) {
-            base::scoped_nsobject<ClearBrowsingDataCollectionViewController>
-                strongSelf([weakSelf retain]);
+            ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
             [strongSelf restartCounters:details.removal_mask];
           };
       _callbackSubscription =
           IOSChromeBrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-              base::BindBlock(dataClearedCallback));
+              base::BindBlockArc(dataClearedCallback));
     }
 
     [self loadModel];
@@ -241,20 +241,18 @@ const int kMaxTimesHistoryNoticeShown = 1;
   history::WebHistoryService* historyService =
       ios::WebHistoryServiceFactory::GetForBrowserState(_browserState);
 
-  base::WeakNSObject<ClearBrowsingDataCollectionViewController> weakSelf(self);
+  __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
   browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      syncService, historyService, base::BindBlock(^(bool shouldShowNotice) {
-        base::scoped_nsobject<ClearBrowsingDataCollectionViewController>
-            strongSelf([weakSelf retain]);
+      syncService, historyService, base::BindBlockArc(^(bool shouldShowNotice) {
+        ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
         [strongSelf setShouldShowNoticeAboutOtherFormsOfBrowsingHistory:
                         shouldShowNotice];
       }));
 
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       syncService, historyService, GetChannel(),
-      base::BindBlock(^(bool shouldShowPopup) {
-        base::scoped_nsobject<ClearBrowsingDataCollectionViewController>
-            strongSelf([weakSelf retain]);
+      base::BindBlockArc(^(bool shouldShowPopup) {
+        ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
         [strongSelf setShouldPopupDialogAboutOtherFormsOfBrowsingHistory:
                         shouldShowPopup];
       }));
@@ -328,8 +326,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   // Clear Browsing Data button.
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
-  CollectionViewTextItem* clearButtonItem = [[[CollectionViewTextItem alloc]
-      initWithType:ItemTypeClearBrowsingDataButton] autorelease];
+  CollectionViewTextItem* clearButtonItem = [[CollectionViewTextItem alloc]
+      initWithType:ItemTypeClearBrowsingDataButton];
   clearButtonItem.text = l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
   clearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
   clearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
@@ -371,8 +369,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                    mask:(int)mask
                                prefName:(const char*)prefName {
   PrefService* prefs = _browserState->GetPrefs();
-  ClearDataItem* clearDataItem =
-      [[[ClearDataItem alloc] initWithType:itemType] autorelease];
+  ClearDataItem* clearDataItem = [[ClearDataItem alloc] initWithType:itemType];
   clearDataItem.text = l10n_util::GetNSString(titleMessageID);
   if (prefs->GetBoolean(prefName)) {
     clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -382,18 +379,17 @@ const int kMaxTimesHistoryNoticeShown = 1;
   clearDataItem.accessibilityIdentifier =
       [self getAccessibilityIdentifierFromItemType:itemType];
 
-  base::WeakNSObject<ClearBrowsingDataCollectionViewController> weakSelf(self);
+  __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
   void (^updateUICallback)(const browsing_data::BrowsingDataCounter::Result&) =
       ^(const browsing_data::BrowsingDataCounter::Result& result) {
-        base::scoped_nsobject<ClearBrowsingDataCollectionViewController>
-            strongSelf([weakSelf retain]);
+        ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
         NSString* counterText = [strongSelf getCounterTextFromResult:result];
         [strongSelf updateCounter:itemType detailText:counterText];
       };
 
   [clearDataItem setCounter:BrowsingDataCounterWrapper::CreateCounterWrapper(
                                 prefName, _browserState, prefs,
-                                base::BindBlock(updateUICallback))];
+                                base::BindBlockArc(updateUICallback))];
   return clearDataItem;
 }
 
@@ -426,8 +422,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 }
 
 - (CollectionViewItem*)footerGoogleAccountItem {
-  CollectionViewFooterItem* footerItem = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooterGoogleAccount] autorelease];
+  CollectionViewFooterItem* footerItem = [[CollectionViewFooterItem alloc]
+      initWithType:ItemTypeFooterGoogleAccount];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
   UIImage* image = ios::GetChromeBrowserProvider()
@@ -475,7 +471,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                       URL:(const char[])URL
                                     image:(UIImage*)image {
   CollectionViewFooterItem* footerItem =
-      [[[CollectionViewFooterItem alloc] initWithType:itemType] autorelease];
+      [[CollectionViewFooterItem alloc] initWithType:itemType];
   footerItem.text = l10n_util::GetNSString(titleMessageID);
   footerItem.linkURL = google_util::AppendGoogleLocaleParam(
       GURL(URL), GetApplicationContext()->GetApplicationLocale());
@@ -485,8 +481,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 }
 
 - (CollectionViewItem*)timeRangeItem {
-  CollectionViewDetailItem* timeRangeItem = [[[CollectionViewDetailItem alloc]
-      initWithType:ItemTypeTimeRange] autorelease];
+  CollectionViewDetailItem* timeRangeItem =
+      [[CollectionViewDetailItem alloc] initWithType:ItemTypeTimeRange];
   timeRangeItem.text = l10n_util::GetNSString(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
   NSString* detailText = [TimeRangeSelectorCollectionViewController
@@ -509,10 +505,10 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   switch (itemType) {
     case ItemTypeTimeRange: {
-      base::scoped_nsobject<UIViewController> controller(
+      UIViewController* controller =
           [[TimeRangeSelectorCollectionViewController alloc]
               initWithPrefs:_browserState->GetPrefs()
-                   delegate:self]);
+                   delegate:self];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
@@ -612,7 +608,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
     // Nothing to clear (no data types selected).
     return YES;
   }
-  base::WeakNSObject<ClearBrowsingDataCollectionViewController> weakSelf(self);
+  __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
   UIAlertController* alertController = [UIAlertController
       alertControllerWithTitle:nil
                        message:nil
@@ -638,10 +634,10 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (void)clearDataForDataTypes:(int)dataTypeMask {
   DCHECK(dataTypeMask);
-  base::scoped_nsobject<ClearBrowsingDataCommand> command(
+  ClearBrowsingDataCommand* command =
       [[ClearBrowsingDataCommand alloc] initWithBrowserState:_browserState
                                                         mask:dataTypeMask
-                                                  timePeriod:_timePeriod]);
+                                                  timePeriod:_timePeriod];
   [self chromeExecuteCommand:command];
 
   if (!!(dataTypeMask && IOSChromeBrowsingDataRemover::REMOVE_HISTORY)) {
@@ -682,7 +678,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                                           message:message
                                    preferredStyle:UIAlertControllerStyleAlert];
 
-  base::WeakNSObject<ClearBrowsingDataCollectionViewController> weakSelf(self);
+  __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
   UIAlertAction* openMyActivityAction = [UIAlertAction
       actionWithTitle:
           l10n_util::GetNSString(
@@ -703,9 +699,9 @@ const int kMaxTimesHistoryNoticeShown = 1;
 }
 
 - (void)openMyActivityLink {
-  base::scoped_nsobject<OpenUrlCommand> openMyActivityCommand(
-      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL(kGoogleMyAccountURL)]);
-  openMyActivityCommand.get().tag = IDC_CLOSE_SETTINGS_AND_OPEN_URL;
+  OpenUrlCommand* openMyActivityCommand =
+      [[OpenUrlCommand alloc] initWithURLFromChrome:GURL(kGoogleMyAccountURL)];
+  openMyActivityCommand.tag = IDC_CLOSE_SETTINGS_AND_OPEN_URL;
   [self chromeExecuteCommand:openMyActivityCommand];
 }
 
@@ -784,12 +780,11 @@ const int kMaxTimesHistoryNoticeShown = 1;
     // Because of this, the lowest unit that can be used is MB.
     static const int kBytesInAMegabyte = 1 << 20;
     if (cacheSizeBytes >= kBytesInAMegabyte) {
-      base::scoped_nsobject<NSByteCountFormatter> formatter(
-          [[NSByteCountFormatter alloc] init]);
-      formatter.get().allowedUnits = NSByteCountFormatterUseAll &
-                                     (~NSByteCountFormatterUseBytes) &
-                                     (~NSByteCountFormatterUseKB);
-      formatter.get().countStyle = NSByteCountFormatterCountStyleMemory;
+      NSByteCountFormatter* formatter = [[NSByteCountFormatter alloc] init];
+      formatter.allowedUnits = NSByteCountFormatterUseAll &
+                               (~NSByteCountFormatterUseBytes) &
+                               (~NSByteCountFormatterUseKB);
+      formatter.countStyle = NSByteCountFormatterCountStyleMemory;
       NSString* formattedSize = [formatter stringFromByteCount:cacheSizeBytes];
       return (_timePeriod == browsing_data::TimePeriod::ALL_TIME)
                  ? formattedSize

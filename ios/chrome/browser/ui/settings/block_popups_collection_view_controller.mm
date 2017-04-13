@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -23,6 +21,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -46,10 +48,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::ListValue _exceptions;
 
   // The observable boolean that binds to the "Disable Popups" setting state.
-  base::scoped_nsobject<ContentSettingBackedBoolean> _disablePopupsSetting;
+  ContentSettingBackedBoolean* _disablePopupsSetting;
 
   // The item related to the switch for the "Disable Popups" setting.
-  base::scoped_nsobject<CollectionViewSwitchItem> _blockPopupsItem;
+  CollectionViewSwitchItem* _blockPopupsItem;
 }
 
 // Fetch the urls that can display popups and add them to |_exceptions|.
@@ -69,10 +71,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _browserState = browserState;
     HostContentSettingsMap* settingsMap =
         ios::HostContentSettingsMapFactory::GetForBrowserState(_browserState);
-    _disablePopupsSetting.reset([[ContentSettingBackedBoolean alloc]
+    _disablePopupsSetting = [[ContentSettingBackedBoolean alloc]
         initWithHostContentSettingsMap:settingsMap
                              settingID:CONTENT_SETTINGS_TYPE_POPUPS
-                              inverted:YES]);
+                              inverted:YES];
     [_disablePopupsSetting setObserver:self];
     self.title = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
     self.collectionViewAccessibilityIdentifier =
@@ -87,7 +89,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)dealloc {
   [_disablePopupsSetting setObserver:nil];
-  [super dealloc];
 }
 
 #pragma mark - SettingsRootCollectionViewController
@@ -100,12 +101,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Block popups switch.
   [model addSectionWithIdentifier:SectionIdentifierMainSwitch];
 
-  _blockPopupsItem.reset(
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeMainSwitch]);
-  _blockPopupsItem.get().text = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
-  _blockPopupsItem.get().on = [_disablePopupsSetting value];
-  _blockPopupsItem.get().accessibilityIdentifier =
-      @"blockPopupsContentView_switch";
+  _blockPopupsItem =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeMainSwitch];
+  _blockPopupsItem.text = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
+  _blockPopupsItem.on = [_disablePopupsSetting value];
+  _blockPopupsItem.accessibilityIdentifier = @"blockPopupsContentView_switch";
   [model addItem:_blockPopupsItem
       toSectionWithIdentifier:SectionIdentifierMainSwitch];
 
@@ -187,18 +187,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSInteger exceptionsSectionIndex = [self.collectionViewModel
         sectionForSectionIdentifier:SectionIdentifierExceptions];
     if ([collectionView numberOfItemsInSection:exceptionsSectionIndex] == 0) {
-      base::WeakNSObject<BlockPopupsCollectionViewController> weakSelf(self);
+      __weak BlockPopupsCollectionViewController* weakSelf = self;
       [self.collectionView performBatchUpdates:^{
-        base::scoped_nsobject<BlockPopupsCollectionViewController> strongSelf(
-            [weakSelf retain]);
+        BlockPopupsCollectionViewController* strongSelf = weakSelf;
         if (!strongSelf) {
           return;
         }
-        NSInteger section = [strongSelf.get().collectionViewModel
+        NSInteger section = [strongSelf.collectionViewModel
             sectionForSectionIdentifier:SectionIdentifierExceptions];
-        [strongSelf.get().collectionViewModel
+        [strongSelf.collectionViewModel
             removeSectionWithIdentifier:SectionIdentifierExceptions];
-        [strongSelf.get().collectionView
+        [strongSelf.collectionView
             deleteSections:[NSIndexSet indexSetWithIndex:section]];
       }
                                     completion:nil];
@@ -222,10 +221,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _disablePopupsSetting.get());
+  DCHECK_EQ(observableBoolean, _disablePopupsSetting);
 
   // Update the item.
-  _blockPopupsItem.get().on = [_disablePopupsSetting value];
+  _blockPopupsItem.on = [_disablePopupsSetting value];
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _blockPopupsItem ]
@@ -244,7 +243,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [_disablePopupsSetting setValue:switchView.on];
 
   // Update the item.
-  _blockPopupsItem.get().on = [_disablePopupsSetting value];
+  _blockPopupsItem.on = [_disablePopupsSetting value];
 
   // Update the rest of the UI.
   [self.editor setEditing:NO];
@@ -294,8 +293,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
   [model addSectionWithIdentifier:SectionIdentifierExceptions];
 
-  CollectionViewTextItem* header = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* header =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_POPUPS_ALLOWED);
   header.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:header forSectionWithIdentifier:SectionIdentifierExceptions];
@@ -303,8 +302,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (size_t i = 0; i < _exceptions.GetSize(); ++i) {
     std::string allowed_url;
     _exceptions.GetString(i, &allowed_url);
-    CollectionViewTextItem* item = [[[CollectionViewTextItem alloc]
-        initWithType:ItemTypeException] autorelease];
+    CollectionViewTextItem* item =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeException];
     item.text = base::SysUTF8ToNSString(allowed_url);
     [model addItem:item toSectionWithIdentifier:SectionIdentifierExceptions];
   }
@@ -318,10 +317,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (blockPopupsIsOn && !exceptionsListShown && hasExceptions) {
     // Animate in the list of exceptions. Animation looks much better if the
     // section is added at once, rather than row-by-row as each object is added.
-    base::WeakNSObject<BlockPopupsCollectionViewController> weakSelf(self);
+    __weak BlockPopupsCollectionViewController* weakSelf = self;
     [self.collectionView performBatchUpdates:^{
-      base::scoped_nsobject<BlockPopupsCollectionViewController> strongSelf(
-          [weakSelf retain]);
+      BlockPopupsCollectionViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
       [strongSelf populateExceptionsItems];
@@ -333,10 +331,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                   completion:nil];
   } else if (!blockPopupsIsOn && exceptionsListShown) {
     // Make sure the exception section is not shown.
-    base::WeakNSObject<BlockPopupsCollectionViewController> weakSelf(self);
+    __weak BlockPopupsCollectionViewController* weakSelf = self;
     [self.collectionView performBatchUpdates:^{
-      base::scoped_nsobject<BlockPopupsCollectionViewController> strongSelf(
-          [weakSelf retain]);
+      BlockPopupsCollectionViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
       NSUInteger index = [[strongSelf collectionViewModel]

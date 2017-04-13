@@ -4,10 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/autofill_collection_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
-#import "base/mac/objc_property_releaser.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -27,6 +24,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -52,8 +53,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     PersonalDataManagerObserverBridgeDelegate> {
   std::string _locale;  // User locale.
   autofill::PersonalDataManager* _personalDataManager;
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_AutofillCollectionViewController;
+
   ios::ChromeBrowserState* _browserState;
   std::unique_ptr<autofill::PersonalDataManagerObserverBridge> _observer;
   BOOL _deletionInProgress;
@@ -86,16 +86,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
     [self updateEditButton];
     [self loadModel];
-
-    _propertyReleaser_AutofillCollectionViewController.Init(
-        self, [AutofillCollectionViewController class]);
   }
   return self;
 }
 
 - (void)dealloc {
   _personalDataManager->RemoveObserver(_observer.get());
-  [super dealloc];
 }
 
 #pragma mark - CollectionViewController
@@ -154,16 +150,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)autofillSwitchItem {
-  CollectionViewSwitchItem* switchItem = [[[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeAutofillSwitch] autorelease];
+  CollectionViewSwitchItem* switchItem =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeAutofillSwitch];
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL);
   switchItem.on = [self isAutofillEnabled];
   return switchItem;
 }
 
 - (CollectionViewItem*)walletSwitchItem {
-  CollectionViewSwitchItem* switchItem = [[[CollectionViewSwitchItem alloc]
-      initWithType:ItemTypeWalletSwitch] autorelease];
+  CollectionViewSwitchItem* switchItem =
+      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeWalletSwitch];
   switchItem.text = l10n_util::GetNSString(IDS_IOS_AUTOFILL_USE_WALLET_DATA);
   switchItem.on = [self isWalletEnabled];
   return switchItem;
@@ -182,8 +178,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewTextItem*)genericHeader {
-  CollectionViewTextItem* header = [
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader] autorelease];
+  CollectionViewTextItem* header =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   header.textColor = [[MDCPalette greyPalette] tint500];
   return header;
 }
@@ -199,7 +195,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          autofill::AutofillProfile::SERVER_PROFILE;
 
   AutofillDataItem* item =
-      [[[AutofillDataItem alloc] initWithType:ItemTypeAddress] autorelease];
+      [[AutofillDataItem alloc] initWithType:ItemTypeAddress];
   item.text = title;
   item.leadingDetailText = subTitle;
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -218,8 +214,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   std::string guid(creditCard.guid());
   NSString* creditCardName = autofill::GetCreditCardName(creditCard, _locale);
 
-  AutofillDataItem* item =
-      [[[AutofillDataItem alloc] initWithType:ItemTypeCard] autorelease];
+  AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:ItemTypeCard];
   item.text = creditCardName;
   item.leadingDetailText = autofill::GetCreditCardObfuscatedNumber(creditCard);
   item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
@@ -284,11 +279,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateEditButton];
 
   // Avoid reference cycle in block.
-  base::WeakNSObject<AutofillCollectionViewController> weakSelf(self);
+  __weak AutofillCollectionViewController* weakSelf = self;
   [self.collectionView performBatchUpdates:^{
     // Obtain strong reference again.
-    base::scoped_nsobject<AutofillCollectionViewController> strongSelf(
-        [weakSelf retain]);
+    AutofillCollectionViewController* strongSelf = weakSelf;
     if (!strongSelf) {
       return;
     }
@@ -380,7 +374,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (NSIndexSet*)indexSetForExistingProfileAndCardSections {
-  NSMutableIndexSet* sections = [[[NSMutableIndexSet alloc] init] autorelease];
+  NSMutableIndexSet* sections = [[NSMutableIndexSet alloc] init];
   if ([self.collectionViewModel
           hasSectionForSectionIdentifier:SectionIdentifierProfiles]) {
     [sections
@@ -457,29 +451,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   CollectionViewModel* model = self.collectionViewModel;
-  base::scoped_nsobject<UIViewController> controller;
+  UIViewController* controller;
   switch ([model itemTypeForIndexPath:indexPath]) {
     case ItemTypeAddress: {
       const std::vector<autofill::AutofillProfile*> autofillProfiles =
           _personalDataManager->GetProfiles();
-      controller.reset([[AutofillProfileEditCollectionViewController
+      controller = [AutofillProfileEditCollectionViewController
           controllerWithProfile:*autofillProfiles[indexPath.item]
-            personalDataManager:_personalDataManager] retain]);
+            personalDataManager:_personalDataManager];
       break;
     }
     case ItemTypeCard: {
       const std::vector<autofill::CreditCard*>& creditCards =
           _personalDataManager->GetCreditCards();
-      controller.reset([[AutofillCreditCardEditCollectionViewController alloc]
+      controller = [[AutofillCreditCardEditCollectionViewController alloc]
            initWithCreditCard:*creditCards[indexPath.item]
-          personalDataManager:_personalDataManager]);
+          personalDataManager:_personalDataManager];
       break;
     }
     default:
       break;
   }
 
-  if (controller.get()) {
+  if (controller) {
     [self.navigationController pushViewController:controller animated:YES];
   }
 }
@@ -539,11 +533,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel sectionForSectionIdentifier:sectionIdentifier];
   if ([self.collectionView numberOfItemsInSection:section] == 0) {
     // Avoid reference cycle in block.
-    base::WeakNSObject<AutofillCollectionViewController> weakSelf(self);
+    __weak AutofillCollectionViewController* weakSelf = self;
     [self.collectionView performBatchUpdates:^{
       // Obtain strong reference again.
-      base::scoped_nsobject<AutofillCollectionViewController> strongSelf(
-          [weakSelf retain]);
+      AutofillCollectionViewController* strongSelf = weakSelf;
       if (!strongSelf) {
         return;
       }
@@ -556,8 +549,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
         completion:^(BOOL finished) {
           // Obtain strong reference again.
-          base::scoped_nsobject<AutofillCollectionViewController> strongSelf(
-              [weakSelf retain]);
+          AutofillCollectionViewController* strongSelf = weakSelf;
           if (!strongSelf) {
             return;
           }
@@ -567,7 +559,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             [[strongSelf editor] setEditing:NO];
           }
           [strongSelf updateEditButton];
-          strongSelf.get()->_deletionInProgress = NO;
+          strongSelf->_deletionInProgress = NO;
         }];
   }
 }
