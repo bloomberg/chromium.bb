@@ -157,7 +157,7 @@ template("chrome_extra_paks") {
         "//ui/file_manager:resources",
       ]
     }
-    if (is_linux) {
+    if (is_linux || is_mac) {
       sources += [ "$root_gen_dir/headless/headless_lib_resources.pak" ]
       deps += [ "//headless:resources" ]
     }
