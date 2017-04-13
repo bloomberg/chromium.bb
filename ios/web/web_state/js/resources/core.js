@@ -17,19 +17,6 @@ goog.require('__crWeb.message');
 (function() {
   __gCrWeb['core'] = {};
 
-  /**
-   * Handles document load completion tasks. Invoked from
-   * [WKNavigationDelegate webView:didFinishNavigation:], when document load is
-   * complete.
-   */
-  __gCrWeb.didFinishNavigation = function() {
-    // Send the favicons to the browser.
-    __gCrWeb.sendFaviconsToHost();
-    // Add placeholders for plugin content.
-    if (__gCrWeb.common.updatePluginPlaceholders())
-      __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});
-  }
-
   // JavaScript errors are logged on the main application side. The handler is
   // added ASAP to catch any errors in startup. Note this does not appear to
   // work in iOS < 5.
@@ -39,11 +26,6 @@ goog.require('__crWeb.message');
     __gCrWeb.message.invokeOnHost(
         {'command': 'window.error', 'message': event.message.toString()});
   });
-
-  __gCrWeb['sendFaviconsToHost'] = function() {
-    __gCrWeb.message.invokeOnHost({'command': 'document.favicons',
-                                   'favicons': __gCrWeb.common.getFavicons()});
-  }
 
   // Flush the message queue.
   if (__gCrWeb.message) {

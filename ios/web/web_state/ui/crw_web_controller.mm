@@ -2682,11 +2682,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHashChangeMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context {
-  // Because hash changes don't trigger |-didFinishNavigation|, fetch favicons
-  // for the new page manually.
-  [self executeJavaScript:@"__gCrWeb.sendFaviconsToHost();"
-        completionHandler:nil];
-
   // Record that the current NavigationItem was created by a hash change, but
   // ignore hashchange events that are manually dispatched for same-document
   // navigations.

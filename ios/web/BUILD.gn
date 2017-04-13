@@ -697,6 +697,7 @@ js_compile_bundle("web_bundle") {
     "web_state/js/resources/core.js",
     "web_state/js/resources/dialog_overrides.js",
     "web_state/js/resources/form.js",
+    "web_state/js/resources/legacy.js",
     "web_state/js/resources/message.js",
     "web_state/js/resources/navigation.js",
     "web_state/js/resources/scroll_workaround.js",

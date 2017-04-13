@@ -8,6 +8,7 @@
 
 goog.provide('__crWeb.navigation');
 
+goog.require('__crWeb.common');
 goog.require('__crWeb.message');
 
 /** Beginning of anonymouse object */
@@ -117,6 +118,11 @@ goog.require('__crWeb.message');
   };
 
   window.addEventListener('hashchange', function(evt) {
+    // Because hash changes don't trigger __gCrWeb.didFinishNavigation, so fetch
+    // favicons for the new page manually.
+    __gCrWeb.message.invokeOnHost({'command': 'document.favicons',
+                                   'favicons': __gCrWeb.common.getFavicons()});
+
     __gCrWeb.message.invokeOnHost({'command': 'window.hashchange'});
   });
 
