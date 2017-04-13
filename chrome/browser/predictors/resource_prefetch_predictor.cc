@@ -804,7 +804,7 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
   if (!response.is_no_store)
     page_request_summary.subresource_requests.push_back(response);
 
-  if (config_.is_origin_prediction_enabled)
+  if (config_.is_origin_learning_enabled)
     UpdateOrAddToOrigins(&page_request_summary.origins, response);
 }
 
@@ -813,7 +813,7 @@ void ResourcePrefetchPredictor::OnSubresourceRedirect(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  if (!config_.is_origin_prediction_enabled)
+  if (!config_.is_origin_learning_enabled)
     return;
 
   NavigationMap::const_iterator nav_it =
@@ -1228,7 +1228,7 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
                   config_.max_hosts_to_track, host_table_cache_.get(),
                   summary.initial_url.host(), host_redirect_table_cache_.get());
 
-  if (config_.is_origin_prediction_enabled) {
+  if (config_.is_origin_learning_enabled) {
     LearnOrigins(host, summary.origins, config_.max_hosts_to_track,
                  origin_table_cache_.get());
   }

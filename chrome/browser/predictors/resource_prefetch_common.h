@@ -27,6 +27,7 @@ extern const char kExternalPrefetchingMode[];
 extern const char kPrefetchingMode[];
 extern const char kEnableUrlLearningParamName[];
 extern const char kEnableManifestsParamName[];
+extern const char kEnableOriginLearningParamName[];
 extern const base::Feature kSpeculativeResourcePrefetchingFeature;
 
 struct ResourcePrefetchPredictorConfig;
@@ -135,8 +136,8 @@ struct ResourcePrefetchPredictorConfig {
   bool is_url_learning_enabled;
   // True iff the predictor could use manifests.
   bool is_manifests_enabled;
-  // True iff the origin-based prediction is enabled.
-  bool is_origin_prediction_enabled;
+  // True iff origin-based learning is enabled.
+  bool is_origin_learning_enabled;
 };
 
 }  // namespace predictors

@@ -25,6 +25,7 @@ const char kExternalPrefetchingMode[] = "external-prefetching";
 const char kPrefetchingMode[] = "prefetching";
 const char kEnableUrlLearningParamName[] = "enable-url-learning";
 const char kEnableManifestsParamName[] = "enable-manifests";
+const char kEnableOriginLearningParamName[] = "enable-origin-learning";
 
 const base::Feature kSpeculativeResourcePrefetchingFeature =
     base::Feature(kSpeculativeResourcePrefetchingFeatureName,
@@ -70,6 +71,11 @@ bool IsSpeculativeResourcePrefetchingEnabled(
       kSpeculativeResourcePrefetchingFeature, kEnableManifestsParamName);
   if (enable_manifests_value == "true")
     config->is_manifests_enabled = true;
+
+  bool enable_origin_learning = base::GetFieldTrialParamValueByFeature(
+                                    kSpeculativeResourcePrefetchingFeature,
+                                    kEnableOriginLearningParamName) == "true";
+  config->is_origin_learning_enabled = enable_origin_learning;
 
   // Ensure that a resource that was only seen once is never prefetched. This
   // prevents the easy mistake of trying to prefetch an ephemeral url.
@@ -146,7 +152,7 @@ ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
       max_prefetches_inflight_per_host_per_navigation(3),
       is_url_learning_enabled(false),
       is_manifests_enabled(false),
-      is_origin_prediction_enabled(false) {}
+      is_origin_learning_enabled(false) {}
 
 ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig(
     const ResourcePrefetchPredictorConfig& other) = default;
