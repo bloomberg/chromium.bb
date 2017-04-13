@@ -307,7 +307,6 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
   scoped_refptr<display::ManagedDisplayMode> mode =
       display_manager()->GetSelectedModeForDisplayId(id2);
   EXPECT_TRUE(!!mode);
-  gfx::Size resolution;
   EXPECT_EQ("200x200", mode->size().ToString());
   EXPECT_EQ(59.0f, mode->refresh_rate());
 }

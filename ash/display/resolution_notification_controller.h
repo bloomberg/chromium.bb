@@ -60,7 +60,7 @@ class ASH_EXPORT ResolutionNotificationController
 
   // Called by the notification delegate when the user wants to revert the
   // display resolution change.
-  void RevertResolutionChange();
+  void RevertResolutionChange(bool display_was_removed);
 
  private:
   friend class ResolutionNotificationControllerTest;

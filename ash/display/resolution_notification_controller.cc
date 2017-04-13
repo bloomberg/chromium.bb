@@ -80,7 +80,7 @@ void ResolutionChangeNotificationDelegate::ButtonClick(int button_index) {
   if (has_timeout_ && button_index == 0)
     controller_->AcceptResolutionChange(true);
   else
-    controller_->RevertResolutionChange();
+    controller_->RevertResolutionChange(false /* display_was_removed */);
 }
 
 }  // namespace
@@ -180,6 +180,14 @@ void ResolutionNotificationController::PrepareNotification(
     original_resolution = change_info_->old_resolution;
   }
 
+  if (change_info_ && change_info_->display_id != display_id) {
+    // Preparing the notification for a new resolution change of another display
+    // before the previous one was accepted. We decided that it's safer to
+    // revert the previous resolution change since the user didn't explicitly
+    // accept it, and we have no way of knowing for sure that it worked.
+    RevertResolutionChange(false /* display_was_removed */);
+  }
+
   change_info_.reset(new ResolutionChangeInfo(display_id, old_resolution,
                                               new_resolution, accept_callback));
   if (original_resolution && !original_resolution->size().IsEmpty())
@@ -253,7 +261,7 @@ void ResolutionNotificationController::OnTimerTick() {
 
   --change_info_->timeout_count;
   if (change_info_->timeout_count == 0)
-    RevertResolutionChange();
+    RevertResolutionChange(false /* display_was_removed */);
   else
     CreateOrUpdateNotification(false);
 }
@@ -271,7 +279,8 @@ void ResolutionNotificationController::AcceptResolutionChange(
   callback.Run();
 }
 
-void ResolutionNotificationController::RevertResolutionChange() {
+void ResolutionNotificationController::RevertResolutionChange(
+    bool display_was_removed) {
   message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
                                                            false /* by_user */);
   if (!change_info_)
@@ -280,7 +289,16 @@ void ResolutionNotificationController::RevertResolutionChange() {
   scoped_refptr<display::ManagedDisplayMode> old_resolution =
       change_info_->old_resolution;
   change_info_.reset();
-  Shell::Get()->display_manager()->SetDisplayMode(display_id, old_resolution);
+  if (display_was_removed) {
+    // If display was removed then we are inside the stack of
+    // DisplayManager::UpdateDisplaysWith(), and we need to update the selected
+    // mode of this removed display without reentering again into
+    // UpdateDisplaysWith() because this can cause a crash. crbug.com/709722.
+    Shell::Get()->display_manager()->SetSelectedModeForDisplayId(
+        display_id, old_resolution);
+  } else {
+    Shell::Get()->display_manager()->SetDisplayMode(display_id, old_resolution);
+  }
 }
 
 void ResolutionNotificationController::OnDisplayAdded(
@@ -289,7 +307,7 @@ void ResolutionNotificationController::OnDisplayAdded(
 void ResolutionNotificationController::OnDisplayRemoved(
     const display::Display& old_display) {
   if (change_info_ && change_info_->display_id == old_display.id())
-    RevertResolutionChange();
+    RevertResolutionChange(true /* display_was_removed */);
 }
 
 void ResolutionNotificationController::OnDisplayMetricsChanged(

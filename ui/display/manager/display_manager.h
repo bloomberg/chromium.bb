@@ -208,10 +208,17 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   scoped_refptr<ManagedDisplayMode> GetActiveModeForDisplayId(
       int64_t display_id) const;
 
-  // Returns the display's selected mode. This returns false and doesn't set
-  // |mode_out| if the display mode is in default.
+  // Returns the display's selected mode.
   scoped_refptr<ManagedDisplayMode> GetSelectedModeForDisplayId(
       int64_t display_id) const;
+
+  // Sets the selected mode of |display_id| to |display_mode| if it's a
+  // supported mode. This doesn't trigger reconfiguration or observers
+  // notifications. This is suitable to be used from within an observer
+  // notification to prevent reentrance to UpdateDisplaysWith().
+  void SetSelectedModeForDisplayId(
+      int64_t display_id,
+      const scoped_refptr<ManagedDisplayMode>& display_mode);
 
   // Tells if the virtual resolution feature is enabled.
   bool IsDisplayUIScalingEnabled() const;

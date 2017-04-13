@@ -487,6 +487,21 @@ scoped_refptr<ManagedDisplayMode> DisplayManager::GetSelectedModeForDisplayId(
   return iter->second;
 }
 
+void DisplayManager::SetSelectedModeForDisplayId(
+    int64_t display_id,
+    const scoped_refptr<ManagedDisplayMode>& display_mode) {
+  ManagedDisplayInfo info = GetDisplayInfo(display_id);
+  auto iter = FindDisplayMode(info, display_mode);
+  if (iter == info.display_modes().end()) {
+    LOG(WARNING) << "Unsupported display mode was requested:"
+                 << "size=" << display_mode->size().ToString()
+                 << ", ui scale=" << display_mode->ui_scale()
+                 << ", scale factor=" << display_mode->device_scale_factor();
+  }
+
+  display_modes_[display_id] = *iter;
+}
+
 bool DisplayManager::IsDisplayUIScalingEnabled() const {
   return GetDisplayIdForUIScaling() != kInvalidDisplayId;
 }
