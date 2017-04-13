@@ -727,25 +727,37 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
       // Once the user starts scrolling send all the scroll events to this
       // element until the scrolling stops.
       case WebInputEvent::kGestureScrollBegin:
-        current_scroll_target = input_target;
-        if (current_scroll_target != InputTarget::NONE) {
-          SendGesture(current_scroll_target, std::move(movableGesture));
+        current_scroll_target_ = input_target;
+        if (current_scroll_target_ != InputTarget::NONE) {
+          SendGesture(current_scroll_target_, std::move(movableGesture));
         }
         break;
       case WebInputEvent::kGestureScrollEnd:
-        if (current_scroll_target != InputTarget::NONE) {
-          SendGesture(current_scroll_target, std::move(movableGesture));
+        if (current_scroll_target_ != InputTarget::NONE) {
+          SendGesture(current_scroll_target_, std::move(movableGesture));
         }
-        current_scroll_target = InputTarget::NONE;
+        current_fling_target_ = current_scroll_target_;
+        current_scroll_target_ = InputTarget::NONE;
         break;
       case WebInputEvent::kGestureScrollUpdate:
-      case WebInputEvent::kGestureFlingCancel:
+        if (current_scroll_target_ != InputTarget::NONE) {
+          SendGesture(current_scroll_target_, std::move(movableGesture));
+        }
+        break;
       case WebInputEvent::kGestureFlingStart:
-        if (current_scroll_target != InputTarget::NONE) {
-          SendGesture(current_scroll_target, std::move(movableGesture));
+        if (current_fling_target_ != InputTarget::NONE) {
+          SendGesture(current_fling_target_, std::move(movableGesture));
+        }
+        current_fling_target_ = InputTarget::NONE;
+        break;
+      case WebInputEvent::kGestureFlingCancel:
+        current_fling_target_ = InputTarget::NONE;
+        if (input_target != InputTarget::NONE) {
+          SendGesture(input_target, std::move(movableGesture));
         }
         break;
       case WebInputEvent::kGestureTapDown:
+        current_fling_target_ = InputTarget::NONE;
         if (input_target != InputTarget::NONE) {
           SendGesture(input_target, std::move(movableGesture));
         }

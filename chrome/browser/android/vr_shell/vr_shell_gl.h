@@ -200,7 +200,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gfx::Point3F target_point_;
   const UiElement* target_element_ = nullptr;
   InputTarget current_input_target_ = InputTarget::NONE;
-  InputTarget current_scroll_target = InputTarget::NONE;
+  InputTarget current_scroll_target_ = InputTarget::NONE;
+  InputTarget current_fling_target_ = InputTarget::NONE;
   int ui_tex_css_width_ = 0;
   int ui_tex_css_height_ = 0;
   int content_tex_css_width_ = 0;
