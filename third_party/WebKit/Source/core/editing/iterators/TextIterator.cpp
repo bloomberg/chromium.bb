@@ -27,6 +27,8 @@
 
 #include "core/editing/iterators/TextIterator.h"
 
+#include <unicode/utf16.h>
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
@@ -51,10 +53,8 @@
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/fonts/Font.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include <algorithm>
-#include <unicode/utf16.h>
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

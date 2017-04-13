@@ -79,8 +79,8 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/text/UnicodeUtilities.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
 
 #define EDIT_DEBUG 0
 

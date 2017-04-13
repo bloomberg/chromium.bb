@@ -4,8 +4,8 @@
 
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 
-#include "wtf/Assertions.h"
 #include <ostream>  // NOLINT
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

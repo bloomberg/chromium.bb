@@ -5,8 +5,8 @@
 #ifndef TextOffset_h
 #define TextOffset_h
 
+#include "platform/wtf/Forward.h"
 #include "public/platform/Platform.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

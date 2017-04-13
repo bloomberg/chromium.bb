@@ -35,7 +35,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSpanElement.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

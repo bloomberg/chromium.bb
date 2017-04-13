@@ -34,9 +34,9 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebTextInputInfo.h"
 #include "public/platform/WebTextInputType.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

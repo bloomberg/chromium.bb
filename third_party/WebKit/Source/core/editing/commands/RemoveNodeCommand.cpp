@@ -29,7 +29,7 @@
 #include "core/dom/Node.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/commands/EditingState.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

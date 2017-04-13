@@ -35,7 +35,7 @@
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

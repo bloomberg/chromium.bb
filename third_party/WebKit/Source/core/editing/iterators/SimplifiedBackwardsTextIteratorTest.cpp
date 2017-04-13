@@ -6,8 +6,8 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/EphemeralRange.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

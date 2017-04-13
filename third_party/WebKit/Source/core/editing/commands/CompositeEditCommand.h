@@ -31,7 +31,7 @@
 #include "core/editing/commands/EditCommand.h"
 #include "core/editing/commands/EditingState.h"
 #include "core/editing/commands/UndoStep.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

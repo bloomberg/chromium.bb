@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -13,11 +14,10 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/StdLibExtras.h"
-#include <memory>
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/frame/LocalFrame.h"
+#include "platform/wtf/StringExtras.h"
 #include "public/platform/WebEditingCommandType.h"
-#include "wtf/StringExtras.h"
 
 namespace blink {
 

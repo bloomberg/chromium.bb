@@ -29,9 +29,9 @@
 
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/serializers/Serialization.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -43,7 +43,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

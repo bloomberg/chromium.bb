@@ -69,10 +69,10 @@
 #include "platform/KillRing.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/scroll/Scrollbar.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebEditingCommandType.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/AtomicString.h"
 
 #include <iterator>
 

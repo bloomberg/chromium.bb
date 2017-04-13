@@ -35,7 +35,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

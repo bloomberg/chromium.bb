@@ -34,8 +34,8 @@
 #include "core/html/TextControlElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
-#include "wtf/AutoReset.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

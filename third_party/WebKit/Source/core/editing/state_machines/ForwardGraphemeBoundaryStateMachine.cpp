@@ -4,11 +4,11 @@
 
 #include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 
+#include <ostream>  // NOLINT
 #include "core/editing/state_machines/StateMachineUtil.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "platform/text/Character.h"
-#include "wtf/text/Unicode.h"
-#include <ostream>  // NOLINT
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 namespace {

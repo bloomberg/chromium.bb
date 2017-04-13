@@ -61,7 +61,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

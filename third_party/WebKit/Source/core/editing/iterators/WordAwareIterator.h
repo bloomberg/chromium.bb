@@ -28,7 +28,7 @@
 
 #include "core/editing/iterators/TextIterator.h"
 #include "platform/heap/Heap.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

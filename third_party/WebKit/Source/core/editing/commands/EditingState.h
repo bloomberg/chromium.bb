@@ -6,9 +6,9 @@
 #define EditingState_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

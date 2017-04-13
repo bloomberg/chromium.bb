@@ -5,7 +5,7 @@
 #include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
 
 #include "core/editing/state_machines/StateMachineTestUtil.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

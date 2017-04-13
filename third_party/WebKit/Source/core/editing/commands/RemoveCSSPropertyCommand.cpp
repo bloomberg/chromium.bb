@@ -29,7 +29,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Element.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

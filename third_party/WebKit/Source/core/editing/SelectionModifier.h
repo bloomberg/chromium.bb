@@ -30,7 +30,7 @@
 #include "base/macros.h"
 #include "core/editing/FrameSelection.h"
 #include "platform/LayoutUnit.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

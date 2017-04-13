@@ -27,10 +27,10 @@
 
 #include "core/editing/iterators/TextSearcherICU.h"
 
-#include "platform/text/TextBreakIteratorInternalICU.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/WTFString.h"
 #include <unicode/usearch.h>
+#include "platform/text/TextBreakIteratorInternalICU.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

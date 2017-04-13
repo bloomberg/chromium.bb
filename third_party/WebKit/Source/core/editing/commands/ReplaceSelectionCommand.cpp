@@ -61,8 +61,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

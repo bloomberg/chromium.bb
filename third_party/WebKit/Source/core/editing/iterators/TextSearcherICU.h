@@ -6,8 +6,8 @@
 #define TextSearcherICU_h
 
 #include "core/CoreExport.h"
-#include "wtf/text/StringView.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/Unicode.h"
 
 struct UStringSearch;
 

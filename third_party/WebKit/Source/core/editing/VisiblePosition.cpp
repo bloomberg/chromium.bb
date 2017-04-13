@@ -27,6 +27,7 @@
 
 #include "core/editing/VisiblePosition.h"
 
+#include <ostream>  // NOLINT
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -37,8 +38,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLElement.h"
 #include "platform/geometry/FloatQuad.h"
-#include "wtf/text/CString.h"
-#include <ostream>  // NOLINT
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

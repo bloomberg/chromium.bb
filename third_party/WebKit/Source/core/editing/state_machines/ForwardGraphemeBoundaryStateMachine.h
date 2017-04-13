@@ -5,12 +5,12 @@
 #ifndef ForwardGraphemeBoundaryStateMachine_h
 #define ForwardGraphemeBoundaryStateMachine_h
 
+#include <iosfwd>
 #include "core/CoreExport.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/Unicode.h"
-#include <iosfwd>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

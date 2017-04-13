@@ -23,7 +23,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBehaviorTypes.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 class KeyboardEvent;

@@ -4,12 +4,12 @@
 
 #include "core/editing/state_machines/StateMachineTestUtil.h"
 
+#include <algorithm>
 #include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
 #include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/StringBuilder.h"
-#include <algorithm>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define StateMachineUtil_h
 
 #include "core/CoreExport.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

@@ -42,7 +42,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

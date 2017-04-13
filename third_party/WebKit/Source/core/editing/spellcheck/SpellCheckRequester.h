@@ -31,11 +31,11 @@
 #include "core/editing/EphemeralRange.h"
 #include "platform/Timer.h"
 #include "platform/text/TextChecking.h"
-#include "wtf/Deque.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

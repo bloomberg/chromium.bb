@@ -49,8 +49,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/heap/Handle.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

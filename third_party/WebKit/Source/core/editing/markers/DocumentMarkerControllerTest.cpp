@@ -39,9 +39,9 @@
 #include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

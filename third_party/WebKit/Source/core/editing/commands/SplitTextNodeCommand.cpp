@@ -30,7 +30,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

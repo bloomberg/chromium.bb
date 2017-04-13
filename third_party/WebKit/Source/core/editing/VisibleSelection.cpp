@@ -33,10 +33,10 @@
 #include "core/editing/SelectionAdjuster.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

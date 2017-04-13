@@ -31,7 +31,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

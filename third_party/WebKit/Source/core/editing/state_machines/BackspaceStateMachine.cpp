@@ -4,10 +4,10 @@
 
 #include "core/editing/state_machines/BackspaceStateMachine.h"
 
-#include "platform/text/Character.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/Unicode.h"
 #include <ostream>  // NOLINT
+#include "platform/text/Character.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

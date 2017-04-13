@@ -6,8 +6,8 @@
 #define TextBufferBase_h
 
 #include "core/CoreExport.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

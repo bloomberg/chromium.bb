@@ -34,7 +34,7 @@
 #include "platform/text/Character.h"
 #include "platform/text/TextBoundaries.h"
 #include "platform/text/UnicodeUtilities.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

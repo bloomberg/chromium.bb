@@ -28,7 +28,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/editing/commands/UndoStep.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

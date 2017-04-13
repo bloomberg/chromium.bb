@@ -10,7 +10,7 @@
 #include <string>
 #include "core/editing/Position.h"
 #include "core/testing/DummyPageHolder.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

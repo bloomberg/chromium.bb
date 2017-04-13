@@ -46,7 +46,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {

@@ -5,8 +5,8 @@
 #include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 
 #include "core/editing/state_machines/StateMachineTestUtil.h"
+#include "platform/wtf/text/CharacterNames.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

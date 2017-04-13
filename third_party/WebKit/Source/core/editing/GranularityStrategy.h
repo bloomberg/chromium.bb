@@ -7,7 +7,7 @@
 
 #include "core/editing/SelectionStrategy.h"
 #include "core/editing/SelectionTemplate.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

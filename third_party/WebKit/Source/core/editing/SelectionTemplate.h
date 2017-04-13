@@ -14,7 +14,7 @@
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextGranularity.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

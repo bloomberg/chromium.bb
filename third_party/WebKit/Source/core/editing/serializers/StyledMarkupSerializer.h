@@ -35,7 +35,7 @@
 #include "core/editing/EditingStyle.h"
 #include "core/editing/Position.h"
 #include "core/editing/serializers/StyledMarkupAccumulator.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

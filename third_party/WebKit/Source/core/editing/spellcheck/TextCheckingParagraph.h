@@ -23,7 +23,7 @@
 
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

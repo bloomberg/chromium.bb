@@ -21,7 +21,7 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/CurrentTime.h"
+#include "platform/wtf/CurrentTime.h"
 
 namespace blink {
 

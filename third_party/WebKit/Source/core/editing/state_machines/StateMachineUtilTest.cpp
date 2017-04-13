@@ -4,9 +4,9 @@
 
 #include "core/editing/state_machines/StateMachineUtil.h"
 
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/Unicode.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/Unicode.h"
 
 namespace blink {
 

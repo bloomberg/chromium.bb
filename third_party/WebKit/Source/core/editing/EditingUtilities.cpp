@@ -61,10 +61,10 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
-#include "wtf/Assertions.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

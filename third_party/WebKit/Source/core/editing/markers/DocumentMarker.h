@@ -26,9 +26,9 @@
 #include "core/CoreExport.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Optional.h"
-#include "wtf/VectorTraits.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/VectorTraits.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

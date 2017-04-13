@@ -31,7 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

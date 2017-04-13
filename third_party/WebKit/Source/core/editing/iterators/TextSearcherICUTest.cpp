@@ -4,9 +4,9 @@
 
 #include "core/editing/iterators/TextSearcherICU.h"
 
+#include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringView.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -89,8 +89,8 @@
 #include "platform/KillRing.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

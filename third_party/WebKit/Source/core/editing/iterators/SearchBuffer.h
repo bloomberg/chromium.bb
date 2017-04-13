@@ -26,12 +26,12 @@
 #ifndef SearchBuffer_h
 #define SearchBuffer_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -30,9 +30,9 @@
 #include "core/editing/commands/SmartReplace.h"
 
 #if !OS(MACOSX)
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
 #include <unicode/uset.h>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

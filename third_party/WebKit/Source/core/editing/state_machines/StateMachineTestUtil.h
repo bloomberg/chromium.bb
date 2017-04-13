@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/Unicode.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
-#include "wtf/text/Unicode.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

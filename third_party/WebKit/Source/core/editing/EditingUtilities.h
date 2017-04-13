@@ -35,8 +35,8 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/events/InputEvent.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Forward.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -29,8 +29,8 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

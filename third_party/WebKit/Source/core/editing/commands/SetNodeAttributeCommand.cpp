@@ -26,7 +26,7 @@
 #include "core/editing/commands/SetNodeAttributeCommand.h"
 
 #include "core/dom/Element.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 
