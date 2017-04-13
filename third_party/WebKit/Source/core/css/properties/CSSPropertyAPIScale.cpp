@@ -12,7 +12,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIScale::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   DCHECK(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
   CSSValueID id = range.Peek().Id();

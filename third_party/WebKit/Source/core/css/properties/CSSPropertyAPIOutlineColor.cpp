@@ -12,7 +12,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIOutlineColor::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueWebkitFocusRingColor)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

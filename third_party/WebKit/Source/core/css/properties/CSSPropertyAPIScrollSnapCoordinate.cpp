@@ -27,7 +27,8 @@ static CSSValueList* ConsumePositionList(CSSParserTokenRange& range,
 
 const CSSValue* CSSPropertyAPIScrollSnapCoordinate::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return ConsumePositionList(range, context.Mode());

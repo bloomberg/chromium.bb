@@ -11,7 +11,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPITabSize::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   CSSPrimitiveValue* parsed_value =
       CSSPropertyParserHelpers::ConsumeInteger(range, 0);
   if (parsed_value)

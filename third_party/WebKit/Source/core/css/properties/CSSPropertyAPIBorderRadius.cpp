@@ -12,7 +12,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIBorderRadius::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   CSSValue* parsed_value1 = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative);
   if (!parsed_value1)

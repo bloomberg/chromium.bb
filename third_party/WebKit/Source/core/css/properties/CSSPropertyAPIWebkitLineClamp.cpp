@@ -10,7 +10,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitLineClamp::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   if (range.Peek().GetType() != kPercentageToken &&
       range.Peek().GetType() != kNumberToken)
     return nullptr;

@@ -13,7 +13,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIJustifyItems::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
   CSSParserTokenRange range_copy = range;
   CSSIdentifierValue* legacy =

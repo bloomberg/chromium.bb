@@ -11,7 +11,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIFlexBasis::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   // FIXME: Support intrinsic dimensions too.
   if (range.Peek().Id() == CSSValueAuto)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

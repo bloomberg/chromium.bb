@@ -17,7 +17,8 @@ using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
 
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   bool in_quirks_mode = IsQuirksModeBehavior(context.Mode());
   CSSValueList* list = nullptr;
   while (CSSValue* image = CSSPropertyParserHelpers::ConsumeImage(

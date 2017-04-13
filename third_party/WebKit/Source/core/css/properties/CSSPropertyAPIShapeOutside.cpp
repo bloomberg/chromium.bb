@@ -15,7 +15,8 @@ using namespace CSSPropertyParserHelpers;
 
 const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   if (CSSValue* image_value = ConsumeImageOrNone(range, &context))
     return image_value;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

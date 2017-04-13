@@ -1851,7 +1851,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       CSSPropertyDescriptor::Get(property);
   if (css_property_desc.parseSingleValue) {
     DCHECK(context_);
-    return css_property_desc.parseSingleValue(range_, *context_);
+    return css_property_desc.parseSingleValue(range_, *context_,
+                                              unresolved_property);
   }
 
   switch (property) {

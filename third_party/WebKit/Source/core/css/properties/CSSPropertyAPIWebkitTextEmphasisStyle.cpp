@@ -12,7 +12,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitTextEmphasisStyle::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

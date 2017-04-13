@@ -14,7 +14,8 @@ namespace blink {
 
 const CSSValue* CSSPropertyAPIPaintStroke::parseSingleValue(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
+    const CSSParserContext& context,
+    CSSPropertyID) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context);
