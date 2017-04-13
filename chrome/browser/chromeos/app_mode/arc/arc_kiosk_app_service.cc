@@ -155,6 +155,11 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   app_manager_->AddObserver(this);
   pref_change_registrar_.reset(new PrefChangeRegistrar());
   pref_change_registrar_->Init(profile_->GetPrefs());
+  // Kiosk app can be started only when policy compliance is reported.
+  pref_change_registrar_->Add(
+      prefs::kArcPolicyComplianceReported,
+      base::Bind(&ArcKioskAppService::PreconditionsChanged,
+                 base::Unretained(this)));
   notification_blocker_.reset(new ArcKioskNotificationBlocker());
   PreconditionsChanged();
 }
@@ -185,9 +190,15 @@ void ArcKioskAppService::PreconditionsChanged() {
   VLOG_IF(2, app_info_ && app_info_->ready) << "Kiosk app is ready";
   VLOG(2) << "Maintenance session is "
           << (maintenance_session_running_ ? "running" : "not running");
+  VLOG(2) << "Policy compliance is "
+          << (profile_->GetPrefs()->GetBoolean(
+                  prefs::kArcPolicyComplianceReported)
+                  ? "reported"
+                  : "not yet reported");
   VLOG(2) << "Kiosk app with id: " << app_id_ << " is "
           << (app_launcher_ ? "already launched" : "not yet launched");
-  if (app_info_ && app_info_->ready && !maintenance_session_running_) {
+  if (app_info_ && app_info_->ready && !maintenance_session_running_ &&
+      profile_->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported)) {
     if (!app_launcher_) {
       VLOG(2) << "Starting kiosk app";
       app_launcher_ = base::MakeUnique<ArcKioskAppLauncher>(

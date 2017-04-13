@@ -36,6 +36,9 @@ const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // utility methods (IsArcPlayStoreEnabledForProfile() and
 // SetArcPlayStoreEnabledForProfile()) in chrome/browser/chromeos/arc/arc_util.
 const char kArcEnabled[] = "arc.enabled";
+// A preference that indicated whether Android reported it's compliance status
+// with provided policies. This is used only as a signal to start Android kiosk.
+const char kArcPolicyComplianceReported[] = "arc.policy_compliance_reported";
 // A preference that indicates that user accepted PlayStore terms.
 const char kArcTermsAccepted[] = "arc.terms.accepted";
 // A preference to keep user's consent to use location service.

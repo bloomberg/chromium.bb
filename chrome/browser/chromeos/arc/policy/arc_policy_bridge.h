@@ -46,6 +46,8 @@ class ArcPolicyBridge : public ArcService,
                   policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   void OverrideIsManagedForTesting(bool is_managed);
 
   // InstanceHolder<mojom::PolicyInstance>::Observer overrides.

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_bridge_service.h"
@@ -143,8 +144,8 @@ class ArcPolicyBridgeTest : public testing::Test {
     testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    ASSERT_TRUE(
-        testing_profile_manager_->CreateTestingProfile("user@gmail.com"));
+    profile_ = testing_profile_manager_->CreateTestingProfile("user@gmail.com");
+    ASSERT_TRUE(profile_);
   }
 
  protected:
@@ -152,6 +153,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   FakePolicyInstance* policy_instance() { return policy_instance_.get(); }
   policy::PolicyMap& policy_map() { return policy_map_; }
   base::RunLoop& run_loop() { return run_loop_; }
+  Profile* profile() { return profile_; }
 
  private:
   safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
@@ -159,6 +161,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::RunLoop run_loop_;
+  TestingProfile* profile_;
 
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcPolicyBridge> policy_bridge_;
@@ -365,29 +368,43 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, EmptyReportComplianceTest) {
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
   policy_bridge()->ReportCompliance(
       "{}", PolicyComplianceCallback(run_loop().QuitClosure(),
                                      kPolicyCompliantResponse));
   run_loop().Run();
+  ASSERT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
 }
 
 TEST_F(ArcPolicyBridgeTest, ParsableReportComplianceTest) {
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
   policy_bridge()->ReportCompliance(
       "{\"nonComplianceDetails\" : []}",
       PolicyComplianceCallback(run_loop().QuitClosure(),
                                kPolicyCompliantResponse));
   run_loop().Run();
+  ASSERT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
 }
 
 TEST_F(ArcPolicyBridgeTest, NonParsableReportComplianceTest) {
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
   policy_bridge()->ReportCompliance(
       "\"nonComplianceDetails\" : [}",
       PolicyComplianceCallback(run_loop().QuitClosure(),
                                kPolicyCompliantResponse));
   run_loop().Run();
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
 }
 
 TEST_F(ArcPolicyBridgeTest, ReportComplianceTest_WithNonCompliantDetails) {
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
   policy_bridge()->ReportCompliance(
       "{\"nonComplianceDetails\" : "
       "[{\"fieldPath\":\"\",\"nonComplianceReason\":0,\"packageName\":\"\","
@@ -395,6 +412,8 @@ TEST_F(ArcPolicyBridgeTest, ReportComplianceTest_WithNonCompliantDetails) {
       PolicyComplianceCallback(run_loop().QuitClosure(),
                                kPolicyCompliantResponse));
   run_loop().Run();
+  ASSERT_TRUE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcPolicyComplianceReported));
 }
 
 // This and the following test send the policies through a mojo connection

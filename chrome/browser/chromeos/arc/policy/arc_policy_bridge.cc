@@ -311,6 +311,12 @@ ArcPolicyBridge::~ArcPolicyBridge() {
   arc_bridge_service()->policy()->RemoveObserver(this);
 }
 
+// static
+void ArcPolicyBridge::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kArcPolicyComplianceReported, false);
+}
+
 void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
   is_managed_ = is_managed;
 }
@@ -392,6 +398,8 @@ void ArcPolicyBridge::OnReportComplianceParseSuccess(
     std::unique_ptr<base::Value> parsed_json) {
   // Always returns "compliant".
   callback.Run(kPolicyCompliantJson);
+  GetProfile()->GetPrefs()->SetBoolean(prefs::kArcPolicyComplianceReported,
+                                       true);
 
   const base::DictionaryValue* dict = nullptr;
   if (parsed_json->GetAsDictionary(&dict))

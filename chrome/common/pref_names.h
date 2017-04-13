@@ -25,6 +25,7 @@ extern const char kArcApps[];
 extern const char kArcBackupRestoreEnabled[];
 extern const char kArcDataRemoveRequested[];
 extern const char kArcEnabled[];
+extern const char kArcPolicyComplianceReported[];
 extern const char kArcTermsAccepted[];
 extern const char kArcLocationServiceEnabled[];
 extern const char kArcPackages[];

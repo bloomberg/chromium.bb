@@ -606,6 +606,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_CHROMEOS)
   arc::ArcSessionManager::RegisterProfilePrefs(registry);
+  arc::ArcPolicyBridge::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::KeyPermissions::RegisterProfilePrefs(registry);
