@@ -284,6 +284,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       is_in_touchpad_gesture_scroll_(false),
       is_in_touchscreen_gesture_scroll_(false),
+      is_in_touchpad_gesture_fling_(false),
       latency_tracker_(),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
@@ -1025,6 +1026,14 @@ void RenderWidgetHostImpl::StartNewContentRenderingTimeout(
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
+  // VrController moves the pointer during the scrolling and fling. To ensure
+  // that scroll performance is not affected we drop mouse events during
+  // scroll/fling.
+  if (GetView()->IsInVR() &&
+      (is_in_touchpad_gesture_scroll_ || is_in_touchpad_gesture_fling_)) {
+    return;
+  }
+
   ForwardMouseEventWithLatencyInfo(mouse_event,
                                    ui::LatencyInfo(ui::SourceEventType::OTHER));
   if (owner_delegate_)
@@ -1120,6 +1129,11 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     //        gesture_event.sourceDevice ==
     //            blink::WebGestureDevice::WebGestureDeviceTouchpad));
     *is_in_gesture_scroll = false;
+    if (gesture_event.GetType() == blink::WebInputEvent::kGestureFlingStart &&
+        gesture_event.source_device ==
+            blink::WebGestureDevice::kWebGestureDeviceTouchpad) {
+      is_in_touchpad_gesture_fling_ = true;
+    }
   }
 
   bool scroll_update_needs_wrapping =
@@ -2204,6 +2218,7 @@ void RenderWidgetHostImpl::DidOverscroll(
 }
 
 void RenderWidgetHostImpl::DidStopFlinging() {
+  is_in_touchpad_gesture_fling_ = false;
   if (view_)
     view_->DidStopFlinging();
 }

@@ -886,6 +886,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool is_in_touchpad_gesture_scroll_;
   bool is_in_touchscreen_gesture_scroll_;
 
+  bool is_in_touchpad_gesture_fling_;
+
   std::unique_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
   std::unique_ptr<TouchEmulator> touch_emulator_;
