@@ -150,55 +150,55 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/variance_tree.c"
     "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
-set(AOM_AV1_COMMON_SSE2_INTRIN
+set(AOM_AV1_COMMON_INTRIN_SSE2
     # Requires CONFIG_GLOBAL_MOTION or CONFIG_WARPED_MOTION
     #"${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c"
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")
 
-set(AOM_AV1_COMMON_SSSE3_INTRIN
+set(AOM_AV1_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/av1/common/x86/av1_convolve_ssse3.c")
 
-set(AOM_AV1_COMMON_SSE4_1_INTRIN
+set(AOM_AV1_COMMON_INTRIN_SSE4_1
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm1d_sse4.c"
     "${AOM_ROOT}/av1/common/x86/av1_fwd_txfm2d_sse4.c")
 
-set(AOM_AV1_COMMON_AVX2_INTRIN
+set(AOM_AV1_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
 
-set(AOM_AV1_COMMON_DSPR2_INTRIN
+set(AOM_AV1_COMMON_INTRIN_DSPR2
     "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans16_dspr2.c"
     "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans4_dspr2.c"
     "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans8_dspr2.c")
 
-set(AOM_AV1_COMMON_MSA_INTRIN
+set(AOM_AV1_COMMON_INTRIN_MSA
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct16x16_msa.c"
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct4x4_msa.c"
     "${AOM_ROOT}/av1/common/mips/msa/av1_idct8x8_msa.c")
 
-set(AOM_AV1_ENCODER_SSE2_ASM
+set(AOM_AV1_ENCODER_ASM_SSE2
     "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/temporal_filter_apply_sse2.asm")
 
-set(AOM_AV1_ENCODER_SSE2_INTRIN
+set(AOM_AV1_ENCODER_INTRIN_SSE2
     "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c")
 
-set(AOM_AV1_ENCODER_SSSE3_ASM_X86_64
+set(AOM_AV1_ENCODER_ASM_SSSE3_X86_64
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
 
-set(AOM_AV1_ENCODER_SSSE3_INTRIN
+set(AOM_AV1_ENCODER_INTRIN_SSSE3
     "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
 
-set(AOM_AV1_ENCODER_AVX2_INTRIN
+set(AOM_AV1_ENCODER_INTRIN_AVX2
     "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
     "${AOM_ROOT}/av1/encoder/x86/hybrid_fwd_txfm_avx2.c")
 
-set(AOM_AV1_ENCODER_NEON_INTRIN
+set(AOM_AV1_ENCODER_INTRIN_NEON
     "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c")
 
-set(AOM_AV1_ENCODER_MSA_INTRIN
+set(AOM_AV1_ENCODER_INTRIN_MSA
     "${AOM_ROOT}/av1/encoder/mips/msa/error_msa.c"
     "${AOM_ROOT}/av1/encoder/mips/msa/fdct16x16_msa.c"
     "${AOM_ROOT}/av1/encoder/mips/msa/fdct4x4_msa.c"
@@ -207,27 +207,27 @@ set(AOM_AV1_ENCODER_MSA_INTRIN
     "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
 if (CONFIG_HIGHBITDEPTH)
-  set(AOM_AV1_COMMON_SSE4_1_INTRIN
-      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c"
       "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_sse4.c")
 
-  set(AOM_AV1_COMMON_AVX2_INTRIN
-      ${AOM_AV1_COMMON_AVX2_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_AVX2
+      ${AOM_AV1_COMMON_INTRIN_AVX2}
       "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
 
-  set(AOM_AV1_ENCODER_NEON_INTRIN
-      ${AOM_AV1_ENCODER_NEON_INTRIN}
+  set(AOM_AV1_ENCODER_INTRIN_NEON
+      ${AOM_AV1_ENCODER_INTRIN_NEON}
       "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
       "${AOM_ROOT}/av1/encoder/arm/neon/error_neon.c")
 
-  set(AOM_AV1_ENCODER_SSE4_1_INTRIN
-      ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
+  set(AOM_AV1_ENCODER_INTRIN_SSE4_1
+      ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
       "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
 else ()
-  set(AOM_AV1_COMMON_NEON_INTRIN
-      ${AOM_AV1_COMMON_NEON_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_NEON
+      ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/common/arm/neon/iht4x4_add_neon.c"
       "${AOM_ROOT}/av1/common/arm/neon/iht8x8_add_neon.c")
 endif ()
@@ -249,23 +249,23 @@ if (CONFIG_CDEF)
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/pickcdef.c")
 
-  set(AOM_AV1_COMMON_SSE2_INTRIN
-      ${AOM_AV1_COMMON_SSE2_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSE2
+      ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/clpf_sse2.c"
       "${AOM_ROOT}/av1/common/od_dering_sse2.c")
 
-  set(AOM_AV1_COMMON_SSSE3_INTRIN
-      ${AOM_AV1_COMMON_SSSE3_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSSE3
+      ${AOM_AV1_COMMON_INTRIN_SSSE3}
       "${AOM_ROOT}/av1/common/clpf_ssse3.c"
       "${AOM_ROOT}/av1/common/od_dering_ssse3.c")
 
-  set(AOM_AV1_COMMON_SSE4_1_INTRIN
-      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/clpf_sse4.c"
       "${AOM_ROOT}/av1/common/od_dering_sse4.c")
 
-  set(AOM_AV1_COMMON_NEON_INTRIN
-      ${AOM_AV1_COMMON_NEON_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_NEON
+      ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/common/clpf_neon.c"
       "${AOM_ROOT}/av1/common/od_dering_neon.c")
 endif ()
@@ -275,14 +275,14 @@ if (CONFIG_EXT_INTER)
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/wedge_utils.c")
 
-  set(AOM_AV1_ENCODER_SSE2_INTRIN
-      ${AOM_AV1_ENCODER_SSE2_INTRIN}
+  set(AOM_AV1_ENCODER_INTRIN_SSE2
+      ${AOM_AV1_ENCODER_INTRIN_SSE2}
       "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 endif ()
 
 if (CONFIG_FILTER_INTRA)
-  set(AOM_AV1_COMMON_SSE4_1_INTRIN
-      ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
 endif ()
 
@@ -354,8 +354,8 @@ if (CONFIG_PVQ)
         "${AOM_ROOT}/av1/encoder/generic_encoder.c"
         "${AOM_ROOT}/av1/encoder/laplace_encoder.c")
 
-    set(AOM_AV1_COMMON_SSE4_1_INTRIN
-        ${AOM_AV1_COMMON_SSE4_1_INTRIN}
+    set(AOM_AV1_COMMON_INTRIN_SSE4_1
+        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
         "${AOM_ROOT}/av1/common/x86/pvq_sse4.c"
         "${AOM_ROOT}/av1/common/x86/pvq_sse4.h")
 
@@ -368,16 +368,16 @@ if (CONFIG_PVQ)
           "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.c"
           "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.h")
 
-      set(AOM_AV1_DECODER_SSE2_ASM
-          ${AOM_AV1_DECODER_SSE2_ASM}
+      set(AOM_AV1_DECODER_ASM_SSE2
+          ${AOM_AV1_DECODER_ASM_SSE2}
           "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm")
 
-      set(AOM_AV1_DECODER_SSE2_INTRIN
-          ${AOM_AV1_DECODER_SSE2_INTRIN}
+      set(AOM_AV1_DECODER_INTRIN_SSE2
+          ${AOM_AV1_DECODER_INTRIN_SSE2}
           "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c")
 
-      set(AOM_AV1_DECODER_SSSE3_INTRIN
-          ${AOM_AV1_DECODER_SSSE3_INTRIN}
+      set(AOM_AV1_DECODER_INTRIN_SSSE3
+          ${AOM_AV1_DECODER_INTRIN_SSSE3}
           "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
     endif ()
 endif ()
@@ -388,8 +388,8 @@ if (CONFIG_WARPED_MOTION)
       "${AOM_ROOT}/av1/common/warped_motion.c"
       "${AOM_ROOT}/av1/common/warped_motion.h")
 
-  set(AOM_AV1_COMMON_SSE2_INTRIN
-      ${AOM_AV1_COMMON_SSE2_INTRIN}
+  set(AOM_AV1_COMMON_INTRIN_SSE2
+      ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c")
 endif ()
 
@@ -415,57 +415,57 @@ function (setup_av1_targets)
   if (HAVE_SSE2)
     require_flag_nomsvc("-msse2" NO)
     add_intrinsics_object_library("-msse2" "sse2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_SSE2_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_SSE2")
     if (CONFIG_AV1_DECODER)
-      if (AOM_AV1_DECODER_SSE2_ASM)
-        add_asm_library("aom_av1_decoder_sse2" "AOM_AV1_DECODER_SSE2_ASM" "aom")
+      if (AOM_AV1_DECODER_ASM_SSE2)
+        add_asm_library("aom_av1_decoder_sse2" "AOM_AV1_DECODER_ASM_SSE2" "aom")
       endif ()
 
-      if (AOM_AV1_DECODER_SSE2_INTRIN)
+      if (AOM_AV1_DECODER_INTRIN_SSE2)
         add_intrinsics_object_library("-msse2" "sse2" "aom_av1_decoder"
-                                      "AOM_AV1_DECODER_SSE2_INTRIN")
+                                      "AOM_AV1_DECODER_INTRIN_SSE2")
       endif ()
     endif ()
 
     if (CONFIG_AV1_ENCODER)
-      add_asm_library("aom_av1_encoder_sse2" "AOM_AV1_ENCODER_SSE2_ASM" "aom")
+      add_asm_library("aom_av1_encoder_sse2" "AOM_AV1_ENCODER_ASM_SSE2" "aom")
       add_intrinsics_object_library("-msse2" "sse2" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_SSE2_INTRIN")
+                                    "AOM_AV1_ENCODER_INTRIN_SSE2")
     endif ()
   endif ()
 
   if (HAVE_SSSE3)
     require_flag_nomsvc("-mssse3" NO)
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_common"
-                                  "AOM_AV1_COMMON_SSSE3_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_SSSE3")
 
     if (CONFIG_AV1_DECODER)
-      if (AOM_AV1_DECODER_SSSE3_INTRIN)
+      if (AOM_AV1_DECODER_INTRIN_SSSE3)
         add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_decoder"
-                                      "AOM_AV1_DECODER_SSSE3_INTRIN")
+                                      "AOM_AV1_DECODER_INTRIN_SSSE3")
       endif ()
     endif ()
 
     if (CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_SSSE3_INTRIN")
+                                    "AOM_AV1_ENCODER_INTRIN_SSSE3")
     endif ()
   endif ()
 
   if (HAVE_SSE4_1)
     require_flag_nomsvc("-msse4.1" NO)
     add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_common"
-                                  "AOM_AV1_COMMON_SSE4_1_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_SSE4_1")
 
     if (CONFIG_AV1_ENCODER)
       if ("${AOM_TARGET_CPU}" STREQUAL "x86_64")
         add_asm_library("aom_av1_encoder_ssse3"
-                        "AOM_AV1_ENCODER_SSSE3_ASM_X86_64" "aom")
+                        "AOM_AV1_ENCODER_ASM_SSSE3_X86_64" "aom")
       endif ()
 
-      if (AOM_AV1_ENCODER_SSE4_1_INTRIN)
+      if (AOM_AV1_ENCODER_INTRIN_SSE4_1)
         add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_encoder"
-                                      "AOM_AV1_ENCODER_SSE4_1_INTRIN")
+                                      "AOM_AV1_ENCODER_INTRIN_SSE4_1")
       endif ()
     endif ()
   endif ()
@@ -473,40 +473,40 @@ function (setup_av1_targets)
   if (HAVE_AVX2)
     require_flag_nomsvc("-mavx2" NO)
     add_intrinsics_object_library("-mavx2" "avx2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_AVX2_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_AVX2")
 
     if (CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mavx2" "avx2" "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_AVX2_INTRIN")
+                                    "AOM_AV1_ENCODER_INTRIN_AVX2")
     endif ()
   endif ()
 
   if (HAVE_NEON)
-    if (AOM_AV1_COMMON_NEON_INTRIN)
-      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}"
+    if (AOM_AV1_COMMON_INTRIN_NEON)
+      add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}"
                                     "neon"
                                     "aom_av1_common"
-                                    "AOM_AV1_COMMON_NEON_INTRIN")
+                                    "AOM_AV1_COMMON_INTRIN_NEON")
     endif ()
 
-    if (AOM_AV1_ENCODER_NEON_INTRIN)
-      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}"
+    if (AOM_AV1_ENCODER_INTRIN_NEON)
+      add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}"
                                     "neon"
                                     "aom_av1_encoder"
-                                    "AOM_AV1_ENCODER_NEON_INTRIN")
+                                    "AOM_AV1_ENCODER_INTRIN_NEON")
     endif ()
   endif ()
 
   if (HAVE_DSPR2)
     add_intrinsics_object_library("" "dspr2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_DSPR2_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_DSPR2")
   endif ()
 
   if (HAVE_MSA)
     add_intrinsics_object_library("" "msa" "aom_av1_common"
-                                  "AOM_AV1_COMMON_MSA_INTRIN")
+                                  "AOM_AV1_COMMON_INTRIN_MSA")
     add_intrinsics_object_library("" "msa" "aom_av1_encoder"
-                                  "AOM_AV1_ENCODER_MSA_INTRIN")
+                                  "AOM_AV1_ENCODER_INTRIN_MSA")
   endif ()
 
   # Pass the new lib targets up to the parent scope instance of
