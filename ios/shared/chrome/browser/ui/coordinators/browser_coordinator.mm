@@ -46,6 +46,11 @@
 - (void)stop {
   [self.parentCoordinator childCoordinatorWillStop:self];
   self.started = NO;
+  for (BrowserCoordinator* child in self.children) {
+    if (child.started) {
+      [child stop];
+    }
+  }
 }
 
 @end

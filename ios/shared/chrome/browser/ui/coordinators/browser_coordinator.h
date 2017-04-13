@@ -34,6 +34,7 @@ class Browser;
 
 // Stops the user interaction managed by the receiver. This method needs to be
 // called at the beginning of the overriding implementation.
+// Calling stop on a coordinator transitively calls stop on its children.
 - (void)stop NS_REQUIRES_SUPER;
 
 @end

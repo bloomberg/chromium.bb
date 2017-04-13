@@ -47,11 +47,6 @@
 
 - (void)stop {
   [super stop];
-  // PLACEHOLDER: Stop child coordinators here for now. We might deal with this
-  // differently later on.
-  for (BrowserCoordinator* child in self.children) {
-    [child stop];
-  }
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 

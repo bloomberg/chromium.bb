@@ -190,4 +190,41 @@ TEST(BrowserCoordinatorTest, DidStartWillStop) {
   EXPECT_TRUE(parent.childWillStopCalled);
 }
 
+TEST(BrowserCoordinatorTest, StopStopsStartedChildren) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  [parent addChildCoordinator:child];
+  [parent start];
+  [child start];
+  __block BOOL called = NO;
+  child.stopHandler = ^{
+    called = YES;
+  };
+  EXPECT_FALSE(called);
+
+  // Call stop on the parent.
+  [parent stop];
+
+  // It should have called stop on the child.
+  EXPECT_TRUE(called);
+}
+
+TEST(BrowserCoordinatorTest, StopDoesntStopNonStartedChildren) {
+  TestCoordinator* parent = [[TestCoordinator alloc] init];
+  TestCoordinator* child = [[TestCoordinator alloc] init];
+  [parent addChildCoordinator:child];
+  [parent start];
+  __block BOOL called = NO;
+  child.stopHandler = ^{
+    called = YES;
+  };
+  EXPECT_FALSE(called);
+
+  // Call stop on the parent.
+  [parent stop];
+
+  // It should not have called stop on the child.
+  EXPECT_FALSE(called);
+}
+
 }  // namespace
