@@ -4,8 +4,8 @@
 
 // See https://webaudio.github.io/web-audio-api/#oscillatoroptions
 dictionary OscillatorOptions : AudioNodeOptions {
-    OscillatorType type;
-    float detune;
-    float frequency;
+    OscillatorType type = "sine";
+    float detune = 0;
+    float frequency = 440;
     PeriodicWave? periodicWave;
 };

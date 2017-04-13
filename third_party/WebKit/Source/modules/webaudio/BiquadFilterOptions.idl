@@ -4,9 +4,9 @@
 
 // See https://webaudio.github.io/web-audio-api/#biquadfilteroptions
 dictionary BiquadFilterOptions : AudioNodeOptions {
-    BiquadFilterType type;
-    float Q;
-    float detune;
-    float frequency;
-    float gain;
+    BiquadFilterType type = "lowpass";
+    float Q = 1;
+    float detune = 0;
+    float frequency = 350;
+    float gain = 0;
 };

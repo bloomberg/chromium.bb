@@ -679,37 +679,23 @@ PannerNode* PannerNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasPanningModel())
-    node->setPanningModel(options.panningModel());
-  if (options.hasDistanceModel())
-    node->setDistanceModel(options.distanceModel());
+  node->setPanningModel(options.panningModel());
+  node->setDistanceModel(options.distanceModel());
 
-  if (options.hasPositionX())
-    node->positionX()->setValue(options.positionX());
-  if (options.hasPositionY())
-    node->positionY()->setValue(options.positionY());
-  if (options.hasPositionZ())
-    node->positionZ()->setValue(options.positionZ());
+  node->positionX()->setValue(options.positionX());
+  node->positionY()->setValue(options.positionY());
+  node->positionZ()->setValue(options.positionZ());
 
-  if (options.hasOrientationX())
-    node->orientationX()->setValue(options.orientationX());
-  if (options.hasOrientationY())
-    node->orientationY()->setValue(options.orientationY());
-  if (options.hasOrientationZ())
-    node->orientationZ()->setValue(options.orientationZ());
+  node->orientationX()->setValue(options.orientationX());
+  node->orientationY()->setValue(options.orientationY());
+  node->orientationZ()->setValue(options.orientationZ());
 
-  if (options.hasRefDistance())
-    node->setRefDistance(options.refDistance(), exception_state);
-  if (options.hasMaxDistance())
-    node->setMaxDistance(options.maxDistance(), exception_state);
-  if (options.hasRolloffFactor())
-    node->setRolloffFactor(options.rolloffFactor());
-  if (options.hasConeInnerAngle())
-    node->setConeInnerAngle(options.coneInnerAngle());
-  if (options.hasConeOuterAngle())
-    node->setConeOuterAngle(options.coneOuterAngle());
-  if (options.hasConeOuterGain())
-    node->setConeOuterGain(options.coneOuterGain());
+  node->setRefDistance(options.refDistance(), exception_state);
+  node->setMaxDistance(options.maxDistance(), exception_state);
+  node->setRolloffFactor(options.rolloffFactor());
+  node->setConeInnerAngle(options.coneInnerAngle());
+  node->setConeOuterAngle(options.coneOuterAngle());
+  node->setConeOuterGain(options.coneOuterGain());
 
   return node;
 }

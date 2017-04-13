@@ -169,8 +169,7 @@ GainNode* GainNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasGain())
-    node->gain()->setValue(options.gain());
+  node->gain()->setValue(options.gain());
 
   return node;
 }

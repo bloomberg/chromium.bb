@@ -202,12 +202,9 @@ AnalyserNode* AnalyserNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasFftSize())
-    node->setFftSize(options.fftSize(), exception_state);
-
-  if (options.hasSmoothingTimeConstant())
-    node->setSmoothingTimeConstant(options.smoothingTimeConstant(),
-                                   exception_state);
+  node->setFftSize(options.fftSize(), exception_state);
+  node->setSmoothingTimeConstant(options.smoothingTimeConstant(),
+                                 exception_state);
 
   // minDecibels and maxDecibels have default values.  Set both of the values
   // at once.

@@ -678,16 +678,11 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
 
   if (options.hasBuffer())
     node->setBuffer(options.buffer(), exception_state);
-  if (options.hasDetune())
-    node->detune()->setValue(options.detune());
-  if (options.hasLoop())
-    node->setLoop(options.loop());
-  if (options.hasLoopEnd())
-    node->setLoopEnd(options.loopEnd());
-  if (options.hasLoopStart())
-    node->setLoopStart(options.loopStart());
-  if (options.hasPlaybackRate())
-    node->playbackRate()->setValue(options.playbackRate());
+  node->detune()->setValue(options.detune());
+  node->setLoop(options.loop());
+  node->setLoopEnd(options.loopEnd());
+  node->setLoopStart(options.loopStart());
+  node->playbackRate()->setValue(options.playbackRate());
 
   return node;
 }

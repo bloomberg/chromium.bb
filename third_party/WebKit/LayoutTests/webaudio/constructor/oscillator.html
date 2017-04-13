@@ -117,11 +117,12 @@
             real: [1, 1]
           })
         };
-        success = Should("new OscillatorNode(c, " + JSON.stringify(options) + ")",
+        success = Should("node2 = new OscillatorNode(c, " + JSON.stringify(options) + ")",
             function () {
               node = new OscillatorNode(context, options);
             })
-          .throw("InvalidStateError") && success;
+          .notThrow() && success;
+        Should("node2.type", node.type).beEqualTo("custom");
 
         options = {
           type: "custom"

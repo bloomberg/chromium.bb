@@ -4,9 +4,9 @@
 
 // See https://webaudio.github.io/web-audio-api/#dynamicscompressoroptions
 dictionary DynamicsCompressorOptions : AudioNodeOptions {
-    float attack;
-    float knee;
-    float ratio;
-    float release;
-    float threshold;
+    float attack = 0.003;
+    float knee = 30;
+    float ratio = 12;
+    float release = 0.25;
+    float threshold = -24;
 };

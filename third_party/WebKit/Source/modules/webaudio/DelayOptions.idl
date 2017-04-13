@@ -5,5 +5,5 @@
 // See https://webaudio.github.io/web-audio-api/#delayoptions
 dictionary DelayOptions : AudioNodeOptions {
     double maxDelayTime = 1;
-    double delayTime;
+    double delayTime = 0;
 };

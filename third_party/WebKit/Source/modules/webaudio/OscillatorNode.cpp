@@ -402,35 +402,16 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasType()) {
-    if (options.type() == "custom" && !options.hasPeriodicWave()) {
-      exception_state.ThrowDOMException(kInvalidStateError,
-                                        "'type' cannot be set to 'custom' "
-                                        "without also specifying "
-                                        "'periodicWave'");
-      return nullptr;
-    }
-    if (options.type() != "custom" && options.hasPeriodicWave()) {
-      exception_state.ThrowDOMException(
-          kInvalidStateError, "'type' MUST be 'custom' instead of '" +
-                                  options.type() +
-                                  "' if 'periodicWave' is also given");
-      return nullptr;
-    }
-
-    // At this both type and periodicWave are consistently defined.  In that
-    // case, don't set the type if periodicWave is specified because that
-    // will cause an (incorrect) error to be signaled.
-    if (options.type() != "custom")
-      node->setType(options.type(), exception_state);
-  }
-  if (options.hasDetune())
-    node->detune()->setValue(options.detune());
-  if (options.hasFrequency())
-    node->frequency()->setValue(options.frequency());
-
-  if (options.hasPeriodicWave())
+  if (options.hasPeriodicWave()) {
+    // Set up the custom wave; this also sets the type to "custom",
+    // overriding any |type| option the user may have set.  Per spec.
     node->setPeriodicWave(options.periodicWave());
+  } else {
+    node->setType(options.type(), exception_state);
+  }
+
+  node->detune()->setValue(options.detune());
+  node->frequency()->setValue(options.frequency());
 
   return node;
 }

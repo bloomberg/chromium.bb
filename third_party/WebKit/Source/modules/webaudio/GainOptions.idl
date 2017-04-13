@@ -4,5 +4,5 @@
 
 // See https://webaudio.github.io/web-audio-api/#gainoptions
 dictionary GainOptions : AudioNodeOptions {
-    float gain;
+    float gain = 1;
 };

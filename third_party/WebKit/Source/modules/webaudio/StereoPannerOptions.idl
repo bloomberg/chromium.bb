@@ -4,5 +4,5 @@
 
 // See https://webaudio.github.io/web-audio-api/#stereopanneroptions
 dictionary StereoPannerOptions : AudioNodeOptions {
-    float pan;
+    float pan = 0;
 };

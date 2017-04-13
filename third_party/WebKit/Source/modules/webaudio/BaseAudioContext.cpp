@@ -538,9 +538,7 @@ PeriodicWave* BaseAudioContext::createPeriodicWave(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  bool disable = options.hasDisableNormalization()
-                     ? options.disableNormalization()
-                     : false;
+  bool disable = options.disableNormalization();
 
   return PeriodicWave::Create(*this, real, imag, disable, exception_state);
 }

@@ -78,16 +78,11 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasType())
-    node->setType(options.type());
-  if (options.hasQ())
-    node->q()->setValue(options.Q());
-  if (options.hasDetune())
-    node->detune()->setValue(options.detune());
-  if (options.hasFrequency())
-    node->frequency()->setValue(options.frequency());
-  if (options.hasGain())
-    node->gain()->setValue(options.gain());
+  node->setType(options.type());
+  node->q()->setValue(options.Q());
+  node->detune()->setValue(options.detune());
+  node->frequency()->setValue(options.frequency());
+  node->gain()->setValue(options.gain());
 
   return node;
 }

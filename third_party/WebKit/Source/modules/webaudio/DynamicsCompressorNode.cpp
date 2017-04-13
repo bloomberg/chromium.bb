@@ -191,16 +191,11 @@ DynamicsCompressorNode* DynamicsCompressorNode::Create(
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasAttack())
-    node->attack()->setValue(options.attack());
-  if (options.hasKnee())
-    node->knee()->setValue(options.knee());
-  if (options.hasRatio())
-    node->ratio()->setValue(options.ratio());
-  if (options.hasRelease())
-    node->release()->setValue(options.release());
-  if (options.hasThreshold())
-    node->threshold()->setValue(options.threshold());
+  node->attack()->setValue(options.attack());
+  node->knee()->setValue(options.knee());
+  node->ratio()->setValue(options.ratio());
+  node->release()->setValue(options.release());
+  node->threshold()->setValue(options.threshold());
 
   return node;
 }

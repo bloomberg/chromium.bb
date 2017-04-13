@@ -5,5 +5,5 @@
 // https://webaudio.github.io/web-audio-api/#waveshaperoptions
 dictionary WaveShaperOptions : AudioNodeOptions {
     sequence<float> curve;
-    OverSampleType oversample;
+    OverSampleType oversample = "none";
 };

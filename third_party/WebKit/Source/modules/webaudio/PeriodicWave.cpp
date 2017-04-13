@@ -97,9 +97,7 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
 PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,
                                    const PeriodicWaveOptions& options,
                                    ExceptionState& exception_state) {
-  bool normalize = options.hasDisableNormalization()
-                       ? options.disableNormalization()
-                       : false;
+  bool normalize = options.disableNormalization();
 
   Vector<float> real_coef;
   Vector<float> imag_coef;

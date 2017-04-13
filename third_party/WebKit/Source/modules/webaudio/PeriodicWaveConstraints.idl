@@ -4,5 +4,5 @@
 
 // See https://webaudio.github.io/web-audio-api/#periodicwaveconstraints
 dictionary PeriodicWaveConstraints {
-    boolean disableNormalization;
+    boolean disableNormalization = false;
 };

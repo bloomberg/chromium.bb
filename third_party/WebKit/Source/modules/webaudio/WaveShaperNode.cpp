@@ -66,8 +66,8 @@ WaveShaperNode* WaveShaperNode::Create(BaseAudioContext* context,
 
   if (options.hasCurve())
     node->setCurve(options.curve(), exception_state);
-  if (options.hasOversample())
-    node->setOversample(options.oversample());
+
+  node->setOversample(options.oversample());
 
   return node;
 }
