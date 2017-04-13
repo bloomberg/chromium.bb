@@ -287,10 +287,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
              initiationType:(web::NavigationInitiationType)initiationType
     userAgentOverrideOption:(web::NavigationManager::UserAgentOverrideOption)
                                 userAgentOverrideOption {
-  // Server side redirects are handled by updating existing pending item instead
-  // of adding a new item.
-  DCHECK((trans & ui::PAGE_TRANSITION_SERVER_REDIRECT) == 0);
-
   [self discardTransientItem];
   self.pendingItemIndex = -1;
 
