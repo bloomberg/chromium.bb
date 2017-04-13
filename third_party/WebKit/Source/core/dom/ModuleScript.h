@@ -27,7 +27,7 @@ enum class ModuleInstantiationState {
 
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
-class CORE_EXPORT ModuleScript final : public Script {
+class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  public:
   static ModuleScript* Create(
       ScriptModule record,
@@ -58,7 +58,7 @@ class CORE_EXPORT ModuleScript final : public Script {
   const String& Nonce() const { return nonce_; }
 
   DECLARE_TRACE();
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   ModuleScript(ScriptModule record,
@@ -96,6 +96,13 @@ class CORE_EXPORT ModuleScript final : public Script {
       ModuleInstantiationState::kUninstantiated;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-error
+  //
+  // |instantiation_error_| is TraceWrappers()ed and kept alive via the path of
+  // v8::Context -> PerContextData -> Modulator/ModulatorImpl
+  // -> ModuleMap -> ModuleMap::Entry -> ModuleScript -> instantiation_error_.
+  // All the classes/references on the path above should be
+  // TraceWrapperBase/TraceWrapperMember<>/etc.,
+  // but other references to those classes can be normal Member<>.
   TraceWrapperV8Reference<v8::Value> instantiation_error_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce

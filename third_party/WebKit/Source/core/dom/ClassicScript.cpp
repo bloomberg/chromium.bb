@@ -51,10 +51,6 @@ DEFINE_TRACE(ClassicScript) {
   visitor->Trace(script_source_code_);
 }
 
-DEFINE_TRACE_WRAPPERS(ClassicScript) {
-  Script::TraceWrappers(visitor);
-}
-
 bool ClassicScript::IsEmpty() const {
   return GetScriptSourceCode().IsEmpty();
 }

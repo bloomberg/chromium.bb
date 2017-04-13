@@ -24,7 +24,6 @@ DEFINE_TRACE(ModuleScript) {
   Script::Trace(visitor);
 }
 DEFINE_TRACE_WRAPPERS(ModuleScript) {
-  Script::TraceWrappers(visitor);
   visitor->TraceWrappers(instantiation_error_);
 }
 

@@ -18,7 +18,6 @@ class CORE_EXPORT ClassicScript final : public Script {
   }
 
   DECLARE_TRACE();
-  DECLARE_TRACE_WRAPPERS();
 
   const ScriptSourceCode& GetScriptSourceCode() const {
     return script_source_code_;
