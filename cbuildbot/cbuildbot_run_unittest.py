@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import cPickle
-import os
 import mock
 import time
 
@@ -279,67 +278,68 @@ class BuilderRunTest(_BuilderRunTestCase):
           DEFAULT_ARCHIVE_GS_PATH, DEFAULT_BOT_NAME, DEFAULT_VERSION)
       self.assertEqual(expected, archive.download_url)
 
-  def _RunAccessor(self, method_name, options_dict, config_dict):
-    """Run the given accessor method of the BuilderRun class.
-
-    Create a BuilderRun object with the options and config provided and
-    then return the result of calling the given method on it.
-
-    Args:
-      method_name: A BuilderRun method to call, specified by name.
-      options_dict: Extend default options with this.
-      config_dict: Extend default config with this.
-
-    Returns:
-      Result of calling the given method.
-    """
-    options = _ExtendDefaultOptions(**options_dict)
-    config = _ExtendDefaultConfig(**config_dict)
+  def testShouldUploadPrebuilts(self):
+    # Enabled
+    options = _ExtendDefaultOptions(prebuilts=True)
+    config = _ExtendDefaultConfig(prebuilts=True)
     run = self._NewBuilderRun(options=options, config=config)
-    method = getattr(run, method_name)
-    self.assertEqual(method.__name__, method_name)
-    return method()
+    self.assertTrue(run.ShouldUploadPrebuilts())
 
-  def testDualEnableSetting(self):
-    settings = {
-        'prebuilts': 'ShouldUploadPrebuilts',
-        'postsync_patch': 'ShouldPatchAfterSync',
-    }
+    # Config disabled.
+    options = _ExtendDefaultOptions(prebuilts=True)
+    config = _ExtendDefaultConfig(prebuilts=False)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldUploadPrebuilts())
 
-    # Both option and config enabled should result in True.
-    # Create truth table with three variables in this order:
-    # <key> option value, <key> config value (e.g. <key> == 'prebuilts').
-    truth_table = cros_test_lib.TruthTable(inputs=[(True, True)])
+    # Option disabled.
+    options = _ExtendDefaultOptions(prebuilts=False)
+    config = _ExtendDefaultConfig(prebuilts=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldUploadPrebuilts())
 
-    for inputs in truth_table:
-      option_val, config_val = inputs
-      for key, accessor in settings.iteritems():
-        self.assertEquals(
-            self._RunAccessor(accessor, {key: option_val}, {key: config_val}),
-            truth_table.GetOutput(inputs))
+  def testShouldPatchAfterSync(self):
+    # Enabled
+    options = _ExtendDefaultOptions(postsync_patch=True)
+    config = _ExtendDefaultConfig(postsync_patch=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertTrue(run.ShouldPatchAfterSync())
+
+    # Config disabled.
+    options = _ExtendDefaultOptions(postsync_patch=True)
+    config = _ExtendDefaultConfig(postsync_patch=False)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldPatchAfterSync())
+
+    # Option disabled.
+    options = _ExtendDefaultOptions(postsync_patch=False)
+    config = _ExtendDefaultConfig(postsync_patch=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldPatchAfterSync())
 
   def testShouldReexecAfterSync(self):
-    # If option and config have postsync_reexec enabled, and this file is not
-    # in the build root, then we expect ShouldReexecAfterSync to return True.
+    # Normal Execution
+    options = _ExtendDefaultOptions(postsync_reexec=True, resume=False)
+    config = _ExtendDefaultConfig(postsync_reexec=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertTrue(run.ShouldReexecAfterSync())
 
-    # Construct a truth table across three variables in this order:
-    # postsync_reexec option value, postsync_reexec config value, same_root.
-    truth_table = cros_test_lib.TruthTable(inputs=[(True, True, False)])
+    # Normal after Rexec
+    options = _ExtendDefaultOptions(postsync_reexec=True, resume=True)
+    config = _ExtendDefaultConfig(postsync_reexec=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldReexecAfterSync())
 
-    for inputs in truth_table:
-      option_val, config_val, same_root = inputs
+    # Turned off in config.
+    options = _ExtendDefaultOptions(postsync_reexec=True, resume=False)
+    config = _ExtendDefaultConfig(postsync_reexec=False)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldReexecAfterSync())
 
-      if same_root:
-        build_root = os.path.dirname(os.path.dirname(__file__))
-      else:
-        build_root = DEFAULT_BUILDROOT
-
-      result = self._RunAccessor(
-          'ShouldReexecAfterSync',
-          {'postsync_reexec': option_val, 'buildroot': build_root},
-          {'postsync_reexec': config_val})
-
-      self.assertEquals(result, truth_table.GetOutput(inputs))
+    # Turned off on command line.
+    options = _ExtendDefaultOptions(postsync_reexec=False, resume=False)
+    config = _ExtendDefaultConfig(postsync_reexec=True)
+    run = self._NewBuilderRun(options=options, config=config)
+    self.assertFalse(run.ShouldReexecAfterSync())
 
   def testInProduction(self):
     run = self._NewBuilderRun()

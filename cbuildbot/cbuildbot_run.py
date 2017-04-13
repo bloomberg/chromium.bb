@@ -741,12 +741,8 @@ class _BuilderRunBase(object):
 
   def ShouldReexecAfterSync(self):
     """Return True if this run should re-exec itself after sync stage."""
-    if self.options.postsync_reexec and self.config.postsync_reexec:
-      # Return True if this source is not in designated buildroot.
-      abs_buildroot = os.path.abspath(self.buildroot)
-      return not os.path.abspath(__file__).startswith(abs_buildroot)
-
-    return False
+    return (self.options.postsync_reexec and self.config.postsync_reexec and
+            not self.options.resume)
 
   def ShouldPatchAfterSync(self):
     """Return True if this run should patch changes after sync stage."""
