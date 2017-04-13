@@ -6,6 +6,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/network/net_adapters.h"
 #include "content/network/network_context.h"
 #include "content/public/common/referrer.h"
@@ -63,6 +64,11 @@ void PopulateResourceResponse(net::URLRequest* request,
 
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  request->GetLoadTimingInfo(&response->head.load_timing);
+
+  response->head.request_start = request->creation_time();
+  response->head.response_start = base::TimeTicks::Now();
 }
 
 // A subclass of net::UploadBytesElementReader which owns
@@ -226,6 +232,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response.get());
+  response->head.encoded_data_length = url_request_->GetTotalReceivedBytes();
 
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
@@ -237,6 +244,7 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response.get());
+  response->head.encoded_data_length = url_request_->raw_header_size();
 
   mojom::DownloadedTempFilePtr downloaded_file_ptr;
   url_loader_client_->OnReceiveResponse(response->head,

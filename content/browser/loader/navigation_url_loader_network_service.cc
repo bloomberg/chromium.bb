@@ -41,6 +41,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   auto new_request = base::MakeUnique<ResourceRequest>();
   new_request->method = "GET";
   new_request->url = request_info->common_params.url;
+  new_request->first_party_for_cookies = request_info->first_party_for_cookies;
   new_request->priority = net::HIGHEST;
 
   mojom::URLLoaderClientPtr url_loader_client_ptr;
