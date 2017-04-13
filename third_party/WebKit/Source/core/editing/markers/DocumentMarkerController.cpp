@@ -508,6 +508,8 @@ Vector<IntRect> DocumentMarkerController::RenderedRectsForMarkers(
        node_iterator != end; ++node_iterator) {
     // inner loop; process each marker in this node
     const Node& node = *node_iterator->key;
+    if (!node.isConnected())
+      continue;
     MarkerLists* markers = node_iterator->value.Get();
     for (size_t marker_list_index = 0;
          marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
