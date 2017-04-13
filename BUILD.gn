@@ -682,6 +682,7 @@ group("gn_all") {
       "//testing/libfuzzer/fuzzers",
       "//testing/libfuzzer/tests:libfuzzer_tests",
       "//third_party/icu/fuzzers",
+      "//third_party/qcms:fuzzers",
     ]
 
     # TODO(miu): Remove this dependency once the build configuration in

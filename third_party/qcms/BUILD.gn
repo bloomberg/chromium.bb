@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 config("qcms_config") {
   include_dirs = [ "src" ]
 }
@@ -46,6 +48,23 @@ static_library("qcms") {
       "/wd4756",  # Overflow in constant arithmetic (INFINITY).
     ]
   }
+}
+
+# fuzzers BUILD depends on this target. Needed for package discovery
+group("fuzzers") {
+}
+
+fuzzer_test("qcms_color_space_fuzzer") {
+  sources = [
+    "//testing/libfuzzer/fuzzers/color_space_data.h",
+    "qcms_color_space_fuzzer.cc",
+  ]
+  deps = [
+    ":qcms",
+    "//base",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/icc.dict"
+  libfuzzer_options = [ "max_len=4194304" ]
 }
 
 if (!disable_qcms) {
