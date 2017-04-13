@@ -121,6 +121,9 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
 // loaded icons.
 void CreateIconFiles(const base::FilePath& icon_dir,
                      const ShellLinkItemList& item_list) {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.CreateIconFilesDuration");
+
   for (ShellLinkItemList::const_iterator item = item_list.begin();
       item != item_list.end(); ++item) {
     base::FilePath icon_path;
@@ -177,6 +180,9 @@ bool UpdateJumpList(const wchar_t* app_id,
                     const ShellLinkItemList& most_visited_pages,
                     const ShellLinkItemList& recently_closed_pages,
                     IncognitoModePrefs::Availability incognito_availability) {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
+
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
   // of Windows.
@@ -255,6 +261,12 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
   // jumplist icons. The jumplist links should be updated anyway, as it doesn't
   // involve disk IO.
   if (base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir)) {
+    // TODO(chengx): Remove the UMA histogram after fixing
+    // http://crbug.com/40407.
+    UMA_HISTOGRAM_COUNTS_100(
+        "WinJumplist.CreateIconFilesCount",
+        local_most_visited_pages.size() + local_recently_closed_pages.size());
+
     // Create icon files for shortcuts in the "Most Visited" category.
     CreateIconFiles(icon_dir, local_most_visited_pages);
 
