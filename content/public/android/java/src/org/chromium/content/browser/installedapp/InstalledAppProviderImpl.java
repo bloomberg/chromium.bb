@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,13 +69,46 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
     @Override
     public void filterInstalledApps(
-            RelatedApplication[] relatedApps, FilterInstalledAppsResponse callback) {
+            final RelatedApplication[] relatedApps, final FilterInstalledAppsResponse callback) {
         if (mFrameUrlDelegate.isIncognito()) {
             callback.call(new RelatedApplication[0]);
             return;
         }
 
-        URI frameUrl = mFrameUrlDelegate.getUrl();
+        final URI frameUrl = mFrameUrlDelegate.getUrl();
+
+        // Use an AsyncTask to execute the installed/related checks on a background thread (so as
+        // not to block the UI thread).
+        new AsyncTask<Void, Void, RelatedApplication[]>() {
+            @Override
+            protected RelatedApplication[] doInBackground(Void... unused) {
+                return filterInstalledAppsOnBackgroundThread(relatedApps, frameUrl);
+            }
+
+            @Override
+            protected void onPostExecute(RelatedApplication[] installedApps) {
+                callback.call(installedApps);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @Override
+    public void close() {}
+
+    @Override
+    public void onConnectionError(MojoException e) {}
+
+    /**
+     * Filters a list of apps, returning those that are both installed and match the origin.
+     *
+     * This method is expected to be called on a background thread (not the main UI thread).
+     *
+     * @param relatedApps A list of applications to be filtered.
+     * @param frameUrl The URL of the frame this operation was called from.
+     * @return A subsequence of applications that meet the criteria.
+     */
+    private RelatedApplication[] filterInstalledAppsOnBackgroundThread(
+            RelatedApplication[] relatedApps, URI frameUrl) {
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
         PackageManager pm = mContext.getPackageManager();
         for (RelatedApplication app : relatedApps) {
@@ -92,14 +126,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
         RelatedApplication[] installedAppsArray = new RelatedApplication[installedApps.size()];
         installedApps.toArray(installedAppsArray);
-        callback.call(installedAppsArray);
+        return installedAppsArray;
     }
-
-    @Override
-    public void close() {}
-
-    @Override
-    public void onConnectionError(MojoException e) {}
 
     /**
      * Determines whether a particular app is installed and matches the origin.

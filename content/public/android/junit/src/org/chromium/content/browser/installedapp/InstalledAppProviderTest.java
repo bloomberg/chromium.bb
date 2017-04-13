@@ -23,6 +23,7 @@ import org.robolectric.res.builder.DefaultPackageManager;
 import org.chromium.base.test.util.Feature;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
+import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.net.URI;
@@ -33,7 +34,7 @@ import java.util.HashMap;
  * Ensure that the InstalledAppProvider returns the correct apps.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class InstalledAppProviderTest {
     private static final String ASSET_STATEMENTS_KEY =
             InstalledAppProviderImpl.ASSET_STATEMENTS_KEY;
