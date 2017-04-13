@@ -4,12 +4,16 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.content.Context;
 import android.net.Uri;
+import android.support.test.filters.SmallTest;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
@@ -204,9 +208,14 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
      * Trigger empty space tap.
      */
     private void mockTapEmptySpace() {
-        mContextualSearchClient.showUnhandledTapUIIfNeeded(0, 0);
-        mContextualSearchClient.onSelectionEvent(
-                SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContextualSearchClient.showUnhandledTapUIIfNeeded(0, 0);
+                mContextualSearchClient.onSelectionEvent(
+                        SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
+            }
+        });
     }
 
     // --------------------------------------------------------------------------------------------
@@ -246,13 +255,10 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
 
     /**
      * Tests that a Tap gesture followed by tapping empty space closes the panel.
-     *
-     * Disabled because of flakiness. See crbug.com/706663
      */
-    //@SmallTest
-    //@Feature({"ContextualSearch"})
-    //@Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @DisabledTest
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTextTapFollowedByNonTextTap() {
         assertTrue(mPanelManager.getRequestPanelShowCount() == 0);
 
