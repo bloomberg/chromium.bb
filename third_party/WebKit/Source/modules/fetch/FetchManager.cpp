@@ -450,26 +450,14 @@ void FetchManager::Loader::DidReceiveResponse(
 
   FetchResponseData* tainted_response = nullptr;
 
-  if (NetworkUtils::IsRedirectResponseCode(response_http_status_code_)) {
-    Vector<String> locations;
-    response_data->HeaderList()->GetAll(HTTPNames::Location, locations);
-    if (locations.size() > 1) {
-      PerformNetworkError("Multiple Location header.");
-      return;
-    }
-    if (locations.size() == 1) {
-      KURL location_url(request_->Url(), locations[0]);
-      if (!location_url.IsValid()) {
-        PerformNetworkError("Invalid Location header.");
-        return;
-      }
-      ASSERT(request_->Redirect() == WebURLRequest::kFetchRedirectModeManual);
-      tainted_response = response_data->CreateOpaqueRedirectFilteredResponse();
-    }
-    // When the location header doesn't exist, we don't treat the response
-    // as a redirect response, and execute tainting.
-  }
-  if (!tainted_response) {
+  DCHECK(!(NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
+           response_data->HeaderList()->Has(HTTPNames::Location) &&
+           request_->Redirect() != WebURLRequest::kFetchRedirectModeManual));
+
+  if (NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
+      request_->Redirect() == WebURLRequest::kFetchRedirectModeManual) {
+    tainted_response = response_data->CreateOpaqueRedirectFilteredResponse();
+  } else {
     switch (tainting) {
       case FetchRequestData::kBasicTainting:
         tainted_response = response_data->CreateBasicFilteredResponse();

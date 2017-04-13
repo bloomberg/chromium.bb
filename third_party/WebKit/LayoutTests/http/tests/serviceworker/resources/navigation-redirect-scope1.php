@@ -5,6 +5,9 @@ if (isset($_GET['url'])) {
   header("Location: $url");
   exit;
 }
+if (isset($_GET['noLocationRedirect'])) {
+  header("HTTP/1.1 302");
+}
 ?>
 <!DOCTYPE html>
 <script>

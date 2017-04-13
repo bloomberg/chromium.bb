@@ -11,17 +11,35 @@ var TEST_TARGETS = [
     responseRedirected, checkURLList.bind(self, [BASE_URL])],
    [methodIsGET, authCheck1]],
 
-  // https://fetch.spec.whatwg.org/#concept-http-fetch
-  // Step 4, Case 301/302/303/307/308:
-  // Step 2: If location is null, return response.
+  // https://fetch.spec.whatwg.org/#http-redirect-fetch
+  // Step 2: If actualResponse’s location URL is null, then return response.
   [REDIRECT_URL + 'noLocation' +
    '&mode=same-origin&method=GET&NoRedirectTest=true',
    [fetchResolved, hasBody, typeBasic, responseNotRedirected,
     checkURLList.bind(self, [])],
    [checkJsonpNoRedirect]],
-  // Step 5: If locationURL is failure, return a network error.
+  // Step 3: If actualResponse’s location URL is failure, then return a network
+  //         error.
   [REDIRECT_URL + 'http://' +
    '&mode=same-origin&method=GET',
+   [fetchRejected]],
+
+  [REDIRECT_URL + encodeURIComponent(BASE_URL) +
+   '&mode=same-origin&redirectmode=manual&method=GET',
+   [fetchResolved, noBody, typeOpaqueredirect, responseNotRedirected,
+    checkURLList.bind(self, [])],
+   [checkJsonpError]],
+  [REDIRECT_URL + 'noLocation' +
+   '&mode=same-origin&redirectmode=manual&method=GET&NoRedirectTest=true',
+   [fetchResolved, noBody, typeOpaqueredirect, responseNotRedirected,
+    checkURLList.bind(self, [])],
+   [checkJsonpError]],
+  // According to the spec, even if the location URL is invalid, when the
+  // redirect mode is manual, fetch() must resolve with an opaque redirect
+  // filtered response. But currently Chrome handles the invalid location URL in
+  // the browser process as an error. See: crbug.com/707185
+  [REDIRECT_URL + 'http://' +
+   '&mode=same-origin&redirectmode=manual&method=GET&NoRedirectTest=true',
    [fetchRejected]],
 
   [REDIRECT_URL + encodeURIComponent(BASE_URL) +

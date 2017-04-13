@@ -110,6 +110,7 @@ var noServerHeader =
 var typeBasic = checkFetchResponseType.bind(this, 'basic');
 var typeCors = checkFetchResponseType.bind(this, 'cors');
 var typeOpaque = checkFetchResponseType.bind(this, 'opaque');
+var typeOpaqueredirect = checkFetchResponseType.bind(this, 'opaqueredirect');
 var responseRedirected = checkFetchResponseRedirected.bind(this, true);
 var responseNotRedirected = checkFetchResponseRedirected.bind(this, false);
 
@@ -306,6 +307,9 @@ function getRequestInit(params) {
   }
   if (params['mode']) {
     init['mode'] = params['mode'];
+  }
+  if (params['redirectmode']) {
+    init['redirect'] = params['redirectmode'];
   }
   if (params['credentials']) {
     init['credentials'] = params['credentials'];

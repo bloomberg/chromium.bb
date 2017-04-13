@@ -244,6 +244,30 @@ promise_test(function(t) {
   }, 'Manual redirect fetch returns opaque redirect response');
 
 promise_test(function(t) {
+    var redirect_original_url =
+      BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=noLocation';
+
+    var request = new Request(redirect_original_url, {redirect: 'manual'});
+    assert_equals(request.url, redirect_original_url,
+      'Request\'s url is the original URL');
+    assert_equals(request.redirect, 'manual');
+
+    return fetch(request)
+      .then(function(response) {
+          assert_equals(response.status, 0);
+          assert_equals(response.type, 'opaqueredirect');
+          assert_equals(response.url, request.url);
+          assert_false(response.redirected);
+          if (self.internals) {
+            assert_array_equals(
+                self.internals.getInternalResponseURLList(response),
+                [redirect_original_url]);
+          }
+        });
+  }, 'Manual redirect fetch returns opaque redirect response even if location' +
+     'header is not set');
+
+promise_test(function(t) {
     var redirect_target_url =
       OTHER_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
     var redirect_original_url =

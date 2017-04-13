@@ -1019,10 +1019,6 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
 
   // We don't support streaming for cache.
   DCHECK(operation.response.stream_url.is_empty());
-  // We don't support the body of redirect response.
-  DCHECK(!(operation.response.response_type ==
-               blink::kWebServiceWorkerResponseTypeOpaqueRedirect &&
-           operation.response.blob_size));
 
   std::unique_ptr<ServiceWorkerResponse> response =
       base::MakeUnique<ServiceWorkerResponse>(operation.response);
