@@ -454,10 +454,6 @@ test("headless_browsertests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (is_mac) {
-    deps += [ ":mac_helpers" ]
-  }
 }
 
 static_library("headless_shell_lib") {
@@ -478,22 +474,6 @@ static_library("headless_shell_lib") {
   configs += [ ":headless_implementation" ]
 }
 
-if (is_mac) {
-  copy("mac_helpers") {
-    sources = [
-      "$root_out_dir/crashpad_handler",
-    ]
-
-    deps = [
-      "//third_party/crashpad/crashpad/handler:crashpad_handler",
-    ]
-
-    outputs = [
-      "$root_out_dir/Helpers/{{source_file_part}}",
-    ]
-  }
-}
-
 executable("headless_shell") {
   sources = [
     "app/headless_shell_main.cc",
@@ -509,10 +489,6 @@ executable("headless_shell") {
       "//content:sandbox_helper_win",
       "//sandbox",
     ]
-  }
-
-  if (is_mac) {
-    deps += [ ":mac_helpers" ]
   }
 
   configs += [ ":headless_implementation" ]
