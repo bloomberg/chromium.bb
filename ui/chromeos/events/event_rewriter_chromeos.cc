@@ -804,24 +804,9 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
       used_modifier_latches_ |= pressed_modifier_latches_;
       latched_modifier_latches_ = ui::EF_NONE;
     }
-    // Toggle Caps Lock if the remapped key is ui::VKEY_CAPITAL.
-    if (state->key_code == ui::VKEY_CAPITAL
-        // ... except on linux Chrome OS, where InputMethodChromeOS handles it.
-        && (base::SysInfo::IsRunningOnChromeOS() || ime_keyboard_for_testing_)
-#if defined(USE_X11)
-        // ... but for X11, do nothing if the original key is ui::VKEY_CAPITAL
-        // (i.e. a Caps Lock key on an external keyboard is pressed) since X
-        // handles that itself.
-        && incoming.key_code != ui::VKEY_CAPITAL
-#endif
-        ) {
-      ::chromeos::input_method::ImeKeyboard* ime_keyboard =
-          ime_keyboard_for_testing_
-              ? ime_keyboard_for_testing_
-              : ::chromeos::input_method::InputMethodManager::Get()
-                    ->GetImeKeyboard();
-      ime_keyboard->SetCapsLockEnabled(!ime_keyboard->CapsLockIsEnabled());
-    }
+    // The handling of Caps Lock toggling is now moved to accelerator
+    // controller.
+    // (see https://bugs.chromium.org/p/chromium/issues/detail?id=700705).
   }
   return exact_event;
 }
