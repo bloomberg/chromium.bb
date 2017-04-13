@@ -115,6 +115,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
 
     private float mUrlFocusChangePercent;
     private boolean mDisableUrlFocusChangeAnimations;
+    private boolean mIsMovingNewTabPageView;
 
     /** Flag used to request some layout changes after the next layout pass is completed. */
     private boolean mTileCountChanged;
@@ -190,7 +191,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 // was dismissed, avoid also manipulating its vertical offset in our scroll handling
                 // at the same time. The onScrolled() method is called when an item is dismissed and
                 // the item at the top of the viewport is repositioned.
-                if (holder.itemView == mNewTabPageLayout) setUrlFocusAnimationsDisabled(true);
+                if (holder.itemView == mNewTabPageLayout) mIsMovingNewTabPageView = true;
 
                 // Cancel any pending scroll update handling, a new one will be scheduled in
                 // onAnimationFinished().
@@ -210,7 +211,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 // from here, as the RecyclerView will animate multiple items when one is dismissed,
                 // and some will "finish" synchronously if they are already in the correct place,
                 // before other moves have even been scheduled.
-                if (viewHolder.itemView == mNewTabPageLayout) setUrlFocusAnimationsDisabled(false);
+                if (viewHolder.itemView == mNewTabPageLayout) mIsMovingNewTabPageView = false;
                 mRecyclerView.removeCallbacks(mUpdateSearchBoxOnScrollRunnable);
                 mRecyclerView.post(mUpdateSearchBoxOnScrollRunnable);
             }
@@ -401,7 +402,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     }
 
     private void updateSearchBoxOnScroll() {
-        if (mDisableUrlFocusChangeAnimations) return;
+        if (mDisableUrlFocusChangeAnimations || mIsMovingNewTabPageView) return;
 
         // When the page changes (tab switching or new page loading), it is possible that events
         // (e.g. delayed RecyclerView change notifications) trigger calls to these methods after
@@ -632,7 +633,10 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     }
 
     private void onUrlFocusAnimationChanged() {
-        if (mDisableUrlFocusChangeAnimations || FeatureUtilities.isChromeHomeEnabled()) return;
+        if (mDisableUrlFocusChangeAnimations || FeatureUtilities.isChromeHomeEnabled()
+                || mIsMovingNewTabPageView) {
+            return;
+        }
 
         // Translate so that the search box is at the top, but only upwards.
         float percent = mSearchProviderHasLogo ? mUrlFocusChangePercent : 0;
