@@ -62,6 +62,8 @@ class ASH_EXPORT TabletPowerButtonController
   void PowerManagerRestarted() override;
   void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& timestamp) override;
 
   // Overridden from ShellObserver:
   void OnMaximizeModeStarted() override;

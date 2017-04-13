@@ -484,5 +484,30 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
   EXPECT_TRUE(GetBacklightsForcedOff());
 }
 
+// Tests that lid closed/open events stop forcing off backlights.
+TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
+  // Pressing/releasing power button to set backlights forced off.
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_TRUE(GetBacklightsForcedOff());
+
+  // A lid closed event is received, we should stop forcing off backlights.
+  power_manager_client_->SetLidState(
+      chromeos::PowerManagerClient::LidState::CLOSED, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  // Pressing/releasing power button again to set backlights forced off. This is
+  // for testing purpose. In real life, powerd would not repond to this event
+  // with lid closed state.
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_TRUE(GetBacklightsForcedOff());
+
+  // A lid open event is received, we should stop forcing off backlights.
+  power_manager_client_->SetLidState(
+      chromeos::PowerManagerClient::LidState::OPEN, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+}
+
 }  // namespace test
 }  // namespace ash

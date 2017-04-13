@@ -162,6 +162,12 @@ void TabletPowerButtonController::SuspendDone(
   last_resume_time_ = tick_clock_->NowTicks();
 }
 
+void TabletPowerButtonController::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& timestamp) {
+  SetDisplayForcedOff(false);
+}
+
 void TabletPowerButtonController::OnMaximizeModeStarted() {
   shutdown_timer_.Stop();
   if (controller_->CanCancelShutdownAnimation())

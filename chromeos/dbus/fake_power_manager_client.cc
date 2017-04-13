@@ -185,6 +185,13 @@ void FakePowerManagerClient::SendPowerButtonEvent(
     observer.PowerButtonEventReceived(down, timestamp);
 }
 
+void FakePowerManagerClient::SetLidState(LidState state,
+                                         const base::TimeTicks& timestamp) {
+  lid_state_ = state;
+  for (auto& observer : observers_)
+    observer.LidEventReceived(state, timestamp);
+}
+
 void FakePowerManagerClient::UpdatePowerProperties(
     const power_manager::PowerSupplyProperties& power_props) {
   props_ = power_props;
