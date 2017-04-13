@@ -82,7 +82,6 @@ void DragCaret::NodeChildrenWillBeRemoved(ContainerNode& container) {
     return;
   if (!container.IsShadowIncludingInclusiveAncestorOf(anchor_node))
     return;
-  position_.GetDocument()->GetLayoutViewItem().ClearSelection();
   Clear();
 }
 
@@ -94,7 +93,6 @@ void DragCaret::NodeWillBeRemoved(Node& node) {
     return;
   if (!node.IsShadowIncludingInclusiveAncestorOf(anchor_node))
     return;
-  position_.GetDocument()->GetLayoutViewItem().ClearSelection();
   Clear();
 }
 
