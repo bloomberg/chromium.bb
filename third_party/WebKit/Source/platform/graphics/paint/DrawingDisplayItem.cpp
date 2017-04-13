@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 namespace blink {
 
@@ -30,14 +29,8 @@ bool DrawingDisplayItem::DrawsContent() const {
   return record_.get();
 }
 
-void DrawingDisplayItem::AnalyzeForGpuRasterization(
-    SkPictureGpuAnalyzer& analyzer) const {
-  // TODO(enne): Need an SkPictureGpuAnalyzer on PictureRecord.
-  // This is a bit overkill to ToSkPicture a record just to get
-  // numSlowPaths.
-  if (!record_)
-    return;
-  analyzer.analyzePicture(ToSkPicture(record_).get());
+int DrawingDisplayItem::NumberOfSlowPaths() const {
+  return record_ ? record_->numSlowPaths() : 0;
 }
 
 #ifndef NDEBUG

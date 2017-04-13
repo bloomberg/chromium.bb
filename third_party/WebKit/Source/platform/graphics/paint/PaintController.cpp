@@ -16,6 +16,8 @@
 #include <stdio.h>
 #endif
 
+static constexpr int kMaxNumberOfSlowPathsBeforeVeto = 5;
+
 namespace blink {
 
 void PaintController::SetTracksRasterInvalidations(bool value) {
@@ -535,7 +537,7 @@ void PaintController::CommitNewDisplayItems(
       !new_display_item_list_.IsEmpty())
     GenerateChunkRasterInvalidationRects(new_paint_chunks_.LastChunk());
 
-  SkPictureGpuAnalyzer gpu_analyzer;
+  int num_slow_paths = 0;
 
   current_cache_generation_ =
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
@@ -554,8 +556,8 @@ void PaintController::CommitNewDisplayItems(
   Vector<const DisplayItemClient*> skipped_cache_clients;
   for (const auto& item : new_display_item_list_) {
     // No reason to continue the analysis once we have a veto.
-    if (gpu_analyzer.suitableForGpuRasterization())
-      item.AnalyzeForGpuRasterization(gpu_analyzer);
+    if (num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto)
+      num_slow_paths += item.NumberOfSlowPaths();
 
     // TODO(wkorman): Only compute and append visual rect for drawings.
     new_display_item_list_.AppendVisualRect(
@@ -593,7 +595,7 @@ void PaintController::CommitNewDisplayItems(
   new_display_item_list_.ShrinkToFit();
   current_paint_artifact_ = PaintArtifact(
       std::move(new_display_item_list_), new_paint_chunks_.ReleasePaintChunks(),
-      gpu_analyzer.suitableForGpuRasterization());
+      num_slow_paths <= kMaxNumberOfSlowPathsBeforeVeto);
   ResetCurrentListIndices();
   out_of_order_item_indices_.Clear();
   out_of_order_chunk_indices_.Clear();

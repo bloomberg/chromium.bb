@@ -17,16 +17,17 @@
 #include "cc/paint/compositing_display_item.h"
 #include "cc/paint/drawing_display_item.h"
 #include "cc/paint/filter_display_item.h"
-
 #include "cc/paint/float_clip_display_item.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/paint/transform_display_item.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_skcanvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -77,6 +78,19 @@ sk_sp<const PaintRecord> CreateRectPicture(const gfx::Rect& bounds) {
   canvas->drawRect(
       SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
       PaintFlags());
+  return recorder.finishRecordingAsPicture();
+}
+
+sk_sp<const PaintRecord> CreateRectPictureWithAlpha(const gfx::Rect& bounds,
+                                                    uint8_t alpha) {
+  PaintRecorder recorder;
+  PaintCanvas* canvas =
+      recorder.beginRecording(bounds.width(), bounds.height());
+  PaintFlags flags;
+  flags.setAlpha(alpha);
+  canvas->drawRect(
+      SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
+      flags);
   return recorder.finishRecordingAsPicture();
 }
 
@@ -702,6 +716,112 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingFilterNoDrawings) {
   EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(filter_bounds, list->VisualRectForTesting(3));
+}
+
+// Verify that raster time optimizations for compositing item / draw single op /
+// end compositing item can be collapsed together into a single draw op
+// with the opacity from the compositing item folded in.
+TEST(DisplayItemListTest, SaveDrawRestore) {
+  auto list = make_scoped_refptr(new DisplayItemList);
+
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      80, SkBlendMode::kSrcOver, nullptr, nullptr, false);
+  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
+      kVisualRect, CreateRectPictureWithAlpha(kVisualRect, 40));
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->Finalize();
+
+  SaveCountingCanvas canvas;
+  list->Raster(&canvas, nullptr);
+
+  EXPECT_EQ(0, canvas.save_count_);
+  EXPECT_EQ(0, canvas.restore_count_);
+  EXPECT_EQ(gfx::RectToSkRect(kVisualRect), canvas.draw_rect_);
+
+  float expected_alpha = 80 * 40 / 255.f;
+  EXPECT_LE(std::abs(expected_alpha - canvas.paint_.getAlpha()), 1.f);
+}
+
+// Verify that compositing item / end compositing item is a noop.
+// Here we're testing that Skia does an optimization that skips
+// save/restore with nothing in between.  If skia stops doing this
+// then we should reimplement this optimization in display list raster.
+TEST(DisplayItemListTest, SaveRestoreNoops) {
+  auto list = make_scoped_refptr(new DisplayItemList);
+
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      80, SkBlendMode::kSrcOver, nullptr, nullptr, false);
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      255, SkBlendMode::kSrcOver, nullptr, nullptr, false);
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      255, SkBlendMode::kSrc, nullptr, nullptr, false);
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->Finalize();
+
+  SaveCountingCanvas canvas;
+  list->Raster(&canvas, nullptr);
+
+  EXPECT_EQ(0, canvas.save_count_);
+  EXPECT_EQ(0, canvas.restore_count_);
+}
+
+// The same as SaveDrawRestore, but with save flags that prevent the
+// optimization.
+TEST(DisplayItemListTest, SaveDrawRestoreFail_BadSaveFlags) {
+  auto list = make_scoped_refptr(new DisplayItemList);
+
+  // Use a blend mode that's not compatible with the SaveDrawRestore
+  // optimization.
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      80, SkBlendMode::kSrc, nullptr, nullptr, false);
+  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
+      kVisualRect, CreateRectPictureWithAlpha(kVisualRect, 40));
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->Finalize();
+
+  SaveCountingCanvas canvas;
+  list->Raster(&canvas, nullptr);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
+  EXPECT_EQ(gfx::RectToSkRect(kVisualRect), canvas.draw_rect_);
+  EXPECT_LE(40, canvas.paint_.getAlpha());
+}
+
+// The same as SaveDrawRestore, but with too many ops in the PaintRecord.
+TEST(DisplayItemListTest, SaveDrawRestoreFail_TooManyOps) {
+  sk_sp<const PaintRecord> record;
+  {
+    PaintRecorder recorder;
+    PaintCanvas* canvas =
+        recorder.beginRecording(kVisualRect.width(), kVisualRect.height());
+    PaintFlags flags;
+    flags.setAlpha(40);
+    canvas->drawRect(gfx::RectToSkRect(kVisualRect), flags);
+    // Add an extra op here.
+    canvas->drawRect(gfx::RectToSkRect(kVisualRect), flags);
+    record = recorder.finishRecordingAsPicture();
+  }
+  EXPECT_GT(record->approximateOpCount(), 1);
+
+  auto list = make_scoped_refptr(new DisplayItemList);
+
+  list->CreateAndAppendPairedBeginItem<CompositingDisplayItem>(
+      80, SkBlendMode::kSrcOver, nullptr, nullptr, false);
+  list->CreateAndAppendDrawingItem<DrawingDisplayItem>(kVisualRect,
+                                                       std::move(record));
+  list->CreateAndAppendPairedEndItem<EndCompositingDisplayItem>();
+  list->Finalize();
+
+  SaveCountingCanvas canvas;
+  list->Raster(&canvas, nullptr);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
+  EXPECT_EQ(gfx::RectToSkRect(kVisualRect), canvas.draw_rect_);
+  EXPECT_LE(40, canvas.paint_.getAlpha());
 }
 
 }  // namespace cc

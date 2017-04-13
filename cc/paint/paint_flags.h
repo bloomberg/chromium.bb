@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -18,6 +17,8 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace cc {
+
+using PaintShader = SkShader;
 
 class CC_PAINT_EXPORT PaintFlags {
  public:
@@ -197,6 +198,14 @@ class CC_PAINT_EXPORT PaintFlags {
                                                 SkRect* storage) const {
     return paint_.computeFastBounds(orig, storage);
   }
+
+  bool operator==(const PaintFlags& flags) { return flags.paint_ == paint_; }
+  bool operator!=(const PaintFlags& flags) { return flags.paint_ != paint_; }
+
+  // Returns true if this just represents an opacity blend when
+  // used as saveLayer flags.
+  bool IsSimpleOpacity() const;
+  bool SupportsFoldingAlpha() const;
 
  private:
   friend const SkPaint& ToSkPaint(const PaintFlags& flags);
