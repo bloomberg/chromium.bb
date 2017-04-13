@@ -891,15 +891,6 @@ int QuicHttpStream::ComputeResponseStatus() const {
 
   DCHECK_NE(QUIC_HANDSHAKE_TIMEOUT, quic_connection_error_);
 
-  // If the headers have not been received and QUIC is now broken, return
-  // ERR_QUIC_BROKEN_ERROR to permit HttpNetworkTransaction to retry the request
-  // over TCP.
-  if (!response_headers_received_ &&
-      http_server_properties_->IsAlternativeServiceBroken(AlternativeService(
-          kProtoQUIC, server_id_.host(), server_id_.port()))) {
-    return ERR_QUIC_BROKEN_ERROR;
-  }
-
   return ERR_QUIC_PROTOCOL_ERROR;
 }
 

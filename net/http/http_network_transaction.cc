@@ -1548,13 +1548,6 @@ int HttpNetworkTransaction::HandleIOError(int error) {
         error = OK;
       }
       break;
-    case ERR_QUIC_BROKEN_ERROR:
-      DCHECK(GetResponseHeaders() == nullptr);
-      net_log_.AddEventWithNetErrorCode(
-          NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
-      ResetConnectionAndRequestForResend();
-      error = OK;
-      break;
     case ERR_SPDY_PING_FAILED:
     case ERR_SPDY_SERVER_REFUSED_STREAM:
     case ERR_QUIC_HANDSHAKE_FAILED:
@@ -1563,6 +1556,19 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       ResetConnectionAndRequestForResend();
       error = OK;
       break;
+    case ERR_QUIC_PROTOCOL_ERROR: {
+      AlternativeService alternative_service;
+      if (GetResponseHeaders() == nullptr &&
+          stream_->GetAlternativeService(&alternative_service) &&
+          session_->http_server_properties()->IsAlternativeServiceBroken(
+              alternative_service)) {
+        net_log_.AddEventWithNetErrorCode(
+            NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
+        ResetConnectionAndRequestForResend();
+        error = OK;
+      }
+      break;
+    }
     case ERR_MISDIRECTED_REQUEST:
       // If this is the second try, just give up.
       if (!enable_ip_based_pooling_ && !enable_alternative_services_)
