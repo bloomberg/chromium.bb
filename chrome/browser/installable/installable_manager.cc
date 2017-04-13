@@ -230,7 +230,16 @@ InstallableStatusCode InstallableManager::GetErrorCode(
       return icon.error;
   }
 
-  // Do not report badge icon's error because badge icon is optional.
+  if (params.fetch_valid_badge_icon) {
+    IconProperty& icon = icons_[ParamsForBadgeIcon(params)];
+
+    // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a badge
+    // in the manifest. Ignore this case since we only want to fail the check if
+    // there was a suitable badge icon specified and we couldn't fetch it.
+    if (icon.error != NO_ERROR_DETECTED && icon.error != NO_ACCEPTABLE_ICON)
+      return icon.error;
+  }
+
   return NO_ERROR_DETECTED;
 }
 

@@ -50,9 +50,9 @@ static const char kNoAcceptableIconMessage[] =
     "a %spx square icon is required, but no supplied icon meets this "
     "requirement";
 static const char kCannotDownloadIconMessage[] =
-    "could not download the specified icon";
+    "could not download a required icon from the manifest";
 static const char kNoIconAvailableMessage[] =
-    "no icon available to display";
+    "icon downloaded from the manifest was empty or corrupted";
 static const char kPlatformNotSupportedOnAndroidMessage[] =
     "the specified application platform is not supported on Android";
 static const char kNoIdSpecifiedMessage[] =

@@ -480,6 +480,31 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifestAndIcon) {
     EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
     EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
   }
+
+  // Navigate to a page with a bad badge icon. This should now fail with
+  // NO_ICON_AVAILABLE, but still have the manifest and primary icon.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(tester.get(),
+                                     GetPrimaryIconAndBadgeIconParams(),
+                                     GetURLOfPageWithServiceWorkerAndManifest(
+                                         "/banners/manifest_bad_badge.json"));
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_FALSE(tester->primary_icon_url().is_empty());
+    EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_TRUE(tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->badge_icon());
+    EXPECT_FALSE(tester->is_installable());
+    EXPECT_EQ(NO_ICON_AVAILABLE, tester->error_code());
+    EXPECT_EQ(GetStatus(), InstallabilityCheckStatus::NOT_STARTED);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
@@ -745,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
         new CallbackTester(run_loop.QuitClosure()));
 
     // Dial up the primary icon size requirements to something that isn't
-    // available. This should now fail with NoIconMatchingRequirements.
+    // available. This should now fail with NO_ACCEPTABLE_ICON.
     InstallableParams params = GetWebAppParams();
     params.ideal_primary_icon_size_in_px = 2000;
     params.minimum_primary_icon_size_in_px = 2000;
@@ -769,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     std::unique_ptr<CallbackTester> tester(
         new CallbackTester(run_loop.QuitClosure()));
 
-    // This should fail with NoIconMatchingRequirements.
+    // This should fail with NO_ACCEPTABLE_ICON.
     InstallableParams params = GetWebAppParams();
     params.ideal_primary_icon_size_in_px = 2000;
     params.minimum_primary_icon_size_in_px = 2000;
