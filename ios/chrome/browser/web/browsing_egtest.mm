@@ -604,8 +604,8 @@ id<GREYMatcher> GoButtonMatcher() {
 // Tests that submitting a POST-based form by tapping the 'Go' button on the
 // keyboard navigates to the correct URL and the back button works as expected
 // afterwards.
-// TODO(crbug.com/704618): Re-enable this test when the flake is fixed.
-- (void)FLAKY_testBrowsingPostEntryWithKeyboard {
+// TODO(crbug.com/711108): Move test to forms_egtest.mm.
+- (void)testBrowsingPostEntryWithKeyboard {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL =
