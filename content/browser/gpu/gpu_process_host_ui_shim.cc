@@ -43,13 +43,8 @@ namespace content {
 
 namespace {
 
-// One of the linux specific headers defines this as a macro.
-#ifdef DestroyAll
-#undef DestroyAll
-#endif
-
-base::LazyInstance<IDMap<GpuProcessHostUIShim*>>::DestructorAtExit
-    g_hosts_by_id = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<IDMap<GpuProcessHostUIShim*>>::Leaky g_hosts_by_id =
+    LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_ANDROID)
 template <typename Interface>
@@ -101,35 +96,24 @@ void GpuProcessHostUIShim::Destroy(int host_id, const std::string& message) {
 }
 
 // static
-void GpuProcessHostUIShim::DestroyAll() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  while (!g_hosts_by_id.Pointer()->IsEmpty()) {
-    IDMap<GpuProcessHostUIShim*>::iterator it(g_hosts_by_id.Pointer());
-    delete it.GetCurrentValue();
-  }
-}
-
-// static
 GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
-bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
+void GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
 #if defined(USE_OZONE)
   if (ui::OzonePlatform::GetInstance()
           ->GetGpuPlatformSupportHost()
           ->OnMessageReceived(message))
-    return true;
+    return;
 #endif
 
-  if (message.routing_id() != MSG_ROUTING_CONTROL)
-    return false;
-
-  NOTREACHED() << "Invalid message with type = " << message.type();
-  return true;
+  if (message.routing_id() == MSG_ROUTING_CONTROL) {
+    NOTREACHED() << "Invalid message with type = " << message.type();
+  }
 }
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {

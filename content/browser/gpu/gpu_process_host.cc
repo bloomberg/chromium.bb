@@ -466,11 +466,10 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   g_gpu_process_hosts[kind] = this;
 
-  // Post a task to create the corresponding GpuProcessHostUIShim.  The
-  // GpuProcessHostUIShim will be destroyed if either the browser exits,
-  // in which case it calls GpuProcessHostUIShim::DestroyAll, or the
-  // GpuProcessHost is destroyed, which happens when the corresponding GPU
-  // process terminates or fails to launch.
+  // Post a task to create the corresponding GpuProcessHostUIShim. The
+  // GpuProcessHostUIShim will be destroyed when the GpuProcessHost is
+  // destroyed, which happens when the corresponding GPU process terminates or
+  // fails to launch. On browser exit, the shim can be leaked.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,

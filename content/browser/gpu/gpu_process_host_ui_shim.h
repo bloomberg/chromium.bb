@@ -38,8 +38,7 @@ class BinderRegistry;
 namespace content {
 void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
 
-class GpuProcessHostUIShim : public IPC::Listener,
-                             public base::NonThreadSafe {
+class GpuProcessHostUIShim : public base::NonThreadSafe {
  public:
   // Create a GpuProcessHostUIShim with the given ID.  The object can be found
   // using FromID with the same id.
@@ -50,16 +49,12 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // UI shim.
   static void Destroy(int host_id, const std::string& message);
 
-  // Destroy all remaining GpuProcessHostUIShims.
-  CONTENT_EXPORT static void DestroyAll();
-
   CONTENT_EXPORT static GpuProcessHostUIShim* FromID(int host_id);
 
-  // IPC::Listener implementation.
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnMessageReceived(const IPC::Message& message);
 
   // Register Mojo interfaces that must be bound on the UI thread.
   static void RegisterUIThreadMojoInterfaces(
@@ -67,7 +62,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
  private:
   explicit GpuProcessHostUIShim(int host_id);
-  ~GpuProcessHostUIShim() override;
+  ~GpuProcessHostUIShim();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

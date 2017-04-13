@@ -1209,14 +1209,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   system_stats_monitor_.reset();
 
-  // Destroying the GpuProcessHostUIShims on the UI thread posts a task to
-  // delete related objects on the GPU thread. This must be done before
-  // stopping the GPU thread. The GPU thread will close IPC channels to renderer
-  // processes so this has to happen before stopping the IO thread.
-  {
-    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUProcessHostShim");
-    GpuProcessHostUIShim::DestroyAll();
-  }
   // Cancel pending requests and prevent new requests.
   if (resource_dispatcher_host_) {
     TRACE_EVENT0("shutdown",
