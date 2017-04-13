@@ -107,7 +107,7 @@ void AudioRendererHost::OnDestruct() const {
 void AudioRendererHost::OnStreamCreated(
     int stream_id,
     base::SharedMemory* shared_memory,
-    base::CancelableSyncSocket* foreign_socket) {
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!PeerHandle()) {

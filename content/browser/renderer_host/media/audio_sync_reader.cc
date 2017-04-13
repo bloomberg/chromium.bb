@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -138,6 +139,12 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
   return base::WrapUnique(new AudioSyncReader(params, std::move(shared_memory),
                                               std::move(socket),
                                               std::move(foreign_socket)));
+}
+
+std::unique_ptr<base::CancelableSyncSocket>
+AudioSyncReader::TakeForeignSocket() {
+  DCHECK(foreign_socket_);
+  return std::move(foreign_socket_);
 }
 
 // media::AudioOutputController::SyncReader implementations.

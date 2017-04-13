@@ -41,9 +41,8 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
       const media::AudioParameters& params);
 
   base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
-  base::CancelableSyncSocket* foreign_socket() const {
-    return foreign_socket_.get();
-  }
+
+  std::unique_ptr<base::CancelableSyncSocket> TakeForeignSocket();
 
   // media::AudioOutputController::SyncReader implementations.
   void RequestMoreData(base::TimeDelta delay,

@@ -35,6 +35,26 @@ using testing::Test;
 using AudioOutputStream = mojom::AudioOutputStream;
 using AudioOutputStreamPtr = mojo::InterfacePtr<AudioOutputStream>;
 
+class TestCancelableSyncSocket : public base::CancelableSyncSocket {
+ public:
+  TestCancelableSyncSocket() {}
+
+  void ExpectOwnershipTransfer() { expect_ownership_transfer_ = true; }
+
+  ~TestCancelableSyncSocket() override {
+    // When the handle is sent over mojo, mojo takes ownership over it and
+    // closes it. We have to make sure we do not also retain the handle in the
+    // sync socket, as the sync socket closes the handle on destruction.
+    if (expect_ownership_transfer_)
+      EXPECT_EQ(handle(), kInvalidHandle);
+  }
+
+ private:
+  bool expect_ownership_transfer_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCancelableSyncSocket);
+};
+
 class MockDelegate : NON_EXPORTED_BASE(public AudioOutputDelegate) {
  public:
   MockDelegate() {}
@@ -111,7 +131,8 @@ class MockClient {
 
 class MojoAudioOutputStreamTest : public Test {
  public:
-  MojoAudioOutputStreamTest() {}
+  MojoAudioOutputStreamTest()
+      : foreign_socket_(base::MakeUnique<TestCancelableSyncSocket>()) {}
 
   AudioOutputStreamPtr CreateAudioOutput() {
     AudioOutputStreamPtr p;
@@ -132,14 +153,15 @@ class MojoAudioOutputStreamTest : public Test {
     mock_delegate_factory_.PrepareDelegateForCreation(
         base::WrapUnique(delegate_));
     EXPECT_TRUE(
-        base::CancelableSyncSocket::CreatePair(&local_, &foreign_socket_));
+        base::CancelableSyncSocket::CreatePair(&local_, foreign_socket_.get()));
     EXPECT_TRUE(mem_.CreateAnonymous(kShmemSize));
     EXPECT_CALL(mock_delegate_factory_, MockCreateDelegate(NotNull()))
         .WillOnce(SaveArg<0>(&delegate_event_handler_));
   }
 
   base::MessageLoop loop_;
-  base::CancelableSyncSocket local_, foreign_socket_;
+  base::CancelableSyncSocket local_;
+  std::unique_ptr<TestCancelableSyncSocket> foreign_socket_;
   base::SharedMemory mem_;
   StrictMock<MockDelegate>* delegate_ = nullptr;
   AudioOutputDelegate::EventHandler* delegate_event_handler_ = nullptr;
@@ -178,7 +200,9 @@ TEST_F(MojoAudioOutputStreamTest, DestructWithCallPending_Safe) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, delegate_event_handler_);
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_, &foreign_socket_);
+  foreign_socket_->ExpectOwnershipTransfer();
+  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+                                           std::move(foreign_socket_));
   audio_output_ptr->Play();
   impl_.reset();
   base::RunLoop().RunUntilIdle();
@@ -191,7 +215,9 @@ TEST_F(MojoAudioOutputStreamTest, Created_NotifiesClient) {
   EXPECT_CALL(client_, GotNotification());
 
   ASSERT_NE(nullptr, delegate_event_handler_);
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_, &foreign_socket_);
+  foreign_socket_->ExpectOwnershipTransfer();
+  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+                                           std::move(foreign_socket_));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -231,7 +257,9 @@ TEST_F(MojoAudioOutputStreamTest, DelegateErrorAfterCreated_PropagatesError) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, delegate_event_handler_);
-  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_, &foreign_socket_);
+  foreign_socket_->ExpectOwnershipTransfer();
+  delegate_event_handler_->OnStreamCreated(kStreamId, &mem_,
+                                           std::move(foreign_socket_));
   delegate_event_handler_->OnStreamError(kStreamId);
 
   base::RunLoop().RunUntilIdle();

@@ -239,9 +239,11 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   base::SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAndMapAnonymous(100));
 
-  base::CancelableSyncSocket local, remote;
-  ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&local, &remote));
-  event_handler->OnStreamCreated(kStreamId, &shared_memory, &remote);
+  auto local = base::MakeUnique<base::CancelableSyncSocket>();
+  auto remote = base::MakeUnique<base::CancelableSyncSocket>();
+  ASSERT_TRUE(
+      base::CancelableSyncSocket::CreatePair(local.get(), remote.get()));
+  event_handler->OnStreamCreated(kStreamId, &shared_memory, std::move(remote));
 
   base::RunLoop().RunUntilIdle();
   // Make sure we got the callback from creating stream.

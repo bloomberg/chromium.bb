@@ -58,7 +58,7 @@ void MojoAudioOutputStream::SetVolume(double volume) {
 void MojoAudioOutputStream::OnStreamCreated(
     int stream_id,
     base::SharedMemory* shared_memory,
-    base::CancelableSyncSocket* foreign_socket) {
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(stream_created_callback_);
   DCHECK(shared_memory);
@@ -71,7 +71,7 @@ void MojoAudioOutputStream::OnStreamCreated(
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
       foreign_memory_handle, shared_memory->requested_size(), false);
   mojo::ScopedHandle socket_handle =
-      mojo::WrapPlatformFile(foreign_socket->handle());
+      mojo::WrapPlatformFile(foreign_socket->Release());
 
   DCHECK(buffer_handle.is_valid());
   DCHECK(socket_handle.is_valid());

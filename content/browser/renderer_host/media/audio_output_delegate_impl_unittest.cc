@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/sync_socket.h"
 #include "content/browser/audio_manager_thread.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -71,10 +72,16 @@ class MockObserver : public content::MediaObserver {
 
 class MockEventHandler : public media::AudioOutputDelegate::EventHandler {
  public:
-  MOCK_METHOD3(OnStreamCreated,
-               void(int stream_id,
-                    base::SharedMemory* shared_memory,
-                    base::CancelableSyncSocket* socket));
+  void OnStreamCreated(int stream_id,
+                       base::SharedMemory* shared_memory,
+                       std::unique_ptr<base::CancelableSyncSocket> socket) {
+    EXPECT_EQ(stream_id, kStreamId);
+    EXPECT_NE(shared_memory, nullptr);
+    EXPECT_NE(socket.get(), nullptr);
+    GotOnStreamCreated();
+  }
+
+  MOCK_METHOD0(GotOnStreamCreated, void());
   MOCK_METHOD1(OnStreamError, void(int stream_id));
 };
 
@@ -114,8 +121,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void CreateTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -139,8 +145,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PlayTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -166,8 +171,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PauseTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -193,8 +197,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PlayPausePlayTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -222,8 +225,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PlayPlayTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -250,8 +252,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void CreateDivertTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -278,8 +279,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void CreateDivertPauseTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -309,8 +309,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PlayDivertTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
 
@@ -338,8 +337,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void ErrorTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(event_handler_, OnStreamError(kStreamId));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
@@ -386,8 +384,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void PlayAndDestroyTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
     EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));
@@ -412,8 +409,7 @@ class AudioOutputDelegateTest : public testing::Test {
   void ErrorAndDestroyTest(base::Closure done) {
     EXPECT_CALL(media_observer_,
                 OnCreatingAudioStream(kRenderProcessId, kRenderFrameId));
-    EXPECT_CALL(event_handler_,
-                OnStreamCreated(kStreamId, NotNull(), NotNull()));
+    EXPECT_CALL(event_handler_, GotOnStreamCreated());
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderFrameId, NotNull()));
     EXPECT_CALL(mirroring_manager_, RemoveDiverter(NotNull()));

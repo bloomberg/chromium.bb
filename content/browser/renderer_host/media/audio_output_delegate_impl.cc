@@ -171,7 +171,7 @@ void AudioOutputDelegateImpl::OnSetVolume(double volume) {
 void AudioOutputDelegateImpl::SendCreatedNotification() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   subscriber_->OnStreamCreated(stream_id_, reader_->shared_memory(),
-                               reader_->foreign_socket());
+                               reader_->TakeForeignSocket());
 }
 
 void AudioOutputDelegateImpl::UpdatePlayingState(bool playing) {
