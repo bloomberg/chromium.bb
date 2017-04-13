@@ -107,7 +107,8 @@ class Field(object):
     """
 
     def __init__(self, field_role, name_for_methods, property_name, type_name,
-                 field_template, size, default_value, properties, **kwargs):
+                 field_template, size, default_value, getter_method_name, setter_method_name,
+                 initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
         self.property_name = property_name
@@ -131,13 +132,9 @@ class Field(object):
             self.is_inherited_method_name = method_name(join_name(name_for_methods, 'is inherited'))
 
         # Method names
-        if 'getter' in properties and not self.is_inherited_flag:
-          self.getter_method_name = properties['getter']
-        else:
-          getter_prefix = 'Get' if name_for_methods == self.type_name else ''
-          self.getter_method_name = method_name(join_name(getter_prefix, name_for_methods))
-        self.setter_method_name = method_name(join_name('Set', name_for_methods))
-        self.initial_method_name = method_name(join_name('Initial', name_for_methods))
+        self.getter_method_name = getter_method_name
+        self.setter_method_name = setter_method_name
+        self.initial_method_name = initial_method_name
         self.resetter_method_name = method_name(join_name('Reset', name_for_methods))
 
         # If the size of the field is not None, it means it is a bit field
@@ -226,7 +223,9 @@ def _create_field(field_role, property_):
         field_template=property_['field_template'],
         size=size,
         default_value=default_value,
-        properties=property_,
+        getter_method_name=property_['getter'],
+        setter_method_name=property_['setter'],
+        initial_method_name=property_['initial'],
     )
 
 
@@ -235,15 +234,18 @@ def _create_inherited_flag_field(property_):
     Create the field used for an inheritance fast path from an independent CSS property,
     and return the Field object.
     """
+    name_for_methods = join_name(property_['name_for_methods'], 'is inherited')
     return Field(
         'inherited_flag',
-        join_name(property_['name_for_methods'], 'is inherited'),
+        name_for_methods,
         property_name=property_['name'],
         type_name='bool',
         field_template='primitive',
         size=1,
         default_value='true',
-        properties=property_,
+        getter_method_name=method_name(name_for_methods),
+        setter_method_name=method_name(join_name('set', name_for_methods)),
+        initial_method_name=method_name(join_name('initial', name_for_methods)),
     )
 
 
@@ -316,6 +318,9 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 property_['field_type_path'] = None
             if 'type_name' not in property_:
                 property_['type_name'] = 'E' + enum_type_name(property_['name_for_methods'])
+            property_['getter'] = method_name(property_['name_for_methods'])
+            property_['setter'] = method_name(join_name('set', property_['name_for_methods']))
+            property_['initial'] = method_name(join_name('initial', property_['name_for_methods']))
 
         property_values = self._properties.values()
 
