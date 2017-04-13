@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "core/CoreExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
@@ -15,7 +16,7 @@
 
 namespace blink {
 
-class PendingScript;
+class ClassicPendingScript;
 class Resource;
 class ScriptResource;
 class ScriptState;
@@ -24,12 +25,12 @@ class SourceStream;
 class WebTaskRunner;
 
 // ScriptStreamer streams incomplete script data to V8 so that it can be parsed
-// while it's loaded. PendingScript holds a reference to ScriptStreamer. At the
-// moment, ScriptStreamer is only used for parser blocking scripts; this means
-// that the Document stays stable and no other scripts are executing while we're
-// streaming. It is possible, though, that Document and the PendingScript are
-// destroyed while the streaming is in progress, and ScriptStreamer handles it
-// gracefully.
+// while it's loaded. ClassicPendingScript holds a reference to ScriptStreamer.
+// At the moment, ScriptStreamer is only used for parser blocking scripts; this
+// means that the Document stays stable and no other scripts are executing
+// while we're streaming. It is possible, though, that Document and the
+// ClassicPendingScript are destroyed while the streaming is in progress, and
+// ScriptStreamer handles it gracefully.
 class CORE_EXPORT ScriptStreamer final
     : public GarbageCollectedFinalized<ScriptStreamer> {
   WTF_MAKE_NONCOPYABLE(ScriptStreamer);
@@ -41,8 +42,8 @@ class CORE_EXPORT ScriptStreamer final
   DECLARE_TRACE();
 
   // Launches a task (on a background thread) which will stream the given
-  // PendingScript into V8 as it loads.
-  static void StartStreaming(PendingScript*,
+  // ClassicPendingScript into V8 as it loads.
+  static void StartStreaming(ClassicPendingScript*,
                              Type,
                              Settings*,
                              ScriptState*,
@@ -58,9 +59,9 @@ class CORE_EXPORT ScriptStreamer final
   ScriptResource* GetResource() const { return resource_; }
 
   // Called when the script is not needed any more (e.g., loading was
-  // cancelled). After calling cancel, PendingScript can drop its reference to
-  // ScriptStreamer, and ScriptStreamer takes care of eventually deleting
-  // itself (after the V8 side has finished too).
+  // cancelled). After calling cancel, ClassicPendingScript can drop its
+  // reference to ScriptStreamer, and ScriptStreamer takes care of eventually
+  // deleting itself (after the V8 side has finished too).
   void Cancel();
 
   // When the streaming is suppressed, the data is not given to V8, but
@@ -76,7 +77,7 @@ class CORE_EXPORT ScriptStreamer final
     return compile_options_;
   }
 
-  // Called by PendingScript when data arrives from the network.
+  // Called by ClassicPendingScript when data arrives from the network.
   void NotifyAppendData(ScriptResource*);
   void NotifyFinished(Resource*);
 
@@ -105,7 +106,7 @@ class CORE_EXPORT ScriptStreamer final
   static size_t small_script_threshold_;
 
   static ScriptStreamer* Create(
-      PendingScript* script,
+      ClassicPendingScript* script,
       Type script_type,
       ScriptState* script_state,
       v8::ScriptCompiler::CompileOptions compile_options,
@@ -113,7 +114,7 @@ class CORE_EXPORT ScriptStreamer final
     return new ScriptStreamer(script, script_type, script_state,
                               compile_options, std::move(loading_task_runner));
   }
-  ScriptStreamer(PendingScript*,
+  ScriptStreamer(ClassicPendingScript*,
                  Type,
                  ScriptState*,
                  v8::ScriptCompiler::CompileOptions,
@@ -122,16 +123,16 @@ class CORE_EXPORT ScriptStreamer final
   void StreamingComplete();
   void NotifyFinishedToClient();
 
-  static bool StartStreamingInternal(PendingScript*,
+  static bool StartStreamingInternal(ClassicPendingScript*,
                                      Type,
                                      Settings*,
                                      ScriptState*,
                                      RefPtr<WebTaskRunner>);
 
-  Member<PendingScript> pending_script_;
-  // This pointer is weak. If PendingScript and its Resource are deleted
-  // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
-  // deletion by calling cancel().
+  Member<ClassicPendingScript> pending_script_;
+  // This pointer is weak. If ClassicPendingScript and its Resource are deleted
+  // before ScriptStreamer, ClassicPendingScript will notify ScriptStreamer of
+  // its deletion by calling cancel().
   Member<ScriptResource> resource_;
   // Whether ScriptStreamer is detached from the Resource. In those cases, the
   // script data is not needed any more, and the client won't get notified

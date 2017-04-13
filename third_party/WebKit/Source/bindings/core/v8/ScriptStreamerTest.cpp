@@ -11,9 +11,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/dom/ClassicPendingScript.h"
 #include "core/dom/ClassicScript.h"
-#include "core/dom/Element.h"
-#include "core/dom/PendingScript.h"
 #include "core/frame/Settings.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -36,9 +35,10 @@ class ScriptStreamingTest : public ::testing::Test {
         settings_(Settings::Create()),
         resource_request_("http://www.streaming-test.com/"),
         resource_(ScriptResource::Create(resource_request_, "UTF-8")),
-        pending_script_(PendingScript::CreateForTesting(resource_.Get())) {
+        pending_script_(
+            ClassicPendingScript::CreateForTesting(resource_.Get())) {
     resource_->SetStatus(ResourceStatus::kPending);
-    pending_script_ = PendingScript::CreateForTesting(resource_.Get());
+    pending_script_ = ClassicPendingScript::CreateForTesting(resource_.Get());
     ScriptStreamer::SetSmallScriptThresholdForTesting(0);
   }
 
@@ -47,7 +47,9 @@ class ScriptStreamingTest : public ::testing::Test {
       pending_script_->Dispose();
   }
 
-  PendingScript* GetPendingScript() const { return pending_script_.Get(); }
+  ClassicPendingScript* GetPendingScript() const {
+    return pending_script_.Get();
+  }
 
  protected:
   void AppendData(const char* data) {
@@ -90,7 +92,7 @@ class ScriptStreamingTest : public ::testing::Test {
   // ScriptResource::appendData.
   ResourceRequest resource_request_;
   Persistent<ScriptResource> resource_;
-  Persistent<PendingScript> pending_script_;
+  Persistent<ClassicPendingScript> pending_script_;
 };
 
 class TestPendingScriptClient
