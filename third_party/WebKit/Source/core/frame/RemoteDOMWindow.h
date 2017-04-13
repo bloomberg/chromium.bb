@@ -7,7 +7,7 @@
 
 #include "core/frame/DOMWindow.h"
 #include "core/frame/RemoteFrame.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

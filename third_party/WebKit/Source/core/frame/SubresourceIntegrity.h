@@ -9,8 +9,8 @@
 #include "core/CoreExport.h"
 #include "platform/Crypto.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "core/frame/PlatformEventDispatcher.h"
 
 #include "core/frame/PlatformEventController.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

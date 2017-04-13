@@ -11,8 +11,8 @@
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/Frame.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -33,8 +33,8 @@
 #ifndef DOMWindowTimers_h
 #define DOMWindowTimers_h
 
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

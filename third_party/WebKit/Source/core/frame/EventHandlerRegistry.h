@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"  // TODO(sashab): Remove this.
 #include "core/page/Page.h"
-#include "wtf/HashCountedSet.h"
+#include "platform/wtf/HashCountedSet.h"
 
 namespace blink {
 

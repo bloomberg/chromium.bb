@@ -60,15 +60,15 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/NotFound.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/NotFound.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 

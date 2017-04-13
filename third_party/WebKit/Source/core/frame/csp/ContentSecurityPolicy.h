@@ -41,12 +41,12 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/TextPosition.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
 
 namespace WTF {
 class OrdinalNumber;

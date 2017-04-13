@@ -31,7 +31,7 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 
 #include "platform/Length.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

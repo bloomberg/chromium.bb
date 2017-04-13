@@ -13,11 +13,11 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/dtoa/utils.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/dtoa/utils.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -6,9 +6,9 @@
 #define LayoutSubtreeRootList_h
 
 #include "core/layout/DepthOrderedLayoutObjectList.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

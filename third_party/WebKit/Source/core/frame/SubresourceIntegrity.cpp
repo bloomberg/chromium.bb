@@ -14,15 +14,15 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/dtoa/utils.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/ASCIICType.h"
-#include "wtf/Vector.h"
-#include "wtf/dtoa/utils.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

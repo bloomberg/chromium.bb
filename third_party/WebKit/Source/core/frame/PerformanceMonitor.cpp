@@ -15,8 +15,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

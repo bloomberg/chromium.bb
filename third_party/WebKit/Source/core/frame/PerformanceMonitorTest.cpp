@@ -7,8 +7,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 
 #include <memory>
 

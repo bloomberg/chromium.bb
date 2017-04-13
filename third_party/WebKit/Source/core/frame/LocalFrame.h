@@ -29,6 +29,7 @@
 #ifndef LocalFrame_h
 #define LocalFrame_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/Frame.h"
@@ -39,8 +40,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/HashSet.h"
-#include <memory>
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

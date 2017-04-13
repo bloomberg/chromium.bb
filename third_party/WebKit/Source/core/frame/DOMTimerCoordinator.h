@@ -5,9 +5,9 @@
 #ifndef DOMTimerCoordinator_h
 #define DOMTimerCoordinator_h
 
-#include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

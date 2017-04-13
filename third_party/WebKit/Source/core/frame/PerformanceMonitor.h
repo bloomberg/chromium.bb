@@ -7,10 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/base/task_time_observer.h"
 #include "v8/include/v8.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

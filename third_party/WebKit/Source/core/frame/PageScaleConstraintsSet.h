@@ -31,14 +31,14 @@
 #ifndef PageScaleConstraintsSet_h
 #define PageScaleConstraintsSet_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

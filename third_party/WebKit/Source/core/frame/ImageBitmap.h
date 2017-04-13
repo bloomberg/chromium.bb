@@ -5,6 +5,7 @@
 #ifndef ImageBitmap_h
 #define ImageBitmap_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLImageElement.h"
@@ -16,9 +17,8 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/PassRefPtr.h"
-#include <memory>
 
 namespace blink {
 class HTMLCanvasElement;

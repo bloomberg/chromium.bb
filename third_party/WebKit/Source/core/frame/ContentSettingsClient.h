@@ -9,7 +9,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Heap.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

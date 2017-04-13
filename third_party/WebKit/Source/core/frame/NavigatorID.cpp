@@ -32,9 +32,9 @@
 #include "core/frame/NavigatorID.h"
 
 #if !OS(MACOSX) && !OS(WIN)
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
 #include <sys/utsname.h>
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
 #endif
 
 namespace blink {

@@ -33,7 +33,7 @@
 #ifndef DOMWindowBase64_h
 #define DOMWindowBase64_h
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

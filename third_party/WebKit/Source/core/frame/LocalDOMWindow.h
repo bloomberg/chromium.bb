@@ -35,8 +35,8 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 
 #include <memory>
 

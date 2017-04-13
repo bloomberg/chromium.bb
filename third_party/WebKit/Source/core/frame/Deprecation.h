@@ -8,8 +8,8 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/BitVector.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/BitVector.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

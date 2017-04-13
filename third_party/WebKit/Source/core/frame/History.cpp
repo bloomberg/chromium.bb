@@ -38,7 +38,7 @@
 #include "core/page/Page.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

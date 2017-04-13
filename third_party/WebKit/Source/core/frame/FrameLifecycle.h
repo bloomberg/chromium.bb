@@ -5,7 +5,7 @@
 #ifndef FrameLifecycle_h
 #define FrameLifecycle_h
 
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

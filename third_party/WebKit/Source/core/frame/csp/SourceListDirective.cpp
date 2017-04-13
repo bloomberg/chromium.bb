@@ -9,11 +9,11 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringToNumber.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringToNumber.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

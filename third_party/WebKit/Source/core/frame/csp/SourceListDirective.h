@@ -11,9 +11,9 @@
 #include "platform/Crypto.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebContentSecurityPolicy.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

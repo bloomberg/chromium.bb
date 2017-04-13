@@ -47,14 +47,14 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "v8/include/v8.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

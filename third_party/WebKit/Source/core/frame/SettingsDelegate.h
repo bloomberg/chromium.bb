@@ -31,9 +31,9 @@
 #ifndef SettingsDelegate_h
 #define SettingsDelegate_h
 
-#include "core/CoreExport.h"
-#include "wtf/Allocator.h"
 #include <memory>
+#include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

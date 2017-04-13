@@ -7,7 +7,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
