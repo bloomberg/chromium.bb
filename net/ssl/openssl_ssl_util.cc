@@ -227,15 +227,17 @@ int GetNetSSLVersion(SSL* ssl) {
 
 bssl::UniquePtr<X509> OSCertHandleToOpenSSL(
     X509Certificate::OSCertHandle os_handle) {
-#if defined(USE_OPENSSL_CERTS)
+#if BUILDFLAG(USE_BYTE_CERTS)
+  return bssl::UniquePtr<X509>(X509_parse_from_buffer(os_handle));
+#elif defined(USE_OPENSSL_CERTS)
   return bssl::UniquePtr<X509>(X509Certificate::DupOSCertHandle(os_handle));
-#else   // !defined(USE_OPENSSL_CERTS)
+#else   // !defined(USE_OPENSSL_CERTS) && !BUILDFLAG(USE_BYTE_CERTS)
   std::string der_encoded;
   if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
     return bssl::UniquePtr<X509>();
   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(der_encoded.data());
   return bssl::UniquePtr<X509>(d2i_X509(NULL, &bytes, der_encoded.size()));
-#endif  // defined(USE_OPENSSL_CERTS)
+#endif  // defined(USE_OPENSSL_CERTS) && BUILDFLAG(USE_BYTE_CERTS)
 }
 
 bssl::UniquePtr<STACK_OF(X509)> OSCertHandlesToOpenSSL(
