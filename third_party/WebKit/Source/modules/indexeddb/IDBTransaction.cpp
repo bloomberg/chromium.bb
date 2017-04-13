@@ -195,7 +195,7 @@ void IDBTransaction::SetError(DOMException* error) {
 
 IDBObjectStore* IDBTransaction::objectStore(const String& name,
                                             ExceptionState& exception_state) {
-  if (IsFinished()) {
+  if (IsFinished() || IsFinishing()) {
     exception_state.ThrowDOMException(
         kInvalidStateError, IDBDatabase::kTransactionFinishedErrorMessage);
     return nullptr;
