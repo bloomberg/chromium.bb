@@ -3,12 +3,19 @@
 // found in the LICENSE file.
 
 /**
+ * Namespace for utility functions.
+ */
+var filelist = {};
+
+/**
  * File table list.
  * @constructor
  * @struct
  * @extends {cr.ui.table.TableList}
  */
-function FileTableList() {}
+function FileTableList() {
+  throw new Error('Designed to decorate elements');
+}
 
 /**
  * Decorates TableList as FileTableList.
@@ -19,6 +26,20 @@ FileTableList.decorate = function(self) {
 }
 
 FileTableList.prototype.__proto__ = cr.ui.table.TableList.prototype;
+
+/**
+ * @type {?function(number, number)}
+ */
+FileTableList.prototype.onMergeItems_ = null;
+
+/**
+ * @param {function(number, number)} onMergeItems callback called from
+ *     |mergeItems| with the parameters |beginIndex| and |endIndex|.
+ */
+FileTableList.prototype.setOnMergeItems = function(onMergeItems) {
+  assert(!this.onMergeItems_);
+  this.onMergeItems_ = onMergeItems;
+};
 
 /** @override */
 FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
@@ -36,7 +57,9 @@ FileTableList.prototype.mergeItems = function(beginIndex, endIndex) {
       item.selected = isSelected;
   }
 
-  this.table.updateHighPriorityRange(beginIndex, endIndex);
+  if (this.onMergeItems_) {
+    this.onMergeItems_(beginIndex, endIndex);
+  }
 }
 
 /** @override */
@@ -68,4 +91,325 @@ FileListSelectionController.prototype.handlePointerDownUp = function(e, index) {
 /** @override */
 FileListSelectionController.prototype.handleKeyDown = function(e) {
   filelist.handleKeyDown.call(this, e);
+};
+
+/**
+ * Common item decoration for table's and grid's items.
+ * @param {cr.ui.ListItem} li List item.
+ * @param {Entry} entry The entry.
+ * @param {!MetadataModel} metadataModel Cache to
+ *     retrieve metadada.
+ */
+filelist.decorateListItem = function(li, entry, metadataModel) {
+  li.classList.add(entry.isDirectory ? 'directory' : 'file');
+  // The metadata may not yet be ready. In that case, the list item will be
+  // updated when the metadata is ready via updateListItemsMetadata. For files
+  // not on an external backend, externalProps is not available.
+  var externalProps = metadataModel.getCache(
+      [entry], ['hosted', 'availableOffline', 'customIconUrl', 'shared'])[0];
+  filelist.updateListItemExternalProps(li, externalProps);
+
+  // Overriding the default role 'list' to 'listbox' for better
+  // accessibility on ChromeOS.
+  li.setAttribute('role', 'option');
+
+  Object.defineProperty(li, 'selected', {
+    /**
+     * @this {cr.ui.ListItem}
+     * @return {boolean} True if the list item is selected.
+     */
+    get: function() {
+      return this.hasAttribute('selected');
+    },
+
+    /**
+     * @this {cr.ui.ListItem}
+     */
+    set: function(v) {
+      if (v)
+        this.setAttribute('selected', '');
+      else
+        this.removeAttribute('selected');
+    }
+  });
+};
+
+/**
+ * Render the type column of the detail table.
+ * @param {!Document} doc Owner document.
+ * @param {!Entry} entry The Entry object to render.
+ * @param {string=} opt_mimeType Optional mime type for the file.
+ * @return {!HTMLDivElement} Created element.
+ */
+filelist.renderFileTypeIcon = function(doc, entry, opt_mimeType) {
+  var icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  icon.className = 'detail-icon';
+  icon.setAttribute('file-type-icon', FileType.getIcon(entry, opt_mimeType));
+  return icon;
+};
+
+/**
+ * Render filename label for grid and list view.
+ * @param {!Document} doc Owner document.
+ * @param {!Entry} entry The Entry object to render.
+ * @return {!HTMLDivElement} The label.
+ */
+filelist.renderFileNameLabel = function(doc, entry) {
+  // Filename need to be in a '.filename-label' container for correct
+  // work of inplace renaming.
+  var box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  box.className = 'filename-label';
+  var fileName = doc.createElement('span');
+  fileName.className = 'entry-name';
+  fileName.textContent = entry.name;
+  box.appendChild(fileName);
+
+  return box;
+};
+
+/**
+ * Updates grid item or table row for the externalProps.
+ * @param {cr.ui.ListItem} li List item.
+ * @param {Object} externalProps Metadata.
+ */
+filelist.updateListItemExternalProps = function(li, externalProps) {
+  if (li.classList.contains('file')) {
+    if (externalProps.availableOffline)
+      li.classList.remove('dim-offline');
+    else
+      li.classList.add('dim-offline');
+    // TODO(mtomasz): Consider adding some vidual indication for files which
+    // are not cached on LTE. Currently we show them as normal files.
+    // crbug.com/246611.
+  }
+
+  var iconDiv = li.querySelector('.detail-icon');
+  if (!iconDiv)
+    return;
+
+  if (externalProps.customIconUrl)
+    iconDiv.style.backgroundImage = 'url(' + externalProps.customIconUrl + ')';
+  else
+    iconDiv.style.backgroundImage = '';  // Back to the default image.
+
+  if (li.classList.contains('directory'))
+    iconDiv.classList.toggle('shared', !!externalProps.shared);
+};
+
+/**
+ * Handles mouseup/mousedown events on file list to change the selection state.
+ *
+ * Basically the content of this function is identical to
+ * cr.ui.ListSelectionController's handlePointerDownUp(), but following
+ * handlings are inserted to control the check-select mode.
+ *
+ * 1) When checkmark area is clicked, toggle item selection and enable the
+ *    check-select mode.
+ * 2) When non-checkmark area is clicked in check-select mode, disable the
+ *    check-select mode.
+ *
+ * @param {!Event} e The browser mouse event.
+ * @param {number} index The index that was under the mouse pointer, -1 if
+ *     none.
+ * @this {cr.ui.ListSelectionController}
+ */
+filelist.handlePointerDownUp = function(e, index) {
+  var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+           (this.selectionModel);
+  var anchorIndex = sm.anchorIndex;
+  var isDown = (e.type == 'mousedown');
+
+  var isTargetCheckmark = e.target.classList.contains('detail-checkmark') ||
+                          e.target.classList.contains('checkmark');
+  // If multiple selection is allowed and the checkmark is clicked without
+  // modifiers(Ctrl/Shift), the click should toggle the item's selection.
+  // (i.e. same behavior as Ctrl+Click)
+  var isClickOnCheckmark = isTargetCheckmark && sm.multiple && index != -1 &&
+                           !e.shiftKey && !e.ctrlKey && e.button == 0;
+
+  sm.beginChange();
+
+  if (index == -1) {
+    sm.leadIndex = sm.anchorIndex = -1;
+    sm.unselectAll();
+  } else {
+    if (sm.multiple && (e.ctrlKey || isClickOnCheckmark) && !e.shiftKey) {
+      // Selection is handled at mouseUp.
+      if (!isDown) {
+        // 1) When checkmark area is clicked, toggle item selection and enable
+        //    the check-select mode.
+        if (isClickOnCheckmark) {
+          // If a selected item's checkmark is clicked when the selection mode
+          // is not check-select, we should avoid toggling(unselecting) the
+          // item. It is done here by toggling the selection twice.
+          if (!sm.getCheckSelectMode() && sm.getIndexSelected(index))
+            sm.setIndexSelected(index, !sm.getIndexSelected(index));
+          // Always enables check-select mode on clicks on checkmark.
+          sm.setCheckSelectMode(true);
+        }
+        // Toggle the current one and make it anchor index.
+        sm.setIndexSelected(index, !sm.getIndexSelected(index));
+        sm.leadIndex = index;
+        sm.anchorIndex = index;
+      }
+    } else if (e.shiftKey && anchorIndex != -1 && anchorIndex != index) {
+      // Shift is done in mousedown.
+      if (isDown) {
+        sm.unselectAll();
+        sm.leadIndex = index;
+        if (sm.multiple)
+          sm.selectRange(anchorIndex, index);
+        else
+          sm.setIndexSelected(index, true);
+      }
+    } else {
+      // Right click for a context menu needs to not clear the selection.
+      var isRightClick = e.button == 2;
+
+      // If the index is selected this is handled in mouseup.
+      var indexSelected = sm.getIndexSelected(index);
+      if ((indexSelected && !isDown || !indexSelected && isDown) &&
+          !(indexSelected && isRightClick)) {
+        // 2) When non-checkmark area is clicked in check-select mode, disable
+        //    the check-select mode.
+        if (sm.getCheckSelectMode()) {
+          // Unselect all items once to ensure that the check-select mode is
+          // terminated.
+          sm.endChange();
+          sm.unselectAll();
+          sm.beginChange();
+        }
+        sm.selectedIndex = index;
+      }
+    }
+  }
+  sm.endChange();
+};
+
+/**
+ * Handles key events on file list to change the selection state.
+ *
+ * Basically the content of this function is identical to
+ * cr.ui.ListSelectionController's handleKeyDown(), but following handlings is
+ * inserted to control the check-select mode.
+ *
+ * 1) When pressing direction key results in a single selection, the
+ *    check-select mode should be terminated.
+ *
+ * @param {Event} e The keydown event.
+ * @this {cr.ui.ListSelectionController}
+ */
+filelist.handleKeyDown = function(e) {
+  var SPACE_KEY_CODE = 32;
+  var tagName = e.target.tagName;
+
+  // If focus is in an input field of some kind, only handle navigation keys
+  // that aren't likely to conflict with input interaction (e.g., text
+  // editing, or changing the value of a checkbox or select).
+  if (tagName == 'INPUT') {
+    var inputType = e.target.type;
+    // Just protect space (for toggling) for checkbox and radio.
+    if (inputType == 'checkbox' || inputType == 'radio') {
+      if (e.keyCode == SPACE_KEY_CODE)
+        return;
+    // Protect all but the most basic navigation commands in anything else.
+    } else if (e.key != 'ArrowUp' && e.key != 'ArrowDown') {
+      return;
+    }
+  }
+  // Similarly, don't interfere with select element handling.
+  if (tagName == 'SELECT')
+    return;
+
+  var sm = /** @type {!FileListSelectionModel|!FileListSingleSelectionModel} */
+           (this.selectionModel);
+  var newIndex = -1;
+  var leadIndex = sm.leadIndex;
+  var prevent = true;
+
+  // Ctrl/Meta+A
+  if (sm.multiple && e.keyCode == 65 &&
+      (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
+    sm.selectAll();
+    e.preventDefault();
+    return;
+  }
+
+  // Esc
+  if (e.keyCode === 27 && !e.ctrlKey && !e.shiftKey) {
+    sm.unselectAll();
+    e.preventDefault();
+    return;
+  }
+
+  // Space
+  if (e.keyCode == SPACE_KEY_CODE) {
+    if (leadIndex != -1) {
+      var selected = sm.getIndexSelected(leadIndex);
+      if (e.ctrlKey || !selected) {
+        sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
+        return;
+      }
+    }
+  }
+
+  switch (e.key) {
+    case 'Home':
+      newIndex = this.getFirstIndex();
+      break;
+    case 'End':
+      newIndex = this.getLastIndex();
+      break;
+    case 'ArrowUp':
+      newIndex = leadIndex == -1 ?
+          this.getLastIndex() : this.getIndexAbove(leadIndex);
+      break;
+    case 'ArrowDown':
+      newIndex = leadIndex == -1 ?
+          this.getFirstIndex() : this.getIndexBelow(leadIndex);
+      break;
+    case 'ArrowLeft':
+    case 'MediaTrackPrevious':
+      newIndex = leadIndex == -1 ?
+          this.getLastIndex() : this.getIndexBefore(leadIndex);
+      break;
+    case 'ArrowRight':
+    case 'MediaTrackNext':
+      newIndex = leadIndex == -1 ?
+          this.getFirstIndex() : this.getIndexAfter(leadIndex);
+      break;
+    default:
+      prevent = false;
+  }
+
+  if (newIndex >= 0 && newIndex < sm.length) {
+    sm.beginChange();
+
+    sm.leadIndex = newIndex;
+    if (e.shiftKey) {
+      var anchorIndex = sm.anchorIndex;
+      if (sm.multiple)
+        sm.unselectAll();
+      if (anchorIndex == -1) {
+        sm.setIndexSelected(newIndex, true);
+        sm.anchorIndex = newIndex;
+      } else {
+        sm.selectRange(anchorIndex, newIndex);
+      }
+    } else {
+      // 1) When pressing direction key results in a single selection, the
+      //    check-select mode should be terminated.
+      sm.setCheckSelectMode(false);
+
+      if (sm.multiple)
+        sm.unselectAll();
+      sm.setIndexSelected(newIndex, true);
+      sm.anchorIndex = newIndex;
+    }
+
+    sm.endChange();
+
+    if (prevent)
+      e.preventDefault();
+  }
 };

@@ -118,10 +118,18 @@
 #      'target_name': 'file_table',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_table_list',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_table_list',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:file_type',
+        '../metadata/compiled_resources2.gyp:metadata_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list_selection_controller',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/table/compiled_resources2.gyp:table_list',
+        'file_list_selection_model',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'files_alert_dialog',
       'dependencies': [
