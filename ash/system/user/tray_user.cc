@@ -210,11 +210,11 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   }
 }
 
-void TrayUser::ActiveUserChanged(const AccountId& account_id) {
-  UserSessionUpdated(account_id);
+void TrayUser::OnActiveUserSessionChanged(const AccountId& account_id) {
+  OnUserSessionUpdated(account_id);
 }
 
-void TrayUser::UserAddedToSession(const AccountId& account_id) {
+void TrayUser::OnUserSessionAdded(const AccountId& account_id) {
   const SessionController* const session_controller =
       Shell::Get()->session_controller();
   // Only create views for user items which are logged in.
@@ -228,7 +228,7 @@ void TrayUser::UserAddedToSession(const AccountId& account_id) {
   UpdateAvatarImage(Shell::Get()->session_controller()->login_status());
 }
 
-void TrayUser::UserSessionUpdated(const AccountId& account_id) {
+void TrayUser::OnUserSessionUpdated(const AccountId& account_id) {
   UpdateAvatarImage(Shell::Get()->session_controller()->login_status());
 }
 

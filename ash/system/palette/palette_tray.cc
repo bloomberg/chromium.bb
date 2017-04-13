@@ -249,7 +249,7 @@ bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
   return bubble_ && bubble_->bubble_view()->GetBoundsInScreen().Contains(point);
 }
 
-void PaletteTray::SessionStateChanged(session_manager::SessionState state) {
+void PaletteTray::OnSessionStateChanged(session_manager::SessionState state) {
   UpdateIconVisibility();
 }
 

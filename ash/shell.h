@@ -632,9 +632,9 @@ class ASH_EXPORT Shell : public SessionStateObserver,
                          aura::Window* lost_active) override;
 
   // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
-  void LoginStatusChanged(LoginStatus login_status) override;
-  void LockStateChanged(bool locked) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+  void OnLoginStatusChanged(LoginStatus login_status) override;
+  void OnLockStateChanged(bool locked) override;
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);

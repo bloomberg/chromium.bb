@@ -158,7 +158,7 @@ void SessionController::UpdateUserSession(mojom::UserSessionPtr user_session) {
 
   *it = std::move(user_session);
   for (auto& observer : observers_)
-    observer.UserSessionUpdated((*it)->account_id);
+    observer.OnUserSessionUpdated((*it)->account_id);
 
   UpdateLoginStatus();
 }
@@ -189,7 +189,7 @@ void SessionController::SetUserSessionOrder(
     active_session_id_ = user_sessions_[0]->session_id;
 
     for (auto& observer : observers_)
-      observer.ActiveUserChanged(user_sessions_[0]->account_id);
+      observer.OnActiveUserSessionChanged(user_sessions_[0]->account_id);
 
     UpdateLoginStatus();
   }
@@ -224,7 +224,7 @@ void SessionController::SetSessionState(SessionState state) {
   const bool was_locked = state_ == SessionState::LOCKED;
   state_ = state;
   for (auto& observer : observers_)
-    observer.SessionStateChanged(state_);
+    observer.OnSessionStateChanged(state_);
 
   UpdateLoginStatus();
 
@@ -234,7 +234,7 @@ void SessionController::SetSessionState(SessionState state) {
       is_unlocking_ = false;
 
     for (auto& observer : observers_)
-      observer.LockStateChanged(locked);
+      observer.OnLockStateChanged(locked);
   }
 }
 
@@ -244,7 +244,7 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
   user_sessions_.push_back(std::move(user_session));
 
   for (auto& observer : observers_)
-    observer.UserAddedToSession(account_id);
+    observer.OnUserSessionAdded(account_id);
 }
 
 LoginStatus SessionController::CalculateLoginStatus() const {
@@ -312,7 +312,7 @@ void SessionController::UpdateLoginStatus() {
 
   login_status_ = new_login_status;
   for (auto& observer : observers_)
-    observer.LoginStatusChanged(login_status_);
+    observer.OnLoginStatusChanged(login_status_);
 }
 
 }  // namespace ash

@@ -18,23 +18,23 @@ enum class LoginStatus;
 // TODO(xiyuan): Rename to On*Changed().
 class ASH_EXPORT SessionStateObserver {
  public:
-  // Called when active user has changed.
-  virtual void ActiveUserChanged(const AccountId& account_id) {}
+  // Called when the active user session has changed.
+  virtual void OnActiveUserSessionChanged(const AccountId& account_id) {}
 
-  // Called when another user gets added to the existing session.
-  virtual void UserAddedToSession(const AccountId& account_id) {}
+  // Called when a user session gets added to the existing session.
+  virtual void OnUserSessionAdded(const AccountId& account_id) {}
 
   // Called when a user session is updated, such as avatar change.
-  virtual void UserSessionUpdated(const AccountId& account_id) {}
+  virtual void OnUserSessionUpdated(const AccountId& account_id) {}
 
   // Called when the session state is changed.
-  virtual void SessionStateChanged(session_manager::SessionState state) {}
+  virtual void OnSessionStateChanged(session_manager::SessionState state) {}
 
   // Called when the login status is changed. |login_status| is the new status.
-  virtual void LoginStatusChanged(LoginStatus login_status) {}
+  virtual void OnLoginStatusChanged(LoginStatus login_status) {}
 
   // Called when the lock state is changed. |locked| is the current lock stated.
-  virtual void LockStateChanged(bool locked) {}
+  virtual void OnLockStateChanged(bool locked) {}
 
  protected:
   virtual ~SessionStateObserver() {}

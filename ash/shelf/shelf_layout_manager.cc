@@ -994,7 +994,7 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
-void ShelfLayoutManager::SessionStateChanged(
+void ShelfLayoutManager::OnSessionStateChanged(
     session_manager::SessionState state) {
   // Check transition changes to/from the add user to session and change the
   // shelf alignment accordingly

@@ -98,7 +98,7 @@ class ASH_EXPORT WallpaperController
   void OnRootWindowAdded(WmWindow* root_window) override;
 
   // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who

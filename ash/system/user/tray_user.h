@@ -70,9 +70,9 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionStateObserver {
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from SessionStateObserver.
-  void ActiveUserChanged(const AccountId& account_id) override;
-  void UserAddedToSession(const AccountId& account_id) override;
-  void UserSessionUpdated(const AccountId& account_id) override;
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  void OnUserSessionAdded(const AccountId& account_id) override;
+  void OnUserSessionUpdated(const AccountId& account_id) override;
 
   void UpdateAvatarImage(LoginStatus status);
 

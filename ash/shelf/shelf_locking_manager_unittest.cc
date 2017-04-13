@@ -25,7 +25,7 @@ class ShelfLockingManagerTest : public ash::test::AshTestBase {
   }
 
   void SetSessionState(session_manager::SessionState state) {
-    GetShelfLockingManager()->SessionStateChanged(state);
+    GetShelfLockingManager()->OnSessionStateChanged(state);
   }
 
  private:

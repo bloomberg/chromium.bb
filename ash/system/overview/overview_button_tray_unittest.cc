@@ -74,7 +74,7 @@ void OverviewButtonTrayTest::SetUp() {
 }
 
 void OverviewButtonTrayTest::NotifySessionStateChanged() {
-  GetTray()->SessionStateChanged(
+  GetTray()->OnSessionStateChanged(
       Shell::Get()->session_controller()->GetSessionState());
 }
 

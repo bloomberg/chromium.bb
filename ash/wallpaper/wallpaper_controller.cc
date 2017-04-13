@@ -213,7 +213,7 @@ void WallpaperController::OnRootWindowAdded(WmWindow* root_window) {
   InstallDesktopController(root_window);
 }
 
-void WallpaperController::SessionStateChanged(
+void WallpaperController::OnSessionStateChanged(
     session_manager::SessionState state) {
   CalculateWallpaperColors();
 }

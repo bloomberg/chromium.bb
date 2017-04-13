@@ -30,15 +30,15 @@ class TestSessionStateObserver : public SessionStateObserver {
   ~TestSessionStateObserver() override {}
 
   // SessionStateObserver:
-  void ActiveUserChanged(const AccountId& account_id) override {
+  void OnActiveUserSessionChanged(const AccountId& account_id) override {
     active_account_id_ = account_id;
   }
 
-  void UserAddedToSession(const AccountId& account_id) override {
+  void OnUserSessionAdded(const AccountId& account_id) override {
     user_session_account_ids_.push_back(account_id);
   }
 
-  void SessionStateChanged(SessionState state) override { state_ = state; }
+  void OnSessionStateChanged(SessionState state) override { state_ = state; }
 
   std::string GetUserSessionEmails() const {
     std::string emails;

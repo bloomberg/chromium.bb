@@ -151,7 +151,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
   // Overridden from SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.

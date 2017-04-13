@@ -1214,7 +1214,7 @@ void Shell::OnWindowActivated(
     root_window_for_new_windows_ = gained_active_wm->GetRootWindow();
 }
 
-void Shell::SessionStateChanged(session_manager::SessionState state) {
+void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // Create the shelf when a session becomes active. It's safe to do this
   // multiple times (e.g. initial login vs. multiprofile add session).
   if (state == session_manager::SessionState::ACTIVE) {
@@ -1227,7 +1227,7 @@ void Shell::SessionStateChanged(session_manager::SessionState state) {
   }
 }
 
-void Shell::LoginStatusChanged(LoginStatus login_status) {
+void Shell::OnLoginStatusChanged(LoginStatus login_status) {
   UpdateAfterLoginStatusChange(login_status);
 
   // TODO(xiyuan): Update OnLoginStateChanged -> OnLoginStatusChanged.
@@ -1235,7 +1235,7 @@ void Shell::LoginStatusChanged(LoginStatus login_status) {
     observer.OnLoginStateChanged(login_status);
 }
 
-void Shell::LockStateChanged(bool locked) {
+void Shell::OnLockStateChanged(bool locked) {
   // TODO(xiyuan): Convert OnLockStateChanged() ShellObservers to
   // SessionStateObservers.
   for (auto& observer : shell_observers_)

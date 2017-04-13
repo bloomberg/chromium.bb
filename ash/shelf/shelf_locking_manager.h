@@ -30,7 +30,7 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   void OnLockStateChanged(bool locked) override;
 
   // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // LockStateObserver:
   void OnLockStateEvent(EventType event) override;

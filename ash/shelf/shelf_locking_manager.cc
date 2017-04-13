@@ -34,7 +34,7 @@ void ShelfLockingManager::OnLockStateChanged(bool locked) {
   UpdateLockedState();
 }
 
-void ShelfLockingManager::SessionStateChanged(
+void ShelfLockingManager::OnSessionStateChanged(
     session_manager::SessionState state) {
   session_locked_ = state != session_manager::SessionState::ACTIVE;
   UpdateLockedState();

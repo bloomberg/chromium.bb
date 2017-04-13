@@ -55,7 +55,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   return performed;
 }
 
-void OverviewButtonTray::SessionStateChanged(
+void OverviewButtonTray::OnSessionStateChanged(
     session_manager::SessionState state) {
   UpdateIconVisibility();
 }
