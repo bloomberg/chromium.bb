@@ -186,6 +186,7 @@ close_fds(struct wl_buffer *buffer, int max)
 	count = size / sizeof fds[0];
 	if (max > 0 && max < count)
 		count = max;
+	size = count * sizeof fds[0];
 	for (i = 0; i < count; i++)
 		close(fds[i]);
 	buffer->tail += size;
