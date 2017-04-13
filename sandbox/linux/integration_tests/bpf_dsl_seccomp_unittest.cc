@@ -2192,19 +2192,6 @@ SANDBOX_DEATH_TEST(
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
 }
 
-// http://crbug.com/407357
-#if !defined(THREAD_SANITIZER)
-SANDBOX_DEATH_TEST(
-    SandboxBPF,
-    StartSingleThreadedAsMultiThreaded,
-    DEATH_MESSAGE(
-        "Cannot start sandbox; process may be single-threaded when "
-        "reported as not")) {
-  SandboxBPF sandbox(new AllowAllPolicy());
-  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
-}
-#endif  // !defined(THREAD_SANITIZER)
-
 // A stub handler for the UnsafeTrap. Never called.
 intptr_t NoOpHandler(const struct arch_seccomp_data& args, void*) {
   return -1;
