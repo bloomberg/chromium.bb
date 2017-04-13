@@ -72,6 +72,9 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
 
+  // Get minimum output buffer size for this board.
+  int GetMinimumOutputBufferSizePerBoard();
+
   void GetAudioDeviceNamesImpl(bool is_input, AudioDeviceNames* device_names);
 
   void AddBeamformingDevices(AudioDeviceNames* device_names);

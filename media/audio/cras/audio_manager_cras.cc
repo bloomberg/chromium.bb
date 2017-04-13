@@ -16,6 +16,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "media/audio/audio_device_description.h"
@@ -295,12 +296,23 @@ AudioInputStream* AudioManagerCras::MakeLowLatencyInputStream(
   return MakeInputStream(params, device_id);
 }
 
+int AudioManagerCras::GetMinimumOutputBufferSizePerBoard() {
+  // On faster boards we can use smaller buffer size for lower latency.
+  // On slower boards we should use larger buffer size to prevent underrun.
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
+  if (board == "kevin")
+    return 768;
+  else if (board == "samus")
+    return 256;
+  return kMinimumOutputBufferSize;
+}
+
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
-  int buffer_size = kMinimumOutputBufferSize;
+  int buffer_size = GetMinimumOutputBufferSizePerBoard();
   int bits_per_sample = 16;
   if (input_params.IsValid()) {
     sample_rate = input_params.sample_rate();
