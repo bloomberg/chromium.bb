@@ -15,7 +15,10 @@ void FakeContentPasswordManagerDriver::BindRequest(
 
 // mojom::PasswordManagerDriver:
 void FakeContentPasswordManagerDriver::PasswordFormsParsed(
-    const std::vector<autofill::PasswordForm>& forms) {}
+    const std::vector<autofill::PasswordForm>& forms) {
+  called_password_forms_parsed_ = true;
+  password_forms_parsed_ = forms;
+}
 
 void FakeContentPasswordManagerDriver::PasswordFormsRendered(
     const std::vector<autofill::PasswordForm>& visible_forms,

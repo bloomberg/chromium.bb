@@ -283,6 +283,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // True indicates that the password field was autofilled, false otherwise.
   bool was_password_autofilled_;
 
+  // True indicates that a request for credentials has been sent to the store.
+  bool sent_request_to_store_;
+
   // Records the username typed before suggestions preview.
   base::string16 username_query_prefix_;
 

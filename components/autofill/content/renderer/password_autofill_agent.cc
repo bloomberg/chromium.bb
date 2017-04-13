@@ -599,6 +599,23 @@ void AnnotateFormsWithSignatures(
   }
 }
 
+// Returns true iff there is a password field in |frame|.
+bool HasPasswordField(const blink::WebLocalFrame& frame) {
+  CR_DEFINE_STATIC_LOCAL(blink::WebString, kPassword, ("password"));
+
+  const blink::WebElementCollection elements = frame.GetDocument().All();
+  for (blink::WebElement element = elements.FirstItem(); !element.IsNull();
+       element = elements.NextItem()) {
+    if (element.IsFormControlElement()) {
+      const blink::WebFormControlElement& control =
+          element.To<blink::WebFormControlElement>();
+      if (control.FormControlType() == kPassword)
+        return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -609,6 +626,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
+      sent_request_to_store_(false),
       binding_(this) {
   // PasswordAutofillAgent is guaranteed to outlive |render_frame|.
   render_frame->GetInterfaceRegistry()->AddInterface(
@@ -1118,20 +1136,33 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     }
   }
 
-  if (password_forms.empty() && !only_visible) {
-    // We need to send the PasswordFormsRendered message regardless of whether
-    // there are any forms visible, as this is also the code path that triggers
-    // showing the infobar.
-    return;
-  }
-
   if (only_visible) {
+    // Send the PasswordFormsRendered message regardless of whether
+    // |password_forms| is empty. The empty |password_forms| are a possible
+    // signal to the browser that a pending login attempt succeeded.
     blink::WebFrame* main_frame = render_frame()->GetWebFrame()->Top();
     bool did_stop_loading = !main_frame || !main_frame->IsLoading();
     GetPasswordManagerDriver()->PasswordFormsRendered(password_forms,
                                                       did_stop_loading);
   } else {
-    GetPasswordManagerDriver()->PasswordFormsParsed(password_forms);
+    // If there is a password field, but the list of password forms is empty for
+    // some reason, add a dummy form to the list. It will cause a request to the
+    // store. Therefore, saved passwords will be available for filling on click.
+    if (!sent_request_to_store_ && password_forms.empty() &&
+        HasPasswordField(*frame)) {
+      // Set everything that |FormDigest| needs.
+      password_forms.push_back(PasswordForm());
+      password_forms.back().scheme = PasswordForm::SCHEME_HTML;
+      password_forms.back().origin =
+          form_util::GetCanonicalOriginForDocument(frame->GetDocument());
+      GURL::Replacements rep;
+      rep.SetPathStr("");
+      password_forms.back().signon_realm =
+          password_forms.back().origin.ReplaceComponents(rep).spec();
+      sent_request_to_store_ = true;
+    }
+    if (!password_forms.empty())
+      GetPasswordManagerDriver()->PasswordFormsParsed(password_forms);
   }
 }
 
@@ -1565,6 +1596,7 @@ void PasswordAutofillAgent::FrameClosing() {
   web_input_to_password_info_.clear();
   provisionally_saved_form_.Reset();
   field_value_and_properties_map_.clear();
+  sent_request_to_store_ = false;
 }
 
 void PasswordAutofillAgent::ClearPreview(

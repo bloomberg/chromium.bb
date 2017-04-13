@@ -95,6 +95,12 @@ const char kEmptyFormHTML[] =
     "<head> <style> form {display: inline;} </style> </head>"
     "<body> <form> </form> </body>";
 
+const char kFormWithoutPasswordsHTML[] =
+    "<FORM>"
+    "  <INPUT type='text' id='random_field'/>"
+    "  <INPUT type='text' id='username'/>"
+    "</FORM>";
+
 const char kNonVisibleFormHTML[] =
     "<head> <style> form {visibility: hidden;} </style> </head>"
     "<body>"
@@ -857,53 +863,132 @@ TEST_F(PasswordAutofillAgentTest, IsWebElementVisibleTest) {
   EXPECT_FALSE(form_util::IsWebElementVisible(web_control_elements[0]));
 }
 
-TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
-  fake_driver_.reset_password_forms_rendered();
+TEST_F(PasswordAutofillAgentTest,
+       SendPasswordFormsTest_VisibleFormWithNoUsername) {
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kVisibleFormWithNoUsernameHTML);
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
   EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+}
 
-  fake_driver_.reset_password_forms_rendered();
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_EmptyForm) {
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kEmptyFormHTML);
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
-
-  fake_driver_.reset_password_forms_rendered();
-  LoadHTML(kNonDisplayedFormHTML);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
-
-  fake_driver_.reset_password_forms_rendered();
-  LoadHTML(kNonVisibleFormHTML);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
   EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
 }
 
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_FormWithoutPasswords) {
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kFormWithoutPasswordsHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonDisplayedForm) {
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kNonDisplayedFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonVisibleForm) {
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kNonVisibleFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_PasswordChangeForm) {
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kPasswordChangeFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
+  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       SendPasswordFormsTest_CannotCreatePasswordForm) {
+  // This test checks that a request to the store is sent even if we fail to
+  // create a |PasswordForm|.
+  fake_driver_.reset_password_forms_calls();
+  const char kInvalidFormHTML[] =
+      "<FORM name='ChangeWithUsernameForm' action='http://www.bidule.com'>"
+      "  <INPUT type='password' id='pwd1' value='1'/>"
+      "  <INPUT type='password' id='pwd1' value='2'/>"
+      "  <INPUT type='password' id='pwd2' value='3'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  LoadHTML(kInvalidFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  ASSERT_TRUE(fake_driver_.password_forms_rendered());
+  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+}
+
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_ReloadTab) {
+  // PasswordAutofillAgent::sent_request_to_store_ disables duplicate requests
+  // to the store. This test checks that new request will be sent if the frame
+  // has been reloaded.
+  fake_driver_.reset_password_forms_calls();
+  LoadHTML(kNonVisibleFormHTML);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+
+  fake_driver_.reset_password_forms_calls();
+  std::string url_string = "data:text/html;charset=utf-8,";
+  url_string.append(kNonVisibleFormHTML);
+  Reload(GURL(url_string));
+  EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
+  ASSERT_TRUE(fake_driver_.password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+}
+
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
-  fake_driver_.reset_password_forms_rendered();
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kEmptyWebpage);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
 
-  fake_driver_.reset_password_forms_rendered();
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kRedirectionWebpage);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
 
-  fake_driver_.reset_password_forms_rendered();
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kSimpleWebpage);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
 
-  fake_driver_.reset_password_forms_rendered();
+  fake_driver_.reset_password_forms_calls();
   LoadHTML(kWebpageWithDynamicContent);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
