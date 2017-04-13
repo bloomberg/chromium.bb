@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -121,6 +122,8 @@ WallpaperResizer::~WallpaperResizer() {
 }
 
 void WallpaperResizer::StartResize() {
+  start_calculation_time_ = base::TimeTicks::Now();
+
   SkBitmap* resized_bitmap = new SkBitmap;
   if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
@@ -144,6 +147,9 @@ void WallpaperResizer::RemoveObserver(WallpaperResizerObserver* observer) {
 
 void WallpaperResizer::OnResizeFinished(SkBitmap* resized_bitmap) {
   image_ = gfx::ImageSkia::CreateFrom1xBitmap(*resized_bitmap);
+  UMA_HISTOGRAM_TIMES("Ash.Wallpaper.TimeSpentResizing",
+                      base::TimeTicks::Now() - start_calculation_time_);
+
   for (auto& observer : observers_)
     observer.OnWallpaperResized();
 }
