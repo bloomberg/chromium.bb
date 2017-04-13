@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
@@ -519,10 +518,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         // For now we don't handle sad tab page. crbug.com/661609
         if (tab.isShowingSadTab()) {
-            return false;
-        }
-        // crbug.com/667781
-        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
             return false;
         }
         return true;
