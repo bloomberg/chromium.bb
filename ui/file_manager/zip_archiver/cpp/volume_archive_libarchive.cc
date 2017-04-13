@@ -459,9 +459,6 @@ int64_t VolumeArchiveMinizip::ReadData(int64_t offset,
                                           int64_t length,
                                           const char** buffer) {
   PP_DCHECK(length > 0);              // Length must be at least 1.
-  PP_DCHECK(current_archive_entry_);  // Check that GetNextHeader was called at
-                                      // least once. In case it wasn't, this is
-                                      // a programmer error.
   // In case of first read or no more available data in the internal buffer or
   // offset is different from the last_read_data_offset_, then force
   // VolumeArchiveMinizip::DecompressData as the decompressed data is
