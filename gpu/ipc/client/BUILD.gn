@@ -35,10 +35,10 @@ source_set("ipc_client_sources") {
       "gpu_process_hosted_ca_layer_tree_params.h",
     ]
   }
-  if (use_ozone) {
+  if (is_linux) {
     sources += [
-      "gpu_memory_buffer_impl_ozone_native_pixmap.cc",
-      "gpu_memory_buffer_impl_ozone_native_pixmap.h",
+      "gpu_memory_buffer_impl_native_pixmap.cc",
+      "gpu_memory_buffer_impl_native_pixmap.h",
     ]
   }
   configs += [

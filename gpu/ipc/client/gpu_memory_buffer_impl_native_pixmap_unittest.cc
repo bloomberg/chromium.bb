@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_native_pixmap.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_test_template.h"
 
 namespace gpu {
 namespace {
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplOzoneNativePixmap,
+INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplNativePixmap,
                               GpuMemoryBufferImplTest,
-                              GpuMemoryBufferImplOzoneNativePixmap);
+                              GpuMemoryBufferImplNativePixmap);
 
 }  // namespace
 }  // namespace gpu

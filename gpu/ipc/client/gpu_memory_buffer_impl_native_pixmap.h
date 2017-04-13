@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_OZONE_NATIVE_PIXMAP_H_
-#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_OZONE_NATIVE_PIXMAP_H_
+#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_NATIVE_PIXMAP_H_
+#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_NATIVE_PIXMAP_H_
 
 #include <stddef.h>
 
@@ -20,12 +20,11 @@ class ClientNativePixmap;
 namespace gpu {
 
 // Implementation of GPU memory buffer based on Ozone native pixmap.
-class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
-    : public GpuMemoryBufferImpl {
+class GPU_EXPORT GpuMemoryBufferImplNativePixmap : public GpuMemoryBufferImpl {
  public:
-  ~GpuMemoryBufferImplOzoneNativePixmap() override;
+  ~GpuMemoryBufferImplNativePixmap() override;
 
-  static std::unique_ptr<GpuMemoryBufferImplOzoneNativePixmap> CreateFromHandle(
+  static std::unique_ptr<GpuMemoryBufferImplNativePixmap> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -48,7 +47,7 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
-  GpuMemoryBufferImplOzoneNativePixmap(
+  GpuMemoryBufferImplNativePixmap(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -61,9 +60,9 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
   std::vector<gfx::NativePixmapPlane> planes_;
   base::ScopedFD fd_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativePixmap);
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplNativePixmap);
 };
 
 }  // namespace gpu
 
-#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_OZONE_NATIVE_PIXMAP_H_
+#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_NATIVE_PIXMAP_H_

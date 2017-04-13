@@ -12,8 +12,8 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
+#if defined(OS_LINUX)
+#include "gpu/ipc/client/gpu_memory_buffer_impl_native_pixmap.h"
 #endif
 
 namespace gpu {
@@ -50,9 +50,9 @@ std::unique_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif
-#if defined(USE_OZONE)
+#if defined(OS_LINUX)
     case gfx::NATIVE_PIXMAP:
-      return GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
+      return GpuMemoryBufferImplNativePixmap::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif
     default:

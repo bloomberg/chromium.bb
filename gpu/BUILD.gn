@@ -326,6 +326,10 @@ test("gpu_unittests") {
     sources += [ "ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc" ]
   }
 
+  if (is_linux) {
+    sources += [ "ipc/client/gpu_memory_buffer_impl_native_pixmap_unittest.cc" ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
 
@@ -368,8 +372,6 @@ test("gpu_unittests") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-    sources +=
-        [ "ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc" ]
   }
 }
 
