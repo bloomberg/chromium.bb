@@ -11,7 +11,7 @@
 // clang-format off
 #include "NodeOrNodeList.h"
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeList.h"
 #include "core/dom/NameNodeList.h"

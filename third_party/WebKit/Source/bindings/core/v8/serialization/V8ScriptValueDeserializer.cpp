@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"

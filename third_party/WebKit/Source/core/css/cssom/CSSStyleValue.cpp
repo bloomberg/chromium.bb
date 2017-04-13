@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/parser/CSSParser.h"

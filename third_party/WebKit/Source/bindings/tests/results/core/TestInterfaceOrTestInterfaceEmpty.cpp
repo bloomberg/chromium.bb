@@ -11,7 +11,7 @@
 // clang-format off
 #include "TestInterfaceOrTestInterfaceEmpty.h"
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/tests/idls/core/TestImplements2.h"

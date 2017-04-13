@@ -13,7 +13,7 @@
 
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8Element.h"
 #include "core/animation/ElementAnimation.h"
 #include "core/dom/ChildNode.h"

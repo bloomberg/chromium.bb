@@ -16,7 +16,7 @@ from v8_utilities import has_extended_attribute_value
 
 DICTIONARY_H_INCLUDES = frozenset([
     'bindings/core/v8/NativeValueTraits.h',
-    'bindings/core/v8/ToV8.h',
+    'bindings/core/v8/ToV8ForCore.h',
     'bindings/core/v8/V8Binding.h',
     'platform/heap/Handle.h',
 ])

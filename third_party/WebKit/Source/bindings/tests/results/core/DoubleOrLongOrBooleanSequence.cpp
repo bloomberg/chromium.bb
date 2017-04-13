@@ -14,7 +14,7 @@
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/LongOrBoolean.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 
 namespace blink {
 

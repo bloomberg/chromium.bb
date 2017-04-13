@@ -7,7 +7,7 @@ import v8_utilities
 
 
 UNION_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ToV8.h',
+    'bindings/core/v8/ToV8ForCore.h',
 ])
 
 UNION_H_INCLUDES = frozenset([

@@ -5,7 +5,7 @@
 #include "modules/payments/PaymentAppRequestConversion.h"
 
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "modules/payments/PaymentAppRequest.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
 #include "modules/payments/PaymentDetailsModifier.h"

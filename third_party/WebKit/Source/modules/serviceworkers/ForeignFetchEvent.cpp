@@ -4,7 +4,7 @@
 
 #include "modules/serviceworkers/ForeignFetchEvent.h"
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"

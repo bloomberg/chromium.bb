@@ -5,7 +5,7 @@
 #include "bindings/core/v8/V8Binding.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"

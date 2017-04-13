@@ -17,16 +17,11 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
-#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "v8/include/v8.h"
 
 namespace blink {
-
-class DOMWindow;
-class Dictionary;
-class EventTarget;
 
 // ScriptWrappable
 
@@ -43,21 +38,6 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
 }
-
-inline v8::Local<v8::Value> ToV8(Node* impl,
-                                 v8::Local<v8::Object> creation_context,
-                                 v8::Isolate* isolate) {
-  return ToV8(ScriptWrappable::FromNode(impl), creation_context, isolate);
-}
-
-// Special versions for DOMWindow and EventTarget
-
-CORE_EXPORT v8::Local<v8::Value> ToV8(DOMWindow*,
-                                      v8::Local<v8::Object> creation_context,
-                                      v8::Isolate*);
-CORE_EXPORT v8::Local<v8::Value> ToV8(EventTarget*,
-                                      v8::Local<v8::Object> creation_context,
-                                      v8::Isolate*);
 
 // Primitives
 
@@ -195,13 +175,6 @@ inline v8::Local<v8::Value> ToV8(const ScriptValue& value,
 
 // Dictionary
 
-inline v8::Local<v8::Value> ToV8(const Dictionary& value,
-                                 v8::Local<v8::Object> creation_context,
-                                 v8::Isolate* isolate) {
-  NOTREACHED();
-  return v8::Undefined(isolate);
-}
-
 inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
                                  v8::Local<v8::Object> creation_context,
                                  v8::Isolate* isolate) {
@@ -214,7 +187,7 @@ inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase& value,
 // overloads below.
 template <typename Sequence>
 inline v8::Local<v8::Value> ToV8SequenceInternal(
-    const Sequence& sequence,
+    const Sequence&,
     v8::Local<v8::Object> creation_context,
     v8::Isolate*);
 
@@ -276,13 +249,6 @@ inline v8::Local<v8::Value> ToV8(const HeapVector<std::pair<String, T>>& value,
   return object;
 }
 
-template <typename T>
-inline v8::Local<v8::Value> ToV8(NotShared<T> value,
-                                 v8::Local<v8::Object> creation_context,
-                                 v8::Isolate* isolate) {
-  return ToV8(value.View(), creation_context, isolate);
-}
-
 template <typename Sequence>
 inline v8::Local<v8::Value> ToV8SequenceInternal(
     const Sequence& sequence,
@@ -337,4 +303,4 @@ inline ScriptValue ScriptValue::From(ScriptState* script_state, T&& value) {
 
 }  // namespace blink
 
-#endif  // ToV8_h
+#endif  // ToV8ForPlatform_h

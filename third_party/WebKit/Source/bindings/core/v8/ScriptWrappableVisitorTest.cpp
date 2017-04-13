@@ -4,7 +4,7 @@
 
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8GCController.h"

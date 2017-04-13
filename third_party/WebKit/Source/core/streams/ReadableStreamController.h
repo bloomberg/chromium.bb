@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"

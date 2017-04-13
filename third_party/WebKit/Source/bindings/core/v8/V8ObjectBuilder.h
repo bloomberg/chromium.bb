@@ -5,7 +5,7 @@
 #ifndef V8ObjectBuilder_h
 #define V8ObjectBuilder_h
 
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"

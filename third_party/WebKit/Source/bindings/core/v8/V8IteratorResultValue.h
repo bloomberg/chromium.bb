@@ -6,7 +6,7 @@
 #define V8IteratorResultValue_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/CoreExport.h"
 #include "v8/include/v8.h"
 

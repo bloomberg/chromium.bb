@@ -53,7 +53,7 @@ INTERFACE_H_INCLUDES = frozenset([
     'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/NativeValueTraits.h',
     'bindings/core/v8/ScriptWrappable.h',
-    'bindings/core/v8/ToV8.h',
+    'bindings/core/v8/ToV8ForCore.h',
     'bindings/core/v8/V8Binding.h',
     'bindings/core/v8/V8DOMWrapper.h',
     'bindings/core/v8/WrapperTypeInfo.h',

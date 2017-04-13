@@ -31,7 +31,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 

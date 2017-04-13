@@ -28,7 +28,7 @@
 #include "bindings/core/v8/TestEnumOrDouble.h"
 #include "bindings/core/v8/TestInterfaceGarbageCollectedOrString.h"
 #include "bindings/core/v8/TestInterfaceOrLong.h"
-#include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrString.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
