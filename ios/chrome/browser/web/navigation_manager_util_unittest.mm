@@ -54,7 +54,7 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemLinkMultiRedirects) {
       item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
 }
 
-// Tests that when all items are redirects, the first one is returned.
+// Tests that when all items are redirects, nullptr is returned.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemAllRedirects) {
   nav_manager_.AddItem(GURL("http://bar.com/redir0"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
