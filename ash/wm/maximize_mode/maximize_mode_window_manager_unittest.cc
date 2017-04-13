@@ -1595,7 +1595,7 @@ TEST_F(MaximizeModeWindowManagerTest, DontMaximizeClientManagedWindows) {
   std::unique_ptr<aura::Window> window(
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
 
-  wm::GetWindowState(window.get())->set_allow_set_bounds_in_maximized(true);
+  wm::GetWindowState(window.get())->set_allow_set_bounds_direct(true);
 
   MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());

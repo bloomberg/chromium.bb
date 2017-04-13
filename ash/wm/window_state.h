@@ -294,14 +294,11 @@ class ASH_EXPORT WindowState {
     ignore_keyboard_bounds_change_ = ignore_keyboard_bounds_change;
   }
 
-  // True if the window's bounds can be updated using SET_BOUNDS event in
-  // maiximzed/fullscreen mode.
-  void set_allow_set_bounds_in_maximized(bool value) {
-    allow_set_bounds_in_maximized_ = value;
+  // True if the window bounds can be updated directly using SET_BOUNDS event.
+  void set_allow_set_bounds_direct(bool value) {
+    allow_set_bounds_direct_ = value;
   }
-  bool allow_set_bounds_in_maximized() const {
-    return allow_set_bounds_in_maximized_;
-  }
+  bool allow_set_bounds_direct() const { return allow_set_bounds_direct_; }
 
   // Creates and takes ownership of a pointer to DragDetails when resizing is
   // active. This should be done before a resizer gets created.
@@ -396,7 +393,7 @@ class ASH_EXPORT WindowState {
   bool minimum_visibility_;
   bool can_be_dragged_;
   bool cached_always_on_top_;
-  bool allow_set_bounds_in_maximized_ = false;
+  bool allow_set_bounds_direct_ = false;
 
   // A property to remember the window position which was set before the
   // auto window position manager changed the window bounds, so that it can get

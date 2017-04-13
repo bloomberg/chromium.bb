@@ -374,7 +374,7 @@ TEST_F(WindowStateTest, TrustedPinned) {
   EXPECT_FALSE(window_state->IsTrustedPinned());
 }
 
-TEST_F(WindowStateTest, AllowSetBoundsInMaximized) {
+TEST_F(WindowStateTest, AllowSetBoundsDirect) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());
@@ -384,7 +384,7 @@ TEST_F(WindowStateTest, AllowSetBoundsInMaximized) {
   window->SetBounds(original_bounds);
   ASSERT_EQ(original_bounds, window->bounds());
 
-  window_state->set_allow_set_bounds_in_maximized(true);
+  window_state->set_allow_set_bounds_direct(true);
   window_state->Maximize();
 
   EXPECT_TRUE(window_state->IsMaximized());
@@ -398,7 +398,7 @@ TEST_F(WindowStateTest, AllowSetBoundsInMaximized) {
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ(original_bounds, window->bounds());
 
-  window_state->set_allow_set_bounds_in_maximized(false);
+  window_state->set_allow_set_bounds_direct(false);
   window_state->Maximize();
 
   EXPECT_TRUE(window_state->IsMaximized());

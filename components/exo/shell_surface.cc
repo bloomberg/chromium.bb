@@ -1195,8 +1195,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
 
   // Allow the client to request bounds that do not fill the entire work area
   // when maximized, or the entire display when fullscreen.
-  window_state->set_allow_set_bounds_in_maximized(
-      bounds_mode_ == BoundsMode::CLIENT);
+  window_state->set_allow_set_bounds_direct(bounds_mode_ == BoundsMode::CLIENT);
 
   // Notify client of initial state if different than normal.
   if (window_state->GetStateType() != ash::wm::WINDOW_STATE_TYPE_NORMAL &&
@@ -1473,7 +1472,7 @@ void ShellSurface::UpdateWidgetBounds() {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
   if (window_state->IsMaximizedOrFullscreenOrPinned() &&
-      !window_state->allow_set_bounds_in_maximized()) {
+      !window_state->allow_set_bounds_direct()) {
     return;
   }
 
@@ -1642,7 +1641,7 @@ void ShellSurface::UpdateShadow() {
     //    not cover the entire background, e.g. overview mode).
     if ((widget_->IsFullscreen() || widget_->IsMaximized() ||
          underlay_capture_events) &&
-        ash::wm::GetWindowState(window)->allow_set_bounds_in_maximized() &&
+        ash::wm::GetWindowState(window)->allow_set_bounds_direct() &&
         window->layer()->GetTargetTransform().IsIdentity()) {
       if (shadow_underlay_in_surface_) {
         shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());

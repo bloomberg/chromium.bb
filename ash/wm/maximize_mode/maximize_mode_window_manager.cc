@@ -266,7 +266,7 @@ bool MaximizeModeWindowManager::ShouldHandleWindow(WmWindow* window) {
 
   // If the changing bounds in the maximized/fullscreen is allowed, then
   // let the client manage it even in maximized mode.
-  if (window->GetWindowState()->allow_set_bounds_in_maximized())
+  if (window->GetWindowState()->allow_set_bounds_direct())
     return false;
 
   return window->GetType() == ui::wm::WINDOW_TYPE_NORMAL;
