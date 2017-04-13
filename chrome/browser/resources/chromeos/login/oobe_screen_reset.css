@@ -8,8 +8,14 @@
   font-size: 16px;
   min-height: 423px;
   padding: 40px 17px 80px;
-  text-align: center;
+  text-align: start;
   width: 722px;
+}
+
+#reset[md-mode] {
+  min-height: unset;
+  padding: unset;
+  width: 768px;
 }
 
 #reset #reset-controls {
@@ -22,20 +28,27 @@
   margin: 0 10px;
 }
 
-#reset #reset-warning-icon {
-  height: 112px;
+#reset #reset-alert-icon {
+  height: 32px;
+  padding: 35px 35px 10px;
+}
+
+#reset #reset-illustration {
+  height: 248px;
+  padding: 50px 70px;
 }
 
 #reset #reset-warning-msg,
 #reset #powerwash-warning-msg,
 #reset #powerwash-and-rollback-warning-msg {
-  color: #606060;
-  font-size: 22px;
-  padding: 5px 45px 30px;
+  color: rgb(0, 0, 0);
+  font-size: 28px;
+  padding: 25px 35px 5px 40px;
+  text-align: start;
 }
 
 .reset-text {
-  color: #606060;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 #reset #reset-warning-details,
@@ -43,7 +56,11 @@
   padding: 20px 40px 0;
 }
 
-#reset #reset-warning-restart {
+#reset #powerwash-warning-details,
+#reset #rollback-warning-details,
+#reset #reset-warning-data-details,
+#reset #reset-warning-restart,
+#reset #powerwash-help-link {
   padding: 30px 40px 0;
 }
 

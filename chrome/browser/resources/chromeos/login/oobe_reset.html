@@ -1,0 +1,64 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="oobe-reset-md">
+  <template>
+    <link rel="stylesheet" href="oobe_reset.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <link rel="stylesheet" href="chrome://resources/css/throbber.css">
+    <oobe-dialog id="resetDialog" role="dialog"
+        i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons>
+      <iron-icon icon="icons:info" class="oobe-icon"></iron-icon>
+      <div class="header">
+        <h1 class="title" i18n-content="resetWarningTitle"></h1>
+        <div class="subtitle">
+          <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
+              i18n-content="resetPowerwashWarningDetails"></div>
+          <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
+              i18n-content="resetWarningDataDetails"></div>
+          <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
+              i18n-content="resetPowerwashRollbackWarningDetails"></div>
+          <div hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
+              i18n-content="resetWarningDataDetails"></div>
+          <div hidden="[[!isState_(uiState_, 'restart-required-view')]]"
+              i18n-content="resetRestartMessage"></div>
+          <a id="powerwash-help-link-md" href="#"
+              hidden="[[isHelpLinkHidden_(uiState_, isOfficial_)]]"
+              on-tap="onLearnMoreTap_" i18n-content="learnMore"></a>
+          <div hidden="[[!isState_(uiState_, 'revert-promise-view')]]">
+            <div i18n-content="resetRevertPromise"></div>
+            <div class="flex horizontal layout">
+              <div id="reset-revert-spinner" class="throbber"></div>
+              <div i18n-content="resetRevertSpinnerMessage"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer layout vertical">
+        <img srcset="images/reset_illustration_1x.png 1x,
+                     images/reset_illustration_2x.png 2x"
+            i18n-values="alt:resetScreenIllustrationTitle">
+      </div>
+      <div class="bottom-buttons flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button border on-tap="onCancelTap_"
+            hidden="[[isCancelHidden_(uiState_)]]">
+          <div i18n-content="cancelButton"></div>
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onRestartTap_"
+            hidden="[[!isState_(uiState_, 'restart-required-view')]]">
+          <div i18n-content="resetButtonRestart"></div>
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onPowerwashTap_"
+            hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]">
+          <div i18n-content="resetButtonPowerwashAndRollback"></div>
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onPowerwashTap_"
+            hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]">
+          <div i18n-content="resetButtonPowerwash"></div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -20,4 +20,6 @@
 // <include src="oobe_buttons.js">
 // <include src="oobe_dialog.js">
 // <include src="arc_terms_of_service.js">
+// <include src="oobe_reset.js">
+// <include src="oobe_reset_confirmation_overlay.js">
 // <include src="encryption_migration.js">

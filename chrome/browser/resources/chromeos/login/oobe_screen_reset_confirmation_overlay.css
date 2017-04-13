@@ -19,3 +19,7 @@
   /*-webkit-margin-start: 9px;*/
   margin: 0 10px;
 }
+
+#overlay-reset[md-mode] {
+  background: rgba(0, 0, 0, .5);
+}

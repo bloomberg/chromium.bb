@@ -1,0 +1,38 @@
+/* Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.bottom-buttons {
+  width: 100%
+}
+
+.reset-popup {
+  background: white;
+  border: 1px solid var(--google-grey-300);
+  border-radius: 2px;
+  box-shadow: 0 5px 80px #505050;
+  min-height: 180px;
+  position: relative;
+  width: 460px;
+  z-index: 10;
+}
+
+.reset-popup h1 {
+  -webkit-padding-end: 24px;
+  background: linear-gradient(white, #F8F8F8);
+  color: var(--google-blue-500);
+  font-size: 105%;
+  font-weight: bold;
+  margin: 0;
+  padding: 10px 15px 8px 15px;
+  text-shadow: white 0 1px 2px;
+  user-select: none;
+}
+
+.reset-popup-content-area {
+  padding: 20px 20px 30px 20px;
+}
+
+#cancel-button {
+  -webkit-margin-end: 22px;
+}

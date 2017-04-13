@@ -31,6 +31,12 @@ paper-button[focused] {
   color: white;
 }
 
+#textButton[border]:not([disabled]) #container {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+}
+
 ::content * {
   font: var(--oobe-roboto-medium), sans-serif;
   font-size: 12px;

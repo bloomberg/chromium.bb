@@ -82,6 +82,7 @@ login.createScreen('ResetScreen', 'reset', function() {
           CONTEXT_KEY_IS_OFFICIAL_BUILD,
           function(isOfficial) {
             $('powerwash-help-link').setAttribute('hidden', !isOfficial);
+            $('oobe-reset-md').isOfficial_ = isOfficial;
           }
       );
       this.context.addObserver(
@@ -164,6 +165,8 @@ login.createScreen('ResetScreen', 'reset', function() {
      */
     get defaultControl() {
       // choose
+      if (this.isMDMode_())
+        return $('oobe-reset-md');
       if (this.context.get(CONTEXT_KEY_SCREEN_STATE,
                            this.RESET_SCREEN_STATE.RESTART_REQUIRED) ==
           this.RESET_SCREEN_STATE.RESTART_REQUIRED)
@@ -186,16 +189,44 @@ login.createScreen('ResetScreen', 'reset', function() {
     },
 
     /**
+     * This method takes care of switching to material-design OOBE.
+     * @private
+     */
+    setMDMode_: function() {
+      var useMDOobe = this.isMDMode_();
+      $('oobe-reset-md').hidden = !useMDOobe;
+      $('reset-confirm-overlay-md').hidden = !useMDOobe;
+      $('oobe-reset').hidden = useMDOobe;
+      $('reset-confirm-overlay').hidden = useMDOobe;
+      if (useMDOobe) {
+        $('reset').setAttribute('md-mode', 'true');
+        $('overlay-reset').setAttribute('md-mode', 'true');
+      } else {
+        $('reset').removeAttribute('md-mode');
+        $('overlay-reset').removeAttribute('md-mode');
+      }
+    },
+
+    /**
+     * Returns if material-design flag is used.
+     * @private
+     */
+    isMDMode_: function() {
+      return loadTimeData.getString('newOobeUI') == 'on';
+    },
+
+    /**
      * Event handler that is invoked just before the screen in shown.
      * @param {Object} data Screen init payload.
      */
     onBeforeShow: function(data) {
+      this.setMDMode_();
     },
 
     /**
-      * Sets css style for corresponding state of the screen.
-      * @private
-      */
+     * Sets css style for corresponding state of the screen.
+     * @private
+     */
     setDialogView_: function(state) {
       state = this.ui_state;
       var resetOverlay = $('reset-confirm-overlay');
@@ -217,6 +248,22 @@ login.createScreen('ResetScreen', 'reset', function() {
       resetOverlay.classList.toggle(
           'rollback-proposal-view',
           state == this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL);
+      var resetMd = $('oobe-reset-md');
+      var resetOverlayMd = $('reset-confirm-overlay-md');
+      if (state == this.RESET_SCREEN_UI_STATE.RESTART_REQUIRED) {
+        resetMd.uiState_ = 'restart-required-view';
+      }
+      if (state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL) {
+        resetMd.uiState_ = 'powerwash-proposal-view';
+        resetOverlayMd.isPowerwashView_ = true;
+      }
+      if (state == this.RESET_SCREEN_UI_STATE.ROLLBACK_PROPOSAL) {
+        resetMd.uiState_ = 'rollback-proposal-view';
+        resetOverlayMd.isPowerwashView_ = false;
+      }
+      if (state == this.RESET_SCREEN_UI_STATE.REVERT_PROMISE) {
+        resetMd.uiState_ = 'revert-promise-view';
+      }
     },
 
     setRollbackOptionView: function() {
