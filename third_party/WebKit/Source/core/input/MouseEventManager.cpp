@@ -94,7 +94,7 @@ void MouseEventManager::Clear() {
   last_known_mouse_global_position_ = IntPoint();
   mouse_pressed_ = false;
   click_count_ = 0;
-  click_node_ = nullptr;
+  click_element_ = nullptr;
   mouse_down_pos_ = IntPoint();
   mouse_down_timestamp_ = TimeTicks();
   mouse_down_ = WebMouseEvent();
@@ -111,7 +111,7 @@ DEFINE_TRACE(MouseEventManager) {
   visitor->Trace(scroll_manager_);
   visitor->Trace(node_under_mouse_);
   visitor->Trace(mouse_press_node_);
-  visitor->Trace(click_node_);
+  visitor->Trace(click_element_);
   SynchronousMutationObserver::Trace(visitor);
 }
 
@@ -233,7 +233,7 @@ WebInputEventResult MouseEventManager::SetMousePositionAndDispatchMouseEvent(
 
 WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     const MouseEventWithHitTestResults& mev,
-    Node* release_node) {
+    Element& mouse_release_target) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event =
@@ -248,39 +248,39 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     context_menu_event = true;
 #endif
 
-  WebInputEventResult click_event_result = WebInputEventResult::kNotHandled;
   const bool should_dispatch_click_event =
-      click_count_ > 0 && !context_menu_event && release_node && click_node_ &&
-      release_node->CanParticipateInFlatTree() &&
-      click_node_->CanParticipateInFlatTree() &&
+      click_count_ > 0 && !context_menu_event && click_element_ &&
+      mouse_release_target.CanParticipateInFlatTree() &&
+      click_element_->CanParticipateInFlatTree() &&
       !(frame_->GetEventHandler()
             .GetSelectionController()
             .HasExtendedSelection() &&
         IsLinkSelection(mev));
-  if (should_dispatch_click_event) {
-    Node* click_target_node = nullptr;
-    if (click_node_ == release_node) {
-      click_target_node = click_node_;
-    } else if (click_node_->GetDocument() == release_node->GetDocument()) {
-      // Updates distribution because a 'mouseup' event listener can make the
-      // tree dirty at dispatchMouseEvent() invocation above.
-      // Unless distribution is updated, commonAncestor would hit ASSERT.
-      click_node_->UpdateDistribution();
-      release_node->UpdateDistribution();
-      click_target_node = release_node->CommonAncestor(
-          *click_node_, EventHandlingUtil::ParentForClickEvent);
-    }
-    if (click_target_node) {
-      click_event_result = DispatchMouseEvent(
-          click_target_node,
-          !RuntimeEnabledFeatures::auxclickEnabled() ||
-                  (mev.Event().button == WebPointerProperties::Button::kLeft)
-              ? EventTypeNames::click
-              : EventTypeNames::auxclick,
-          mev.Event(), mev.CanvasRegionId(), nullptr);
-    }
+  if (!should_dispatch_click_event)
+    return WebInputEventResult::kNotHandled;
+
+  Node* click_target_node = nullptr;
+  if (click_element_ == mouse_release_target) {
+    click_target_node = click_element_;
+  } else if (click_element_->GetDocument() ==
+             mouse_release_target.GetDocument()) {
+    // Updates distribution because a 'mouseup' event listener can make the
+    // tree dirty at dispatchMouseEvent() invocation above.
+    // Unless distribution is updated, commonAncestor would hit ASSERT.
+    click_element_->UpdateDistribution();
+    mouse_release_target.UpdateDistribution();
+    click_target_node = mouse_release_target.CommonAncestor(
+        *click_element_, EventHandlingUtil::ParentForClickEvent);
   }
-  return click_event_result;
+  if (!click_target_node)
+    return WebInputEventResult::kNotHandled;
+  return DispatchMouseEvent(
+      click_target_node,
+      !RuntimeEnabledFeatures::auxclickEnabled() ||
+              (mev.Event().button == WebPointerProperties::Button::kLeft)
+          ? EventTypeNames::click
+          : EventTypeNames::auxclick,
+      mev.Event(), mev.CanvasRegionId(), nullptr);
 }
 
 void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
@@ -381,19 +381,19 @@ void MouseEventManager::SetNodeUnderMouse(
 }
 
 void MouseEventManager::NodeChildrenWillBeRemoved(ContainerNode& container) {
-  if (container == click_node_)
+  if (container == click_element_)
     return;
-  if (!container.IsShadowIncludingInclusiveAncestorOf(click_node_.Get()))
+  if (!container.IsShadowIncludingInclusiveAncestorOf(click_element_.Get()))
     return;
-  click_node_ = nullptr;
+  click_element_ = nullptr;
 }
 
 void MouseEventManager::NodeWillBeRemoved(Node& node_to_be_removed) {
   if (node_to_be_removed.IsShadowIncludingInclusiveAncestorOf(
-          click_node_.Get())) {
+          click_element_.Get())) {
     // We don't dispatch click events if the mousedown node is removed
     // before a mouseup event. It is compatible with IE and Firefox.
-    click_node_ = nullptr;
+    click_element_ = nullptr;
   }
 }
 
@@ -1005,7 +1005,7 @@ bool MouseEventManager::HandleSvgPanIfNeeded(bool is_release_event) {
 
 void MouseEventManager::InvalidateClick() {
   click_count_ = 0;
-  click_node_ = nullptr;
+  click_element_ = nullptr;
 }
 
 bool MouseEventManager::MousePressed() {
@@ -1032,9 +1032,9 @@ void MouseEventManager::SetMousePressNode(Node* node) {
   mouse_press_node_ = node;
 }
 
-void MouseEventManager::SetClickNode(Node* node) {
-  SetContext(node ? node->ownerDocument() : nullptr);
-  click_node_ = node;
+void MouseEventManager::SetClickElement(Element* element) {
+  SetContext(element ? element->ownerDocument() : nullptr);
+  click_element_ = element;
 }
 
 void MouseEventManager::SetClickCount(int click_count) {

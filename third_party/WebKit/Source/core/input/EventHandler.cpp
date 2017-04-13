@@ -651,10 +651,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   mouse_event_manager_->SetClickCount(mouse_event.click_count);
-  mouse_event_manager_->SetClickNode(
-      mev.InnerNode()->IsTextNode()
-          ? FlatTreeTraversal::Parent(*mev.InnerNode())
-          : mev.InnerNode());
+  mouse_event_manager_->SetClickElement(
+      EventHandlingUtil::ParentElementIfNeeded(mev.InnerNode()));
 
   if (!mouse_event.FromTouch())
     frame_->Selection().SetCaretBlinkingSuspended(true);
@@ -959,9 +957,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev =
       EventHandlingUtil::PerformMouseEventHitTest(frame_, request, mouse_event);
-  Node* release_node = (mev.InnerNode() && mev.InnerNode()->IsTextNode())
-                           ? FlatTreeTraversal::Parent(*mev.InnerNode())
-                           : mev.InnerNode();
+  Element* mouse_release_target =
+      EventHandlingUtil::ParentElementIfNeeded(mev.InnerNode());
   LocalFrame* subframe =
       capturing_mouse_events_node_.Get()
           ? SubframeForTargetNode(capturing_mouse_events_node_.Get())
@@ -994,7 +991,9 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
       mev.Event(), Vector<WebMouseEvent>());
 
   WebInputEventResult click_event_result =
-      mouse_event_manager_->DispatchMouseClickIfNeeded(mev, release_node);
+      mouse_release_target ? mouse_event_manager_->DispatchMouseClickIfNeeded(
+                                 mev, *mouse_release_target)
+                           : WebInputEventResult::kNotHandled;
 
   scroll_manager_->ClearResizeScrollableArea(false);
 

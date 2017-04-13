@@ -58,7 +58,7 @@ class CORE_EXPORT MouseEventManager final
 
   WebInputEventResult DispatchMouseClickIfNeeded(
       const MouseEventWithHitTestResults&,
-      Node* release_node);
+      Element& mouse_release_target);
 
   WebInputEventResult DispatchDragSrcEvent(const AtomicString& event_type,
                                            const WebMouseEvent&);
@@ -139,7 +139,7 @@ class CORE_EXPORT MouseEventManager final
   Node* MousePressNode();
   void SetMousePressNode(Node*);
 
-  void SetClickNode(Node*);
+  void SetClickElement(Element*);
   void SetClickCount(int);
 
   bool MouseDownMayStartDrag();
@@ -225,7 +225,7 @@ class CORE_EXPORT MouseEventManager final
   Member<Node> mouse_press_node_;
 
   int click_count_;
-  Member<Node> click_node_;
+  Member<Element> click_element_;
 
   IntPoint mouse_down_pos_;  // In our view's coords.
   TimeTicks mouse_down_timestamp_;

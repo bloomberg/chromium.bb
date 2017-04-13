@@ -185,17 +185,15 @@ WebInputEventResult GestureManager::HandleGestureTap(
   }
 
   // Capture data for showUnhandledTapUIIfNeeded.
-  Node* tapped_node = current_hit_test.InnerNode();
   IntPoint tapped_position =
       FlooredIntPoint(gesture_event.PositionInRootFrame());
-  Node* tapped_non_text_node = tapped_node;
+  Node* tapped_node = current_hit_test.InnerNode();
+  Element* tapped_element =
+      EventHandlingUtil::ParentElementIfNeeded(tapped_node);
   UserGestureIndicator gesture_indicator(DocumentUserGestureToken::Create(
       tapped_node ? &tapped_node->GetDocument() : nullptr));
 
-  if (tapped_non_text_node && tapped_non_text_node->IsTextNode())
-    tapped_non_text_node = FlatTreeTraversal::Parent(*tapped_non_text_node);
-
-  mouse_event_manager_->SetClickNode(tapped_non_text_node);
+  mouse_event_manager_->SetClickElement(tapped_element);
 
   WebMouseEvent fake_mouse_down(
       WebInputEvent::kMouseDown, gesture_event,
@@ -262,7 +260,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
                 EventTypeNames::mouseup, fake_mouse_up);
 
   WebInputEventResult click_event_result = WebInputEventResult::kNotHandled;
-  if (tapped_non_text_node) {
+  if (tapped_element) {
     if (current_hit_test.InnerNode()) {
       // Updates distribution because a mouseup (or mousedown) event listener
       // can make the tree dirty at dispatchMouseEvent() invocation above.
@@ -270,15 +268,15 @@ WebInputEventResult GestureManager::HandleGestureTap(
       // tappedNonTextNode and currentHitTest.innerNode()) don't need to be
       // updated because commonAncestor() will exit early if their documents are
       // different.
-      tapped_non_text_node->UpdateDistribution();
+      tapped_element->UpdateDistribution();
       Node* click_target_node = current_hit_test.InnerNode()->CommonAncestor(
-          *tapped_non_text_node, EventHandlingUtil::ParentForClickEvent);
+          *tapped_element, EventHandlingUtil::ParentForClickEvent);
       click_event_result =
           mouse_event_manager_->SetMousePositionAndDispatchMouseEvent(
               click_target_node, String(), EventTypeNames::click,
               fake_mouse_up);
     }
-    mouse_event_manager_->SetClickNode(nullptr);
+    mouse_event_manager_->SetClickElement(nullptr);
   }
 
   if (mouse_up_event_result == WebInputEventResult::kNotHandled)
