@@ -1079,7 +1079,57 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   return results
 
 
-def _FilesToCheckForIncomingDeps(re, changed_lines):
+def _ExtractAddRulesFromParsedDeps(parsed_deps):
+  """Extract the rules that add dependencies from a parsed DEPS file.
+
+  Args:
+    parsed_deps: the locals dictionary from evaluating the DEPS file."""
+  add_rules = set()
+  add_rules.update([
+      rule[1:] for rule in parsed_deps.get('include_rules', [])
+      if rule.startswith('+') or rule.startswith('!')
+  ])
+  for specific_file, rules in parsed_deps.get('specific_include_rules',
+                                              {}).iteritems():
+    add_rules.update([
+        rule[1:] for rule in rules
+        if rule.startswith('+') or rule.startswith('!')
+    ])
+  return add_rules
+
+
+def _ParseDeps(contents):
+  """Simple helper for parsing DEPS files."""
+  # Stubs for handling special syntax in the root DEPS file.
+  def FromImpl(*_):
+    pass  # NOP function so "From" doesn't fail.
+
+  def FileImpl(_):
+    pass  # NOP function so "File" doesn't fail.
+
+  class _VarImpl:
+
+    def __init__(self, local_scope):
+      self._local_scope = local_scope
+
+    def Lookup(self, var_name):
+      """Implements the Var syntax."""
+      try:
+        return self._local_scope['vars'][var_name]
+      except KeyError:
+        raise Exception('Var is not defined: %s' % var_name)
+
+  local_scope = {}
+  global_scope = {
+      'File': FileImpl,
+      'From': FromImpl,
+      'Var': _VarImpl(local_scope).Lookup,
+  }
+  exec contents in global_scope, local_scope
+  return local_scope
+
+
+def _CalculateAddedDeps(os_path, old_contents, new_contents):
   """Helper method for _CheckAddedDepsHaveTargetApprovals. Returns
   a set of DEPS entries that we should look up.
 
@@ -1090,22 +1140,20 @@ def _FilesToCheckForIncomingDeps(re, changed_lines):
   # We ignore deps entries on auto-generated directories.
   AUTO_GENERATED_DIRS = ['grit', 'jni']
 
-  # This pattern grabs the path without basename in the first
-  # parentheses, and the basename (if present) in the second. It
-  # relies on the simple heuristic that if there is a basename it will
-  # be a header file ending in ".h".
-  pattern = re.compile(
-      r"""['"]\+([^'"]+?)(/[a-zA-Z0-9_]+\.h)?['"].*""")
+  old_deps = _ExtractAddRulesFromParsedDeps(_ParseDeps(old_contents))
+  new_deps = _ExtractAddRulesFromParsedDeps(_ParseDeps(new_contents))
+
+  added_deps = new_deps.difference(old_deps)
+
   results = set()
-  for changed_line in changed_lines:
-    m = pattern.match(changed_line)
-    if m:
-      path = m.group(1)
-      if path.split('/')[0] not in AUTO_GENERATED_DIRS:
-        if m.group(2):
-          results.add('%s%s' % (path, m.group(2)))
-        else:
-          results.add('%s/DEPS' % path)
+  for added_dep in added_deps:
+    if added_dep.split('/')[0] in AUTO_GENERATED_DIRS:
+      continue
+    # Assume that a rule that ends in .h is a rule for a specific file.
+    if added_dep.endswith('.h'):
+      results.add(added_dep)
+    else:
+      results.add(os_path.join(added_dep, 'DEPS'))
   return results
 
 
@@ -1115,7 +1163,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   target file or directory, to avoid layering violations from being
   introduced. This check verifies that this happens.
   """
-  changed_lines = set()
+  virtual_depended_on_files = set()
 
   file_filter = lambda f: not input_api.re.match(
       r"^third_party[\\\/]WebKit[\\\/].*", f.LocalPath())
@@ -1123,14 +1171,11 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
                                    file_filter=file_filter):
     filename = input_api.os_path.basename(f.LocalPath())
     if filename == 'DEPS':
-      changed_lines |= set(line.strip()
-                           for line_num, line
-                           in f.ChangedContents())
-  if not changed_lines:
-    return []
+      virtual_depended_on_files.update(_CalculateAddedDeps(
+          input_api.os_path,
+          '\n'.join(f.OldContents()),
+          '\n'.join(f.NewContents())))
 
-  virtual_depended_on_files = _FilesToCheckForIncomingDeps(input_api.re,
-                                                           changed_lines)
   if not virtual_depended_on_files:
     return []
 
