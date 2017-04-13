@@ -49,7 +49,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface PaymentItemsDisplayViewController ()<
     PaymentItemsDisplayViewControllerActions> {
-  MDCFlatButton* _payButton;
+  MDCButton* _payButton;
 
   // The PaymentRequest object having a copy of web::PaymentRequest as provided
   // by the page invoking the Payment Request API. This is a weak pointer and
@@ -78,14 +78,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self navigationItem].leftBarButtonItem = returnButton;
 
     // Set up trailing (pay) button.
-    _payButton = [[MDCFlatButton alloc] init];
+    _payButton = [[MDCButton alloc] init];
     [_payButton setTitle:l10n_util::GetNSString(IDS_PAYMENTS_PAY_BUTTON)
                 forState:UIControlStateNormal];
-    [_payButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
-                          forState:UIControlStateNormal];
+    [_payButton setCustomTitleColor:[UIColor whiteColor]];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
-    [_payButton setBackgroundColor:[UIColor grayColor]
-                          forState:UIControlStateDisabled];
     [_payButton addTarget:nil
                    action:@selector(onConfirm)
          forControlEvents:UIControlEventTouchUpInside];
