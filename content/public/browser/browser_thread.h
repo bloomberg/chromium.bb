@@ -74,8 +74,11 @@ class CONTENT_EXPORT BrowserThread {
     // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
     // requiring a background file I/O task runner, i.e.:
     //   base::CreateSequencedTaskRunnerWithTraits(
-    //       TaskTraits().MayBlock()
-    //           .WithPriority(TaskPriority::BACKGROUND|USER_VISIBLE)...)
+    //       base::TaskTraits().MayBlock()
+    //           .WithPriority(base::TaskPriority::BACKGROUND))
+    //   Note: You can use base::TaskPriority::USER_VISIBLE instead of
+    //         base::TaskPriority::BACKGROUND if the latency of this operation
+    //         is visible but non-blocking to the user.
     FILE,
 
     // Used for file system operations that block user interactions.
@@ -83,8 +86,8 @@ class CONTENT_EXPORT BrowserThread {
     // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
     // requiring a user-blocking file I/O task runner, i.e.:
     //   base::CreateSequencedTaskRunnerWithTraits(
-    //       TaskTraits().MayBlock()
-    //           .WithPriority(TaskPriority::USER_BLOCKING)...)
+    //       base::TaskTraits().MayBlock()
+    //           .WithPriority(base::TaskPriority::USER_BLOCKING))
     FILE_USER_BLOCKING,
 
     // Used to launch and terminate Chrome processes.
@@ -167,7 +170,7 @@ class CONTENT_EXPORT BrowserThread {
   // DEPRECATED: use base/task_scheduler/post_task.h instead.
   //   * BrowserThread::PostBlockingPoolTask(AndReply)(...) =>
   //         base::PostTaskWithTraits(AndReply)(
-  //             FROM_HERE, TaskTraits().MayBlock()...)
+  //             FROM_HERE, base::TaskTraits().MayBlock()...)
   //   * BrowserThread::PostBlockingPoolSequencedTask =>
   //         Share a single SequencedTaskRunner created via
   //         base::CreateSequencedTaskRunnerWithTraits() instead of sharing a
@@ -223,7 +226,8 @@ class CONTENT_EXPORT BrowserThread {
   //   BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
   //       base::SequencedWorkerPool::GetSequenceToken())
   //  =>
-  //   base::CreateSequencedTaskRunnerWithTraits(TaskTraits().MayBlock()...).
+  //   base::CreateSequencedTaskRunnerWithTraits(
+  //       base::TaskTraits().MayBlock()...).
   static base::SequencedWorkerPool* GetBlockingPool() WARN_UNUSED_RESULT;
 
   // Callable on any thread.  Returns whether the given well-known thread is
