@@ -82,6 +82,29 @@ function androidPayBuy() {  // eslint-disable-line no-unused-vars
 }
 
 /**
+ * Launches the PaymentRequest UI which accepts only Android Pay and does not
+ * require any other information.
+ */
+function androidPaySkipUiBuy() {  // eslint-disable-line no-unused-vars
+  try {
+    request = new PaymentRequest(
+        [{supportedMethods: ['https://android.com/pay']}], {
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+        });
+    request.show()
+        .then(function(resp) {
+          return resp.complete('success');
+        }).then(function() {
+          print(JSON.stringify(resp, undefined, 2));
+        }).catch(function(error) {
+          print(error);
+        });
+  } catch (error) {
+    print(error.message);
+  }
+}
+
+/**
  * Launches the PaymentRequest UI which accepts only an unsupported payment
  * method.
  */

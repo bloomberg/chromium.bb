@@ -10,8 +10,10 @@ import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -260,6 +262,47 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
 
         assertOnlySpecificSelectedPaymentMethodMetricLogged(
                 PaymentRequestMetrics.SELECTED_METHOD_ANDROID_PAY);
+    }
+
+    /**
+     * Expect that the SkippedShow metric is logged when the UI directly goes
+     * to the payment app UI during a Payment Request.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testMetrics_SkippedShow()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Complete a Payment Request with Android Pay.
+        installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        triggerUIAndWait("androidPaySkipUiBuy", mResultReady);
+
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.SkippedShow", 1));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.Shown", 1));
+    }
+
+    /**
+     * Expect that the PaymentRequest UI is shown even if all the requirements are met to skip, if
+     * the skip feature is disabled.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP})
+    public void testMetrics_SkippedShow_Disabled()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Complete a Payment Request with Android Pay.
+        installPaymentApp("https://android.com/pay", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        triggerUIAndWait("androidPaySkipUiBuy", mReadyToPay);
+
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.Shown", 1));
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.SkippedShow", 1));
     }
 
     /**

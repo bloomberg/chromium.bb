@@ -42,7 +42,8 @@ public class JourneyLogger {
     public static final int EVENT_SHOWN = 1 << 0;
     public static final int EVENT_PAY_CLICKED = 1 << 1;
     public static final int EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2;
-    public static final int EVENT_MAX = 8;
+    public static final int EVENT_SKIPPED_SHOW = 1 << 3;
+    public static final int EVENT_MAX = 16;
 
     // The minimum expected value of CustomCountHistograms is always set to 1. It is still possible
     // to log the value 0 to that type of histogram.

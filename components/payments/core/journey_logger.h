@@ -65,7 +65,8 @@ class JourneyLogger {
     EVENT_SHOWN = 1 << 0,
     EVENT_PAY_CLICKED = 1 << 1,
     EVENT_RECEIVED_INSTRUMENT_DETAILS = 1 << 2,
-    EVENT_MAX = 8,
+    EVENT_SKIPPED_SHOW = 1 << 3,
+    EVENT_MAX = 16,
   };
 
   // Used to mesure the impact of the CanMakePayment return value on whether the

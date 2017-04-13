@@ -598,8 +598,8 @@ public class PaymentRequestImpl
 
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
-            recordSuccessFunnelHistograms("Shown");
-            mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_SHOWN);
+            recordSuccessFunnelHistograms("SkippedShow");
+            mJourneyLogger.setEventOccurred(JourneyLogger.EVENT_SKIPPED_SHOW);
             mJourneyLogger.setShowCalled();
 
             onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
