@@ -134,7 +134,8 @@ std::unique_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   return std::move(http_response);
 }
 
-IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {
+// Flaky: http://crbug.com/711289
+IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, DISABLED_TestHasPnaclHeader) {
   // Load 2 pexes, one same origin and one cross orgin.
   RunLoadTest("/nacl/pnacl_request_header/pnacl_request_header.html", 1, 1);
 }
