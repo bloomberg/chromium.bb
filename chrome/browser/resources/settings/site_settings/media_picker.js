@@ -18,6 +18,9 @@ Polymer({
      */
     type: String,
 
+    /** Label for a11y purposes. */
+    label: String,
+
     /**
      * The devices available to pick from.
      * @type {Array<MediaPickerEntry>}

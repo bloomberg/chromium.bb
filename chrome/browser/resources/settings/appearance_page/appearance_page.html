@@ -175,9 +175,9 @@
         </div>
         <div class="settings-box"
             hidden="[[!pageVisibility.pageZoom]]">
-          <div class="start">$i18n{pageZoom}</div>
+          <div id="pageZoom" class="start">$i18n{pageZoom}</div>
           <div class="md-select-wrapper">
-            <select id="zoomLevel" class="md-select"
+            <select id="zoomLevel" class="md-select" aria-labelledy="pageZoom"
                 on-change="onZoomLevelChange_">
               <template is="dom-repeat" items="[[pageZoomLevels_]]">
                 <option value="[[item]]"

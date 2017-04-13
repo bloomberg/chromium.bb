@@ -168,10 +168,10 @@
         </div>
         <div class="settings-box two-line">
           <div class="start">
-            <div class="label">$i18n{printerProtocol}</div>
+            <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
               <div class="md-select-wrapper">
-                <select class="md-select" 
+                <select class="md-select" aria-labelledby="printerProtocol"
                     value="[[newPrinter.printerProtocol]]"
                     on-change="onProtocolChange_">
                   <option value="ipp">$i18n{printerProtocolIpp}</option>

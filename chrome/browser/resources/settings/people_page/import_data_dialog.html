@@ -54,6 +54,7 @@
               importStatusEnum_.SUCCEEDED, importStatus_)]]">
           <span class="md-select-wrapper">
             <select id="browserSelect" class="md-select"
+                aria-label="$i18n{importFromLabel}"
                 on-change="onBrowserProfileSelectionChange_">
               <template is="dom-repeat" items="[[browserProfiles_]]">
                 <option value="[[item.index]]">[[item.name]]</option>

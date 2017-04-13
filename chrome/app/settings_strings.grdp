@@ -1826,6 +1826,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CAMERA" desc="Label for the camera site settings.">
     Camera
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CAMERA_LABEL" desc="The accessibility label of the 'camera device' select menu">
+    Camera
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies site settings.">
     Cookies
   </message>
@@ -1836,6 +1839,9 @@
     Location
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIC" desc="Label for the microphone site settings.">
+    Microphone
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_MIC_LABEL" desc="The accessibility label of the 'microphone device' select menu">
     Microphone
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS" desc="Label for notifications sites site settings.">

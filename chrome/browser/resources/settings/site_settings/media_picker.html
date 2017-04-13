@@ -12,7 +12,8 @@
     </style>
     <div class="settings-box first" id="picker" hidden>
       <div class="md-select-wrapper">
-        <select id="mediaPicker" class="md-select" on-change="onChange_">
+        <select id="mediaPicker" class="md-select" on-change="onChange_"
+            aria-label$="[[label]]">
           <template is="dom-repeat" items="[[devices]]">
             <option value$="[[item.id]]">[[item.name]]</option>
           </template>

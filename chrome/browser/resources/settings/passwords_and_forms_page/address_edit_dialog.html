@@ -107,7 +107,8 @@
           <div id="select-label">$i18n{addressCountry}</div>
           <span class="md-select-wrapper">
             <select class="md-select address-column long"
-                  value="[[countryCode_]]" on-change="onCountryChange_">
+                aria-labelledby="select-label"
+                value="[[countryCode_]]" on-change="onCountryChange_">
               <option value=""></option>
               <template is="dom-repeat" items="[[countries_]]">
                 <option value="[[getCode_(item)]]"

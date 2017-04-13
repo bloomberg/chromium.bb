@@ -20,6 +20,7 @@
         <div class="middle" id="permissionHeader">[[label]]</div>
         <div class="md-select-wrapper">
           <select id="permission" class="md-select"
+              aria-labelledby="permissionHeader"
               on-change="onPermissionSelectionChange_">
             <option id="allow" value$="[[PermissionValues.ALLOW]]">
               $i18n{siteSettingsActionAllow}
