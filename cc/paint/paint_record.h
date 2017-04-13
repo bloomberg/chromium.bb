@@ -5,22 +5,19 @@
 #ifndef CC_PAINT_PAINT_RECORD_H_
 #define CC_PAINT_PAINT_RECORD_H_
 
-#include "cc/paint/paint_export.h"
-#include "cc/paint/paint_op_buffer.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
 
-// TODO(enne): Don't want to rename the world for this.  Using these as the
-// same types for now prevents an extra allocation.  Probably PaintRecord
-// will become an interface in the future.
-using PaintRecord = PaintOpBuffer;
+using PaintRecord = SkPicture;
 
-// TODO(enne): Remove these if possible, they are really expensive.
-CC_PAINT_EXPORT sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record);
+inline sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record) {
+  return record;
+}
 
-CC_PAINT_EXPORT sk_sp<const SkPicture> ToSkPicture(
-    sk_sp<const PaintRecord> record);
+inline sk_sp<const SkPicture> ToSkPicture(sk_sp<const PaintRecord> record) {
+  return record;
+}
 
 }  // namespace cc
 

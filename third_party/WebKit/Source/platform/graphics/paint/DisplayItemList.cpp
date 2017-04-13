@@ -7,6 +7,7 @@
 #include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintChunk.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #ifndef NDEBUG
 #include "platform/wtf/text/WTFString.h"
