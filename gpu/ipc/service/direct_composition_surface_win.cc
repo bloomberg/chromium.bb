@@ -473,7 +473,28 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   swap_chain_scale_x_ = bounds_rect.width() * 1.0f / swap_chain_size.width();
   swap_chain_scale_y_ = bounds_rect.height() * 1.0f / swap_chain_size.height();
 
-  swap_chain_->Present(first_present ? 0 : 1, 0);
+  if (first_present) {
+    swap_chain_->Present(0, 0);
+
+    // DirectComposition can display black for a swapchain between the first
+    // and second time it's presented to - maybe the first Present can get
+    // lost somehow and it shows the wrong buffer. In that case copy the
+    // buffers so both have the correct contents, which seems to help. The
+    // first Present() after this needs to have SyncInterval > 0, or else the
+    // workaround doesn't help.
+    base::win::ScopedComPtr<ID3D11Texture2D> dest_texture;
+    HRESULT hr =
+        swap_chain_->GetBuffer(0, IID_PPV_ARGS(dest_texture.Receive()));
+    DCHECK(SUCCEEDED(hr));
+    base::win::ScopedComPtr<ID3D11Texture2D> src_texture;
+    hr = swap_chain_->GetBuffer(1, IID_PPV_ARGS(src_texture.Receive()));
+    DCHECK(SUCCEEDED(hr));
+    base::win::ScopedComPtr<ID3D11DeviceContext> context;
+    d3d11_device_->GetImmediateContext(context.Receive());
+    context->CopyResource(dest_texture.get(), src_texture.get());
+  }
+
+  swap_chain_->Present(1, 0);
 
   frames_since_color_space_change_++;
 

@@ -326,7 +326,10 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   UINT last_present_count = 0;
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetLastPresentCount(&last_present_count)));
-  EXPECT_EQ(1u, last_present_count);
+
+  // One present is normal, and a second present because it's the first frame
+  // and the other buffer needs to be drawn to.
+  EXPECT_EQ(2u, last_present_count);
 
   surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
@@ -337,7 +340,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   // It's the same image, so it should have the same swapchain.
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetLastPresentCount(&last_present_count)));
-  EXPECT_EQ(1u, last_present_count);
+  EXPECT_EQ(2u, last_present_count);
 
   // The size of the swapchain changed, so it should be recreated.
   ui::DCRendererLayerParams params2(false, gfx::Rect(), 1, gfx::Transform(),
