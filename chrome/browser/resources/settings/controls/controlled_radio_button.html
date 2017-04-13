@@ -1,6 +1,6 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="pref_control_behavior.html">
 <link rel="import" href="../prefs/pref_util.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -9,19 +9,102 @@
   <template>
     <style include="settings-shared">
       :host {
+        --ink-to-circle: calc((var(--paper-radio-button-ink-size) -
+                               var(--paper-radio-button-size)) / 2);
+        @apply(--settings-actionable);
         align-items: center;
         display: flex;
         outline: none;
       }
 
-      #radioButton {
+      #labelWrapper {
+        -webkit-margin-start: var(--paper-radio-button-label-spacing, 10px);
         flex: 1;
+      }
+
+      #label {
+        color: var(--paper-radio-button-label-color, --primary-text-color);
+      }
+
+      .circle,
+      .disc,
+      .disc-wrapper,
+      paper-ripple {
+        border-radius: 50%;
+      }
+
+      .disc-wrapper {
+        height: var(--paper-radio-button-ink-size);
+        margin: 0 calc(-1 * var(--ink-to-circle));
+        position: relative;
+        width: var(--paper-radio-button-ink-size);
+      }
+
+      .circle,
+      .disc {
+        box-sizing: border-box;
+        height: var(--paper-radio-button-size);
+        left: var(--ink-to-circle);
+        position: absolute;
+        top: var(--ink-to-circle);
+        width: var(--paper-radio-button-size);
+      }
+
+      .circle {
+        border: 2px solid var(--paper-radio-button-unchecked-color,
+                              --primary-text-color);
+      }
+
+      :host([checked]) .circle {
+        border-color: var(--paper-radio-button-checked-color, --primary-color);
+      }
+
+      .disc {
+        background-color: var(--paper-radio-button-unchecked-background-color,
+                              transparent);
+        transform: scale(0);
+        transition: border-color 200ms, transform 200ms;
+      }
+
+      :host([checked]) .disc {
+        background-color: var(--paper-radio-button-checked-color,
+                              --primary-color);
+        transform: scale(0.5);
+      }
+
+      paper-ripple {
+        color: var(--paper-radio-button-unchecked-ink-color,
+                   --primary-text-color);
+        opacity: .6;
+      }
+
+      :host([checked]) paper-ripple {
+        color: var(--paper-radio-button-checked-ink-color,
+                   --primary-text-color);
       }
 
       :host([controlled_]) {
         /* Disable pointer events for this whole element, as outer on-tap gets
          * triggered when clicking/tapping anywhere in :host. */
         pointer-events: none;
+      }
+
+      :host([controlled_]) :-webkit-any(.circle, .disc) {
+        opacity: .5;
+      }
+
+      :host([controlled_]) .circle {
+        border-color: var(--paper-radio-button-unchecked-color,
+                          --primary-text-color);
+      }
+
+      :host([controlled_][checked]) .disc {
+        background-color: var(--paper-radio-button-unchecked-color,
+                              --primary-text-color);
+      }
+
+      :host([controlled_]) #labelWrapper {
+        opacity: .65;
       }
 
       cr-policy-pref-indicator {
@@ -32,10 +115,16 @@
       }
     </style>
 
-    <paper-radio-button id="radioButton" name="{{name}}" checked="{{checked}}"
-        disabled="[[controlled_]]" tabindex$="[[tabindex]]">
-      [[label]] <content></content>
-    </paper-radio-button>
+    <div class="disc-wrapper">
+      <div class="circle"></div>
+      <div class="disc"></div>
+      <paper-ripple center hold-down="[[pressed_]]"></paper-ripple>
+    </div>
+
+    <div id="labelWrapper">
+      <span id="label" hidden$="[[!label]]">[[label]]</span>
+      <content></content>
+    </div>
 
     <template is="dom-if" if="[[showIndicator_(controlled_, name, pref.*)]]">
       <cr-policy-pref-indicator pref="[[pref]]" on-tap="onIndicatorTap_"

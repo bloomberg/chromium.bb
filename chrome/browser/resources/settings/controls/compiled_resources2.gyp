@@ -15,6 +15,7 @@
     {
       'target_name': 'controlled_radio_button',
       'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(EXTERNS_GYP):settings_private',
         '../prefs/compiled_resources2.gyp:pref_util',
@@ -83,9 +84,9 @@
     {
       'target_name': 'settings_slider',
       'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-slider/compiled_resources2.gyp:paper-slider-extracted',
         '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-slider/compiled_resources2.gyp:paper-slider-extracted',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

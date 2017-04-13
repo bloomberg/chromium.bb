@@ -24,7 +24,8 @@ suite('controlled radio button', function() {
     radioButton.set('pref.enforcement',
                     chrome.settingsPrivate.Enforcement.ENFORCED);
     Polymer.dom.flush();
-    assertTrue(radioButton.$$('paper-radio-button').disabled);
+    // TODO(dbeam): rewrite this not to test private state (controlled_).
+    assertTrue(radioButton.controlled_);
     assertFalse(!!radioButton.$$('cr-policy-pref-indicator'));
 
     radioButton.set('name', 'true');
@@ -33,7 +34,7 @@ suite('controlled radio button', function() {
 
     radioButton.set('pref.enforcement', undefined);
     Polymer.dom.flush();
-    assertFalse(radioButton.$$('paper-radio-button').disabled);
+    assertFalse(radioButton.controlled_);
     assertEquals('none',
                  radioButton.$$('cr-policy-pref-indicator').style.display);
   });

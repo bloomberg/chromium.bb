@@ -5,10 +5,22 @@
 Polymer({
   is: 'controlled-radio-button',
 
-  behaviors: [PrefControlBehavior],
+  behaviors: [
+    PrefControlBehavior,
+    Polymer.IronA11yKeysBehavior,
+  ],
 
   properties: {
-    label: String,
+    checked: {
+      type: Boolean,
+      reflectToAttribute: true,
+      observer: 'checkedChanged_',
+    },
+
+    label: {
+      type: String,
+      value: '',  // Allows the hidden$= binding to run without being set.
+    },
 
     name: {
       type: String,
@@ -21,10 +33,34 @@ Polymer({
       computed: 'computeControlled_(pref.*)',
       reflectToAttribute: true,
     },
+
+    /** @private */
+    pressed_: Boolean,
+  },
+
+  hostAttributes: {
+    role: 'radio',
+    tabindex: 0,
   },
 
   listeners: {
-    'focus': 'onFocus_',
+    'blur': 'updatePressed_',
+    'down': 'updatePressed_',
+    'focus': 'updatePressed_',
+    'tap': 'onTap_',
+    'up': 'updatePressed_',
+  },
+
+  keyBindings: {
+    // This is mainly for screenreaders, which can perform actions on things
+    // that aren't focused (only focused things get synthetic click/tap events).
+    'enter:keyup': 'click',
+    'space:keyup': 'click',
+  },
+
+  /** @private */
+  checkedChanged_: function() {
+    this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
   },
 
   /**
@@ -56,8 +92,17 @@ Polymer({
     e.stopPropagation();
   },
 
-  /** Focuses the internal radio button when the row is selected. */
-  onFocus_: function() {
-    this.$.radioButton.focus();
+  /** @private */
+  onTap_: function() {
+    if (!this.controlled_)
+      this.checked = true;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  updatePressed_: function(e) {
+    this.pressed_ = ['down', 'focus'].includes(e.type);
   },
 });

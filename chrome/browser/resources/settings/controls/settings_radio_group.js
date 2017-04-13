@@ -28,6 +28,10 @@ Polymer({
     },
   },
 
+  hostAttributes: {
+    role: 'none',
+  },
+
   observers: [
     'prefChanged_(pref.*)',
   ],
