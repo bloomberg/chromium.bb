@@ -5,7 +5,7 @@
 #ifndef IOS_SHOWCASE_COMMON_COORDINATOR_H_
 #define IOS_SHOWCASE_COMMON_COORDINATOR_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 // This protocol is the common interface to the simple non-production
 // coordinators that will initialize, set up and present production view

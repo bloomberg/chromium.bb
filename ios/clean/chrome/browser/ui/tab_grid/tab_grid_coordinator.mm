@@ -88,6 +88,11 @@
 - (void)stop {
   [super stop];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
+  [self.mediator disconnect];
+  for (BrowserCoordinator* child in self.children) {
+    [child stop];
+    [self removeChildCoordinator:child];
+  }
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {

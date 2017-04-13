@@ -8,7 +8,7 @@
 #import "ios/clean/chrome/app/steps/launch_to_background.h"
 #import "ios/clean/chrome/app/steps/launch_to_basic.h"
 #import "ios/clean/chrome/app/steps/launch_to_foreground.h"
-#import "ios/clean/chrome/app/steps/tab_grid_coordinator+application_step.h"
+#import "ios/clean/chrome/app/steps/root_coordinator+application_step.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -109,7 +109,7 @@
     [[BeginForegrounding alloc] init],
     [[PrepareForUI alloc] init],
     [[CompleteForegrounding alloc] init],
-    [[TabGridCoordinator alloc] init],
+    [[RootCoordinator alloc] init],
   ]];
 }
 

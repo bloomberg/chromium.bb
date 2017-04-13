@@ -10,8 +10,8 @@ source_set("steps") {
     "launch_to_basic.mm",
     "launch_to_foreground.h",
     "launch_to_foreground.mm",
-    "tab_grid_coordinator+application_step.h",
-    "tab_grid_coordinator+application_step.mm",
+    "root_coordinator+application_step.h",
+    "root_coordinator+application_step.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -28,10 +28,28 @@ source_set("steps") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/web:web_internal",
     "//ios/clean/chrome/app:application_state",
-    "//ios/clean/chrome/browser/ui/tab_grid",
+    "//ios/clean/chrome/browser/ui/root",
     "//ios/net",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/web:web_arc",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "root_coordinator+application_step_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":steps",
+    "//base",
+    "//ios/clean/chrome/app:application_state",
+    "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }

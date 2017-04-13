@@ -37,6 +37,11 @@
       showcase::kUseCaseKey : @"Payment request picker view",
     },
     @{
+      showcase::kClassForDisplayKey : @"RootContainerViewController",
+      showcase::kClassForInstantiationKey : @"SCRootCoordinator",
+      showcase::kUseCaseKey : @"Root container",
+    },
+    @{
       showcase::kClassForDisplayKey : @"SettingsViewController",
       showcase::kClassForInstantiationKey : @"SCSettingsCoordinator",
       showcase::kUseCaseKey : @"Main settings screen",

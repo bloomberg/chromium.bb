@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/app/steps/tab_grid_coordinator+application_step.h"
+#import "ios/clean/chrome/app/steps/root_coordinator+application_step.h"
 
 #import "base/supports_user_data.h"
 #import "ios/clean/chrome/app/application_state.h"
@@ -31,10 +31,10 @@ class RootCoordinatorContainer : public base::SupportsUserData::Data {
 const char kRootCoordinatorContainerKey[] = "root_coordinator";
 }  // namespace
 
-@interface StopTabGridCoordinator : NSObject<ApplicationStep>
+@interface StopRootCoordinator : NSObject<ApplicationStep>
 @end
 
-@implementation TabGridCoordinator (ApplicationStep)
+@implementation RootCoordinator (ApplicationStep)
 
 - (BOOL)canRunInState:(ApplicationState*)state {
   return [state.window isKeyWindow] && state.phase == APPLICATION_FOREGROUNDED;
@@ -61,12 +61,12 @@ const char kRootCoordinatorContainerKey[] = "root_coordinator";
                                      new RootCoordinatorContainer(self));
 
   // Add a termination step to remove this object.
-  [[state terminationSteps] addObject:[[StopTabGridCoordinator alloc] init]];
+  [[state terminationSteps] addObject:[[StopRootCoordinator alloc] init]];
 }
 
 @end
 
-@implementation StopTabGridCoordinator
+@implementation StopRootCoordinator
 
 - (BOOL)canRunInState:(ApplicationState*)state {
   return state.phase = APPLICATION_TERMINATING;

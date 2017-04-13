@@ -28,6 +28,7 @@ group("features") {
     "//ios/clean/chrome/browser/ui/tools:tools_ui",
     "//ios/showcase/content_suggestions",
     "//ios/showcase/payments",
+    "//ios/showcase/root",
     "//ios/showcase/settings",
     "//ios/showcase/tab",
     "//ios/showcase/tab_grid",
@@ -54,6 +55,7 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",
     "//ios/showcase/payments:eg_tests",
+    "//ios/showcase/root:eg_tests",
     "//ios/showcase/tab:eg_tests",
     "//ios/showcase/tab_grid:eg_tests",
 
