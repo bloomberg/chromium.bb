@@ -78,10 +78,17 @@ class CustomTabObserver extends EmptyTabObserver {
 
     /**
      * Tracks the next page load, with timestamp as the origin of time.
+     * If a load is already happening, we track its PLT.
+     * If not, we track NavigationCommit timing + PLT for the next load.
      */
-    public void trackNextPageLoadFromTimestamp(long timestamp) {
+    public void trackNextPageLoadFromTimestamp(Tab tab, long timestamp) {
         mIntentReceivedTimestamp = timestamp;
-        mCurrentState = STATE_WAITING_LOAD_START;
+        if (tab.isLoading()) {
+            mPageLoadStartedTimestamp = -1;
+            mCurrentState = STATE_WAITING_LOAD_FINISH;
+        } else {
+            mCurrentState = STATE_WAITING_LOAD_START;
+        }
     }
 
     @Override
@@ -133,22 +140,22 @@ class CustomTabObserver extends EmptyTabObserver {
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.NAVIGATION_FINISHED);
         }
-        // Both histograms (commit and PLT) are reported here, to make sure
-        // that they are always recorded together, and that we only record
-        // commits for successful navigations.
-        if (mCurrentState == STATE_WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
-            long timeToPageLoadStartedMs = mPageLoadStartedTimestamp - mIntentReceivedTimestamp;
-            long timeToPageLoadFinishedMs =
-                    pageLoadFinishedTimestamp - mIntentReceivedTimestamp;
 
+        if (mCurrentState == STATE_WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
             String histogramPrefix = mOpenedByChrome ? "ChromeGeneratedCustomTab" : "CustomTabs";
-            RecordHistogram.recordCustomTimesHistogram(
-                    histogramPrefix + ".IntentToFirstCommitNavigationTime2.ZoomedOut",
-                    timeToPageLoadStartedMs,
-                    50, TimeUnit.MINUTES.toMillis(10), TimeUnit.MILLISECONDS, 50);
-            RecordHistogram.recordCustomTimesHistogram(
-                    histogramPrefix + ".IntentToFirstCommitNavigationTime2.ZoomedIn",
-                    timeToPageLoadStartedMs, 200, 1000, TimeUnit.MILLISECONDS, 100);
+            long timeToPageLoadFinishedMs = pageLoadFinishedTimestamp - mIntentReceivedTimestamp;
+            if (mPageLoadStartedTimestamp > 0) {
+                long timeToPageLoadStartedMs = mPageLoadStartedTimestamp - mIntentReceivedTimestamp;
+                // Intent to Load Start is recorded here to make sure we do not record
+                // failed/aborted page loads.
+                RecordHistogram.recordCustomTimesHistogram(
+                        histogramPrefix + ".IntentToFirstCommitNavigationTime2.ZoomedOut",
+                        timeToPageLoadStartedMs, 50, TimeUnit.MINUTES.toMillis(10),
+                        TimeUnit.MILLISECONDS, 50);
+                RecordHistogram.recordCustomTimesHistogram(
+                        histogramPrefix + ".IntentToFirstCommitNavigationTime2.ZoomedIn",
+                        timeToPageLoadStartedMs, 200, 1000, TimeUnit.MILLISECONDS, 100);
+            }
             // Same bounds and bucket count as PLT histograms.
             RecordHistogram.recordCustomTimesHistogram(histogramPrefix + ".IntentToPageLoadedTime",
                     timeToPageLoadFinishedMs, 10, TimeUnit.MINUTES.toMillis(10),

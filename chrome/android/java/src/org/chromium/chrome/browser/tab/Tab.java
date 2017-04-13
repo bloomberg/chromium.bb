@@ -1340,27 +1340,42 @@ public class Tab
         IntentHandler.addTrustedIntentExtras(intent);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_REPARENTING)) {
-            TabModelSelector tabModelSelector = getTabModelSelector();
-            if (tabModelSelector == null) return false;
-            mIsDetachedForReparenting = true;
-
-            // Add the tab to AsyncTabParamsManager before removing it from the current model to
-            // ensure the global count of tabs is correct. See crbug.com/611806.
-            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
-            AsyncTabParamsManager.add(mId,
-                    new TabReparentingParams(this, intent, finalizeCallback));
-
-            tabModelSelector.getModel(mIncognito).removeTab(this);
-
-            // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
-            // because many code paths (including navigation) expect the tab to always be associated
-            // with an activity, and will crash. crbug.com/657007
-            if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
-            attachTabContentManager(null);
+            detach(intent, finalizeCallback);
         }
 
         activity.startActivity(intent, startActivityOptions);
         return true;
+    }
+
+    /**
+     * Detaches a tab from its current activity if any.
+     *
+     * In details, this function:
+     * - Tags the tab using mIsDetachedForReparenting.
+     * - Registers some information for later reparenting in {@link AsyncTabParamsManager}.
+     * - Removes the tab from its current {@link TabModelSelector}, effectively severing
+     *   the {@link Activity} to {@link Tab} link.
+     *
+     * @param intent to be stored within a {@link TabReparentingParams}
+     * @param finalizeCallback to be stored within a {@link TabReparentingParams}
+     */
+    private void detach(Intent intent, Runnable finalizeCallback) {
+        mIsDetachedForReparenting = true;
+        // Add the tab to AsyncTabParamsManager before removing it from the current model to
+        // ensure the global count of tabs is correct. See crbug.com/611806.
+        if (intent == null) intent = new Intent();
+        intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
+        AsyncTabParamsManager.add(mId, new TabReparentingParams(this, intent, finalizeCallback));
+
+        TabModelSelector tabModelSelector = getTabModelSelector();
+        if (tabModelSelector != null) {
+            tabModelSelector.getModel(mIncognito).removeTab(this);
+        }
+        // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
+        // because many code paths (including navigation) expect the tab to always be associated
+        // with an activity, and will crash. crbug.com/657007
+        if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
+        attachTabContentManager(null);
     }
 
     /**
@@ -1383,7 +1398,6 @@ public class Tab
         attachTabContentManager(activity.getTabContentManager());
         mFullscreenManager = activity.getFullscreenManager();
         activity.getCompositorViewHolder().prepareForTabReparenting();
-
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
@@ -2897,6 +2911,31 @@ public class Tab
         return new Tab(id, parentId, incognito, activity, nativeWindow, type, initiallyHidden
                 ? TabCreationState.LIVE_IN_BACKGROUND
                 : TabCreationState.LIVE_IN_FOREGROUND, null);
+    }
+
+    /**
+     * Creates an instance of a {@link Tab} that is fully detached from any activity.
+     * Also performs general tab initialization as well as detached specifics.
+     *
+     * The current application context must allow the creation of a WindowAndroid.
+     *
+     * @return The newly created and initialized tab.
+     */
+    public static Tab createDetached(TabDelegateFactory delegateFactory) {
+        Context context = ContextUtils.getApplicationContext();
+        WindowAndroid windowAndroid = new WindowAndroid(context);
+        Tab tab = new Tab(INVALID_TAB_ID, INVALID_TAB_ID, false, context, windowAndroid,
+                TabLaunchType.FROM_DETACHED, null, null);
+        tab.initialize(null, null, delegateFactory, true, false);
+
+        // Resize the webContent to avoid expensive post load resize when attaching the tab.
+        Rect bounds = ExternalPrerenderHandler.estimateContentSize((Application) context, false);
+        int width = bounds.right - bounds.left;
+        int height = bounds.bottom - bounds.top;
+        tab.getContentViewCore().onSizeChanged(width, height, 0, 0);
+
+        tab.detach(null, null);
+        return tab;
     }
 
     /**

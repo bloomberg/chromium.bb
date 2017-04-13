@@ -1376,6 +1376,48 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 requestTime, CustomTabsConnection.SpeculationParams.PRERENDER);
     }
 
+    /**
+     * Tests a postMessage request chain can start while loading a hidden tab and continue
+     * afterwards. Request sent before the hidden tab start.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughHiddenTabWithRequestBeforeMayLaunchUrl()
+            throws InterruptedException {
+        sendPostMessageDuringHiddenTabTransition(BEFORE_MAY_LAUNCH_URL);
+    }
+
+    /**
+     * Tests a postMessage request chain can start while loading a hidden tab and continue
+     * afterwards. Request sent after the hidden tab start and before intent launched.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughHiddenTabWithRequestBeforeIntent()
+            throws InterruptedException {
+        sendPostMessageDuringHiddenTabTransition(BEFORE_INTENT);
+    }
+
+    /**
+     * Tests a postMessage request chain can start while loading a hidden tab and continue
+     * afterwards. Request sent after intent received.
+     */
+    @SmallTest
+    @RetryOnFailure
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPostMessageThroughHiddenTabWithRequestAfterIntent()
+            throws InterruptedException {
+        sendPostMessageDuringHiddenTabTransition(AFTER_INTENT);
+    }
+
+    private void sendPostMessageDuringHiddenTabTransition(int requestTime)
+            throws InterruptedException {
+        sendPostMessageDuringSpeculationTransition(
+                requestTime, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+    }
+
     private void sendPostMessageDuringSpeculationTransition(int requestTime, int speculationMode)
             throws InterruptedException {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
@@ -1532,6 +1574,13 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         mayLaunchUrlWithoutWarmup(CustomTabsConnection.SpeculationParams.PRERENDER);
     }
 
+    /** Tests that calling mayLaunchUrl() without warmup() succeeds. */
+    @SmallTest
+    @RetryOnFailure
+    public void testMayLaunchUrlWithoutWarmupHiddenTab() {
+        mayLaunchUrlWithoutWarmup(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+    }
+
     /**
      * Tests that launching a regular Chrome tab after warmup() gives the right layout.
      *
@@ -1634,6 +1683,60 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 ignoreFragments, wait, CustomTabsConnection.SpeculationParams.PRERENDER);
     }
 
+    /**
+     * Tests the following scenario:
+     * - warmup() + mayLaunchUrl("http://example.com/page.html#first-fragment")
+     * - loadUrl("http://example.com/page.html#other-fragment")
+     *
+     * The expected behavior is that the hidden tab shouldn't be dropped, and that the fragment is
+     * updated.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabAndChangingFragmentIgnoreFragments() throws Exception {
+        startHiddenTabAndChangeFragment(true, true);
+    }
+
+    /** Same as above, but the hidden tab matching should not ignore the fragment. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabAndChangingFragmentDontIgnoreFragments() throws Exception {
+        startHiddenTabAndChangeFragment(false, true);
+    }
+
+    /** Same as above, hidden tab matching ignores the fragment, don't wait. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabAndChangingFragmentDontWait() throws Exception {
+        startHiddenTabAndChangeFragment(true, false);
+    }
+
+    /** Same as above, hidden tab matching doesn't ignore the fragment, don't wait. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabAndChangingFragmentDontWaitDrop() throws Exception {
+        startHiddenTabAndChangeFragment(false, false);
+    }
+
+    /**
+     * Tests the following scenario:
+     * - warmup() + mayLaunchUrl("http://example.com/page.html#first-fragment")
+     * - loadUrl("http://example.com/page.html#other-fragment")
+     *
+     * There are two parameters changing the bahavior:
+     * @param ignoreFragments Whether the hidden tab should be kept.
+     * @param wait Whether to wait for the hidden tab to load.
+     */
+    private void startHiddenTabAndChangeFragment(boolean ignoreFragments, boolean wait)
+            throws Exception {
+        speculateAndChangeFragment(
+                ignoreFragments, wait, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+    }
+
     private void speculateAndChangeFragment(
             boolean ignoreFragments, boolean wait, int speculationMode) throws Exception {
         String testUrl = mTestServer.getURL(FRAGMENT_TEST_PAGE);
@@ -1685,7 +1788,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
-     * Test whether the url shown on prerender gets updated from about:blank when the prerender
+     * Test whether the url shown on prerender gets updated from about:blank when it
      * completes in the background.
      * Non-regression test for crbug.com/554236.
      */
@@ -1694,6 +1797,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @RetryOnFailure
     public void testPrerenderingCorrectUrl() throws Exception {
         testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    /**
+     * Test whether the url shown on hidden tab gets updated from about:blank when it
+     * completes in the background.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabCorrectUrl() throws Exception {
+        testSpeculateCorrectUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
 
     private void testSpeculateCorrectUrl(int speculationMode) throws Exception {
@@ -1724,6 +1838,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @RetryOnFailure
     public void testPrerenderingInvalidUrl() throws Exception {
         testSpeculateInvalidUrl(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    /**
+     * Test whether invalid urls are avoided for hidden tab.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabInvalidUrl() throws Exception {
+        testSpeculateInvalidUrl(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
 
     private void testSpeculateInvalidUrl(int speculationMode) throws Exception {
@@ -1861,6 +1985,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         testSpeculatingWithReferrer(CustomTabsConnection.SpeculationParams.PRERENDER);
     }
 
+    /**
+     * Tests that hidden tab accepts a referrer, and that this is not lost when launching the
+     * Custom Tab.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabWithReferrer() throws Exception {
+        testSpeculatingWithReferrer(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+    }
+
     private void testSpeculatingWithReferrer(int speculationMode) throws Exception {
         String referrer = "android-app://com.foo.me/";
         maybeSpeculateAndLaunchWithReferrers(
@@ -1878,7 +2013,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
-     * Tests that prerendering accepts a referrer, and that the prerender is dropped when the tab
+     * Tests that prerendering accepts a referrer, and that this is dropped when the tab
      * is launched with a mismatched referrer.
      */
     @SmallTest
@@ -1886,6 +2021,17 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @RetryOnFailure
     public void testPrerenderingWithMismatchedReferrers() throws Exception {
         testSpeculatingWithMismatchedReferrers(CustomTabsConnection.SpeculationParams.PRERENDER);
+    }
+
+    /**
+     * Tests that hidden tab accepts a referrer, and that this is dropped when the tab
+     * is launched with a mismatched referrer.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @RetryOnFailure
+    public void testHiddenTabWithMismatchedReferrers() throws Exception {
+        testSpeculatingWithMismatchedReferrers(CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
     }
 
     private void testSpeculatingWithMismatchedReferrers(int speculationMode) throws Exception {
@@ -2248,6 +2394,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 }
             }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         }
+        if (speculationMode == CustomTabsConnection.SpeculationParams.HIDDEN_TAB) {
+            CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
+                @Override
+                public boolean isSatisfied() {
+                    return connection.mSpeculation != null && connection.mSpeculation.tab != null
+                            && !connection.mSpeculation.tab.isLoading()
+                            && !connection.mSpeculation.tab.isShowingErrorPage();
+                }
+            }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        }
     }
 
     private CustomTabsSession bindWithCallback(final CustomTabsCallback callback) {
@@ -2340,6 +2496,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         switch (speculationMode) {
             case CustomTabsConnection.SpeculationParams.PRERENDER:
                 return "prerender";
+            case CustomTabsConnection.SpeculationParams.HIDDEN_TAB:
+                return "hidden";
             default:
                 return "visible";
         }

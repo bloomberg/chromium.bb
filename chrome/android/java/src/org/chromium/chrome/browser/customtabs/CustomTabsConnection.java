@@ -50,9 +50,11 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
@@ -87,6 +89,8 @@ public class CustomTabsConnection {
     static final int NO_PRERENDERING = 1;
     @VisibleForTesting
     static final int PREFETCH_ONLY = 2;
+    @VisibleForTesting
+    static final int HIDDEN_TAB = 3;
 
     private static AtomicReference<CustomTabsConnection> sInstance = new AtomicReference<>();
 
@@ -99,6 +103,8 @@ public class CustomTabsConnection {
         static final int PREFETCH = 1;
         @VisibleForTesting
         static final int PRERENDER = 2;
+        @VisibleForTesting
+        static final int HIDDEN_TAB = 3;
 
         public final CustomTabsSessionToken session;
         public final String url;
@@ -106,26 +112,39 @@ public class CustomTabsConnection {
 
         // Only for prerender.
         public final WebContents webContents;
+
+        // Only for hidden tab.
+        public final Tab tab;
+        @VisibleForTesting
+        boolean mDidFinishLoad;
+
+        // For both hidden tab and prerender
         public final String referrer;
         public final Bundle extras;
 
         static SpeculationParams forPrefetch(CustomTabsSessionToken session, String url) {
-            return new SpeculationParams(session, url, PREFETCH, null, null, null);
+            return new SpeculationParams(session, url, PREFETCH, null, null, null, null);
         }
 
         static SpeculationParams forPrerender(CustomTabsSessionToken session, String url,
                 WebContents webcontents, String referrer, Bundle extras) {
-            return new SpeculationParams(session, url, PRERENDER, webcontents, referrer, extras);
+            return new SpeculationParams(
+                    session, url, PRERENDER, webcontents, referrer, extras, null);
+        }
+        static SpeculationParams forHiddenTab(CustomTabsSessionToken session, String url, Tab tab,
+                String referrer, Bundle extras) {
+            return new SpeculationParams(session, url, HIDDEN_TAB, null, referrer, extras, tab);
         }
 
         private SpeculationParams(CustomTabsSessionToken session, String url, int speculationMode,
-                WebContents webContents, String referrer, Bundle extras) {
+                WebContents webContents, String referrer, Bundle extras, Tab tab) {
             this.session = session;
             this.url = url;
             this.speculationMode = speculationMode;
             this.webContents = webContents;
             this.referrer = referrer;
             this.extras = extras;
+            this.tab = tab;
         }
     }
 
@@ -601,12 +620,57 @@ public class CustomTabsConnection {
         return result;
     }
 
-    /** Returns the URL prerendered for a session, or null. */
-    String getPrerenderedUrl(CustomTabsSessionToken session) {
+    String getSpeculatedUrl(CustomTabsSessionToken session) {
         if (mSpeculation == null || session == null || !session.equals(mSpeculation.session)) {
             return null;
         }
-        return mSpeculation.webContents != null ? mSpeculation.url : null;
+        switch (mSpeculation.speculationMode) {
+            case SpeculationParams.PRERENDER:
+                return mSpeculation.webContents != null ? mSpeculation.url : null;
+            case SpeculationParams.HIDDEN_TAB:
+                return mSpeculation.tab != null ? mSpeculation.url : null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Returns a {@link Tab} that was preloaded as a hidden tab if it exists.
+     *
+     * If one exists but either URL matching or referer matching fails,
+     * null is returned and the existing tab is discarded.
+     *
+     * @param session The Binder object identifying a session.
+     * @param url The URL the tab is for.
+     * @param referrer The referrer to use for |url|.
+     * @return The hidden tab, or null.
+     */
+    Tab takeHiddenTab(CustomTabsSessionToken session, String url, String referrer) {
+        try {
+            TraceEvent.begin("CustomTabsConnection.takeHiddenTab");
+            if (mSpeculation == null || session == null) return null;
+            if (session.equals(mSpeculation.session) && mSpeculation.tab != null) {
+                Tab tab = mSpeculation.tab;
+                String speculatedUrl = mSpeculation.url;
+                String speculationReferrer = mSpeculation.referrer;
+                mSpeculation = null;
+
+                boolean ignoreFragments = mClientManager.getIgnoreFragmentsForSession(session);
+                boolean isExactSameUrl = TextUtils.equals(speculatedUrl, url);
+                boolean urlsMatch = isExactSameUrl
+                        || (ignoreFragments
+                                   && UrlUtilities.urlsMatchIgnoringFragments(speculatedUrl, url));
+                if (referrer == null) referrer = "";
+                if (urlsMatch && TextUtils.equals(speculationReferrer, referrer)) {
+                    return tab;
+                } else {
+                    tab.destroy();
+                }
+            }
+        } finally {
+            TraceEvent.end("CustomTabsConnection.takeHiddenTab");
+        }
+        return null;
     }
 
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
@@ -933,6 +997,9 @@ public class CustomTabsConnection {
                 boolean didPrerender = prerenderUrl(session, url, extras, uid);
                 createSpareWebContents = !didPrerender;
                 break;
+            case SpeculationParams.HIDDEN_TAB:
+                launchUrlInHiddenTab(session, url, extras);
+                break;
             default:
                 break;
         }
@@ -967,11 +1034,8 @@ public class CustomTabsConnection {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
         Rect contentBounds = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
-        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent);
-        if (referrer == null && getReferrerForSession(session) != null) {
-            referrer = getReferrerForSession(session).getUrl();
-        }
-        if (referrer == null) referrer = "";
+        String referrer = getReferrer(session, extrasIntent);
+
         Pair<WebContents, WebContents> webContentsPair =
                 mExternalPrerenderHandler.addPrerender(Profile.getLastUsedProfile(), url, referrer,
                         contentBounds, shouldPrerenderOnCellularForSession(session));
@@ -988,6 +1052,36 @@ public class CustomTabsConnection {
                 mClientManager.usesDefaultSessionParameters(session));
 
         return true;
+    }
+
+    /**
+     * Creates a hidden tab and initiates a navigation.
+     */
+    private void launchUrlInHiddenTab(
+            final CustomTabsSessionToken session, final String url, final Bundle extras) {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Intent extrasIntent = new Intent();
+                if (extras != null) extrasIntent.putExtras(extras);
+                if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
+
+                Tab tab = Tab.createDetached(new CustomTabDelegateFactory(false, false, null));
+
+                // Updating post message as soon as we have a valid WebContents.
+                mClientManager.resetPostMessageHandlerForSession(
+                        session, tab.getContentViewCore().getWebContents());
+
+                LoadUrlParams loadParams = new LoadUrlParams(url);
+                String referrer = getReferrer(session, extrasIntent);
+                if (referrer != null && !referrer.isEmpty()) {
+                    loadParams.setReferrer(
+                            new Referrer(referrer, Referrer.REFERRER_POLICY_DEFAULT));
+                }
+                mSpeculation = SpeculationParams.forHiddenTab(session, url, tab, referrer, extras);
+                mSpeculation.tab.loadUrl(loadParams);
+            }
+        });
     }
 
     @VisibleForTesting
@@ -1014,5 +1108,25 @@ public class CustomTabsConnection {
             default:
                 return getSpeculationModeForSession(session);
         }
+    }
+
+    /**
+     * Get any referrer that has been explicitly set.
+     *
+     * Inspects the two possible sources for the referrer:
+     * - A session for which the referrer might have been set.
+     * - An intent for a navigation that contains a referer in the headers.
+     *
+     * @param session session to inspect for referrer settings.
+     * @param intent intent to inspect for referrer header.
+     * @return referrer URL as a string if any was found, empty string otherwise.
+     */
+    String getReferrer(CustomTabsSessionToken session, Intent intent) {
+        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
+        if (referrer == null && getReferrerForSession(session) != null) {
+            referrer = getReferrerForSession(session).getUrl();
+        }
+        if (referrer == null) referrer = "";
+        return referrer;
     }
 }
