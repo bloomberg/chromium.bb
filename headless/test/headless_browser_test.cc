@@ -224,13 +224,20 @@ void HeadlessAsyncDevTooledBrowserTest::RenderProcessExited(
 }
 
 void HeadlessAsyncDevTooledBrowserTest::RunTest() {
-  browser_context_ = browser()
-                         ->CreateBrowserContextBuilder()
-                         .SetProtocolHandlers(GetProtocolHandlers())
-                         .Build();
+  HeadlessBrowserContext::Builder builder =
+      browser()->CreateBrowserContextBuilder();
+  builder.SetProtocolHandlers(GetProtocolHandlers());
+  if (GetCreateTabSocket()) {
+    builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
+    builder.AddTabSocketMojoBindings();
+  }
+  browser_context_ = builder.Build();
+
   browser()->SetDefaultBrowserContext(browser_context_);
 
-  web_contents_ = browser_context_->CreateWebContentsBuilder().Build();
+  web_contents_ = browser_context_->CreateWebContentsBuilder()
+                      .CreateTabSocket(GetCreateTabSocket())
+                      .Build();
   web_contents_->AddObserver(this);
 
   RunAsynchronousTest();
@@ -246,6 +253,10 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
 
 ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
   return ProtocolHandlerMap();
+}
+
+bool HeadlessAsyncDevTooledBrowserTest::GetCreateTabSocket() {
+  return false;
 }
 
 }  // namespace headless

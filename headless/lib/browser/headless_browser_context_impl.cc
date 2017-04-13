@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "headless/grit/headless_lib_resources.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_permission_manager.h"
@@ -22,6 +23,7 @@
 #include "headless/public/util/black_hole_protocol_handler.h"
 #include "headless/public/util/in_memory_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
 
@@ -362,6 +364,16 @@ HeadlessBrowserContext::Builder::AddJsMojoBindings(
     const std::string& mojom_name,
     const std::string& js_bindings) {
   mojo_bindings_.emplace_back(mojom_name, js_bindings);
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::AddTabSocketMojoBindings() {
+  std::string js_bindings =
+      ui::ResourceBundle::GetSharedInstance()
+          .GetRawDataResource(IDR_HEADLESS_TAB_SOCKET_MOJOM_JS)
+          .as_string();
+  mojo_bindings_.emplace_back("headless/lib/tab_socket.mojom", js_bindings);
   return *this;
 }
 

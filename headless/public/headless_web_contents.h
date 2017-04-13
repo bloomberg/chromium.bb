@@ -21,6 +21,7 @@ namespace headless {
 class HeadlessBrowserContextImpl;
 class HeadlessBrowserImpl;
 class HeadlessDevToolsTarget;
+class HeadlessTabSocket;
 
 // Class representing contents of a browser tab. Should be accessed from browser
 // main thread.
@@ -71,6 +72,9 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // Close this page. |HeadlessWebContents| object will be destroyed.
   virtual void Close() = 0;
 
+  // Returns the headless tab socket for JS -> C++ if one was created.
+  virtual HeadlessTabSocket* GetHeadlessTabSocket() const = 0;
+
  private:
   friend class HeadlessWebContentsImpl;
   HeadlessWebContents() {}
@@ -92,9 +96,10 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   // Specify the initial window size (default is configured in browser options).
   Builder& SetWindowSize(const gfx::Size& size);
 
-  // Specify an embedder provided Mojo service to be installed.  The
+  // DEPRECATED. Specify an embedder provided Mojo service to be installed.  The
   // |service_factory| callback is called on demand by Mojo to instantiate the
   // service if a client asks for it.
+  // TODO(alexclarke): Remove AddMojoService.
   template <typename Interface>
   Builder& AddMojoService(
       const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
@@ -107,6 +112,10 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   Builder& AddMojoService(const std::string& service_name,
                           const base::Callback<void(
                               mojo::ScopedMessagePipeHandle)>& service_factory);
+
+  // Whether or not a headless tab socket should be created, to allow JS -> C++
+  // embedder communications.
+  Builder& CreateTabSocket(bool create_tab_socket);
 
   // The returned object is owned by HeadlessBrowser. Call
   // HeadlessWebContents::Close() to dispose it.
@@ -146,6 +155,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   GURL initial_url_ = GURL("about:blank");
   gfx::Size window_size_;
   std::list<MojoService> mojo_services_;
+  bool create_tab_socket_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };

@@ -13,6 +13,7 @@
 #include "headless/public/devtools/domains/security.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_tab_socket.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -185,5 +186,35 @@ class HeadlessWebContentsSecurityTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsSecurityTest);
+
+class HeadlessTabSocketTest : public HeadlessAsyncDevTooledBrowserTest,
+                              public HeadlessTabSocket::Listener {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetRuntime()->Evaluate(
+        R"(window.TabSocket.onmessage =
+            function(event) {
+              window.TabSocket.send(
+                  'Embedder sent us: ' + event.detail.message);
+            };
+          )");
+
+    HeadlessTabSocket* headless_tab_socket =
+        web_contents_->GetHeadlessTabSocket();
+    DCHECK(headless_tab_socket);
+
+    headless_tab_socket->SendMessageToTab("Hello");
+    headless_tab_socket->SetListener(this);
+  }
+
+  void OnMessageFromTab(const std::string& message) override {
+    EXPECT_EQ("Embedder sent us: Hello", message);
+    FinishAsynchronousTest();
+  }
+
+  bool GetCreateTabSocket() override { return true; }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessTabSocketTest);
 
 }  // namespace headless

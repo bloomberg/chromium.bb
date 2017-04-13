@@ -28,6 +28,7 @@ class Size;
 
 namespace headless {
 class HeadlessBrowserImpl;
+class HeadlessTabSocketImpl;
 class WebContentsObserverAdapter;
 
 // Exported for tests.
@@ -53,6 +54,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   HeadlessDevToolsTarget* GetDevToolsTarget() override;
+  HeadlessTabSocket* GetHeadlessTabSocket() const override;
 
   // HeadlessDevToolsTarget implementation:
   bool AttachClient(HeadlessDevToolsClient* client) override;
@@ -92,7 +94,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
                           HeadlessBrowserContextImpl* browser_context);
 
   void InitializeScreen(const gfx::Size& initial_size);
-
   using MojoService = HeadlessWebContents::Builder::MojoService;
 
   class Delegate;
@@ -101,6 +102,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   std::unique_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::list<MojoService> mojo_services_;
+  std::unique_ptr<HeadlessTabSocketImpl> headless_tab_socket_;
 
   HeadlessBrowserContextImpl* browser_context_;      // Not owned.
   content::RenderProcessHost* render_process_host_;  // Not owned.

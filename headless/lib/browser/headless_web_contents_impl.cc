@@ -31,6 +31,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_client_impl.h"
+#include "headless/lib/browser/headless_tab_socket_impl.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
@@ -144,6 +145,14 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
       base::WrapUnique(new HeadlessWebContentsImpl(
           content::WebContents::Create(create_params),
           builder->browser_context_));
+
+  if (builder->create_tab_socket_) {
+    headless_web_contents->headless_tab_socket_ =
+        base::MakeUnique<HeadlessTabSocketImpl>();
+    builder->AddMojoService(base::Bind(
+        &HeadlessTabSocketImpl::CreateMojoService,
+        base::Unretained(headless_web_contents->headless_tab_socket_.get())));
+  }
 
   headless_web_contents->mojo_services_ = std::move(builder->mojo_services_);
   headless_web_contents->InitializeScreen(builder->window_size_);
@@ -292,6 +301,10 @@ HeadlessBrowserContextImpl* HeadlessWebContentsImpl::browser_context() const {
   return browser_context_;
 }
 
+HeadlessTabSocket* HeadlessWebContentsImpl::GetHeadlessTabSocket() const {
+  return headless_tab_socket_.get();
+}
+
 HeadlessWebContents::Builder::Builder(
     HeadlessBrowserContextImpl* browser_context)
     : browser_context_(browser_context),
@@ -318,6 +331,12 @@ HeadlessWebContents::Builder& HeadlessWebContents::Builder::AddMojoService(
     const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
         service_factory) {
   mojo_services_.emplace_back(service_name, service_factory);
+  return *this;
+}
+
+HeadlessWebContents::Builder& HeadlessWebContents::Builder::CreateTabSocket(
+    bool create_tab_socket) {
+  create_tab_socket_ = create_tab_socket;
   return *this;
 }
 
