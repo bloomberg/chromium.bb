@@ -36,7 +36,7 @@ static void PostTaskFromMainToImplThread(
     bool is_lost) {
   // This posts the task to RunDeleteTextureOnImplThread().
   impl_task_runner->PostTask(
-      FROM_HERE, base::Bind(run_impl_callback, sync_token, is_lost));
+      FROM_HERE, base::BindOnce(run_impl_callback, sync_token, is_lost));
 }
 
 TextureMailboxDeleter::TextureMailboxDeleter(

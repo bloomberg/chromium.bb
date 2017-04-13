@@ -128,8 +128,9 @@ void ContextCacheController::ClientBecameNotBusy(
 void ContextCacheController::PostIdleCallback(
     uint32_t current_idle_generation) const {
   task_runner_->PostDelayedTask(
-      FROM_HERE, base::Bind(&ContextCacheController::OnIdle, weak_ptr_,
-                            current_idle_generation),
+      FROM_HERE,
+      base::BindOnce(&ContextCacheController::OnIdle, weak_ptr_,
+                     current_idle_generation),
       base::TimeDelta::FromSeconds(kIdleCleanupDelaySeconds));
 }
 

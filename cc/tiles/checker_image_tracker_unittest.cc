@@ -50,7 +50,7 @@ class TestImageController : public ImageController {
     // ImageController.
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(callback, request_id, ImageDecodeResult::SUCCESS));
+        base::BindOnce(callback, request_id, ImageDecodeResult::SUCCESS));
 
     return request_id;
   }

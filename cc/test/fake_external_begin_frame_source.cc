@@ -105,8 +105,8 @@ void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
                  weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(begin_frame_task_.callback(),
-                 CreateBeginFrameArgs(BEGINFRAME_FROM_HERE)),
+      base::BindOnce(begin_frame_task_.callback(),
+                     CreateBeginFrameArgs(BEGINFRAME_FROM_HERE)),
       base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
   next_begin_frame_number_++;
 }

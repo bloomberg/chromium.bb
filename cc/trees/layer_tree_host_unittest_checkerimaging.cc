@@ -51,8 +51,8 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
     CompletionEvent completion_event;
     image_worker_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind([](CompletionEvent* event) { event->Signal(); },
-                   base::Unretained(&completion_event)));
+        base::BindOnce([](CompletionEvent* event) { event->Signal(); },
+                       base::Unretained(&completion_event)));
     completion_event.Wait();
   }
 

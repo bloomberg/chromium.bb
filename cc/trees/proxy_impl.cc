@@ -133,8 +133,8 @@ void ProxyImpl::InitializeCompositorFrameSinkOnImpl(
   LayerTreeHostImpl* host_impl = layer_tree_host_impl_.get();
   bool success = host_impl->InitializeRenderer(compositor_frame_sink);
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::DidInitializeCompositorFrameSink,
-                            proxy_main_weak_ptr_, success));
+      FROM_HERE, base::BindOnce(&ProxyMain::DidInitializeCompositorFrameSink,
+                                proxy_main_weak_ptr_, success));
   if (success)
     scheduler_->DidCreateAndInitializeCompositorFrameSink();
 }
@@ -285,8 +285,8 @@ void ProxyImpl::DidLoseCompositorFrameSinkOnImplThread() {
   TRACE_EVENT0("cc", "ProxyImpl::DidLoseCompositorFrameSinkOnImplThread");
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyMain::DidLoseCompositorFrameSink, proxy_main_weak_ptr_));
+      FROM_HERE, base::BindOnce(&ProxyMain::DidLoseCompositorFrameSink,
+                                proxy_main_weak_ptr_));
   scheduler_->DidLoseCompositorFrameSink();
 }
 
@@ -306,8 +306,8 @@ void ProxyImpl::DidReceiveCompositorFrameAckOnImplThread() {
   DCHECK(IsImplThread());
   scheduler_->DidReceiveCompositorFrameAck();
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::DidReceiveCompositorFrameAck,
-                            proxy_main_weak_ptr_));
+      FROM_HERE, base::BindOnce(&ProxyMain::DidReceiveCompositorFrameAck,
+                                proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
@@ -365,8 +365,8 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
   TRACE_EVENT0("cc", "ProxyImpl::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::SetAnimationEvents,
-                            proxy_main_weak_ptr_, base::Passed(&events)));
+      FROM_HERE, base::BindOnce(&ProxyMain::SetAnimationEvents,
+                                proxy_main_weak_ptr_, base::Passed(&events)));
 }
 
 bool ProxyImpl::IsInsideDraw() {
@@ -449,8 +449,8 @@ void ProxyImpl::DidPrepareTiles() {
 void ProxyImpl::DidCompletePageScaleAnimationOnImplThread() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::DidCompletePageScaleAnimation,
-                            proxy_main_weak_ptr_));
+      FROM_HERE, base::BindOnce(&ProxyMain::DidCompletePageScaleAnimation,
+                                proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::OnDrawForCompositorFrameSink(bool resourceless_software_draw) {
@@ -491,8 +491,9 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
   begin_main_frame_state->completed_image_decode_callbacks =
       layer_tree_host_impl_->TakeCompletedImageDecodeCallbacks();
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
-                            base::Passed(&begin_main_frame_state)));
+      FROM_HERE,
+      base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
+                     base::Passed(&begin_main_frame_state)));
   layer_tree_host_impl_->DidSendBeginMainFrame();
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
@@ -571,8 +572,8 @@ void ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation() {
                "ProxyImpl::ScheduledActionBeginCompositorFrameSinkCreation");
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::RequestNewCompositorFrameSink,
-                            proxy_main_weak_ptr_));
+      FROM_HERE, base::BindOnce(&ProxyMain::RequestNewCompositorFrameSink,
+                                proxy_main_weak_ptr_));
 }
 
 void ProxyImpl::ScheduledActionPrepareTiles() {
@@ -597,8 +598,8 @@ void ProxyImpl::ScheduledActionPerformImplSideInvalidation() {
 void ProxyImpl::SendBeginMainFrameNotExpectedSoon() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyMain::BeginMainFrameNotExpectedSoon,
-                            proxy_main_weak_ptr_));
+      FROM_HERE, base::BindOnce(&ProxyMain::BeginMainFrameNotExpectedSoon,
+                                proxy_main_weak_ptr_));
 }
 
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
@@ -656,8 +657,8 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   if (next_frame_is_newly_committed_frame_) {
     next_frame_is_newly_committed_frame_ = false;
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ProxyMain::DidCommitAndDrawFrame, proxy_main_weak_ptr_));
+        FROM_HERE, base::BindOnce(&ProxyMain::DidCommitAndDrawFrame,
+                                  proxy_main_weak_ptr_));
   }
 
   DCHECK_NE(INVALID_RESULT, result);

@@ -147,8 +147,9 @@ StagingBufferPool::StagingBufferPool(base::SequencedTaskRunner* task_runner,
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&StagingBufferPool::RegisterMemoryCoordinatorClient,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&StagingBufferPool::RegisterMemoryCoordinatorClient,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 StagingBufferPool::~StagingBufferPool() {

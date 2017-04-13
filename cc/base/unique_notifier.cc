@@ -34,7 +34,7 @@ void UniqueNotifier::Schedule() {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UniqueNotifier::Notify, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&UniqueNotifier::Notify, weak_ptr_factory_.GetWeakPtr()));
   notification_pending_ = true;
 }
 

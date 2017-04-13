@@ -23,8 +23,8 @@ void TestContextSupport::SignalSyncToken(const gpu::SyncToken& sync_token,
                                          const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&TestContextSupport::CallAllSyncPointCallbacks,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool TestContextSupport::IsSyncTokenSignaled(const gpu::SyncToken& sync_token) {
@@ -35,8 +35,8 @@ void TestContextSupport::SignalQuery(uint32_t query,
                                      const base::Closure& callback) {
   sync_point_callbacks_.push_back(callback);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&TestContextSupport::CallAllSyncPointCallbacks,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&TestContextSupport::CallAllSyncPointCallbacks,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TestContextSupport::SetAggressivelyFreeResources(

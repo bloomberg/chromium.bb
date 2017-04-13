@@ -1355,9 +1355,9 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     if (!TestEnded()) {
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&LayerTreeHostAnimationTestAddAnimationAfterAnimating::
-                         CheckAnimations,
-                     base::Unretained(this), host_impl));
+          base::BindOnce(&LayerTreeHostAnimationTestAddAnimationAfterAnimating::
+                             CheckAnimations,
+                         base::Unretained(this), host_impl));
     }
   }
 

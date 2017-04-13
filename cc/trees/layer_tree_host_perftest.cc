@@ -307,9 +307,9 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     clean_up_started_ = true;
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&BrowserCompositorInvalidateLayerTreePerfTest::
-                        CleanUpAndEndTestOnMainThread,
-                   base::Unretained(this)));
+        base::BindOnce(&BrowserCompositorInvalidateLayerTreePerfTest::
+                           CleanUpAndEndTestOnMainThread,
+                       base::Unretained(this)));
   }
 
   void CleanUpAndEndTestOnMainThread() {

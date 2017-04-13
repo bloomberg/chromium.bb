@@ -615,8 +615,8 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
 #endif
 
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SingleThreadProxy::BeginMainFrame,
-                            weak_factory_.GetWeakPtr(), begin_frame_args));
+      FROM_HERE, base::BindOnce(&SingleThreadProxy::BeginMainFrame,
+                                weak_factory_.GetWeakPtr(), begin_frame_args));
   layer_tree_host_impl_->DidSendBeginMainFrame();
 }
 

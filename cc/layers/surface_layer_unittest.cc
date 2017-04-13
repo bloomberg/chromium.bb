@@ -241,8 +241,8 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
 
   void DidCommitAndDrawFrame() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SurfaceLayerSwapPromise::ChangeTree,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&SurfaceLayerSwapPromise::ChangeTree,
+                                  base::Unretained(this)));
   }
 
  protected:

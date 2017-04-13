@@ -66,8 +66,8 @@ void FakeCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeCompositorFrameSink::DidReceiveCompositorFrameAck,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeCompositorFrameSink::DidReceiveCompositorFrameAck,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeCompositorFrameSink::DidReceiveCompositorFrameAck() {

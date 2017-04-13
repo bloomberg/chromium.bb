@@ -181,9 +181,10 @@ class LayerTreeHostContextTestLostContextSucceeds
   void RequestNewCompositorFrameSink() override {
     if (async_compositor_frame_sink_creation_) {
       MainThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&LayerTreeHostContextTestLostContextSucceeds::
-                                    AsyncRequestNewCompositorFrameSink,
-                                base::Unretained(this)));
+          FROM_HERE,
+          base::BindOnce(&LayerTreeHostContextTestLostContextSucceeds::
+                             AsyncRequestNewCompositorFrameSink,
+                         base::Unretained(this)));
     } else {
       AsyncRequestNewCompositorFrameSink();
     }
@@ -408,8 +409,9 @@ class LayerTreeHostClientTakeAwayCompositorFrameSink
     CHECK(surface);
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostClientTakeAwayCompositorFrameSink::MakeVisible,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &LayerTreeHostClientTakeAwayCompositorFrameSink::MakeVisible,
+            base::Unretained(this)));
   }
 
   void DidInitializeCompositorFrameSink() override {
@@ -417,9 +419,9 @@ class LayerTreeHostClientTakeAwayCompositorFrameSink
     if (setos_counter_ == 1) {
       MainThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&LayerTreeHostClientTakeAwayCompositorFrameSink::
-                         HideAndReleaseCompositorFrameSink,
-                     base::Unretained(this)));
+          base::BindOnce(&LayerTreeHostClientTakeAwayCompositorFrameSink::
+                             HideAndReleaseCompositorFrameSink,
+                         base::Unretained(this)));
     } else {
       EndTest();
     }
@@ -539,7 +541,7 @@ class LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink
   void RequestNewCompositorFrameSink() override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &LayerTreeHostContextTestCommitAfterDelayedCompositorFrameSink::
                 CreateAndSetCompositorFrameSink,
             base::Unretained(this)));
@@ -708,9 +710,9 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
     if (HasImplThread()) {
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&LayerTreeHostContextTestLostContextAndEvictTextures::
-                         EvictTexturesOnImplThread,
-                     base::Unretained(this)));
+          base::BindOnce(&LayerTreeHostContextTestLostContextAndEvictTextures::
+                             EvictTexturesOnImplThread,
+                         base::Unretained(this)));
     } else {
       DebugScopedSetImplThread impl(task_runner_provider());
       EvictTexturesOnImplThread();
@@ -1149,15 +1151,15 @@ class UIResourceLostTest : public LayerTreeHostContextTest {
   void PostStepCompleteToMainThread() {
     task_runner_provider()->MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&UIResourceLostTest::StepCompleteOnMainThreadInternal,
-                   base::Unretained(this), time_step_));
+        base::BindOnce(&UIResourceLostTest::StepCompleteOnMainThreadInternal,
+                       base::Unretained(this), time_step_));
   }
 
   void PostLoseContextToImplThread() {
     EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostContextTest::LoseContext,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&LayerTreeHostContextTest::LoseContext,
+                                  base::Unretained(this)));
   }
 
  protected:
@@ -1563,9 +1565,9 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     // Meanwhile, lose the context while we are in defer commits.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
-                       LoseContextOnImplThread,
-                   base::Unretained(this)));
+        base::BindOnce(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
+                           LoseContextOnImplThread,
+                       base::Unretained(this)));
 
     // After the first frame, we will lose the context and then not start
     // allowing commits until that happens. The 2nd frame should not happen

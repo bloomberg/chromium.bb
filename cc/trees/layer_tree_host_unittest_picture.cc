@@ -506,7 +506,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
             ++frame_;
             MainThreadTaskRunner()->PostTask(
                 FROM_HERE,
-                base::Bind(
+                base::BindOnce(
                     &LayerTreeHostPictureTestRSLLMembershipWithScale::NextStep,
                     base::Unretained(this)));
           }
@@ -523,7 +523,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
         ++frame_;
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &LayerTreeHostPictureTestRSLLMembershipWithScale::NextStep,
                 base::Unretained(this)));
         break;
@@ -624,7 +624,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
 
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &LayerTreeHostPictureTestForceRecalculateScales::ScaleRootUp,
                 base::Unretained(this)));
         break;
@@ -641,9 +641,9 @@ class LayerTreeHostPictureTestForceRecalculateScales
 
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&LayerTreeHostPictureTestForceRecalculateScales::
-                           ScaleRootUpAndRecalculateScales,
-                       base::Unretained(this)));
+            base::BindOnce(&LayerTreeHostPictureTestForceRecalculateScales::
+                               ScaleRootUpAndRecalculateScales,
+                           base::Unretained(this)));
         break;
       case 2:
         // On 3rd commit, both layers should adjust scales due to forced

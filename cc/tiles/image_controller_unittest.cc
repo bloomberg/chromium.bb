@@ -266,7 +266,8 @@ class ImageControllerTest : public testing::Test {
   void RunOrTimeout(base::RunLoop* run_loop) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ImageControllerTest::Timeout, base::Unretained(run_loop)),
+        base::BindOnce(&ImageControllerTest::Timeout,
+                       base::Unretained(run_loop)),
         base::TimeDelta::FromSeconds(kDefaultTimeoutSeconds));
     run_loop->Run();
   }

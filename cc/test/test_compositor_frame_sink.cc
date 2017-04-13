@@ -154,8 +154,8 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     // calling the client to tell it that it is done.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&TestCompositorFrameSink::SendCompositorFrameAckToClient,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&TestCompositorFrameSink::SendCompositorFrameAckToClient,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

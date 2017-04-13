@@ -1111,10 +1111,9 @@ static void PostCopyCallbackToMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     std::unique_ptr<CopyOutputRequest> request,
     std::unique_ptr<CopyOutputResult> result) {
-  main_thread_task_runner->PostTask(FROM_HERE,
-                                    base::Bind(&RunCopyCallbackOnMainThread,
-                                               base::Passed(&request),
-                                               base::Passed(&result)));
+  main_thread_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&RunCopyCallbackOnMainThread,
+                                base::Passed(&request), base::Passed(&result)));
 }
 
 bool Layer::IsSnapped() {

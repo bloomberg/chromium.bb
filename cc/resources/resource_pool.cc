@@ -397,10 +397,11 @@ void ResourcePool::ScheduleEvictExpiredResourcesIn(
 
   evict_expired_resources_pending_ = true;
 
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&ResourcePool::EvictExpiredResources,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                                time_from_now);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ResourcePool::EvictExpiredResources,
+                     weak_ptr_factory_.GetWeakPtr()),
+      time_from_now);
 }
 
 void ResourcePool::EvictExpiredResources() {

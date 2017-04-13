@@ -55,8 +55,8 @@ class LayerTreeHostCopyRequestTestMultipleRequests
   void WaitForCallback() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostCopyRequestTestMultipleRequests::NextStep,
-                   base::Unretained(this)));
+        base::BindOnce(&LayerTreeHostCopyRequestTestMultipleRequests::NextStep,
+                       base::Unretained(this)));
   }
 
   void NextStep() {
@@ -784,9 +784,9 @@ class LayerTreeHostCopyRequestTestDeleteTexture
     result_ = nullptr;
 
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostCopyRequestTestDeleteTexture::
-                                  CheckNumTexturesAfterReadbackDestroyed,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&LayerTreeHostCopyRequestTestDeleteTexture::
+                                      CheckNumTexturesAfterReadbackDestroyed,
+                                  base::Unretained(this)));
   }
 
   void CheckNumTexturesAfterReadbackDestroyed() {
@@ -813,7 +813,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
         // Request a copy of the layer. This will use another texture.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &LayerTreeHostCopyRequestTestDeleteTexture::InsertCopyRequest,
                 base::Unretained(this)));
         break;
@@ -832,9 +832,10 @@ class LayerTreeHostCopyRequestTestDeleteTexture
         // to the compositor. Then check the resulting number of allocated
         // textures.
         MainThreadTaskRunner()->PostTask(
-            FROM_HERE, base::Bind(&LayerTreeHostCopyRequestTestDeleteTexture::
-                                      DestroyCopyResultAndCheckNumTextures,
-                                  base::Unretained(this)));
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostCopyRequestTestDeleteTexture::
+                               DestroyCopyResultAndCheckNumTextures,
+                           base::Unretained(this)));
         break;
     }
   }
@@ -936,8 +937,9 @@ class LayerTreeHostCopyRequestTestCountTextures
         // readback.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&LayerTreeHostCopyRequestTestCountTextures::DoEndTest,
-                       base::Unretained(this)));
+            base::BindOnce(
+                &LayerTreeHostCopyRequestTestCountTextures::DoEndTest,
+                base::Unretained(this)));
         break;
     }
   }
@@ -1074,8 +1076,9 @@ class LayerTreeHostCopyRequestTestDestroyBeforeCopy
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostCopyRequestTestDestroyBeforeCopy::DidActivate,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &LayerTreeHostCopyRequestTestDestroyBeforeCopy::DidActivate,
+            base::Unretained(this)));
   }
 
   void DidActivate() {
@@ -1151,8 +1154,9 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::DidActivate,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &LayerTreeHostCopyRequestTestShutdownBeforeCopy::DidActivate,
+            base::Unretained(this)));
   }
 
   void DidActivate() {
@@ -1177,8 +1181,9 @@ class LayerTreeHostCopyRequestTestShutdownBeforeCopy
         // the main thread.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&LayerTreeHostCopyRequestTestShutdownBeforeCopy::EndTest,
-                       base::Unretained(this)));
+            base::BindOnce(
+                &LayerTreeHostCopyRequestTestShutdownBeforeCopy::EndTest,
+                base::Unretained(this)));
         break;
     }
   }
@@ -1275,7 +1280,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
         // to the main thread.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest::
                     TryEndTest,
                 base::Unretained(this), WhatHappened::DRAW));

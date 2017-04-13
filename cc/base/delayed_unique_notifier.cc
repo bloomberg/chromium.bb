@@ -34,10 +34,11 @@ void DelayedUniqueNotifier::Schedule() {
   }
 
   next_notification_time_ = Now() + delay_;
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&DelayedUniqueNotifier::NotifyIfTime,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                                delay_);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&DelayedUniqueNotifier::NotifyIfTime,
+                     weak_ptr_factory_.GetWeakPtr()),
+      delay_);
   notification_pending_ = true;
 }
 
@@ -82,8 +83,9 @@ void DelayedUniqueNotifier::NotifyIfTime() {
     base::TimeTicks now = Now();
     if (next_notification_time_ > now) {
       task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&DelayedUniqueNotifier::NotifyIfTime,
-                                weak_ptr_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&DelayedUniqueNotifier::NotifyIfTime,
+                         weak_ptr_factory_.GetWeakPtr()),
           next_notification_time_ - now);
       return;
     }

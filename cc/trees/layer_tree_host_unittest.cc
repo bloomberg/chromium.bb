@@ -2715,8 +2715,8 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
             FROM_HERE,
             // Unretained because the test should not end before allowing
             // commits via this running.
-            base::Bind(&LayerTreeHostTestDeferCommits::AllowCommits,
-                       base::Unretained(this)));
+            base::BindOnce(&LayerTreeHostTestDeferCommits::AllowCommits,
+                           base::Unretained(this)));
         break;
       default:
         // Sometimes |num_will_begin_impl_frame_| will be greater than 5 if the
@@ -2772,7 +2772,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
     MainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
-        base::Bind(&LayerTreeTest::EndTest, base::Unretained(this)),
+        base::BindOnce(&LayerTreeTest::EndTest, base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(100));
   }
 
@@ -2814,7 +2814,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
     MainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
-        base::Bind(
+        base::BindOnce(
             &LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter::
                 AllowCommits,
             base::Unretained(this)),
@@ -3021,7 +3021,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     // once we return. End test while it's enabled.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTest::EndTest, base::Unretained(this)));
+        base::BindOnce(&LayerTreeHostTest::EndTest, base::Unretained(this)));
   }
 
   void AfterTest() override {}
@@ -3142,9 +3142,9 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
       // surface. But it needs to be done on a new stack frame.
       bool resourceless_software_draw = false;
       ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&OnDrawCompositorFrameSink::OnDraw,
-                                base::Unretained(compositor_frame_sink_),
-                                resourceless_software_draw));
+          FROM_HERE, base::BindOnce(&OnDrawCompositorFrameSink::OnDraw,
+                                    base::Unretained(compositor_frame_sink_),
+                                    resourceless_software_draw));
     }
   }
 
@@ -4776,8 +4776,9 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
 
   void DidCommit() override {
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestKeepSwapPromise::ChangeFrame,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestKeepSwapPromise::ChangeFrame,
+                       base::Unretained(this)));
   }
 
   void ChangeFrame() {
@@ -4881,8 +4882,8 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   void DidCommit() override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostTestKeepSwapPromiseMFBA::ChangeFrame,
-                   base::Unretained(this)));
+        base::BindOnce(&LayerTreeHostTestKeepSwapPromiseMFBA::ChangeFrame,
+                       base::Unretained(this)));
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -4981,9 +4982,10 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
                                   const BeginFrameArgs& args) override {
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestBreakSwapPromiseForVisibility::
-                                  SetVisibleFalseAndQueueSwapPromise,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
+                           SetVisibleFalseAndQueueSwapPromise,
+                       base::Unretained(this)));
   }
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
@@ -5992,8 +5994,9 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       return;
     posted_ = true;
     ImplThreadTaskRunner()->PostDelayedTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestCrispUpAfterPinchEnds::Next,
-                              base::Unretained(this), host_impl),
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestCrispUpAfterPinchEnds::Next,
+                       base::Unretained(this), host_impl),
         // Use a delay to allow raster/upload to happen in between frames. This
         // should cause flakiness if we fail to block raster/upload when
         // desired.
@@ -6464,9 +6467,10 @@ class LayerTreeHostTestNoTasksBetweenWillAndDidCommit
 
   void WillCommit() override {
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestNoTasksBetweenWillAndDidCommit::
-                                  EndTestShouldRunAfterDidCommit,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestNoTasksBetweenWillAndDidCommit::
+                           EndTestShouldRunAfterDidCommit,
+                       base::Unretained(this)));
   }
 
   void EndTestShouldRunAfterDidCommit() {

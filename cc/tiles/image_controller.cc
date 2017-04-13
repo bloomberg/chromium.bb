@@ -47,8 +47,8 @@ void ImageController::StopWorkerTasks() {
   // "flush" any scheduled tasks (they will abort).
   CompletionEvent completion_event;
   worker_task_runner_->PostTask(
-      FROM_HERE, base::Bind([](CompletionEvent* event) { event->Signal(); },
-                            base::Unretained(&completion_event)));
+      FROM_HERE, base::BindOnce([](CompletionEvent* event) { event->Signal(); },
+                                base::Unretained(&completion_event)));
   completion_event.Wait();
 
   // Reset the abort flag so that new tasks can be scheduled.
@@ -216,8 +216,8 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
     // Post a worker task.
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ImageController::ProcessNextImageDecodeOnWorkerThread,
-                   base::Unretained(this)));
+        base::BindOnce(&ImageController::ProcessNextImageDecodeOnWorkerThread,
+                       base::Unretained(this)));
   }
 
   return id;
@@ -272,8 +272,8 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
     decode.task->state().DidFinish();
   }
   origin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ImageController::ImageDecodeCompleted,
-                            weak_ptr_factory_.GetWeakPtr(), decode.id));
+      FROM_HERE, base::BindOnce(&ImageController::ImageDecodeCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), decode.id));
 }
 
 void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
@@ -320,8 +320,8 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
   // Post another task to run.
   worker_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ImageController::ProcessNextImageDecodeOnWorkerThread,
-                 base::Unretained(this)));
+      base::BindOnce(&ImageController::ProcessNextImageDecodeOnWorkerThread,
+                     base::Unretained(this)));
 
   // Finally run the requested callback.
   callback.Run(id, result);
@@ -349,8 +349,8 @@ void ImageController::GenerateTasksForOrphanedRequests() {
     // Post a worker task.
     worker_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ImageController::ProcessNextImageDecodeOnWorkerThread,
-                   base::Unretained(this)));
+        base::BindOnce(&ImageController::ProcessNextImageDecodeOnWorkerThread,
+                       base::Unretained(this)));
   }
 }
 

@@ -1347,9 +1347,9 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   ThreadCheckingInputHandlerClient input_handler_client(
       impl_thread.task_runner().get(), &received_stop_flinging);
   impl_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BindInputHandlerOnCompositorThread,
-                            layer_tree_host->GetInputHandler(),
-                            base::Unretained(&input_handler_client)));
+      FROM_HERE, base::BindOnce(&BindInputHandlerOnCompositorThread,
+                                layer_tree_host->GetInputHandler(),
+                                base::Unretained(&input_handler_client)));
 
   layer_tree_host->DidStopFlinging();
 
@@ -1868,9 +1868,9 @@ class LayerTreeHostScrollTestElasticOverscroll
     DCHECK(HasImplThread());
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&LayerTreeHostScrollTestElasticOverscroll::BindInputHandler,
-                   base::Unretained(this),
-                   layer_tree_host()->GetInputHandler()));
+        base::BindOnce(
+            &LayerTreeHostScrollTestElasticOverscroll::BindInputHandler,
+            base::Unretained(this), layer_tree_host()->GetInputHandler()));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -2095,9 +2095,10 @@ class LayerTreeHostScrollTestImplSideInvalidation
     {
       CompletionEvent completion;
       task_runner_provider()->ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&LayerTreeHostScrollTestImplSideInvalidation::
-                                    WaitForInvalidationOnImplThread,
-                                base::Unretained(this), &completion));
+          FROM_HERE,
+          base::BindOnce(&LayerTreeHostScrollTestImplSideInvalidation::
+                             WaitForInvalidationOnImplThread,
+                         base::Unretained(this), &completion));
       completion.Wait();
     }
 
