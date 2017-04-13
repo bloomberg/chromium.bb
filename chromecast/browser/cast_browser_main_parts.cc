@@ -317,6 +317,12 @@ CastBrowserMainParts::GetMediaTaskRunner() {
     base::Thread::Options options;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
     CHECK(media_thread_->StartWithOptions(options));
+    // Start the media_resource_tracker as soon as the media thread is created.
+    // There are services that run on the media thread that depend on it,
+    // and we want to initialize it with the correct task runner before any
+    // tasks that might use it are posted to the media thread.
+    media_resource_tracker_ = new media::MediaResourceTracker(
+        base::ThreadTaskRunnerHandle::Get(), media_thread_->task_runner());
   }
   return media_thread_->task_runner();
 #else
@@ -326,10 +332,7 @@ CastBrowserMainParts::GetMediaTaskRunner() {
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::MediaResourceTracker* CastBrowserMainParts::media_resource_tracker() {
-  if (!media_resource_tracker_) {
-    media_resource_tracker_ = new media::MediaResourceTracker(
-        base::ThreadTaskRunnerHandle::Get(), GetMediaTaskRunner());
-  }
+  DCHECK(media_thread_);
   return media_resource_tracker_;
 }
 
