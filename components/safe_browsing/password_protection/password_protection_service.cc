@@ -131,7 +131,7 @@ PasswordProtectionService::GetCachedVerdict(
 
   std::vector<std::string> paths;
   GeneratePathVariantsWithoutQuery(url, &paths);
-  size_t max_path_depth = 0U;
+  int max_path_depth = -1;
   LoginReputationClientResponse::VerdictType most_matching_verdict =
       LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
   // For all the verdicts of the same origin, we key them by |cache_expression|.
@@ -150,28 +150,18 @@ PasswordProtectionService::GetCachedVerdict(
     std::string cache_expression_path =
         GetCacheExpressionPath(verdict.cache_expression());
 
-    if (verdict.cache_expression_exact_match()) {
-      if (PathMatchCacheExpressionExactly(paths, cache_expression_path)) {
-        if (!IsCacheExpired(verdict_received_time,
-                            verdict.cache_duration_sec())) {
-          out_response->CopyFrom(verdict);
-          return verdict.verdict_type();
-        } else {  // verdict expired
-          return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-        }
-      }
-    } else {
-      // If it doesn't require exact match, we need to find the most specific
-      // match.
-      size_t path_depth = GetPathDepth(cache_expression_path);
-      if (path_depth > max_path_depth &&
-          PathVariantsMatchCacheExpression(paths, cache_expression_path) &&
-          !IsCacheExpired(verdict_received_time,
-                          verdict.cache_duration_sec())) {
-        max_path_depth = path_depth;
-        most_matching_verdict = verdict.verdict_type();
-        out_response->CopyFrom(verdict);
-      }
+    // Finds the most specific match.
+    int path_depth = static_cast<int>(GetPathDepth(cache_expression_path));
+    if (path_depth > max_path_depth &&
+        PathVariantsMatchCacheExpression(paths, cache_expression_path)) {
+      max_path_depth = path_depth;
+      // If the most matching verdict is expired, set the result to
+      // VERDICT_TYPE_UNSPECIFIED.
+      most_matching_verdict =
+          IsCacheExpired(verdict_received_time, verdict.cache_duration_sec())
+              ? LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED
+              : verdict.verdict_type();
+      out_response->CopyFrom(verdict);
     }
   }
   return most_matching_verdict;
@@ -374,26 +364,12 @@ bool PasswordProtectionService::ParseVerdictEntry(
   return out_verdict->ParseFromString(serialized_verdict_proto);
 }
 
-bool PasswordProtectionService::PathMatchCacheExpressionExactly(
-    const std::vector<std::string>& generated_paths,
-    const std::string& cache_expression_path) {
-  size_t cache_expression_path_depth = GetPathDepth(cache_expression_path);
-  if (generated_paths.size() <= cache_expression_path_depth) {
-    return false;
-  }
-  std::string canonical_path = generated_paths.back();
-  size_t last_slash_pos = canonical_path.find_last_of("/");
-  DCHECK_NE(std::string::npos, last_slash_pos);
-  return canonical_path.substr(0, last_slash_pos + 1) == cache_expression_path;
-}
-
 bool PasswordProtectionService::PathVariantsMatchCacheExpression(
     const std::vector<std::string>& generated_paths,
     const std::string& cache_expression_path) {
   for (const auto& path : generated_paths) {
-    if (cache_expression_path == path) {
+    if (cache_expression_path == path)
       return true;
-    }
   }
   return false;
 }

@@ -115,13 +115,11 @@ class PasswordProtectionServiceTest : public testing::Test {
   LoginReputationClientResponse CreateVerdictProto(
       LoginReputationClientResponse::VerdictType verdict,
       int cache_duration_sec,
-      const std::string& cache_expression,
-      bool exact_match) {
+      const std::string& cache_expression) {
     LoginReputationClientResponse verdict_proto;
     verdict_proto.set_verdict_type(verdict);
     verdict_proto.set_cache_duration_sec(cache_duration_sec);
     verdict_proto.set_cache_expression(cache_expression);
-    verdict_proto.set_cache_expression_exact_match(exact_match);
     return verdict_proto;
   }
 
@@ -162,23 +160,13 @@ class PasswordProtectionServiceTest : public testing::Test {
         PasswordProtectionService::GetCacheExpressionPath(cache_expression));
   }
 
-  bool PathMatchCacheExpressionExactly(const GURL& url,
-                                       const std::string& cache_expression) {
-    std::vector<std::string> paths;
-    PasswordProtectionService::GeneratePathVariantsWithoutQuery(url, &paths);
-    return PasswordProtectionService::PathMatchCacheExpressionExactly(
-        paths,
-        PasswordProtectionService::GetCacheExpressionPath(cache_expression));
-  }
-
   void CacheVerdict(const GURL& url,
                     LoginReputationClientResponse::VerdictType verdict,
                     int cache_duration_sec,
                     const std::string& cache_expression,
-                    bool exact_match,
                     const base::Time& verdict_received_time) {
-    LoginReputationClientResponse response(CreateVerdictProto(
-        verdict, cache_duration_sec, cache_expression, exact_match));
+    LoginReputationClientResponse response(
+        CreateVerdictProto(verdict, cache_duration_sec, cache_expression));
     password_protection_service_->CacheVerdict(url, &response,
                                                verdict_received_time);
   }
@@ -250,7 +238,7 @@ TEST_F(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
 TEST_F(PasswordProtectionServiceTest, TestParseValidVerdictEntry) {
   base::Time expected_creation_time = base::Time::Now();
   LoginReputationClientResponse expected_verdict(CreateVerdictProto(
-      LoginReputationClientResponse::SAFE, 10 * 60, "test.com/foo", true));
+      LoginReputationClientResponse::SAFE, 10 * 60, "test.com/foo"));
   std::unique_ptr<base::DictionaryValue> valid_verdict_entry =
       PasswordProtectionService::CreateDictionaryFromVerdict(
           &expected_verdict, expected_creation_time);
@@ -267,8 +255,6 @@ TEST_F(PasswordProtectionServiceTest, TestParseValidVerdictEntry) {
   EXPECT_EQ(expected_verdict.verdict_type(), actual_verdict.verdict_type());
   EXPECT_EQ(expected_verdict.cache_expression(),
             actual_verdict.cache_expression());
-  EXPECT_EQ(expected_verdict.cache_expression_exact_match(),
-            actual_verdict.cache_expression_exact_match());
 }
 
 TEST_F(PasswordProtectionServiceTest, TestPathVariantsMatchCacheExpression) {
@@ -309,43 +295,13 @@ TEST_F(PasswordProtectionServiceTest, TestPathVariantsMatchCacheExpression) {
       GURL("http://evil.com/worse/index.html"), cache_expression_with_slash));
 }
 
-TEST_F(PasswordProtectionServiceTest, TestPathMatchCacheExpressionExactly) {
-  // Cache expression without path.
-  std::string cache_expression("www.google.com");
-  EXPECT_TRUE(PathMatchCacheExpressionExactly(GURL("https://www.google.com"),
-                                              cache_expression));
-  EXPECT_TRUE(PathMatchCacheExpressionExactly(GURL("https://www.google.com/"),
-                                              cache_expression));
-  EXPECT_TRUE(PathMatchCacheExpressionExactly(
-      GURL("https://www.google.com/index.html"), cache_expression));
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(
-      GURL("https://www.google.com/abc/"), cache_expression));
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(
-      GURL("https://www.google.com/def/login"), cache_expression));
-
-  // Cache expression with path.
-  cache_expression = "evil.com/bad";
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(GURL("http://evil.com"),
-                                               cache_expression));
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(GURL("http://evil.com/"),
-                                               cache_expression));
-  EXPECT_TRUE(PathMatchCacheExpressionExactly(GURL("http://evil.com/bad/"),
-                                              cache_expression));
-  EXPECT_TRUE(PathMatchCacheExpressionExactly(
-      GURL("http://evil.com/bad/index.html"), cache_expression));
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(GURL("http://evil.com/bad/abc/"),
-                                               cache_expression));
-  EXPECT_FALSE(PathMatchCacheExpressionExactly(
-      GURL("http://evil.com/bad/abc/login.jsp"), cache_expression));
-}
-
 TEST_F(PasswordProtectionServiceTest, TestCachedVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount());
   // Assume each verdict has a TTL of 10 minutes.
   // Cache a verdict for http://www.test.com/foo/index.html
   CacheVerdict(GURL("http://www.test.com/foo/index.html"),
                LoginReputationClientResponse::SAFE, 10 * 60, "test.com/foo",
-               false, base::Time::Now());
+               base::Time::Now());
 
   EXPECT_EQ(1U, GetStoredVerdictCount());
 
@@ -353,7 +309,7 @@ TEST_F(PasswordProtectionServiceTest, TestCachedVerdicts) {
   // override the cache.
   CacheVerdict(GURL("http://www.test.com/foo/index2.html"),
                LoginReputationClientResponse::PHISHING, 10 * 60, "test.com/foo",
-               false, base::Time::Now());
+               base::Time::Now());
   EXPECT_EQ(1U, GetStoredVerdictCount());
   LoginReputationClientResponse out_verdict;
   EXPECT_EQ(LoginReputationClientResponse::PHISHING,
@@ -365,29 +321,23 @@ TEST_F(PasswordProtectionServiceTest, TestCachedVerdicts) {
   // in the given origin.
   CacheVerdict(GURL("http://www.test.com/bar/index2.html"),
                LoginReputationClientResponse::SAFE, 10 * 60, "test.com/bar",
-               false, base::Time::Now());
+               base::Time::Now());
   EXPECT_EQ(2U, GetStoredVerdictCount());
 }
 
 TEST_F(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount());
-  // Prepare 3 verdicts of the same origin with different cache expressions:
-  // (1) require exact match, not expired.
-  // (2) not require exact match, not expired.
-  // (3) require exact match, expired.
+  // Prepare 2 verdicts of the same origin with different cache expressions,
+  // one is expired, the other is not.
   base::Time now = base::Time::Now();
   CacheVerdict(GURL("http://test.com/login.html"),
-               LoginReputationClientResponse::SAFE, 10 * 60, "test.com", true,
-               now);
-  CacheVerdict(GURL("http://test.com/abc/index.jsp"),
-               LoginReputationClientResponse::LOW_REPUTATION, 10 * 60,
-               "test.com/abc", false, now);
+               LoginReputationClientResponse::SAFE, 10 * 60, "test.com", now);
   CacheVerdict(
       GURL("http://test.com/def/index.jsp"),
-      LoginReputationClientResponse::PHISHING, 10 * 60, "test.com/def", false,
+      LoginReputationClientResponse::PHISHING, 10 * 60, "test.com/def",
       base::Time::FromDoubleT(now.ToDoubleT() -
                               24.0 * 60.0 * 60.0));  // Yesterday, expired.
-  ASSERT_EQ(3U, GetStoredVerdictCount());
+  ASSERT_EQ(2U, GetStoredVerdictCount());
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL with unknown origin.
   LoginReputationClientResponse actual_verdict;
@@ -395,39 +345,16 @@ TEST_F(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
             password_protection_service_->GetCachedVerdict(
                 GURL("http://www.unknown.com/"), &actual_verdict));
 
-  // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL with http://test.com
-  // origin, but doesn't match any known cache_expression.
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+  // Return SAFE if look up for a URL that matches "test.com" cache expression.
+  EXPECT_EQ(LoginReputationClientResponse::SAFE,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/xyz/foo.jsp"), &actual_verdict));
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL whose variants match
-  // test.com/def, since corresponding entry is expired.
+  // test.com/def, but the corresponding verdict is expired.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
                 GURL("http://test.com/def/ghi/index.html"), &actual_verdict));
-
-  // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL whose variants match
-  // test.com, but not match it exactly. Return SAFE if it is a exact match of
-  // test.com.
-  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://test.com/ghi/index.html"), &actual_verdict));
-  EXPECT_EQ(LoginReputationClientResponse::SAFE,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://test.com/term_of_service.html"), &actual_verdict));
-
-  // Return LOW_REPUTATION if look up for a URL whose variants match
-  // test.com/abc.
-  EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://test.com/abc/"), &actual_verdict));
-  EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://test.com/abc/bar.jsp"), &actual_verdict));
-  EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
-            password_protection_service_->GetCachedVerdict(
-                GURL("http://test.com/abc/foo/bar.html"), &actual_verdict));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
@@ -437,10 +364,10 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
   base::Time now = base::Time::Now();
   CacheVerdict(GURL("http://foo.com/abc/index.jsp"),
                LoginReputationClientResponse::LOW_REPUTATION, 10 * 60,
-               "foo.com/abc", false, now);
+               "foo.com/abc", now);
   CacheVerdict(GURL("http://bar.com/index.jsp"),
                LoginReputationClientResponse::PHISHING, 10 * 60, "bar.com",
-               false, now);
+               now);
   ASSERT_EQ(2U, GetStoredVerdictCount());
 
   // Delete a bar.com URL. Corresponding content setting keyed on
@@ -505,7 +432,7 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   CacheVerdict(GURL(kTargetUrl), LoginReputationClientResponse::LOW_REPUTATION,
-               600, GURL(kTargetUrl).host(), true, base::Time::Now());
+               600, GURL(kTargetUrl).host(), base::Time::Now());
   InitializeAndStartRequest(false /* match whitelist */,
                             10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
@@ -568,9 +495,8 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
   fetcher.set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   fetcher.set_response_code(200);
-  LoginReputationClientResponse expected_response =
-      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 600,
-                         GURL(kTargetUrl).host(), true);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
   fetcher.SetResponseString(expected_response.SerializeAsString());
 
   InitializeAndStartRequest(false /* match whitelist */,
@@ -584,8 +510,6 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
   EXPECT_EQ(expected_response.verdict_type(), actual_response->verdict_type());
   EXPECT_EQ(expected_response.cache_expression(),
             actual_response->cache_expression());
-  EXPECT_EQ(expected_response.cache_expression_exact_match(),
-            actual_response->cache_expression_exact_match());
   EXPECT_EQ(expected_response.cache_duration_sec(),
             actual_response->cache_duration_sec());
 }

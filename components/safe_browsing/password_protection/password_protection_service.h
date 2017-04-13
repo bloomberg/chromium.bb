@@ -129,8 +129,6 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestPathVariantsMatchCacheExpression);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
-                           TestPathMatchCacheExpressionExactly);
-  FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestCleanUpCachedVerdicts);
 
   // Overridden from history::HistoryServiceObserver.
@@ -151,10 +149,6 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   static bool ParseVerdictEntry(base::DictionaryValue* verdict_entry,
                                 int* out_verdict_received_time,
                                 LoginReputationClientResponse* out_verdict);
-
-  static bool PathMatchCacheExpressionExactly(
-      const std::vector<std::string>& generated_paths,
-      const std::string& cache_expression_path);
 
   static bool PathVariantsMatchCacheExpression(
       const std::vector<std::string>& generated_paths,
