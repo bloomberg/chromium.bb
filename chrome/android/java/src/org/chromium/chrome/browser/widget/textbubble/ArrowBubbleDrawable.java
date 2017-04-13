@@ -22,7 +22,7 @@ import org.chromium.chrome.R;
 /**
  * A {@link Drawable} that is a bubble with an arrow pointing out of either the top or bottom.
  */
-class ArrowBubbleDrawable extends Drawable {
+class ArrowBubbleDrawable extends Drawable implements Drawable.Callback {
     private final Rect mCachedBubblePadding = new Rect();
 
     private final int mRadiusPx;
@@ -40,6 +40,9 @@ class ArrowBubbleDrawable extends Drawable {
                         null, null));
         mArrowDrawable = (BitmapDrawable) ApiCompatibilityUtils.getDrawable(
                 context.getResources(), R.drawable.bubble_point_white);
+
+        mBubbleDrawable.setCallback(this);
+        mArrowDrawable.setCallback(this);
     }
 
     /**
@@ -72,12 +75,35 @@ class ArrowBubbleDrawable extends Drawable {
     }
 
     /**
+     * @return Whether or not the arrow is currently drawing on top of this {@link Drawable}.
+     */
+    public boolean isArrowOnTop() {
+        return mArrowOnTop;
+    }
+
+    /**
      * @param color The color to make the bubble and arrow.
      */
     public void setBubbleColor(@ColorInt int color) {
         DrawableCompat.setTint(mBubbleDrawable, color);
         DrawableCompat.setTint(mArrowDrawable, color);
         invalidateSelf();
+    }
+
+    // Drawable.Callback implementation.
+    @Override
+    public void invalidateDrawable(Drawable who) {
+        invalidateSelf();
+    }
+
+    @Override
+    public void scheduleDrawable(Drawable who, Runnable what, long when) {
+        scheduleSelf(what, when);
+    }
+
+    @Override
+    public void unscheduleDrawable(Drawable who, Runnable what) {
+        unscheduleSelf(what);
     }
 
     // Drawable implementation.

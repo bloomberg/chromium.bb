@@ -8,19 +8,30 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.support.annotation.StringRes;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnPreDrawListener;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.content.browser.PositionObserver;
+import org.chromium.content.browser.ViewPositionObserver;
 
 /**
  * A helper class that anchors a {@link TextBubble} to a particular {@link View}.  The bubble will
  * listen to layout events on the {@link View} and update accordingly.
  */
-public class ViewAnchoredTextBubble extends TextBubble implements OnLayoutChangeListener {
+public class ViewAnchoredTextBubble extends TextBubble
+        implements PositionObserver.Listener, ViewTreeObserver.OnGlobalLayoutListener,
+                   View.OnAttachStateChangeListener, OnPreDrawListener, OnDismissListener {
     private final int[] mCachedScreenCoordinates = new int[2];
     private final Rect mAnchorRect = new Rect();
     private final Rect mInsetRect = new Rect();
     private final View mAnchorView;
+
+    private final ViewPositionObserver mViewPositionObserver;
+
+    /** If not {@code null}, the {@link ViewTreeObserver} that we are registered to. */
+    private ViewTreeObserver mViewTreeObserver;
 
     /**
      * Creates an instance of a {@link ViewAnchoredTextBubble}.
@@ -31,6 +42,8 @@ public class ViewAnchoredTextBubble extends TextBubble implements OnLayoutChange
     public ViewAnchoredTextBubble(Context context, View anchorView, @StringRes int stringId) {
         super(context, anchorView.getRootView(), stringId);
         mAnchorView = anchorView;
+
+        mViewPositionObserver = new ViewPositionObserver(mAnchorView);
     }
 
     /**
@@ -45,26 +58,53 @@ public class ViewAnchoredTextBubble extends TextBubble implements OnLayoutChange
     // TextBubble implementation.
     @Override
     public void show() {
-        mAnchorView.addOnLayoutChangeListener(this);
+        mViewPositionObserver.addListener(this);
+        mAnchorView.addOnAttachStateChangeListener(this);
+        mViewTreeObserver = mAnchorView.getViewTreeObserver();
+        mViewTreeObserver.addOnGlobalLayoutListener(this);
+        mViewTreeObserver.addOnPreDrawListener(this);
+
         refreshAnchorBounds();
         super.show();
     }
 
     @Override
-    public void dismiss() {
-        super.dismiss();
-        mAnchorView.removeOnLayoutChangeListener(this);
+    public void onDismiss() {
+        mViewPositionObserver.removeListener(this);
+        mAnchorView.removeOnAttachStateChangeListener(this);
+
+        if (mViewTreeObserver != null && mViewTreeObserver.isAlive()) {
+            mViewTreeObserver.removeOnGlobalLayoutListener(this);
+            mViewTreeObserver.removeOnPreDrawListener(this);
+        }
+        mViewTreeObserver = null;
     }
 
-    // OnLayoutChangeListener implementation.
+    // ViewTreeObserver.OnGlobalLayoutListener implementation.
     @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-            int oldTop, int oldRight, int oldBottom) {
-        if (!mAnchorView.isShown()) {
-            dismiss();
-            return;
-        }
+    public void onGlobalLayout() {
+        if (!mAnchorView.isShown()) dismiss();
+    }
 
+    // ViewTreeObserver.OnPreDrawListener implementation.
+    @Override
+    public boolean onPreDraw() {
+        if (!mAnchorView.isShown()) dismiss();
+        return true;
+    }
+
+    // View.OnAttachStateChangedObserver implementation.
+    @Override
+    public void onViewAttachedToWindow(View v) {}
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        dismiss();
+    }
+
+    // PositionObserver.Listener implementation.
+    @Override
+    public void onPositionChanged(int positionX, int positionY) {
         refreshAnchorBounds();
     }
 

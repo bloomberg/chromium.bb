@@ -2272,7 +2272,7 @@ public class ToolbarPhone extends ToolbarLayout
                 TabSwitcherCallout.showIfNecessary(getContext(), mToggleTabStackButton);
         if (mTabSwitcherCallout == null) return;
 
-        mTabSwitcherCallout.setOnDismissListener(new OnDismissListener() {
+        mTabSwitcherCallout.addOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss() {
                 if (mControlsVisibilityDelegate != null) {

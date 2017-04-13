@@ -21,6 +21,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -29,7 +30,7 @@ import org.chromium.chrome.browser.util.MathUtils;
  * calls to {@link #setAnchorRect(Rect)}.  This should be called at least once before the
  * {@link #show()} call.  To attach to a {@link View} see {@link ViewAnchoredTextBubble}.
  */
-public class TextBubble implements OnTouchListener, OnDismissListener {
+public class TextBubble implements OnTouchListener {
     /**
      * Specifies no limit to the popup duration.
      * @see #setAutoDismissTimeout(long)
@@ -63,6 +64,16 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
         }
     };
 
+    private final OnDismissListener mDismissListener = new OnDismissListener() {
+        @Override
+        public void onDismiss() {
+            if (mIgnoreDismissal) return;
+
+            mHandler.removeCallbacks(mDismissRunnable);
+            for (OnDismissListener listener : mDismissListeners) listener.onDismiss();
+        }
+    };
+
     /**
      * How long to wait before automatically dismissing the bubble.  {@link #NO_TIMEOUT} is the
      * default and means the bubble will stay visible indefinitely.
@@ -72,7 +83,7 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
 
     // Pass through for the internal PopupWindow.  This class needs to intercept these for API
     // purposes, but they are still useful to callers.
-    private OnDismissListener mDismissListener;
+    private ObserverList<OnDismissListener> mDismissListeners = new ObserverList<>();
     private OnTouchListener mTouchListener;
 
     // Positioning/sizing coordinates for the popup bubble.
@@ -80,6 +91,13 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
     private int mY;
     private int mWidth;
     private int mHeight;
+
+    /**
+     * Tracks whether or not we are in the process of updating the bubble, which might include a
+     * dismiss and show.  In that case we don't want to let the world know we're dismissing because
+     * it's only temporary.
+     */
+    private boolean mIgnoreDismissal;
 
     // Content specific variables.
     /** The resource id for the string to show in the bubble. */
@@ -106,7 +124,7 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
         mPopupWindow.setAnimationStyle(R.style.TextBubbleAnimation);
 
         mPopupWindow.setTouchInterceptor(this);
-        mPopupWindow.setOnDismissListener(this);
+        mPopupWindow.setOnDismissListener(mDismissListener);
 
         mMarginPx = context.getResources().getDimensionPixelSize(R.dimen.text_bubble_margin);
 
@@ -148,8 +166,16 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
      * @param onDismissListener A listener to be called when the bubble is dismissed.
      * @see PopupWindow#setOnDismissListener(OnDismissListener)
      */
-    public void setOnDismissListener(OnDismissListener onDismissListener) {
-        mDismissListener = onDismissListener;
+    public void addOnDismissListener(OnDismissListener onDismissListener) {
+        mDismissListeners.addObserver(onDismissListener);
+    }
+
+    /**
+     * @param onDismissListener The listener to remove and not call when the bubble is dismissed.
+     * @see PopupWindow#setOnDismissListener(OnDismissListener)
+     */
+    public void removeOnDismissListener(OnDismissListener onDismissListener) {
+        mDismissListeners.removeObserver(onDismissListener);
     }
 
     /**
@@ -196,7 +222,11 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
      */
     private void updateBubbleLayout() {
         // Determine the size of the text bubble.
-        mPopupWindow.getBackground().getPadding(mCachedPaddingRect);
+        ArrowBubbleDrawable background = (ArrowBubbleDrawable) mPopupWindow.getBackground();
+        boolean currentPositionBelow = background.isArrowOnTop();
+        boolean preferCurrentOrientation = mPopupWindow.isShowing();
+
+        background.getPadding(mCachedPaddingRect);
         int paddingX = mCachedPaddingRect.left + mCachedPaddingRect.right;
         int paddingY = mCachedPaddingRect.top + mCachedPaddingRect.bottom;
 
@@ -221,6 +251,13 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
         // available.  This does bias the bubbles to show below the anchors if possible.
         boolean positionBelow =
                 idealHeight <= spaceBelowAnchor || spaceBelowAnchor >= spaceAboveAnchor;
+
+        // Override the ideal bubble orientation if we are trying to maintain the current one.
+        if (preferCurrentOrientation && currentPositionBelow != positionBelow) {
+            if (currentPositionBelow && idealHeight <= spaceBelowAnchor) positionBelow = true;
+            if (!currentPositionBelow && idealHeight <= spaceAboveAnchor) positionBelow = false;
+        }
+
         int maxContentHeight = positionBelow ? spaceBelowAnchor : spaceAboveAnchor;
         contentView.measure(
                 widthSpec, MeasureSpec.makeMeasureSpec(maxContentHeight, MeasureSpec.AT_MOST));
@@ -247,7 +284,20 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
         // TODO(dtrainor): Figure out how to move the arrow and bubble to make things look better.
 
         mDrawable.setPositionProperties(arrowXOffset, positionBelow);
-        mPopupWindow.update(mX, mY, mWidth, mHeight);
+
+        if (positionBelow != currentPositionBelow) {
+            // This is a hack to deal with the case where the arrow flips between top and bottom.
+            // In this case the padding of the background drawable in the PopupWindow changes.
+            try {
+                mIgnoreDismissal = true;
+                mPopupWindow.dismiss();
+                mPopupWindow.showAtLocation(mRootView, Gravity.TOP | Gravity.START, mX, mY);
+            } finally {
+                mIgnoreDismissal = false;
+            }
+        } else {
+            mPopupWindow.update(mX, mY, mWidth, mHeight);
+        }
     }
 
     private void createContentView() {
@@ -264,12 +314,5 @@ public class TextBubble implements OnTouchListener, OnDismissListener {
         boolean returnValue = mTouchListener != null && mTouchListener.onTouch(v, event);
         if (mDismissOnTouchInteraction) dismiss();
         return returnValue;
-    }
-
-    // OnDismissListener implementation.
-    @Override
-    public void onDismiss() {
-        mHandler.removeCallbacks(mDismissRunnable);
-        if (mDismissListener != null) mDismissListener.onDismiss();
     }
 }
