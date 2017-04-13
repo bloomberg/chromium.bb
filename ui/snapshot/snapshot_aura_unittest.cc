@@ -126,7 +126,7 @@ class SnapshotAuraTest : public testing::Test {
 
   void WaitForDraw() {
     helper_->host()->compositor()->ScheduleDraw();
-    ui::DrawWaiterForTest::WaitForCompositingStarted(
+    ui::DrawWaiterForTest::WaitForCompositingEnded(
         helper_->host()->compositor());
   }
 

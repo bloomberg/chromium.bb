@@ -95,6 +95,7 @@ class CompositorObserverForLocks : public CompositorObserver {
   void OnCompositingDidCommit(Compositor* compositor) override {}
   void OnCompositingStarted(Compositor* compositor,
                             base::TimeTicks start_time) override {}
+  void OnCompositingEnded(Compositor* compositor) override {}
   void OnCompositingLockStateChanged(Compositor* compositor) override {
     changed_ = true;
     locked_ = compositor->IsLocked();
@@ -330,14 +331,14 @@ TEST_F(CompositorTestWithMessageLoop, MAYBE_CreateAndReleaseOutputSurface) {
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
   DCHECK(compositor()->IsVisible());
   compositor()->ScheduleDraw();
-  DrawWaiterForTest::WaitForCompositingStarted(compositor());
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
   compositor()->SetVisible(false);
   EXPECT_EQ(gfx::kNullAcceleratedWidget,
             compositor()->ReleaseAcceleratedWidget());
   compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   compositor()->SetVisible(true);
   compositor()->ScheduleDraw();
-  DrawWaiterForTest::WaitForCompositingStarted(compositor());
+  DrawWaiterForTest::WaitForCompositingEnded(compositor());
   compositor()->SetRootLayer(nullptr);
 }
 

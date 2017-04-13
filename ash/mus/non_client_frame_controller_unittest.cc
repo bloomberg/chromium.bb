@@ -120,7 +120,7 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   // Without the window visible, there should be a tile for the wallpaper at
   // (tile_x, tile_y) of size |tile_size|.
   compositor->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingStarted(compositor);
+  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
   {
     const cc::CompositorFrame& frame = GetLastCompositorFrame();
     ASSERT_EQ(1u, frame.render_pass_list.size());
@@ -133,7 +133,7 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   widget->SetBounds(widget_bound);
   widget->Show();
   compositor->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingStarted(compositor);
+  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
   {
     // This time, that tile for the wallpaper will not be drawn.
     const cc::CompositorFrame& frame = GetLastCompositorFrame();
