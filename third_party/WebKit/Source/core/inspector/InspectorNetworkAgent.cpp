@@ -558,14 +558,14 @@ DEFINE_TRACE(InspectorNetworkAgent) {
 
 void InspectorNetworkAgent::ShouldBlockRequest(const ResourceRequest& request,
                                                bool* result) {
-  protocol::DictionaryValue* blocked_ur_ls =
+  protocol::DictionaryValue* blocked_urls =
       state_->getObject(NetworkAgentState::kBlockedURLs);
-  if (!blocked_ur_ls)
+  if (!blocked_urls)
     return;
 
   String url = request.Url().GetString();
-  for (size_t i = 0; i < blocked_ur_ls->size(); ++i) {
-    auto entry = blocked_ur_ls->at(i);
+  for (size_t i = 0; i < blocked_urls->size(); ++i) {
+    auto entry = blocked_urls->at(i);
     if (Matches(url, entry.first)) {
       *result = true;
       return;

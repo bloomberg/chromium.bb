@@ -121,7 +121,7 @@ bool StyledMarkupTraverser<Strategy>::ShouldConvertBlocksToInlines() const {
 
 template <typename Strategy>
 StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(
-    EAbsoluteURLs should_resolve_ur_ls,
+    EAbsoluteURLs should_resolve_urls,
     EAnnotateForInterchange should_annotate,
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end,
@@ -129,7 +129,7 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(
     ConvertBlocksToInlines convert_blocks_to_inlines)
     : start_(start),
       end_(end),
-      should_resolve_ur_ls_(should_resolve_ur_ls),
+      should_resolve_urls_(should_resolve_urls),
       should_annotate_(should_annotate),
       highest_node_to_be_serialized_(highest_node_to_be_serialized),
       convert_blocks_to_inlines_(convert_blocks_to_inlines),
@@ -180,7 +180,7 @@ static EditingStyle* StyleFromMatchedRulesAndInlineDecl(
 template <typename Strategy>
 String StyledMarkupSerializer<Strategy>::CreateMarkup() {
   StyledMarkupAccumulator markup_accumulator(
-      should_resolve_ur_ls_, ToTextOffset(start_.ParentAnchoredEquivalent()),
+      should_resolve_urls_, ToTextOffset(start_.ParentAnchoredEquivalent()),
       ToTextOffset(end_.ParentAnchoredEquivalent()), start_.GetDocument(),
       should_annotate_, convert_blocks_to_inlines_);
 

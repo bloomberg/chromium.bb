@@ -225,9 +225,9 @@ bool CanvasRenderingContext::WouldTaintOrigin(
 
   if (has_url) {
     if (source_url.ProtocolIsData() ||
-        clean_ur_ls_.Contains(source_url.GetString()))
+        clean_urls_.Contains(source_url.GetString()))
       return false;
-    if (dirty_ur_ls_.Contains(source_url.GetString()))
+    if (dirty_urls_.Contains(source_url.GetString()))
       return true;
   }
 
@@ -239,9 +239,9 @@ bool CanvasRenderingContext::WouldTaintOrigin(
 
   if (has_url) {
     if (taint_origin)
-      dirty_ur_ls_.insert(source_url.GetString());
+      dirty_urls_.insert(source_url.GetString());
     else
-      clean_ur_ls_.insert(source_url.GetString());
+      clean_urls_.insert(source_url.GetString());
   }
   return taint_origin;
 }

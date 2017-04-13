@@ -144,7 +144,7 @@ class CORE_EXPORT FrameSerializer final {
   void RetrieveResourcesForCSSValue(const CSSValue&, Document&);
 
   Deque<SerializedResource>* resources_;
-  HashSet<KURL> resource_ur_ls_;
+  HashSet<KURL> resource_urls_;
 
   bool is_serializing_css_;
 

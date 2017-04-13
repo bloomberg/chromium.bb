@@ -5437,19 +5437,19 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
     }
   }
 
-  Vector<IconURL> icon_ur_ls;
+  Vector<IconURL> icon_urls;
   if (first_favicon.icon_type_ != kInvalidIcon)
-    icon_ur_ls.push_back(first_favicon);
+    icon_urls.push_back(first_favicon);
   else if (url_.ProtocolIsInHTTPFamily() && icon_types_mask & kFavicon)
-    icon_ur_ls.push_back(IconURL::DefaultFavicon(url_));
+    icon_urls.push_back(IconURL::DefaultFavicon(url_));
 
   if (first_touch_icon.icon_type_ != kInvalidIcon)
-    icon_ur_ls.push_back(first_touch_icon);
+    icon_urls.push_back(first_touch_icon);
   if (first_touch_precomposed_icon.icon_type_ != kInvalidIcon)
-    icon_ur_ls.push_back(first_touch_precomposed_icon);
+    icon_urls.push_back(first_touch_precomposed_icon);
   for (int i = secondary_icons.size() - 1; i >= 0; --i)
-    icon_ur_ls.push_back(secondary_icons[i]);
-  return icon_ur_ls;
+    icon_urls.push_back(secondary_icons[i]);
+  return icon_urls;
 }
 
 Color Document::ThemeColor() const {

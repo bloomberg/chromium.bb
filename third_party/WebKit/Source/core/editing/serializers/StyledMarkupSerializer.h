@@ -60,7 +60,7 @@ class StyledMarkupSerializer final {
 
   const PositionTemplate<Strategy> start_;
   const PositionTemplate<Strategy> end_;
-  const EAbsoluteURLs should_resolve_ur_ls_;
+  const EAbsoluteURLs should_resolve_urls_;
   const EAnnotateForInterchange should_annotate_;
   const Member<Node> highest_node_to_be_serialized_;
   const ConvertBlocksToInlines convert_blocks_to_inlines_;

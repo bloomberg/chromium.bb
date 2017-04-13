@@ -123,14 +123,14 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
 
 MarkupFormatter::MarkupFormatter(EAbsoluteURLs resolve_urls_method,
                                  SerializationType serialization_type)
-    : resolve_ur_ls_method_(resolve_urls_method),
+    : resolve_urls_method_(resolve_urls_method),
       serialization_type_(serialization_type) {}
 
 MarkupFormatter::~MarkupFormatter() {}
 
 String MarkupFormatter::ResolveURLIfNeeded(const Element& element,
                                            const String& url_string) const {
-  switch (resolve_ur_ls_method_) {
+  switch (resolve_urls_method_) {
     case kResolveAllURLs:
       return element.GetDocument().CompleteURL(url_string).GetString();
 

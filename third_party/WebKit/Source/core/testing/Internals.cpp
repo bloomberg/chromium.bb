@@ -2190,10 +2190,10 @@ int Internals::pageNumber(Element* element,
 
 Vector<String> Internals::IconURLs(Document* document,
                                    int icon_types_mask) const {
-  Vector<IconURL> icon_ur_ls = document->IconURLs(icon_types_mask);
+  Vector<IconURL> icon_urls = document->IconURLs(icon_types_mask);
   Vector<String> array;
 
-  for (auto& icon_url : icon_ur_ls)
+  for (auto& icon_url : icon_urls)
     array.push_back(icon_url.icon_url_.GetString());
 
   return array;

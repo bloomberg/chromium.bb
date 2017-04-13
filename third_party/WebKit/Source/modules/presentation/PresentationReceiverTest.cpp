@@ -47,10 +47,10 @@ class MockWebPresentationClient : public WebPresentationClient {
                                   callbacks);
   }
 
-  void GetAvailability(const WebVector<WebURL>& availability_ur_ls,
+  void GetAvailability(const WebVector<WebURL>& availability_urls,
                        std::unique_ptr<WebPresentationAvailabilityCallbacks>
                            callbacks) override {
-    return getAvailability_(availability_ur_ls, callbacks);
+    return getAvailability_(availability_urls, callbacks);
   }
 
  public:

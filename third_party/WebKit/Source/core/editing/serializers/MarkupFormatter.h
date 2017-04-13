@@ -119,7 +119,7 @@ class MarkupFormatter final {
                                      const Element&,
                                      const Attribute&);
 
-  const EAbsoluteURLs resolve_ur_ls_method_;
+  const EAbsoluteURLs resolve_urls_method_;
   SerializationType serialization_type_;
 };
 

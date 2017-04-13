@@ -51,13 +51,13 @@ size_t TotalLength(const Vector<String>& strings) {
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(
-    EAbsoluteURLs should_resolve_ur_ls,
+    EAbsoluteURLs should_resolve_urls,
     const TextOffset& start,
     const TextOffset& end,
     Document* document,
     EAnnotateForInterchange should_annotate,
     ConvertBlocksToInlines convert_blocks_to_inlines)
-    : formatter_(should_resolve_ur_ls),
+    : formatter_(should_resolve_urls),
       start_(start),
       end_(end),
       document_(document),

@@ -245,7 +245,7 @@ class CreateMarkupAlgorithm {
       const PositionTemplate<Strategy>& end_position,
       EAnnotateForInterchange should_annotate = kDoNotAnnotateForInterchange,
       ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
-      EAbsoluteURLs should_resolve_ur_ls = kDoNotResolveURLs,
+      EAbsoluteURLs should_resolve_urls = kDoNotResolveURLs,
       Node* constraining_ancestor = nullptr);
 };
 
@@ -259,7 +259,7 @@ String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
     const PositionTemplate<Strategy>& end_position,
     EAnnotateForInterchange should_annotate,
     ConvertBlocksToInlines convert_blocks_to_inlines,
-    EAbsoluteURLs should_resolve_ur_ls,
+    EAbsoluteURLs should_resolve_urls,
     Node* constraining_ancestor) {
   if (start_position.IsNull() || end_position.IsNull())
     return g_empty_string;
@@ -284,7 +284,7 @@ String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
   HTMLElement* special_common_ancestor = HighestAncestorToWrapMarkup<Strategy>(
       start_position, end_position, should_annotate, constraining_ancestor);
   StyledMarkupSerializer<Strategy> serializer(
-      should_resolve_ur_ls, should_annotate, start_position, end_position,
+      should_resolve_urls, should_annotate, start_position, end_position,
       special_common_ancestor, convert_blocks_to_inlines);
   return serializer.CreateMarkup();
 }
@@ -293,22 +293,22 @@ String CreateMarkup(const Position& start_position,
                     const Position& end_position,
                     EAnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_ur_ls,
+                    EAbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
-      should_resolve_ur_ls, constraining_ancestor);
+      should_resolve_urls, constraining_ancestor);
 }
 
 String CreateMarkup(const PositionInFlatTree& start_position,
                     const PositionInFlatTree& end_position,
                     EAnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_ur_ls,
+                    EAbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingInFlatTreeStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
-      should_resolve_ur_ls, constraining_ancestor);
+      should_resolve_urls, constraining_ancestor);
 }
 
 DocumentFragment* CreateFragmentFromMarkup(
@@ -434,11 +434,11 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
 
 String CreateMarkup(const Node* node,
                     EChildrenOnly children_only,
-                    EAbsoluteURLs should_resolve_ur_ls) {
+                    EAbsoluteURLs should_resolve_urls) {
   if (!node)
     return "";
 
-  MarkupAccumulator accumulator(should_resolve_ur_ls);
+  MarkupAccumulator accumulator(should_resolve_urls);
   return SerializeNodes<EditingStrategy>(accumulator, const_cast<Node&>(*node),
                                          children_only);
 }

@@ -175,7 +175,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
 
-  Vector<KURL> completed_ur_ls;
+  Vector<KURL> completed_urls;
   for (const String& url_string : urls) {
     const KURL& url = execution_context.CompleteURL(url_string);
     if (!url.IsValid()) {
@@ -190,10 +190,10 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
           "The script at '" + url.ElidedString() + "' failed to load.");
       return;
     }
-    completed_ur_ls.push_back(url);
+    completed_urls.push_back(url);
   }
 
-  for (const KURL& complete_url : completed_ur_ls) {
+  for (const KURL& complete_url : completed_urls) {
     RefPtr<WorkerScriptLoader> script_loader(WorkerScriptLoader::Create());
     script_loader->SetRequestContext(WebURLRequest::kRequestContextScript);
     script_loader->LoadSynchronously(

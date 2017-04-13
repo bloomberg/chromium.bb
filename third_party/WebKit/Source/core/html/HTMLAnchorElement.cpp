@@ -307,10 +307,10 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
 
   UseCounter::Count(GetDocument(), UseCounter::kHTMLAnchorElementPingAttribute);
 
-  SpaceSplitString ping_ur_ls(ping_value, SpaceSplitString::kShouldNotFoldCase);
-  for (unsigned i = 0; i < ping_ur_ls.size(); i++)
+  SpaceSplitString ping_urls(ping_value, SpaceSplitString::kShouldNotFoldCase);
+  for (unsigned i = 0; i < ping_urls.size(); i++)
     PingLoader::SendLinkAuditPing(GetDocument().GetFrame(),
-                                  GetDocument().CompleteURL(ping_ur_ls[i]),
+                                  GetDocument().CompleteURL(ping_urls[i]),
                                   destination_url);
 }
 

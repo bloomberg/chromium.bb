@@ -69,27 +69,27 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
     return;
   }
   const Vector<String>& sub_scopes = options.scopes();
-  Vector<KURL> sub_scope_ur_ls(sub_scopes.size());
+  Vector<KURL> sub_scope_urls(sub_scopes.size());
   for (size_t i = 0; i < sub_scopes.size(); ++i) {
-    sub_scope_ur_ls[i] = execution_context->CompleteURL(sub_scopes[i]);
-    if (!sub_scope_ur_ls[i].IsValid()) {
+    sub_scope_urls[i] = execution_context->CompleteURL(sub_scopes[i]);
+    if (!sub_scope_urls[i].IsValid()) {
       exception_state.ThrowTypeError("Invalid subscope URL: " + sub_scopes[i]);
       return;
     }
-    sub_scope_ur_ls[i].RemoveFragmentIdentifier();
-    if (!origin->CanRequest(sub_scope_ur_ls[i])) {
+    sub_scope_urls[i].RemoveFragmentIdentifier();
+    if (!origin->CanRequest(sub_scope_urls[i])) {
       exception_state.ThrowTypeError("Subscope URL is not within scope: " +
                                      sub_scopes[i]);
       return;
     }
-    String sub_scope_path = sub_scope_ur_ls[i].GetPath();
+    String sub_scope_path = sub_scope_urls[i].GetPath();
     if (!sub_scope_path.StartsWith(scope_path)) {
       exception_state.ThrowTypeError("Subscope URL is not within scope: " +
                                      sub_scopes[i]);
       return;
     }
   }
-  client->RegisterForeignFetchScopes(sub_scope_ur_ls, parsed_origins);
+  client->RegisterForeignFetchScopes(sub_scope_urls, parsed_origins);
 }
 
 const AtomicString& InstallEvent::InterfaceName() const {

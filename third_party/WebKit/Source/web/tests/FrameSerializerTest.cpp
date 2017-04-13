@@ -107,11 +107,11 @@ class FrameSerializerTest : public ::testing::Test,
   }
 
   void RegisterRewriteURL(const char* from_url, const char* to_url) {
-    rewrite_ur_ls_.insert(from_url, to_url);
+    rewrite_urls_.insert(from_url, to_url);
   }
 
   void RegisterSkipURL(const char* url) {
-    skip_ur_ls_.push_back(KURL(base_url_, url));
+    skip_urls_.push_back(KURL(base_url_, url));
   }
 
   void Serialize(const char* url) {
@@ -173,27 +173,27 @@ class FrameSerializerTest : public ::testing::Test,
       }
     }
 
-    if (complete_url.IsNull() || !rewrite_ur_ls_.Contains(complete_url))
+    if (complete_url.IsNull() || !rewrite_urls_.Contains(complete_url))
       return false;
 
     StringBuilder uri_builder;
     uri_builder.Append(rewrite_folder_);
     uri_builder.Append('/');
-    uri_builder.Append(rewrite_ur_ls_.at(complete_url));
+    uri_builder.Append(rewrite_urls_.at(complete_url));
     rewritten_link = uri_builder.ToString();
     return true;
   }
 
   bool ShouldSkipResourceWithURL(const KURL& url) {
-    return skip_ur_ls_.Contains(url);
+    return skip_urls_.Contains(url);
   }
 
   FrameTestHelpers::WebViewHelper helper_;
   std::string folder_;
   KURL base_url_;
   Deque<SerializedResource> resources_;
-  HashMap<String, String> rewrite_ur_ls_;
-  Vector<String> skip_ur_ls_;
+  HashMap<String, String> rewrite_urls_;
+  Vector<String> skip_urls_;
   String rewrite_folder_;
 };
 

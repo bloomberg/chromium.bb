@@ -230,8 +230,8 @@ class CORE_EXPORT CanvasRenderingContext
 
   Member<HTMLCanvasElement> canvas_;
   Member<OffscreenCanvas> offscreen_canvas_;
-  HashSet<String> clean_ur_ls_;
-  HashSet<String> dirty_ur_ls_;
+  HashSet<String> clean_urls_;
+  HashSet<String> dirty_urls_;
   CanvasColorSpace color_space_;
   CanvasPixelFormat pixel_format_;
   bool linear_pixel_math_ = false;

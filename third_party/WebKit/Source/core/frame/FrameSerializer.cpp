@@ -350,7 +350,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   bool is_inline_css = !url.IsValid() || url.ProtocolIsData();
   // If this CSS is not inline then it is identifiable by its URL. So just skip
   // it if it has already been analyzed before.
-  if (!is_inline_css && (resource_ur_ls_.Contains(url) ||
+  if (!is_inline_css && (resource_urls_.Contains(url) ||
                          delegate_.ShouldSkipResourceWithURL(url))) {
     return;
   }
@@ -390,7 +390,7 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     resources_->push_back(
         SerializedResource(url, String("text/css"),
                            SharedBuffer::Create(text.Data(), text.length())));
-    resource_ur_ls_.insert(url);
+    resource_urls_.insert(url);
   }
 
   // Sub resources need to be serialized even if the CSS definition doesn't
@@ -455,7 +455,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
 }
 
 bool FrameSerializer::ShouldAddURL(const KURL& url) {
-  return url.IsValid() && !resource_ur_ls_.Contains(url) &&
+  return url.IsValid() && !resource_urls_.Contains(url) &&
          !url.ProtocolIsData() && !delegate_.ShouldSkipResourceWithURL(url);
 }
 
@@ -473,7 +473,7 @@ void FrameSerializer::AddToResources(
   }
 
   resources_->push_back(SerializedResource(url, mime_type, std::move(data)));
-  resource_ur_ls_.insert(url);
+  resource_urls_.insert(url);
 }
 
 void FrameSerializer::AddImageToResources(ImageResourceContent* image,

@@ -77,8 +77,8 @@ void PublicURLManager::Revoke(const String& uuid) {
   Vector<String> urls_to_remove;
   for (auto& registry_url : registry_to_url_) {
     URLRegistry* registry = registry_url.key;
-    URLMap& registered_ur_ls = registry_url.value;
-    for (auto& registered_url : registered_ur_ls) {
+    URLMap& registered_urls = registry_url.value;
+    for (auto& registered_url : registered_urls) {
       if (uuid == registered_url.value) {
         KURL url(kParsedURLString, registered_url.key);
         GetExecutionContext()->RemoveURLFromMemoryCache(url);
@@ -87,7 +87,7 @@ void PublicURLManager::Revoke(const String& uuid) {
       }
     }
     for (const auto& url : urls_to_remove)
-      registered_ur_ls.erase(url);
+      registered_urls.erase(url);
     urls_to_remove.Clear();
   }
 }
