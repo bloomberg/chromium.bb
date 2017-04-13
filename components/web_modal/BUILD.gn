@@ -17,12 +17,15 @@ static_library("web_modal") {
     "web_contents_modal_dialog_manager_delegate.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//content/public/browser",
+    "//ui/gfx",
+  ]
+
+  deps = [
     "//net",
     "//skia",
-    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 }
