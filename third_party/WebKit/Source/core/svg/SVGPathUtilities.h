@@ -22,7 +22,7 @@
 
 #include "core/CoreExport.h"
 #include "core/svg/SVGParsingError.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

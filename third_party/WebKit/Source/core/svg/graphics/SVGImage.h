@@ -32,8 +32,8 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

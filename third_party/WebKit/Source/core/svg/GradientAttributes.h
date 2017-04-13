@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGUnitTypes.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

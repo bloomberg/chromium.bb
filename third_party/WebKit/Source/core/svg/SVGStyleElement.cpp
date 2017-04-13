@@ -26,7 +26,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

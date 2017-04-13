@@ -24,8 +24,8 @@
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

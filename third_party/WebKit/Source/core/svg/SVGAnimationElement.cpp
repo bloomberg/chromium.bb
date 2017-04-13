@@ -29,7 +29,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

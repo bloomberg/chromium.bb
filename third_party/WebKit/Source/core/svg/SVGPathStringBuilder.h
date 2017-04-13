@@ -22,7 +22,7 @@
 
 #include "core/CoreExport.h"
 #include "core/svg/SVGPathConsumer.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

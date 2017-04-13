@@ -30,10 +30,10 @@
 #include "platform/Timer.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

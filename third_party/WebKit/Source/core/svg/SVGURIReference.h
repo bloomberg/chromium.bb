@@ -25,7 +25,7 @@
 #include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedHref.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

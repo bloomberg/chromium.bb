@@ -26,8 +26,8 @@
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/svg/SVGAnimationElement.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

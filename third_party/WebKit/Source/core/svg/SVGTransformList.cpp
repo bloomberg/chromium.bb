@@ -30,9 +30,9 @@
 #include "core/css/CSSValueList.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformDistance.h"
-#include "wtf/text/ParsingUtilities.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

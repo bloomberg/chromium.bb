@@ -52,8 +52,8 @@
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGUseElement.h"
 #include "core/svg/properties/SVGProperty.h"
-#include "wtf/AutoReset.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

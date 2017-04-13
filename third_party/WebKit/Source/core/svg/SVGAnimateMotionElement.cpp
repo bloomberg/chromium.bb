@@ -29,8 +29,8 @@
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

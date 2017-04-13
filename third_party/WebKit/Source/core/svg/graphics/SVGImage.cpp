@@ -61,7 +61,7 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -20,7 +20,7 @@
 #include "core/svg/SVGPathStringBuilder.h"
 
 #include "core/svg/SVGPathData.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

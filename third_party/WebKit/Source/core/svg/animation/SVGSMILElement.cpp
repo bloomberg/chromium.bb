@@ -37,9 +37,9 @@
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

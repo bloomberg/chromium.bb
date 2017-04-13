@@ -22,8 +22,8 @@
 
 #include "core/svg/SVGParserUtilities.h"
 
-#include "wtf/MathExtras.h"
 #include <limits>
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

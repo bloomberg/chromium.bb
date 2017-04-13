@@ -32,7 +32,7 @@
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SMILTime.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

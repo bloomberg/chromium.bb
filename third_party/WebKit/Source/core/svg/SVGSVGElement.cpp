@@ -56,8 +56,8 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

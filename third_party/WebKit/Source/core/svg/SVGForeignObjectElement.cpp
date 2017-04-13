@@ -24,7 +24,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGForeignObject.h"
 #include "core/svg/SVGLength.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

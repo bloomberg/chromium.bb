@@ -32,7 +32,7 @@
 #define SVGListPropertyTearOffHelper_h
 
 #include "core/svg/properties/SVGPropertyTearOff.h"
-#include "wtf/TypeTraits.h"
+#include "platform/wtf/TypeTraits.h"
 
 namespace blink {
 

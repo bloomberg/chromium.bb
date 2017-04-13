@@ -21,7 +21,7 @@
 #define SVGTransformDistance_h
 
 #include "core/svg/SVGTransform.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

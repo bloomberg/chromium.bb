@@ -24,7 +24,7 @@
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

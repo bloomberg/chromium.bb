@@ -24,7 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SMILTimeContainer.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

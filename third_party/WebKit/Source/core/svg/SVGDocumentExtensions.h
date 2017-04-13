@@ -24,8 +24,8 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

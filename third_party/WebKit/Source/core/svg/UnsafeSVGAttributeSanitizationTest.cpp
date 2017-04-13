@@ -5,6 +5,7 @@
 // FIXME(dominicc): Poor confused check-webkit-style demands Attribute.h here.
 #include "core/dom/Attribute.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
@@ -23,11 +24,10 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 // Test that SVG content with JavaScript URLs is sanitized by removing
 // the URLs. This sanitization happens when the content is pasted or

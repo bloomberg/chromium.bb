@@ -25,7 +25,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

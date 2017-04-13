@@ -21,7 +21,7 @@
 
 #include "core/svg/SVGZoomAndPan.h"
 
-#include "wtf/text/ParsingUtilities.h"
+#include "platform/wtf/text/ParsingUtilities.h"
 
 namespace blink {
 

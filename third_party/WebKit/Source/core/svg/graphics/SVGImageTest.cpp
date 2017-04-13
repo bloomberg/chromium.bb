@@ -11,10 +11,10 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 class SVGImageTest : public ::testing::Test {

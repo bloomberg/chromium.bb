@@ -9,7 +9,7 @@
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGUseElement.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

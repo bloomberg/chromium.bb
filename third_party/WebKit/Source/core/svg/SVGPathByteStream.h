@@ -20,10 +20,10 @@
 #ifndef SVGPathByteStream_h
 #define SVGPathByteStream_h
 
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

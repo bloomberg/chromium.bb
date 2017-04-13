@@ -20,7 +20,7 @@
 #ifndef ColorDistance_h
 #define ColorDistance_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

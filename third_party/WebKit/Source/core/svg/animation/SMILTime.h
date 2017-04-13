@@ -26,10 +26,10 @@
 #ifndef SMILTime_h
 #define SMILTime_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashTraits.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -35,7 +35,7 @@ G*     * Redistributions in binary form must reproduce the above
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

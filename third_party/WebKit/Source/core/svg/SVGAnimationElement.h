@@ -27,8 +27,8 @@
 
 #include "core/CoreExport.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "platform/wtf/Vector.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
