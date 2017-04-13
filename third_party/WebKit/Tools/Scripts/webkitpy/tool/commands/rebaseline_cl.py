@@ -77,8 +77,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return 1
 
         if builders_with_no_results and not options.fill_missing:
-            # TODO(qyearsley): Support trying to continue as long as there are
-            # some results from some builder; see http://crbug.com/673966.
             _log.error('The following builders have no results:')
             for builder in builders_with_no_results:
                 _log.error('  %s', builder)
@@ -86,13 +84,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         _log.debug('Getting results for issue %d.', issue_number)
         builds_to_results = self._fetch_results(builds)
-        if builds_to_results is None:
+        if not options.fill_missing and len(builds_to_results) < len(builds):
             return 1
 
         test_baseline_set = TestBaselineSet(tool)
         if args:
             for test in args:
                 for build in builds:
+                    if not builds_to_results.get(build):
+                        continue
                     test_baseline_set.add(test, build)
         else:
             test_baseline_set = self._make_test_baseline_set(
@@ -160,10 +160,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             results_url = buildbot.results_url(build.builder_name, build.build_number)
             layout_test_results = buildbot.fetch_results(build)
             if layout_test_results is None:
-                _log.error('Failed to fetch results for: %s', build)
-                _log.error('Results were expected to exist at:\n%s/results.html', results_url)
-                _log.error('If the job failed, you could retry by running:\ngit cl try -b %s', build.builder_name)
-                return None
+                _log.info('Failed to fetch results for %s', build)
+                _log.info('Results URL: %s/results.html', results_url)
+                _log.info('Retry job by running: git cl try -b %s', build.builder_name)
+                continue
             results[build] = layout_test_results
         return results
 

@@ -324,11 +324,24 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 1)
         self.assertLog([
-            'ERROR: Failed to fetch results for: Build(builder_name=\'MOCK Try Win\', build_number=5000)\n',
-            'ERROR: Results were expected to exist at:\n'
-            'https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Try_Win/5000/layout-test-results/results.html\n',
-            'ERROR: If the job failed, you could retry by running:\n'
-            'git cl try -b MOCK Try Win\n'
+            'INFO: Failed to fetch results for Build(builder_name=\'MOCK Try Win\', build_number=5000)\n',
+            'INFO: Results URL: https://storage.googleapis.com/chromium-layout-test-archives'
+            '/MOCK_Try_Win/5000/layout-test-results/results.html\n',
+            'INFO: Retry job by running: git cl try -b MOCK Try Win\n'
+        ])
+
+    def test_continues_with_missing_results_when_filling_results(self):
+        self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
+        return_code = self.command.execute(self.command_options(fill_missing=True), ['fast/dom/prototype-taco.html'], self.tool)
+        self.assertEqual(return_code, 0)
+        self.assertLog([
+            'INFO: Failed to fetch results for Build(builder_name=\'MOCK Try Win\', build_number=5000)\n',
+            'INFO: Results URL: https://storage.googleapis.com/chromium-layout-test-archives'
+            '/MOCK_Try_Win/5000/layout-test-results/results.html\n',
+            'INFO: Retry job by running: git cl try -b MOCK Try Win\n',
+            'INFO: For fast/dom/prototype-taco.html:\n',
+            'INFO: Using Build(builder_name=\'MOCK Try Mac\', build_number=4000) to supply results for test-win-win7.\n',
+            'INFO: Rebaselining fast/dom/prototype-taco.html\n'
         ])
 
     def test_bails_when_there_are_unstaged_baselines(self):
