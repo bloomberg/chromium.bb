@@ -170,7 +170,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_basic(self):
         options, args = parse_args(
-            extra_args=['--json-test-results', '/tmp/json_test_results.json'],
+            extra_args=['--json-failing-test-results', '/tmp/json_failing_test_results.json'],
             tests_included=True)
         logging_stream = StringIO.StringIO()
         stdout = StringIO.StringIO()
@@ -209,9 +209,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         failing_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/failing_results.json')
         json_to_eval = failing_results_text.replace('ADD_RESULTS(', '').replace(');', '')
         self.assertEqual(json.loads(json_to_eval), details.summarized_failing_results)
-
-        json_test_results = host.filesystem.read_text_file('/tmp/json_test_results.json')
-        self.assertEqual(json.loads(json_test_results), details.summarized_failing_results)
 
         full_results_text = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertEqual(json.loads(full_results_text), details.summarized_full_results)
@@ -1007,12 +1004,38 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                                 tests_included=True, host=host)
         self.assertIn('OUT:', err.getvalue())
 
-    def test_write_full_results_to(self):
-        host = MockHost()
-        details, _, _ = logging_run(['--write-full-results-to', '/tmp/full_results.json',
-                                     '--order', 'natural'], host=host)
+    def _check_json_test_results(self, host, details):
         self.assertEqual(details.exit_code, 0)
-        self.assertTrue(host.filesystem.exists('/tmp/full_results.json'))
+        self.assertTrue(host.filesystem.exists('/tmp/json_results.json'))
+        json_failing_test_results = host.filesystem.read_text_file('/tmp/json_results.json')
+        self.assertEqual(json.loads(json_failing_test_results), details.summarized_full_results)
+
+    def test_json_test_results(self):
+        host = MockHost()
+        details, _, _ = logging_run(
+            ['--json-test-results', '/tmp/json_results.json'], host=host)
+        self._check_json_test_results(host, details)
+
+    def test_json_test_results_alias_write_full_results_to(self):
+        host = MockHost()
+        details, _, _ = logging_run(
+            ['--write-full-results-to', '/tmp/json_results.json'], host=host)
+        self._check_json_test_results(host, details)
+
+    def test_json_test_results_alias_isolated_script_test_output(self):
+        host = MockHost()
+        details, _, _ = logging_run(
+            ['--isolated-script-test-output', '/tmp/json_results.json'], host=host)
+        self._check_json_test_results(host, details)
+
+    def test_json_failing_test_results(self):
+        host = MockHost()
+        details, _, _ = logging_run(
+            ['--json-failing-test-results', '/tmp/json_failing_results.json'], host=host)
+        self.assertEqual(details.exit_code, 0)
+        self.assertTrue(host.filesystem.exists('/tmp/json_failing_results.json'))
+        json_failing_test_results = host.filesystem.read_text_file('/tmp/json_failing_results.json')
+        self.assertEqual(json.loads(json_failing_test_results), details.summarized_failing_results)
 
     def test_buildbot_results_are_printed_on_early_exit(self):
         stdout = StringIO.StringIO()

@@ -164,9 +164,14 @@ def parse_args(args):
                 default=False,
                 help='Show all failures in results.html, rather than only regressions'),
             optparse.make_option(
-                '--json-test-results',
-                action='store',
-                help='Path to write the JSON test results to.'),
+                '--json-test-results',              # New name from json_results_generator
+                '--write-full-results-to',          # Old argument name
+                '--isolated-script-test-output',    # Isolated API
+                help='Path to write the JSON test results for *all* tests.'),
+            # FIXME(tansell): Remove this option if nobody is found who needs it.
+            optparse.make_option(
+                '--json-failing-test-results',
+                help='Path to write the JSON test results for only *failing* tests.'),
             optparse.make_option(
                 '--new-baseline',
                 action='store_true',
@@ -466,10 +471,6 @@ def parse_args(args):
                 '--test-results-server',
                 default='',
                 help='If specified, upload results json files to this appengine server.'),
-            optparse.make_option(
-                '--write-full-results-to',
-                help=('If specified, copy full_results.json from the results dir to the '
-                      'specified path.')),
         ]))
 
     option_parser = optparse.OptionParser()

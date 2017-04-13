@@ -213,10 +213,6 @@ class Manager(object):
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results, running_all_tests)
 
-            if self._options.write_full_results_to:
-                self._filesystem.copyfile(self._filesystem.join(self._results_directory, "full_results.json"),
-                                          self._options.write_full_results_to)
-
             self._upload_json_files()
 
             results_path = self._filesystem.join(self._results_directory, "results.html")
@@ -495,8 +491,15 @@ class Manager(object):
         # from a file url for results.html and Chromium doesn't allow that.
         json_results_generator.write_json(self._filesystem, summarized_failing_results, full_results_path, callback="ADD_RESULTS")
 
+        # Write out the JSON files suitable for other tools to process.
+        # As the output can be quite large (as there are 60k+ tests) we also
+        # support only outputting the failing results.
+        if self._options.json_failing_test_results:
+            # FIXME(tansell): Make sure this includes an *unexpected* results
+            # (IE Passing when expected to be failing.)
+            json_results_generator.write_json(self._filesystem, summarized_failing_results, self._options.json_failing_test_results)
         if self._options.json_test_results:
-            json_results_generator.write_json(self._filesystem, summarized_failing_results, self._options.json_test_results)
+            json_results_generator.write_json(self._filesystem, summarized_full_results, self._options.json_test_results)
 
         _log.debug("Finished writing JSON files.")
 
