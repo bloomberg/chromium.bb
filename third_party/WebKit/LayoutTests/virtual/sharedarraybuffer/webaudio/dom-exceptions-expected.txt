@@ -1,8 +1,8 @@
 CONSOLE WARNING: line 327: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: line 333: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 488: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 703: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 732: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 481: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 696: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 725: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [initialize] Initialize contexts for testing 
@@ -103,14 +103,13 @@ PASS   node.channelInterpretation is equal to speakers.
 PASS   context.destination.channelCount = 99 threw IndexSizeError: [error message omitted]. 
 PASS < [channel-stuff] All assertions passed. (total 7 assertions) 
 PASS > [audioparam]  
-PASS   param.setValueCurveAtTime(null, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': parameter 1 is not of type 'Float32Array'.". 
-PASS   param.setValueCurveAtTime(SharedArrayBuffer view, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided ArrayBufferView value must not be shared.". 
+PASS   param.setValueCurveAtTime(null, 0, 0) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The 1st argument is neither an array, nor does it have indexed properties.". 
 PASS   node.gain.exponentialRampToValueAtTime(-1, 0.1) did not throw an exception. 
 PASS   node.gain.exponentialRampToValueAtTime(0, 0.1) threw InvalidAccessError: "Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45).". 
 PASS   node.gain.exponentialRampToValueAtTime(1e-100, 0.1) threw InvalidAccessError: "Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45).". 
 PASS   node.gain.exponentialRampToValueAtTime(Math.pow(2, -149), 0.1) did not throw an exception. 
 PASS   node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1) threw InvalidAccessError: "Failed to execute 'exponentialRampToValueAtTime' on 'AudioParam': The float target value provided (0) should not be in the range (-1.40130e-45, 1.40130e-45).". 
-PASS < [audioparam] All assertions passed. (total 7 assertions) 
+PASS < [audioparam] All assertions passed. (total 6 assertions) 
 PASS > [biquad]  
 PASS   node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), new Float32Array(1)) did not throw an exception. 
 PASS   node.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1)) threw TypeError: "Failed to execute 'getFrequencyResponse' on 'BiquadFilterNode': parameter 1 is not of type 'Float32Array'.". 

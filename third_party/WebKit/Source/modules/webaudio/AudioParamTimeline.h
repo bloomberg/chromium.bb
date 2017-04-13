@@ -61,7 +61,7 @@ class AudioParamTimeline {
                        double time,
                        double time_constant,
                        ExceptionState&);
-  void SetValueCurveAtTime(DOMFloat32Array* curve,
+  void SetValueCurveAtTime(const Vector<float>& curve,
                            double time,
                            double duration,
                            ExceptionState&);
@@ -128,7 +128,7 @@ class AudioParamTimeline {
     static std::unique_ptr<ParamEvent>
     CreateSetTargetEvent(float value, double time, double time_constant);
     static std::unique_ptr<ParamEvent> CreateSetValueCurveEvent(
-        const DOMFloat32Array* curve,
+        const Vector<float>& curve,
         double time,
         double duration);
     static std::unique_ptr<ParamEvent> CreateCancelValuesEvent(
@@ -210,7 +210,7 @@ class AudioParamTimeline {
     ParamEvent(Type,
                double time,
                double duration,
-               const DOMFloat32Array* curve,
+               const Vector<float>& curve,
                double curve_points_per_second,
                float curve_end_value);
 

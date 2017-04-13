@@ -469,33 +469,18 @@ AudioParam* AudioParam::setTargetAtTime(float target,
   return this;
 }
 
-AudioParam* AudioParam::setValueCurveAtTime(NotShared<DOMFloat32Array> curve,
+AudioParam* AudioParam::setValueCurveAtTime(const Vector<float>& curve,
                                             double time,
                                             double duration,
                                             ExceptionState& exception_state) {
-  float* curve_data = curve.View()->Data();
   float min = minValue();
   float max = maxValue();
 
-  // First, find any non-finite value in the curve and throw an exception if
-  // there are any.
-  for (unsigned k = 0; k < curve.View()->length(); ++k) {
-    float value = curve_data[k];
-
-    if (!std::isfinite(value)) {
-      exception_state.ThrowDOMException(
-          kV8TypeError, "The provided float value for the curve at element " +
-                            String::Number(k) +
-                            " is non-finite: " + String::Number(value));
-      return nullptr;
-    }
-  }
-
-  // Second, find the first value in the curve (if any) that is outside the
-  // nominal range.  It's probably not necessary to produce a warning on every
-  // value outside the nominal range.
-  for (unsigned k = 0; k < curve.View()->length(); ++k) {
-    float value = curve_data[k];
+  // Find the first value in the curve (if any) that is outside the
+  // nominal range.  It's probably not necessary to produce a warning
+  // on every value outside the nominal range.
+  for (unsigned k = 0; k < curve.size(); ++k) {
+    float value = curve[k];
 
     if (value < min || value > max) {
       WarnIfOutsideRange("setValueCurveAtTime value", value);
@@ -503,7 +488,7 @@ AudioParam* AudioParam::setValueCurveAtTime(NotShared<DOMFloat32Array> curve,
     }
   }
 
-  Handler().Timeline().SetValueCurveAtTime(curve.View(), time, duration,
+  Handler().Timeline().SetValueCurveAtTime(curve, time, duration,
                                            exception_state);
 
   // We could update the histogram with every value in the curve, due to

@@ -355,13 +355,6 @@ audit.define('audioparam', (task, should) => {
       'param.setValueCurveAtTime(null, 0, 0)')
       .throw();
 
-  if (window.SharedArrayBuffer) {
-    should(
-        () => param.setValueCurveAtTime(new Float32Array(new SharedArrayBuffer(16)), 0, 0),
-        'param.setValueCurveAtTime(SharedArrayBuffer view, 0, 0)')
-        .throw();
-  }
-
   // exponentialRampToValue should throw only for "zero" target values.
   should(
       () => node.gain.exponentialRampToValueAtTime(-1, 0.1),

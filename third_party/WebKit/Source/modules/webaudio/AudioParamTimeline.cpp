@@ -202,11 +202,11 @@ AudioParamTimeline::ParamEvent::CreateSetTargetEvent(float value,
 
 std::unique_ptr<AudioParamTimeline::ParamEvent>
 AudioParamTimeline::ParamEvent::CreateSetValueCurveEvent(
-    const DOMFloat32Array* curve,
+    const Vector<float>& curve,
     double time,
     double duration) {
-  double curve_points = (curve->length() - 1) / duration;
-  float end_value = curve->Data()[curve->length() - 1];
+  double curve_points = (curve.size() - 1) / duration;
+  float end_value = curve.Data()[curve.size() - 1];
 
   return WTF::WrapUnique(new ParamEvent(ParamEvent::kSetValueCurve, time,
                                         duration, curve, curve_points,
@@ -361,7 +361,7 @@ AudioParamTimeline::ParamEvent::ParamEvent(ParamEvent::Type type,
 AudioParamTimeline::ParamEvent::ParamEvent(ParamEvent::Type type,
                                            double time,
                                            double duration,
-                                           const DOMFloat32Array* curve,
+                                           const Vector<float>& curve,
                                            double curve_points_per_second,
                                            float curve_end_value)
     : type_(type),
@@ -377,11 +377,9 @@ AudioParamTimeline::ParamEvent::ParamEvent(ParamEvent::Type type,
       needs_time_clamp_check_(true),
       has_default_cancelled_value_(false) {
   DCHECK_EQ(type, ParamEvent::kSetValueCurve);
-  if (curve) {
-    unsigned curve_length = curve->length();
-    curve_.Resize(curve->length());
-    memcpy(curve_.Data(), curve->Data(), curve_length * sizeof(float));
-  }
+  unsigned curve_length = curve.size();
+  curve_.Resize(curve_length);
+  memcpy(curve_.Data(), curve.Data(), curve_length * sizeof(float));
 }
 
 // Create CancelValues event
@@ -483,21 +481,21 @@ void AudioParamTimeline::SetTargetAtTime(float target,
   }
 }
 
-void AudioParamTimeline::SetValueCurveAtTime(DOMFloat32Array* curve,
+void AudioParamTimeline::SetValueCurveAtTime(const Vector<float>& curve,
                                              double time,
                                              double duration,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  DCHECK(curve);
 
   if (!IsNonNegativeAudioParamTime(time, exception_state) ||
       !IsPositiveAudioParamTime(duration, exception_state, "Duration"))
     return;
 
-  if (curve->length() < 2) {
+  if (curve.size() < 2) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, ExceptionMessages::IndexExceedsMinimumBound(
-                                "curve length", curve->length(), 2U));
+        kInvalidStateError,
+        ExceptionMessages::IndexExceedsMinimumBound(
+            "curve length", curve.size(), static_cast<size_t>(2)));
     return;
   }
 
@@ -508,8 +506,8 @@ void AudioParamTimeline::SetValueCurveAtTime(DOMFloat32Array* curve,
   // Insert a setValueAtTime event too to establish an event so that all
   // following events will process from the end of the curve instead of the
   // beginning.
-  InsertEvent(ParamEvent::CreateSetValueEvent(
-                  curve->Data()[curve->length() - 1], time + duration),
+  InsertEvent(ParamEvent::CreateSetValueEvent(curve.Data()[curve.size() - 1],
+                                              time + duration),
               exception_state);
 }
 

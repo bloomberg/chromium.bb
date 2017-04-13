@@ -247,7 +247,7 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
                               double time,
                               double time_constant,
                               ExceptionState&);
-  AudioParam* setValueCurveAtTime(NotShared<DOMFloat32Array> curve,
+  AudioParam* setValueCurveAtTime(const Vector<float>& curve,
                                   double time,
                                   double duration,
                                   ExceptionState&);

@@ -106,7 +106,13 @@
                   'gain.gain.setValueCurveAtTime(curve, 1, ' + duration + ')')
                   .throw();
             }
-
+            // Non-finite curve values should signal an error.
+            for (curve of [[1, 2, Infinity, 3], [1, NaN, 2, 3]]) {
+              should(
+                  () => gain.gain.setValueCurveAtTime(curve, 1, 1),
+                  'gain.gain.setValueCurveAtTime([' + curve + '], 1, 1)')
+                .throw();
+            }
             task.done();
           });
 

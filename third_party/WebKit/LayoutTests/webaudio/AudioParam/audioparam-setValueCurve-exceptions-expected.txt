@@ -18,10 +18,10 @@ PASS   setValueCurveAtTime(curve, 0.00625, 0.01) threw NotSupportedError: "Faile
 PASS   setValueCurveAtTime(curve, 0.018750000000000003, 0.01) threw NotSupportedError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.01875, 0.01) overlaps exponentialRampToValue(1, 0.025)". 
 PASS   setValueCurveAtTime(curve, 0.03125, 0.01) threw NotSupportedError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03125, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1)". 
 PASS   setValueCurveAtTime(curve, 0.043750000000000004, 0.01) threw NotSupportedError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueAtTime(0, 0.05375000000000001) overlaps setValueCurveAtTime(..., 0.05, 0.1)". 
-PASS   setValueCurveAtTime([NaN, NaN], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 0 is non-finite: NaN". 
-PASS   setValueCurveAtTime([1, Infinity], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 1 is non-finite: Infinity". 
+PASS   setValueCurveAtTime([NaN, NaN], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value is non-finite.". 
+PASS   setValueCurveAtTime([1, Infinity], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value is non-finite.". 
 PASS   delayTime.setValueCurveAtTime([1, 5], 0.043750000000000004, 0.01) did not throw an exception. 
-PASS   delayTime.setValueCurveAtTime([1, 5, Infinity], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 2 is non-finite: Infinity". 
+PASS   delayTime.setValueCurveAtTime([1, 5, Infinity], 0.043750000000000004, 0.01) threw TypeError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value is non-finite.". 
 PASS   setValueCurveAtTime(curve, 0.031415926535897934, 0.01) threw NotSupportedError: "Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03141592653589793, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1)". 
 PASS < [automations] All assertions passed. (total 13 assertions) 
 PASS > [catch-exception]  
