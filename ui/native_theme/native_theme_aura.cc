@@ -200,11 +200,11 @@ void NativeThemeAura::PaintScrollbarThumb(
 
   if (use_overlay_scrollbars_) {
     // Constants used for painting overlay scrollbar thumb.
-    constexpr SkAlpha kOverlayScrollbarFillAlphaNormal = 0x4D;
-    constexpr SkAlpha kOverlayScrollbarFillAlphaHovered = 0x80;
-    constexpr SkAlpha kOverlayScrollbarFillAlphaPressed = 0x80;
+    constexpr SkAlpha kOverlayScrollbarFillAlphaNormal = 0x80;
+    constexpr SkAlpha kOverlayScrollbarFillAlphaHovered = 0xB3;
+    constexpr SkAlpha kOverlayScrollbarFillAlphaPressed = 0xB3;
     constexpr SkAlpha kOverlayScrollbarStrokeAlphaNormal = 0x4D;
-    constexpr SkAlpha kOverlayScrollbarStrokeAlphaHovered = 0x58;
+    constexpr SkAlpha kOverlayScrollbarStrokeAlphaHovered = 0x80;
     constexpr SkAlpha kOverlayScrollbarStrokeAlphaPressed = 0x80;
 
     // Indexed by ScrollbarOverlayColorTheme.
