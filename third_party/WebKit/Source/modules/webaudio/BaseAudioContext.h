@@ -221,11 +221,11 @@ class MODULES_EXPORT BaseAudioContext
   ChannelMergerNode* createChannelMerger(size_t number_of_inputs,
                                          ExceptionState&);
   OscillatorNode* createOscillator(ExceptionState&);
-  PeriodicWave* createPeriodicWave(NotShared<DOMFloat32Array> real,
-                                   NotShared<DOMFloat32Array> imag,
+  PeriodicWave* createPeriodicWave(const Vector<float>& real,
+                                   const Vector<float>& imag,
                                    ExceptionState&);
-  PeriodicWave* createPeriodicWave(NotShared<DOMFloat32Array> real,
-                                   NotShared<DOMFloat32Array> imag,
+  PeriodicWave* createPeriodicWave(const Vector<float>& real,
+                                   const Vector<float>& imag,
                                    const PeriodicWaveConstraints&,
                                    ExceptionState&);
 

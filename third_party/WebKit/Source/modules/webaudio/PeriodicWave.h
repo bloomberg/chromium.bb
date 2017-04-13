@@ -56,16 +56,8 @@ class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
   // Creates an arbitrary periodic wave given the frequency components (Fourier
   // coefficients).
   static PeriodicWave* Create(BaseAudioContext&,
-                              size_t real_length,
-                              const float* real,
-                              size_t imag_length,
-                              const float* imag,
-                              bool normalize,
-                              ExceptionState&);
-
-  static PeriodicWave* Create(BaseAudioContext&,
-                              NotShared<DOMFloat32Array> real,
-                              NotShared<DOMFloat32Array> imag,
+                              const Vector<float>& real,
+                              const Vector<float>& imag,
                               bool normalize,
                               ExceptionState&);
 

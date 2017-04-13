@@ -54,10 +54,8 @@ const float kCentsPerRange = 1200 / kNumberOfOctaveBands;
 using namespace VectorMath;
 
 PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
-                                   size_t real_length,
-                                   const float* real,
-                                   size_t imag_length,
-                                   const float* imag,
+                                   const Vector<float>& real,
+                                   const Vector<float>& imag,
                                    bool disable_normalization,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -67,31 +65,19 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  if (real_length != imag_length) {
+  if (real.size() != imag.size()) {
     exception_state.ThrowDOMException(
         kIndexSizeError, "length of real array (" +
-                             String::Number(real_length) +
+                             String::Number(real.size()) +
                              ") and length of imaginary array (" +
-                             String::Number(imag_length) + ") must match.");
+                             String::Number(imag.size()) + ") must match.");
     return nullptr;
   }
 
   PeriodicWave* periodic_wave = new PeriodicWave(context.sampleRate());
-  periodic_wave->CreateBandLimitedTables(real, imag, real_length,
+  periodic_wave->CreateBandLimitedTables(real.Data(), imag.Data(), real.size(),
                                          disable_normalization);
   return periodic_wave;
-}
-
-PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
-                                   NotShared<DOMFloat32Array> real,
-                                   NotShared<DOMFloat32Array> imag,
-                                   bool disable_normalization,
-                                   ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  return Create(context, real.View()->length(), real.View()->Data(),
-                imag.View()->length(), imag.View()->Data(),
-                disable_normalization, exception_state);
 }
 
 PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,
@@ -120,8 +106,7 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext* context,
     imag_coef[1] = 1;
   }
 
-  return Create(*context, real_coef.size(), real_coef.Data(), imag_coef.size(),
-                imag_coef.Data(), normalize, exception_state);
+  return Create(*context, real_coef, imag_coef, normalize, exception_state);
 }
 
 PeriodicWave* PeriodicWave::CreateSine(float sample_rate) {

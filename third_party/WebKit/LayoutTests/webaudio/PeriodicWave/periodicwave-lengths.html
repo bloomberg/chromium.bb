@@ -47,15 +47,12 @@
           verifier: resultShouldBeNonZero
         },
 
-        // Test that we use all 8192 Fourier coefficients at 192 kHz sample rate.  Ideally, we'd
-        // like to compare 8191 coefficients vs 8192 coefficients.  However, due to single-precision
-        // arithmetic, the wave forms are identical in this case.  Thus, use a somewhat smaller
-        // value where the wave forms are actually different.
+        // Test that we use all 8192 Fourier coefficients at 192 kHz sample rate.
         {
           name: "192khz-test-3",
           sampleRate: 192000,
           bigWave: 8192,
-          smallWave: (8 - 1 / 256) * 1024,
+          smallWave: 8191,
           verifier: resultShouldBeNonZero
         },
 
@@ -185,9 +182,12 @@
          var bigWaveRealCoef = new Float32Array(bigPeriodicWaveLength);
          var bigWaveImagCoef = new Float32Array(bigPeriodicWaveLength);
 
-         // Set up the Fourier coefficients for a square wave.
-         for (var k = 0; k < bigPeriodicWaveLength; k += 2) {
-           bigWaveImagCoef[k] = 4 / Math.PI / k;
+         // Set up the Fourier coefficients for a sawtooth wave.  We use
+         // sawtooth because all coefficients are non-zero
+         bigWaveImagCoef[0] = 0;
+         for (var k = 1; k < bigPeriodicWaveLength; k++) {
+           var piFactor = 2 / (Math.PI * k);
+           bigWaveImagCoef[k] = piFactor * ((k % 2 === 0) ? -1 : 1);
            if (k < smallPeriodicWaveLength)
              smallWaveImagCoef[k] = bigWaveImagCoef[k];
          }

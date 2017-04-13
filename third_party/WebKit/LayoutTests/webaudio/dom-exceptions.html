@@ -197,20 +197,6 @@ audit.define('createPeriodicWave', (task, should) => {
       'context.createPeriodicWave(new Float32Array(10), new Float32Array(7))')
       .throw('IndexSizeError');
 
-  if (window.SharedArrayBuffer) {
-    let shared_view = new Float32Array(new SharedArrayBuffer(4100 * 4));
-    let nonshared_view = new Float32Array(4100);
-    should(
-        () => context.createPeriodicWave(shared_view, nonshared_view),
-        'context.createPeriodicWave(shared_view, nonshared_view)')
-        .throw('TypeError');
-
-    should(
-        () => context.createPeriodicWave(nonshared_view, shared_view),
-        'context.createPeriodicWave(nonshared_view, shared_view)')
-        .throw('TypeError');
-  }
-
   task.done();
 });
 
