@@ -217,6 +217,18 @@ static void PaintRoundedSliderBackground(const IntRect& rect,
                           slider_background_color);
 }
 
+bool MediaControlsPainter::PaintMediaRemotingCastIcon(
+    const LayoutObject& object,
+    const PaintInfo& paintInfo,
+    const IntRect& rect) {
+  const HTMLMediaElement* media_element = ToParentMediaElement(object);
+  if (!media_element)
+    return false;
+  static Image* cast_icon = PlatformResource("mediaRemotingCastIcon");
+
+  return PaintMediaButton(paintInfo.context, rect, cast_icon);
+}
+
 static void PaintSliderRangeHighlight(const IntRect& rect,
                                       const ComputedStyle& style,
                                       GraphicsContext& context,

@@ -59,16 +59,22 @@ void LayoutMedia::UpdateLayout() {
 // overlap checking, see LayoutVTTCue.
 #if DCHECK_IS_ON()
   bool seen_text_track_container = false;
+  bool seen_media_remoting_interstitial = false;
 #endif
   for (LayoutObject* child = children_.LastChild(); child;
        child = child->PreviousSibling()) {
 #if DCHECK_IS_ON()
-    if (child->GetNode()->IsMediaControls())
+    if (child->GetNode()->IsMediaControls()) {
       DCHECK(!seen_text_track_container);
-    else if (child->GetNode()->IsTextTrackContainer())
+      DCHECK(!seen_media_remoting_interstitial);
+    } else if (child->GetNode()->IsTextTrackContainer()) {
       seen_text_track_container = true;
-    else
+      DCHECK(!seen_media_remoting_interstitial);
+    } else if (child->GetNode()->IsMediaRemotingInterstitial()) {
+      seen_media_remoting_interstitial = true;
+    } else {
       NOTREACHED();
+    }
 #endif
 
     // TODO(mlamouri): we miss some layouts because needsLayout returns false in
@@ -115,7 +121,8 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   if (child->GetNode()->IsMediaControls())
     return child->IsFlexibleBox();
 
-  if (child->GetNode()->IsTextTrackContainer())
+  if (child->GetNode()->IsTextTrackContainer() ||
+      child->GetNode()->IsMediaRemotingInterstitial())
     return true;
 
   return false;

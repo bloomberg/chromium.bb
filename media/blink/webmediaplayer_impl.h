@@ -223,7 +223,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 #endif
 
   // MediaObserverClient implementation.
-  void SwitchRenderer(bool disable_pipeline_auto_suspend) override;
+  void SwitchRenderer(bool is_rendered_remotely) override;
   void ActivateViewportIntersectionMonitoring(bool activate) override;
 
   // Called from WebMediaPlayerCast.

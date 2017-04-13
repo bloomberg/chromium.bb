@@ -116,6 +116,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Returns the selected video track id (or an empty id if there's none).
   virtual WebMediaPlayer::TrackId GetSelectedVideoTrackId() = 0;
 
+  // Informs that media starts/stops being rendered and played back remotely.
+  virtual void MediaRemotingStarted() {}
+  virtual void MediaRemotingStopped() {}
+
  protected:
   ~WebMediaPlayerClient() {}
 };

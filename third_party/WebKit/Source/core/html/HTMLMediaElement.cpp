@@ -3637,20 +3637,32 @@ bool HTMLMediaElement::TextTracksVisible() const {
   return text_tracks_visible_;
 }
 
-static void AssertShadowRootChildren(ShadowRoot& shadow_root) {
+// static
+void HTMLMediaElement::AssertShadowRootChildren(ShadowRoot& shadow_root) {
 #if DCHECK_IS_ON()
-  // There can be up to two children, either or both of the text
-  // track container and media controls. If both are present, the
-  // text track container must be the first child.
+  // There can be up to three children: media remoting interstitial, text track
+  // container, and media controls. The media controls has to be the last child
+  // if presend, and has to be the next sibling of the text track container if
+  // both present. When present, media remoting interstitial has to be the first
+  // child.
   unsigned number_of_children = shadow_root.CountChildren();
-  DCHECK_LE(number_of_children, 2u);
+  DCHECK_LE(number_of_children, 3u);
   Node* first_child = shadow_root.FirstChild();
   Node* last_child = shadow_root.LastChild();
   if (number_of_children == 1) {
     DCHECK(first_child->IsTextTrackContainer() ||
-           first_child->IsMediaControls());
+           first_child->IsMediaControls() ||
+           first_child->IsMediaRemotingInterstitial());
   } else if (number_of_children == 2) {
-    DCHECK(first_child->IsTextTrackContainer());
+    DCHECK(first_child->IsTextTrackContainer() ||
+           first_child->IsMediaRemotingInterstitial());
+    DCHECK(last_child->IsTextTrackContainer() || last_child->IsMediaControls());
+    if (first_child->IsTextTrackContainer())
+      DCHECK(last_child->IsMediaControls());
+  } else if (number_of_children == 3) {
+    Node* second_child = first_child->nextSibling();
+    DCHECK(first_child->IsMediaRemotingInterstitial());
+    DCHECK(second_child->IsTextTrackContainer());
     DCHECK(last_child->IsMediaControls());
   }
 #endif
@@ -3663,12 +3675,20 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
   Node* first_child = shadow_root.FirstChild();
   if (first_child && first_child->IsTextTrackContainer())
     return ToTextTrackContainer(*first_child);
+  Node* to_be_inserted = first_child;
+
+  if (first_child && first_child->IsMediaRemotingInterstitial()) {
+    Node* second_child = first_child->nextSibling();
+    if (second_child && second_child->IsTextTrackContainer())
+      return ToTextTrackContainer(*second_child);
+    to_be_inserted = second_child;
+  }
 
   TextTrackContainer* text_track_container = TextTrackContainer::Create(*this);
 
   // The text track container should be inserted before the media controls,
   // so that they are rendered behind them.
-  shadow_root.InsertBefore(text_track_container, first_child);
+  shadow_root.InsertBefore(text_track_container, to_be_inserted);
 
   AssertShadowRootChildren(shadow_root);
 

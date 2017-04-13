@@ -2334,10 +2334,16 @@ void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
                         time_to_first_frame);
   }
 }
-void WebMediaPlayerImpl::SwitchRenderer(bool disable_pipeline_auto_suspend) {
+void WebMediaPlayerImpl::SwitchRenderer(bool is_rendered_remotely) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  disable_pipeline_auto_suspend_ = disable_pipeline_auto_suspend;
+  disable_pipeline_auto_suspend_ = is_rendered_remotely;
   ScheduleRestart();
+  if (client_) {
+    if (is_rendered_remotely)
+      client_->MediaRemotingStarted();
+    else
+      client_->MediaRemotingStopped();
+  }
 }
 
 void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {

@@ -88,6 +88,9 @@ class MediaControlsPainter {
                                      const PaintInfo&,
                                      const IntRect&);
   static void AdjustMediaSliderThumbSize(ComputedStyle&);
+  static bool PaintMediaRemotingCastIcon(const LayoutObject&,
+                                         const PaintInfo&,
+                                         const IntRect&);
 
  private:
   static void AdjustMediaSliderThumbPaintSize(const IntRect&,

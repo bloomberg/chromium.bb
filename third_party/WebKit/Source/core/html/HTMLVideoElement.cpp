@@ -39,6 +39,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/MediaRemotingInterstitial.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
@@ -66,7 +67,9 @@ enum VideoPersistenceControlsType {
 }  // anonymous namespace
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(videoTag, document) {
+    : HTMLMediaElement(videoTag, document),
+      media_remoting_status_(MediaRemotingStatus::kNotStarted),
+      remoting_interstitial_(nullptr) {
   if (document.GetSettings()) {
     default_poster_url_ =
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
@@ -88,6 +91,7 @@ HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
 DEFINE_TRACE(HTMLVideoElement) {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);
+  visitor->Trace(remoting_interstitial_);
   HTMLMediaElement::Trace(visitor);
 }
 
@@ -179,6 +183,10 @@ void HTMLVideoElement::ParseAttribute(
     // Notify the player when the poster image URL changes.
     if (GetWebMediaPlayer())
       GetWebMediaPlayer()->SetPoster(PosterImageURL());
+    // Media remoting doesn't show the original poster image, instead, it shows
+    // a grayscaled and blurred copy.
+    if (remoting_interstitial_)
+      remoting_interstitial_->OnPosterImageChanged();
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }
@@ -481,6 +489,32 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
       script_state, ImageBitmap::Create(
                         this, crop_rect,
                         event_target.ToLocalDOMWindow()->document(), options));
+}
+
+void HTMLVideoElement::MediaRemotingStarted() {
+  DCHECK_EQ(media_remoting_status_, MediaRemotingStatus::kNotStarted);
+  media_remoting_status_ = MediaRemotingStatus::kStarted;
+  if (!remoting_interstitial_) {
+    remoting_interstitial_ = new MediaRemotingInterstitial(*this);
+    ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
+    shadow_root.InsertBefore(remoting_interstitial_, shadow_root.FirstChild());
+    HTMLMediaElement::AssertShadowRootChildren(shadow_root);
+  }
+  remoting_interstitial_->Show();
+}
+
+void HTMLVideoElement::MediaRemotingStopped() {
+  if (media_remoting_status_ != MediaRemotingStatus::kDisabled)
+    media_remoting_status_ = MediaRemotingStatus::kNotStarted;
+  DCHECK(remoting_interstitial_);
+  remoting_interstitial_->Hide();
+}
+
+void HTMLVideoElement::DisableMediaRemoting() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->RequestRemotePlaybackDisabled(true);
+  media_remoting_status_ = MediaRemotingStatus::kDisabled;
+  MediaRemotingStopped();
 }
 
 }  // namespace blink

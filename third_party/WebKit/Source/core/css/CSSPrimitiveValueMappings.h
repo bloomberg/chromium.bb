@@ -475,6 +475,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kCapsLockIndicatorPart:
       value_id_ = CSSValueCapsLockIndicator;
       break;
+    case kMediaRemotingCastIconPart:
+      value_id_ = CSSValueInternalMediaRemotingCastIcon;
+      break;
   }
 }
 

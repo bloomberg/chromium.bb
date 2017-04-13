@@ -145,6 +145,87 @@ video::-webkit-media-controls-overlay-play-button {
     padding: 0;
 }
 
+/* TODO(xjz): Move media remoting elements to a separate css file. */
+video::-internal-media-remoting-interstitial {
+    width: inherit;
+    height: inherit;
+    position: relative;
+    direction: ltr;
+    display: flex;
+    flex-direction: column;
+    font-family: Segoe, "Helvetica Neue", Roboto, Arial, Helvetica, sans-serif;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 28px;
+    background-color: black;
+    transition: opacity .2s cubic-bezier (0.4, 0.0, 0.2, 1);
+}
+
+video::-internal-media-remoting-background-image {
+    display: flex;
+    position: absolute;
+    margin: 0;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-width: 0px;
+    background-color: transparent;
+    padding: 0;
+    filter: grayscale(100%) blur(5px);
+}
+
+video::-internal-media-remoting-cast-icon {
+    -webkit-appearance: -internal-media-remoting-cast-icon;
+    display: flex;
+    position: absolute;
+    margin: 0px;
+    border-width: 0px;
+    background-color: transparent;
+    height: 36px;
+    width: 44px;
+    padding: 0px;
+    left: calc(50% - 22px);
+    top: calc(50% - 60px);
+}
+
+video::-internal-media-remoting-cast-text-message {
+    display: inline;
+    position: absolute;
+    top: calc(50% - 10px);
+    border: none;
+    color: #FFFFFF;
+    opacity: 54%
+    width: 100%;
+    text-wrap: none;
+    text-align: center;
+    background-color: transparent;
+    font-size: 13pt;
+    font-face: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
+    padding: 0px;
+    margin: 0px;
+}
+
+video::-internal-media-remoting-disable-button {
+    display: flex;
+    position: absolute;
+    top: calc(50% + 55pt);
+    left: calc(50% - 102px);
+    height: 28pt;
+    border: 2pt solid rgba(255,255,255,.54);
+    border-radius: 2pt;
+    background-color: transparent;
+    color: #FFFFFF;
+    margin: 0px;
+    padding: 8pt 16pt 0pt 16pt;
+    text-wrap: none;
+    font-size: 13pt;
+    font-face: Roboto-Medium, Sans-serif, Segoe, Serif, Helvetica;
+    opacity: 54%
+    transition: border .5s ease-out;
+}
+
 video::-internal-media-controls-overlay-cast-button {
     -webkit-appearance: -internal-media-overlay-cast-off-button;
     display: flex;

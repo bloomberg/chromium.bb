@@ -43,6 +43,7 @@ namespace blink {
 class ExceptionState;
 class ImageBitmapOptions;
 class MediaCustomControlsFullscreenDetector;
+class MediaRemotingInterstitial;
 
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                            public CanvasImageSource,
@@ -52,6 +53,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
  public:
   static HTMLVideoElement* Create(Document&);
   DECLARE_VIRTUAL_TRACE();
+
+  enum class MediaRemotingStatus { kNotStarted, kStarted, kDisabled };
 
   // Node override.
   Node::InsertionNotificationRequest InsertedInto(ContainerNode*) override;
@@ -132,6 +135,11 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   bool IsPersistent() const;
 
+  MediaRemotingStatus GetMediaRemotingStatus() const {
+    return media_remoting_status_;
+  }
+  void DisableMediaRemoting();
+
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
@@ -156,10 +164,16 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void UpdateDisplayState() override;
   void DidMoveToNewDocument(Document& old_document) override;
   void SetDisplayMode(DisplayMode) override;
+  void MediaRemotingStarted() final;
+  void MediaRemotingStopped() final;
 
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
       custom_controls_fullscreen_detector_;
+
+  MediaRemotingStatus media_remoting_status_;
+
+  Member<MediaRemotingInterstitial> remoting_interstitial_;
 
   AtomicString default_poster_url_;
 

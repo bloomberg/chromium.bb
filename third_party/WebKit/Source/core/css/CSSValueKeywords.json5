@@ -668,6 +668,7 @@
     "-internal-media-subtitles-icon",
     "-internal-media-overflow-button",
     "-internal-media-download-button",
+    "-internal-media-remoting-cast-icon",
     "menulist",
     "menulist-button",
     "menulist-text",

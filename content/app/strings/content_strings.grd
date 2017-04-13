@@ -517,7 +517,7 @@ below:
           tree item
         </message>
       </if>
-      
+
       <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
         AM/PM
       </message>
@@ -871,6 +871,12 @@ below:
       </message>
       <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
        Download
+      </message>
+      <message name="IDS_MEDIA_REMOTING_DISABLE_TEXT" desc="Media remoting disable button label.">
+       Play on both screens
+      </message>
+      <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Media remoting cast video text message.">
+       Now casting to your TV
       </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified. The number represents the track number in the list of tracks.">
         Track <ph name="NUMBER">$1<ex>1</ex></ph>

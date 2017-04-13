@@ -16,9 +16,10 @@ class MEDIA_EXPORT MediaObserverClient {
   virtual ~MediaObserverClient() {}
 
   // Requests to restart the media pipeline and create a new renderer as soon as
-  // possible. |disable_pipeline_auto_suspend| indicates whether to disable
-  // any optimizations that might suspend the media pipeline.
-  virtual void SwitchRenderer(bool disable_pipeline_auto_suspend) = 0;
+  // possible. |is_rendered_remotely| indicates whether the media is rendered
+  // remotely. When it is true, all the optimizations that might suspend the
+  // media pipeline should be disabled.
+  virtual void SwitchRenderer(bool is_rendered_remotely) = 0;
 
   // Requests to activate monitoring changes on viewport intersection.
   virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;

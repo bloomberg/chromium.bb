@@ -212,6 +212,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_INPUT_ALT;
     case WebLocalizedString::kMissingPluginText:
       return IDS_PLUGIN_INITIALIZATION_ERROR;
+    case WebLocalizedString::kMediaRemotingDisableText:
+      return IDS_MEDIA_REMOTING_DISABLE_TEXT;
+    case WebLocalizedString::kMediaRemotingCastText:
+      return IDS_MEDIA_REMOTING_CAST_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::kOtherColorLabel:
@@ -522,6 +526,8 @@ const DataResource kDataResources[] = {
     {"mediaplayerOverlayCastOff", IDR_MEDIAPLAYER_OVERLAY_CAST_BUTTON_OFF,
      ui::SCALE_FACTOR_100P, false},
     {"mediaplayerOverlayPlay", IDR_MEDIAPLAYER_OVERLAY_PLAY_BUTTON,
+     ui::SCALE_FACTOR_100P, false},
+    {"mediaRemotingCastIcon", IDR_MEDIA_REMOTING_CAST_ICON,
      ui::SCALE_FACTOR_100P, false},
     {"mediaplayerTrackSelectionCheckmark",
      IDR_MEDIAPLAYER_TRACKSELECTION_CHECKMARK, ui::SCALE_FACTOR_100P, false},

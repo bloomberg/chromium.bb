@@ -350,6 +350,9 @@ class CORE_EXPORT HTMLMediaElement
   DisplayMode GetDisplayMode() const { return display_mode_; }
   virtual void SetDisplayMode(DisplayMode mode) { display_mode_ = mode; }
 
+  // Assert the correct order of the children in shadow dom when DCHECK is on.
+  static void AssertShadowRootChildren(ShadowRoot&);
+
  private:
   // Friend class for testing.
   friend class MediaElementFillingViewportTest;

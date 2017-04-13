@@ -161,6 +161,8 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return PaintSearchField(o, paint_info, r);
     case kSearchFieldCancelButtonPart:
       return PaintSearchFieldCancelButton(o, paint_info, r);
+    case kMediaRemotingCastIconPart:
+      return MediaControlsPainter::PaintMediaRemotingCastIcon(o, paint_info, r);
     default:
       break;
   }
