@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.installedapp;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -64,7 +65,25 @@ public class InstalledAppProviderTest {
 
     private FakePackageManager mPackageManager;
     private FakeFrameUrlDelegate mFrameUrlDelegate;
-    private InstalledAppProviderImpl mInstalledAppProvider;
+    private InstalledAppProviderTestImpl mInstalledAppProvider;
+
+    private static class InstalledAppProviderTestImpl extends InstalledAppProviderImpl {
+        private long mLastDelayMillis;
+
+        public InstalledAppProviderTestImpl(FrameUrlDelegate frameUrlDelegate, Context context) {
+            super(frameUrlDelegate, context);
+        }
+
+        public long getLastDelayMillis() {
+            return mLastDelayMillis;
+        }
+
+        @Override
+        protected void delayThenRun(Runnable r, long delayMillis) {
+            mLastDelayMillis = delayMillis;
+            r.run();
+        }
+    }
 
     /**
      * FakePackageManager allows for the "installation" of Android package names and setting up
@@ -279,7 +298,7 @@ public class InstalledAppProviderTest {
         RuntimeEnvironment.setRobolectricPackageManager(mPackageManager);
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mInstalledAppProvider =
-                new InstalledAppProviderImpl(mFrameUrlDelegate, RuntimeEnvironment.application);
+                new InstalledAppProviderTestImpl(mFrameUrlDelegate, RuntimeEnvironment.application);
     }
 
     /**
@@ -789,5 +808,35 @@ public class InstalledAppProviderTest {
         RelatedApplication[] expectedInstalledRelatedApps =
                 new RelatedApplication[] {manifestRelatedApps[1], manifestRelatedApps[3]};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Tests the pseudo-random artificial delay to counter a timing attack.
+     */
+    @Test
+    @Feature({"InstalledApp"})
+    public void testArtificialDelay() {
+        byte[] salt = {0x64, 0x09, -0x68, -0x25, 0x70, 0x11, 0x25, 0x24, 0x68, -0x1a, 0x08, 0x79,
+                -0x12, -0x50, 0x3b, -0x57, -0x17, -0x4d, 0x46, 0x02};
+        PackageHash.setGlobalSaltForTesting(salt);
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        // Installed app.
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+        // This expectation is based on HMAC_SHA256(salt, packageName encoded in UTF-8), taking the
+        // low 10 bits of the first two bytes of the result / 100.
+        Assert.assertEquals(2, mInstalledAppProvider.getLastDelayMillis());
+
+        // Non-installed app.
+        manifestRelatedApps = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null)};
+        expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+        // This expectation is based on HMAC_SHA256(salt, packageName encoded in UTF-8), taking the
+        // low 10 bits of the first two bytes of the result / 100.
+        Assert.assertEquals(5, mInstalledAppProvider.getLastDelayMillis());
     }
 }

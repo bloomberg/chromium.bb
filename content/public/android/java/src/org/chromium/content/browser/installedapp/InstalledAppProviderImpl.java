@@ -10,12 +10,14 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.util.Pair;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
@@ -79,15 +81,24 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
         // Use an AsyncTask to execute the installed/related checks on a background thread (so as
         // not to block the UI thread).
-        new AsyncTask<Void, Void, RelatedApplication[]>() {
+        new AsyncTask<Void, Void, Pair<RelatedApplication[], Integer>>() {
             @Override
-            protected RelatedApplication[] doInBackground(Void... unused) {
+            protected Pair<RelatedApplication[], Integer> doInBackground(Void... unused) {
                 return filterInstalledAppsOnBackgroundThread(relatedApps, frameUrl);
             }
 
             @Override
-            protected void onPostExecute(RelatedApplication[] installedApps) {
-                callback.call(installedApps);
+            protected void onPostExecute(Pair<RelatedApplication[], Integer> result) {
+                final RelatedApplication[] installedApps = result.first;
+                int delayMillis = result.second;
+                // Before calling the callback, delay for the amount of time that has been
+                // calculated in |delayMillis|.
+                delayThenRun(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.call(installedApps);
+                    }
+                }, delayMillis);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -105,11 +116,14 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      *
      * @param relatedApps A list of applications to be filtered.
      * @param frameUrl The URL of the frame this operation was called from.
-     * @return A subsequence of applications that meet the criteria.
+     * @return Pair of: A subsequence of applications that meet the criteria, and, the total amount
+     *         of time in ms that should be delayed before returning to the user, to mask the
+     *         installed state of the requested apps.
      */
-    private RelatedApplication[] filterInstalledAppsOnBackgroundThread(
+    private Pair<RelatedApplication[], Integer> filterInstalledAppsOnBackgroundThread(
             RelatedApplication[] relatedApps, URI frameUrl) {
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
+        int delayMillis = 0;
         PackageManager pm = mContext.getPackageManager();
         for (RelatedApplication app : relatedApps) {
             // If the package is of type "play", it is installed, and the origin is associated with
@@ -118,15 +132,34 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
             // between the app not being installed and the origin not being associated with the app
             // (otherwise, arbitrary websites would be able to test whether un-associated apps are
             // installed on the user's device).
-            if (app.platform.equals(RELATED_APP_PLATFORM_ANDROID) && app.id != null
-                    && isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, pm)) {
-                installedApps.add(app);
+            if (app.platform.equals(RELATED_APP_PLATFORM_ANDROID) && app.id != null) {
+                delayMillis += calculateDelayForPackageMs(app.id);
+                if (isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, pm)) {
+                    installedApps.add(app);
+                }
             }
         }
 
         RelatedApplication[] installedAppsArray = new RelatedApplication[installedApps.size()];
         installedApps.toArray(installedAppsArray);
-        return installedAppsArray;
+        return Pair.create(installedAppsArray, delayMillis);
+    }
+
+    /**
+     * Determines how long to artifically delay for, for a particular package name.
+     */
+    private int calculateDelayForPackageMs(String packageName) {
+        // Important timing-attack prevention measure: delay by a pseudo-random amount of time, to
+        // add significant noise to the time taken to check whether this app is installed and
+        // related. Otherwise, it would be possible to tell whether a non-related app is installed,
+        // based on the time this operation takes.
+        //
+        // Generate a 16-bit hash based on a unique device ID + the package name.
+        short hash = PackageHash.hashForPackage(packageName);
+
+        // The time delay is the low 10 bits of the hash in 100ths of a ms (between 0 and 10ms).
+        int delayHundredthsOfMs = hash & 0x3ff;
+        return delayHundredthsOfMs / 100;
     }
 
     /**
@@ -137,7 +170,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * @param frameUrl Returns false if the Android package does not declare association with the
      *                origin of this URL. Can be null.
      */
-    private static boolean isAppInstalledAndAssociatedWithOrigin(
+    private boolean isAppInstalledAndAssociatedWithOrigin(
             String packageName, URI frameUrl, PackageManager pm) {
         if (frameUrl == null) return false;
 
@@ -274,5 +307,18 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
         return assetUrl.getScheme().equals(frameUrl.getScheme())
                 && assetUrl.getAuthority().equals(frameUrl.getAuthority());
+    }
+
+    /**
+     * Runs a Runnable task after a given delay.
+     *
+     * Protected and non-static for testing.
+     *
+     * @param r The Runnable that will be executed.
+     * @param delayMillis The delay (in ms) until the Runnable will be executed.
+     * @return True if the Runnable was successfully placed into the message queue.
+     */
+    protected void delayThenRun(Runnable r, long delayMillis) {
+        ThreadUtils.postOnUiThreadDelayed(r, delayMillis);
     }
 }
