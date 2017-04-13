@@ -51,7 +51,7 @@ typedef struct TileData {
   DECLARE_ALIGNED(16, tran_low_t, pvq_ref_coeff[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
 #endif
 #if CONFIG_EC_ADAPT
-  FRAME_CONTEXT tctx;
+  DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
 #endif
 #if CONFIG_PALETTE
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
