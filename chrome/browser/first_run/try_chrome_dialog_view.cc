@@ -34,7 +34,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -134,9 +134,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   columns->AddPaddingColumn(0, icon_size.width());
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(
-      0, views::ViewsDelegate::GetInstance()->GetDistanceMetric(
-             views::DistanceMetric::RELATED_BUTTON_HORIZONTAL));
+  columns->AddPaddingColumn(0, views::LayoutProvider::Get()->GetDistanceMetric(
+                                   views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
 

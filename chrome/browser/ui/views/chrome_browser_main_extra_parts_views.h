@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace ui {
 class InputDeviceClient;
@@ -41,6 +42,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
  private:
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<views::LayoutProvider> layout_provider_;
 
 #if defined(USE_AURA)
   // Not created when running in ash::Config::MUS.

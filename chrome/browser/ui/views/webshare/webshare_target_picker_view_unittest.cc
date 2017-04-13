@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +31,9 @@ class WebShareTargetPickerViewTest : public views::ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
+
+    test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
 
     SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 

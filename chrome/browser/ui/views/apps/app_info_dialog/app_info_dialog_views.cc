@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/features.h"
@@ -137,8 +137,8 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   views::View* dialog_body_contents = new views::View();
   dialog_body_contents->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_PANEL_CONTENT_MARGIN),
       views::kUnrelatedControlVerticalSpacing));
   dialog_body_contents->AddChildView(new AppInfoSummaryPanel(profile, app));
   dialog_body_contents->AddChildView(new AppInfoPermissionsPanel(profile, app));

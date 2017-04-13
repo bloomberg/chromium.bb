@@ -13,6 +13,7 @@
 #include "chrome/browser/media/webrtc/fake_desktop_media_list.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,6 +23,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/test/scoped_views_test_helper.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -40,6 +42,8 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   ~DesktopMediaPickerViewsTest() override {}
 
   void SetUp() override {
+    test_helper_.test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
     media_lists_[DesktopMediaID::TYPE_SCREEN] = new FakeDesktopMediaList();
     media_lists_[DesktopMediaID::TYPE_WINDOW] = new FakeDesktopMediaList();
     media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS] =

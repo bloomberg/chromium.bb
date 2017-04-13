@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/native_window_tracker.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -168,13 +168,12 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     : dialog_(dialog_view),
       triggered_by_extension_(triggered_by_extension),
       report_abuse_checkbox_(nullptr) {
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal,
-      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN),
-      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-      layout_delegate->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING)));
+      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN),
+      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_ = new views::ImageView();
   DCHECK_GE(image->width(), kIconSize);
@@ -213,8 +212,8 @@ views::View* ExtensionUninstallDialogDelegateView::CreateExtraView() {
 bool ExtensionUninstallDialogDelegateView::GetExtraViewPadding(int* padding) {
   // We want a little more padding between the "report abuse" checkbox and the
   // buttons.
-  *padding = LayoutDelegate::Get()->GetMetric(
-      LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING_LARGE);
+  *padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE);
   return true;
 }
 

@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -114,8 +114,8 @@ void DeviceChooserContentView::Layout() {
 gfx::Size DeviceChooserContentView::GetPreferredSize() const {
   constexpr int kHeight = 320;
   constexpr int kDefaultWidth = 402;
-  int width = LayoutDelegate::Get()->GetDialogPreferredWidth(
-      LayoutDelegate::DialogWidth::MEDIUM);
+  int width =
+      ChromeLayoutProvider::Get()->GetDialogPreferredWidth(DialogWidth::MEDIUM);
   if (!width)
     width = kDefaultWidth;
   return gfx::Size(width, kHeight);

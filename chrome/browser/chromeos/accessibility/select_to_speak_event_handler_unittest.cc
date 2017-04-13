@@ -85,8 +85,9 @@ class SelectToSpeakEventHandlerTest : public ash::test::AshTestBase {
   void SetUp() override {
     ash::test::AshTestBase::SetUp();
     event_delegate_.reset(new SelectToSpeakAccessibilityEventDelegate());
-    ash_test_helper()->views_delegate()->set_test_accessibility_event_delegate(
-        event_delegate_.get());
+    ash_test_helper()
+        ->test_views_delegate()
+        ->set_test_accessibility_event_delegate(event_delegate_.get());
     generator_ = &AshTestBase::GetEventGenerator();
     CurrentContext()->AddPreTargetHandler(select_to_speak_event_handler_.get());
     CurrentContext()->AddPreTargetHandler(&event_capturer_);

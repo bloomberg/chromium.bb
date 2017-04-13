@@ -1,0 +1,111 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
+
+gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
+  DCHECK_LT(metric, views::VIEWS_INSETS_MAX);
+  switch (metric) {
+    case views::INSETS_DIALOG_BUTTON:
+    case views::INSETS_PANEL:
+    case views::INSETS_BUBBLE_CONTENTS:
+      return gfx::Insets(kHarmonyLayoutUnit);
+    case views::INSETS_DIALOG_TITLE: {
+      constexpr int top = kHarmonyLayoutUnit;
+      constexpr int side = kHarmonyLayoutUnit;
+      // Titles are inset at the top and sides, but not at the bottom.
+      return gfx::Insets(top, side, 0, side);
+    }
+    case views::INSETS_VECTOR_IMAGE_BUTTON:
+      return gfx::Insets(kHarmonyLayoutUnit / 4);
+  }
+  NOTREACHED();
+  return gfx::Insets();
+}
+
+int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
+  DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
+  switch (metric) {
+    case views::DISTANCE_CLOSE_BUTTON_MARGIN: {
+      constexpr int kVisibleMargin = kHarmonyLayoutUnit / 2;
+      // The visible margin is based on the unpadded size, so to get the actual
+      // margin we need to subtract out the padding.
+      return kVisibleMargin - kHarmonyLayoutUnit / 4;
+    }
+    case views::DISTANCE_RELATED_BUTTON_HORIZONTAL:
+      return kHarmonyLayoutUnit / 2;
+    case views::DISTANCE_RELATED_CONTROL_HORIZONTAL:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL:
+      return kHarmonyLayoutUnit;
+    case views::DISTANCE_RELATED_CONTROL_VERTICAL:
+      return kHarmonyLayoutUnit / 2;
+    case DISTANCE_RELATED_CONTROL_VERTICAL_SMALL:
+      return kHarmonyLayoutUnit / 2;
+    case DISTANCE_DIALOG_BUTTON_MARGIN:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_DIALOG_BUTTON_TOP:
+      return kHarmonyLayoutUnit;
+    case views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
+    case DISTANCE_BUTTON_MINIMUM_WIDTH:
+      // Minimum label size plus padding.
+      return 2 * kHarmonyLayoutUnit +
+             2 * GetDistanceMetric(views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
+    case views::DISTANCE_BUTTON_HORIZONTAL_PADDING:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
+      return kHarmonyLayoutUnit * 8;
+    case DISTANCE_RELATED_LABEL_HORIZONTAL:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
+      return 0;
+    case DISTANCE_PANEL_CONTENT_MARGIN:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_UNRELATED_CONTROL_VERTICAL:
+      return kHarmonyLayoutUnit;
+    case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
+      return kHarmonyLayoutUnit;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+views::GridLayout::Alignment
+HarmonyLayoutProvider::GetControlLabelGridAlignment() const {
+  return views::GridLayout::LEADING;
+}
+
+bool HarmonyLayoutProvider::UseExtraDialogPadding() const {
+  return false;
+}
+
+bool HarmonyLayoutProvider::ShouldShowWindowIcon() const {
+  return false;
+}
+
+bool HarmonyLayoutProvider::IsHarmonyMode() const {
+  return true;
+}
+
+int HarmonyLayoutProvider::GetDialogPreferredWidth(DialogWidth width) const {
+  switch (width) {
+    case DialogWidth::SMALL:
+      return 320;
+    case DialogWidth::MEDIUM:
+      return 448;
+    case DialogWidth::LARGE:
+      return 512;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+const views::TypographyProvider& HarmonyLayoutProvider::GetTypographyProvider()
+    const {
+  return typography_provider_;
+}

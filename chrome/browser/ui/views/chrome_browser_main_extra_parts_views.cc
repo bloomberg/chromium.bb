@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "components/constrained_window/constrained_window_views.h"
 
@@ -70,7 +71,10 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // The delegate needs to be set before any UI is created so that windows
   // display the correct icon.
   if (!views::ViewsDelegate::GetInstance())
-    views_delegate_.reset(new ChromeViewsDelegate);
+    views_delegate_ = base::MakeUnique<ChromeViewsDelegate>();
+
+  if (!views::LayoutProvider::Get())
+    layout_provider_ = ChromeLayoutProvider::CreateLayoutProvider();
 
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 

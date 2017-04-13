@@ -26,9 +26,9 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
@@ -92,8 +92,8 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       is_default_(false),
       style_(STYLE_TEXTBUTTON),
       border_is_themed_border_(true),
-      image_label_spacing_(ViewsDelegate::GetInstance()->GetDistanceMetric(
-          DistanceMetric::RELATED_CONTROL_HORIZONTAL)),
+      image_label_spacing_(LayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_HORIZONTAL)),
       horizontal_alignment_(gfx::ALIGN_LEFT) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetTextInternal(text);

@@ -48,7 +48,6 @@ namespace views {
 class NativeWidget;
 class NonClientFrameView;
 class ViewsTouchEditingControllerFactory;
-class TypographyProvider;
 class View;
 class Widget;
 
@@ -61,38 +60,6 @@ class TouchSelectionMenuRunnerViews;
 namespace internal {
 class NativeWidgetDelegate;
 }
-
-enum class InsetsMetric {
-  // The margins around the contents area of a bubble (popover)-style dialog.
-  BUBBLE_CONTENTS,
-  // The margins around the button row of a dialog.
-  DIALOG_BUTTON,
-  // The margins around the icon/title of a dialog.
-  DIALOG_TITLE,
-  // The margins that should be applied around a panel GridLayout.
-  PANEL,
-  // Padding to add to vector image buttons to increase their click and touch
-  // target size.
-  VECTOR_IMAGE_BUTTON_PADDING,
-};
-
-enum class DistanceMetric {
-  // The default padding to add on each side of a button's label.
-  BUTTON_HORIZONTAL_PADDING,
-  // The distance between a dialog's edge and the close button in the upper
-  // trailing corner.
-  CLOSE_BUTTON_MARGIN,
-  // The default minimum width of a dialog button.
-  DIALOG_BUTTON_MINIMUM_WIDTH,
-  // The spacing between a pair of related horizontal buttons, used for
-  // dialog layout.
-  RELATED_BUTTON_HORIZONTAL,
-  // Horizontal spacing between controls that are logically related.
-  RELATED_CONTROL_HORIZONTAL,
-  // The spacing between a pair of related vertical controls, used for
-  // dialog layout.
-  RELATED_CONTROL_VERTICAL,
-};
 
 // ViewsDelegate is an interface implemented by an object using the views
 // framework. It is used to obtain various high level application utilities
@@ -249,22 +216,12 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns a blocking pool task runner given a TaskRunnerType.
   virtual scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner();
 
-  // Returns the insets metric according to the given enumeration element.
-  virtual gfx::Insets GetInsetsMetric(InsetsMetric metric) const;
-
-  // Returns the distance metric between elements according to the given
-  // enumeration element.
-  virtual int GetDistanceMetric(DistanceMetric metric) const;
-
-  // Returns the TypographyProvider, used to configure text properties such as
-  // font, weight, color, size, and line height. Never null.
-  virtual const TypographyProvider& GetTypographyProvider() const = 0;
-
  protected:
   ViewsDelegate();
 
  private:
-  std::unique_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
+  std::unique_ptr<ViewsTouchEditingControllerFactory>
+      editing_controller_factory_;
 
 #if defined(USE_AURA)
   std::unique_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;

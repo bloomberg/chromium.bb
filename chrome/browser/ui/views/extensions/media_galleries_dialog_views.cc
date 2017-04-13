@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -110,9 +110,9 @@ void MediaGalleriesDialogViews::InitChildViews() {
                      0);
 
   // Message text.
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  const int vertical_padding = layout_delegate->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int vertical_padding =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   views::Label* subtext = new views::Label(controller_->GetSubtext());
   subtext->SetMultiLine(true);
   subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -124,8 +124,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   layout->AddPaddingRow(0, vertical_padding);
 
   // Scrollable area for checkboxes.
-  const int small_vertical_padding = LayoutDelegate::Get()->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING_SMALL);
+  const int small_vertical_padding =
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   ScrollableView* scroll_container = new ScrollableView();
   scroll_container->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0, small_vertical_padding));
@@ -148,8 +148,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
       header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       header->SetBorder(views::CreateEmptyBorder(
           vertical_padding,
-          layout_delegate->GetMetric(
-              LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+          provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN),
           vertical_padding, 0));
       scroll_container->AddChildView(header);
     }

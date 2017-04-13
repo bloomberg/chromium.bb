@@ -15,8 +15,8 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -215,9 +215,9 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       accept_events_(true),
       adjust_if_offscreen_(true),
       parent_window_(NULL) {
-  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
-  margins_ = views_delegate->GetInsetsMetric(InsetsMetric::BUBBLE_CONTENTS);
-  title_margins_ = views_delegate->GetInsetsMetric(InsetsMetric::DIALOG_TITLE);
+  LayoutProvider* provider = LayoutProvider::Get();
+  margins_ = provider->GetInsetsMetric(INSETS_BUBBLE_CONTENTS);
+  title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);
   UpdateColorsFromTheme(GetNativeTheme());

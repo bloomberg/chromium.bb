@@ -16,7 +16,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -132,8 +132,8 @@ void DialogExample::CreateExampleView(View* container) {
   const float kStretchy = 1.f;
 
   const int horizontal_spacing =
-      ViewsDelegate::GetInstance()->GetDistanceMetric(
-          views::DistanceMetric::RELATED_BUTTON_HORIZONTAL);
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   GridLayout* layout = GridLayout::CreatePanel(container);
   container->SetLayoutManager(layout);
   ColumnSet* column_set = layout->AddColumnSet(kFieldsColumnId);
@@ -186,10 +186,10 @@ void DialogExample::CreateExampleView(View* container) {
 
 void DialogExample::StartRowWithLabel(GridLayout* layout, const char* label) {
   const float kFixedVerticalResize = 0.f;
-  layout->StartRowWithPadding(
-      kFixedVerticalResize, kFieldsColumnId, kFixedVerticalResize,
-      ViewsDelegate::GetInstance()->GetDistanceMetric(
-          views::DistanceMetric::RELATED_CONTROL_VERTICAL));
+  layout->StartRowWithPadding(kFixedVerticalResize, kFieldsColumnId,
+                              kFixedVerticalResize,
+                              views::LayoutProvider::Get()->GetDistanceMetric(
+                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));
   layout->AddView(new Label(base::ASCIIToUTF16(label)));
 }
 

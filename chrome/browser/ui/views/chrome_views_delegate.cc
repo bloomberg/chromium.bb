@@ -16,7 +16,6 @@
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
@@ -57,32 +56,15 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
   return profile->GetPrefs();
 }
 
-ChromeViewsDelegate* views_delegate = nullptr;
-
 }  // namespace
 
 
 // ChromeViewsDelegate --------------------------------------------------------
 
-#if defined(OS_WIN)
-ChromeViewsDelegate::ChromeViewsDelegate()
-    : in_autohide_edges_callback_(false), weak_factory_(this) {
-#else
-ChromeViewsDelegate::ChromeViewsDelegate() {
-#endif
-  DCHECK(!views_delegate);
-  views_delegate = this;
-}
+ChromeViewsDelegate::ChromeViewsDelegate() {}
 
 ChromeViewsDelegate::~ChromeViewsDelegate() {
   DCHECK_EQ(0u, ref_count_);
-
-  DCHECK_EQ(this, views_delegate);
-  views_delegate = nullptr;
-}
-
-ChromeViewsDelegate* ChromeViewsDelegate::GetInstance() {
-  return views_delegate;
 }
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
@@ -207,83 +189,6 @@ std::string ChromeViewsDelegate::GetApplicationName() {
 scoped_refptr<base::TaskRunner>
 ChromeViewsDelegate::GetBlockingPoolTaskRunner() {
   return content::BrowserThread::GetBlockingPool();
-}
-
-gfx::Insets ChromeViewsDelegate::GetInsetsMetric(
-    views::InsetsMetric metric) const {
-  const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  switch (metric) {
-    case views::InsetsMetric::BUBBLE_CONTENTS:
-      return gfx::Insets(layout_delegate->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
-    case views::InsetsMetric::DIALOG_BUTTON: {
-      const int top = layout_delegate->GetMetric(
-          LayoutDelegate::Metric::DIALOG_BUTTON_TOP_SPACING);
-      const int margin = layout_delegate->GetMetric(
-          LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
-      return gfx::Insets(top, margin, margin, margin);
-    }
-    case views::InsetsMetric::DIALOG_TITLE: {
-      const int top = layout_delegate->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
-      const int side = layout_delegate->GetMetric(
-          LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
-      // Titles are inset at the top and sides, but not at the bottom.
-      return gfx::Insets(top, side, 0, side);
-    }
-    case views::InsetsMetric::PANEL:
-      return gfx::Insets(layout_delegate->GetMetric(
-                             LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
-                         layout_delegate->GetMetric(
-                             LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
-    case views::InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING:
-      return gfx::Insets(layout_delegate->GetMetric(
-          LayoutDelegate::Metric::VECTOR_IMAGE_BUTTON_PADDING));
-  }
-  NOTREACHED();
-  return gfx::Insets();
-}
-
-int ChromeViewsDelegate::GetDistanceMetric(views::DistanceMetric metric) const {
-  switch (metric) {
-    case views::DistanceMetric::CLOSE_BUTTON_MARGIN:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::DIALOG_CLOSE_BUTTON_MARGIN);
-    case views::DistanceMetric::RELATED_BUTTON_HORIZONTAL:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING);
-    case views::DistanceMetric::RELATED_CONTROL_HORIZONTAL:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING);
-    case views::DistanceMetric::RELATED_CONTROL_VERTICAL:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
-    case views::DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::DIALOG_BUTTON_MINIMUM_WIDTH);
-    case views::DistanceMetric::BUTTON_HORIZONTAL_PADDING:
-      return LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::BUTTON_HORIZONTAL_PADDING);
-  }
-  NOTREACHED();
-  return 0;
-}
-
-const views::TypographyProvider& ChromeViewsDelegate::GetTypographyProvider()
-    const {
-  return LayoutDelegate::Get()->GetTypographyProvider();
-}
-
-int ChromeViewsDelegate::GetDefaultDistanceMetric(
-    views::DistanceMetric metric) {
-  return views_delegate
-             ? views_delegate->InternalGetDefaultDistanceMetric(metric)
-             : views::ViewsDelegate::GetInstance()->GetDistanceMetric(metric);
-}
-
-int ChromeViewsDelegate::InternalGetDefaultDistanceMetric(
-    views::DistanceMetric metric) const {
-  return views::ViewsDelegate::GetDistanceMetric(metric);
 }
 
 #if !defined(OS_CHROMEOS)

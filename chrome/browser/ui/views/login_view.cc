@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/login_view.h"
 
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -32,7 +32,7 @@ LoginView::LoginView(const base::string16& authority,
       authority_label_(new views::Label(authority)),
       message_label_(nullptr),
       login_model_(login_model_data ? login_model_data->model : nullptr) {
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
   authority_label_->SetMultiLine(true);
@@ -53,17 +53,16 @@ LoginView::LoginView(const base::string16& authority,
   // Add the column set for the user name and password fields and labels.
   const int labels_column_set_id = 1;
   column_set = layout->AddColumnSet(labels_column_set_id);
-  if (layout_delegate->UseExtraDialogPadding())
+  if (provider->UseExtraDialogPadding())
     column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
-  column_set->AddColumn(layout_delegate->GetControlLabelGridAlignment(),
+  column_set->AddColumn(provider->GetControlLabelGridAlignment(),
                         GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
       0,
-      layout_delegate->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  if (layout_delegate->UseExtraDialogPadding())
+  if (provider->UseExtraDialogPadding())
     column_set->AddPaddingColumn(0, kTextfieldStackHorizontalSpacing);
 
   layout->StartRow(0, single_column_view_set_id);
@@ -73,37 +72,29 @@ LoginView::LoginView(const base::string16& authority,
     message_label_->SetMultiLine(true);
     message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     message_label_->SetAllowCharacterBreak(true);
-    layout->AddPaddingRow(
-        0,
-        layout_delegate->GetMetric(
-            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+    layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(message_label_);
   }
 
-  layout->AddPaddingRow(
-      0,
-      layout_delegate->GetMetric(
-          LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE));
+  layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                               DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(username_label_);
   layout->AddView(username_field_);
 
   layout->AddPaddingRow(
-      0,
-      layout_delegate->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   layout->StartRow(0, labels_column_set_id);
   layout->AddView(password_label_);
   layout->AddView(password_field_);
 
-  if (layout_delegate->UseExtraDialogPadding()) {
+  if (provider->UseExtraDialogPadding()) {
     layout->AddPaddingRow(
-        0,
-        layout_delegate->GetMetric(
-            LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
+        0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
   }
 
   if (login_model_data) {

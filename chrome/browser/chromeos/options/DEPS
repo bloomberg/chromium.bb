@@ -1,5 +1,0 @@
-include_rules = [
-  # TODO(xdai): Remove these rules after bugs 687340 and 687349 are fixed.
-  "!chrome/browser/ui/views/harmony/layout_delegate.h",
-]
-

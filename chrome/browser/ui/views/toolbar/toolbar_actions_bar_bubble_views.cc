@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -72,10 +72,10 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
 
   if (icon && label) {
     views::View* parent = new views::View();
-    parent->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0,
-        LayoutDelegate::Get()->GetMetric(
-            LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING)));
+    parent->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
+                             ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     parent->AddChildView(icon.release());
     parent->AddChildView(label.release());
     return parent;
@@ -106,11 +106,10 @@ bool ToolbarActionsBarBubbleViews::Close() {
 }
 
 void ToolbarActionsBarBubbleViews::Init() {
-  LayoutDelegate* delegate = LayoutDelegate::Get();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, 0, 0,
-      delegate->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING)));
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   // Add the content string.
   views::Label* content_label =
@@ -128,8 +127,7 @@ void ToolbarActionsBarBubbleViews::Init() {
     item_list_ = new views::Label(item_list);
     item_list_->SetBorder(views::CreateEmptyBorder(
         0,
-        delegate->GetMetric(
-            LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING),
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL),
         0, 0));
     item_list_->SetMultiLine(true);
     item_list_->SizeToFit(width);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/default_style.h"
@@ -20,7 +20,7 @@
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
 // Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST(LayoutDelegateTest, DISABLED_LegacyFontSizeConstants) {
+TEST(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
   ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList label_font = rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 
@@ -108,7 +108,7 @@ TEST(LayoutDelegateTest, DISABLED_LegacyFontSizeConstants) {
 // TypographyProvider must add 4 instead. We do this so that Chrome adapts
 // correctly to _non-standard_ system font configurations on user machines.
 // Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST(LayoutDelegateTest, DISABLED_RequestFontBySize) {
+TEST(LayoutProviderTest, DISABLED_RequestFontBySize) {
 #if defined(OS_MACOSX)
   constexpr int kBase = 13;
 #else
@@ -188,13 +188,14 @@ TEST(LayoutDelegateTest, DISABLED_RequestFontBySize) {
 // to the "base" font in the manner that legacy toolkit-views code expects. This
 // reads the base font configuration at runtime, and only tests font sizes, so
 // should be robust against platform changes.
-TEST(LayoutDelegateTest, FontSizeRelativeToBase) {
+TEST(LayoutProviderTest, FontSizeRelativeToBase) {
   using views::style::GetFont;
 
   constexpr int kStyle = views::style::STYLE_PRIMARY;
 
-  // Typography described in chrome_typography.h requires a ChromeViewsDelegate.
-  ChromeViewsDelegate views_delegate;
+  // Typography described in chrome_typography.h requires a
+  // ChromeLayoutProvider.
+  ChromeLayoutProvider layout_provider;
 
 // Legacy code measures everything relative to a default-constructed FontList.
 // On Mac, subtract one since that is 13pt instead of 12pt.
@@ -236,7 +237,7 @@ TEST(LayoutDelegateTest, FontSizeRelativeToBase) {
 // configuration. Generally, for a particular platform configuration, there
 // should be a consistent increase in line height when compared to the height of
 // a given font.
-TEST(LayoutDelegateTest, TypographyLineHeight) {
+TEST(LayoutProviderTest, TypographyLineHeight) {
   constexpr int kStyle = views::style::STYLE_PRIMARY;
 
   // Only MD overrides the default line spacing.
@@ -244,7 +245,8 @@ TEST(LayoutDelegateTest, TypographyLineHeight) {
       ui::MaterialDesignController::MATERIAL_NORMAL);
   md_test_api.SetSecondaryUiMaterial(true);
 
-  ChromeViewsDelegate views_delegate;
+  std::unique_ptr<views::LayoutProvider> layout_provider =
+      ChromeLayoutProvider::CreateLayoutProvider();
 
   constexpr struct {
     int context;

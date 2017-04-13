@@ -38,8 +38,4 @@ ui::ContextFactoryPrivate* TestViewsDelegate::GetContextFactoryPrivate() {
   return context_factory_private_;
 }
 
-const TypographyProvider& TestViewsDelegate::GetTypographyProvider() const {
-  return typography_provider_;
-}
-
 }  // namespace views

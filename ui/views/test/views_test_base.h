@@ -49,8 +49,8 @@ class ViewsTestBase : public PlatformTest {
   void SimulateNativeDestroy(Widget* widget);
 
  protected:
-  TestViewsDelegate* views_delegate() const {
-    return test_helper_->views_delegate();
+  TestViewsDelegate* test_views_delegate() const {
+    return test_helper_->test_views_delegate();
   }
 
   void set_views_delegate(std::unique_ptr<TestViewsDelegate> views_delegate) {

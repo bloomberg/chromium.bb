@@ -25,8 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -86,8 +86,8 @@ constexpr int kExternalInstallLeftColumnWidth = 350;
 // its parent. Therefore increase the indentation by one more unit to show that
 // it is in fact a child item (with no missing bullet) and not a sibling.
 int GetLeftPaddingForBulletedItems(bool parent_bulleted) {
-  return LayoutDelegate::Get()->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING) *
+  return ChromeLayoutProvider::Get()->GetDistanceMetric(
+             views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
          (parent_bulleted ? 2 : 1);
 }
 
@@ -236,6 +236,7 @@ void ExtensionInstallDialogView::InitView() {
 
   int column_set_id = 0;
   views::GridLayout* layout = CreateLayout(left_column_width, column_set_id);
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -248,7 +249,7 @@ void ExtensionInstallDialogView::InitView() {
     prompt_->AppendRatingStars(AddResourceIcon, rating);
 
     int rating_text_context, user_count_text_context;
-    if (LayoutDelegate::Get()->IsHarmonyMode()) {
+    if (provider->IsHarmonyMode()) {
       rating_text_context = CONTEXT_BODY_TEXT_LARGE;
       user_count_text_context = CONTEXT_BODY_TEXT_SMALL;
     } else {
@@ -269,9 +270,8 @@ void ExtensionInstallDialogView::InitView() {
     layout->AddView(user_count);
   }
 
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  const int vertical_padding = layout_delegate->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
+  const int vertical_padding =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   if (prompt_->ShouldShowPermissions()) {
     layout->AddPaddingRow(0, vertical_padding);
     layout->StartRow(0, column_set_id);
@@ -281,8 +281,7 @@ void ExtensionInstallDialogView::InitView() {
 
   const int content_width =
       left_column_width +
-      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN) +
-      kIconSize;
+      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN) + kIconSize;
 
   // Create the scrollable view which will contain the permissions and retained
   // files/devices. It will span the full content width.
@@ -300,7 +299,7 @@ void ExtensionInstallDialogView::InitView() {
 
   // Pad to the very right of the dialog, so the scrollbar will be on the edge.
   const int button_margin =
-      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
   scrollable_column_set->AddPaddingColumn(0, button_margin);
 
   layout->StartRow(0, column_set_id);
@@ -401,8 +400,8 @@ bool ExtensionInstallDialogView::AddPermissions(
   if (prompt_->GetPermissionCount(perm_type) == 0)
     return false;
 
-  const int vertical_padding = LayoutDelegate::Get()->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
+  const int vertical_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_VERTICAL);
   layout->AddPaddingRow(0, vertical_padding);
 
   layout->StartRow(0, column_set_id);
@@ -442,11 +441,11 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
     int left_column_width,
     int column_set_id) {
   container_ = new views::View();
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int horizontal_margin =
-      layout_delegate->GetMetric(LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN);
+      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
   const int bottom_margin =
-      layout_delegate->GetMetric(LayoutDelegate::Metric::PANEL_CONTENT_MARGIN);
+      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN);
 
   // This is views::GridLayout::CreatePanel(), but without a top or right
   // margin. The empty dialog title will then become the top margin, and a
@@ -466,8 +465,7 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
                         0,  // no fixed width
                         left_column_width);
   column_set->AddPaddingColumn(
-      0, layout_delegate->GetMetric(
-             LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING));
+      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
                         0,  // no resizing
                         views::GridLayout::USE_PREF,
@@ -652,10 +650,9 @@ ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
 
 void ExpandableContainerView::DetailsView::AddDetail(
     const base::string16& detail) {
-  layout_->StartRowWithPadding(
-      0, 0, 0,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING_SMALL));
+  layout_->StartRowWithPadding(0, 0, 0,
+                               ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                   DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
   views::Label* detail_label =
       new views::Label(PrepareForDisplay(detail, false));
   detail_label->SetMultiLine(true);

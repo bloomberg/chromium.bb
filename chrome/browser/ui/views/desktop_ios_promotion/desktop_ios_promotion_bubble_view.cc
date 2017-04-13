@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_controller.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,11 +27,11 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
                                                           entry_point)) {
   int bubble_width = ManagePasswordsBubbleView::kDesiredBubbleWidth;
   views::GridLayout* layout = new views::GridLayout(this);
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   layout->set_minimum_size(gfx::Size(bubble_width, 0));
   layout->SetInsets(
       0,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN) +
+      provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN) +
           desktop_ios_promotion::GetPromoImage(
               GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_TextfieldDefaultColor))
@@ -51,8 +51,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         1, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0, LayoutDelegate::Get()->GetMetric(
-             LayoutDelegate::Metric::RELATED_BUTTON_HORIZONTAL_SPACING));
+      0,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
   promotion_text_label_->SetEnabledColor(SK_ColorGRAY);
@@ -61,8 +61,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   layout->StartRow(0, kLabelColumnSet);
   layout->AddView(promotion_text_label_);
   layout->AddPaddingRow(
-      0, LayoutDelegate::Get()->GetMetric(
-             LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL));
   layout->StartRow(0, kDoubleButtonColumnSet);
   layout->AddView(send_sms_button_);
   layout->AddView(no_button_);

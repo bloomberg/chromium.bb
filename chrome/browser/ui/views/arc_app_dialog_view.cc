@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/native_window_tracker.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -140,8 +140,8 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
 
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, views::kButtonHEdgeMarginNew,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_PANEL_CONTENT_MARGIN),
       views::kRelatedControlHorizontalSpacing));
 
   icon_view_ = new FixedBoundarySizeImageView();

@@ -577,7 +577,7 @@ TEST_F(RootViewTest, SingleLayoutDuringInit) {
   widget->CloseNow();
 
   // Also test Aura desktop Widget codepaths.
-  views_delegate()->set_use_desktop_native_widgets(true);
+  test_views_delegate()->set_use_desktop_native_widgets(true);
   delegate = new RootViewTestDialogDelegate();
   widget = DialogDelegate::CreateDialogWidget(delegate, GetContext(), nullptr);
   EXPECT_EQ(1, delegate->layout_count());

@@ -968,7 +968,7 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
 // Test that touch selection quick menu is not activated when opened.
 TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 #if defined(OS_WIN)
-  views_delegate()->set_use_desktop_native_widgets(true);
+  test_views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
   Widget* widget = CreateWidget();
@@ -999,7 +999,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
 #if defined(OS_WIN)
-  views_delegate()->set_use_desktop_native_widgets(true);
+  test_views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
   // Create first widget and view, activate the widget, and focus the view.

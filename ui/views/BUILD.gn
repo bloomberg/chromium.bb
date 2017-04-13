@@ -296,6 +296,8 @@ component("views") {
     "layout/layout_constants.h",
     "layout/layout_manager.cc",
     "layout/layout_manager.h",
+    "layout/layout_provider.cc",
+    "layout/layout_provider.h",
     "linux_ui/linux_ui.cc",
     "linux_ui/linux_ui.h",
     "linux_ui/status_icon_linux.cc",

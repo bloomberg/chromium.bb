@@ -23,17 +23,18 @@
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/page_transition_types.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/test/ash_test_helper.h"
-#include "chrome/test/base/ash_test_environment_chrome.h"
-#elif defined(TOOLKIT_VIEWS)
-#include "ui/views/test/scoped_views_test_helper.h"
-#endif
+#include "ui/views/test/test_views_delegate.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/test/base/ash_test_environment_chrome.h"
+#else
+#include "ui/views/test/test_views_delegate.h"
+#endif
 #endif
 
 using content::NavigationController;
@@ -66,6 +67,9 @@ void BrowserWithTestWindowTest::SetUp() {
 #endif
 #if defined(TOOLKIT_VIEWS)
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
+
+  test_views_delegate()->set_layout_provider(
+      ChromeLayoutProvider::CreateLayoutProvider());
 #endif
 
   if (content::IsBrowserSideNavigationEnabled())

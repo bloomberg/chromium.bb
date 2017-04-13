@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,6 +44,12 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
  protected:
   ToolbarActionsBarBubbleViewsTest() {}
   ~ToolbarActionsBarBubbleViewsTest() override {}
+
+  void SetUp() override {
+    views::ViewsTestBase::SetUp();
+    test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
+  }
 
   void TearDown() override {
     anchor_widget_.reset();

@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
@@ -38,6 +37,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -506,8 +506,9 @@ void VPNConfigView::Init() {
         GetNetworkState(service_path_);
     DCHECK(vpn && vpn->type() == shill::kTypeVPN);
   }
+
   layout_ = views::GridLayout::CreatePanel(this);
-  LayoutDelegate* delegate = LayoutDelegate::Get();
+  views::LayoutProvider* provider = views::LayoutProvider::Get();
 
   // Observer any changes to the certificate list.
   CertLibrary::Get()->AddObserver(this);
@@ -517,15 +518,15 @@ void VPNConfigView::Init() {
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
+      0,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   // Textfield, combobox.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0,
                         ChildNetworkConfigView::kInputFieldMinWidth);
   column_set->AddPaddingColumn(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
+      0,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   // Policy indicator.
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
@@ -551,8 +552,7 @@ void VPNConfigView::Init() {
   server_textfield_->set_controller(this);
   layout_->AddView(server_textfield_);
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   if (!service_path_.empty()) {
     server_label->SetEnabled(false);
     server_textfield_->SetEnabled(false);
@@ -574,8 +574,7 @@ void VPNConfigView::Init() {
     service_textfield_ = NULL;
   }
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Provider type label and select.
   layout_->StartRow(0, 0);
@@ -596,8 +595,7 @@ void VPNConfigView::Init() {
     provider_type_combobox_ = NULL;
   }
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // PSK passphrase label, input and visible button.
   layout_->StartRow(0, 0);
@@ -610,8 +608,7 @@ void VPNConfigView::Init() {
   layout_->AddView(
       new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Server CA certificate
   if (service_path_.empty()) {
@@ -625,9 +622,8 @@ void VPNConfigView::Init() {
         server_ca_cert_combobox_model_.get());
     layout_->AddView(server_ca_cert_combobox_);
     layout_->AddView(new ControlledSettingIndicatorView(ca_cert_ui_data_));
-    layout_->AddPaddingRow(
-        0, delegate->GetMetric(
-               LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+    layout_->AddPaddingRow(0, provider->GetDistanceMetric(
+                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));
   } else {
     server_ca_cert_label_ = NULL;
     server_ca_cert_combobox_ = NULL;
@@ -645,8 +641,7 @@ void VPNConfigView::Init() {
   layout_->AddView(user_cert_combobox_);
   layout_->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Username label and input.
   layout_->StartRow(0, 0);
@@ -658,8 +653,7 @@ void VPNConfigView::Init() {
   layout_->AddView(username_textfield_);
   layout_->AddView(new ControlledSettingIndicatorView(username_ui_data_));
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // User passphrase label, input and visble button.
   layout_->StartRow(0, 0);
@@ -672,8 +666,7 @@ void VPNConfigView::Init() {
   layout_->AddView(
       new ControlledSettingIndicatorView(user_passphrase_ui_data_));
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // OTP label and input.
   layout_->StartRow(0, 0);
@@ -684,8 +677,7 @@ void VPNConfigView::Init() {
   otp_textfield_->set_controller(this);
   layout_->AddView(otp_textfield_);
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Group Name label and input.
   layout_->StartRow(0, 0);
@@ -698,8 +690,7 @@ void VPNConfigView::Init() {
   layout_->AddView(group_name_textfield_);
   layout_->AddView(new ControlledSettingIndicatorView(group_name_ui_data_));
   layout_->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Save credentials
   layout_->StartRow(0, 0);

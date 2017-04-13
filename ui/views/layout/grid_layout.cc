@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -652,8 +652,7 @@ GridLayout::~GridLayout() {
 // static
 GridLayout* GridLayout::CreatePanel(View* host) {
   GridLayout* layout = new GridLayout(host);
-  layout->SetInsets(
-      ViewsDelegate::GetInstance()->GetInsetsMetric(InsetsMetric::PANEL));
+  layout->SetInsets(LayoutProvider::Get()->GetInsetsMetric(INSETS_PANEL));
   host->SetLayoutManager(layout);
   return layout;
 }

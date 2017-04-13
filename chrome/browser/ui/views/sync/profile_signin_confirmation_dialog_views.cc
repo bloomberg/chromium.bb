@@ -32,6 +32,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -194,8 +195,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Layout the components.
   const gfx::Insets panel_insets =
-      views::ViewsDelegate::GetInstance()->GetInsetsMetric(
-          views::InsetsMetric::PANEL);
+      views::LayoutProvider::Get()->GetInsetsMetric(views::INSETS_PANEL);
   // The prompt bar needs to go to the edge of the dialog, so ignore insets for
   // the outer layout.
   views::GridLayout* dialog_layout = new views::GridLayout(this);

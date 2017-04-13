@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -24,6 +25,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/scoped_views_test_helper.h"
+#include "ui/views/test/test_views_delegate.h"
 
 const char* kUrl = "http://www.example.com/index.html";
 
@@ -130,6 +132,8 @@ class PageInfoBubbleViewTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    views_helper_.test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
     views::Widget::InitParams parent_params;
     parent_params.context = views_helper_.GetContext();
     parent_window_ = new views::Widget();

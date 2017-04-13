@@ -19,6 +19,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/views_delegate.h"
@@ -44,11 +45,7 @@ class MusViewsDelegate : public ViewsDelegate {
       Widget::InitParams* params,
       internal::NativeWidgetDelegate* delegate) override {}
 
-  const TypographyProvider& GetTypographyProvider() const override {
-    return typography_provider_;
-  }
-
-  DefaultTypographyProvider typography_provider_;
+  LayoutProvider layout_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MusViewsDelegate);
 };

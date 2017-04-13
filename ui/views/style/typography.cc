@@ -5,8 +5,8 @@
 #include "ui/views/style/typography.h"
 
 #include "base/logging.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography_provider.h"
-#include "ui/views/views_delegate.h"
 
 namespace views {
 namespace style {
@@ -22,19 +22,19 @@ void ValidateContextAndStyle(int text_context, int text_style) {
 
 const gfx::FontList& GetFont(int text_context, int text_style) {
   ValidateContextAndStyle(text_context, text_style);
-  return ViewsDelegate::GetInstance()->GetTypographyProvider().GetFont(
-      text_context, text_style);
+  return LayoutProvider::Get()->GetTypographyProvider().GetFont(text_context,
+                                                                text_style);
 }
 
 SkColor GetColor(int text_context, int text_style) {
   ValidateContextAndStyle(text_context, text_style);
-  return ViewsDelegate::GetInstance()->GetTypographyProvider().GetColor(
-      text_context, text_style);
+  return LayoutProvider::Get()->GetTypographyProvider().GetColor(text_context,
+                                                                 text_style);
 }
 
 int GetLineHeight(int text_context, int text_style) {
   ValidateContextAndStyle(text_context, text_style);
-  return ViewsDelegate::GetInstance()->GetTypographyProvider().GetLineHeight(
+  return LayoutProvider::Get()->GetTypographyProvider().GetLineHeight(
       text_context, text_style);
 }
 

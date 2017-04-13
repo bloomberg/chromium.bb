@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/device_permissions_dialog_controller.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,11 +75,17 @@ views::ClientView* ChooserDialogView::CreateClientView(views::Widget* widget) {
   views::DialogClientView* client =
       new views::DialogClientView(widget, GetContentsView());
 
-  LayoutDelegate* delegate = LayoutDelegate::Get();
+  constexpr int kMinWidth = 402;
+  constexpr int kMinHeight = 320;
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  int min_width = provider->GetDialogPreferredWidth(DialogWidth::MEDIUM);
+  if (!min_width)
+    min_width = kMinWidth;
+  client->set_minimum_size(gfx::Size(min_width, kMinHeight));
+
   client->set_button_row_insets(gfx::Insets(
-      delegate->GetMetric(
-          LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING),
-      0, 0, 0));
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL), 0, 0,
+      0));
   return client;
 }
 
@@ -89,8 +95,8 @@ views::NonClientFrameView* ChooserDialogView::CreateNonClientFrameView(
   // always be true.
   DCHECK(ShouldUseCustomFrame());
   return views::DialogDelegate::CreateDialogFrameView(
-      widget, gfx::Insets(LayoutDelegate::Get()->GetMetric(
-                  LayoutDelegate::Metric::PANEL_CONTENT_MARGIN)));
+      widget, gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                  DISTANCE_PANEL_CONTENT_MARGIN)));
 }
 
 bool ChooserDialogView::Accept() {

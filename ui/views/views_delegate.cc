@@ -21,6 +21,20 @@ ViewsDelegate* views_delegate = nullptr;
 
 }
 
+ViewsDelegate::ViewsDelegate()
+    : editing_controller_factory_(new ViewsTouchEditingControllerFactory) {
+  DCHECK(!views_delegate);
+  views_delegate = this;
+
+  ui::TouchEditingControllerFactory::SetInstance(
+      editing_controller_factory_.get());
+
+#if defined(USE_AURA)
+  touch_selection_menu_runner_ =
+      base::MakeUnique<TouchSelectionMenuRunnerViews>();
+#endif
+}
+
 ViewsDelegate::~ViewsDelegate() {
   ui::TouchEditingControllerFactory::SetInstance(nullptr);
 
@@ -124,56 +138,6 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 
 scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
   return nullptr;
-}
-
-gfx::Insets ViewsDelegate::GetInsetsMetric(InsetsMetric metric) const {
-  switch (metric) {
-    case InsetsMetric::BUBBLE_CONTENTS:
-      return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
-    case InsetsMetric::DIALOG_BUTTON:
-      return gfx::Insets(0, kButtonHEdgeMarginNew, kButtonVEdgeMarginNew,
-                         kButtonHEdgeMarginNew);
-    case InsetsMetric::DIALOG_TITLE:
-      return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew, 0,
-                         kButtonHEdgeMarginNew);
-    case InsetsMetric::PANEL:
-      return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew);
-    case InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING:
-      return gfx::Insets(kVectorButtonExtraTouchSize);
-  }
-  NOTREACHED();
-  return gfx::Insets();
-}
-
-int ViewsDelegate::GetDistanceMetric(DistanceMetric metric) const {
-  switch (metric) {
-    case DistanceMetric::CLOSE_BUTTON_MARGIN:
-      return kCloseButtonMargin;
-    case DistanceMetric::RELATED_BUTTON_HORIZONTAL:
-      return kRelatedButtonHSpacing;
-    case DistanceMetric::RELATED_CONTROL_HORIZONTAL:
-      return kRelatedControlHorizontalSpacing;
-    case DistanceMetric::RELATED_CONTROL_VERTICAL:
-      return kRelatedControlVerticalSpacing;
-    case DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH:
-      return kDialogMinimumButtonWidth;
-    case DistanceMetric::BUTTON_HORIZONTAL_PADDING:
-      return kButtonHorizontalPadding;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-ViewsDelegate::ViewsDelegate()
-    : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
-  DCHECK(!views_delegate);
-  views_delegate = this;
-
-  ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
-
-#if defined(USE_AURA)
-  touch_selection_menu_runner_.reset(new TouchSelectionMenuRunnerViews());
-#endif
 }
 
 }  // namespace views

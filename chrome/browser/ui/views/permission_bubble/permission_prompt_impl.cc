@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "chrome/grit/generated_resources.h"
@@ -197,12 +197,10 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
 
   set_close_on_deactivate(false);
 
-  LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           layout_delegate->GetMetric(
-                               LayoutDelegate::Metric::
-                                   RELATED_CONTROL_VERTICAL_SPACING)));
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   display_origin_ = url_formatter::FormatUrlForSecurityDisplay(
       requests[0]->GetOrigin(),
@@ -225,12 +223,11 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     row_layout->StartRow(0, 0);
 
     views::View* label_container = new views::View();
-    int indent = layout_delegate->GetMetric(
-        LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT);
+    int indent =
+        provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
     label_container->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, indent, 0,
-        layout_delegate->GetMetric(
-            LayoutDelegate::Metric::RELATED_LABEL_HORIZONTAL_SPACING)));
+        provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL)));
     views::ImageView* icon = new views::ImageView();
     const gfx::VectorIcon& vector_id = requests[index]->GetIconId();
     icon->SetImage(

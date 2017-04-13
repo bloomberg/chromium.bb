@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/views/style/typography_provider.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
@@ -40,6 +40,13 @@ class TestViewsDelegate : public ViewsDelegate {
     context_factory_private_ = context_factory_private;
   }
 
+  // For convenience, we create a layout provider by default, but embedders
+  // that use their own layout provider subclasses may need to set those classes
+  // as the layout providers for their tests.
+  void set_layout_provider(std::unique_ptr<LayoutProvider> layout_provider) {
+    layout_provider_.swap(layout_provider);
+  }
+
   // ViewsDelegate:
 #if defined(OS_WIN)
   HICON GetSmallWindowIcon() const override;
@@ -48,14 +55,14 @@ class TestViewsDelegate : public ViewsDelegate {
                           internal::NativeWidgetDelegate* delegate) override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
-  const TypographyProvider& GetTypographyProvider() const override;
 
  private:
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;
   bool use_desktop_native_widgets_;
   bool use_transparent_windows_;
-  DefaultTypographyProvider typography_provider_;
+  std::unique_ptr<LayoutProvider> layout_provider_ =
+      base::MakeUnique<LayoutProvider>();
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

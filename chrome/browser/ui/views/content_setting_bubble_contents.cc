@@ -18,8 +18,8 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
@@ -186,8 +186,8 @@ ContentSettingBubbleContents::~ContentSettingBubbleContents() {
 
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
   gfx::Size preferred_size(views::View::GetPreferredSize());
-  int preferred_width = LayoutDelegate::Get()->GetDialogPreferredWidth(
-      LayoutDelegate::DialogWidth::SMALL);
+  int preferred_width =
+      ChromeLayoutProvider::Get()->GetDialogPreferredWidth(DialogWidth::SMALL);
   if (!preferred_width)
     preferred_width = (!content_setting_bubble_model_->bubble_content()
                             .domain_lists.empty() &&
@@ -210,13 +210,13 @@ void ContentSettingBubbleContents::Init() {
 
   GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  const LayoutDelegate* layout_delegate = LayoutDelegate::Get();
-  const int related_control_horizontal_spacing = layout_delegate->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING);
-  const int related_control_vertical_spacing = layout_delegate->GetMetric(
-      LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING);
-  const int unrelated_control_vertical_spacing = layout_delegate->GetMetric(
-      LayoutDelegate::Metric::UNRELATED_CONTROL_VERTICAL_SPACING);
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int related_control_horizontal_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const int related_control_vertical_spacing =
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  const int unrelated_control_vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
@@ -232,7 +232,7 @@ void ContentSettingBubbleContents::Init() {
 
   if (!bubble_content.title.empty()) {
     const int title_context =
-        layout_delegate->IsHarmonyMode()
+        provider->IsHarmonyMode()
             ? static_cast<int>(views::style::CONTEXT_DIALOG_TITLE)
             : CONTEXT_BODY_TEXT_SMALL;
     views::Label* title_label =
@@ -303,9 +303,7 @@ void ContentSettingBubbleContents::Init() {
   views::ColumnSet* indented_single_column_set =
       layout->AddColumnSet(indented_kSingleColumnSetId);
   indented_single_column_set->AddPaddingColumn(
-      0,
-      layout_delegate->GetMetric(
-          LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT));
+      0, provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
                                         1, GridLayout::USE_PREF, 0, 0);
 
@@ -320,7 +318,7 @@ void ContentSettingBubbleContents::Init() {
       views::RadioButton* radio = new views::RadioButton(*i, 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
-      if (layout_delegate->IsHarmonyMode()) {
+      if (provider->IsHarmonyMode()) {
         std::unique_ptr<views::LabelButtonBorder> border =
             radio->CreateDefaultBorder();
         gfx::Insets insets = border->GetInsets();
@@ -345,9 +343,7 @@ void ContentSettingBubbleContents::Init() {
     views::ColumnSet* menu_column_set =
         layout->AddColumnSet(kMediaMenuColumnSetId);
     menu_column_set->AddPaddingColumn(
-        0,
-        layout_delegate->GetMetric(
-            LayoutDelegate::Metric::SUBSECTION_HORIZONTAL_INDENT));
+        0, provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
     menu_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
     menu_column_set->AddPaddingColumn(0, related_control_horizontal_spacing);
@@ -421,7 +417,7 @@ void ContentSettingBubbleContents::Init() {
   }
 
   if (!bubble_content_empty) {
-    if (!layout_delegate->IsHarmonyMode()) {
+    if (!provider->IsHarmonyMode()) {
       layout->AddPaddingRow(0, related_control_vertical_spacing);
       layout->StartRow(0, kSingleColumnSetId);
       layout->AddView(new views::Separator(), 1, 1, GridLayout::FILL,

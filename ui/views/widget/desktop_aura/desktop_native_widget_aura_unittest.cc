@@ -380,7 +380,7 @@ class DesktopAuraWidgetTest : public WidgetTest {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    views_delegate()->set_use_desktop_native_widgets(true);
+    test_views_delegate()->set_use_desktop_native_widgets(true);
   }
 
  private:

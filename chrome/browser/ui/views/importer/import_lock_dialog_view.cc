@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -62,8 +62,8 @@ gfx::Size ImportLockDialogView::GetPreferredSize() const {
 void ImportLockDialogView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(views::kButtonHEdgeMarginNew,
-               LayoutDelegate::Get()->GetMetric(
-                   LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
+               ChromeLayoutProvider::Get()->GetDistanceMetric(
+                   DISTANCE_PANEL_CONTENT_MARGIN));
   description_label_->SetBoundsRect(bounds);
 }
 

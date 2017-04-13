@@ -220,7 +220,7 @@ TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
 // Ensure CreateBrowserModalDialogViews() works correctly with a null parent.
 TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
   // Use desktop widgets (except on ChromeOS) for extra coverage.
-  views_delegate()->set_use_desktop_native_widgets(true);
+  test_views_delegate()->set_use_desktop_native_widgets(true);
 
   SetConstrainedWindowViewsClient(
       base::MakeUnique<TestConstrainedWindowViewsClient>());

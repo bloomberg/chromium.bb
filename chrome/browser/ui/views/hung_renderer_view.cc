@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
@@ -422,7 +422,7 @@ void HungRendererDialogView::Init() {
   using views::ColumnSet;
 
   GridLayout* layout = GridLayout::CreatePanel(this);
-  LayoutDelegate* delegate = LayoutDelegate::Get();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   const int double_column_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(double_column_set_id);
@@ -430,8 +430,7 @@ void HungRendererDialogView::Init() {
                         GridLayout::FIXED, frozen_icon_->width(), 0);
   column_set->AddPaddingColumn(
       0,
-      delegate->GetMetric(
-          LayoutDelegate::Metric::UNRELATED_CONTROL_HORIZONTAL_SPACING_LARGE));
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE));
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -443,8 +442,7 @@ void HungRendererDialogView::Init() {
       info_label_, 1, 1, GridLayout::FILL, GridLayout::LEADING, 1, 0);
 
   layout->AddPaddingRow(
-      0, delegate->GetMetric(
-             LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
+      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   layout->StartRow(1, double_column_set_id);
   layout->SkipColumns(1);

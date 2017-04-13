@@ -20,8 +20,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   ChromeViewsDelegate();
   ~ChromeViewsDelegate() override;
 
-  static ChromeViewsDelegate* GetInstance();
-
   // views::ViewsDelegate:
   void SaveWindowPlacement(const views::Widget* window,
                            const std::string& window_name,
@@ -60,12 +58,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   std::string GetApplicationName() override;
   scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
-  gfx::Insets GetInsetsMetric(views::InsetsMetric metric) const override;
-  int GetDistanceMetric(views::DistanceMetric metric) const override;
-  const views::TypographyProvider& GetTypographyProvider() const override;
-
-  static int GetDefaultDistanceMetric(views::DistanceMetric metric);
-
  private:
 #if defined(OS_WIN)
   typedef std::map<HMONITOR, int> AppbarAutohideEdgeMap;
@@ -83,8 +75,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   void AdjustSavedWindowPlacementChromeOS(const views::Widget* widget,
                                           gfx::Rect* bounds) const;
 #endif
-
-  int InternalGetDefaultDistanceMetric(views::DistanceMetric metric) const;
 
   // Function to retrieve default opacity value mainly based on platform
   // and desktop context.
@@ -106,9 +96,9 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   AppbarAutohideEdgeMap appbar_autohide_edge_map_;
   // If true we're in the process of notifying a callback from
   // GetAutohideEdges().start a new query.
-  bool in_autohide_edges_callback_;
+  bool in_autohide_edges_callback_ = false;
 
-  base::WeakPtrFactory<ChromeViewsDelegate> weak_factory_;
+  base::WeakPtrFactory<ChromeViewsDelegate> weak_factory_{this};
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,6 +31,8 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
+    test_views_delegate()->set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
     auto mock_chooser_controller = base::MakeUnique<MockChooserController>();
     mock_chooser_controller_ = mock_chooser_controller.get();
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(

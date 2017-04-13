@@ -408,7 +408,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
-    views_delegate()->set_use_desktop_native_widgets(true);
+    test_views_delegate()->set_use_desktop_native_widgets(true);
 
     // Create widget to initiate the drags.
     widget_.reset(new Widget);

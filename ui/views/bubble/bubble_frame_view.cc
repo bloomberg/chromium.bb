@@ -31,8 +31,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/resources/grit/views_resources.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -312,8 +312,8 @@ void BubbleFrameView::Layout() {
     return;
 
   // The close button is positioned somewhat closer to the edge of the bubble.
-  const int close_margin = ViewsDelegate::GetInstance()->GetDistanceMetric(
-      DistanceMetric::CLOSE_BUTTON_MARGIN);
+  const int close_margin =
+      LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
   close_->SetPosition(
       gfx::Point(contents_bounds.right() - close_margin - close_->width(),
                  contents_bounds.y() + close_margin));

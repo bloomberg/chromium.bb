@@ -88,7 +88,7 @@ void AshTestHelper::SetUp(bool start_session) {
   // WindowManager creates WMState for mash.
   if (config_ == Config::CLASSIC)
     wm_state_ = base::MakeUnique<::wm::WMState>();
-  views_delegate_ = ash_test_environment_->CreateViewsDelegate();
+  test_views_delegate_ = ash_test_environment_->CreateViewsDelegate();
 
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -217,7 +217,7 @@ void AshTestHelper::TearDown() {
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 
-  views_delegate_.reset();
+  test_views_delegate_.reset();
   wm_state_.reset();
 
   // WindowManager owns the CaptureController for mus/mash.

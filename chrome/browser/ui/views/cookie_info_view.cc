@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -147,23 +147,20 @@ void CookieInfoView::Init() {
   expires_value_field_ = new views::Textfield;
 
   views::GridLayout* layout = new views::GridLayout(this);
-  layout->SetInsets(0,
-                    LayoutDelegate::Get()->GetMetric(
-                        LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN),
-                    0,
-                    LayoutDelegate::Get()->GetMetric(
-                        LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  int dialog_button_margin =
+      provider->GetDistanceMetric(DISTANCE_DIALOG_BUTTON_MARGIN);
+  layout->SetInsets(0, dialog_button_margin, 0, dialog_button_margin);
   SetLayoutManager(layout);
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(LayoutDelegate::Get()->GetControlLabelGridAlignment(),
+  column_set->AddColumn(provider->GetControlLabelGridAlignment(),
                         views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
       0,
-      LayoutDelegate::Get()->GetMetric(
-          LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING));
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,

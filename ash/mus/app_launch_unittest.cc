@@ -10,6 +10,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace ash {
 namespace mus {
@@ -29,6 +30,8 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
     base::CommandLine::ForCurrentProcess()->AppendSwitch("use-test-config");
     ServiceTest::SetUp();
   }
+
+  views::LayoutProvider layout_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchTest);
 };

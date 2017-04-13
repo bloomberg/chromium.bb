@@ -23,8 +23,8 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
@@ -310,7 +310,7 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
   set_margins(gfx::Insets());
-  if (LayoutDelegate::Get()->ShouldShowWindowIcon()) {
+  if (ChromeLayoutProvider::Get()->ShouldShowWindowIcon()) {
     views::ImageView* icon_view = new NonAccessibleImageView();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     icon_view->SetImage(rb.GetImageSkiaNamed(icon));
@@ -438,8 +438,8 @@ PageInfoBubbleView::PageInfoBubbleView(
     // In non-material, titles are inset from the dialog margin. Ensure the
     // horizontal insets match.
     set_title_margins(
-        gfx::Insets(LayoutDelegate::Get()->GetMetric(
-                        LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+        gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_PANEL_CONTENT_MARGIN),
                     side_margin, 0, side_margin));
   }
   views::BubbleDialogDelegateView::CreateBubble(this);

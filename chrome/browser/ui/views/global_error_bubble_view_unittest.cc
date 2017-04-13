@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/global_error/global_error.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -87,8 +88,14 @@ class GlobalErrorBubbleViewTest : public testing::Test {
             nullptr,
             mock_global_error_with_standard_bubble_->AsWeakPtr())) {}
 
+  void SetUp() override {
+    testing::Test::SetUp();
+    test_views_delegate_.set_layout_provider(
+        ChromeLayoutProvider::CreateLayoutProvider());
+  }
+
  protected:
-  views::TestViewsDelegate views_delegate_;
+  views::TestViewsDelegate test_views_delegate_;
   std::unique_ptr<StrictMock<MockGlobalErrorWithStandardBubble>>
       mock_global_error_with_standard_bubble_;
   views::View arg_view_;
