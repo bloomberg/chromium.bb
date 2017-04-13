@@ -18,6 +18,8 @@
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/view.h"
 
+namespace views {
+
 namespace {
 
 // The minimum scale factor to use when scaling rectangle layers. Smaller values
@@ -127,41 +129,13 @@ int kAnimationDurationInMs[] = {
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   return base::TimeDelta::FromMilliseconds(
-      (views::InkDropRipple::UseFastAnimations()
+      (InkDropRipple::UseFastAnimations()
            ? 1
-           : views::InkDropRipple::kSlowAnimationDurationFactor) *
+           : InkDropRipple::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state]);
 }
 
-// Calculates a Transform for a circle layer. The transform will be set up to
-// translate by -|center_offset|, scale, and then translate to the target point
-// defined by |target_center_x| and |target_center_y|.
-gfx::Transform CalculateCircleTransform(const gfx::Vector2dF& center_offset,
-                                        float scale,
-                                        float target_center_x,
-                                        float target_center_y) {
-  gfx::Transform transform;
-  transform.Translate(target_center_x, target_center_y);
-  transform.Scale(scale, scale);
-  transform.Translate(-center_offset.x(), -center_offset.y());
-  return transform;
-}
-
-// Calculates a Transform for a rectangle layer. The transform will be set up to
-// translate by -|center_offset| and then scale by the |x_scale| and |y_scale|
-// factors.
-gfx::Transform CalculateRectTransform(const gfx::Vector2dF& center_offset,
-                                      float x_scale,
-                                      float y_scale) {
-  gfx::Transform transform;
-  transform.Scale(x_scale, y_scale);
-  transform.Translate(-center_offset.x(), -center_offset.y());
-  return transform;
-}
-
 }  // namespace
-
-namespace views {
 
 SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
                                          int large_corner_radius,
@@ -176,6 +150,7 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
       large_corner_radius_(large_corner_radius),
       small_size_(small_size),
       small_corner_radius_(small_corner_radius),
+      center_point_(center_point),
       circle_layer_delegate_(new CircleLayerDelegate(
           color,
           std::min(large_size_.width(), large_size_.height()) / 2)),
@@ -189,10 +164,6 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
 
   root_layer_.SetMasksToBounds(false);
   root_layer_.SetBounds(gfx::Rect(large_size_));
-
-  gfx::Transform transform;
-  transform.Translate(center_point.x(), center_point.y());
-  root_layer_.SetTransform(transform);
 
   SetStateToHidden();
 }
@@ -265,7 +236,6 @@ void SquareInkDropRipple::AnimateStateChange(
     case InkDropState::ACTION_PENDING:
       DCHECK_EQ(InkDropState::HIDDEN, old_ink_drop_state)
           << " old_ink_drop_state=" << ToString(old_ink_drop_state);
-      ;
       AnimateToOpacity(visible_opacity_,
                        GetAnimationDuration(ACTION_PENDING_FADE_IN),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
@@ -460,13 +430,28 @@ void SquareInkDropRipple::CalculateCircleTransforms(
 }
 
 void SquareInkDropRipple::CalculateRectTransforms(
-    const gfx::Size& size,
+    const gfx::Size& desired_size,
     float corner_radius,
     InkDropTransforms* transforms_out) const {
-  DCHECK_GE(size.width() / 2.0f, corner_radius)
+  DCHECK_GE(desired_size.width() / 2.0f, corner_radius)
       << "The circle's diameter should not be greater than the total width.";
-  DCHECK_GE(size.height() / 2.0f, corner_radius)
+  DCHECK_GE(desired_size.height() / 2.0f, corner_radius)
       << "The circle's diameter should not be greater than the total height.";
+
+  gfx::SizeF size(desired_size);
+  // This function can be called before the layer's been added to a view,
+  // either at construction time or in tests.
+  if (root_layer_.GetCompositor()) {
+    // Modify |desired_size| so that the ripple aligns to pixel bounds.
+    const float dsf = root_layer_.GetCompositor()->device_scale_factor();
+    gfx::RectF ripple_bounds((gfx::PointF(center_point_)), gfx::SizeF());
+    ripple_bounds.Inset(-gfx::InsetsF(desired_size.height() / 2.0f,
+                                      desired_size.width() / 2.0f));
+    ripple_bounds.Scale(dsf);
+    ripple_bounds = gfx::RectF(gfx::ToEnclosingRect(ripple_bounds));
+    ripple_bounds.Scale(1.0f / dsf);
+    size = ripple_bounds.size();
+  }
 
   // The shapes are drawn such that their center points are not at the origin.
   // Thus we use the CalculateCircleTransform() and CalculateRectTransform()
@@ -479,42 +464,56 @@ void SquareInkDropRipple::CalculateRectTransforms(
   const float circle_target_x_offset = size.width() / 2.0f - corner_radius;
   const float circle_target_y_offset = size.height() / 2.0f - corner_radius;
 
-  const gfx::Vector2dF circle_center_offset =
-      circle_layer_delegate_->GetCenteringOffset();
   (*transforms_out)[TOP_LEFT_CIRCLE] = CalculateCircleTransform(
-      circle_center_offset, circle_scale, -circle_target_x_offset,
-      -circle_target_y_offset);
+      circle_scale, -circle_target_x_offset, -circle_target_y_offset);
+  (*transforms_out)[TOP_RIGHT_CIRCLE] = CalculateCircleTransform(
+      circle_scale, circle_target_x_offset, -circle_target_y_offset);
+  (*transforms_out)[BOTTOM_RIGHT_CIRCLE] = CalculateCircleTransform(
+      circle_scale, circle_target_x_offset, circle_target_y_offset);
+  (*transforms_out)[BOTTOM_LEFT_CIRCLE] = CalculateCircleTransform(
+      circle_scale, -circle_target_x_offset, circle_target_y_offset);
 
-  (*transforms_out)[TOP_RIGHT_CIRCLE] =
-      CalculateCircleTransform(circle_center_offset, circle_scale,
-                               circle_target_x_offset, -circle_target_y_offset);
+  const float rect_delegate_width = rect_layer_delegate_->size().width();
+  const float rect_delegate_height = rect_layer_delegate_->size().height();
 
-  (*transforms_out)[BOTTOM_RIGHT_CIRCLE] =
-      CalculateCircleTransform(circle_center_offset, circle_scale,
-                               circle_target_x_offset, circle_target_y_offset);
-
-  (*transforms_out)[BOTTOM_LEFT_CIRCLE] =
-      CalculateCircleTransform(circle_center_offset, circle_scale,
-                               -circle_target_x_offset, circle_target_y_offset);
-
-  const float rect_delegate_width =
-      static_cast<float>(rect_layer_delegate_->size().width());
-  const float rect_delegate_height =
-      static_cast<float>(rect_layer_delegate_->size().height());
-
-  const gfx::Vector2dF rect_center_offset =
-      rect_layer_delegate_->GetCenteringOffset();
   (*transforms_out)[HORIZONTAL_RECT] = CalculateRectTransform(
-      rect_center_offset,
       std::max(kMinimumRectScale, size.width() / rect_delegate_width),
       std::max(kMinimumRectScale,
                (size.height() - 2.0f * corner_radius) / rect_delegate_height));
 
   (*transforms_out)[VERTICAL_RECT] = CalculateRectTransform(
-      rect_center_offset,
       std::max(kMinimumRectScale,
                (size.width() - 2.0f * corner_radius) / rect_delegate_width),
       std::max(kMinimumRectScale, size.height() / rect_delegate_height));
+}
+
+gfx::Transform SquareInkDropRipple::CalculateCircleTransform(
+    float scale,
+    float target_center_x,
+    float target_center_y) const {
+  gfx::Transform transform;
+  // Offset for the center point of the ripple.
+  transform.Translate(center_point_.x(), center_point_.y());
+  // Move circle to target.
+  transform.Translate(target_center_x, target_center_y);
+  transform.Scale(scale, scale);
+  // Align center point of the painted circle.
+  const gfx::Vector2dF circle_center_offset =
+      circle_layer_delegate_->GetCenteringOffset();
+  transform.Translate(-circle_center_offset.x(), -circle_center_offset.y());
+  return transform;
+}
+
+gfx::Transform SquareInkDropRipple::CalculateRectTransform(
+    float x_scale,
+    float y_scale) const {
+  gfx::Transform transform;
+  transform.Translate(center_point_.x(), center_point_.y());
+  transform.Scale(x_scale, y_scale);
+  const gfx::Vector2dF rect_center_offset =
+      rect_layer_delegate_->GetCenteringOffset();
+  transform.Translate(-rect_center_offset.x(), -rect_center_offset.y());
+  return transform;
 }
 
 void SquareInkDropRipple::GetCurrentTransforms(

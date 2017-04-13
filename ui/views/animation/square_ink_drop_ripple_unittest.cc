@@ -15,6 +15,7 @@
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/test/square_ink_drop_ripple_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_ripple_observer.h"
+#include "ui/views/test/widget_test.h"
 
 namespace views {
 namespace test {
@@ -31,7 +32,7 @@ gfx::Point TransformPoint(const gfx::Transform& transform,
   return transformed_point;
 }
 
-class SquareInkDropRippleCalculateTransformsTest : public testing::Test {
+class SquareInkDropRippleCalculateTransformsTest : public WidgetTest {
  public:
   SquareInkDropRippleCalculateTransformsTest();
   ~SquareInkDropRippleCalculateTransformsTest() override;
@@ -236,6 +237,77 @@ TEST_F(SquareInkDropRippleCalculateTransformsTest,
     EXPECT_EQ(test_cases[i].bottom_mid_point,
               TransformPoint(transform, kDrawnBottomMidPoint));
   }
+}
+
+TEST_F(SquareInkDropRippleCalculateTransformsTest, RippleIsPixelAligned) {
+  // Create a ripple that would not naturally be pixel aligned at a fractional
+  // scale factor.
+  const gfx::Point center(14, 14);
+  const gfx::Rect drawn_rect_bounds(0, 0, 10, 10);
+  SquareInkDropRipple ink_drop_ripple(drawn_rect_bounds.size(), 2,
+                                      gfx::Size(1, 1),  // unimportant
+                                      1, center, SK_ColorBLACK, 0.175f);
+  SquareInkDropRippleTestApi test_api(&ink_drop_ripple);
+
+  // Add to a widget so we can control the DSF.
+  auto* widget = CreateTopLevelPlatformWidget();
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+  auto* host_view = new View();
+  host_view->SetPaintToLayer();
+  widget->GetContentsView()->AddChildView(host_view);
+  host_view->layer()->Add(ink_drop_ripple.GetRootLayer());
+
+  // Test a variety of scale factors and target transform sizes.
+  std::vector<float> dsfs({1.0f, 1.25f, 1.5f, 2.0f, 3.0f});
+  std::vector<int> target_sizes({5, 7, 11, 13, 31});
+
+  for (float dsf : dsfs) {
+    for (int target_size : target_sizes) {
+      SCOPED_TRACE(testing::Message()
+                   << "target_size=" << target_size << " dsf=" << dsf);
+      host_view->layer()->GetCompositor()->SetScaleAndSize(dsf,
+                                                           gfx::Size(100, 100));
+
+      SquareInkDropRippleTestApi::InkDropTransforms transforms;
+      test_api.CalculateRectTransforms(gfx::Size(target_size, target_size), 0,
+                                       &transforms);
+
+      // Checks that a rectangle is integer-aligned modulo floating point error.
+      auto verify_bounds = [](const gfx::RectF& rect) {
+        float float_min_x = rect.x();
+        float float_min_y = rect.y();
+        float float_max_x = rect.right();
+        float float_max_y = rect.bottom();
+
+        int min_x = gfx::ToRoundedInt(float_min_x);
+        int min_y = gfx::ToRoundedInt(float_min_y);
+        int max_x = gfx::ToRoundedInt(float_max_x);
+        int max_y = gfx::ToRoundedInt(float_max_y);
+
+        EXPECT_LT(std::abs(min_x - float_min_x), 0.01f);
+        EXPECT_LT(std::abs(min_y - float_min_y), 0.01f);
+        EXPECT_LT(std::abs(max_x - float_max_x), 0.01f);
+        EXPECT_LT(std::abs(max_y - float_max_y), 0.01f);
+      };
+
+      // When you feed in the bounds of the rectangle layer delegate, no matter
+      // what the target size was you should get an integer aligned bounding
+      // box.
+      gfx::Transform transform = transforms[PaintedShape::HORIZONTAL_RECT];
+      gfx::RectF horizontal_rect(drawn_rect_bounds);
+      transform.TransformRect(&horizontal_rect);
+      horizontal_rect.Scale(dsf);
+      verify_bounds(horizontal_rect);
+
+      transform = transforms[PaintedShape::VERTICAL_RECT];
+      gfx::RectF vertical_rect(drawn_rect_bounds);
+      transform.TransformRect(&vertical_rect);
+      vertical_rect.Scale(dsf);
+      verify_bounds(vertical_rect);
+    }
+  }
+
+  widget->CloseNow();
 }
 
 }  // namespace test
