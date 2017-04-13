@@ -22,12 +22,13 @@ RegionComboboxModel::RegionComboboxModel(
     std::unique_ptr<::i18n::addressinput::Storage> storage,
     const std::string& app_locale,
     const std::string& country_code)
-    : app_locale_(app_locale),
+    : failed_to_load_data_(false),
+      pending_region_data_load_(false),
+      app_locale_(app_locale),
       region_data_supplier_(source.release(), storage.release()) {
   region_data_supplier_callback_.reset(::i18n::addressinput::BuildCallback(
       this, &RegionComboboxModel::RegionDataLoaded));
-  region_data_supplier_.LoadRules(country_code,
-                                  *region_data_supplier_callback_.get());
+  LoadRegionData(country_code);
 }
 
 RegionComboboxModel::~RegionComboboxModel() {}
@@ -35,9 +36,7 @@ RegionComboboxModel::~RegionComboboxModel() {}
 int RegionComboboxModel::GetItemCount() const {
   // The combobox view needs to always have at least one item. If the regions
   // have not been completely loaded yet, we display a single "loading" item.
-  // But if we failed to load, we return 0 so that the view can be identified
-  // as empty and potentially replaced by another view during ReLayout.
-  if (regions_.size() == 0 && !failed_to_load_data_)
+  if (regions_.size() == 0)
     return 1;
   return regions_.size();
 }
@@ -72,18 +71,37 @@ void RegionComboboxModel::RemoveObserver(ui::ComboboxModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void RegionComboboxModel::SetFailureModeForTests(bool failed_to_load_data) {
+  failed_to_load_data_ = failed_to_load_data;
+  for (auto& observer : observers_) {
+    observer.OnComboboxModelChanged(this);
+  }
+}
+
+void RegionComboboxModel::LoadRegionData(const std::string& country_code) {
+  pending_region_data_load_ = true;
+  region_data_supplier_.LoadRules(country_code,
+                                  *region_data_supplier_callback_.get());
+}
+
 void RegionComboboxModel::RegionDataLoaded(bool success,
                                            const std::string& country_code,
                                            int rule_count) {
+  pending_region_data_load_ = false;
   if (success) {
-    failed_to_load_data_ = false;
     std::string best_region_tree_language_tag;
     ::i18n::addressinput::RegionDataBuilder builder(&region_data_supplier_);
     const std::vector<const ::i18n::addressinput::RegionData*>& regions =
         builder.Build(country_code, app_locale_, &best_region_tree_language_tag)
             .sub_regions();
-    for (auto* const region : regions) {
-      regions_.push_back(std::make_pair(region->key(), region->name()));
+    // Some countries expose a state field but have not region names available.
+    if (regions.size() > 0) {
+      failed_to_load_data_ = false;
+      for (auto* const region : regions) {
+        regions_.push_back(std::make_pair(region->key(), region->name()));
+      }
+    } else {
+      failed_to_load_data_ = true;
     }
   } else {
     // TODO(mad): Maybe use a static list as is done for countries in

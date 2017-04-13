@@ -72,6 +72,7 @@ class CreditCardEditorViewController : public EditorViewController {
     // ValidationDelegate:
     bool ValidateTextfield(views::Textfield* textfield) override;
     bool ValidateCombobox(views::Combobox* combobox) override;
+    void ComboboxModelChanged(views::Combobox* combobox) override {}
 
    private:
     // Validates a specific |value|.

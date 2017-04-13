@@ -4,7 +4,9 @@
 
 #include "components/payments/content/payment_request_state.h"
 
+#include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -129,6 +131,16 @@ const std::string& PaymentRequestState::GetApplicationLocale() {
 
 autofill::PersonalDataManager* PaymentRequestState::GetPersonalDataManager() {
   return personal_data_manager_;
+}
+
+std::unique_ptr<const ::i18n::addressinput::Source>
+PaymentRequestState::GetAddressInputSource() {
+  return payment_request_delegate_->GetAddressInputSource();
+}
+
+std::unique_ptr<::i18n::addressinput::Storage>
+PaymentRequestState::GetAddressInputStorage() {
+  return payment_request_delegate_->GetAddressInputStorage();
 }
 
 void PaymentRequestState::PopulateProfileCache() {

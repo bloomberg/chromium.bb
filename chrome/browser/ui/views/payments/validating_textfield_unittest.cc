@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -32,6 +33,7 @@ class ValidatingTextfieldTest : public testing::Test {
       return textfield->text().size() <= 5u;
     }
     bool ValidateCombobox(views::Combobox* combobox) override { return true; }
+    void ComboboxModelChanged(views::Combobox* combobox) override {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TestValidationDelegate);

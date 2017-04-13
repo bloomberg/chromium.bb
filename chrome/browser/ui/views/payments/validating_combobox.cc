@@ -45,6 +45,7 @@ void ValidatingCombobox::OnContentsChanged() {
 void ValidatingCombobox::OnComboboxModelChanged(
     ui::ComboboxModel* unused_model) {
   ModelChanged();
+  delegate_->ComboboxModelChanged(this);
 }
 
 void ValidatingCombobox::Validate() {

@@ -20,6 +20,7 @@ class ValidationDelegate {
   virtual bool ValidateTextfield(views::Textfield* textfield) = 0;
 
   virtual bool ValidateCombobox(views::Combobox* combobox) = 0;
+  virtual void ComboboxModelChanged(views::Combobox* combobox) = 0;
 };
 
 }  // namespace payments

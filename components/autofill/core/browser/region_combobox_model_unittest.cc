@@ -34,8 +34,8 @@ class RegionComboboxModelTest : public testing::Test {
 
   void SetupCombobox(bool source_failure) {
     model_.reset(new RegionComboboxModel(
-        base::WrapUnique(new TestSource(source_failure)),
-        base::WrapUnique(new ::i18n::addressinput::NullStorage),
+        base::MakeUnique<TestSource>(source_failure),
+        base::MakeUnique<::i18n::addressinput::NullStorage>(),
         manager_.app_locale(), kTestCountryCode));
   }
 
@@ -94,12 +94,14 @@ TEST_F(RegionComboboxModelTest, QuebecOntarioRegions) {
   EXPECT_EQ(2, model()->GetItemCount());
   EXPECT_EQ(base::ASCIIToUTF16(kQuebec), model()->GetItemAt(0));
   EXPECT_EQ(base::ASCIIToUTF16(kOntario), model()->GetItemAt(1));
+  EXPECT_FALSE(model()->failed_to_load_data());
 }
 
 // Make sure the combo box properly support source failures.
 TEST_F(RegionComboboxModelTest, FailingSource) {
   SetupCombobox(true);
-  EXPECT_EQ(0, model()->GetItemCount());
+  EXPECT_EQ(1, model()->GetItemCount());
+  EXPECT_TRUE(model()->failed_to_load_data());
 }
 
 }  // namespace autofill

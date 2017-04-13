@@ -2,18 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
-#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
+#ifndef COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DELEGATE_H_
+#define COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
+
+namespace i18n {
+namespace addressinput {
+class Storage;
+class Source;
+}  // namespace addressinput
+}  // namespace i18n
 
 namespace autofill {
 class CreditCard;
 class PersonalDataManager;
-}
+}  // namespace autofill
 
 namespace payments {
 
@@ -48,8 +58,14 @@ class PaymentRequestDelegate {
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) = 0;
+
+  // Returns the source and storage for country/region data loads.
+  virtual std::unique_ptr<const ::i18n::addressinput::Source>
+  GetAddressInputSource() = 0;
+  virtual std::unique_ptr<::i18n::addressinput::Storage>
+  GetAddressInputStorage() = 0;
 };
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DELEGATE_H_
+#endif  // COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DELEGATE_H_

@@ -4,7 +4,10 @@
 
 #include "components/payments/content/payment_response_helper.h"
 
+#include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,6 +48,16 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
           result_delegate) override {
     result_delegate->OnFullCardRequestSucceeded(credit_card,
                                                 base::ASCIIToUTF16("123"));
+  }
+
+  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+      override {
+    return nullptr;
+  }
+
+  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
+      override {
+    return nullptr;
   }
 
  private:

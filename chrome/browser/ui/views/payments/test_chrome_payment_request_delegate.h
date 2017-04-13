@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_TEST_CHROME_PAYMENT_REQUEST_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_TEST_CHROME_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
@@ -30,14 +32,35 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
       views::WidgetObserver* widget_observer,
       bool is_incognito);
 
+  // This class allows tests to provide their own AddressInput data.
+  class AddressInputProvider {
+   public:
+    virtual std::unique_ptr<const ::i18n::addressinput::Source>
+    GetAddressInputSource() = 0;
+    virtual std::unique_ptr<::i18n::addressinput::Storage>
+    GetAddressInputStorage() = 0;
+  };
+
+  void SetAddressInputOverride(AddressInputProvider* address_input_provider) {
+    address_input_provider_ = address_input_provider;
+  }
+
+  // ChromePaymentRequestDelegate.
   void ShowDialog(PaymentRequest* request) override;
   bool IsIncognito() const override;
+  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+      override;
+  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
+      override;
 
   PaymentRequestDialogView* dialog_view() {
     return static_cast<PaymentRequestDialogView*>(dialog_);
   }
 
  private:
+  // Not owned so must outlive the PaymentRequest object;
+  AddressInputProvider* address_input_provider_;
+
   PaymentRequestDialogView::ObserverForTest* observer_;
   views::WidgetObserver* widget_observer_;
   bool is_incognito_for_testing_;

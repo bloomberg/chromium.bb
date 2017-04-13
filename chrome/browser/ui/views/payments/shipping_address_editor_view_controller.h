@@ -60,11 +60,13 @@ class ShippingAddressEditorViewController : public EditorViewController {
     // ValidationDelegate:
     bool ValidateTextfield(views::Textfield* textfield) override;
     bool ValidateCombobox(views::Combobox* combobox) override;
+    void ComboboxModelChanged(views::Combobox* combobox) override;
 
    private:
     bool ValidateValue(const base::string16& value);
 
     EditorField field_;
+
     // Raw pointer back to the owner of this class, therefore will not be null.
     ShippingAddressEditorViewController* controller_;
 
@@ -83,16 +85,23 @@ class ShippingAddressEditorViewController : public EditorViewController {
   // combobox, which is the generated default value received from
   // autofill::CountryComboboxModel::countries() which is documented to always
   // have the default country at the top as well as within the sorted list.
-  size_t chosen_country_index_{0};
+  size_t chosen_country_index_;
 
   // The list of country codes as ordered in the country combobox model.
   std::vector<std::string> country_codes_;
 
+  // Identifies whether we tried and failed to load region data.
+  bool failed_to_load_region_data_;
+
   // Updates |editor_fields_| based on the current country.
   void UpdateEditorFields();
 
-  // Called by the validation delegate when the country combobox changed.
-  void OnCountryChanged(views::Combobox* combobox);
+  // Called when data changes need to force a view update.
+  void OnDataChanged();
+
+  // When a combobox model has changed, a view update might be needed, e.g., if
+  // there is no data in the combobox and it must be converted to a text field.
+  void OnComboboxModelChanged(views::Combobox* combobox);
 
   DISALLOW_COPY_AND_ASSIGN(ShippingAddressEditorViewController);
 };

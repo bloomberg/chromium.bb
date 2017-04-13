@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_STATE_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_STATE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,13 @@
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_response_helper.h"
+
+namespace i18n {
+namespace addressinput {
+class Storage;
+class Source;
+}  // namespace addressinput
+}  // namespace i18n
 
 namespace autofill {
 class AutofillProfile;
@@ -127,6 +135,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
 
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
+  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource();
+  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage();
 
   Delegate* delegate() { return delegate_; }
 

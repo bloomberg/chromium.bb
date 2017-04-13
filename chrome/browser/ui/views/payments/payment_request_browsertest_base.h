@@ -180,6 +180,12 @@ class PaymentRequestBrowserTestBase
 
   PaymentRequestDialogView* dialog_view() { return delegate_->dialog_view(); }
 
+  void SetAddressInputOverride(
+      TestChromePaymentRequestDelegate::AddressInputProvider*
+          address_input_provider) {
+    delegate_->SetAddressInputOverride(address_input_provider);
+  }
+
   // Various events that can be waited on by the DialogEventObserver.
   enum DialogEvent : int {
     DIALOG_OPENED,

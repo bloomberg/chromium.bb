@@ -5,11 +5,15 @@
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
+#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
 namespace payments {
 
@@ -56,6 +60,17 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
     base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
         result_delegate) {
   dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate, web_contents_);
+}
+
+std::unique_ptr<const ::i18n::addressinput::Source>
+ChromePaymentRequestDelegate::GetAddressInputSource() {
+  return base::WrapUnique(new autofill::ChromeMetadataSource(
+      I18N_ADDRESS_VALIDATION_DATA_URL,
+      GetPersonalDataManager()->GetURLRequestContextGetter()));
+}
+std::unique_ptr<::i18n::addressinput::Storage>
+ChromePaymentRequestDelegate::GetAddressInputStorage() {
+  return autofill::ValidationRulesStorageFactory::CreateStorage();
 }
 
 }  // namespace payments

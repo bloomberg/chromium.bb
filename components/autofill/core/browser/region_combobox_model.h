@@ -36,6 +36,9 @@ class RegionComboboxModel : public ui::ComboboxModel {
       const std::string& country_code);
   ~RegionComboboxModel() override;
 
+  bool pending_region_data_load() const { return pending_region_data_load_; }
+  bool failed_to_load_data() const { return failed_to_load_data_; }
+
   // ui::ComboboxModel implementation:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
@@ -43,12 +46,22 @@ class RegionComboboxModel : public ui::ComboboxModel {
   void AddObserver(ui::ComboboxModelObserver* observer) override;
   void RemoveObserver(ui::ComboboxModelObserver* observer) override;
 
+  // To allow testing failure states.
+  void SetFailureModeForTests(bool failed_to_load_data);
+
+ private:
+  // Start the potentially asynchronous process of loading region data.
+  void LoadRegionData(const std::string& country_code);
+
   // Callback for ::i18n::addressinput::PreloadSupplier::LoadRules
   void RegionDataLoaded(bool success, const std::string&, int rule_count);
 
- private:
   // Whether the region data load failed or not.
-  bool failed_to_load_data_{false};
+  bool failed_to_load_data_;
+
+  // Set to true during region data load, and false otherwise. Whether the load
+  // succeeded or not doesn't affect this value.
+  bool pending_region_data_load_;
 
   // The application locale.
   const std::string app_locale_;

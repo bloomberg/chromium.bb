@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PAYMENTS_CHROME_PAYMENT_REQUEST_DELEGATE_H_
 #define CHROME_BROWSER_PAYMENTS_CHROME_PAYMENT_REQUEST_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -34,6 +35,10 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
       const autofill::CreditCard& credit_card,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate) override;
+  std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
+      override;
+  std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
+      override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
@@ -35,8 +34,6 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
-#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -78,7 +75,10 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
     autofill::AutofillProfile* profile)
-    : EditorViewController(spec, state, dialog), profile_to_edit_(profile) {
+    : EditorViewController(spec, state, dialog),
+      profile_to_edit_(profile),
+      chosen_country_index_(0),
+      failed_to_load_region_data_(false) {
   UpdateEditorFields();
 }
 
@@ -188,17 +188,23 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
         else
           country_codes_.push_back("");  // Separator.
       }
-      return std::unique_ptr<ui::ComboboxModel>(model.release());
+      return std::move(model);
     }
     case autofill::ADDRESS_HOME_STATE: {
-      return std::unique_ptr<
-          ui::ComboboxModel>(new autofill::RegionComboboxModel(
-          base::WrapUnique(new autofill::ChromeMetadataSource(
-              I18N_ADDRESS_VALIDATION_DATA_URL,
-              state()->GetPersonalDataManager()->GetURLRequestContextGetter())),
-          autofill::ValidationRulesStorageFactory::CreateStorage(),
-          state()->GetApplicationLocale(),
-          country_codes_[chosen_country_index_]));
+      std::unique_ptr<autofill::RegionComboboxModel> model =
+          base::MakeUnique<autofill::RegionComboboxModel>(
+              state()->GetAddressInputSource(),
+              state()->GetAddressInputStorage(),
+              state()->GetApplicationLocale(),
+              country_codes_[chosen_country_index_]);
+      // If the data was already pre-loaded, the observer won't get notified so
+      // we have to check for failure here.
+      if (!model->pending_region_data_load()) {
+        failed_to_load_region_data_ = model->failed_to_load_data();
+        if (failed_to_load_region_data_)
+          OnDataChanged();
+      }
+      return std::move(model);
     }
     default:
       NOTREACHED();
@@ -215,7 +221,8 @@ void ShippingAddressEditorViewController::OnPerformAction(
   DCHECK_GE(sender->selected_index(), 0);
   if (chosen_country_index_ != static_cast<size_t>(sender->selected_index())) {
     chosen_country_index_ = sender->selected_index();
-    OnCountryChanged(sender);
+    failed_to_load_region_data_ = false;
+    OnDataChanged();
   }
 }
 
@@ -245,7 +252,6 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
   autofill::GetAddressComponents(chosen_country_code,
                                  state()->GetApplicationLocale(),
                                  components.get(), &unused);
-
   for (size_t line_index = 0; line_index < components->GetSize();
        ++line_index) {
     const base::ListValue* line = nullptr;
@@ -286,7 +292,8 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       EditorField::ControlType control_type =
           EditorField::ControlType::TEXTFIELD;
       if (server_field_type == autofill::ADDRESS_HOME_COUNTRY ||
-          server_field_type == autofill::ADDRESS_HOME_STATE) {
+          (server_field_type == autofill::ADDRESS_HOME_STATE &&
+           !failed_to_load_region_data_)) {
         control_type = EditorField::ControlType::COMBOBOX;
       }
       editor_fields_.emplace_back(
@@ -312,8 +319,7 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       EditorField::ControlType::TEXTFIELD);
 }
 
-void ShippingAddressEditorViewController::OnCountryChanged(
-    views::Combobox* combobox) {
+void ShippingAddressEditorViewController::OnDataChanged() {
   // TODO(crbug.com/703764): save the current state so we can map it to the new
   // country fields as best we can.
   UpdateEditorFields();
@@ -323,6 +329,20 @@ void ShippingAddressEditorViewController::OnCountryChanged(
       FROM_HERE,
       base::Bind(&ShippingAddressEditorViewController::UpdateEditorView,
                  base::Unretained(this)));
+}
+
+void ShippingAddressEditorViewController::OnComboboxModelChanged(
+    views::Combobox* combobox) {
+  if (combobox->id() != autofill::ADDRESS_HOME_STATE)
+    return;
+  autofill::RegionComboboxModel* model =
+      static_cast<autofill::RegionComboboxModel*>(combobox->model());
+  if (model->pending_region_data_load())
+    return;
+  if (model->failed_to_load_data()) {
+    failed_to_load_region_data_ = true;
+    OnDataChanged();
+  }
 }
 
 ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -342,6 +362,11 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateCombobox(views::Combobox* combobox) {
   return ValidateValue(combobox->GetTextForRow(combobox->selected_index()));
+}
+
+void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
+    ComboboxModelChanged(views::Combobox* combobox) {
+  controller_->OnComboboxModelChanged(combobox);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
