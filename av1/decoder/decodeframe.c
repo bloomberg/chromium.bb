@@ -2499,19 +2499,19 @@ static void read_wiener_filter(WienerInfo *wiener_info,
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
           WIENER_FILT_TAP0_SUBEXP_K,
-          ref_wiener_info->vfilter[0] - WIENER_FILT_TAP0_MINV) +
+          ref_wiener_info->vfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
       WIENER_FILT_TAP0_MINV;
   wiener_info->vfilter[1] = wiener_info->vfilter[WIENER_WIN - 2] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
           WIENER_FILT_TAP1_SUBEXP_K,
-          ref_wiener_info->vfilter[1] - WIENER_FILT_TAP1_MINV) +
+          ref_wiener_info->vfilter[1] - WIENER_FILT_TAP1_MINV, ACCT_STR) +
       WIENER_FILT_TAP1_MINV;
   wiener_info->vfilter[2] = wiener_info->vfilter[WIENER_WIN - 3] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP2_MAXV - WIENER_FILT_TAP2_MINV + 1,
           WIENER_FILT_TAP2_SUBEXP_K,
-          ref_wiener_info->vfilter[2] - WIENER_FILT_TAP2_MINV) +
+          ref_wiener_info->vfilter[2] - WIENER_FILT_TAP2_MINV, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
   // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->vfilter[WIENER_HALFWIN] =
@@ -2522,19 +2522,19 @@ static void read_wiener_filter(WienerInfo *wiener_info,
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
           WIENER_FILT_TAP0_SUBEXP_K,
-          ref_wiener_info->hfilter[0] - WIENER_FILT_TAP0_MINV) +
+          ref_wiener_info->hfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
       WIENER_FILT_TAP0_MINV;
   wiener_info->hfilter[1] = wiener_info->hfilter[WIENER_WIN - 2] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
           WIENER_FILT_TAP1_SUBEXP_K,
-          ref_wiener_info->hfilter[1] - WIENER_FILT_TAP1_MINV) +
+          ref_wiener_info->hfilter[1] - WIENER_FILT_TAP1_MINV, ACCT_STR) +
       WIENER_FILT_TAP1_MINV;
   wiener_info->hfilter[2] = wiener_info->hfilter[WIENER_WIN - 3] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP2_MAXV - WIENER_FILT_TAP2_MINV + 1,
           WIENER_FILT_TAP2_SUBEXP_K,
-          ref_wiener_info->hfilter[2] - WIENER_FILT_TAP2_MINV) +
+          ref_wiener_info->hfilter[2] - WIENER_FILT_TAP2_MINV, ACCT_STR) +
       WIENER_FILT_TAP2_MINV;
   // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->hfilter[WIENER_HALFWIN] =
@@ -2549,12 +2549,12 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
   sgrproj_info->xqd[0] =
       aom_read_primitive_refsubexpfin(
           rb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
-          ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0) +
+          ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0, ACCT_STR) +
       SGRPROJ_PRJ_MIN0;
   sgrproj_info->xqd[1] =
       aom_read_primitive_refsubexpfin(
           rb, SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
-          ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1) +
+          ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1, ACCT_STR) +
       SGRPROJ_PRJ_MIN1;
   memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
@@ -4469,37 +4469,41 @@ static void read_global_motion_params(WarpedMotionParams *params,
         params->wmmat[6] =
             aom_read_signed_primitive_refsubexpfin(
                 r, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-                (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF)) *
+                (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF), ACCT_STR) *
             GM_ROW3HOMO_DECODE_FACTOR;
       if (type != VERTRAPEZOID)
         params->wmmat[7] =
             aom_read_signed_primitive_refsubexpfin(
                 r, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-                (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF)) *
+                (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF), ACCT_STR) *
             GM_ROW3HOMO_DECODE_FACTOR;
     case AFFINE:
     case ROTZOOM:
       params->wmmat[2] = aom_read_signed_primitive_refsubexpfin(
                              r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
                              (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
-                                 (1 << GM_ALPHA_PREC_BITS)) *
+                                 (1 << GM_ALPHA_PREC_BITS),
+                             ACCT_STR) *
                              GM_ALPHA_DECODE_FACTOR +
                          (1 << WARPEDMODEL_PREC_BITS);
       if (type != VERTRAPEZOID)
-        params->wmmat[3] = aom_read_signed_primitive_refsubexpfin(
-                               r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                               (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
-                           GM_ALPHA_DECODE_FACTOR;
+        params->wmmat[3] =
+            aom_read_signed_primitive_refsubexpfin(
+                r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF), ACCT_STR) *
+            GM_ALPHA_DECODE_FACTOR;
       if (type >= AFFINE) {
         if (type != HORTRAPEZOID)
-          params->wmmat[4] = aom_read_signed_primitive_refsubexpfin(
-                                 r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                                 (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
-                             GM_ALPHA_DECODE_FACTOR;
+          params->wmmat[4] =
+              aom_read_signed_primitive_refsubexpfin(
+                  r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                  (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF), ACCT_STR) *
+              GM_ALPHA_DECODE_FACTOR;
         params->wmmat[5] = aom_read_signed_primitive_refsubexpfin(
                                r, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
                                (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                                   (1 << GM_ALPHA_PREC_BITS)) *
+                                   (1 << GM_ALPHA_PREC_BITS),
+                               ACCT_STR) *
                                GM_ALPHA_DECODE_FACTOR +
                            (1 << WARPEDMODEL_PREC_BITS);
       } else {
@@ -4516,14 +4520,16 @@ static void read_global_motion_params(WarpedMotionParams *params,
       trans_prec_diff = (type == TRANSLATION)
                             ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
                             : GM_TRANS_PREC_DIFF;
-      params->wmmat[0] = aom_read_signed_primitive_refsubexpfin(
-                             r, (1 << trans_bits) + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[0] >> trans_prec_diff)) *
-                         trans_dec_factor;
-      params->wmmat[1] = aom_read_signed_primitive_refsubexpfin(
-                             r, (1 << trans_bits) + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[1] >> trans_prec_diff)) *
-                         trans_dec_factor;
+      params->wmmat[0] =
+          aom_read_signed_primitive_refsubexpfin(
+              r, (1 << trans_bits) + 1, SUBEXPFIN_K,
+              (ref_params->wmmat[0] >> trans_prec_diff), ACCT_STR) *
+          trans_dec_factor;
+      params->wmmat[1] =
+          aom_read_signed_primitive_refsubexpfin(
+              r, (1 << trans_bits) + 1, SUBEXPFIN_K,
+              (ref_params->wmmat[1] >> trans_prec_diff), ACCT_STR) *
+          trans_dec_factor;
     case IDENTITY: break;
     default: assert(0);
   }
