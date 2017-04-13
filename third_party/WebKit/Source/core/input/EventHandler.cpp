@@ -321,12 +321,11 @@ static LocalFrame* SubframeForTargetNode(Node* node) {
   if (!layout_object || !layout_object->IsLayoutPart())
     return nullptr;
 
-  FrameViewBase* frame_view_base =
-      ToLayoutPart(layout_object)->GetFrameViewBase();
-  if (!frame_view_base || !frame_view_base->IsFrameView())
+  FrameView* frame_view = ToLayoutPart(layout_object)->ChildFrameView();
+  if (!frame_view)
     return nullptr;
 
-  return &ToFrameView(frame_view_base)->GetFrame();
+  return &frame_view->GetFrame();
 }
 
 static LocalFrame* SubframeForHitTestResult(

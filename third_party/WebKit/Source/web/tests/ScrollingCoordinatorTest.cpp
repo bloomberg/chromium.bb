@@ -670,10 +670,10 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
 
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
-  ASSERT_TRUE(layout_part->GetFrameViewBase());
-  ASSERT_TRUE(layout_part->GetFrameViewBase()->IsFrameView());
 
-  FrameView* inner_frame_view = ToFrameView(layout_part->GetFrameViewBase());
+  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  ASSERT_TRUE(inner_frame_view);
+
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
   ASSERT_FALSE(inner_layout_view_item.IsNull());
 
@@ -722,10 +722,10 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
 
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
-  ASSERT_TRUE(layout_part->GetFrameViewBase());
-  ASSERT_TRUE(layout_part->GetFrameViewBase()->IsFrameView());
 
-  FrameView* inner_frame_view = ToFrameView(layout_part->GetFrameViewBase());
+  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  ASSERT_TRUE(inner_frame_view);
+
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
   ASSERT_FALSE(inner_layout_view_item.IsNull());
 
@@ -900,10 +900,10 @@ TEST_P(ScrollingCoordinatorTest,
 
   LayoutPart* layout_part = ToLayoutPart(layout_object);
   ASSERT_TRUE(layout_part);
-  ASSERT_TRUE(layout_part->GetFrameViewBase());
-  ASSERT_TRUE(layout_part->GetFrameViewBase()->IsFrameView());
 
-  FrameView* inner_frame_view = ToFrameView(layout_part->GetFrameViewBase());
+  FrameView* inner_frame_view = layout_part->ChildFrameView();
+  ASSERT_TRUE(inner_frame_view);
+
   LayoutViewItem inner_layout_view_item = inner_frame_view->GetLayoutViewItem();
   ASSERT_FALSE(inner_layout_view_item.IsNull());
 

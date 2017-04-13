@@ -157,9 +157,9 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
 }
 
 LayoutReplaced* LayoutEmbeddedObject::EmbeddedReplacedContent() const {
-  if (!GetNode() || !GetFrameViewBase() || !GetFrameViewBase()->IsFrameView())
-    return nullptr;
-  return ToFrameView(GetFrameViewBase())->EmbeddedReplacedContent();
+  if (FrameView* frame_view = ChildFrameView())
+    return frame_view->EmbeddedReplacedContent();
+  return nullptr;
 }
 
 }  // namespace blink

@@ -89,25 +89,30 @@ LayoutPart::~LayoutPart() {
   DCHECK_LE(ref_count_, 0);
 }
 
-FrameViewBase* LayoutPart::GetFrameViewBase() const {
-  // Plugin FrameViewBases are stored in their DOM node.
-  Element* element = ToElement(GetNode());
-
-  if (element && element->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(element)->OwnedWidget();
-
+FrameView* LayoutPart::ChildFrameView() const {
+  // FrameViews are stored in HTMLFrameOwnerElement node.
+  Node* node = GetNode();
+  if (node && node->IsFrameOwnerElement()) {
+    FrameViewBase* frame_view_base =
+        ToHTMLFrameOwnerElement(node)->OwnedWidget();
+    if (frame_view_base && frame_view_base->IsFrameView())
+      return ToFrameView(frame_view_base);
+  }
   return nullptr;
 }
 
 PluginView* LayoutPart::Plugin() const {
-  // Plugins are stored in their DOM node.
-  return GetNode() && IsHTMLPlugInElement(GetNode())
-             ? ToHTMLPlugInElement(GetNode())->Plugin()
-             : nullptr;
+  // Plugins are stored in HTMLPlugInElement node.
+  Node* node = GetNode();
+  return node && IsHTMLPlugInElement(node) ? ToHTMLPlugInElement(node)->Plugin()
+                                           : nullptr;
 }
 
 FrameViewBase* LayoutPart::PluginOrFrame() const {
-  FrameViewBase* result = GetFrameViewBase();
+  FrameViewBase* result = nullptr;
+  Node* node = GetNode();
+  if (node && node->IsFrameOwnerElement())
+    result = ToHTMLFrameOwnerElement(node)->OwnedWidget();
   if (!result)
     result = Plugin();
   return result;
@@ -174,15 +179,15 @@ bool LayoutPart::NodeAtPoint(HitTestResult& result,
                              const HitTestLocation& location_in_container,
                              const LayoutPoint& accumulated_offset,
                              HitTestAction action) {
-  if (!GetFrameViewBase() || !GetFrameViewBase()->IsFrameView() ||
-      !result.GetHitTestRequest().AllowsChildFrameContent()) {
+  FrameView* frame_view = ChildFrameView();
+  if (!frame_view || !result.GetHitTestRequest().AllowsChildFrameContent()) {
     return NodeAtPointOverFrameViewBase(result, location_in_container,
                                         accumulated_offset, action);
   }
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (ToFrameView(GetFrameViewBase())->ShouldThrottleRendering()) {
+  if (frame_view->ShouldThrottleRendering()) {
     return NodeAtPointOverFrameViewBase(result, location_in_container,
                                         accumulated_offset, action);
   }
@@ -191,16 +196,14 @@ bool LayoutPart::NodeAtPoint(HitTestResult& result,
             DocumentLifecycle::kCompositingClean);
 
   if (action == kHitTestForeground) {
-    FrameView* child_frame_view = ToFrameView(GetFrameViewBase());
-    LayoutViewItem child_root_item = child_frame_view->GetLayoutViewItem();
+    LayoutViewItem child_root_item = frame_view->GetLayoutViewItem();
 
     if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
         !child_root_item.IsNull()) {
       LayoutPoint adjusted_location = accumulated_offset + Location();
-      LayoutPoint content_offset =
-          LayoutPoint(BorderLeft() + PaddingLeft(),
-                      BorderTop() + PaddingTop()) -
-          LayoutSize(child_frame_view->ScrollOffsetInt());
+      LayoutPoint content_offset = LayoutPoint(BorderLeft() + PaddingLeft(),
+                                               BorderTop() + PaddingTop()) -
+                                   LayoutSize(frame_view->ScrollOffsetInt());
       HitTestLocation new_hit_test_location(
           location_in_container, -adjusted_location - content_offset);
       HitTestRequest new_hit_test_request(result.GetHitTestRequest().GetType() |
@@ -393,19 +396,16 @@ void LayoutPart::UpdateGeometryInternal(FrameViewBase& frame_view_base) {
 
 void LayoutPart::InvalidatePaintOfSubtreesIfNeeded(
     const PaintInvalidationState& paint_invalidation_state) {
-  if (GetFrameViewBase() && GetFrameViewBase()->IsFrameView() &&
-      !IsThrottledFrameView()) {
-    FrameView* child_frame_view = ToFrameView(GetFrameViewBase());
+  FrameView* frame_view = ChildFrameView();
+  if (frame_view && !IsThrottledFrameView()) {
     // |childFrameView| is in another document, which could be
     // missing its LayoutView. TODO(jchaffraix): Ideally we should
     // not need this code.
-    if (LayoutView* child_layout_view =
-            ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
-                child_frame_view->GetLayoutViewItem()))) {
+    if (LayoutView* child_layout_view = ToLayoutView(
+            LayoutAPIShim::LayoutObjectFrom(frame_view->GetLayoutViewItem()))) {
       PaintInvalidationState child_view_paint_invalidation_state(
           paint_invalidation_state, *child_layout_view);
-      child_frame_view->InvalidateTreeIfNeeded(
-          child_view_paint_invalidation_state);
+      frame_view->InvalidateTreeIfNeeded(child_view_paint_invalidation_state);
     }
   }
 
@@ -413,10 +413,9 @@ void LayoutPart::InvalidatePaintOfSubtreesIfNeeded(
 }
 
 bool LayoutPart::IsThrottledFrameView() const {
-  if (!GetFrameViewBase() || !GetFrameViewBase()->IsFrameView())
-    return false;
-  const FrameView* frame_view = ToFrameView(GetFrameViewBase());
-  return frame_view->ShouldThrottleRendering();
+  if (FrameView* frame_view = ChildFrameView())
+    return frame_view->ShouldThrottleRendering();
+  return false;
 }
 
 }  // namespace blink

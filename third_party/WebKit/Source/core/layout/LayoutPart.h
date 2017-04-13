@@ -49,12 +49,12 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void Ref() { ++ref_count_; }
   void Deref();
 
-  FrameViewBase* GetFrameViewBase() const;
+  // LayoutPart::ChildFrameView returns the FrameView associated with
+  // the current Node, if Node is HTMLFrameOwnerElement.
+  // This is different to LayoutObject::GetFrameView which returns
+  // the FrameView associated with the root Document Frame.
+  FrameView* ChildFrameView() const;
   PluginView* Plugin() const;
-  // TODO(joelhockey): This method will be removed once FrameViewBase
-  // class is removed.  New abstract base classes will be defined
-  // for when polymorphism is required for plugins and frames and
-  // other methods provided.
   FrameViewBase* PluginOrFrame() const;
 
   LayoutRect ReplacedContentRect() const final;

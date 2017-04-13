@@ -509,10 +509,9 @@ void Write(TextStream& ts,
   }
 
   if (o.IsLayoutPart()) {
-    FrameViewBase* frame_view_base = ToLayoutPart(o).GetFrameViewBase();
-    if (frame_view_base && frame_view_base->IsFrameView()) {
-      FrameView* view = ToFrameView(frame_view_base);
-      LayoutViewItem root_item = view->GetLayoutViewItem();
+    FrameView* frame_view = ToLayoutPart(o).ChildFrameView();
+    if (frame_view) {
+      LayoutViewItem root_item = frame_view->GetLayoutViewItem();
       if (!root_item.IsNull()) {
         root_item.UpdateStyleAndLayout();
         PaintLayer* layer = root_item.Layer();

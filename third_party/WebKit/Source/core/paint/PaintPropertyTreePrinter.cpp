@@ -495,11 +495,10 @@ class PaintPropertyTreeGraphBuilder {
     for (const LayoutObject* child = object.SlowFirstChild(); child;
          child = child->NextSibling())
       WriteLayoutObjectNode(*child);
-    if (object.IsLayoutPart() && ToLayoutPart(object).GetFrameViewBase() &&
-        ToLayoutPart(object).GetFrameViewBase()->IsFrameView()) {
-      FrameView* frame_view =
-          ToFrameView(ToLayoutPart(object).GetFrameViewBase());
-      WriteFrameViewNode(*frame_view, &object);
+    if (object.IsLayoutPart()) {
+      FrameView* frame_view = ToLayoutPart(object).ChildFrameView();
+      if (frame_view)
+        WriteFrameViewNode(*frame_view, &object);
     }
   }
 

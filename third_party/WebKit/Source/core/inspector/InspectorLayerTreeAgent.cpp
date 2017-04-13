@@ -267,7 +267,7 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
   if (!root->GetLayoutObject().IsLayoutIFrame())
     return;
   FrameView* child_frame_view =
-      ToFrameView(ToLayoutPart(root->GetLayoutObject()).GetFrameViewBase());
+      ToLayoutPart(root->GetLayoutObject()).ChildFrameView();
   LayoutViewItem child_layout_view_item = child_frame_view->GetLayoutViewItem();
   if (!child_layout_view_item.IsNull()) {
     if (PaintLayerCompositor* child_compositor =
