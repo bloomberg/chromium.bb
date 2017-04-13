@@ -282,7 +282,7 @@ static const int kCLayoutScheduleThreshold = 250;
 
 // After a document has been committed for this time, it can create a history
 // entry even if the user hasn't interacted with the document.
-static const int kCElapsedTimeForHistoryEntryWithoutUserGestureMS = 5000;
+static const int kElapsedTimeForHistoryEntryWithoutUserGestureMS = 5000;
 
 // DOM Level 2 says (letters added):
 //
@@ -3221,11 +3221,11 @@ bool Document::CanCreateHistoryEntry() const {
   // on creating history entries without user gestures. I'm waiting to update
   // the tests until the feature is proven to minimize churn.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=638198
-  if (!frame_->GetSettings()->GetHistoryEntryRequiresUserGesture())
+  if (!GetSettings() || !GetSettings()->GetHistoryEntryRequiresUserGesture())
     return true;
   if (frame_->HasReceivedUserGesture())
     return true;
-  return ElapsedTime() >= kCElapsedTimeForHistoryEntryWithoutUserGestureMS;
+  return ElapsedTime() >= kElapsedTimeForHistoryEntryWithoutUserGestureMS;
 }
 
 void Document::write(const SegmentedString& text,
