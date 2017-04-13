@@ -29,10 +29,10 @@
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

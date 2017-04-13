@@ -26,7 +26,7 @@
 #include "core/page/PageVisibilityNotifier.h"
 
 #include "core/page/PageVisibilityObserver.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

@@ -26,15 +26,15 @@
 #ifndef ScrollingCoordinator_h
 #define ScrollingCoordinator_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/paint/LayerHitTestRects.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 using MainThreadScrollingReasons = uint32_t;

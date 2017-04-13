@@ -28,7 +28,7 @@
 
 #include "core/page/DragActions.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -26,6 +26,7 @@
 
 #include "core/page/ContextMenuController.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/events/Event.h"
@@ -39,8 +40,7 @@
 #include "core/page/CustomContextMenuProvider.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

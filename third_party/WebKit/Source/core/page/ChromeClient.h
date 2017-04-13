@@ -23,6 +23,7 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
@@ -36,14 +37,13 @@
 #include "platform/PopupMenu.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
-#include "wtf/Forward.h"
-#include "wtf/Optional.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow

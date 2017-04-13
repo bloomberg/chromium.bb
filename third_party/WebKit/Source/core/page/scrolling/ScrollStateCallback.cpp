@@ -4,7 +4,7 @@
 
 #include "core/page/scrolling/ScrollStateCallback.h"
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

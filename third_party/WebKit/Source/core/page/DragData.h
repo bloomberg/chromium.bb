@@ -30,9 +30,9 @@
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

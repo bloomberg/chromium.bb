@@ -23,8 +23,8 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

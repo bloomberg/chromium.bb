@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

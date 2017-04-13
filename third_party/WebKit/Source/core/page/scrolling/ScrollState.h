@@ -5,14 +5,14 @@
 #ifndef ScrollState_h
 #define ScrollState_h
 
+#include <deque>
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/page/scrolling/ScrollStateInit.h"
 #include "platform/scroll/ScrollStateData.h"
-#include "wtf/Forward.h"
-#include <deque>
-#include <memory>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

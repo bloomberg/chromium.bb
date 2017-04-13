@@ -31,7 +31,7 @@
 #ifndef PagePopup_h
 #define PagePopup_h
 
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef PostMessage

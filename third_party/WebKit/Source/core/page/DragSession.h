@@ -27,7 +27,7 @@
 #define DragSession_h
 
 #include "core/page/DragActions.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

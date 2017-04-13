@@ -30,7 +30,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Time.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 

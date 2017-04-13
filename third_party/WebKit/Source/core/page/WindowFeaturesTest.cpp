@@ -4,8 +4,8 @@
 //
 #include "core/page/WindowFeatures.h"
 
-#include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

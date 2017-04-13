@@ -34,8 +34,8 @@
 #include "core/CoreExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

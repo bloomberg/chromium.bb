@@ -8,7 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 

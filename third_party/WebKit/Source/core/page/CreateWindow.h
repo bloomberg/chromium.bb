@@ -30,7 +30,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow

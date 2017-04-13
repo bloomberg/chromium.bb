@@ -11,7 +11,7 @@
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

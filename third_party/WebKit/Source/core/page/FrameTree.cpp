@@ -28,10 +28,10 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
-#include "wtf/Assertions.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 using std::swap;
 

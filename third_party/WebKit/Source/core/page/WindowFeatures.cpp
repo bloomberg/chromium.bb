@@ -24,9 +24,9 @@
 #include "core/page/WindowFeatures.h"
 
 #include "platform/geometry/IntRect.h"
-#include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

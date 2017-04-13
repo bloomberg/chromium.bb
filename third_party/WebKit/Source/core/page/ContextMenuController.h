@@ -26,13 +26,13 @@
 #ifndef ContextMenuController_h
 #define ContextMenuController_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

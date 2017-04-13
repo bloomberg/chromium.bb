@@ -4,11 +4,11 @@
 
 #include "core/page/scrolling/ScrollState.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

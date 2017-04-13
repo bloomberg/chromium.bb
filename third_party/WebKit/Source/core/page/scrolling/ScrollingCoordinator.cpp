@@ -55,9 +55,12 @@
 #if OS(MACOSX)
 #include "platform/mac/ScrollAnimatorMac.h"
 #endif
+#include <memory>
+#include <utility>
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayerPositionConstraint.h"
@@ -65,9 +68,6 @@
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"
-#include "wtf/text/StringBuilder.h"
-#include <memory>
-#include <utility>
 
 using blink::WebLayer;
 using blink::WebLayerPositionConstraint;

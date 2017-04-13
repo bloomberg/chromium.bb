@@ -79,16 +79,16 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebImage.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebScreenInfo.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 #if OS(WIN)
 #include <windows.h>

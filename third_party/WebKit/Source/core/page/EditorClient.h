@@ -28,7 +28,7 @@
 #define EditorClient_h
 
 #include "core/editing/SelectionType.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
