@@ -28,6 +28,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Color constants.
 const CGFloat kBackgroundColorBrightness = 247.0f / 255.0f;
@@ -48,31 +52,23 @@ const CGFloat kMessageLabelFontSize = 14.0f;
 const CGFloat kHelpLabelFontSize = 14.0f;
 }  // namespace
 
-@interface SadTabView () {
-  // The block called when |_reloadButton| is tapped.
-  base::mac::ScopedBlock<ProceduralBlock> _reloadHandler;
-  // Backing objects for properties of the same name.
-  base::scoped_nsobject<UIView> _containerView;
-  base::scoped_nsobject<UIImageView> _imageView;
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UILabel> _messageLabel;
-  base::scoped_nsobject<UILabel> _helpLabel;
-  base::scoped_nsobject<LabelLinkController> _helpLabelLinkController;
-  base::scoped_nsobject<MDCButton> _reloadButton;
-}
+@interface SadTabView ()
 
+@property(nonatomic, readonly) ProceduralBlock reloadHandler;
 // Container view that displays all other subviews.
-@property(nonatomic, readonly) UIView* containerView;
+@property(nonatomic, readonly, strong) UIView* containerView;
 // Displays the Sad Tab face.
-@property(nonatomic, readonly) UIImageView* imageView;
+@property(nonatomic, readonly, strong) UIImageView* imageView;
 // Displays the Sad Tab title.
-@property(nonatomic, readonly) UILabel* titleLabel;
+@property(nonatomic, readonly, strong) UILabel* titleLabel;
 // Displays the Sad Tab message.
-@property(nonatomic, readonly) UILabel* messageLabel;
+@property(nonatomic, readonly, strong) UILabel* messageLabel;
 // Displays the Sad Tab help message.
-@property(nonatomic, readonly) UILabel* helpLabel;
+@property(nonatomic, readonly, strong) UILabel* helpLabel;
+@property(nonatomic, readonly, strong)
+    LabelLinkController* helpLabelLinkController;
 // Button used to trigger a reload.
-@property(nonatomic, readonly) UIButton* reloadButton;
+@property(nonatomic, readonly, strong) MDCFlatButton* reloadButton;
 
 // The bounds of |containerView|, with a height updated to CGFLOAT_MAX to allow
 // text to be laid out using as many lines as necessary.
@@ -99,11 +95,20 @@ const CGFloat kHelpLabelFontSize = 14.0f;
 
 @implementation SadTabView
 
+@synthesize imageView = _imageView;
+@synthesize containerView = _containerView;
+@synthesize titleLabel = _titleLabel;
+@synthesize messageLabel = _messageLabel;
+@synthesize helpLabel = _helpLabel;
+@synthesize helpLabelLinkController = _helpLabelLinkController;
+@synthesize reloadButton = _reloadButton;
+@synthesize reloadHandler = _reloadHandler;
+
 - (instancetype)initWithReloadHandler:(ProceduralBlock)reloadHandler {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(reloadHandler);
-    _reloadHandler.reset([reloadHandler copy]);
+    _reloadHandler = [reloadHandler copy];
     self.backgroundColor = [[self class] sadTabBackgroundColor];
   }
   return self;
@@ -128,7 +133,7 @@ const CGFloat kHelpLabelFontSize = 14.0f;
 
 - (UIView*)containerView {
   if (!_containerView) {
-    _containerView.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _containerView = [[UIView alloc] initWithFrame:CGRectZero];
     [_containerView setBackgroundColor:self.backgroundColor];
   }
   return _containerView;
@@ -136,16 +141,16 @@ const CGFloat kHelpLabelFontSize = 14.0f;
 
 - (UIImageView*)imageView {
   if (!_imageView) {
-    _imageView.reset(
-        [[UIImageView alloc] initWithImage:NativeImage(IDR_CRASH_SAD_TAB)]);
+    _imageView =
+        [[UIImageView alloc] initWithImage:NativeImage(IDR_CRASH_SAD_TAB)];
     [_imageView setBackgroundColor:self.backgroundColor];
   }
-  return _imageView.get();
+  return _imageView;
 }
 
 - (UILabel*)titleLabel {
   if (!_titleLabel) {
-    _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_titleLabel setBackgroundColor:self.backgroundColor];
     [_titleLabel setText:base::SysUTF8ToNSString(
                              l10n_util::GetStringUTF8(IDS_SAD_TAB_TITLE))];
@@ -157,12 +162,12 @@ const CGFloat kHelpLabelFontSize = 14.0f;
     [_titleLabel setFont:[[MDFRobotoFontLoader sharedInstance]
                              regularFontOfSize:kTitleLabelFontSize]];
   }
-  return _titleLabel.get();
+  return _titleLabel;
 }
 
 - (UILabel*)messageLabel {
   if (!_messageLabel) {
-    _messageLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _messageLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_messageLabel setBackgroundColor:self.backgroundColor];
     std::string messageText = l10n_util::GetStringUTF8(IDS_SAD_TAB_MESSAGE);
     [_messageLabel setText:base::SysUTF8ToNSString(messageText)];
@@ -174,12 +179,12 @@ const CGFloat kHelpLabelFontSize = 14.0f;
     [_messageLabel setFont:[[MDFRobotoFontLoader sharedInstance]
                                regularFontOfSize:kMessageLabelFontSize]];
   }
-  return _messageLabel.get();
+  return _messageLabel;
 }
 
 - (UILabel*)helpLabel {
   if (!_helpLabel) {
-    _helpLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+    _helpLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     [_helpLabel setBackgroundColor:self.backgroundColor];
     [_helpLabel setNumberOfLines:0];
     [_helpLabel setFont:[[MDFRobotoFontLoader sharedInstance]
@@ -195,13 +200,13 @@ const CGFloat kHelpLabelFontSize = 14.0f;
     [_helpLabel setText:helpText];
     // Create link controller.
     base::WeakNSObject<SadTabView> weakSelf(self);
-    _helpLabelLinkController.reset([[LabelLinkController alloc]
+    _helpLabelLinkController = [[LabelLinkController alloc]
         initWithLabel:_helpLabel
                action:^(const GURL& url) {
                  base::scoped_nsobject<OpenUrlCommand> openCommand(
                      [[OpenUrlCommand alloc] initWithURLFromChrome:url]);
                  [weakSelf chromeExecuteCommand:openCommand];
-               }]);
+               }];
     [_helpLabelLinkController
         setLinkFont:[[MDFRobotoFontLoader sharedInstance]
                         boldFontOfSize:kHelpLabelFontSize]];
@@ -213,12 +218,12 @@ const CGFloat kHelpLabelFontSize = 14.0f;
     [_helpLabelLinkController addLinkWithRange:linkRange
                                            url:GURL(kCrashReasonURL)];
   }
-  return _helpLabel.get();
+  return _helpLabel;
 }
 
 - (UIButton*)reloadButton {
   if (!_reloadButton) {
-    _reloadButton.reset([[MDCFlatButton alloc] init]);
+    _reloadButton = [[MDCFlatButton alloc] init];
     [_reloadButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                              forState:UIControlStateNormal];
     [_reloadButton setBackgroundColor:[[MDCPalette greyPalette] tint500]
@@ -235,7 +240,7 @@ const CGFloat kHelpLabelFontSize = 14.0f;
                       action:@selector(handleReloadButtonTapped)
             forControlEvents:UIControlEventTouchUpInside];
   }
-  return _reloadButton.get();
+  return _reloadButton;
 }
 
 - (CGRect)containerBounds {
@@ -387,7 +392,7 @@ const CGFloat kHelpLabelFontSize = 14.0f;
 }
 
 - (void)handleReloadButtonTapped {
-  _reloadHandler.get()();
+  self.reloadHandler();
 }
 
 + (UIColor*)sadTabBackgroundColor {

@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
+#import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -57,6 +58,7 @@ void AttachTabHelpers(web::WebState* web_state) {
   BlockedPopupTabHelper::CreateForWebState(web_state);
   FindTabHelper::CreateForWebState(web_state, tab.findInPageControllerDelegate);
   StoreKitTabHelper::CreateForWebState(web_state);
+  SadTabTabHelper::CreateForWebState(web_state, tab);
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);

@@ -15,16 +15,27 @@ source_set("web") {
     "network_activity_indicator_tab_helper.mm",
     "repost_form_tab_helper.h",
     "repost_form_tab_helper.mm",
+    "sad_tab_tab_helper.h",
+    "sad_tab_tab_helper.mm",
   ]
   deps = [
+    ":sad_tab_tab_helper_delegate",
     "//base",
     "//components/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator",
+    "//ios/chrome/browser/ui/sad_tab:sad_tab",
     "//ios/chrome/browser/ui/util:util",
     "//ios/web",
     "//ios/web:web_arc",
     "//ui/base",
+  ]
+}
+
+source_set("sad_tab_tab_helper_delegate") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "sad_tab_tab_helper_delegate.h",
   ]
 }
 
@@ -35,8 +46,10 @@ source_set("unit_tests") {
     "navigation_manager_util_unittest.mm",
     "network_activity_indicator_tab_helper_unittest.mm",
     "repost_form_tab_helper_unittest.mm",
+    "sad_tab_tab_helper_unittest.mm",
   ]
   deps = [
+    ":sad_tab_tab_helper_delegate",
     ":web",
     "//base:base",
     "//base/test:test_support",

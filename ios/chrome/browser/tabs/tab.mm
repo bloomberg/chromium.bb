@@ -101,7 +101,6 @@
 #import "ios/chrome/browser/ui/prerender_delegate.h"
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_checker.h"
 #import "ios/chrome/browser/ui/reader_mode/reader_mode_controller.h"
-#import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
@@ -1830,19 +1829,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   if (visible_) {
     if (!applicationIsNotActive) {
-      base::WeakNSObject<Tab> weakSelf(self);
-      base::scoped_nsobject<SadTabView> sadTabView(
-          [[SadTabView alloc] initWithReloadHandler:^{
-            base::scoped_nsobject<Tab> strongSelf([weakSelf retain]);
-
-            // |check_for_repost| is true because this is called from SadTab and
-            // explicitly initiated by the user.
-            [strongSelf navigationManager]->Reload(web::ReloadType::NORMAL,
-                                                   true /* check_for_repost */);
-          }]);
-      base::scoped_nsobject<CRWContentView> contentView(
-          [[CRWGenericContentView alloc] initWithView:sadTabView]);
-      self.webState->ShowTransientContentView(contentView);
       [fullScreenController_ disableFullScreen];
     }
   } else {
@@ -1971,6 +1957,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self updateFullscreenWithToolbarVisible:YES];
   [self.webController wasHidden];
   [inputAccessoryViewController_ wasHidden];
+}
+
+#pragma mark - SadTabTabHelperDelegate
+
+- (BOOL)isTabVisibleForTabHelper:(SadTabTabHelper*)tabHelper {
+  UIApplicationState state = UIApplication.sharedApplication.applicationState;
+  return visible_ && !IsApplicationStateNotActive(state);
 }
 
 @end

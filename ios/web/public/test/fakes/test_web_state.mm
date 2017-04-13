@@ -23,6 +23,7 @@ TestWebState::TestWebState()
     : browser_state_(nullptr),
       web_usage_enabled_(false),
       is_loading_(false),
+      is_showing_transient_content_view_(false),
       trust_level_(kAbsolute),
       content_is_html_(true) {}
 
@@ -186,6 +187,21 @@ void TestWebState::OnProvisionalNavigationStarted(const GURL& url) {
     observer.ProvisionalNavigationStarted(url);
 }
 
+void TestWebState::OnRenderProcessGone() {
+  for (auto& observer : observers_)
+    observer.RenderProcessGone();
+}
+
+void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
+  if (content_view) {
+    is_showing_transient_content_view_ = true;
+  }
+}
+
+void TestWebState::ClearTransientContentView() {
+  is_showing_transient_content_view_ = false;
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
@@ -209,6 +225,10 @@ bool TestWebState::HasOpener() const {
 base::WeakPtr<WebState> TestWebState::AsWeakPtr() {
   NOTREACHED();
   return base::WeakPtr<WebState>();
+}
+
+bool TestWebState::IsShowingTransientContentView() {
+  return is_showing_transient_content_view_;
 }
 
 }  // namespace web
