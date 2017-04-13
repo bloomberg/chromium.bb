@@ -230,7 +230,8 @@ class AndroidProfileTool(object):
     self._device.PushChangedFiles([(self._cygprofile_tests, device_path)])
     try:
       self._device.RunShellCommand(device_path, check_return=True)
-    except device_errors.CommandFailedError:
+    except (device_errors.CommandFailedError,
+            device_errors.DeviceUnreachableError):
       # TODO(jbudorick): Let the exception propagate up once clients can
       # handle it.
       logging.exception('Failure while running cygprofile_unittests:')

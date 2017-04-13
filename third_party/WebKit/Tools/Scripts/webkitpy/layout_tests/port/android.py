@@ -793,7 +793,8 @@ class ChromiumAndroidDriver(driver.Driver):
             log_callback('installing apk if necessary')
             self._device.Install(driver_host_path)
         except (device_errors.CommandFailedError,
-                device_errors.CommandTimeoutError) as exc:
+                device_errors.CommandTimeoutError,
+                device_errors.DeviceUnreachableError) as exc:
             self._abort('Failed to install %s onto device: %s' % (driver_host_path, str(exc)))
 
     def _push_fonts(self, log_callback):
