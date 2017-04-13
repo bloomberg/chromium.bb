@@ -92,6 +92,10 @@ class DeleteJournal {
   // Return true if delete journals of |type| are maintained.
   static bool IsDeleteJournalEnabled(ModelType type);
 
+  // Adds entry to JournalIndex if it doesn't already exist.
+  static void AddEntryToJournalIndex(JournalIndex* journal_index,
+                                     std::unique_ptr<EntryKernel> entry);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
 

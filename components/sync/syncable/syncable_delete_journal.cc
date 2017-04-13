@@ -45,10 +45,9 @@ void DeleteJournal::UpdateDeleteJournalForServerDelete(
   if (entry.ref(SERVER_IS_DEL)) {
     if (it == delete_journals_.end()) {
       // New delete.
-      std::unique_ptr<EntryKernel> t_ptr = base::MakeUnique<EntryKernel>(entry);
-      EntryKernel* t = t_ptr.get();
-      delete_journals_to_purge_.erase(t->ref(META_HANDLE));
-      delete_journals_[t] = std::move(t_ptr);
+      auto entry_copy = base::MakeUnique<EntryKernel>(entry);
+      delete_journals_to_purge_.erase(entry_copy->ref(META_HANDLE));
+      AddEntryToJournalIndex(&delete_journals_, std::move(entry_copy));
     }
   } else {
     // Undelete. This could happen in two cases:
@@ -124,10 +123,8 @@ void DeleteJournal::AddJournalBatch(BaseTransaction* trans,
   for (auto& entry : entries) {
     needle.put(ID, entry->ref(ID));
     if (delete_journals_.find(&needle) == delete_journals_.end()) {
-      std::unique_ptr<EntryKernel> t_ptr =
-          base::MakeUnique<EntryKernel>(*entry);
-      EntryKernel* t = t_ptr.get();
-      delete_journals_[t] = std::move(t_ptr);
+      auto entry_copy = base::MakeUnique<EntryKernel>(*entry);
+      AddEntryToJournalIndex(&delete_journals_, std::move(entry_copy));
     }
     delete_journals_to_purge_.erase(entry->ref(META_HANDLE));
   }
@@ -141,6 +138,14 @@ bool DeleteJournal::IsDeleteJournalEnabled(ModelType type) {
     default:
       return false;
   }
+}
+
+// static
+void DeleteJournal::AddEntryToJournalIndex(JournalIndex* journal_index,
+                                           std::unique_ptr<EntryKernel> entry) {
+  EntryKernel* key = entry.get();
+  if (journal_index->find(key) == journal_index->end())
+    (*journal_index)[key] = std::move(entry);
 }
 
 }  // namespace syncable

@@ -717,13 +717,11 @@ bool DirectoryBackingStore::LoadDeleteJournals(JournalIndex* delete_journals) {
 
   while (s.Step()) {
     int total_entry_copies;
-    std::unique_ptr<EntryKernel> kernel_ptr =
-        UnpackEntry(&s, &total_entry_copies);
+    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s, &total_entry_copies);
     // A null kernel is evidence of external data corruption.
-    if (!kernel_ptr)
+    if (!kernel)
       return false;
-    EntryKernel* kernel = kernel_ptr.get();
-    (*delete_journals)[kernel] = std::move(kernel_ptr);
+    DeleteJournal::AddEntryToJournalIndex(delete_journals, std::move(kernel));
   }
   return s.Succeeded();
 }
