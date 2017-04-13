@@ -14,7 +14,3 @@ Local Modifications:
 - Hardcoded ShadowProvider service config files. These files are normally
   generated at compile time but it is difficult to use the generated file
   with GN.
-- Added template_processor/ directory with Java classes to process Robolectric's
-  .vm template files. The template processor creates versions of these classes
-  for different Android API levels. The templated code is used to build the
-  respective shadows-core-3.0-<API Level>.jar
