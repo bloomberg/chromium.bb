@@ -57,10 +57,10 @@ enum class FetchingInterval {
 // The values of each array specify a default time interval for the intervals
 // defined by the enum FetchingInterval. The default time intervals defined in
 // the arrays can be overridden using different variation parameters.
-const double kDefaultFetchingIntervalHoursRareNtpUser[] = {48.0, 24.0, 12.0,
-                                                           6.0};
-const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {24.0, 6.0, 4.0,
-                                                             2.0};
+const double kDefaultFetchingIntervalHoursRareNtpUser[] = {48.0, 24.0, 8.0,
+                                                           4.0};
+const double kDefaultFetchingIntervalHoursActiveNtpUser[] = {24.0, 8.0, 6.0,
+                                                             3.0};
 const double kDefaultFetchingIntervalHoursActiveSuggestionsConsumer[] = {
     24.0, 6.0, 2.0, 1.0};
 
@@ -579,8 +579,7 @@ RemoteSuggestionsSchedulerImpl::GetEnabledTriggerTypes() {
 
 std::set<RemoteSuggestionsSchedulerImpl::TriggerType>
 RemoteSuggestionsSchedulerImpl::GetDefaultEnabledTriggerTypes() {
-  return {TriggerType::PERSISTENT_SCHEDULER_WAKE_UP, TriggerType::NTP_OPENED,
-          TriggerType::BROWSER_FOREGROUNDED};
+  return {TriggerType::PERSISTENT_SCHEDULER_WAKE_UP, TriggerType::NTP_OPENED};
 }
 
 }  // namespace ntp_snippets

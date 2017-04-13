@@ -632,7 +632,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForSoftTriggerOnWifi) {
   // Pretend we are on WiFi (already done in ctor, we make it explicit here).
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(true));
-  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 2h time
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 3h time
   // interval by default for soft background fetches on WiFi.
 
   // Initial scheduling after being enabled.
@@ -649,11 +649,11 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForSoftTriggerOnWifi) {
   signal_fetch_done.Run(Status::Success());
 
   // Open NTP again after too short delay. This time no fetch is executed.
-  test_clock()->Advance(base::TimeDelta::FromMinutes(20));
+  test_clock()->Advance(base::TimeDelta::FromMinutes(30));
   scheduler()->OnNTPOpened();
 
   // Open NTP after another delay, now together long enough to issue a fetch.
-  test_clock()->Advance(base::TimeDelta::FromMinutes(100));
+  test_clock()->Advance(base::TimeDelta::FromMinutes(150));
   EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   scheduler()->OnNTPOpened();
 }
@@ -696,7 +696,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   // Pretend we are not on wifi -> fallback connection.
   EXPECT_CALL(*persistent_scheduler(), IsOnUnmeteredConnection())
       .WillRepeatedly(Return(false));
-  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 4h time
+  // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 6h time
   // interval by default for soft background fetches not on WiFi.
 
   // Initial scheduling after being enabled.
@@ -713,7 +713,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   signal_fetch_done.Run(Status::Success());
 
   // Open NTP again after too short delay. This time no fetch is executed.
-  test_clock()->Advance(base::TimeDelta::FromMinutes(180));
+  test_clock()->Advance(base::TimeDelta::FromMinutes(300));
   scheduler()->OnNTPOpened();
 
   // Open NTP after another delay, now together long enough to issue a fetch.
