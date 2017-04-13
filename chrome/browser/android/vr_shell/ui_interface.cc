@@ -4,146 +4,47 @@
 
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 
-#include <memory>
-#include <utility>
-
-#include "base/memory/ptr_util.h"
-#include "chrome/browser/android/vr_shell/vr_omnibox.h"
-#include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
 #include "url/gurl.h"
 
 namespace vr_shell {
 
-UiInterface::UiInterface(Mode initial_mode)
-    : omnibox_(base::MakeUnique<VrOmnibox>(this)) {
-  SetMode(initial_mode);
-}
-
-UiInterface::~UiInterface() {}
+UiInterface::UiInterface(Mode initial_mode) : mode_(initial_mode) {}
 
 void UiInterface::SetMode(Mode mode) {
   mode_ = mode;
-  FlushModeState();
 }
 
 void UiInterface::SetFullscreen(bool enabled) {
   fullscreen_ = enabled;
-  FlushModeState();
 }
 
-void UiInterface::HandleOmniboxInput(const base::DictionaryValue& input) {
-  omnibox_->HandleInput(input);
-}
+void UiInterface::SetSecurityLevel(int level) {}
 
-void UiInterface::SetOmniboxSuggestions(
-    std::unique_ptr<base::Value> suggestions) {
-  updates_.Set("suggestions", std::move(suggestions));
-  FlushUpdates();
-}
+void UiInterface::SetWebVRSecureOrigin(bool secure) {}
 
-void UiInterface::FlushModeState() {
-  updates_.SetInteger("mode", static_cast<int>(mode_));
-  updates_.SetBoolean("fullscreen", fullscreen_);
-  FlushUpdates();
-}
+void UiInterface::SetLoading(bool loading) {}
 
-void UiInterface::SetSecurityLevel(int level) {
-  updates_.SetInteger("securityLevel", level);
-  FlushUpdates();
-}
+void UiInterface::SetLoadProgress(double progress) {}
 
-void UiInterface::SetWebVRSecureOrigin(bool secure) {
-  updates_.SetBoolean("webVRSecureOrigin", secure);
-  FlushUpdates();
-}
-
-void UiInterface::SetLoading(bool loading) {
-  updates_.SetBoolean("loading", loading);
-  FlushUpdates();
-}
-
-void UiInterface::SetLoadProgress(double progress) {
-  updates_.SetDouble("loadProgress", progress);
-  FlushUpdates();
-}
-
-void UiInterface::InitTabList() {
-  tab_list_ = base::MakeUnique<base::ListValue>();
-}
+void UiInterface::InitTabList() {}
 
 void UiInterface::AppendToTabList(bool incognito,
                                   int id,
-                                  const base::string16& title) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetBoolean("incognito", incognito);
-  dict->SetInteger("id", id);
-  dict->SetString("title", title);
-  tab_list_->Append(std::move(dict));
-}
+                                  const base::string16& title) {}
 
-void UiInterface::FlushTabList() {
-  updates_.Set("setTabs", std::move(tab_list_));
-  FlushUpdates();
-}
+void UiInterface::UpdateTab(bool incognito, int id, const std::string& title) {}
 
-void UiInterface::UpdateTab(bool incognito, int id, const std::string& title) {
-  auto details = base::MakeUnique<base::DictionaryValue>();
-  details->SetBoolean("incognito", incognito);
-  details->SetInteger("id", id);
-  details->SetString("title", title);
-  updates_.Set("updateTab", std::move(details));
-}
+void UiInterface::FlushTabList() {}
 
-void UiInterface::RemoveTab(bool incognito, int id) {
-  auto details = base::MakeUnique<base::DictionaryValue>();
-  details->SetBoolean("incognito", incognito);
-  details->SetInteger("id", id);
-  updates_.Set("removeTab", std::move(details));
-}
+void UiInterface::RemoveTab(bool incognito, int id) {}
 
-void UiInterface::SetURL(const GURL& url) {
-  auto details = base::MakeUnique<base::DictionaryValue>();
-  details->SetString("host", url.host());
-  details->SetString("path", url.path());
+void UiInterface::SetURL(const GURL& url) {}
 
-  updates_.Set("url", std::move(details));
-  FlushUpdates();
-}
+void UiInterface::HandleAppButtonGesturePerformed(Direction direction) {}
 
-void UiInterface::HandleAppButtonGesturePerformed(Direction direction) {
-  updates_.SetInteger("appButtonGesturePerformed", direction);
-  FlushUpdates();
-}
-
-void UiInterface::HandleAppButtonClicked() {
-  updates_.SetBoolean("appButtonClicked", true);
-  FlushUpdates();
-}
+void UiInterface::HandleAppButtonClicked() {}
 
 void UiInterface::SetHistoryButtonsEnabled(bool can_go_back,
-                                           bool can_go_forward) {
-  updates_.SetBoolean("canGoBack", can_go_back);
-  updates_.SetBoolean("canGoForward", can_go_forward);
-  FlushUpdates();
-}
-
-void UiInterface::OnDomContentsLoaded() {
-  loaded_ = true;
-#if defined(ENABLE_VR_SHELL_UI_DEV)
-  updates_.SetBoolean("enableReloadUi", true);
-#endif
-  FlushUpdates();
-}
-
-void UiInterface::SetUiCommandHandler(UiCommandHandler* handler) {
-  handler_ = handler;
-}
-
-void UiInterface::FlushUpdates() {
-  if (loaded_ && handler_) {
-    handler_->SendCommandToUi(updates_);
-    updates_.Clear();
-  }
-}
+                                           bool can_go_forward) {}
 
 }  // namespace vr_shell

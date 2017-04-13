@@ -296,10 +296,6 @@ const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 const char kChromeUIWebApksHost[] = "webapks";
 #endif
 
-#if BUILDFLAG(ENABLE_VR)
-const char kChromeUIVrShellUIHost[] = "vr-shell-ui";
-#endif
-
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessageHost[] = "activationmessage";
 const char kChromeUIAppLaunchHost[] = "app-launch";

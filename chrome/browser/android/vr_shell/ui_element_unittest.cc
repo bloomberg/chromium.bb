@@ -43,20 +43,6 @@ base::TimeDelta usToDelta(uint64_t us) {
 
 }  // namespace
 
-TEST(UiElements, AnimateCopyRect) {
-  UiElement rect;
-  rect.copy_rect = {10, 100, 1000, 10000};
-  std::unique_ptr<Animation> animation(new Animation(
-      0, Animation::Property::COPYRECT,
-      std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-      {20, 200, 2000, 20000}, usToTicks(50000), usToDelta(10000)));
-  rect.animations.emplace_back(std::move(animation));
-  rect.Animate(usToTicks(50000));
-  EXPECT_RECTF_EQ(rect.copy_rect, gfx::RectF(10, 100, 1000, 10000));
-  rect.Animate(usToTicks(60000));
-  EXPECT_RECTF_EQ(rect.copy_rect, gfx::RectF(20, 200, 2000, 20000));
-}
-
 TEST(UiElements, AnimateSize) {
   UiElement rect;
   rect.size = {10, 100, 1};

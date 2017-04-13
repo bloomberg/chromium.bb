@@ -15,13 +15,6 @@ class GURL;
 
 namespace vr_shell {
 
-class VrOmnibox;
-
-class UiCommandHandler {
- public:
-  virtual void SendCommandToUi(const base::Value& value) = 0;
-};
-
 // This class manages the communication of browser state from VR shell to the
 // HTML UI. State information is asynchronous and unidirectional.
 class UiInterface {
@@ -40,7 +33,7 @@ class UiInterface {
   };
 
   explicit UiInterface(Mode initial_mode);
-  virtual ~UiInterface();
+  virtual ~UiInterface() = default;
 
   // Set HTML UI state or pass events.
   void SetMode(Mode mode);
@@ -55,29 +48,13 @@ class UiInterface {
   void UpdateTab(bool incognito, int id, const std::string& title);
   void RemoveTab(bool incognito, int id);
   void SetURL(const GURL& url);
-  void SetOmniboxSuggestions(std::unique_ptr<base::Value> suggestions);
   void HandleAppButtonGesturePerformed(Direction direction);
   void HandleAppButtonClicked();
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
-  // Handlers for HTML UI commands and notifications.
-  void OnDomContentsLoaded();
-  void HandleOmniboxInput(const base::DictionaryValue& input);
-
-  void SetUiCommandHandler(UiCommandHandler* handler);
-
  private:
-  void FlushUpdates();
-  void FlushModeState();
-
   Mode mode_;
   bool fullscreen_ = false;
-  UiCommandHandler* handler_;
-  bool loaded_ = false;
-  base::DictionaryValue updates_;
-  std::unique_ptr<base::ListValue> tab_list_;
-
-  std::unique_ptr<VrOmnibox> omnibox_;
 
   DISALLOW_COPY_AND_ASSIGN(UiInterface);
 };

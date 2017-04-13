@@ -70,10 +70,6 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UiSceneManager::UpdateScene(std::unique_ptr<base::ListValue> commands) {
-  scene_->HandleCommands(std::move(commands), base::TimeTicks::Now());
-}
-
 void UiSceneManager::SetWebVRMode(bool web_vr) {
   web_vr_mode_ = web_vr;
   ConfigureSecurityWarnings();

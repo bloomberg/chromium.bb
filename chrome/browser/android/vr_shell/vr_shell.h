@@ -23,10 +23,6 @@
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace blink {
 class WebInputEvent;
 }
@@ -58,15 +54,9 @@ enum UiAction {
   HISTORY_BACK = 0,
   HISTORY_FORWARD,
   RELOAD,
-  ZOOM_OUT,
-  ZOOM_IN,
-  RELOAD_UI,
-  LOAD_URL,
-  OMNIBOX_CONTENT,
   SET_CONTENT_PAUSED,
   SHOW_TAB,
   OPEN_NEW_TAB,
-  KEY_EVENT,
   EXIT_PRESENT,
 };
 
@@ -75,14 +65,11 @@ class VrMetricsHelper;
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
 class VrShell : public device::PresentingGvrDelegate,
-                content::WebContentsObserver,
                 device::GvrGamepadDataProvider {
  public:
   VrShell(JNIEnv* env,
           jobject obj,
-          ui::WindowAndroid* content_window,
-          content::WebContents* ui_contents,
-          ui::WindowAndroid* ui_window,
+          ui::WindowAndroid* window,
           bool for_web_vr,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
@@ -137,14 +124,6 @@ class VrShell : public device::PresentingGvrDelegate,
   void ContentWasHidden();
   void ContentWasShown();
 
-  // html/js UI hooks.
-  static base::WeakPtr<VrShell> GetWeakPtr(
-      const content::WebContents* web_contents);
-
-  UiInterface* GetUiInterface();
-  void OnDomContentsLoaded();
-
-  void UiSurfaceChanged(jobject surface);
   void ContentSurfaceChanged(jobject surface);
   void GvrDelegateReady();
   void AppButtonGesturePerformed(UiInterface::Direction direction);
@@ -157,27 +136,16 @@ class VrShell : public device::PresentingGvrDelegate,
       jint height,
       jfloat dpr);
 
-  void UIPhysicalBoundsChanged(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& object,
-      jint width,
-      jint height,
-      jfloat dpr);
-
-  void UpdateScene(const base::ListValue* args);
-
   // Perform a UI action triggered by the javascript API.
   void DoUiAction(const UiAction action,
                   const base::DictionaryValue* arguments);
 
   void SetContentCssSize(float width, float height, float dpr);
-  void SetUiCssSize(float width, float height, float dpr);
 
   void ContentFrameWasResized(bool width_changed);
 
   void ForceExitVr();
 
-  void ProcessUIGesture(std::unique_ptr<blink::WebInputEvent> event);
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
   void SubmitControllerModel(std::unique_ptr<VrControllerModel> model);
 
@@ -190,12 +158,6 @@ class VrShell : public device::PresentingGvrDelegate,
   void PostToGlThreadWhenReady(const base::Closure& task);
   void SetContentPaused(bool paused);
   void SetUiState();
-
-  // content::WebContentsObserver implementation.
-  void RenderViewHostChanged(content::RenderViewHost* old_host,
-                             content::RenderViewHost* new_host) override;
-  void MainFrameWasResized(bool width_changed) override;
-  void WebContentsDestroyed() override;
 
   // device::GvrDelegate implementation.
   void SetWebVRSecureOrigin(bool secure_origin) override;
@@ -221,25 +183,22 @@ class VrShell : public device::PresentingGvrDelegate,
 
   bool vr_shell_enabled_;
 
-  std::unique_ptr<UiInterface> html_interface_;
+  std::unique_ptr<UiInterface> ui_;
   bool content_paused_ = false;
   bool webvr_mode_ = false;
 
-  content::WebContents* main_contents_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> j_motion_event_synthesizer_;
-  ui::WindowAndroid* content_window_;
-  std::unique_ptr<VrCompositor> content_compositor_;
-  content::WebContents* ui_contents_;
-  std::unique_ptr<VrCompositor> ui_compositor_;
+  ui::WindowAndroid* window_;
+  std::unique_ptr<VrCompositor> compositor_;
 
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
 
   VrShellDelegate* delegate_provider_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
-  std::unique_ptr<VrInputManager> content_input_manager_;
+  std::unique_ptr<VrInputManager> input_manager_;
   std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
-  std::unique_ptr<VrInputManager> ui_input_manager_;
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

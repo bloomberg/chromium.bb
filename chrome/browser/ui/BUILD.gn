@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
-import("//device/vr/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
@@ -589,7 +588,6 @@ split_static_library("ui") {
     "//device/base",
     "//device/bluetooth/public/interfaces:experimental_interfaces",
     "//device/usb",
-    "//device/vr:features",
     "//extensions/features",
     "//media",
     "//net:net",
@@ -2321,20 +2319,6 @@ split_static_library("ui") {
       "webui/webapks_ui.cc",
       "webui/webapks_ui.h",
     ]
-    if (enable_vr) {
-      sources += [
-        "webui/vr_shell/vr_shell_ui_message_handler.cc",
-        "webui/vr_shell/vr_shell_ui_message_handler.h",
-        "webui/vr_shell/vr_shell_ui_ui.cc",
-        "webui/vr_shell/vr_shell_ui_ui.h",
-      ]
-      configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
-      deps += [ "//chrome/browser/android/vr_shell:vr_common" ]
-    }
-    if (enable_vr_shell_ui_dev) {
-      assert(enable_vr)
-      defines += [ "ENABLE_VR_SHELL_UI_DEV" ]
-    }
     deps += [
       "//chrome/browser:jni_headers",
       "//components/web_contents_delegate_android",

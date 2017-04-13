@@ -22,8 +22,6 @@ class UiSceneManager {
 
   base::WeakPtr<UiSceneManager> GetWeakPtr();
 
-  void UpdateScene(std::unique_ptr<base::ListValue> commands);
-
   void SetWebVRSecureOrigin(bool secure);
   void SetWebVRMode(bool web_vr);
 

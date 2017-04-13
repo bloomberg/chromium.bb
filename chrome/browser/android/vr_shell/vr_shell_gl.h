@@ -65,7 +65,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   enum class InputTarget {
     NONE = 0,
     CONTENT,
-    UI,
   };
 
   VrShellGl(const base::WeakPtr<VrShell>& weak_vr_shell,
@@ -153,22 +152,16 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void SendVSync(base::TimeDelta time, const GetVSyncCallback& callback);
 
-  // samplerExternalOES texture data for UI content image.
-  int ui_texture_id_ = 0;
   // samplerExternalOES texture data for main content image.
   int content_texture_id_ = 0;
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
-  UiScene* scene_;
-
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
-  scoped_refptr<gl::SurfaceTexture> ui_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> content_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> webvr_surface_texture_;
 
-  std::unique_ptr<gl::ScopedJavaSurface> ui_surface_;
   std::unique_ptr<gl::ScopedJavaSurface> content_surface_;
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
@@ -202,13 +195,10 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   InputTarget current_input_target_ = InputTarget::NONE;
   InputTarget current_scroll_target_ = InputTarget::NONE;
   InputTarget current_fling_target_ = InputTarget::NONE;
-  int ui_tex_css_width_ = 0;
-  int ui_tex_css_height_ = 0;
   int content_tex_css_width_ = 0;
   int content_tex_css_height_ = 0;
   gfx::Size content_tex_physical_size_ = {0, 0};
   gfx::Size webvr_surface_size_ = {0, 0};
-  gfx::Size ui_tex_physical_size_ = {0, 0};
 
   std::vector<vr::Mat4f> webvr_head_pose_;
   bool web_vr_mode_;
@@ -231,6 +221,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   base::WeakPtr<VrShell> weak_vr_shell_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  UiScene* scene_ = nullptr;
 
   uint8_t frame_index_ = 0;
   // Larger than frame_index_ so it can be initialized out-of-band.

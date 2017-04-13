@@ -18,6 +18,7 @@
 #include "chrome/browser/android/vr_shell/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
+#include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
@@ -203,13 +204,13 @@ VrShellGl::VrShellGl(
     bool initially_web_vr,
     bool reprojected_rendering,
     UiScene* scene)
-    : scene_(scene),
-      web_vr_mode_(initially_web_vr),
+    : web_vr_mode_(initially_web_vr),
       surfaceless_rendering_(reprojected_rendering),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       weak_vr_shell_(weak_vr_shell),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
+      scene_(scene),
 #if DCHECK_IS_ON()
       fps_meter_(new FPSMeter()),
 #endif
@@ -277,26 +278,20 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  unsigned int textures[3];
-  glGenTextures(3, textures);
-  ui_texture_id_ = textures[0];
-  content_texture_id_ = textures[1];
-  webvr_texture_id_ = textures[2];
-  ui_surface_texture_ = gl::SurfaceTexture::Create(ui_texture_id_);
+  unsigned int textures[2];
+  glGenTextures(2, textures);
+  content_texture_id_ = textures[0];
+  webvr_texture_id_ = textures[1];
   content_surface_texture_ = gl::SurfaceTexture::Create(content_texture_id_);
   webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
-  CreateUiSurface();
   CreateContentSurface();
-  ui_surface_texture_->SetFrameAvailableCallback(base::Bind(
-      &VrShellGl::OnUIFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   content_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnContentFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
   webvr_surface_texture_->SetFrameAvailableCallback(base::Bind(
       &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-  ui_surface_texture_->SetDefaultBufferSize(ui_tex_physical_size_.width(),
-                                            ui_tex_physical_size_.height());
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_physical_size_.width(), content_tex_physical_size_.height());
+
   InitializeRenderer();
 
   gfx::Size webvr_size =
@@ -318,14 +313,6 @@ void VrShellGl::CreateContentSurface() {
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_,
                             content_surface_->j_surface().obj()));
-}
-
-void VrShellGl::CreateUiSurface() {
-  ui_surface_ =
-      base::MakeUnique<gl::ScopedJavaSurface>(ui_surface_texture_.get());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::UiSurfaceChanged, weak_vr_shell_,
-                            ui_surface_->j_surface().obj()));
 }
 
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
@@ -393,10 +380,6 @@ void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
 void VrShellGl::SetSubmitClient(
     device::mojom::VRSubmitFrameClientPtrInfo submit_client_info) {
   submit_client_.Bind(std::move(submit_client_info));
-}
-
-void VrShellGl::OnUIFrameAvailable() {
-  ui_surface_texture_->UpdateTexImage();
 }
 
 void VrShellGl::OnContentFrameAvailable() {
@@ -639,29 +622,12 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& forward_vector) {
   int pixel_x = 0;
   int pixel_y = 0;
 
-  if (target_element_ != nullptr) {
-    gfx::RectF pixel_rect;
-    if (target_element_->fill == Fill::CONTENT) {
-      pixel_rect.SetRect(0, 0, content_tex_css_width_, content_tex_css_height_);
-    } else {
-      pixel_rect.SetRect(target_element_->copy_rect.x(),
-                         target_element_->copy_rect.y(),
-                         target_element_->copy_rect.width(),
-                         target_element_->copy_rect.height());
-    }
+  if (target_element_ != nullptr && target_element_->fill == Fill::CONTENT) {
+    input_target = InputTarget::CONTENT;
+    gfx::RectF pixel_rect(0, 0, content_tex_css_width_,
+                          content_tex_css_height_);
     pixel_x = pixel_rect.x() + pixel_rect.width() * target_x;
     pixel_y = pixel_rect.y() + pixel_rect.height() * target_y;
-
-    switch (target_element_->fill) {
-      case Fill::CONTENT:
-        input_target = InputTarget::CONTENT;
-        break;
-      case Fill::SPRITE:
-        input_target = InputTarget::UI;
-        break;
-      default:
-        break;
-    }
   }
   SendEventsToTarget(input_target, pixel_x, pixel_y);
 }
@@ -788,12 +754,9 @@ void VrShellGl::SendEventsToTarget(InputTarget input_target,
 void VrShellGl::SendGesture(InputTarget input_target,
                             std::unique_ptr<blink::WebInputEvent> event) {
   DCHECK(input_target != InputTarget::NONE);
-  auto&& target = input_target == InputTarget::CONTENT
-                      ? &VrShell::ProcessContentGesture
-                      : &VrShell::ProcessUIGesture;
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(target, weak_vr_shell_, base::Passed(std::move(event))));
+      FROM_HERE, base::Bind(&VrShell::ProcessContentGesture, weak_vr_shell_,
+                            base::Passed(std::move(event))));
 }
 
 void VrShellGl::DrawFrame(int16_t frame_index) {
@@ -1031,15 +994,7 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
     vr::MatrixMul(view_proj_matrix, rect->TransformMatrix(), &transform);
 
     switch (rect->fill) {
-      case Fill::SPRITE: {
-        gfx::RectF copy_rect(
-            static_cast<float>(rect->copy_rect.x()) / ui_tex_css_width_,
-            static_cast<float>(rect->copy_rect.y()) / ui_tex_css_height_,
-            static_cast<float>(rect->copy_rect.width()) / ui_tex_css_width_,
-            static_cast<float>(rect->copy_rect.height()) / ui_tex_css_height_);
-        jint texture_handle = ui_texture_id_;
-        vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
-            texture_handle, transform, copy_rect, rect->computed_opacity);
+      case Fill::SKIA: {
         break;
       }
       case Fill::OPAQUE_GRADIENT: {
@@ -1057,10 +1012,9 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
         break;
       }
       case Fill::CONTENT: {
-        gfx::RectF copy_rect = {0, 0, 1, 1};
-        jint texture_handle = content_texture_id_;
+        gfx::RectF copy_rect(0, 0, 1, 1);
         vr_shell_renderer_->GetTexturedQuadRenderer()->AddQuad(
-            texture_handle, transform, copy_rect, rect->computed_opacity);
+            content_texture_id_, transform, copy_rect, rect->computed_opacity);
         break;
       }
       default:
@@ -1272,18 +1226,6 @@ void VrShellGl::ContentPhysicalBoundsChanged(int width, int height) {
     content_surface_texture_->SetDefaultBufferSize(width, height);
   content_tex_physical_size_.set_width(width);
   content_tex_physical_size_.set_height(height);
-}
-
-void VrShellGl::UIBoundsChanged(int width, int height) {
-  ui_tex_css_width_ = width;
-  ui_tex_css_height_ = height;
-}
-
-void VrShellGl::UIPhysicalBoundsChanged(int width, int height) {
-  if (ui_surface_texture_.get())
-    ui_surface_texture_->SetDefaultBufferSize(width, height);
-  ui_tex_physical_size_.set_width(width);
-  ui_tex_physical_size_.set_height(height);
 }
 
 base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {

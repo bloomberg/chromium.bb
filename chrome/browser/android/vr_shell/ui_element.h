@@ -34,9 +34,7 @@ enum YAnchoring {
 
 enum Fill {
   NONE = 0,
-  // The element is filled with part of the HTML UI as specified by the copy
-  // rect.
-  SPRITE = 1,
+  SKIA = 1,
   // The element is filled with a radial gradient as specified by the edge and
   // center color.
   OPAQUE_GRADIENT = 2,
@@ -117,9 +115,6 @@ struct UiElement : public WorldRectangle {
   // If true, transformations will be applied relative to the field of view,
   // rather than the world.
   bool lock_to_fov = false;
-
-  // Specifies the region (in pixels) of a texture to render.
-  gfx::Rect copy_rect = {0, 0, 0, 0};
 
   // The size of the object.  This does not affect children.
   gfx::Vector3dF size = {1.0f, 1.0f, 1.0f};

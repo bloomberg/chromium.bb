@@ -81,7 +81,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
-#include "device/vr/features.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
@@ -117,9 +116,6 @@
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals_ui.h"
 #include "chrome/browser/ui/webui/webapks_ui.h"
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_ui.h"
-#endif
 #else
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
@@ -530,10 +526,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SnippetsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
-#if BUILDFLAG(ENABLE_VR)
-  if (url.host_piece() == chrome::kChromeUIVrShellUIHost)
-    return &NewWebUI<VrShellUIUI>;
-#endif
 #else
   if (url.SchemeIs(content::kChromeDevToolsScheme)) {
     if (!DevToolsUIBindings::IsValidFrontendURL(url))

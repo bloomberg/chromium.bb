@@ -23,8 +23,7 @@ class Easing;
 class Animation {
  public:
   enum Property {
-    COPYRECT = 0,
-    SIZE,
+    SIZE = 0,
     TRANSLATION,
     SCALE,
     ROTATION,

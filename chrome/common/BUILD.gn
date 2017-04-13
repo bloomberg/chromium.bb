@@ -206,7 +206,6 @@ static_library("common") {
     "//components/visitedlink/common",
     "//content/public/common",
     "//crypto",
-    "//device/vr:features",
     "//extensions/common:common_constants",
     "//extensions/features",
     "//google_apis",

@@ -114,12 +114,6 @@ void UiElement::Animate(const base::TimeTicks& time) {
     // If |from| is not specified, start at the current values.
     if (animation.from.size() == 0) {
       switch (animation.property) {
-        case Animation::COPYRECT:
-          animation.from.push_back(copy_rect.x());
-          animation.from.push_back(copy_rect.y());
-          animation.from.push_back(copy_rect.width());
-          animation.from.push_back(copy_rect.height());
-          break;
         case Animation::SIZE:
           animation.from.push_back(size.x());
           animation.from.push_back(size.y());
@@ -161,10 +155,6 @@ void UiElement::Animate(const base::TimeTicks& time) {
           animation.from[i] + (value * (animation.to[i] - animation.from[i]));
     }
     switch (animation.property) {
-      case Animation::COPYRECT:
-        CHECK_EQ(animation.from.size(), 4u);
-        copy_rect.SetRect(values[0], values[1], values[2], values[3]);
-        break;
       case Animation::SIZE:
         CHECK_EQ(animation.from.size(), 2u);
         size.set_x(values[0]);

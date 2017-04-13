@@ -12,7 +12,6 @@
 #include "device/vr/vr_types.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class TimeTicks;
 }
@@ -38,20 +37,10 @@ class UiScene {
 
   void AddUiElement(std::unique_ptr<UiElement> element);
 
-  // Add a UI element according to a dictionary passed from the UI HTML.
-  void AddUiElementFromDict(const base::DictionaryValue& dict);
-
-  // Update an existing element with new properties.
-  void UpdateUiElementFromDict(const base::DictionaryValue& dict);
-
   void RemoveUiElement(int element_id);
 
   // Add an animation to the scene, on element |element_id|.
   void AddAnimation(int element_id, std::unique_ptr<Animation> animation);
-
-  // Add an animation according to a dictionary passed from the UI HTML.
-  void AddAnimationFromDict(const base::DictionaryValue& dict,
-                            const base::TimeTicks& current_time);
 
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
@@ -79,8 +68,6 @@ class UiScene {
 
  private:
   void ApplyRecursiveTransforms(UiElement* element);
-  void ApplyDictToElement(const base::DictionaryValue& dict,
-                          UiElement* element);
 
   std::vector<std::unique_ptr<UiElement>> ui_elements_;
   UiElement* content_element_ = nullptr;
