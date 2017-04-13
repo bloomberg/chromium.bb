@@ -20,6 +20,7 @@ static_library("open_from_clipboard") {
   deps = [
     ":open_from_clipboard_impl",
     "//base",
+    "//components/variations",
     "//net",
     "//ui/base:base",
     "//url",

@@ -426,6 +426,16 @@ class OmniboxFieldTrial {
   static std::string ZeroSuggestRedirectToChromeAdditionalFields();
 
   // ---------------------------------------------------------
+  // Clipboard URL suggestions:
+
+  // The parameter "ClipboardURLMaximumAge" doesn't live in this file; instead
+  // it lives in
+  // components/open_from_clipboard/clipboard_recent_content.cc.
+  // Please see ClipboardRecentContent::MaximumAgeOfClipboard() for the usage
+  // of it.  The parameter cannot live here because that component cannot
+  // include this component, else there would be a circular dependency.
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.

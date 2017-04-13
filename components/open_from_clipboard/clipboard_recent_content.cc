@@ -4,6 +4,9 @@
 
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
+#include "components/variations/variations_associated_data.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -52,5 +55,18 @@ bool ClipboardRecentContent::IsAppropriateSuggestion(const GURL& url) {
 
 // static
 base::TimeDelta ClipboardRecentContent::MaximumAgeOfClipboard() {
-  return base::TimeDelta::FromHours(3);
+  // Identify the current setting for this parameter from the omnibox field
+  // trial.
+  std::string value_str = variations::GetVariationParamValue(
+      "OmniboxBundledExperimentV1", "ClipboardURLMaximumAge");
+  // If the parameter is not set, use a 1 hour timeout.
+  if (value_str.empty())
+    return base::TimeDelta::FromHours(1);
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  int value;
+  // The value in the parameter is stored in seconds.
+  base::StringToInt(value_str, &value);
+  return base::TimeDelta::FromSeconds(value);
 }
