@@ -1538,7 +1538,7 @@ class ChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTestableFiles',
         'AffectedTextFiles',
         'AllFiles', 'DescriptionText', 'FullDescriptionText',
-        'LocalPaths', 'Name', 'RepositoryRoot',
+        'LocalPaths', 'Name', 'OriginalOwnersFiles', 'RepositoryRoot',
         'RightHandSideLines', 'SetDescriptionText', 'TAG_LINE_RE',
         'author_email', 'issue', 'patchset', 'scm', 'tags',
     ]
@@ -2276,6 +2276,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     if not is_committing or (not tbr and issue):
       affected_file.LocalPath().AndReturn('foo/xyz.cc')
       change.AffectedFiles(file_filter=None).AndReturn([affected_file])
+      change.OriginalOwnersFiles().AndReturn({})
       if issue and not rietveld_response and not gerrit_response:
         rietveld_response = {
           "owner_email": change.author_email,
@@ -2305,6 +2306,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       if not is_committing and uncovered_files:
         fake_db.reviewers_for(set(['foo']),
             change.author_email).AndReturn(change.author_email)
+        change.OriginalOwnersFiles().AndReturn({})
 
     self.mox.ReplayAll()
     output = presubmit.PresubmitOutput()

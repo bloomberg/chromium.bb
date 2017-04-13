@@ -916,6 +916,13 @@ class Change(object):
         x for x in self.AffectedFiles(include_deletes=False)
         if x.IsTestableFile())
 
+  def OriginalOwnersFiles(self):
+    """A map from path names of affected OWNERS files to their old content."""
+    def owners_file_filter(f):
+      return 'OWNERS' in os.path.split(f.LocalPath())[1]
+    files = self.AffectedFiles(file_filter=owners_file_filter)
+    return dict([(f.LocalPath(), f.OldContents()) for f in files])
+
 
 class GitChange(Change):
   _AFFECTED_FILES = GitAffectedFile

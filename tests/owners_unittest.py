@@ -18,6 +18,7 @@ import owners
 ben = 'ben@example.com'
 brett = 'brett@example.com'
 darin = 'darin@example.com'
+jochen = 'jochen@example.com'
 john = 'john@example.com'
 ken = 'ken@example.com'
 peter = 'peter@example.com'
@@ -345,8 +346,9 @@ class OwnersDatabaseTest(_BaseTestCase):
 
 class ReviewersForTest(_BaseTestCase):
   def assert_reviewers_for(self, files, potential_suggested_reviewers,
-                           author=None):
+                           author=None, override_files=None):
     db = self.db()
+    db.override_files = override_files or {}
     suggested_reviewers = db.reviewers_for(set(files), author)
     self.assertTrue(suggested_reviewers in
         [set(suggestion) for suggestion in potential_suggested_reviewers])
@@ -462,6 +464,12 @@ class ReviewersForTest(_BaseTestCase):
                               [[peter]])
     self.assert_reviewers_for(['content/garply/bar.cc'],
                               [[brett]])
+
+  def test_override_files(self):
+      self.assert_reviewers_for(['content/baz/froboz.h'], [[jochen]],
+                                override_files={'content/baz/OWNERS': [jochen]})
+      self.assert_reviewers_for(['content/baz/froboz.h'], [[john],[darin]],
+                                override_files={'content/baz/OWNERS': []})
 
 
 class LowestCostOwnersTest(_BaseTestCase):

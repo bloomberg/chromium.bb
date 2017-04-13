@@ -883,6 +883,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
+  owners_db.override_files = input_api.change.OriginalOwnersFiles()
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
       input_api,
       owners_db.email_regexp,
@@ -903,11 +904,11 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
                   (needed, '\n    '.join(sorted(missing_files))))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
-      finder = input_api.owners_finder(missing_files,
-                                       input_api.change.RepositoryRoot(),
-                                       owner_email,
-                                       fopen=file, os_path=input_api.os_path,
-                                       email_postfix='', disable_color=True)
+      finder = input_api.owners_finder(
+          missing_files, input_api.change.RepositoryRoot(),
+          owner_email, fopen=file, os_path=input_api.os_path,
+          email_postfix='', disable_color=True,
+          override_files=input_api.change.OriginalOwnersFiles())
       owners_with_comments = []
       def RecordComments(text):
         owners_with_comments.append(finder.print_indent() + text)

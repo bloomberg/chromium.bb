@@ -5553,7 +5553,8 @@ def CMDowners(parser, args):
           cl.GetChange(base_branch, None).AffectedFiles()],
       change.RepositoryRoot(),
       author, fopen=file, os_path=os.path,
-      disable_color=options.no_color).run()
+      disable_color=options.no_color,
+      override_files=change.OriginalOwnersFiles()).run()
 
 
 def BuildGitDiffCmd(diff_type, upstream_commit, args):

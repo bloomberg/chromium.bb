@@ -25,7 +25,8 @@ class OwnersFinder(object):
   def __init__(self, files, local_root, author,
                fopen, os_path,
                email_postfix='@chromium.org',
-               disable_color=False):
+               disable_color=False,
+               override_files=None):
     self.email_postfix = email_postfix
 
     if os.name == 'nt' or disable_color:
@@ -35,6 +36,7 @@ class OwnersFinder(object):
       self.COLOR_RESET = ''
 
     self.db = owners_module.Database(local_root, fopen, os_path)
+    self.db.override_files = override_files or {}
     self.db.load_data_needed_for(files)
 
     self.os_path = os_path
@@ -52,6 +54,7 @@ class OwnersFinder(object):
       files = filtered_files
       # Reload the database.
       self.db = owners_module.Database(local_root, fopen, os_path)
+      self.db.override_files = override_files or {}
       self.db.load_data_needed_for(files)
 
     self.all_possible_owners = self.db.all_possible_owners(files, None)

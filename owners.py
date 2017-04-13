@@ -114,6 +114,11 @@ class Database(object):
     # Pick a default email regexp to use; callers can override as desired.
     self.email_regexp = re.compile(BASIC_EMAIL_REGEXP)
 
+    # Replacement contents for the given files. Maps the file name of an
+    # OWNERS file (relative to root) to an iterator returning the replacement
+    # file contents.
+    self.override_files = {}
+
     # Mapping of owners to the paths or globs they own.
     self._owners_to_paths = {EVERYONE: set()}
 
@@ -240,7 +245,13 @@ class Database(object):
     dirpath = self.os_path.dirname(path)
     in_comment = False
     lineno = 0
-    for line in self.fopen(owners_path):
+
+    if path in self.override_files:
+      file_iter = self.override_files[path]
+    else:
+      file_iter = self.fopen(owners_path)
+
+    for line in file_iter:
       lineno += 1
       line = line.strip()
       if line.startswith('#'):
@@ -395,6 +406,8 @@ class Database(object):
     dirs_remaining = set(self._enclosing_dir_with_owners(f) for f in files)
     all_possible_owners = self.all_possible_owners(dirs_remaining, author)
     suggested_owners = set()
+    if len(all_possible_owners) == 0:
+      return suggested_owners
     while dirs_remaining:
       owner = self.lowest_cost_owner(all_possible_owners, dirs_remaining)
       suggested_owners.add(owner)
