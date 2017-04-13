@@ -100,6 +100,8 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
 
 void PaymentRequestState::SetSelectedShippingOption(
     const std::string& shipping_option_id) {
+  spec_->StartWaitingForUpdateWith(
+      PaymentRequestSpec::UpdateReason::SHIPPING_OPTION);
   // This will inform the merchant and will lead to them calling updateWith with
   // new PaymentDetails.
   delegate_->OnShippingOptionIdSelected(shipping_option_id);
@@ -107,6 +109,8 @@ void PaymentRequestState::SetSelectedShippingOption(
 
 void PaymentRequestState::SetSelectedShippingProfile(
     autofill::AutofillProfile* profile) {
+  spec_->StartWaitingForUpdateWith(
+      PaymentRequestSpec::UpdateReason::SHIPPING_ADDRESS);
   selected_shipping_profile_ = profile;
   UpdateIsReadyToPayAndNotifyObservers();
   delegate_->OnShippingAddressSelected(

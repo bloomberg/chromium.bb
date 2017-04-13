@@ -127,6 +127,13 @@ std::string PaymentRequestSpec::GetFormattedCurrencyCode() {
   return formatter->formatted_currency_code();
 }
 
+void PaymentRequestSpec::StartWaitingForUpdateWith(
+    PaymentRequestSpec::UpdateReason reason) {
+  for (auto& observer : observers_) {
+    observer.OnStartUpdating(reason);
+  }
+}
+
 void PaymentRequestSpec::PopulateValidatedMethodData(
     const std::vector<mojom::PaymentMethodDataPtr>& method_data_mojom) {
   if (method_data_mojom.empty()) {

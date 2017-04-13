@@ -30,6 +30,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
 
   // PaymentRequestSpec::Observer:
   void OnInvalidSpecProvided() override {}
+  void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
   void OnSpecUpdated() override;
 
   // PaymentRequestState::Observer:
@@ -57,6 +58,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   views::Button* pay_button_;
 
   const int widest_name_column_view_width_;
+  PaymentRequestSpec::UpdateReason current_update_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewController);
 };

@@ -25,12 +25,25 @@ extern const char kBasicCardMethodName[];
 // certain occasions by the merchant (see API).
 class PaymentRequestSpec : public PaymentOptionsProvider {
  public:
+  // This enum represents which bit of information was changed to trigger an
+  // update roundtrip with the website.
+  enum class UpdateReason {
+    NONE,
+    SHIPPING_OPTION,
+    SHIPPING_ADDRESS,
+  };
+
   // Any class call add itself as Observer via AddObserver() and receive
   // notification about spec events.
   class Observer {
    public:
     // Called when the provided spec (details, options, method_data) is invalid.
     virtual void OnInvalidSpecProvided() = 0;
+
+    // Called when the website is notified that the user selected shipping
+    // options or a shipping address. This will be followed by a call to
+    // OnSpecUpdated or the PaymentRequest being aborted due to a timeout.
+    virtual void OnStartUpdating(UpdateReason reason) {}
 
     // Called when the provided spec has changed.
     virtual void OnSpecUpdated() = 0;
@@ -86,6 +99,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   }
 
   const mojom::PaymentDetails& details() const { return *details_.get(); }
+
+  void StartWaitingForUpdateWith(UpdateReason reason);
 
  private:
   friend class PaymentRequestDialogView;
