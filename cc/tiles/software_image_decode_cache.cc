@@ -446,7 +446,7 @@ SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
     case kLow_SkFilterQuality:
       if (key.should_use_subrect())
         return GetSubrectImageDecode(key, std::move(image));
-      return GetOriginalImageDecode(std::move(image));
+      return GetOriginalSizeImageDecode(key, std::move(image));
     case kMedium_SkFilterQuality:
     case kHigh_SkFilterQuality:
       return GetScaledImageDecode(key, std::move(image));
@@ -563,22 +563,35 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
 }
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
-SoftwareImageDecodeCache::GetOriginalImageDecode(sk_sp<const SkImage> image) {
+SoftwareImageDecodeCache::GetOriginalSizeImageDecode(
+    const ImageKey& key,
+    sk_sp<const SkImage> image) {
   SkImageInfo decoded_info =
       CreateImageInfo(image->width(), image->height(), format_);
+  sk_sp<SkColorSpace> target_color_space =
+      key.target_color_space().ToSkColorSpace();
+
   std::unique_ptr<base::DiscardableMemory> decoded_pixels;
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetOriginalSizeImageDecode - "
                  "allocate decoded pixels");
     decoded_pixels =
         base::DiscardableMemoryAllocator::GetInstance()
             ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
                                               decoded_info.height());
   }
+  if (target_color_space) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                 "SoftwareImageDecodeCache::GetOriginalSizeImageDecode - "
+                 "color conversion");
+    image = image->makeColorSpace(target_color_space,
+                                  SkTransferFunctionBehavior::kIgnore);
+    DCHECK(image);
+  }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetOriginalSizeImageDecode - "
                  "read pixels");
     bool result = image->readPixels(decoded_info, decoded_pixels->data(),
                                     decoded_info.minRowBytes(), 0, 0,
@@ -590,12 +603,10 @@ SoftwareImageDecodeCache::GetOriginalImageDecode(sk_sp<const SkImage> image) {
     }
   }
 
-  // TODO(ccameron,msarett): Convert image to target color space.
-  // http://crbug.com/706613
-
-  return base::MakeUnique<DecodedImage>(decoded_info, std::move(decoded_pixels),
-                                        SkSize::Make(0, 0),
-                                        next_tracing_id_.GetNext());
+  return base::MakeUnique<DecodedImage>(
+      decoded_info.makeColorSpace(target_color_space),
+      std::move(decoded_pixels), SkSize::Make(0, 0),
+      next_tracing_id_.GetNext());
 }
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
@@ -609,6 +620,9 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
       kNone_SkFilterQuality, SkMatrix::I(), key.target_color_space());
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
+  sk_sp<SkColorSpace> target_color_space =
+      key.target_color_space().ToSkColorSpace();
+
   // Sanity checks.
   DCHECK(original_size_key.can_use_original_size_decode())
       << original_size_key.ToString();
@@ -621,6 +635,8 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
   if (!decoded_draw_image.image())
     return nullptr;
 
+  DCHECK(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),
+                              target_color_space.get()));
   SkImageInfo subrect_info = CreateImageInfo(
       key.target_size().width(), key.target_size().height(), format_);
   std::unique_ptr<base::DiscardableMemory> subrect_pixels;
@@ -649,11 +665,9 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
     DCHECK(result);
   }
 
-  // TODO(ccameron,msarett): Convert image to target color space.
-  // http://crbug.com/706613
-
   return base::WrapUnique(
-      new DecodedImage(subrect_info, std::move(subrect_pixels),
+      new DecodedImage(subrect_info.makeColorSpace(target_color_space),
+                       std::move(subrect_pixels),
                        SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
                        next_tracing_id_.GetNext()));
 }
@@ -669,6 +683,9 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
       kNone_SkFilterQuality, SkMatrix::I(), key.target_color_space());
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
+  sk_sp<SkColorSpace> target_color_space =
+      key.target_color_space().ToSkColorSpace();
+
   // Sanity checks.
   DCHECK(original_size_key.can_use_original_size_decode())
       << original_size_key.ToString();
@@ -691,6 +708,8 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
   }
 
   DCHECK(!key.target_size().IsEmpty());
+  DCHECK(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),
+                              target_color_space.get()));
   SkImageInfo scaled_info = CreateImageInfo(
       key.target_size().width(), key.target_size().height(), format_);
   std::unique_ptr<base::DiscardableMemory> scaled_pixels;
@@ -714,11 +733,9 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
     DCHECK(result) << key.ToString();
   }
 
-  // TODO(ccameron,msarett): Convert image to target color space.
-  // http://crbug.com/706613
-
   return base::MakeUnique<DecodedImage>(
-      scaled_info, std::move(scaled_pixels),
+      scaled_info.makeColorSpace(decoded_draw_image.image()->refColorSpace()),
+      std::move(scaled_pixels),
       SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
       next_tracing_id_.GetNext());
 }

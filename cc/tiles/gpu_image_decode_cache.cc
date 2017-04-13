@@ -1130,9 +1130,6 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     }
   }
 
-  // TODO(ccameron,msarett): Convert image to target color space.
-  // http://crbug.com/706613
-
   if (image_data->decode.data()) {
     // An at-raster task decoded this before us. Ingore our decode.
     return;
@@ -1196,6 +1193,14 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   image_data->decode.mark_used();
   DCHECK(uploaded_image);
 
+  if (draw_image.target_color_space().IsValid()) {
+    TRACE_EVENT0("cc", "GpuImageDecodeCache::UploadImage - color conversion");
+    uploaded_image = uploaded_image->makeColorSpace(
+        draw_image.target_color_space().ToSkColorSpace(),
+        SkTransferFunctionBehavior::kIgnore);
+  }
+  DCHECK(uploaded_image);
+
   // At-raster may have decoded this while we were unlocked. If so, ignore our
   // result.
   if (!image_data->upload.image())
@@ -1214,8 +1219,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
       draw_image.matrix(), CalculateUploadScaleFilterQuality(draw_image),
       upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
-      *context_threadsafe_proxy_.get(), &params, 1, nullptr,
-      draw_image.target_color_space().ToSkColorSpace().get());
+      *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr);
 
   if (data_size == 0) {
     // Can't upload image, too large or other failure. Try to use SW fallback.
