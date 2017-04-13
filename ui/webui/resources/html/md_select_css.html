@@ -34,10 +34,13 @@
 
       /* Mirroring paper-dropdown-menu disabled style. */
       .md-select[disabled] {
-        border-bottom: 1px dashed var(--secondary-text-color);
+        pointer-events: none;
+      }
+
+      .md-select[disabled],
+      .md-select[disabled] + .md-select-underline {
         color: var(--secondary-text-color);
         opacity: 0.65;
-        pointer-events: none;
       }
 
       :host-context([dir=rtl]) .md-select {
@@ -75,6 +78,10 @@
       .md-select:focus + .md-select-underline::after {
         transform: scale3d(1, 1, 1);
         transition: transform 200ms ease-out;
+      }
+
+      .md-select[disabled] + .md-select-underline {
+        border-top: 1px dashed var(--secondary-text-color);
       }
 
       .md-select-wrapper {
