@@ -178,7 +178,7 @@ close_fds(struct wl_buffer *buffer, int max)
 	int32_t fds[sizeof(buffer->data) / sizeof(int32_t)], i, count;
 	size_t size;
 
-	size = buffer->head - buffer->tail;
+	size = wl_buffer_size(buffer);
 	if (size == 0)
 		return;
 
@@ -222,7 +222,7 @@ build_cmsg(struct wl_buffer *buffer, char *data, int *clen)
 	struct cmsghdr *cmsg;
 	size_t size;
 
-	size = buffer->head - buffer->tail;
+	size = wl_buffer_size(buffer);
 	if (size > MAX_FDS_OUT * sizeof(int32_t))
 		size = MAX_FDS_OUT * sizeof(int32_t);
 
