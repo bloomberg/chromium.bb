@@ -7,7 +7,7 @@
 #include "mojo/public/interfaces/bindings/tests/test_structs.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/wtf/HashFunctions.h"
+#include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
 
 namespace mojo {
 namespace test {

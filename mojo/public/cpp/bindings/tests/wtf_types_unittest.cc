@@ -14,7 +14,7 @@
 #include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_wtf_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/wtf/text/StringHash.h"
+#include "third_party/WebKit/Source/platform/wtf/text/StringHash.h"
 
 namespace mojo {
 namespace test {

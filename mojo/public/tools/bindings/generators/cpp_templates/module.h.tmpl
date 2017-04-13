@@ -73,9 +73,9 @@ namespace {{variant}} {
 {# hash_util.h includes template specializations that should be present for
    every use of {Inlined}StructPtr. #}
 #include "mojo/public/cpp/bindings/lib/wtf_hash_util.h"
-#include "third_party/WebKit/Source/wtf/HashFunctions.h"
-#include "third_party/WebKit/Source/wtf/Optional.h"
-#include "third_party/WebKit/Source/wtf/text/WTFString.h"
+#include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
+#include "third_party/WebKit/Source/platform/wtf/Optional.h"
+#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
 {%- endif %}
 
 {%- for header in extra_public_headers %}

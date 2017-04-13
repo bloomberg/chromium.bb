@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/map_traits.h"
-#include "third_party/WebKit/Source/wtf/HashMap.h"
+#include "third_party/WebKit/Source/platform/wtf/HashMap.h"
 
 namespace mojo {
 
