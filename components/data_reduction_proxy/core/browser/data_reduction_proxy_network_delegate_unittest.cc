@@ -72,6 +72,38 @@ using TestNetworkDelegate = net::NetworkDelegateImpl;
 const char kOtherProxy[] = "testproxy:17";
 
 const char kTestURL[] = "http://www.google.com/";
+const char kSecureTestURL[] = "https://www.google.com/";
+
+const std::string kReceivedValidOCLHistogramName =
+    "Net.HttpContentLengthWithValidOCL";
+const std::string kOriginalValidOCLHistogramName =
+    "Net.HttpOriginalContentLengthWithValidOCL";
+const std::string kDifferenceValidOCLHistogramName =
+    "Net.HttpContentLengthDifferenceWithValidOCL";
+
+// Lo-Fi histograms.
+const std::string kReceivedValidOCLLoFiOnHistogramName =
+    "Net.HttpContentLengthWithValidOCL.LoFiOn";
+const std::string kOriginalValidOCLLoFiOnHistogramName =
+    "Net.HttpOriginalContentLengthWithValidOCL.LoFiOn";
+const std::string kDifferenceValidOCLLoFiOnHistogramName =
+    "Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn";
+
+const std::string kReceivedHistogramName = "Net.HttpContentLength";
+const std::string kReceivedInsecureHistogramName = "Net.HttpContentLength.Http";
+const std::string kReceivedSecureHistogramName = "Net.HttpContentLength.Https";
+const std::string kReceivedVideoHistogramName = "Net.HttpContentLength.Video";
+const std::string kOriginalHistogramName = "Net.HttpOriginalContentLength";
+const std::string kDifferenceHistogramName = "Net.HttpContentLengthDifference";
+const std::string kFreshnessLifetimeHistogramName =
+    "Net.HttpContentFreshnessLifetime";
+const std::string kCacheableHistogramName = "Net.HttpContentLengthCacheable";
+const std::string kCacheable4HoursHistogramName =
+    "Net.HttpContentLengthCacheable4Hours";
+const std::string kCacheable24HoursHistogramName =
+    "Net.HttpContentLengthCacheable24Hours";
+const int64_t kResponseContentLength = 100;
+const int64_t kOriginalContentLength = 200;
 
 #if defined(OS_ANDROID)
 const Client kClient = Client::CHROME_ANDROID;
@@ -180,6 +212,8 @@ class TestLoFiUIService : public LoFiUIService {
   bool on_lofi_response_;
 };
 
+enum ProxyTestConfig { USE_SECURE_PROXY, USE_INSECURE_PROXY, BYPASS_PROXY };
+
 class DataReductionProxyNetworkDelegateTest : public testing::Test {
  public:
   DataReductionProxyNetworkDelegateTest()
@@ -191,24 +225,35 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         net::GetTestCertsDirectory(), "unittest.selfsigned.der");
   }
 
-  void Init(bool use_secure_proxy, bool enable_brotli_globally) {
-    net::ProxyServer proxy_server =
-        use_secure_proxy
-            ? net::ProxyServer::FromURI("https://origin.net:443",
-                                        net::ProxyServer::SCHEME_HTTPS)
-            : net::ProxyServer::FromURI("http://origin.net:80",
-                                        net::ProxyServer::SCHEME_HTTP);
-
+  void Init(ProxyTestConfig proxy_config, bool enable_brotli_globally) {
+    net::ProxyServer proxy_server;
+    switch (proxy_config) {
+      case BYPASS_PROXY:
+        proxy_server = net::ProxyServer::Direct();
+        break;
+      case USE_SECURE_PROXY:
+        proxy_server = net::ProxyServer::FromURI(
+            "https://origin.net:443", net::ProxyServer::SCHEME_HTTPS);
+        break;
+      case USE_INSECURE_PROXY:
+        proxy_server = net::ProxyServer::FromURI("http://origin.net:80",
+                                                 net::ProxyServer::SCHEME_HTTP);
+        break;
+    }
     proxy_service_ =
         net::ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
     context_.set_proxy_service(proxy_service_.get());
-    test_context_ = (DataReductionProxyTestContext::Builder()
-                         .WithClient(kClient)
-                         .WithMockClientSocketFactory(&mock_socket_factory_)
-                         .WithURLRequestContext(&context_)
-                         .WithProxiesForHttp({DataReductionProxyServer(
-                             proxy_server, ProxyServer::UNSPECIFIED_TYPE)})
-                         .Build());
+    DataReductionProxyTestContext::Builder builder;
+    builder = builder.WithClient(kClient)
+                  .WithMockClientSocketFactory(&mock_socket_factory_)
+                  .WithURLRequestContext(&context_);
+
+    if (proxy_config != BYPASS_PROXY) {
+      builder = builder.WithProxiesForHttp({DataReductionProxyServer(
+          proxy_server, ProxyServer::UNSPECIFIED_TYPE)});
+    }
+
+    test_context_ = builder.Build();
 
     context_.set_client_socket_factory(&mock_socket_factory_);
     test_context_->AttachToURLRequestContext(&context_storage_);
@@ -552,6 +597,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return &test_network_quality_estimator_;
   }
 
+  net::SSLSocketDataProvider* ssl_socket_data_provider() {
+    return &ssl_socket_data_provider_;
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
@@ -573,7 +622,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   std::unique_ptr<net::URLRequest> fake_request(
       FetchURLRequest(GURL(kTestURL), nullptr, std::string(), 0, 0));
 
@@ -603,7 +652,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   // Enable Lo-Fi.
   const struct {
     bool lofi_switch_enabled;
@@ -754,7 +803,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   const struct {
     bool lofi_on;
     bool used_data_reduction_proxy;
@@ -830,7 +879,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
        RequestDataHoldbackConfigurations) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   const struct {
     bool data_reduction_proxy_enabled;
     bool used_direct;
@@ -877,7 +926,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   net::ProxyInfo data_reduction_proxy_info;
   std::string data_reduction_proxy;
   base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
@@ -944,35 +993,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
-  Init(false, false);
-  const std::string kReceivedValidOCLHistogramName =
-      "Net.HttpContentLengthWithValidOCL";
-  const std::string kOriginalValidOCLHistogramName =
-      "Net.HttpOriginalContentLengthWithValidOCL";
-  const std::string kDifferenceValidOCLHistogramName =
-      "Net.HttpContentLengthDifferenceWithValidOCL";
-
-  // Lo-Fi histograms.
-  const std::string kReceivedValidOCLLoFiOnHistogramName =
-      "Net.HttpContentLengthWithValidOCL.LoFiOn";
-  const std::string kOriginalValidOCLLoFiOnHistogramName =
-      "Net.HttpOriginalContentLengthWithValidOCL.LoFiOn";
-  const std::string kDifferenceValidOCLLoFiOnHistogramName =
-      "Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn";
-
-  const std::string kReceivedHistogramName = "Net.HttpContentLength";
-  const std::string kOriginalHistogramName = "Net.HttpOriginalContentLength";
-  const std::string kDifferenceHistogramName =
-      "Net.HttpContentLengthDifference";
-  const std::string kFreshnessLifetimeHistogramName =
-      "Net.HttpContentFreshnessLifetime";
-  const std::string kCacheableHistogramName = "Net.HttpContentLengthCacheable";
-  const std::string kCacheable4HoursHistogramName =
-      "Net.HttpContentLengthCacheable4Hours";
-  const std::string kCacheable24HoursHistogramName =
-      "Net.HttpContentLengthCacheable24Hours";
-  const int64_t kResponseContentLength = 100;
-  const int64_t kOriginalContentLength = 200;
+  Init(USE_INSECURE_PROXY, false);
 
   base::HistogramTester histogram_tester;
 
@@ -1001,6 +1022,12 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       kDifferenceValidOCLHistogramName,
       kOriginalContentLength - kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kReceivedHistogramName,
+                                      kResponseContentLength, 1);
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
+                                      kResponseContentLength, 1);
+  histogram_tester.ExpectTotalCount(kReceivedSecureHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kReceivedVideoHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
                                       kResponseContentLength, 1);
   histogram_tester.ExpectUniqueSample(kOriginalHistogramName,
                                       kOriginalContentLength, 1);
@@ -1092,8 +1119,57 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   }
 }
 
+TEST_F(DataReductionProxyNetworkDelegateTest, NetVideoHistograms) {
+  Init(USE_INSECURE_PROXY, false);
+
+  base::HistogramTester histogram_tester;
+
+  // Check video
+  std::string video_response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Content-Type: video/mp4\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: " +
+      base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
+
+  FetchURLRequest(GURL(kTestURL), nullptr, video_response_headers,
+                  kResponseContentLength, 0);
+
+  histogram_tester.ExpectUniqueSample(kReceivedInsecureHistogramName,
+                                      kResponseContentLength, 1);
+  histogram_tester.ExpectTotalCount(kReceivedSecureHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kReceivedVideoHistogramName,
+                                      kResponseContentLength, 1);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, NetSSLHistograms) {
+  Init(BYPASS_PROXY, false);
+
+  base::HistogramTester histogram_tester;
+
+  // Check https
+  std::string secure_response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: " +
+      base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
+
+  mock_socket_factory()->AddSSLSocketDataProvider(ssl_socket_data_provider());
+  FetchURLRequest(GURL(kSecureTestURL), nullptr, secure_response_headers,
+                  kResponseContentLength, 0);
+
+  histogram_tester.ExpectTotalCount(kReceivedInsecureHistogramName, 0);
+  histogram_tester.ExpectUniqueSample(kReceivedSecureHistogramName,
+                                      kResponseContentLength, 1);
+  histogram_tester.ExpectTotalCount(kReceivedVideoHistogramName, 0);
+}
+
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   // Enable Lo-Fi.
   const struct {
     bool lofi_response;
@@ -1121,7 +1197,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
        TestLoFiTransformationTypeHistogram) {
-  Init(false, false);
+  Init(USE_INSECURE_PROXY, false);
   const char kLoFiTransformationTypeHistogram[] =
       "DataReductionProxy.LoFi.TransformationType";
   base::HistogramTester histogram_tester;
@@ -1152,7 +1228,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 // disabled globally.
 TEST_F(DataReductionProxyNetworkDelegateTest,
        BrotliAdvertisement_BrotliDisabled) {
-  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   ReadBrotliFile();
 
@@ -1174,7 +1250,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 // is fetched from an insecure proxy.
 TEST_F(DataReductionProxyNetworkDelegateTest,
        BrotliAdvertisementInsecureProxy) {
-  Init(false /* use_secure_proxy */, true /* enable_brotli_globally */);
+  Init(USE_INSECURE_PROXY, true /* enable_brotli_globally */);
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 140\r\n"
@@ -1200,7 +1276,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 // disabled via data reduction proxy field trial.
 TEST_F(DataReductionProxyNetworkDelegateTest,
        BrotliAdvertisementDisabledViaFieldTrial) {
-  Init(true /* use_secure_proxy */, true /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
@@ -1222,7 +1298,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
 // Test that Brotli is correctly added to the accept-encoding header when it is
 // enabled globally.
 TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
-  Init(true /* use_secure_proxy */, true /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1239,7 +1315,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, IncrementingMainFramePageId) {
   // This is unaffacted by brotil and insecure proxy.
-  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
 
@@ -1252,7 +1328,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, IncrementingMainFramePageId) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, ResetSessionResetsId) {
   // This is unaffacted by brotil and insecure proxy.
-  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
 
@@ -1265,14 +1341,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, ResetSessionResetsId) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, SubResourceNoPageId) {
   // This is unaffacted by brotil and insecure proxy.
-  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
   io_data()->request_options()->SetSecureSession("new-session");
   FetchURLRequestAndVerifyPageIdDirective(std::string(), false);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
   // This is unaffacted by brotil and insecure proxy.
-  Init(true /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
 
@@ -1285,7 +1361,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   // state changing in between redirects within an URLRequest's lifetime.
 
   // This is unaffacted by brotil and insecure proxy.
-  Init(false /* use_secure_proxy */, false /* enable_brotli_globally */);
+  Init(USE_INSECURE_PROXY, false /* enable_brotli_globally */);
   net::ProxyInfo data_reduction_proxy_info;
   std::string data_reduction_proxy;
   base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);

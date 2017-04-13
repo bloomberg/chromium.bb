@@ -23,6 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
+#include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -46,27 +47,31 @@ namespace {
 // |freshness_lifetime| contains information on how long the resource will be
 // fresh for and how long is the usability.
 void RecordContentLengthHistograms(bool lofi_low_header_added,
+                                   bool is_https,
+                                   bool is_video,
                                    int64_t received_content_length,
                                    int64_t original_content_length,
                                    const base::TimeDelta& freshness_lifetime) {
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
   if (original_content_length >= 0) {
-    UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthWithValidOCL",
-                         received_content_length);
-    UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLengthWithValidOCL",
-                         original_content_length);
-    UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifferenceWithValidOCL",
-                         original_content_length - received_content_length);
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthWithValidOCL",
+                            received_content_length);
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLengthWithValidOCL",
+                            original_content_length);
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifferenceWithValidOCL",
+                            original_content_length - received_content_length);
 
     // Populate Lo-Fi content length histograms.
     if (lofi_low_header_added) {
-      UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthWithValidOCL.LoFiOn",
-                           received_content_length);
-      UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLengthWithValidOCL.LoFiOn",
-                           original_content_length);
-      UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn",
-                           original_content_length - received_content_length);
+      UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthWithValidOCL.LoFiOn",
+                              received_content_length);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Net.HttpOriginalContentLengthWithValidOCL.LoFiOn",
+          original_content_length);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn",
+          original_content_length - received_content_length);
     }
 
   } else {
@@ -74,11 +79,22 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
     // length if the X-Original-Content-Header is not present.
     original_content_length = received_content_length;
   }
-  UMA_HISTOGRAM_COUNTS("Net.HttpContentLength", received_content_length);
-  UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLength",
-                       original_content_length);
-  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifference",
-                       original_content_length - received_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength", received_content_length);
+  if (is_https) {
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Https",
+                            received_content_length);
+  } else {
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Http",
+                            received_content_length);
+  }
+  if (is_video) {
+    UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLength.Video",
+                            received_content_length);
+  }
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLength",
+                          original_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifference",
+                          original_content_length - received_content_length);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpContentFreshnessLifetime",
                               freshness_lifetime.InSeconds(),
                               base::TimeDelta::FromHours(1).InSeconds(),
@@ -86,17 +102,17 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
                               100);
   if (freshness_lifetime.InSeconds() <= 0)
     return;
-  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable",
-                       received_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable",
+                          received_content_length);
   if (freshness_lifetime.InHours() < 4)
     return;
-  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable4Hours",
-                       received_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable4Hours",
+                          received_content_length);
 
   if (freshness_lifetime.InHours() < 24)
     return;
-  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable24Hours",
-                       received_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable24Hours",
+                          received_content_length);
 }
 
 // Given a |request| that went through the Data Reduction Proxy, this function
@@ -448,14 +464,21 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
           ->GetFreshnessLifetimes(request.response_info().response_time)
           .freshness;
 
+  bool is_https = request.url().SchemeIs("https");
+  bool is_video = false;
+  std::string mime_type;
+  if (request.response_headers()->GetMimeType(&mime_type)) {
+    is_video = net::MatchesMimeType("video/*", mime_type);
+  }
+
   RecordContentLengthHistograms(
       // |data_reduction_proxy_io_data_| can be NULL for Webview.
       data_reduction_proxy_io_data_ &&
           data_reduction_proxy_io_data_->IsEnabled() &&
           data_reduction_proxy_io_data_->lofi_decider() &&
           data_reduction_proxy_io_data_->lofi_decider()->IsUsingLoFi(request),
-      request.received_response_content_length(), original_content_length,
-      freshness_lifetime);
+      is_https, is_video, request.received_response_content_length(),
+      original_content_length, freshness_lifetime);
 
   if (data_reduction_proxy_io_data_ && data_reduction_proxy_bypass_stats_) {
     // Record BypassedBytes histograms for the request.
