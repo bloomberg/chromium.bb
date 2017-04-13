@@ -511,7 +511,15 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyUploaded) {
   cache.UnrefImage(draw_image);
 }
 
-TEST(GpuImageDecodeCacheTest, GetTaskForImageCanceledGetsNewTask) {
+// crbug.com/709341.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageCanceledGetsNewTask \
+  DISABLED_GetTaskForImageCanceledGetsNewTask
+#else
+#define MAYBE_GetTaskForImageCanceledGetsNewTask \
+  GetTaskForImageCanceledGetsNewTask
+#endif
+TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageCanceledGetsNewTask) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
   TestGpuImageDecodeCache cache(context_provider.get());
