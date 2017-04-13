@@ -12,6 +12,7 @@
 #include <limits>
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -90,7 +91,7 @@ class SpdyFramerTestUtil {
     SpdyHeadersHandlerInterface* OnHeaderFrameStart(
         SpdyStreamId stream_id) override {
       if (headers_handler_ == nullptr) {
-        headers_handler_.reset(new TestHeadersHandler);
+        headers_handler_ = base::MakeUnique<TestHeadersHandler>();
       }
       return headers_handler_.get();
     }
@@ -111,21 +112,20 @@ class SpdyFramerTestUtil {
                    bool exclusive,
                    bool fin,
                    bool end) override {
-      SpdyHeadersIR* headers = new SpdyHeadersIR(stream_id);
+      auto headers = base::MakeUnique<SpdyHeadersIR>(stream_id);
       headers->set_has_priority(has_priority);
       headers->set_weight(weight);
       headers->set_parent_stream_id(parent_stream_id);
       headers->set_exclusive(exclusive);
       headers->set_fin(fin);
-      frame_.reset(headers);
+      frame_ = std::move(headers);
     }
 
     void OnPushPromise(SpdyStreamId stream_id,
                        SpdyStreamId promised_stream_id,
                        bool end) override {
-      SpdyPushPromiseIR* push_promise =
-          new SpdyPushPromiseIR(stream_id, promised_stream_id);
-      frame_.reset(push_promise);
+      frame_ =
+          base::MakeUnique<SpdyPushPromiseIR>(stream_id, promised_stream_id);
     }
 
     // TODO(birenroy): Add support for CONTINUATION.
@@ -196,22 +196,20 @@ class SpdyFramerTestUtil {
 MATCHER_P(IsFrameUnionOf, frame_list, "") {
   size_t size_verified = 0;
   for (const auto& frame : *frame_list) {
-    if (arg.size() >= size_verified + frame.size()) {
-      if (!memcmp(arg.data() + size_verified, frame.data(), frame.size())) {
-        size_verified += frame.size();
-      } else {
-        CompareCharArraysWithHexError(
-            "Header serialization methods should be equivalent: ",
-            reinterpret_cast<unsigned char*>(arg.data() + size_verified),
-            frame.size(), reinterpret_cast<unsigned char*>(frame.data()),
-            frame.size());
-        return false;
-      }
-    } else {
+    if (arg.size() < size_verified + frame.size()) {
       LOG(FATAL) << "Incremental header serialization should not lead to a "
                  << "higher total frame length than non-incremental method.";
       return false;
     }
+    if (memcmp(arg.data() + size_verified, frame.data(), frame.size())) {
+      CompareCharArraysWithHexError(
+          "Header serialization methods should be equivalent: ",
+          reinterpret_cast<unsigned char*>(arg.data() + size_verified),
+          frame.size(), reinterpret_cast<unsigned char*>(frame.data()),
+          frame.size());
+      return false;
+    }
+    size_verified += frame.size();
   }
   return size_verified == arg.size();
 }
@@ -326,9 +324,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         data_frame_count_(0),
         last_payload_len_(0),
         last_frame_len_(0),
-        header_buffer_(new char[kDefaultHeaderBufferSize]),
+        header_buffer_(kDefaultHeaderBufferSize),
         header_buffer_length_(0),
-        header_buffer_size_(kDefaultHeaderBufferSize),
         header_stream_id_(static_cast<SpdyStreamId>(-1)),
         header_control_type_(SpdyFrameType::DATA),
         header_buffer_valid_(false) {}
@@ -373,7 +370,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override {
     if (headers_handler_ == nullptr) {
-      headers_handler_.reset(new TestHeadersHandler);
+      headers_handler_ = base::MakeUnique<TestHeadersHandler>();
     }
     return headers_handler_.get();
   }
@@ -471,8 +468,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     if (origin.length() > 0) {
       test_altsvc_ir_.set_origin(SpdyString(origin));
     }
-    for (const SpdyAltSvcWireFormat::AlternativeService& altsvc :
-         altsvc_vector) {
+    for (const auto& altsvc : altsvc_vector) {
       test_altsvc_ir_.add_altsvc(altsvc);
     }
     ++altsvc_count_;
@@ -535,7 +531,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       DLOG(FATAL) << "Attempted to init header streaming with "
                   << "invalid control frame type: " << header_control_type;
     }
-    memset(header_buffer_.get(), 0, header_buffer_size_);
+    std::fill(header_buffer_.begin(), header_buffer_.end(), 0);
     header_buffer_length_ = 0;
     header_stream_id_ = stream_id;
     header_control_type_ = header_control_type;
@@ -549,8 +545,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   // Override the default buffer size (16K). Call before using the framer!
   void set_header_buffer_size(size_t header_buffer_size) {
-    header_buffer_size_ = header_buffer_size;
-    header_buffer_.reset(new char[header_buffer_size]);
+    header_buffer_.resize(header_buffer_size);
   }
 
   // Largest control frame that the SPDY implementation sends, including the
@@ -600,9 +595,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   size_t last_frame_len_;
 
   // Header block streaming state:
-  std::unique_ptr<char[]> header_buffer_;
+  std::vector<char> header_buffer_;
   size_t header_buffer_length_;
-  size_t header_buffer_size_;
   size_t header_bytes_received_;
   SpdyStreamId header_stream_id_;
   SpdyFrameType header_control_type_;
@@ -2870,7 +2864,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
       control_frame.size());
   // It's up to the visitor to ignore extraneous header data; the framer
   // won't throw an error.
-  EXPECT_GT(visitor.header_bytes_received_, visitor.header_buffer_size_);
+  EXPECT_GT(visitor.header_bytes_received_, visitor.header_buffer_.size());
   EXPECT_EQ(1, visitor.end_of_stream_count_);
 }
 
@@ -4034,11 +4028,7 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
     SpdySerializedFrame frame(framer.SerializePing(SpdyPingIR(42)));
     SetFrameFlags(&frame, flags);
 
-    if (flags & PING_FLAG_ACK) {
-      EXPECT_CALL(visitor, OnPing(42, true));
-    } else {
-      EXPECT_CALL(visitor, OnPing(42, false));
-    }
+    EXPECT_CALL(visitor, OnPing(42, flags & PING_FLAG_ACK));
 
     framer.ProcessInput(frame.data(), frame.size());
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
@@ -4391,14 +4381,14 @@ TEST_P(SpdyFramerTest, ReadChunkedAltSvcFrame) {
 // origin MUST be ignored, it is not implemented at the framer level: instead,
 // such frames are passed on to the consumer.
 TEST_P(SpdyFramerTest, ReadAltSvcFrame) {
-  struct {
+  constexpr struct {
     uint32_t stream_id;
     const char* origin;
   } test_cases[] = {{0, ""},
                     {1, ""},
                     {0, "https://www.example.com"},
                     {1, "https://www.example.com"}};
-  for (auto test_case : test_cases) {
+  for (const auto& test_case : test_cases) {
     SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
     SpdyAltSvcIR altsvc_ir(test_case.stream_id);
     SpdyAltSvcWireFormat::AlternativeService altsvc(
@@ -4578,8 +4568,8 @@ TEST_P(SpdyFramerTest, ReadInvalidRstStreamWithPayload) {
 // to ProcessInput (i.e. will not be calling set_process_single_input_frame()).
 TEST_P(SpdyFramerTest, ProcessAllInput) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-  std::unique_ptr<TestSpdyVisitor> visitor(
-      new TestSpdyVisitor(SpdyFramer::DISABLE_COMPRESSION));
+  auto visitor =
+      base::MakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
   framer.set_visitor(visitor.get());
 
   // Create two input frames.
@@ -4629,7 +4619,6 @@ TEST_P(SpdyFramerTest, ProcessAllInput) {
 TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_process_single_input_frame(true);
-  std::unique_ptr<TestSpdyVisitor> visitor;
 
   // Create two input frames.
   const char four_score[] = "Four score and ...";
@@ -4665,7 +4654,8 @@ TEST_P(SpdyFramerTest, ProcessAtMostOneFrame) {
 
   for (size_t first_size = 0; first_size <= buf_size; ++first_size) {
     VLOG(1) << "first_size = " << first_size;
-    visitor.reset(new TestSpdyVisitor(SpdyFramer::DISABLE_COMPRESSION));
+    auto visitor =
+        base::MakeUnique<TestSpdyVisitor>(SpdyFramer::DISABLE_COMPRESSION);
     framer.set_visitor(visitor.get());
 
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
