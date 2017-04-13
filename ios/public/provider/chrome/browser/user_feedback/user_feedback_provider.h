@@ -42,7 +42,7 @@ class UserFeedbackProvider {
   virtual bool IsUserFeedbackEnabled();
   // Returns view controller to present to the user to collect their feedback.
   virtual UIViewController* CreateViewController(
-      id<UserFeedbackDataSource> dataSource);
+      id<UserFeedbackDataSource> dataSource) NS_RETURNS_RETAINED;
   // Uploads collected feedback reports.
   virtual void Synchronize();
 
