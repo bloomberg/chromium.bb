@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -277,7 +278,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     private static boolean activitySupportsPresentation(Activity activity) {
-        return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity;
+        return activity instanceof ChromeTabbedActivity || activity instanceof CustomTabActivity
+                || activity instanceof WebappActivity;
     }
 
     private static boolean activitySupportsVrBrowsing(Activity activity) {
