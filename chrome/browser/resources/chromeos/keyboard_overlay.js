@@ -45,9 +45,11 @@ var LABEL_TO_IDENTIFIER = {
   'disabled': 'DISABLED'
 };
 
+// For KeyboardOverlayUIBrowserTest.
 var KEYCODE_TO_LABEL = {
   8: 'backspace',
   9: 'tab',
+  10: 'shift',
   13: 'enter',
   27: 'esc',
   32: 'space',
@@ -87,6 +89,15 @@ var KEYCODE_TO_LABEL = {
   119: 'mute',
   120: 'vol. down',
   121: 'vol. up',
+  152: 'power',
+  166: 'back',
+  167: 'forward',
+  168: 'reload',
+  173: 'mute',
+  174: 'vol. down',
+  175: 'vol. up',
+  183: 'full screen',
+  182: 'switch window',
   186: ';',
   187: '+',
   188: ',',
@@ -94,10 +105,14 @@ var KEYCODE_TO_LABEL = {
   190: '.',
   191: '/',
   192: '`',
+  216: 'bright down',
+  217: 'bright up',
+  218: 'bright down',
   219: '[',
   220: '\\',
   221: ']',
   222: '\'',
+  232: 'bright up',
 };
 
 /**

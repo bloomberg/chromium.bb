@@ -2373,6 +2373,7 @@ test("browser_tests") {
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
         "../browser/ui/views/arc_app_dialog_view_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
+        "../browser/ui/webui/chromeos/keyboard_overlay_ui_browsertest.cc",
         "../browser/ui/webui/options/chromeos/accounts_options_browsertest.cc",
         "../browser/ui/webui/options/chromeos/guest_mode_options_browsertest.cc",
         "../browser/ui/webui/options/chromeos/guest_mode_options_browsertest.h",

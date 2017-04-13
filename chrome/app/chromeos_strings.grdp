@@ -4725,6 +4725,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_ROTATE_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (rotate the screen).">
     Rotate screen
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ROTATE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (rotate the window).">
+    Rotate window
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut (save page as a file).">
     Save
   </message>
@@ -4754,6 +4757,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU" desc="The text in the keyboard overlay to explain the shortcut (show the status menu).">
     Status menu
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SHOW_STYLUS_TOOLS" desc="The text in the keyboard overlay to explain the shortcut (show the stylus tools).">
+    Stylus tools
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
     Sign out
@@ -4791,8 +4797,14 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_SPEECH_INPUT" desc="The text in the keyboard overlay to explain the shortcut (start or stop speech input).">
     Speech input
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_TOUCH_HUD_MODE_CHANGE" desc="The text in the keyboard overlay to explain the shortcut (touch hub mode change).">
+    Touch HUD mode change
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_UNDO" desc="The text in the keyboard overlay to explain the shortcut.">
     Undo
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_UNPIN" desc="The text in the keyboard overlay to explain the shortcut.">
+    Unpin
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_VIEW_KEYBOARD_OVERLAY" desc="The text in the keyboard overlay to explain the shortcut.">
     Keyboard overlay
