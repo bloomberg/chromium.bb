@@ -104,7 +104,7 @@ if (CONFIG_AV1)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}
           # TODO: not sure if this intrinsics or a wrapper calling intrin/asm.
-          "${AOM_ROOT}/test/filterintra_predictors_test.cc")
+          #"${AOM_ROOT}/test/filterintra_predictors_test.cc")
     endif ()
   endif ()
 
