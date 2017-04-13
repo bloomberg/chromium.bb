@@ -90,20 +90,21 @@ bool IsOrganic(const std::string& brand) {
   }
 #endif
 
-  const char* const kBrands[] = {
-      "CHCA", "CHCB", "CHCG", "CHCH", "CHCI", "CHCJ", "CHCK", "CHCL",
-      "CHFO", "CHFT", "CHHS", "CHHM", "CHMA", "CHMB", "CHME", "CHMF",
-      "CHMG", "CHMH", "CHMI", "CHMQ", "CHMV", "CHNB", "CHNC", "CHNG",
-      "CHNH", "CHNI", "CHOA", "CHOB", "CHOC", "CHON", "CHOO", "CHOP",
-      "CHOQ", "CHOR", "CHOS", "CHOT", "CHOU", "CHOX", "CHOY", "CHOZ",
-      "CHPD", "CHPE", "CHPF", "CHPG", "ECBA", "ECBB", "ECDA", "ECDB",
-      "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB", "ECWC", "ECWD",
-      "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"
-  };
-  const char* const* end = &kBrands[arraysize(kBrands)];
-  const char* const* found = std::find(&kBrands[0], end, brand);
-  if (found != end)
+  const char* const kOrganicBrands[] = {
+      "CHCA", "CHCB", "CHCG", "CHCH", "CHCI", "CHCJ", "CHCK", "CHCL", "CHFO",
+      "CHFT", "CHHS", "CHHM", "CHMA", "CHMB", "CHME", "CHMF", "CHMG", "CHMH",
+      "CHMI", "CHMQ", "CHMV", "CHNB", "CHNC", "CHNG", "CHNH", "CHNI", "CHOA",
+      "CHOB", "CHOC", "CHON", "CHOO", "CHOP", "CHOQ", "CHOR", "CHOS", "CHOT",
+      "CHOU", "CHOX", "CHOY", "CHOZ", "CHPD", "CHPE", "CHPF", "CHPG", "ECBA",
+      "ECBB", "ECDA", "ECDB", "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB",
+      "ECWC", "ECWD", "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"};
+  const char* const* end = &kOrganicBrands[arraysize(kOrganicBrands)];
+  if (std::binary_search(&kOrganicBrands[0], end, brand))
     return true;
+
+  // The Chrome enterprise brand code is the only GGR* brand to be non-organic.
+  if (brand == "GGRV")
+    return false;
 
   return base::StartsWith(brand, "EUB", base::CompareCase::SENSITIVE) ||
          base::StartsWith(brand, "EUC", base::CompareCase::SENSITIVE) ||

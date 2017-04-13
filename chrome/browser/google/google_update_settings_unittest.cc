@@ -50,6 +50,20 @@ TEST_F(GoogleUpdateTest, LastRunTime) {
 
 #endif  // defined(OS_WIN)
 
+TEST_F(GoogleUpdateTest, IsOrganic) {
+  // Test some brand codes to ensure that future changes to this method won't
+  // go unnoticed.
+
+  // GGRV is non-organic.
+  EXPECT_FALSE(google_brand::IsOrganic("GGRV"));
+
+  // Other GGR* are organic.
+  EXPECT_TRUE(google_brand::IsOrganic("GGRA"));
+
+  // GGLS must always be organic.
+  EXPECT_TRUE(google_brand::IsOrganic("GGLS"));
+}
+
 TEST_F(GoogleUpdateTest, IsOrganicFirstRunBrandCodes) {
   // Test some brand codes to ensure that future changes to this method won't
   // go unnoticed.
