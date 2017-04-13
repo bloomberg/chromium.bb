@@ -60,6 +60,10 @@
   return self;
 }
 
+- (void)dealloc {
+  _webStateList->RemoveObserver(_webStateListObserver.get());
+}
+
 - (void)stopFinding {
   web::WebState* webState = self.webStateList->GetActiveWebState();
   FindTabHelper* helper = FindTabHelper::FromWebState(webState);
