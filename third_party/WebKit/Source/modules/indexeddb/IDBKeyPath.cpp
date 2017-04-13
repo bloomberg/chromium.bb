@@ -88,7 +88,7 @@ void IDBParseKeyPath(const String& key_path,
     return;
   }
 
-  key_path.Split('.', /*allowEmptyEntries*/ true, elements);
+  key_path.Split('.', /*allow_empty_entries=*/true, elements);
   for (size_t i = 0; i < elements.size(); ++i) {
     if (!IsIdentifier(elements[i])) {
       error = kIDBKeyPathParseErrorIdentifier;

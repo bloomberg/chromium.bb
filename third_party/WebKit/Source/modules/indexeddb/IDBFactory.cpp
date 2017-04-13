@@ -154,7 +154,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* script_state,
                                              const String& name,
                                              ExceptionState& exception_state) {
   return DeleteDatabaseInternal(script_state, name, exception_state,
-                                false /* force_close */);
+                                /*force_close=*/false);
 }
 
 IDBOpenDBRequest* IDBFactory::CloseConnectionsAndDeleteDatabase(
@@ -162,7 +162,7 @@ IDBOpenDBRequest* IDBFactory::CloseConnectionsAndDeleteDatabase(
     const String& name,
     ExceptionState& exception_state) {
   return DeleteDatabaseInternal(script_state, name, exception_state,
-                                true /* force_close */);
+                                /*force_close=*/true);
 }
 
 IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(

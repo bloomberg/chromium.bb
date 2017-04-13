@@ -92,8 +92,8 @@ TEST(IDBTransactionTest, EnsureLifetime) {
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(1u, set.size());
 
-  // This will generate an abort() call to the back end which is dropped by the
-  // fake proxy, so an explicit onAbort call is made.
+  // This will generate an Abort() call to the back end which is dropped by the
+  // fake proxy, so an explicit OnAbort call is made.
   scope.GetExecutionContext()->NotifyContextDestroyed();
   transaction->OnAbort(DOMException::Create(kAbortError, "Aborted"));
   transaction.Clear();
@@ -143,7 +143,7 @@ TEST(IDBTransactionTest, TransactionFinish) {
   // The test will not fail if it is, but ASAN would notice the error.
   db->OnAbort(kTransactionId, DOMException::Create(kAbortError, "Aborted"));
 
-  // onAbort() should have cleared the transaction's reference to the database.
+  // OnAbort() should have cleared the transaction's reference to the database.
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, set.size());
 }

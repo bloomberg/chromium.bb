@@ -219,7 +219,7 @@ void IDBCursor::continueFunction(ScriptState* script_state,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return;
   }
-  continueFunction(key, nullptr, exception_state);
+  Continue(key, nullptr, exception_state);
 }
 
 void IDBCursor::continuePrimaryKey(ScriptState* script_state,
@@ -286,12 +286,12 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
     return;
   }
 
-  continueFunction(key, primary_key, exception_state);
+  Continue(key, primary_key, exception_state);
 }
 
-void IDBCursor::continueFunction(IDBKey* key,
-                                 IDBKey* primary_key,
-                                 ExceptionState& exception_state) {
+void IDBCursor::Continue(IDBKey* key,
+                         IDBKey* primary_key,
+                         ExceptionState& exception_state) {
   DCHECK(transaction_->IsActive());
   DCHECK(got_value_);
   DCHECK(!IsDeleted());

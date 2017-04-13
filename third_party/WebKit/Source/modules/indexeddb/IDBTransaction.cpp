@@ -165,7 +165,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
 
 IDBTransaction::~IDBTransaction() {
   // Note: IDBTransaction is a ContextLifecycleObserver (rather than
-  // ContextClient) only in order to be able call upon getExecutionContext()
+  // ContextClient) only in order to be able call upon GetExecutionContext()
   // during this destructor.
   DCHECK(state_ == kFinished || !GetExecutionContext());
   DCHECK(request_list_.IsEmpty() || !GetExecutionContext());
@@ -305,7 +305,7 @@ void IDBTransaction::ObjectStoreRenamed(const String& old_name,
 
 void IDBTransaction::IndexDeleted(IDBIndex* index) {
   DCHECK(index);
-  DCHECK(!index->IsDeleted()) << "indexDeleted called twice for the same index";
+  DCHECK(!index->IsDeleted()) << "IndexDeleted called twice for the same index";
 
   IDBObjectStore* object_store = index->objectStore();
   DCHECK_EQ(object_store->transaction(), this);
@@ -341,7 +341,7 @@ void IDBTransaction::IndexDeleted(IDBIndex* index) {
 }
 
 void IDBTransaction::SetActive(bool active) {
-  DCHECK_NE(state_, kFinished) << "A finished transaction tried to setActive("
+  DCHECK_NE(state_, kFinished) << "A finished transaction tried to SetActive("
                                << (active ? "true" : "false") << ")";
   if (state_ == kFinishing)
     return;
@@ -588,7 +588,7 @@ void IDBTransaction::Finished() {
       DCHECK(!old_store_metadata_.Contains(object_store));
       object_store->ClearIndexCache();
     } else {
-      // We'll call clearIndexCache() on this store in the loop below.
+      // We'll call ClearIndexCache() on this store in the loop below.
       DCHECK(old_store_metadata_.Contains(object_store));
     }
   }

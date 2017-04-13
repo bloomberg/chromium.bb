@@ -54,7 +54,7 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
 
   Member<IDBDatabase> database_;
   Member<IDBTransaction> transaction_;
-  // Map objectStoreId to IDBObservation list.
+  // Map object_store_id to IDBObservation list.
   HeapHashMap<int64_t, HeapVector<Member<IDBObservation>>> records_;
 };
 

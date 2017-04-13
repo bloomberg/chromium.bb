@@ -133,8 +133,9 @@ class MODULES_EXPORT IDBTransaction final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // For use in IDBObjectStore.isNewlyCreated(). The rest of the code should use
-  // IDBObjectStore.isNewlyCreated() instead of calling this method directly.
+  // For use in IDBObjectStore::IsNewlyCreated(). The rest of the code should
+  // use IDBObjectStore::IsNewlyCreated() instead of calling this method
+  // directly.
   int64_t OldMaxObjectStoreId() const {
     DCHECK(IsVersionChange());
     return old_database_metadata_.max_object_store_id;

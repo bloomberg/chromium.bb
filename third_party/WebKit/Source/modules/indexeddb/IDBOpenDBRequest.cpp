@@ -132,7 +132,7 @@ void IDBOpenDBRequest::OnSuccess(std::unique_ptr<WebIDBDatabase> backend,
 
   IDBDatabase* idb_database = nullptr;
   if (ResultAsAny()) {
-    // Previous onUpgradeNeeded call delivered the backend.
+    // Previous OnUpgradeNeeded call delivered the backend.
     DCHECK(!backend.get());
     idb_database = ResultAsAny()->IdbDatabase();
     DCHECK(idb_database);

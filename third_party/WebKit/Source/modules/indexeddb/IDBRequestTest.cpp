@@ -78,7 +78,7 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
       scope.GetScriptState(), IDBAny::CreateUndefined(), transaction);
   EXPECT_EQ(request->readyState(), "pending");
 
-  // Simulate the IDBTransaction having received onAbort from back end and
+  // Simulate the IDBTransaction having received OnAbort from back end and
   // aborting the request:
   request->Abort();
 

@@ -193,7 +193,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   // Transactions should be aborted after event dispatch if an exception was
   // not caught. This is cleared before dispatch, set by a call to
-  // uncaughtExceptionInEventHandler() during dispatch, and checked afterwards
+  // UncaughtExceptionInEventHandler() during dispatch, and checked afterwards
   // to abort if necessary.
   bool did_throw_in_event_handler_ = false;
 

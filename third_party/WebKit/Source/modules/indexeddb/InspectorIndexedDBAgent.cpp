@@ -566,7 +566,7 @@ class OpenCursorCallback final : public EventListener {
     // Continue cursor before making injected script calls, otherwise
     // transaction might be finished.
     DummyExceptionStateForTesting exception_state;
-    idb_cursor->continueFunction(nullptr, nullptr, exception_state);
+    idb_cursor->Continue(nullptr, nullptr, exception_state);
     if (exception_state.HadException()) {
       request_callback_->sendFailure(
           Response::Error("Could not continue cursor."));

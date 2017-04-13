@@ -286,7 +286,7 @@ IDBRequest* IDBIndex::getAllKeys(ScriptState* script_state,
                                  ExceptionState& exception_state) {
   IDB_TRACE("IDBIndex::getAllKeys");
   return GetAllInternal(script_state, range, max_count, exception_state,
-                        true /* keyOnly */);
+                        /*key_only=*/true);
 }
 
 IDBRequest* IDBIndex::getKey(ScriptState* script_state,

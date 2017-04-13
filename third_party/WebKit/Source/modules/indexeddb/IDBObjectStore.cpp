@@ -170,7 +170,7 @@ IDBRequest* IDBObjectStore::get(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(script_state, IDBAny::Create(this),
                                            transaction_.Get());
   BackendDB()->Get(transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId,
-                   key_range, false /* keyOnly */,
+                   key_range, /*key_only=*/false,
                    request->CreateWebCallbacks().release());
   return request;
 }
@@ -214,7 +214,7 @@ IDBRequest* IDBObjectStore::getKey(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(script_state, IDBAny::Create(this),
                                            transaction_.Get());
   BackendDB()->Get(transaction_->Id(), Id(), IDBIndexMetadata::kInvalidId,
-                   key_range, true /* keyOnly */,
+                   key_range, /*key_only=*/true,
                    request->CreateWebCallbacks().release());
   return request;
 }
@@ -645,7 +645,7 @@ IDBRequest* IDBObjectStore::clear(ScriptState* script_state,
 namespace {
 // This class creates the index keys for a given index by extracting
 // them from the SerializedScriptValue, for all the existing values in
-// the objectStore. It only needs to be kept alive by virtue of being
+// the object store. It only needs to be kept alive by virtue of being
 // a listener on an IDBRequest object, in the same way that JavaScript
 // cursor success handlers are kept alive.
 class IndexPopulator final : public EventListener {
@@ -707,7 +707,7 @@ class IndexPopulator final : public EventListener {
     Vector<int64_t> index_ids;
     index_ids.push_back(IndexMetadata().id);
     if (cursor && !cursor->IsDeleted()) {
-      cursor->continueFunction(nullptr, nullptr, ASSERT_NO_EXCEPTION);
+      cursor->Continue(nullptr, nullptr, ASSERT_NO_EXCEPTION);
 
       IDBKey* primary_key = cursor->IdbPrimaryKey();
       ScriptValue value = cursor->value(script_state_.Get());
@@ -1060,10 +1060,10 @@ void IDBObjectStore::MarkDeleted() {
 void IDBObjectStore::ClearIndexCache() {
   DCHECK(!transaction_->IsActive() || (IsDeleted() && IsNewlyCreated()));
 
-// There is no harm in having clearIndexCache() happen multiple times for
-// the same object. We assert that it is called once to uncover potential
-// object store accounting bugs.
 #if DCHECK_IS_ON()
+  // There is no harm in having ClearIndexCache() happen multiple times for
+  // the same object. We assert that it is called once to uncover potential
+  // object store accounting bugs.
   DCHECK(!clear_index_cache_called_);
   clear_index_cache_called_ = true;
 #endif  // DCHECK_IS_ON()
@@ -1124,7 +1124,7 @@ void IDBObjectStore::RenameIndex(int64_t index_id, const String& new_name) {
   BackendDB()->RenameIndex(transaction_->Id(), Id(), index_id, new_name);
 
   auto metadata_iterator = metadata_->indexes.Find(index_id);
-  DCHECK_NE(metadata_iterator, metadata_->indexes.end()) << "Invalid indexId";
+  DCHECK_NE(metadata_iterator, metadata_->indexes.end()) << "Invalid index_id";
   const String& old_name = metadata_iterator->value->name;
 
   DCHECK(index_map_.Contains(old_name))

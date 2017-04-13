@@ -170,7 +170,7 @@ class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>,
   //
   // Used when a versionchange transaction is aborted.
   void RevertMetadata(RefPtr<IDBObjectStoreMetadata> previous_metadata);
-  // This relies on the changes made by revertMetadata().
+  // This relies on the changes made by RevertMetadata().
   void RevertDeletedIndexMetadata(IDBIndex& deleted_index);
 
   // Used by IDBIndex::setName:
