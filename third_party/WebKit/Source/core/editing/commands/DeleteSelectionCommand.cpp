@@ -760,9 +760,9 @@ void DeleteSelectionCommand::FixupWhitespace() {
     DCHECK(!text_node->GetLayoutObject() ||
            text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
         << text_node;
-    ReplaceTextInNodePreservingMarkers(
-        text_node, leading_whitespace_.ComputeOffsetInContainerNode(), 1,
-        NonBreakingSpaceString());
+    ReplaceTextInNode(text_node,
+                      leading_whitespace_.ComputeOffsetInContainerNode(), 1,
+                      NonBreakingSpaceString());
   }
   if (trailing_whitespace_.IsNotNull() &&
       !IsRenderedCharacter(trailing_whitespace_) &&
@@ -771,9 +771,9 @@ void DeleteSelectionCommand::FixupWhitespace() {
     DCHECK(!text_node->GetLayoutObject() ||
            text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
         << text_node;
-    ReplaceTextInNodePreservingMarkers(
-        text_node, trailing_whitespace_.ComputeOffsetInContainerNode(), 1,
-        NonBreakingSpaceString());
+    ReplaceTextInNode(text_node,
+                      trailing_whitespace_.ComputeOffsetInContainerNode(), 1,
+                      NonBreakingSpaceString());
   }
 }
 

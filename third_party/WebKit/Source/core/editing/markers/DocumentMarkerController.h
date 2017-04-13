@@ -30,6 +30,7 @@
 #define DocumentMarkerController_h
 
 #include "core/CoreExport.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/geometry/IntRect.h"
@@ -103,7 +104,6 @@ class CORE_EXPORT DocumentMarkerController final
   void RemoveMarkers(const MarkerRemoverPredicate& should_remove_marker);
   void RepaintMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
-  void ShiftMarkers(Node*, unsigned start_offset, int delta);
   // Returns true if markers within a range are found.
   bool SetMarkersActive(const EphemeralRange&, bool);
   // Returns true if markers within a range defined by a node, |startOffset| and

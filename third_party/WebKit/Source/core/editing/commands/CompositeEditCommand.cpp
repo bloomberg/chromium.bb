@@ -25,6 +25,7 @@
 
 #include "core/editing/commands/CompositeEditCommand.h"
 
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -52,6 +53,7 @@
 #include "core/editing/commands/RemoveNodePreservingChildrenCommand.h"
 #include "core/editing/commands/ReplaceNodeWithSpanCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
+#include "core/editing/commands/SetCharacterDataCommand.h"
 #include "core/editing/commands/SetNodeAttributeCommand.h"
 #include "core/editing/commands/SplitElementCommand.h"
 #include "core/editing/commands/SplitTextNodeCommand.h"
@@ -73,7 +75,6 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -540,15 +541,10 @@ void CompositeEditCommand::ReplaceTextInNode(Text* node,
                                              unsigned offset,
                                              unsigned count,
                                              const String& replacement_text) {
-  // DeleteFromTextNodeCommand and InsertIntoTextNodeCommand are never
-  // aborted.
+  // SetCharacterDataCommand is never aborted.
   ApplyCommandToComposite(
-      DeleteFromTextNodeCommand::Create(node, offset, count),
+      SetCharacterDataCommand::Create(node, offset, count, replacement_text),
       ASSERT_NO_EDITING_ABORT);
-  if (!replacement_text.IsEmpty())
-    ApplyCommandToComposite(
-        InsertIntoTextNodeCommand::Create(node, offset, replacement_text),
-        ASSERT_NO_EDITING_ABORT);
 }
 
 Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
@@ -565,50 +561,6 @@ Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
                     text);
 
   return Position(text_node, start.OffsetInContainerNode() + text.length());
-}
-
-static void CopyMarkerTypesAndDescriptions(
-    const DocumentMarkerVector& marker_pointers,
-    Vector<DocumentMarker::MarkerType>& types,
-    Vector<String>& descriptions) {
-  size_t array_size = marker_pointers.size();
-  types.ReserveCapacity(array_size);
-  descriptions.ReserveCapacity(array_size);
-  for (const auto& marker_pointer : marker_pointers) {
-    types.push_back(marker_pointer->GetType());
-    descriptions.push_back(marker_pointer->Description());
-  }
-}
-
-void CompositeEditCommand::ReplaceTextInNodePreservingMarkers(
-    Text* node,
-    unsigned offset,
-    unsigned count,
-    const String& replacement_text) {
-  DocumentMarkerController& marker_controller = GetDocument().Markers();
-  Vector<DocumentMarker::MarkerType> types;
-  Vector<String> descriptions;
-  CopyMarkerTypesAndDescriptions(
-      marker_controller.MarkersInRange(
-          EphemeralRange(Position(node, offset),
-                         Position(node, offset + count)),
-          DocumentMarker::AllMarkers()),
-      types, descriptions);
-
-  ReplaceTextInNode(node, offset, count, replacement_text);
-
-  // Re-adding markers requires a clean tree.
-  GetDocument().UpdateStyleAndLayout();
-
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetDocument().Lifecycle());
-  Position start_position(node, offset);
-  Position end_position(node, offset + replacement_text.length());
-  DCHECK_EQ(types.size(), descriptions.size());
-
-  for (size_t i = 0; i < types.size(); ++i)
-    marker_controller.AddMarker(start_position, end_position, types[i],
-                                descriptions[i]);
 }
 
 Position CompositeEditCommand::PositionOutsideTabSpan(const Position& pos) {
@@ -775,8 +727,7 @@ void CompositeEditCommand::RebalanceWhitespaceOnTextSubstring(Text* text_node,
       should_emit_nbs_pbefore_end);
 
   if (string != rebalanced_string)
-    ReplaceTextInNodePreservingMarkers(text_node, upstream, length,
-                                       rebalanced_string);
+    ReplaceTextInNode(text_node, upstream, length, rebalanced_string);
 }
 
 void CompositeEditCommand::PrepareWhitespaceAtPositionForSplit(
@@ -818,9 +769,8 @@ void CompositeEditCommand::
   Position pos = MostForwardCaretPosition(visible_position.DeepEquivalent());
   if (!pos.ComputeContainerNode() || !pos.ComputeContainerNode()->IsTextNode())
     return;
-  ReplaceTextInNodePreservingMarkers(ToText(pos.ComputeContainerNode()),
-                                     pos.OffsetInContainerNode(), 1,
-                                     NonBreakingSpaceString());
+  ReplaceTextInNode(ToText(pos.ComputeContainerNode()),
+                    pos.OffsetInContainerNode(), 1, NonBreakingSpaceString());
 }
 
 void CompositeEditCommand::RebalanceWhitespace() {

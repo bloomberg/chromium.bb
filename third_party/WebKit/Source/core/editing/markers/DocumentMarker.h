@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Optional.h"
 #include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
 
@@ -163,6 +164,15 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
 
   void SetIsActiveMatch(bool);
   void ClearDetails() { details_.Clear(); }
+
+  struct MarkerOffsets {
+    unsigned start_offset;
+    unsigned end_offset;
+  };
+
+  Optional<MarkerOffsets> ComputeOffsetsAfterShift(unsigned offset,
+                                                   unsigned old_length,
+                                                   unsigned new_length) const;
 
   // Offset modifications are done by DocumentMarkerController.
   // Other classes should not call following setters.

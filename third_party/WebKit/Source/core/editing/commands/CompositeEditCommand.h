@@ -157,10 +157,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
                          unsigned count,
                          const String& replacement_text);
   Position ReplaceSelectedTextInNode(const String&);
-  void ReplaceTextInNodePreservingMarkers(Text*,
-                                          unsigned offset,
-                                          unsigned count,
-                                          const String& replacement_text);
   Position PositionOutsideTabSpan(const Position&);
   void SetNodeAttribute(Element*,
                         const QualifiedName& attribute,

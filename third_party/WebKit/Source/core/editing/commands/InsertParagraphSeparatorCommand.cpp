@@ -471,9 +471,9 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
     DCHECK(!text_node->GetLayoutObject() ||
            text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
         << text_node;
-    ReplaceTextInNodePreservingMarkers(
-        text_node, leading_whitespace.ComputeOffsetInContainerNode(), 1,
-        NonBreakingSpaceString());
+    ReplaceTextInNode(text_node,
+                      leading_whitespace.ComputeOffsetInContainerNode(), 1,
+                      NonBreakingSpaceString());
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 

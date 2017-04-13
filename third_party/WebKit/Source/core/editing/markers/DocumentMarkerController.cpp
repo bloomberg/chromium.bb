@@ -179,11 +179,6 @@ static bool StartsFurther(const Member<RenderedDocumentMarker>& lhv,
   return lhv->StartOffset() < rhv->StartOffset();
 }
 
-static bool StartsAfter(const Member<RenderedDocumentMarker>& marker,
-                        size_t start_offset) {
-  return marker->StartOffset() < start_offset;
-}
-
 static bool EndsBefore(size_t start_offset,
                        const Member<RenderedDocumentMarker>& rhv) {
   return start_offset < rhv->EndOffset();
@@ -303,10 +298,7 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
     return;
 
   bool doc_dirty = false;
-  for (size_t marker_list_index = 0;
-       marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-       ++marker_list_index) {
-    Member<MarkerList>& list = (*markers)[marker_list_index];
+  for (Member<MarkerList> list : *markers) {
     if (!list)
       continue;
 
@@ -730,47 +722,6 @@ void DocumentMarkerController::RepaintMarkers(
   }
 }
 
-void DocumentMarkerController::ShiftMarkers(Node* node,
-                                            unsigned start_offset,
-                                            int delta) {
-  if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
-    return;
-  DCHECK(!markers_.IsEmpty());
-
-  MarkerLists* markers = markers_.at(node);
-  if (!markers)
-    return;
-
-  bool did_shift_marker = false;
-  for (size_t marker_list_index = 0;
-       marker_list_index < DocumentMarker::kMarkerTypeIndexesCount;
-       ++marker_list_index) {
-    Member<MarkerList>& list = (*markers)[marker_list_index];
-    if (!list)
-      continue;
-    MarkerList::iterator start_pos =
-        std::lower_bound(list->begin(), list->end(), start_offset, StartsAfter);
-    for (MarkerList::iterator marker = start_pos; marker != list->end();
-         ++marker) {
-#if DCHECK_IS_ON()
-      int start_offset = (*marker)->StartOffset();
-      DCHECK_GE(start_offset + delta, 0);
-#endif
-      (*marker)->ShiftOffsets(delta);
-      did_shift_marker = true;
-    }
-  }
-
-  if (did_shift_marker) {
-    InvalidateRectsForMarkersInNode(*node);
-    // repaint the affected node
-    if (node->GetLayoutObject()) {
-      node->GetLayoutObject()->SetShouldDoFullPaintInvalidation(
-          kPaintInvalidationDocumentMarkerChange);
-    }
-  }
-}
-
 bool DocumentMarkerController::SetMarkersActive(const EphemeralRange& range,
                                                 bool active) {
   if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
@@ -870,10 +821,46 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
                                                       unsigned offset,
                                                       unsigned old_length,
                                                       unsigned new_length) {
-  // Shift markers as if we first remove the old text, then insert the new text
-  RemoveMarkers(node, offset, old_length);
-  ShiftMarkers(node, offset + old_length, 0 - old_length);
-  ShiftMarkers(node, offset, new_length);
+  if (!PossiblyHasMarkers(DocumentMarker::AllMarkers()))
+    return;
+  DCHECK(!markers_.IsEmpty());
+
+  MarkerLists* markers = markers_.at(node);
+  if (!markers)
+    return;
+
+  bool did_shift_marker = false;
+  for (MarkerList* list : *markers) {
+    if (!list)
+      continue;
+
+    for (MarkerList::iterator it = list->begin(); it != list->end(); ++it) {
+      RenderedDocumentMarker& marker = **it;
+      Optional<DocumentMarker::MarkerOffsets> result =
+          marker.ComputeOffsetsAfterShift(offset, old_length, new_length);
+      if (result == WTF::kNullopt) {
+        list->erase(it - list->begin());
+        --it;
+        did_shift_marker = true;
+        continue;
+      }
+
+      if (marker.StartOffset() != result.value().start_offset ||
+          marker.EndOffset() != result.value().end_offset) {
+        did_shift_marker = true;
+        marker.SetStartOffset(result.value().start_offset);
+        marker.SetEndOffset(result.value().end_offset);
+      }
+    }
+  }
+
+  if (!did_shift_marker)
+    return;
+  if (!node->GetLayoutObject())
+    return;
+  InvalidateRectsForMarkersInNode(*node);
+  // repaint the affected node
+  node->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 }
 
 }  // namespace blink
