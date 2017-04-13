@@ -399,6 +399,8 @@ TEST_P(LargeIconServiceGetterTest, FallbackSinceIconTooSmall) {
   GetLargeIconOrFallbackStyleAndWaitForCallback(GURL(kDummyUrl), 24, 24);
   EXPECT_EQ(nullptr, returned_bitmap_size_);
   EXPECT_TRUE(HasBackgroundColor(*returned_fallback_style_, kTestColor));
+  histogram_tester_.ExpectUniqueSample("Favicons.LargeIconService.FallbackSize",
+                                       16, /*expected_count=*/1);
 }
 
 TEST_P(LargeIconServiceGetterTest, FallbackSinceIconNotSquare) {
@@ -406,6 +408,8 @@ TEST_P(LargeIconServiceGetterTest, FallbackSinceIconNotSquare) {
   GetLargeIconOrFallbackStyleAndWaitForCallback(GURL(kDummyUrl), 24, 24);
   EXPECT_EQ(nullptr, returned_bitmap_size_);
   EXPECT_TRUE(HasBackgroundColor(*returned_fallback_style_, kTestColor));
+  histogram_tester_.ExpectUniqueSample("Favicons.LargeIconService.FallbackSize",
+                                       24, /*expected_count=*/1);
 }
 
 TEST_P(LargeIconServiceGetterTest, FallbackSinceIconMissing) {
@@ -413,6 +417,8 @@ TEST_P(LargeIconServiceGetterTest, FallbackSinceIconMissing) {
   GetLargeIconOrFallbackStyleAndWaitForCallback(GURL(kDummyUrl), 24, 24);
   EXPECT_EQ(nullptr, returned_bitmap_size_);
   EXPECT_TRUE(returned_fallback_style_->is_default_background_color);
+  histogram_tester_.ExpectUniqueSample("Favicons.LargeIconService.FallbackSize",
+                                       0, /*expected_count=*/1);
 }
 
 TEST_P(LargeIconServiceGetterTest, FallbackSinceIconMissingNoScale) {
@@ -420,6 +426,8 @@ TEST_P(LargeIconServiceGetterTest, FallbackSinceIconMissingNoScale) {
   GetLargeIconOrFallbackStyleAndWaitForCallback(GURL(kDummyUrl), 24, 0);
   EXPECT_EQ(nullptr, returned_bitmap_size_);
   EXPECT_TRUE(returned_fallback_style_->is_default_background_color);
+  histogram_tester_.ExpectUniqueSample("Favicons.LargeIconService.FallbackSize",
+                                       0, /*expected_count=*/1);
 }
 
 // Oddball case where we demand a high resolution icon to scale down. Generates
@@ -429,6 +437,8 @@ TEST_P(LargeIconServiceGetterTest, FallbackSinceTooPicky) {
   GetLargeIconOrFallbackStyleAndWaitForCallback(GURL(kDummyUrl), 32, 24);
   EXPECT_EQ(nullptr, returned_bitmap_size_);
   EXPECT_TRUE(HasBackgroundColor(*returned_fallback_style_, kTestColor));
+  histogram_tester_.ExpectUniqueSample("Favicons.LargeIconService.FallbackSize",
+                                       24, /*expected_count=*/1);
 }
 
 // Every test will appear with suffix /0 (param false) and /1 (param true), e.g.

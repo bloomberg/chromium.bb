@@ -117,10 +117,20 @@ void ProcessIconOnBackgroundThread(
     return;
 
   *fallback_icon_style = favicon_base::FallbackIconStyle();
+  int fallback_icon_size = 0;
   if (db_result.is_valid()) {
     favicon_base::SetDominantColorAsBackground(db_result.bitmap_data,
                                                fallback_icon_style);
+    // The size must be positive, we cap to 128 to avoid the sparse histogram
+    // to explode (having too many different values, server-side). Size 128
+    // already indicates that there is a problem in the code, 128 px _should_ be
+    // enough in all current UI surfaces.
+    fallback_icon_size = db_result.pixel_size.width();
+    DCHECK_GT(fallback_icon_size, 0);
+    fallback_icon_size = std::min(fallback_icon_size, 128);
   }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Favicons.LargeIconService.FallbackSize",
+                              fallback_icon_size);
 }
 
 // Processes the bitmap data returned from the FaviconService as part of a
