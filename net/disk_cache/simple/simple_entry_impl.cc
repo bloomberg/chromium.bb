@@ -973,18 +973,17 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
     have_written_[0] = true;
 
   std::unique_ptr<int> result(new int());
-
-  // Retain a reference to |buf| in |reply| instead of |task|, so that we can
-  // reduce cross thread malloc/free pairs. The cross thread malloc/free pair
-  // increases the apparent memory usage due to the thread cached free list.
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
       SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len,
                                                  truncate, doomed_),
-      base::Unretained(buf), entry_stat.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
-                             stream_index, callback, base::Passed(&entry_stat),
-                             base::Passed(&result), base::RetainedRef(buf));
+      base::RetainedRef(buf), entry_stat.get(), result.get());
+  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete,
+                             this,
+                             stream_index,
+                             callback,
+                             base::Passed(&entry_stat),
+                             base::Passed(&result));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -1272,8 +1271,7 @@ void SimpleEntryImpl::WriteOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
     std::unique_ptr<SimpleEntryStat> entry_stat,
-    std::unique_ptr<int> result,
-    net::IOBuffer* buf) {
+    std::unique_ptr<int> result) {
   if (*result >= 0)
     RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   else
