@@ -80,9 +80,15 @@ public class MediaNotificationManager {
     // Maps the notification ids to their corresponding notification managers.
     private static SparseArray<MediaNotificationManager> sManagers;
 
+    // Overrides N detection. The production code will use |null|, which uses the Android version
+    // code. Otherwise, |isRunningN()| will return whatever value is set.
+    @VisibleForTesting
+    static Boolean sOverrideIsRunningNForTesting;
+
     // Maps the notification ids to their corresponding choices of the service, button receiver and
     // group name.
-    private static SparseArray<NotificationOptions> sMapNotificationIdToOptions;
+    @VisibleForTesting
+    static SparseArray<NotificationOptions> sMapNotificationIdToOptions;
 
     static {
         sManagers = new SparseArray<MediaNotificationManager>();
@@ -105,18 +111,23 @@ public class MediaNotificationManager {
     private int mNotificationId;
 
     // ListenerService running for the notification. Only non-null when showing.
-    private ListenerService mService;
+    @VisibleForTesting
+    ListenerService mService;
 
     private SparseArray<MediaButtonInfo> mActionToButtonInfo;
 
-    private ChromeNotificationBuilder mNotificationBuilder;
+    @VisibleForTesting
+    ChromeNotificationBuilder mNotificationBuilder;
 
-    private Bitmap mDefaultNotificationLargeIcon;
+    @VisibleForTesting
+    Bitmap mDefaultNotificationLargeIcon;
 
     // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
-    private MediaNotificationInfo mMediaNotificationInfo;
+    @VisibleForTesting
+    MediaNotificationInfo mMediaNotificationInfo;
 
-    private MediaSessionCompat mMediaSession;
+    @VisibleForTesting
+    MediaSessionCompat mMediaSession;
 
     private final MediaSessionCompat.Callback mMediaSessionCallback =
             new MediaSessionCompat.Callback() {
@@ -157,7 +168,8 @@ public class MediaNotificationManager {
                 }
             };
 
-    private static class NotificationOptions {
+    @VisibleForTesting
+    static class NotificationOptions {
         public Class<?> serviceClass;
         public Class<?> receiverClass;
         public String groupName;
@@ -175,24 +187,29 @@ public class MediaNotificationManager {
      * {@code MediaNotificationListener} callbacks. We have to create a separate derived class for
      * each type of notification since one class corresponds to one instance of the service only.
      */
-    private abstract static class ListenerService extends Service {
-        private static final String ACTION_PLAY =
-                "MediaNotificationManager.ListenerService.PLAY";
-        private static final String ACTION_PAUSE =
-                "MediaNotificationManager.ListenerService.PAUSE";
-        private static final String ACTION_STOP =
-                "MediaNotificationManager.ListenerService.STOP";
-        private static final String ACTION_SWIPE =
-                "MediaNotificationManager.ListenerService.SWIPE";
-        private static final String ACTION_CANCEL =
-                "MediaNotificationManager.ListenerService.CANCEL";
-        private static final String ACTION_PREVIOUS_TRACK =
+    @VisibleForTesting
+    abstract static class ListenerService extends Service {
+        @VisibleForTesting
+        static final String ACTION_PLAY = "MediaNotificationManager.ListenerService.PLAY";
+        @VisibleForTesting
+        static final String ACTION_PAUSE = "MediaNotificationManager.ListenerService.PAUSE";
+        @VisibleForTesting
+        static final String ACTION_STOP = "MediaNotificationManager.ListenerService.STOP";
+        @VisibleForTesting
+        static final String ACTION_SWIPE = "MediaNotificationManager.ListenerService.SWIPE";
+        @VisibleForTesting
+        static final String ACTION_CANCEL = "MediaNotificationManager.ListenerService.CANCEL";
+        @VisibleForTesting
+        static final String ACTION_PREVIOUS_TRACK =
                 "MediaNotificationManager.ListenerService.PREVIOUS_TRACK";
-        private static final String ACTION_NEXT_TRACK =
+        @VisibleForTesting
+        static final String ACTION_NEXT_TRACK =
                 "MediaNotificationManager.ListenerService.NEXT_TRACK";
-        private static final String ACTION_SEEK_FORWARD =
+        @VisibleForTesting
+        static final String ACTION_SEEK_FORWARD =
                 "MediaNotificationManager.ListenerService.SEEK_FORWARD";
-        private static final String ACTION_SEEK_BACKWARD =
+        @VisibleForTesting
+        static final String ACTION_SEEK_BACKWARD =
                 "MediaNotificationmanager.ListenerService.SEEK_BACKWARD";
 
         @Override
@@ -212,7 +229,7 @@ public class MediaNotificationManager {
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            if (!processIntent(intent)) stopSelf();
+            if (!processIntent(intent)) stopListenerService();
 
             return START_NOT_STICKY;
         }
@@ -220,7 +237,13 @@ public class MediaNotificationManager {
         @Nullable
         protected abstract MediaNotificationManager getManager();
 
-        private boolean processIntent(Intent intent) {
+        @VisibleForTesting
+        void stopListenerService() {
+            stopSelf();
+        }
+
+        @VisibleForTesting
+        boolean processIntent(Intent intent) {
             if (intent == null) return false;
 
             MediaNotificationManager manager = getManager();
@@ -238,14 +261,13 @@ public class MediaNotificationManager {
             return true;
         }
 
-        private void processAction(Intent intent, MediaNotificationManager manager) {
+        @VisibleForTesting
+        void processAction(Intent intent, MediaNotificationManager manager) {
             String action = intent.getAction();
 
             // Before Android L, instead of using the MediaSession callback, the system will fire
             // ACTION_MEDIA_BUTTON intents which stores the information about the key event.
             if (Intent.ACTION_MEDIA_BUTTON.equals(action)) {
-                assert Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
-
                 KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 if (event == null) return;
                 if (event.getAction() != KeyEvent.ACTION_DOWN) return;
@@ -288,7 +310,7 @@ public class MediaNotificationManager {
                     || ACTION_CANCEL.equals(action)) {
                 manager.onStop(
                         MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
-                stopSelf();
+                stopListenerService();
             } else if (ACTION_PLAY.equals(action)) {
                 manager.onPlay(MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
             } else if (ACTION_PAUSE.equals(action)) {
@@ -551,7 +573,8 @@ public class MediaNotificationManager {
                 && icon.getHeight() >= MINIMAL_MEDIA_IMAGE_SIZE_PX;
     }
 
-    private static MediaNotificationManager getManager(int notificationId) {
+    @VisibleForTesting
+    static MediaNotificationManager getManager(int notificationId) {
         return sManagers.get(notificationId);
     }
 
@@ -561,12 +584,8 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
-    static void ensureManagerForTesting(int notificationId) {
-        MediaNotificationManager manager = sManagers.get(notificationId);
-        if (manager == null) {
-            manager = new MediaNotificationManager(notificationId);
-            sManagers.put(notificationId, manager);
-        }
+    static void setManagerForTesting(int notificationId, MediaNotificationManager manager) {
+        sManagers.put(notificationId, manager);
     }
 
     @VisibleForTesting
@@ -588,7 +607,9 @@ public class MediaNotificationManager {
     }
 
     private static boolean isRunningN() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+        return (sOverrideIsRunningNForTesting != null)
+                ? sOverrideIsRunningNForTesting
+                : Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
     /**
@@ -612,7 +633,8 @@ public class MediaNotificationManager {
         }
     }
 
-    private MediaNotificationManager(int notificationId) {
+    @VisibleForTesting
+    MediaNotificationManager(int notificationId) {
         mNotificationId = notificationId;
 
         mActionToButtonInfo = new SparseArray<>();
@@ -647,7 +669,8 @@ public class MediaNotificationManager {
      *
      * @param service the service that was started
      */
-    private void onServiceStarted(ListenerService service) {
+    @VisibleForTesting
+    void onServiceStarted(ListenerService service) {
         if (mService == service) return;
 
         mService = service;
@@ -657,30 +680,36 @@ public class MediaNotificationManager {
     /**
      * Handles the service destruction destruction.
      */
-    private void onServiceDestroyed() {
+    @VisibleForTesting
+    void onServiceDestroyed() {
         mService = null;
         if (mMediaNotificationInfo != null) clear(mMediaNotificationInfo.id);
     }
 
-    private void onPlay(int actionSource) {
+    @VisibleForTesting
+    void onPlay(int actionSource) {
         if (!mMediaNotificationInfo.isPaused) return;
         mMediaNotificationInfo.listener.onPlay(actionSource);
     }
 
-    private void onPause(int actionSource) {
+    @VisibleForTesting
+    void onPause(int actionSource) {
         if (mMediaNotificationInfo.isPaused) return;
         mMediaNotificationInfo.listener.onPause(actionSource);
     }
 
-    private void onStop(int actionSource) {
+    @VisibleForTesting
+    void onStop(int actionSource) {
         mMediaNotificationInfo.listener.onStop(actionSource);
     }
 
-    private void onMediaSessionAction(int action) {
+    @VisibleForTesting
+    void onMediaSessionAction(int action) {
         mMediaNotificationInfo.listener.onMediaSessionAction(action);
     }
 
-    private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
+    @VisibleForTesting
+    void showNotification(MediaNotificationInfo mediaNotificationInfo) {
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
         if (mediaNotificationInfo.isPaused && mMediaNotificationInfo != null
                 && mediaNotificationInfo.tabId != mMediaNotificationInfo.tabId) {
@@ -700,8 +729,9 @@ public class MediaNotificationManager {
             updateNotificationBuilder();
             AppHooks.get().startForegroundService(createIntent());
         } else {
-            mService.startService(createIntent());
+            getContext().startService(createIntent());
         }
+        // TODO(zqzhang): merge this call to the if statement above?
         updateNotification();
     }
 
@@ -756,11 +786,11 @@ public class MediaNotificationManager {
         return metadataBuilder.build();
     }
 
-    private void updateNotification() {
+    @VisibleForTesting
+    void updateNotification() {
         if (mService == null) return;
 
         if (mMediaNotificationInfo == null) return;
-
         updateMediaSession();
         updateNotificationBuilder();
 
@@ -780,11 +810,15 @@ public class MediaNotificationManager {
         }
     }
 
-    private void updateNotificationBuilder() {
+    @VisibleForTesting
+    void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
                 true /* preferCompat */, ChannelsInitializer.CHANNEL_ID_MEDIA);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
+        // TODO(zqzhang): It's weird that setShowWhen() doesn't work on K. Calling setWhen() to
+        // force removing the time.
+        mNotificationBuilder.setShowWhen(false).setWhen(0);
         mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.notificationSmallIcon);
         mNotificationBuilder.setAutoCancel(false);
         mNotificationBuilder.setLocalOnly(true);
@@ -811,7 +845,8 @@ public class MediaNotificationManager {
                                                  : NotificationCompat.VISIBILITY_PUBLIC);
     }
 
-    private void updateMediaSession() {
+    @VisibleForTesting
+    void updateMediaSession() {
         if (!mMediaNotificationInfo.supportsPlayPause()) return;
 
         if (mMediaSession == null) mMediaSession = createMediaSession();
@@ -900,6 +935,8 @@ public class MediaNotificationManager {
     private void setMediaStyleLayoutForNotificationBuilder(ChromeNotificationBuilder builder) {
         setMediaStyleNotificationText(builder);
         if (!mMediaNotificationInfo.supportsPlayPause()) {
+            // TODO(zqzhang): this should be wrong. On pre-N, the notification will look bad when
+            // the large icon is not set.
             builder.setLargeIcon(null);
         } else if (mMediaNotificationInfo.notificationLargeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);
@@ -913,9 +950,6 @@ public class MediaNotificationManager {
             }
             builder.setLargeIcon(mDefaultNotificationLargeIcon);
         }
-        // TODO(zqzhang): It's weird that setShowWhen() don't work on K. Calling setWhen() to force
-        // removing the time.
-        builder.setShowWhen(false).setWhen(0);
 
         addNotificationButtons(builder);
     }

@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -51,6 +52,14 @@ import org.chromium.policy.CombinedPolicyProvider;
  */
 public abstract class AppHooks {
     private static AppHooksImpl sInstance;
+
+    /**
+     * Sets a mocked instance for testing.
+     */
+    @VisibleForTesting
+    public static void setInstanceForTesting(AppHooksImpl instance) {
+        sInstance = instance;
+    }
 
     @CalledByNative
     public static AppHooks get() {
