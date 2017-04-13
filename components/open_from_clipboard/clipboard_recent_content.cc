@@ -49,3 +49,8 @@ bool ClipboardRecentContent::IsAppropriateSuggestion(const GURL& url) {
   // Not a scheme we're allowed to return.
   return false;
 }
+
+// static
+base::TimeDelta ClipboardRecentContent::MaximumAgeOfClipboard() {
+  return base::TimeDelta::FromHours(3);
+}

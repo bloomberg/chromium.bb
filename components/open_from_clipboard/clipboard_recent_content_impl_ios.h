@@ -23,10 +23,10 @@
 // should contain all schemes considered valid. |groupUserDefaults| is the
 // NSUserDefaults used to store information on pasteboard entry expiration. This
 // information will be shared with other applications in the application group.
-- (instancetype)initWithAuthorizedSchemes:(NSSet<NSString*>*)authorizedSchemes
-                             userDefaults:(NSUserDefaults*)groupUserDefaults
-                                 delegate:(id<ClipboardRecentContentDelegate>)
-                                              delegate
+- (instancetype)initWithMaxAge:(NSTimeInterval)maxAge
+             authorizedSchemes:(NSSet<NSString*>*)authorizedSchemes
+                  userDefaults:(NSUserDefaults*)groupUserDefaults
+                      delegate:(id<ClipboardRecentContentDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

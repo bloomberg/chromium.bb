@@ -43,7 +43,7 @@ class ClipboardRecentContent {
  protected:
   // GetRecentURLFromClipboard() should never return a URL from a clipboard
   // older than this.
-  const base::TimeDelta kMaximumAgeOfClipboard = base::TimeDelta::FromHours(3);
+  static base::TimeDelta MaximumAgeOfClipboard();
 
   // Returns true if the URL is appropriate to be suggested.
   static bool IsAppropriateSuggestion(const GURL& url);

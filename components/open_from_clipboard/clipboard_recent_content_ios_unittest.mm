@@ -46,17 +46,18 @@ const char kRecognizedURL2[] = "good://bar/2";
 const char kAppSpecificURL[] = "test://qux/";
 const char kAppSpecificScheme[] = "test";
 const char kRecognizedScheme[] = "good";
-NSTimeInterval kSevenHours = 60 * 60 * 7;
+NSTimeInterval kLongerThanMaxAge = 60 * 60 * 7;
+NSTimeInterval kMaxAge = 60 * 60 * 1;
 }  // namespace
 
 @interface ClipboardRecentContentImplIOSWithFakeUptime
     : ClipboardRecentContentImplIOS
 @property(nonatomic) NSTimeInterval fakeUptime;
 
-- (instancetype)initWithDelegate:(id<ClipboardRecentContentDelegate>)delegate
-               authorizedSchemes:(NSArray*)authorizedSchemes
-                    userDefaults:(NSUserDefaults*)groupUserDefaults
-                          uptime:(NSTimeInterval)uptime;
+- (instancetype)initWithMaxAge:(NSTimeInterval)maxAge
+             authorizedSchemes:(NSArray*)authorizedSchemes
+                  userDefaults:(NSUserDefaults*)groupUserDefaults
+                        uptime:(NSTimeInterval)uptime;
 
 @end
 
@@ -64,13 +65,14 @@ NSTimeInterval kSevenHours = 60 * 60 * 7;
 
 @synthesize fakeUptime = _fakeUptime;
 
-- (instancetype)initWithDelegate:(id<ClipboardRecentContentDelegate>)delegate
-               authorizedSchemes:(NSSet*)authorizedSchemes
-                    userDefaults:(NSUserDefaults*)groupUserDefaults
-                          uptime:(NSTimeInterval)uptime {
-  self = [super initWithAuthorizedSchemes:authorizedSchemes
-                             userDefaults:groupUserDefaults
-                                 delegate:delegate];
+- (instancetype)initWithMaxAge:(NSTimeInterval)maxAge
+             authorizedSchemes:(NSSet*)authorizedSchemes
+                  userDefaults:(NSUserDefaults*)groupUserDefaults
+                        uptime:(NSTimeInterval)uptime {
+  self = [super initWithMaxAge:maxAge
+             authorizedSchemes:authorizedSchemes
+                  userDefaults:groupUserDefaults
+                      delegate:nil];
   if (self) {
     _fakeUptime = uptime;
   }
@@ -108,7 +110,7 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
                                    base::TimeDelta time_delta) {
     clipboard_content_implementation_ =
         [[ClipboardRecentContentImplIOSWithFakeUptime alloc]
-             initWithDelegate:nil
+               initWithMaxAge:kMaxAge
             authorizedSchemes:@[
               base::SysUTF8ToNSString(kRecognizedScheme),
               base::SysUTF8ToNSString(application_scheme)
@@ -167,7 +169,7 @@ TEST_F(ClipboardRecentContentIOSTest, PasteboardURLObsolescence) {
 
   // Test that old pasteboard data is not provided.
   SetStoredPasteboardChangeDate(
-      [NSDate dateWithTimeIntervalSinceNow:-kSevenHours]);
+      [NSDate dateWithTimeIntervalSinceNow:-kLongerThanMaxAge]);
   EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
 
   // Tests that if chrome is relaunched, old pasteboard data is still

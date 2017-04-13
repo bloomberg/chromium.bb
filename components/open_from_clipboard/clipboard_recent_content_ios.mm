@@ -59,10 +59,11 @@ ClipboardRecentContentIOS::ClipboardRecentContentIOS(
     const std::string& application_scheme,
     NSUserDefaults* group_user_defaults)
     : ClipboardRecentContentIOS([[ClipboardRecentContentImplIOS alloc]
-          initWithAuthorizedSchemes:getAuthorizedSchemeList(application_scheme)
-                       userDefaults:group_user_defaults
-                           delegate:[[ClipboardRecentContentDelegateImpl alloc]
-                                        init]]) {}
+             initWithMaxAge:MaximumAgeOfClipboard().InSecondsF()
+          authorizedSchemes:getAuthorizedSchemeList(application_scheme)
+               userDefaults:group_user_defaults
+                   delegate:[[ClipboardRecentContentDelegateImpl alloc]
+                                init]]) {}
 
 ClipboardRecentContentIOS::ClipboardRecentContentIOS(
     ClipboardRecentContentImplIOS* implementation) {

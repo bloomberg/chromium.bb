@@ -16,7 +16,7 @@ bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
       (last_modified_time == last_modified_time_to_suppress_))
     return false;
 
-  if (GetClipboardContentAge() > kMaximumAgeOfClipboard)
+  if (GetClipboardContentAge() > MaximumAgeOfClipboard())
     return false;
 
   // Get and clean up the clipboard before processing.

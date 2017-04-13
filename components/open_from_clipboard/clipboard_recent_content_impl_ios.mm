@@ -26,8 +26,6 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
 // Key used to store the hash of the content of the pasteboard. Whenever the
 // hash changed, the pasteboard content is considered to have changed.
 NSString* const kPasteboardEntryMD5Key = @"PasteboardEntryMD5";
-// Maximum age of clipboard in seconds.
-NSTimeInterval const kMaximumAgeOfClipboard = 3 * 60 * 60;
 
 // Compute a hash consisting of the first 4 bytes of the MD5 hash of |string|.
 // This value is used to detect pasteboard content change. Keeping only 4 bytes
@@ -57,6 +55,8 @@ NSData* WeakMD5FromNSString(NSString* string) {
 @property(nonatomic, readonly) NSSet* authorizedSchemes;
 // Delegate for metrics.
 @property(nonatomic, strong) id<ClipboardRecentContentDelegate> delegate;
+// Maximum age of clipboard in seconds.
+@property(nonatomic, readonly) NSTimeInterval maximumAgeOfClipboard;
 
 // If the content of the pasteboard has changed, updates the change count,
 // change date, and md5 of the latest pasteboard entry if necessary.
@@ -85,13 +85,15 @@ NSData* WeakMD5FromNSString(NSString* string) {
 @synthesize sharedUserDefaults = _sharedUserDefaults;
 @synthesize authorizedSchemes = _authorizedSchemes;
 @synthesize delegate = _delegate;
+@synthesize maximumAgeOfClipboard = _maximumAgeOfClipboard;
 
-- (instancetype)initWithAuthorizedSchemes:(NSSet<NSString*>*)authorizedSchemes
-                             userDefaults:(NSUserDefaults*)groupUserDefaults
-                                 delegate:(id<ClipboardRecentContentDelegate>)
-                                              delegate {
+- (instancetype)initWithMaxAge:(NSTimeInterval)maxAge
+             authorizedSchemes:(NSSet<NSString*>*)authorizedSchemes
+                  userDefaults:(NSUserDefaults*)groupUserDefaults
+                      delegate:(id<ClipboardRecentContentDelegate>)delegate {
   self = [super init];
   if (self) {
+    _maximumAgeOfClipboard = maxAge;
     _delegate = delegate;
     _authorizedSchemes = authorizedSchemes;
     _sharedUserDefaults = groupUserDefaults;
@@ -150,7 +152,7 @@ NSData* WeakMD5FromNSString(NSString* string) {
 
 - (NSURL*)recentURLFromClipboard {
   [self updateIfNeeded];
-  if ([self clipboardContentAge] > kMaximumAgeOfClipboard) {
+  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
     return nil;
   }
   return [self URLFromPasteboard];

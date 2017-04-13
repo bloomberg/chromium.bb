@@ -55,9 +55,10 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   self = [super init];
   if (self) {
     _clipboardRecentContent = [[ClipboardRecentContentImplIOS alloc]
-        initWithAuthorizedSchemes:[NSSet setWithObjects:@"http", @"https", nil]
-                     userDefaults:app_group::GetGroupUserDefaults()
-                         delegate:nil];
+           initWithMaxAge:1 * 60 * 60
+        authorizedSchemes:[NSSet setWithObjects:@"http", @"https", nil]
+             userDefaults:app_group::GetGroupUserDefaults()
+                 delegate:nil];
   }
   return self;
 }
