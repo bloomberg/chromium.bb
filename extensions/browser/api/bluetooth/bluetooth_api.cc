@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -64,6 +65,7 @@ BluetoothAPI* BluetoothAPI::Get(BrowserContext* context) {
 BluetoothAPI::BluetoothAPI(content::BrowserContext* context)
     : browser_context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BLUETOOTH_LOG(EVENT) << "BluetoothAPI: " << browser_context_;
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this,
                                  bluetooth::OnAdapterStateChanged::kEventName);
@@ -72,11 +74,14 @@ BluetoothAPI::BluetoothAPI(content::BrowserContext* context)
   event_router->RegisterObserver(this, bluetooth::OnDeviceRemoved::kEventName);
 }
 
-BluetoothAPI::~BluetoothAPI() {}
+BluetoothAPI::~BluetoothAPI() {
+  BLUETOOTH_LOG(EVENT) << "~BluetoothAPI: " << browser_context_;
+}
 
 BluetoothEventRouter* BluetoothAPI::event_router() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!event_router_) {
+    BLUETOOTH_LOG(EVENT) << "BluetoothAPI: Creating BluetoothEventRouter";
     event_router_.reset(new BluetoothEventRouter(browser_context_));
   }
   return event_router_.get();
@@ -84,19 +89,20 @@ BluetoothEventRouter* BluetoothAPI::event_router() {
 
 void BluetoothAPI::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BLUETOOTH_LOG(EVENT) << "BluetoothAPI: Shutdown";
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 void BluetoothAPI::OnListenerAdded(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (event_router()->IsBluetoothSupported())
-    event_router()->OnListenerAdded();
+    event_router()->OnListenerAdded(details);
 }
 
 void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (event_router()->IsBluetoothSupported())
-    event_router()->OnListenerRemoved();
+    event_router()->OnListenerRemoved(details);
 }
 
 namespace api {

@@ -32,11 +32,27 @@ Polymer({
       notify: true,
     },
 
-    /** @private */
-    bluetoothEnabled_: {
+    /**
+     * Reflects the current state of the toggle buttons (in this page and the
+     * subpage). This will be set when the adapter state change or when the user
+     * changes the toggle.
+     * @private
+     */
+    bluetoothToggleState_: {
       type: Boolean,
-      observer: 'bluetoothEnabledChanged_',
-      notify: true,
+      observer: 'bluetoothToggleStateChanged_',
+    },
+
+    /**
+     * Set to true before the adapter state is received, when the adapter is
+     * unavailable, and while an adapter state change is requested. This
+     * prevents user changes while a change is in progress or when the adapter
+     * is not available.
+     * @private
+     */
+    bluetoothToggleDisabled_: {
+      type: Boolean,
+      value: true,
     },
 
     /**
@@ -111,7 +127,7 @@ Polymer({
    * @private
    */
   getIcon_: function() {
-    if (!this.bluetoothEnabled_)
+    if (!this.bluetoothToggleState_)
       return 'settings:bluetooth-disabled';
     return 'settings:bluetooth';
   },
@@ -134,15 +150,16 @@ Polymer({
    */
   onBluetoothAdapterStateChanged_: function(state) {
     this.adapterState_ = state;
-    this.bluetoothEnabled_ = state.powered;
+    this.bluetoothToggleState_ = state.powered;
+    this.bluetoothToggleDisabled_ = !state.available;
   },
 
   /** @private */
   onTap_: function() {
     if (this.adapterState_.available === false)
       return;
-    if (!this.bluetoothEnabled_)
-      this.bluetoothEnabled_ = true;
+    if (!this.bluetoothToggleState_)
+      this.bluetoothToggleState_ = true;
     else
       this.openSubpage_();
   },
@@ -165,9 +182,14 @@ Polymer({
   },
 
   /** @private */
-  bluetoothEnabledChanged_: function() {
+  bluetoothToggleStateChanged_: function() {
+    if (!this.adapterState_ || this.bluetoothToggleDisabled_ ||
+        this.bluetoothToggleState_ == this.adapterState_.powered) {
+      return;
+    }
+    this.bluetoothToggleDisabled_ = true;
     this.bluetoothPrivate.setAdapterState(
-        {powered: this.bluetoothEnabled_}, function() {
+        {powered: this.bluetoothToggleState_}, function() {
           if (chrome.runtime.lastError) {
             console.error(
                 'Error enabling bluetooth: ' +

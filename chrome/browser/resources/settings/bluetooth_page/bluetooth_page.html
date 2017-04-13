@@ -20,11 +20,11 @@
       <neon-animatable route-path="default">
         <div id="bluetoothDevices"
             class="settings-box two-line" actionable on-tap="onTap_">
-          <iron-icon icon="[[getIcon_(bluetoothEnabled_)]]"></iron-icon>
+          <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
           <div class="middle">
             $i18n{bluetoothPageTitle}
             <div class="secondary" id="bluetoothSecondary">
-              [[getOnOffString_(bluetoothEnabled_,
+              [[getOnOffString_(bluetoothToggleState_,
               '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
             </div>
           </div>
@@ -41,8 +41,8 @@
           </template>
           <div class="secondary-action">
             <paper-toggle-button id="enableBluetooth"
-                checked="{{bluetoothEnabled_}}"
-                disabled="[[!adapterState_.available]]" on-tap="stopTap_"
+                checked="{{bluetoothToggleState_}}"
+                disabled$="[[bluetoothToggleDisabled_]]" on-tap="stopTap_"
                 aria-label="$i18n{bluetoothToggleA11yLabel}">
             </paper-toggle-button>
           </div>
@@ -54,7 +54,8 @@
             page-title="$i18n{bluetoothPageTitle}">
           <settings-bluetooth-subpage 
               adapter-state="[[adapterState_]]"
-              bluetooth-enabled="{{bluetoothEnabled_}}"
+              bluetooth-toggle-state="{{bluetoothToggleState_}}"
+              bluetooth-toggle-disabled="[[bluetoothToggleDisabled_]]"
               bluetooth="[[bluetooth]]"
               bluetooth-private="[[bluetoothPrivate]]">
           </settings-bluetooth-subpage>

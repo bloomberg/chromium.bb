@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -162,18 +163,21 @@ bool BluetoothPrivateSetAdapterStateFunction::DoWork(
   bool* discoverable = new_state.discoverable.get();
 
   if (name && adapter->GetName() != *name) {
+    BLUETOOTH_LOG(USER) << "SetAdapterState: name=" << *name;
     pending_properties_.insert(kNameProperty);
     adapter->SetName(*name, CreatePropertySetCallback(kNameProperty),
                      CreatePropertyErrorCallback(kNameProperty));
   }
 
   if (powered && adapter->IsPowered() != *powered) {
+    BLUETOOTH_LOG(USER) << "SetAdapterState: powerd=" << *powered;
     pending_properties_.insert(kPoweredProperty);
     adapter->SetPowered(*powered, CreatePropertySetCallback(kPoweredProperty),
                         CreatePropertyErrorCallback(kPoweredProperty));
   }
 
   if (discoverable && adapter->IsDiscoverable() != *discoverable) {
+    BLUETOOTH_LOG(USER) << "SetAdapterState: discoverable=" << *discoverable;
     pending_properties_.insert(kDiscoverableProperty);
     adapter->SetDiscoverable(
         *discoverable, CreatePropertySetCallback(kDiscoverableProperty),
@@ -190,6 +194,7 @@ bool BluetoothPrivateSetAdapterStateFunction::DoWork(
 base::Closure
 BluetoothPrivateSetAdapterStateFunction::CreatePropertySetCallback(
     const std::string& property_name) {
+  BLUETOOTH_LOG(DEBUG) << "Set property succeeded: " << property_name;
   return base::Bind(
       &BluetoothPrivateSetAdapterStateFunction::OnAdapterPropertySet, this,
       property_name);
@@ -198,6 +203,7 @@ BluetoothPrivateSetAdapterStateFunction::CreatePropertySetCallback(
 base::Closure
 BluetoothPrivateSetAdapterStateFunction::CreatePropertyErrorCallback(
     const std::string& property_name) {
+  BLUETOOTH_LOG(DEBUG) << "Set property failed: " << property_name;
   return base::Bind(
       &BluetoothPrivateSetAdapterStateFunction::OnAdapterPropertyError, this,
       property_name);

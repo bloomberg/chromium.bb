@@ -24,7 +24,7 @@ cr.define('settings', function() {
   FakeBluetoothPrivate.prototype = {
     /** @override */
     setAdapterState: function(state, opt_callback) {
-      this.bluetoothApi_.adapterState = state;
+      this.bluetoothApi_.setAdapterState(state);
       if (opt_callback)
         opt_callback();
     },

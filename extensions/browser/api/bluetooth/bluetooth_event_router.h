@@ -35,6 +35,7 @@ class BluetoothDiscoverySession;
 namespace extensions {
 class BluetoothApiPairingDelegate;
 class ExtensionRegistry;
+struct EventListenerInfo;
 
 class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                              public content::NotificationObserver,
@@ -81,10 +82,10 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
       const base::Closure& error_callback);
 
   // Called when a bluetooth event listener is added.
-  void OnListenerAdded();
+  void OnListenerAdded(const EventListenerInfo& details);
 
   // Called when a bluetooth event listener is removed.
-  void OnListenerRemoved();
+  void OnListenerRemoved(const EventListenerInfo& details);
 
   // Adds a pairing delegate for an extension.
   void AddPairingDelegate(const std::string& extension_id);
@@ -159,7 +160,8 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   content::BrowserContext* browser_context_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  int num_event_listeners_;
+  // Map of listener id -> listener count.
+  std::map<std::string, int> event_listener_count_;
 
   // A map that maps extension ids to BluetoothDiscoverySession pointers.
   typedef std::map<std::string, device::BluetoothDiscoverySession*>

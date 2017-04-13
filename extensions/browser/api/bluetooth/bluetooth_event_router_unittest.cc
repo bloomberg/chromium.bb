@@ -16,6 +16,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/api/bluetooth.h"
@@ -64,19 +65,22 @@ class BluetoothEventRouterTest : public ExtensionsTest {
 };
 
 TEST_F(BluetoothEventRouterTest, BluetoothEventListener) {
-  router_->OnListenerAdded();
+  EventListenerInfo info("", "", GURL(), nullptr);
+  router_->OnListenerAdded(info);
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
-  router_->OnListenerRemoved();
+  router_->OnListenerRemoved(info);
 }
 
 TEST_F(BluetoothEventRouterTest, MultipleBluetoothEventListeners) {
-  router_->OnListenerAdded();
-  router_->OnListenerAdded();
-  router_->OnListenerAdded();
-  router_->OnListenerRemoved();
-  router_->OnListenerRemoved();
+  // TODO(rkc/stevenjb): Test multiple extensions and WebUI.
+  EventListenerInfo info("", "", GURL(), nullptr);
+  router_->OnListenerAdded(info);
+  router_->OnListenerAdded(info);
+  router_->OnListenerAdded(info);
+  router_->OnListenerRemoved(info);
+  router_->OnListenerRemoved(info);
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
-  router_->OnListenerRemoved();
+  router_->OnListenerRemoved(info);
 }
 
 TEST_F(BluetoothEventRouterTest, UnloadExtension) {

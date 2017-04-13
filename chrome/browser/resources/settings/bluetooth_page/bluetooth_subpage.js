@@ -22,10 +22,13 @@ Polymer({
 
   properties: {
     /** Reflects the bluetooth-page property. */
-    bluetoothEnabled: {
+    bluetoothToggleState: {
       type: Boolean,
       notify: true,
     },
+
+    /** Reflects the bluetooth-page property. */
+    bluetoothToggleDisabled: Boolean,
 
     /**
      * The bluetooth adapter state, cached by bluetooth-page.
@@ -249,7 +252,7 @@ Polymer({
    * @private
    */
   updateDeviceList_: function() {
-    if (!this.bluetoothEnabled) {
+    if (!this.bluetoothToggleState) {
       this.deviceList_ = [];
       return;
     }
@@ -352,23 +355,23 @@ Polymer({
   },
 
   /**
-   * @param {boolean} bluetoothEnabled
+   * @param {boolean} bluetoothToggleState
    * @param {!Array<!chrome.bluetooth.Device>} deviceList
    * @return {boolean}
    * @private
    */
-  showDevices_: function(bluetoothEnabled, deviceList) {
-    return bluetoothEnabled && deviceList.length > 0;
+  showDevices_: function(bluetoothToggleState, deviceList) {
+    return bluetoothToggleState && deviceList.length > 0;
   },
 
   /**
-   * @param {boolean} bluetoothEnabled
+   * @param {boolean} bluetoothToggleState
    * @param {!Array<!chrome.bluetooth.Device>} deviceList
    * @return {boolean}
    * @private
    */
-  showNoDevices_: function(bluetoothEnabled, deviceList) {
-    return bluetoothEnabled && deviceList.length == 0;
+  showNoDevices_: function(bluetoothToggleState, deviceList) {
+    return bluetoothToggleState && deviceList.length == 0;
   },
 
   /**
