@@ -269,7 +269,8 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
   base::Closure task = base::Bind(
       &EPKPChallengeMachineKey::Run, base::Unretained(impl_),
       scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, StringFromVector(params->challenge));
+      callback, StringFromVector(params->challenge),
+      params->register_key ? *params->register_key : false);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
   return RespondLater();
 }

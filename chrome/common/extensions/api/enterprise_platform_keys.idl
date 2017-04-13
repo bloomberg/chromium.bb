@@ -111,8 +111,16 @@ namespace enterprise.platformKeys {
     // policy. The Enterprise Machine Key does not reside in the
     // <code>"system"</code> token and is not accessible by any other API.
     // |challenge|: A challenge as emitted by the Verified Access Web API.
+    // |registerKey|: If set, the current Enterprise Machine Key is registered
+    //                with the <code>"system"</code> token and relinquishes the
+    //                Enterprise Machine Key role. The key can then be
+    //                associated with a certificate and used like any other
+    //                signing key. This key is 2048-bit RSA. Subsequent calls
+    //                to this function will then generate a new Enterprise
+    //                Machine Key.
     // |callback|: Called back with the challenge response.
     static void challengeMachineKey(ArrayBuffer challenge,
+                                    optional boolean registerKey,
                                     ChallengeCallback callback);
 
     // Challenges a hardware-backed Enterprise User Key and emits the response

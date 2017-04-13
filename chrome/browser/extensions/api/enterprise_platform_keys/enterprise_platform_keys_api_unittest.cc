@@ -262,8 +262,24 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
   }
 
   std::unique_ptr<base::ListValue> CreateArgs() {
+    return CreateArgsInternal(nullptr);
+  }
+
+  std::unique_ptr<base::ListValue> CreateArgsNoRegister() {
+    return CreateArgsInternal(base::MakeUnique<bool>(false));
+  }
+
+  std::unique_ptr<base::ListValue> CreateArgsRegister() {
+    return CreateArgsInternal(base::MakeUnique<bool>(true));
+  }
+
+  std::unique_ptr<base::ListValue> CreateArgsInternal(
+      std::unique_ptr<bool> register_key) {
     std::unique_ptr<base::ListValue> args(new base::ListValue);
     args->Append(base::Value::CreateWithCopiedBuffer("challenge", 9));
+    if (register_key) {
+      args->AppendBoolean(*register_key);
+    }
     return args;
   }
 
@@ -320,6 +336,15 @@ TEST_F(EPKChallengeMachineKeyTest, SignChallengeFailed) {
             RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
 }
 
+TEST_F(EPKChallengeMachineKeyTest, KeyRegistrationFailed) {
+  EXPECT_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
+      .WillRepeatedly(Invoke(RegisterKeyCallbackFalse));
+
+  EXPECT_EQ(
+      EPKPChallengeMachineKey::kKeyRegistrationFailedError,
+      RunFunctionAndReturnError(func_.get(), CreateArgsRegister(), browser()));
+}
+
 TEST_F(EPKChallengeMachineKeyTest, KeyExists) {
   EXPECT_CALL(mock_cryptohome_client_, TpmAttestationDoesKeyExist(_, _, _, _))
       .WillRepeatedly(WithArgs<3>(Invoke(
@@ -329,6 +354,22 @@ TEST_F(EPKChallengeMachineKeyTest, KeyExists) {
 
   EXPECT_TRUE(
       utils::RunFunction(func_.get(), CreateArgs(), browser(), utils::NONE));
+}
+
+TEST_F(EPKChallengeMachineKeyTest, KeyNotRegisteredByDefault) {
+  EXPECT_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
+      .Times(0);
+
+  EXPECT_TRUE(
+      utils::RunFunction(func_.get(), CreateArgs(), browser(), utils::NONE));
+}
+
+TEST_F(EPKChallengeMachineKeyTest, KeyNotRegistered) {
+  EXPECT_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
+      .Times(0);
+
+  EXPECT_TRUE(utils::RunFunction(func_.get(), CreateArgsNoRegister(), browser(),
+                                 utils::NONE));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, Success) {
@@ -348,6 +389,36 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
 
   std::unique_ptr<base::Value> value(
       RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
+
+  const base::Value* response;
+  ASSERT_TRUE(value->GetAsBinary(&response));
+  EXPECT_EQ("response",
+            std::string(response->GetBuffer(), response->GetSize()));
+}
+
+TEST_F(EPKChallengeMachineKeyTest, KeyRegisteredSuccess) {
+  // GetCertificate must be called exactly once.
+  EXPECT_CALL(mock_attestation_flow_,
+              GetCertificate(
+                  chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
+                  _, _, _, _))
+      .Times(1);
+  // TpmAttestationRegisterKey must be called exactly once.
+  EXPECT_CALL(mock_async_method_caller_,
+              TpmAttestationRegisterKey(chromeos::attestation::KEY_DEVICE,
+                                        _ /* Unused by the API. */,
+                                        "attest-ent-machine", _))
+      .Times(1);
+  // SignEnterpriseChallenge must be called exactly once.
+  EXPECT_CALL(
+      mock_async_method_caller_,
+      TpmAttestationSignEnterpriseChallenge(
+          chromeos::attestation::KEY_DEVICE, cryptohome::Identification(),
+          "attest-ent-machine", "google.com", "device_id", _, "challenge", _))
+      .Times(1);
+
+  std::unique_ptr<base::Value> value(RunFunctionAndReturnSingleResult(
+      func_.get(), CreateArgsRegister(), browser()));
 
   const base::Value* response;
   ASSERT_TRUE(value->GetAsBinary(&response));

@@ -163,6 +163,7 @@ class EPKPChallengeKeyBase {
 class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
  public:
   static const char kGetCertificateFailedError[];
+  static const char kKeyRegistrationFailedError[];
   static const char kNonEnterpriseDeviceError[];
 
   EPKPChallengeMachineKey();
@@ -177,21 +178,30 @@ class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
   // context.
   void Run(scoped_refptr<UIThreadExtensionFunction> caller,
            const ChallengeKeyCallback& callback,
-           const std::string& encoded_challenge);
+           const std::string& encoded_challenge,
+           bool register_key);
 
   // Like |Run| but expects a Base64 |encoded_challenge|.
   void DecodeAndRun(scoped_refptr<UIThreadExtensionFunction> caller,
                     const ChallengeKeyCallback& callback,
-                    const std::string& encoded_challenge);
+                    const std::string& encoded_challenge,
+                    bool register_key);
 
  private:
   static const char kKeyName[];
 
   void GetDeviceAttestationEnabledCallback(const std::string& challenge,
+                                           bool register_key,
                                            bool enabled);
   void PrepareKeyCallback(const std::string& challenge,
+                          bool register_key,
                           PrepareKeyResult result);
-  void SignChallengeCallback(bool success, const std::string& response);
+  void SignChallengeCallback(bool register_key,
+                             bool success,
+                             const std::string& response);
+  void RegisterKeyCallback(const std::string& response,
+                           bool success,
+                           cryptohome::MountError return_code);
 };
 
 class EPKPChallengeUserKey : public EPKPChallengeKeyBase {

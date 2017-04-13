@@ -287,6 +287,8 @@ void EPKPChallengeKeyBase::GetCertificateCallback(
 
 const char EPKPChallengeMachineKey::kGetCertificateFailedError[] =
     "Failed to get Enterprise machine certificate. Error code = %d";
+const char EPKPChallengeMachineKey::kKeyRegistrationFailedError[] =
+    "Machine key registration failed.";
 const char EPKPChallengeMachineKey::kNonEnterpriseDeviceError[] =
     "The device is not enterprise enrolled.";
 
@@ -312,7 +314,8 @@ EPKPChallengeMachineKey::~EPKPChallengeMachineKey() {
 void EPKPChallengeMachineKey::Run(
     scoped_refptr<UIThreadExtensionFunction> caller,
     const ChallengeKeyCallback& callback,
-    const std::string& challenge) {
+    const std::string& challenge,
+    bool register_key) {
   callback_ = callback;
   profile_ = ChromeExtensionFunctionDetails(caller.get()).GetProfile();
   extension_id_ = caller->extension_id();
@@ -337,23 +340,26 @@ void EPKPChallengeMachineKey::Run(
   // Check if RA is enabled in the device policy.
   GetDeviceAttestationEnabled(
       base::Bind(&EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback,
-                 base::Unretained(this), challenge));
+                 base::Unretained(this), challenge, register_key));
 }
 
 void EPKPChallengeMachineKey::DecodeAndRun(
     scoped_refptr<UIThreadExtensionFunction> caller,
     const ChallengeKeyCallback& callback,
-    const std::string& encoded_challenge) {
+    const std::string& encoded_challenge,
+    bool register_key) {
   std::string challenge;
   if (!base::Base64Decode(encoded_challenge, &challenge)) {
     callback.Run(false, kChallengeBadBase64Error);
     return;
   }
-  Run(caller, callback, challenge);
+  Run(caller, callback, challenge, register_key);
 }
 
 void EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback(
-    const std::string& challenge, bool enabled) {
+    const std::string& challenge,
+    bool register_key,
+    bool enabled) {
   if (!enabled) {
     callback_.Run(false, kDevicePolicyDisabledError);
     return;
@@ -365,11 +371,12 @@ void EPKPChallengeMachineKey::GetDeviceAttestationEnabledCallback(
              chromeos::attestation::PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
              false,  // user consent is not required.
              base::Bind(&EPKPChallengeMachineKey::PrepareKeyCallback,
-                        base::Unretained(this), challenge));
+                        base::Unretained(this), challenge, register_key));
 }
 
-void EPKPChallengeMachineKey::PrepareKeyCallback(
-    const std::string& challenge, PrepareKeyResult result) {
+void EPKPChallengeMachineKey::PrepareKeyCallback(const std::string& challenge,
+                                                 bool register_key,
+                                                 PrepareKeyResult result) {
   if (result != PREPARE_KEY_OK) {
     callback_.Run(false,
                   base::StringPrintf(kGetCertificateFailedError, result));
@@ -381,15 +388,39 @@ void EPKPChallengeMachineKey::PrepareKeyCallback(
       chromeos::attestation::KEY_DEVICE,
       cryptohome::Identification(),  // Not used.
       kKeyName, GetEnterpriseDomain(), GetDeviceId(),
-      chromeos::attestation::CHALLENGE_OPTION_NONE, challenge,
+      register_key ? chromeos::attestation::CHALLENGE_INCLUDE_SIGNED_PUBLIC_KEY
+                   : chromeos::attestation::CHALLENGE_OPTION_NONE,
+      challenge,
       base::Bind(&EPKPChallengeMachineKey::SignChallengeCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this), register_key));
 }
 
 void EPKPChallengeMachineKey::SignChallengeCallback(
-    bool success, const std::string& response) {
+    bool register_key,
+    bool success,
+    const std::string& response) {
   if (!success) {
     callback_.Run(false, kSignChallengeFailedError);
+    return;
+  }
+  if (register_key) {
+    async_caller_->TpmAttestationRegisterKey(
+        chromeos::attestation::KEY_DEVICE,
+        cryptohome::Identification(),  // Not used.
+        kKeyName,
+        base::Bind(&EPKPChallengeMachineKey::RegisterKeyCallback,
+                   base::Unretained(this), response));
+  } else {
+    RegisterKeyCallback(response, true, cryptohome::MOUNT_ERROR_NONE);
+  }
+}
+
+void EPKPChallengeMachineKey::RegisterKeyCallback(
+    const std::string& response,
+    bool success,
+    cryptohome::MountError return_code) {
+  if (!success || return_code != cryptohome::MOUNT_ERROR_NONE) {
+    callback_.Run(false, kKeyRegistrationFailedError);
     return;
   }
   callback_.Run(true, response);
@@ -579,7 +610,7 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
   base::Closure task = base::Bind(
       &EPKPChallengeMachineKey::DecodeAndRun, base::Unretained(impl_),
       scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, params->challenge);
+      callback, params->challenge, false);
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
   return RespondLater();
 }
