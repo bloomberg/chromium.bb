@@ -278,7 +278,7 @@ MediaStreamTrack* MediaStream::getTrackById(String id) {
 
 MediaStream* MediaStream::clone(ScriptState* script_state) {
   MediaStreamTrackVector tracks;
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   for (MediaStreamTrackVector::iterator iter = audio_tracks_.begin();
        iter != audio_tracks_.end(); ++iter)
     tracks.push_back((*iter)->clone(script_state));

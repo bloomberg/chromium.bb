@@ -30,6 +30,7 @@
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
 
 namespace blink {
@@ -94,7 +95,7 @@ IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
                                const ScriptValue& key_value,
                                ExceptionState& exception_state) {
   IDBKey* key =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                key_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -112,7 +113,7 @@ IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* script_state,
                                      bool open,
                                      ExceptionState& exception_state) {
   IDBKey* bound =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                bound_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -132,7 +133,7 @@ IDBKeyRange* IDBKeyRange::upperBound(ScriptState* script_state,
                                      bool open,
                                      ExceptionState& exception_state) {
   IDBKey* bound =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                bound_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -153,7 +154,7 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
                                 bool upper_open,
                                 ExceptionState& exception_state) {
   IDBKey* lower =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                lower_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -164,7 +165,7 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
   }
 
   IDBKey* upper =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                upper_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
@@ -195,7 +196,7 @@ bool IDBKeyRange::includes(ScriptState* script_state,
                            const ScriptValue& key_value,
                            ExceptionState& exception_state) {
   IDBKey* key =
-      ScriptValue::To<IDBKey*>(ToIsolate(script_state->GetExecutionContext()),
+      ScriptValue::To<IDBKey*>(ToIsolate(ExecutionContext::From(script_state)),
                                key_value, exception_state);
   if (exception_state.HadException())
     return false;

@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/budget/BudgetState.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -60,7 +61,7 @@ ScriptPromise BudgetService::getCost(ScriptState* script_state,
   DCHECK(service_);
 
   String error_message;
-  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kSecurityError, error_message));
 
@@ -86,7 +87,7 @@ ScriptPromise BudgetService::getBudget(ScriptState* script_state) {
   DCHECK(service_);
 
   String error_message;
-  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kSecurityError, error_message));
 
@@ -95,7 +96,7 @@ ScriptPromise BudgetService::getBudget(ScriptState* script_state) {
 
   // Get the budget from the browser BudgetService.
   RefPtr<SecurityOrigin> origin(
-      script_state->GetExecutionContext()->GetSecurityOrigin());
+      ExecutionContext::From(script_state)->GetSecurityOrigin());
   service_->GetBudget(
       origin, ConvertToBaseCallback(WTF::Bind(&BudgetService::GotBudget,
                                               WrapPersistent(this),
@@ -132,7 +133,7 @@ ScriptPromise BudgetService::reserve(ScriptState* script_state,
   DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
   String error_message;
-  if (!script_state->GetExecutionContext()->IsSecureContext(error_message))
+  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kSecurityError, error_message));
 
@@ -141,7 +142,7 @@ ScriptPromise BudgetService::reserve(ScriptState* script_state,
 
   // Call to the BudgetService to place the reservation.
   RefPtr<SecurityOrigin> origin(
-      script_state->GetExecutionContext()->GetSecurityOrigin());
+      ExecutionContext::From(script_state)->GetSecurityOrigin());
   service_->Reserve(origin, type,
                     ConvertToBaseCallback(WTF::Bind(
                         &BudgetService::GotReservation, WrapPersistent(this),

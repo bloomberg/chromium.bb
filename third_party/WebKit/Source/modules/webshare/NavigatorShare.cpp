@@ -7,6 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webshare/ShareData.h"
@@ -104,7 +105,7 @@ const char* NavigatorShare::SupplementName() {
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     const ShareData& share_data) {
   String error_message;
-  if (!script_state->GetExecutionContext()->IsSecureContext(error_message)) {
+  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message)) {
     DOMException* error = DOMException::Create(kSecurityError, error_message);
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
@@ -115,7 +116,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
 
-  Document* doc = ToDocument(script_state->GetExecutionContext());
+  Document* doc = ToDocument(ExecutionContext::From(script_state));
   DCHECK(doc);
   if (!service_) {
     LocalFrame* frame = doc->GetFrame();

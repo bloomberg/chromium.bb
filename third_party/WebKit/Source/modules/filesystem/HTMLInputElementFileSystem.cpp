@@ -31,6 +31,7 @@
 #include "modules/filesystem/HTMLInputElementFileSystem.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -54,7 +55,7 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
     return entries;
 
   DOMFileSystem* filesystem = DOMFileSystem::CreateIsolatedFileSystem(
-      script_state->GetExecutionContext(), input.DroppedFileSystemId());
+      ExecutionContext::From(script_state), input.DroppedFileSystemId());
   if (!filesystem) {
     // Drag-drop isolated filesystem is not available.
     return entries;

@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/Frame.h"
 #include "core/frame/SubresourceIntegrity.h"
@@ -425,7 +426,7 @@ void FetchManager::Loader::DidReceiveResponse(
     response_data = FetchResponseData::CreateWithBuffer(new BodyStreamBuffer(
         script_state,
         new BytesConsumerForDataConsumerHandle(
-            script_state->GetExecutionContext(), std::move(handle))));
+            ExecutionContext::From(script_state), std::move(handle))));
   } else {
     sri_consumer = new SRIBytesConsumer();
     response_data = FetchResponseData::CreateWithBuffer(

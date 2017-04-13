@@ -174,7 +174,7 @@ bool AudioWorkletGlobalScope::Process(AudioWorkletProcessor* processor,
   // V8 operation happens here to make the AudioWorkletProcessor class a thin
   // wrapper of v8::Object instance.
   V8ScriptRunner::CallFunction(
-      definition->ProcessLocal(isolate), script_state->GetExecutionContext(),
+      definition->ProcessLocal(isolate), ExecutionContext::From(script_state),
       processor->InstanceLocal(isolate), WTF_ARRAY_LENGTH(argv), argv, isolate);
 
   return !block.HasCaught();

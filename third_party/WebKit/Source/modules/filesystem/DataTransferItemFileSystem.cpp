@@ -34,6 +34,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
@@ -62,7 +63,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ScriptState* script_state,
   DOMFileSystem* dom_file_system =
       DraggedIsolatedFileSystemImpl::GetDOMFileSystem(
           item.GetDataTransfer()->GetDataObject(),
-          script_state->GetExecutionContext(), *item.GetDataObjectItem());
+          ExecutionContext::From(script_state), *item.GetDataObjectItem());
   if (!dom_file_system) {
     // IsolatedFileSystem may not be enabled.
     return 0;

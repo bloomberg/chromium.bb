@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLocation.h"
@@ -48,14 +49,14 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!script_state->GetExecutionContext()->IsWindowInteractionAllowed()) {
+  if (!ExecutionContext::From(script_state)->IsWindowInteractionAllowed()) {
     resolver->Reject(DOMException::Create(kInvalidAccessError,
                                           "Not allowed to focus a window."));
     return promise;
   }
-  script_state->GetExecutionContext()->ConsumeWindowInteraction();
+  ExecutionContext::From(script_state)->ConsumeWindowInteraction();
 
-  ServiceWorkerGlobalScopeClient::From(script_state->GetExecutionContext())
+  ServiceWorkerGlobalScopeClient::From(ExecutionContext::From(script_state))
       ->Focus(Uuid(),
               WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
                                                      ServiceWorkerError>>(
@@ -67,7 +68,7 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
                                                   const String& url) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   KURL parsed_url = KURL(ToWorkerGlobalScope(context)->location()->Url(), url);
   if (!parsed_url.IsValid() || parsed_url.ProtocolIsAbout()) {

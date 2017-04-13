@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
@@ -68,7 +69,7 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
                                       PassRefPtr<SerializedScriptValue> message,
                                       const MessagePortArray& ports,
                                       ExceptionState& exception_state) {
-  ExecutionContext* context = script_state->GetExecutionContext();
+  ExecutionContext* context = ExecutionContext::From(script_state);
   // Disentangle the port in preparation for sending it to the remote context.
   MessagePortChannelArray channels =
       MessagePort::DisentanglePorts(context, ports, exception_state);

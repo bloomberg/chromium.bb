@@ -112,7 +112,8 @@ PassRefPtr<Image> CSSPaintDefinition::Paint(
   v8::TryCatch block(isolate);
   block.SetVerbose(true);
 
-  V8ScriptRunner::CallFunction(paint, script_state_->GetExecutionContext(),
+  V8ScriptRunner::CallFunction(paint,
+                               ExecutionContext::From(script_state_.Get()),
                                instance, WTF_ARRAY_LENGTH(argv), argv, isolate);
 
   // The paint function may have produced an error, in which case produce an

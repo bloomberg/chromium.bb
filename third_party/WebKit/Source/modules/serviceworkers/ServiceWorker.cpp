@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "modules/EventTargetModules.h"
@@ -64,7 +65,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
 
   // Disentangle the port in preparation for sending it to the remote context.
   MessagePortChannelArray channels = MessagePort::DisentanglePorts(
-      script_state->GetExecutionContext(), ports, exception_state);
+      ExecutionContext::From(script_state), ports, exception_state);
   if (exception_state.HadException())
     return;
   if (handle_->ServiceWorker()->GetState() == kWebServiceWorkerStateRedundant) {

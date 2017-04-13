@@ -39,6 +39,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -157,7 +158,7 @@ ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration() {
 }
 
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
-  ExecutionContext* execution_context = script_state->GetExecutionContext();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: short-term fix, see details at:
   // https://codereview.chromium.org/535193002/.
   if (!execution_context)

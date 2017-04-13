@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"
@@ -79,7 +80,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
   }
 
   UseCounter::CountCrossOriginIframe(
-      *ToDocument(script_state->GetExecutionContext()),
+      *ToDocument(ExecutionContext::From(script_state)),
       UseCounter::kRequestMIDIAccessIframe);
   return MIDIAccessInitializer::Start(script_state, options);
 }

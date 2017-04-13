@@ -16,6 +16,7 @@
 #include "bindings/modules/v8/V8Request.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BodyStreamBuffer.h"
@@ -244,7 +245,7 @@ class CacheStorageTest : public ::testing::Test {
     return ToScriptStateForMainWorld(page_->GetDocument().GetFrame());
   }
   ExecutionContext* GetExecutionContext() {
-    return GetScriptState()->GetExecutionContext();
+    return ExecutionContext::From(GetScriptState());
   }
   v8::Isolate* GetIsolate() { return GetScriptState()->GetIsolate(); }
   v8::Local<v8::Context> GetContext() { return GetScriptState()->GetContext(); }

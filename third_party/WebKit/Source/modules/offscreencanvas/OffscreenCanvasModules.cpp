@@ -4,6 +4,7 @@
 
 #include "modules/offscreencanvas/OffscreenCanvasModules.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
@@ -25,7 +26,7 @@ void OffscreenCanvasModules::getContext(
 
   // OffscreenCanvas cannot be transferred after getContext, so this execution
   // context will always be the right one from here on.
-  offscreen_canvas.SetExecutionContext(script_state->GetExecutionContext());
+  offscreen_canvas.SetExecutionContext(ExecutionContext::From(script_state));
   CanvasRenderingContext* context =
       offscreen_canvas.GetCanvasRenderingContext(script_state, id, attributes);
   if (context)

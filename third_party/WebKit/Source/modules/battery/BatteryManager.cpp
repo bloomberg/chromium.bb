@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "platform/wtf/Assertions.h"
@@ -26,8 +27,8 @@ BatteryManager::BatteryManager(ExecutionContext* context)
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {
-    battery_property_ = new BatteryProperty(script_state->GetExecutionContext(),
-                                            this, BatteryProperty::kReady);
+    battery_property_ = new BatteryProperty(
+        ExecutionContext::From(script_state), this, BatteryProperty::kReady);
 
     // If the context is in a stopped state already, do not start updating.
     if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {

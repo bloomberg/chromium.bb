@@ -31,6 +31,7 @@
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -67,7 +68,7 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(
     ScriptState* script_state) {
   if (!speech_synthesis_) {
     speech_synthesis_ =
-        SpeechSynthesis::Create(script_state->GetExecutionContext());
+        SpeechSynthesis::Create(ExecutionContext::From(script_state));
   }
   return speech_synthesis_;
 }

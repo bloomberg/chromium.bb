@@ -143,7 +143,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
   WebIDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -191,7 +191,7 @@ IDBRequest* IDBIndex::count(ScriptState* script_state,
   }
 
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -233,7 +233,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
   WebIDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!BackendDB()) {
@@ -319,7 +319,7 @@ IDBRequest* IDBIndex::GetInternal(ScriptState* script_state,
   }
 
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key, exception_state);
+      ExecutionContext::From(script_state), key, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key_range) {
@@ -367,7 +367,7 @@ IDBRequest* IDBIndex::GetAllInternal(ScriptState* script_state,
   }
 
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!BackendDB()) {

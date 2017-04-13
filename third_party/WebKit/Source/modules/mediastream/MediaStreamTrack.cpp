@@ -211,7 +211,7 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   // tracks.
   MediaStreamComponent* cloned_component = Component()->Clone();
   MediaStreamTrack* cloned_track = MediaStreamTrack::Create(
-      script_state->GetExecutionContext(), cloned_component);
+      ExecutionContext::From(script_state), cloned_component);
   MediaStreamCenter::Instance().DidCloneMediaStreamTrack(Component(),
                                                          cloned_component);
   return cloned_track;

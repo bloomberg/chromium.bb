@@ -153,7 +153,7 @@ IDBRequest* IDBObjectStore::get(ScriptState* script_state,
     return nullptr;
   }
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key, exception_state);
+      ExecutionContext::From(script_state), key, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key_range) {
@@ -197,7 +197,7 @@ IDBRequest* IDBObjectStore::getKey(ScriptState* script_state,
     return nullptr;
   }
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key, exception_state);
+      ExecutionContext::From(script_state), key, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key_range) {
@@ -252,7 +252,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
     return nullptr;
   }
   IDBKeyRange* range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key_range, exception_state);
+      ExecutionContext::From(script_state), key_range, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!BackendDB()) {
@@ -302,7 +302,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
     return nullptr;
   }
   IDBKeyRange* range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key_range, exception_state);
+      ExecutionContext::From(script_state), key_range, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!BackendDB()) {
@@ -422,7 +422,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   SerializedScriptValue::SerializeOptions options;
   options.blob_info = &blob_info;
   options.write_wasm_to_stream =
-      script_state->GetExecutionContext()->IsSecureContext();
+      ExecutionContext::From(script_state)->IsSecureContext();
   RefPtr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Serialize(isolate, value.V8Value(), options,
                                        exception_state);
@@ -583,7 +583,7 @@ IDBRequest* IDBObjectStore::deleteFunction(ScriptState* script_state,
   }
 
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), key, exception_state);
+      ExecutionContext::From(script_state), key, exception_state);
   if (exception_state.HadException())
     return nullptr;
   if (!key_range) {
@@ -689,7 +689,7 @@ class IndexPopulator final : public EventListener {
     if (!script_state_->ContextIsValid())
       return;
 
-    DCHECK_EQ(script_state_->GetExecutionContext(), execution_context);
+    DCHECK_EQ(ExecutionContext::From(script_state_.Get()), execution_context);
     DCHECK_EQ(event->type(), EventTypeNames::success);
     EventTarget* target = event->target();
     IDBRequest* request = static_cast<IDBRequest*>(target);
@@ -930,7 +930,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
   WebIDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -983,7 +983,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
   WebIDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -1027,7 +1027,7 @@ IDBRequest* IDBObjectStore::count(ScriptState* script_state,
   }
 
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
-      script_state->GetExecutionContext(), range, exception_state);
+      ExecutionContext::From(script_state), range, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
