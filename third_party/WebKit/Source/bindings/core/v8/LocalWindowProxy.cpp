@@ -106,6 +106,12 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status) {
   V8GCForContextDispose::Instance().NotifyContextDisposed(
       GetFrame()->IsMainFrame());
 
+  if (next_status == Lifecycle::kFrameIsDetached) {
+    // The context's frame is detached from the DOM, so there shouldn't be a
+    // strong reference to the context.
+    global_proxy_.SetPhantom();
+  }
+
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);
   lifecycle_ = next_status;
 }

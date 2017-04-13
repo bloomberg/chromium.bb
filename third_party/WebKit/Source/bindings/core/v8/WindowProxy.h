@@ -206,7 +206,9 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // to the context and hence author script may run in the context.
   // The spec does not support some of web features such as setTimeout, etc. on
   // a detached window. Blink supports less things than the spec.
-  // V8PerContextData is cut off from the context.
+  // V8PerContextData is cut off from the context.  |global_proxy_| becomes a
+  // weak reference so that it's collectable when author script has no
+  // reference.
   // - Possible next states: n/a
   enum class Lifecycle {
     // v8::Context is not yet initialized.
@@ -249,6 +251,10 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
  protected:
   // TODO(dcheng): Consider making these private and using getters.
   const RefPtr<DOMWrapperWorld> world_;
+  // |global_proxy_| is the root reference from Blink to v8::Context (a strong
+  // reference to the global proxy makes the entire context alive).  In order to
+  // discard the v8::Context, |global_proxy_| needs to be a weak reference or
+  // to be destroyed.
   ScopedPersistent<v8::Object> global_proxy_;
   Lifecycle lifecycle_;
 };
