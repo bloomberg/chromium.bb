@@ -658,9 +658,10 @@
       name: "NotificationConstructor",
       status: "stable",
     },
+    // NotificationContentImage is not available in all platforms
     {
       name: "NotificationContentImage",
-      status: "stable",
+      status: "test",
     },
     {
       name: "NotificationInlineReplies",

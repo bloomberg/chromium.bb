@@ -3726,7 +3726,6 @@ interface Notification : EventTarget
     getter data
     getter dir
     getter icon
-    getter image
     getter lang
     getter onclick
     getter onclose

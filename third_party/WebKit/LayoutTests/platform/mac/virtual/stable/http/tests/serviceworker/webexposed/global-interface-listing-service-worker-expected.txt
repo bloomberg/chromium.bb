@@ -1,0 +1,723 @@
+interface Blob
+    getter size
+    getter type
+    method constructor
+    method slice
+interface BroadcastChannel : EventTarget
+    getter name
+    getter onmessage
+    method close
+    method constructor
+    method postMessage
+    setter onmessage
+interface ByteLengthQueuingStrategy
+    method constructor
+    method size
+interface Cache
+    method add
+    method addAll
+    method constructor
+    method delete
+    method keys
+    method match
+    method matchAll
+    method put
+interface CacheStorage
+    method constructor
+    method delete
+    method has
+    method keys
+    method match
+    method open
+interface Client
+    getter frameType
+    getter id
+    getter url
+    method constructor
+    method postMessage
+interface Clients
+    method claim
+    method constructor
+    method get
+    method matchAll
+    method openWindow
+interface CloseEvent : Event
+    getter code
+    getter reason
+    getter wasClean
+    method constructor
+interface CountQueuingStrategy
+    method constructor
+    method size
+interface Crypto
+    getter subtle
+    method constructor
+    method getRandomValues
+interface CryptoKey
+    getter algorithm
+    getter extractable
+    getter type
+    getter usages
+    method constructor
+interface CustomEvent : Event
+    getter detail
+    method constructor
+    method initCustomEvent
+interface DOMException
+    attribute ABORT_ERR
+    attribute DATA_CLONE_ERR
+    attribute DOMSTRING_SIZE_ERR
+    attribute HIERARCHY_REQUEST_ERR
+    attribute INDEX_SIZE_ERR
+    attribute INUSE_ATTRIBUTE_ERR
+    attribute INVALID_ACCESS_ERR
+    attribute INVALID_CHARACTER_ERR
+    attribute INVALID_MODIFICATION_ERR
+    attribute INVALID_NODE_TYPE_ERR
+    attribute INVALID_STATE_ERR
+    attribute NAMESPACE_ERR
+    attribute NETWORK_ERR
+    attribute NOT_FOUND_ERR
+    attribute NOT_SUPPORTED_ERR
+    attribute NO_DATA_ALLOWED_ERR
+    attribute NO_MODIFICATION_ALLOWED_ERR
+    attribute QUOTA_EXCEEDED_ERR
+    attribute SECURITY_ERR
+    attribute SYNTAX_ERR
+    attribute TIMEOUT_ERR
+    attribute TYPE_MISMATCH_ERR
+    attribute URL_MISMATCH_ERR
+    attribute VALIDATION_ERR
+    attribute WRONG_DOCUMENT_ERR
+    getter code
+    getter message
+    getter name
+    method constructor
+    method toString
+interface DOMStringList
+    getter length
+    method constructor
+    method contains
+    method item
+interface DataView
+    getter buffer
+    getter byteLength
+    getter byteOffset
+    method constructor
+    method getFloat32
+    method getFloat64
+    method getInt16
+    method getInt32
+    method getInt8
+    method getUint16
+    method getUint32
+    method getUint8
+    method setFloat32
+    method setFloat64
+    method setInt16
+    method setInt32
+    method setInt8
+    method setUint16
+    method setUint32
+    method setUint8
+interface Event
+    attribute AT_TARGET
+    attribute BUBBLING_PHASE
+    attribute CAPTURING_PHASE
+    attribute NONE
+    getter bubbles
+    getter cancelBubble
+    getter cancelable
+    getter composed
+    getter currentTarget
+    getter defaultPrevented
+    getter eventPhase
+    getter path
+    getter returnValue
+    getter srcElement
+    getter target
+    getter timeStamp
+    getter type
+    method composedPath
+    method constructor
+    method initEvent
+    method preventDefault
+    method stopImmediatePropagation
+    method stopPropagation
+    setter cancelBubble
+    setter returnValue
+interface EventSource : EventTarget
+    attribute CLOSED
+    attribute CONNECTING
+    attribute OPEN
+    getter onerror
+    getter onmessage
+    getter onopen
+    getter readyState
+    getter url
+    getter withCredentials
+    method close
+    method constructor
+    setter onerror
+    setter onmessage
+    setter onopen
+interface EventTarget
+    method addEventListener
+    method constructor
+    method dispatchEvent
+    method removeEventListener
+interface ExtendableEvent : Event
+    method constructor
+    method waitUntil
+interface ExtendableMessageEvent : ExtendableEvent
+    getter data
+    getter lastEventId
+    getter origin
+    getter ports
+    getter source
+    method constructor
+interface FetchEvent : ExtendableEvent
+    getter clientId
+    getter isReload
+    getter preloadResponse
+    getter request
+    method constructor
+    method respondWith
+interface File : Blob
+    getter lastModified
+    getter lastModifiedDate
+    getter name
+    getter webkitRelativePath
+    method constructor
+interface FileList
+    getter length
+    method constructor
+    method item
+interface FileReader : EventTarget
+    attribute DONE
+    attribute EMPTY
+    attribute LOADING
+    getter error
+    getter onabort
+    getter onerror
+    getter onload
+    getter onloadend
+    getter onloadstart
+    getter onprogress
+    getter readyState
+    getter result
+    method abort
+    method constructor
+    method readAsArrayBuffer
+    method readAsBinaryString
+    method readAsDataURL
+    method readAsText
+    setter onabort
+    setter onerror
+    setter onload
+    setter onloadend
+    setter onloadstart
+    setter onprogress
+interface FormData
+    method append
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method values
+interface Headers
+    method append
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method values
+interface IDBCursor
+    getter direction
+    getter key
+    getter primaryKey
+    getter source
+    method advance
+    method constructor
+    method continue
+    method continuePrimaryKey
+    method delete
+    method update
+interface IDBCursorWithValue : IDBCursor
+    getter value
+    method constructor
+interface IDBDatabase : EventTarget
+    getter name
+    getter objectStoreNames
+    getter onabort
+    getter onclose
+    getter onerror
+    getter onversionchange
+    getter version
+    method close
+    method constructor
+    method createObjectStore
+    method deleteObjectStore
+    method transaction
+    setter onabort
+    setter onclose
+    setter onerror
+    setter onversionchange
+interface IDBFactory
+    method cmp
+    method constructor
+    method deleteDatabase
+    method open
+    method webkitGetDatabaseNames
+interface IDBIndex
+    getter keyPath
+    getter multiEntry
+    getter name
+    getter objectStore
+    getter unique
+    method constructor
+    method count
+    method get
+    method getAll
+    method getAllKeys
+    method getKey
+    method openCursor
+    method openKeyCursor
+    setter name
+interface IDBKeyRange
+    static method bound
+    static method lowerBound
+    static method only
+    static method upperBound
+    getter lower
+    getter lowerOpen
+    getter upper
+    getter upperOpen
+    method constructor
+    method includes
+interface IDBObjectStore
+    getter autoIncrement
+    getter indexNames
+    getter keyPath
+    getter name
+    getter transaction
+    method add
+    method clear
+    method constructor
+    method count
+    method createIndex
+    method delete
+    method deleteIndex
+    method get
+    method getAll
+    method getAllKeys
+    method getKey
+    method index
+    method openCursor
+    method openKeyCursor
+    method put
+    setter name
+interface IDBOpenDBRequest : IDBRequest
+    getter onblocked
+    getter onupgradeneeded
+    method constructor
+    setter onblocked
+    setter onupgradeneeded
+interface IDBRequest : EventTarget
+    getter error
+    getter onerror
+    getter onsuccess
+    getter readyState
+    getter result
+    getter source
+    getter transaction
+    method constructor
+    setter onerror
+    setter onsuccess
+interface IDBTransaction : EventTarget
+    getter db
+    getter error
+    getter mode
+    getter objectStoreNames
+    getter onabort
+    getter oncomplete
+    getter onerror
+    method abort
+    method constructor
+    method objectStore
+    setter onabort
+    setter oncomplete
+    setter onerror
+interface IDBVersionChangeEvent : Event
+    getter dataLoss
+    getter dataLossMessage
+    getter newVersion
+    getter oldVersion
+    method constructor
+interface ImageBitmap
+    getter height
+    getter width
+    method close
+    method constructor
+interface ImageData
+    getter data
+    getter height
+    getter width
+    method constructor
+interface InstallEvent : ExtendableEvent
+    method constructor
+interface MessageChannel
+    getter port1
+    getter port2
+    method constructor
+interface MessageEvent : Event
+    getter data
+    getter lastEventId
+    getter origin
+    getter ports
+    getter source
+    method constructor
+    method initMessageEvent
+interface MessagePort : EventTarget
+    getter onmessage
+    method close
+    method constructor
+    method postMessage
+    method start
+    setter onmessage
+interface NavigationPreloadManager
+    method constructor
+    method disable
+    method enable
+    method getState
+    method setHeaderValue
+interface Notification : EventTarget
+    static getter maxActions
+    static getter permission
+    getter actions
+    getter badge
+    getter body
+    getter data
+    getter dir
+    getter icon
+    getter lang
+    getter onclick
+    getter onclose
+    getter onerror
+    getter onshow
+    getter renotify
+    getter requireInteraction
+    getter silent
+    getter tag
+    getter timestamp
+    getter title
+    getter vibrate
+    method close
+    method constructor
+    setter onclick
+    setter onclose
+    setter onerror
+    setter onshow
+interface NotificationEvent : ExtendableEvent
+    getter action
+    getter notification
+    method constructor
+interface PerformanceObserverEntryList
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
+interface PermissionStatus : EventTarget
+    getter onchange
+    getter state
+    method constructor
+    setter onchange
+interface Permissions
+    method constructor
+    method query
+interface PromiseRejectionEvent : Event
+    getter promise
+    getter reason
+    method constructor
+interface PushEvent : ExtendableEvent
+    getter data
+    method constructor
+interface PushManager
+    method constructor
+    method getSubscription
+    method permissionState
+    method subscribe
+interface PushMessageData
+    method arrayBuffer
+    method blob
+    method constructor
+    method json
+    method text
+interface PushSubscription
+    getter endpoint
+    getter options
+    method constructor
+    method getKey
+    method toJSON
+    method unsubscribe
+interface PushSubscriptionOptions
+    getter applicationServerKey
+    getter userVisibleOnly
+    method constructor
+interface ReadableStream
+    getter locked
+    method cancel
+    method constructor
+    method getReader
+    method pipeThrough
+    method pipeTo
+    method tee
+interface Request
+    getter bodyUsed
+    getter credentials
+    getter headers
+    getter integrity
+    getter method
+    getter mode
+    getter redirect
+    getter referrer
+    getter referrerPolicy
+    getter url
+    method arrayBuffer
+    method blob
+    method clone
+    method constructor
+    method json
+    method text
+interface Response
+    static method error
+    static method redirect
+    getter body
+    getter bodyUsed
+    getter headers
+    getter ok
+    getter redirected
+    getter status
+    getter statusText
+    getter type
+    getter url
+    method arrayBuffer
+    method blob
+    method clone
+    method constructor
+    method json
+    method text
+interface ServiceWorkerGlobalScope : WorkerGlobalScope
+    method constructor
+interface ServiceWorkerRegistration : EventTarget
+    getter active
+    getter installing
+    getter navigationPreload
+    getter onupdatefound
+    getter pushManager
+    getter scope
+    getter sync
+    getter waiting
+    method constructor
+    method getNotifications
+    method showNotification
+    method unregister
+    method update
+    setter onupdatefound
+interface StorageManager
+    method constructor
+    method persisted
+interface SubtleCrypto
+    method constructor
+    method decrypt
+    method deriveBits
+    method deriveKey
+    method digest
+    method encrypt
+    method exportKey
+    method generateKey
+    method importKey
+    method sign
+    method unwrapKey
+    method verify
+    method wrapKey
+interface SyncEvent : ExtendableEvent
+    getter lastChance
+    getter tag
+    method constructor
+interface SyncManager
+    method constructor
+    method getTags
+    method register
+interface TextDecoder
+    getter encoding
+    getter fatal
+    getter ignoreBOM
+    method constructor
+    method decode
+interface TextEncoder
+    getter encoding
+    method constructor
+    method encode
+interface URL
+    getter hash
+    getter host
+    getter hostname
+    getter href
+    getter origin
+    getter password
+    getter pathname
+    getter port
+    getter protocol
+    getter search
+    getter searchParams
+    getter username
+    method constructor
+    method toString
+    setter hash
+    setter host
+    setter hostname
+    setter href
+    setter password
+    setter pathname
+    setter port
+    setter protocol
+    setter search
+    setter username
+interface URLSearchParams
+    method append
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method has
+    method keys
+    method set
+    method toString
+    method values
+interface WebSocket : EventTarget
+    attribute CLOSED
+    attribute CLOSING
+    attribute CONNECTING
+    attribute OPEN
+    getter binaryType
+    getter bufferedAmount
+    getter extensions
+    getter onclose
+    getter onerror
+    getter onmessage
+    getter onopen
+    getter protocol
+    getter readyState
+    getter url
+    method close
+    method constructor
+    method send
+    setter binaryType
+    setter onclose
+    setter onerror
+    setter onmessage
+    setter onopen
+interface WindowClient : Client
+    getter focused
+    getter visibilityState
+    method constructor
+    method focus
+    method navigate
+interface WorkerGlobalScope : EventTarget
+    getter caches
+    getter crypto
+    getter indexedDB
+    getter isSecureContext
+    getter location
+    getter navigator
+    getter onerror
+    getter onrejectionhandled
+    getter onunhandledrejection
+    getter origin
+    getter performance
+    getter self
+    method atob
+    method btoa
+    method clearInterval
+    method clearTimeout
+    method constructor
+    method createImageBitmap
+    method fetch
+    method importScripts
+    method setInterval
+    method setTimeout
+    setter onerror
+    setter onrejectionhandled
+    setter onunhandledrejection
+    setter origin
+interface WorkerLocation
+    getter hash
+    getter host
+    getter hostname
+    getter href
+    getter origin
+    getter pathname
+    getter port
+    getter protocol
+    getter search
+    method constructor
+    method toString
+interface WorkerNavigator
+    getter appCodeName
+    getter appName
+    getter appVersion
+    getter hardwareConcurrency
+    getter onLine
+    getter permissions
+    getter platform
+    getter product
+    getter storage
+    getter userAgent
+    method constructor
+interface WritableStream
+    getter locked
+    method abort
+    method constructor
+    method getWriter
+global object
+    attribute console
+    attribute internals
+    getter clients
+    getter onactivate
+    getter onfetch
+    getter oninstall
+    getter onmessage
+    getter onnotificationclick
+    getter onnotificationclose
+    getter onpush
+    getter onsync
+    getter registration
+    method fetch
+    method gc
+    method skipWaiting
+    setter onactivate
+    setter onfetch
+    setter oninstall
+    setter onmessage
+    setter onnotificationclick
+    setter onnotificationclose
+    setter onpush
+    setter onsync
+PASS Verify the interface of ServiceWorkerGlobalScope
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
