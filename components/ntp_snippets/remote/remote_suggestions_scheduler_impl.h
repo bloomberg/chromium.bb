@@ -93,7 +93,7 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
 
   // Checks whether it is time to perform a soft background fetch, according to
   // |schedule|.
-  bool ShouldRefetchInTheBackgroundNow();
+  bool ShouldRefetchInTheBackgroundNow(base::Time last_fetch_attempt_time);
 
   // Returns whether background fetching (for the given |trigger|) is disabled.
   bool BackgroundFetchesDisabled(TriggerType trigger) const;
@@ -143,6 +143,9 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   RequestThrottler request_throttler_rare_ntp_user_;
   RequestThrottler request_throttler_active_ntp_user_;
   RequestThrottler request_throttler_active_suggestions_consumer_;
+
+  // To make sure we only report the first trigger to UMA.
+  bool time_until_first_trigger_reported_;
 
   // We should not fetch in background before EULA gets accepted.
   std::unique_ptr<EulaState> eula_state_;
