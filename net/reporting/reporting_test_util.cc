@@ -14,11 +14,13 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_garbage_collector.h"
+#include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,14 +124,18 @@ TestReportingContext::TestReportingContext(const ReportingPolicy& policy)
                        base::MakeUnique<base::SimpleTestClock>(),
                        base::MakeUnique<base::SimpleTestTickClock>(),
                        base::MakeUnique<TestReportingUploader>()),
+      persistence_timer_(new base::MockTimer(/* retain_user_task= */ false,
+                                             /* is_repeating= */ false)),
       garbage_collection_timer_(
           new base::MockTimer(/* retain_user_task= */ false,
                               /* is_repeating= */ false)) {
+  persister()->SetTimerForTesting(base::WrapUnique(persistence_timer_));
   garbage_collector()->SetTimerForTesting(
       base::WrapUnique(garbage_collection_timer_));
 }
 
 TestReportingContext::~TestReportingContext() {
+  persistence_timer_ = nullptr;
   garbage_collection_timer_ = nullptr;
 }
 
@@ -137,13 +143,35 @@ ReportingTestBase::ReportingTestBase() {
   // For tests, disable jitter.
   ReportingPolicy policy;
   policy.endpoint_backoff_policy.jitter_factor = 0.0;
-  UsePolicy(policy);
+
+  CreateAndInitializeContext(policy, std::unique_ptr<const base::Value>(),
+                             base::Time::Now(), base::TimeTicks::Now());
 }
 
 ReportingTestBase::~ReportingTestBase() {}
 
-void ReportingTestBase::UsePolicy(const ReportingPolicy& policy) {
+void ReportingTestBase::UsePolicy(const ReportingPolicy& new_policy) {
+  CreateAndInitializeContext(new_policy, delegate()->GetPersistedData(),
+                             clock()->Now(), tick_clock()->NowTicks());
+}
+
+void ReportingTestBase::SimulateRestart(base::TimeDelta delta,
+                                        base::TimeDelta delta_ticks) {
+  CreateAndInitializeContext(policy(), delegate()->GetPersistedData(),
+                             clock()->Now() + delta,
+                             tick_clock()->NowTicks() + delta_ticks);
+}
+
+void ReportingTestBase::CreateAndInitializeContext(
+    const ReportingPolicy& policy,
+    std::unique_ptr<const base::Value> persisted_data,
+    base::Time now,
+    base::TimeTicks now_ticks) {
   context_ = base::MakeUnique<TestReportingContext>(policy);
+  delegate()->PersistData(std::move(persisted_data));
+  clock()->SetNow(now);
+  tick_clock()->SetNowTicks(now_ticks);
+  context_->Initialize();
 }
 
 base::TimeTicks ReportingTestBase::yesterday() {

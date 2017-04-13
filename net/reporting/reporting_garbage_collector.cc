@@ -24,21 +24,28 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
                                       public ReportingObserver {
  public:
   ReportingGarbageCollectorImpl(ReportingContext* context)
-      : context_(context), timer_(base::MakeUnique<base::OneShotTimer>()) {
-    context_->AddObserver(this);
-  }
+      : context_(context), timer_(base::MakeUnique<base::OneShotTimer>()) {}
 
   // ReportingGarbageCollector implementation:
-  //
-  ~ReportingGarbageCollectorImpl() override { context_->RemoveObserver(this); }
+
+  ~ReportingGarbageCollectorImpl() override {
+    DCHECK(context_->initialized());
+    context_->RemoveObserver(this);
+  }
+
+  void Initialize() override {
+    context_->AddObserver(this);
+    CollectGarbage();
+  }
 
   void SetTimerForTesting(std::unique_ptr<base::Timer> timer) override {
-    DCHECK(!timer_->IsRunning());
+    DCHECK(!context_->initialized());
     timer_ = std::move(timer);
   }
 
   // ReportingObserver implementation:
   void OnCacheUpdated() override {
+    DCHECK(context_->initialized());
     if (!timer_->IsRunning())
       StartTimer();
   }

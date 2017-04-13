@@ -21,6 +21,7 @@
 #include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_observer.h"
+#include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
 
 namespace net {
@@ -54,6 +55,15 @@ std::unique_ptr<ReportingContext> ReportingContext::Create(
 
 ReportingContext::~ReportingContext() {}
 
+void ReportingContext::Initialize() {
+  DCHECK(!initialized_);
+
+  persister_->Initialize();
+  garbage_collector_->Initialize();
+
+  initialized_ = true;
+}
+
 void ReportingContext::AddObserver(ReportingObserver* observer) {
   DCHECK(!observers_.HasObserver(observer));
   observers_.AddObserver(observer);
@@ -65,6 +75,9 @@ void ReportingContext::RemoveObserver(ReportingObserver* observer) {
 }
 
 void ReportingContext::NotifyCacheUpdated() {
+  if (!initialized_)
+    return;
+
   for (auto& observer : observers_)
     observer.OnCacheUpdated();
 }
@@ -79,9 +92,11 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       uploader_(std::move(uploader)),
+      initialized_(false),
       cache_(base::MakeUnique<ReportingCache>(this)),
       endpoint_manager_(base::MakeUnique<ReportingEndpointManager>(this)),
       delivery_agent_(base::MakeUnique<ReportingDeliveryAgent>(this)),
+      persister_(ReportingPersister::Create(this)),
       garbage_collector_(ReportingGarbageCollector::Create(this)) {}
 
 }  // namespace net

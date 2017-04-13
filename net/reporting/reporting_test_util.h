@@ -110,6 +110,7 @@ class TestReportingContext : public ReportingContext {
   base::SimpleTestTickClock* test_tick_clock() {
     return reinterpret_cast<base::SimpleTestTickClock*>(tick_clock());
   }
+  base::MockTimer* test_persistence_timer() { return persistence_timer_; }
   base::MockTimer* test_garbage_collection_timer() {
     return garbage_collection_timer_;
   }
@@ -118,7 +119,10 @@ class TestReportingContext : public ReportingContext {
   }
 
  private:
-  // Owned by the garbage collector but referenced here to preserve type.
+  // Owned by the Persister and GarbageCollector, respectively, but referenced
+  // here to preserve type:
+
+  base::MockTimer* persistence_timer_;
   base::MockTimer* garbage_collection_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestReportingContext);
@@ -133,6 +137,13 @@ class ReportingTestBase : public ::testing::Test {
 
   void UsePolicy(const ReportingPolicy& policy);
 
+  // Simulates an embedder restart, preserving the ReportingPolicy and any data
+  // persisted via the TestReportingDelegate, but nothing else.
+  //
+  // Advances the Clock by |delta|, and the TickClock by |delta_ticks|. Both can
+  // be zero or negative.
+  void SimulateRestart(base::TimeDelta delta, base::TimeDelta delta_ticks);
+
   TestReportingContext* context() { return context_.get(); }
 
   const ReportingPolicy& policy() { return context_->policy(); }
@@ -141,6 +152,9 @@ class ReportingTestBase : public ::testing::Test {
   base::SimpleTestClock* clock() { return context_->test_clock(); }
   base::SimpleTestTickClock* tick_clock() {
     return context_->test_tick_clock();
+  }
+  base::MockTimer* persistence_timer() {
+    return context_->test_persistence_timer();
   }
   base::MockTimer* garbage_collection_timer() {
     return context_->test_garbage_collection_timer();
@@ -158,11 +172,19 @@ class ReportingTestBase : public ::testing::Test {
     return context_->garbage_collector();
   }
 
+  ReportingPersister* persister() { return context_->persister(); }
+
   base::TimeTicks yesterday();
 
   base::TimeTicks tomorrow();
 
  private:
+  void CreateAndInitializeContext(
+      const ReportingPolicy& policy,
+      std::unique_ptr<const base::Value> persisted_data,
+      base::Time now,
+      base::TimeTicks now_ticks);
+
   std::unique_ptr<TestReportingContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportingTestBase);
