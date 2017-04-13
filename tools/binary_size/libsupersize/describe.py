@@ -175,19 +175,19 @@ class Describer(object):
                            group_desc)
 
   def _DescribeSizeInfoDiff(self, diff):
-    common_metadata = {k: v for k, v in diff.old_metadata.iteritems()
-                       if diff.new_metadata[k] == v}
-    old_metadata = {k: v for k, v in diff.old_metadata.iteritems()
-                    if k not in common_metadata}
-    new_metadata = {k: v for k, v in diff.new_metadata.iteritems()
-                    if k not in common_metadata}
+    common_metadata = {k: v for k, v in diff.before_metadata.iteritems()
+                       if diff.after_metadata[k] == v}
+    before_metadata = {k: v for k, v in diff.before_metadata.iteritems()
+                       if k not in common_metadata}
+    after_metadata = {k: v for k, v in diff.after_metadata.iteritems()
+                      if k not in common_metadata}
     metadata_desc = itertools.chain(
         ('Common Metadata:',),
         ('    %s' % line for line in DescribeMetadata(common_metadata)),
         ('Old Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(old_metadata)),
+        ('    %s' % line for line in DescribeMetadata(before_metadata)),
         ('New Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(new_metadata)))
+        ('    %s' % line for line in DescribeMetadata(after_metadata)))
     section_desc = self._DescribeSectionSizes(diff.section_sizes)
     group_desc = self.GenerateLines(diff.symbols)
     return itertools.chain(metadata_desc, section_desc, ('',), group_desc)

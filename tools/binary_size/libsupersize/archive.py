@@ -459,8 +459,9 @@ def Run(args, parser):
   any_input = apk_path or elf_path or map_path
   if not any_input:
     parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
-  lazy_paths = paths.LazyPaths(args=args, input_file=any_input)
-
+  lazy_paths = paths.LazyPaths(tool_prefix=args.tool_prefix,
+                               output_directory=args.output_directory,
+                               any_path_within_output_directory=any_input)
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()

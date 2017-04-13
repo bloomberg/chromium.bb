@@ -36,6 +36,23 @@ def _AddCommonArguments(parser):
                       help='Verbose level (multiple times for more)')
 
 
+class _DiffAction(object):
+  @staticmethod
+  def AddArguments(parser):
+    parser.add_argument('before', help='Before-patch .size file.')
+    parser.add_argument('after', help='After-patch .size file.')
+    parser.add_argument('--all', action='store_true', help='Verbose diff')
+
+  @staticmethod
+  def Run(args, parser):
+    args.output_directory = None
+    args.tool_prefix = None
+    args.inputs = [args.before, args.after]
+    args.query = ('Print(Diff(size_info1, size_info2), verbose=%s)' %
+                  bool(args.all))
+    console.Run(args, parser)
+
+
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   sub_parsers = parser.add_subparsers()
@@ -46,6 +63,9 @@ def main():
   actions['console'] = (
       console,
       'Starts an interactive Python console for analyzing .size files.')
+  actions['diff'] = (
+      _DiffAction(),
+      'Shorthand for console --query "Print(Diff(size_info1, size_info2))"')
 
   for name, tup in actions.iteritems():
     sub_parser = sub_parsers.add_parser(name, help=tup[1])

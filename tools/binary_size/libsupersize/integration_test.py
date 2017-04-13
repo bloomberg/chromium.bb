@@ -5,6 +5,7 @@
 
 import copy
 import difflib
+import glob
 import itertools
 import logging
 import os
@@ -94,11 +95,25 @@ class IntegrationTest(unittest.TestCase):
       archive.LoadAndPostProcessSizeInfo(temp_file.name)
 
   @_CompareWithGolden
-  def test_ConsoleNullDiff(self):
+  def test_Console(self):
+    with tempfile.NamedTemporaryFile(suffix='.size') as size_file, \
+         tempfile.NamedTemporaryFile(suffix='.txt') as output_file:
+      file_format.SaveSizeInfo(self._CloneSizeInfo(), size_file.name)
+      query = [
+          'ShowExamples()',
+          'ExpandRegex("_foo_")',
+          'Print(size_info, to_file=%r)' % output_file.name,
+      ]
+      ret = _RunApp('console', size_file.name, '--query', '; '.join(query))
+      with open(output_file.name) as f:
+        ret.extend(l.rstrip() for l in f)
+      return ret
+
+  @_CompareWithGolden
+  def test_Diff_NullDiff(self):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       file_format.SaveSizeInfo(self._CloneSizeInfo(), temp_file.name)
-      return _RunApp('console', '--query', 'Diff(size_info1, size_info2)',
-                     temp_file.name, temp_file.name)
+      return _RunApp('diff', temp_file.name, temp_file.name)
 
   @_CompareWithGolden
   def test_ActualDiff(self):
@@ -146,6 +161,8 @@ def main():
     argv.pop(0)
     global update_goldens
     update_goldens = True
+    for f in glob.glob(os.path.join(_TEST_DATA_DIR, '*.golden')):
+      os.unlink(f)
 
   unittest.main(argv=argv, verbosity=2)
 

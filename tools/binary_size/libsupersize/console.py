@@ -206,9 +206,7 @@ class _Session(object):
     atexit.register(lambda: readline.write_history_file(history_file))
 
   def Eval(self, query):
-    eval_result = eval(query, self._variables)
-    if eval_result:
-      self._PrintFunc(eval_result)
+    exec query in self._variables
 
   def GoInteractive(self):
     _Session._InitReadline()
@@ -221,10 +219,9 @@ def AddArguments(parser):
       help='Input .size files to load. For a single file, it will be mapped to '
            'the variable "size_info". For multiple inputs, the names will be '
            'size_info1, size_info2, etc.')
-  parser.add_argument(
-      '--query', help='Print the result of the given snippet. Example: '
-                      'size_info.symbols.WhereInSection("d")'
-                      '.WhereBiggerThan(100)')
+  parser.add_argument('--query',
+                      help='Execute the given snippet. '
+                           'Example: Print(size_info)')
   parser.add_argument('--tool-prefix', default='',
                       help='Path prefix for objdump. Required only for '
                            'Disassemble().')
@@ -239,7 +236,9 @@ def Run(args, parser):
       parser.error('All inputs must end with ".size"')
 
   size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
-  lazy_paths = paths.LazyPaths(args=args, input_file=args.inputs[0])
+  lazy_paths = paths.LazyPaths(tool_prefix=args.tool_prefix,
+                               output_directory=args.output_directory,
+                               any_path_within_output_directory=args.inputs[0])
   session = _Session(size_infos, lazy_paths)
 
   if args.query:

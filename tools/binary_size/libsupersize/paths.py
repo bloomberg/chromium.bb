@@ -13,13 +13,11 @@ _STATUS_VERIFIED = 2
 
 
 class LazyPaths(object):
-  def __init__(self, args=None, tool_prefix=None, output_directory=None,
-               input_file=None):
-    tool_prefix = tool_prefix or (args and args.tool_prefix)
-    output_directory = output_directory or (args and args.output_directory)
+  def __init__(self, tool_prefix=None, output_directory=None,
+               any_path_within_output_directory=None):
     self._tool_prefix = tool_prefix
     self._output_directory = output_directory
-    self._input_file = input_file
+    self._any_path_within_output_directory = any_path_within_output_directory
     self._output_directory_status = _STATUS_DETECTED if output_directory else 0
     self._tool_prefix_status = _STATUS_DETECTED if tool_prefix else 0
 
@@ -64,13 +62,15 @@ class LazyPaths(object):
     return tool_prefix
 
   def _DetectOutputDirectory(self):
-    # See if input file is in out/Release.
-    abs_path = os.path.abspath(self._input_file)
-    release_idx = abs_path.find('Release')
-    if release_idx != -1:
-      output_directory = abs_path[:release_idx] + 'Release'
-      output_directory = os.path.relpath(abs_path[:release_idx] + '/Release')
-      return output_directory
+    # Try and find build.ninja.
+    abs_path = os.path.abspath(self._any_path_within_output_directory)
+    while True:
+      if os.path.exists(os.path.join(abs_path, 'build.ninja')):
+        return os.path.relpath(abs_path)
+      parent_dir = os.path.dirname(abs_path)
+      if parent_dir == abs_path:
+        break
+      abs_path = abs_path = parent_dir
 
     # See if CWD=output directory.
     if os.path.exists('build.ninja'):

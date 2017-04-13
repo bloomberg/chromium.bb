@@ -33,7 +33,7 @@ symbol information parsed from a linker .map file.
 Creates an interactive size breakdown (by source path) as a stand-alone html
 report.
 
-## Example Usage:
+### Example Usage:
 
     tools/binary_size/supersize html_report chrome.size --report-dir size-report -v
     xdg-open size-report/index.html
@@ -42,19 +42,27 @@ report.
 
 Starts a Python interpreter where you can run custom queries.
 
-## Example Usage:
+### Example Usage:
 
-    # Runs a single diff and exits (does not enter interactive mode).
-    tools/binary_size/supersize console without_patch.size with_patch.size --query='Diff(size_info2, size_info1)'
+    # Prints size infomation and exits (does not enter interactive mode).
+    tools/binary_size/supersize console chrome.size --query='Print(size_info)'
 
     # Enters a Python REPL (it will print more guidance).
     tools/binary_size/supersize console chrome.size
 
-## diagnose_apk_bloat.py
+## "diff"
+
+A convenience command equivalent to: `console before.size after.size --query='Print(Diff(size_info1, size_info2))'`
+
+### Example Usage:
+
+    tools/binary_size/supersize diff before.size after.size --all
+
+# diagnose_apk_bloat.py
 
 Determine the cause of binary size bloat for a patch.
 
-### Example Usage:
+## Example Usage:
 
     # Sync, build, and diff for HEAD and HEAD^.
     tools/binary_size/diagnose_apk_bloat.py
