@@ -63,7 +63,9 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
-    DCHECK(task);
+    // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
+    // for details.
+    CHECK(task);
     base::AutoLock lock(lock_);
 
     // Remove completed tasks.

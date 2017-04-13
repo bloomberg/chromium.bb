@@ -223,7 +223,9 @@ bool TaskQueueImpl::PostImmediateTaskImpl(
     const tracked_objects::Location& from_here,
     base::OnceClosure task,
     TaskType task_type) {
-  DCHECK(task);
+  // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
+  // for details.
+  CHECK(task);
   base::AutoLock lock(any_thread_lock_);
   if (!any_thread().task_queue_manager)
     return false;
@@ -242,7 +244,9 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
     base::OnceClosure task,
     base::TimeDelta delay,
     TaskType task_type) {
-  DCHECK(task);
+  // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
+  // for details.
+  CHECK(task);
   DCHECK_GT(delay, base::TimeDelta());
   if (base::PlatformThread::CurrentId() == thread_id_) {
     // Lock-free fast path for delayed tasks posted from the main thread.

@@ -347,7 +347,9 @@ bool SchedulerWorkerPoolImpl::PostTaskWithSequence(
   if (task->delayed_run_time.is_null()) {
     PostTaskWithSequenceNow(std::move(task), std::move(sequence));
   } else {
-    DCHECK(task->task);
+    // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
+    // for details.
+    CHECK(task->task);
     delayed_task_manager_->AddDelayedTask(
         std::move(task),
         Bind(
