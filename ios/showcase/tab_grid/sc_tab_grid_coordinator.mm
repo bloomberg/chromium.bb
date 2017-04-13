@@ -5,6 +5,7 @@
 #import "ios/showcase/tab_grid/sc_tab_grid_coordinator.h"
 
 #import "base/format_macros.h"
+#import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
