@@ -5,8 +5,14 @@
 package org.chromium.ui.base;
 
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.style.CharacterStyle;
+import android.text.style.ParagraphStyle;
+import android.text.style.UpdateAppearance;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -98,7 +104,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      */
     @SuppressWarnings("javadoc")
     @CalledByNative
-    private String getCoercedText() {
+    public String getCoercedText() {
         // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
         // crbug.com/654802 and b/31501780)
         try {
@@ -111,6 +117,18 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         }
     }
 
+    // TODO(ctzsm): Remove this method after Android API is updated
+    private boolean hasStyleSpan(Spanned spanned) {
+        Class<?>[] styleClasses = {
+                CharacterStyle.class, ParagraphStyle.class, UpdateAppearance.class};
+        for (Class<?> clazz : styleClasses) {
+            if (spanned.nextSpanTransition(-1, spanned.length(), clazz) < spanned.length()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets the HTML text of top item on the primary clip on the Android clipboard.
      *
@@ -118,14 +136,26 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      *         text or no entries on the primary clip.
      */
     @CalledByNative
-    private String getHTMLText() {
+    public String getHTMLText() {
         // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
         // crbug/654802 and b/31501780)
         try {
-            return mClipboardManager.getPrimaryClip().getItemAt(0).getHtmlText();
+            ClipData clipData = mClipboardManager.getPrimaryClip();
+            ClipDescription description = clipData.getDescription();
+            if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML)) {
+                return clipData.getItemAt(0).getHtmlText();
+            }
+
+            if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                Spanned spanned = (Spanned) clipData.getItemAt(0).getText();
+                if (hasStyleSpan(spanned)) {
+                    return Html.toHtml(spanned);
+                }
+            }
         } catch (Exception e) {
             return null;
         }
+        return null;
     }
 
     /**
@@ -179,7 +209,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         setPrimaryClipNoException(ClipData.newPlainText(null, null));
     }
 
-    private void setPrimaryClipNoException(ClipData clip) {
+    public void setPrimaryClipNoException(ClipData clip) {
         try {
             mClipboardManager.setPrimaryClip(clip);
         } catch (Exception ex) {
