@@ -10,6 +10,7 @@
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
@@ -90,6 +91,12 @@
   [self.dispatcher showSettings];
 }
 
+#pragma mark - ToolsMenuActions
+
+- (void)showToolsMenu:(id)sender {
+  [self.dispatcher showToolsMenu];
+}
+
 #pragma mark - TabGridActions
 
 - (void)showTabGrid:(id)sender {
@@ -103,11 +110,51 @@
 #pragma mark - ZoomTransitionDelegate methods
 
 - (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
+  // If key is nil we return a CGRect based on the toolbar position, if not it
+  // was set by the TabGrid and we return a CGRect based on the IndexPath of the
+  // key.
+  if (!key) {
+    return [self.toolbar rectForZoomWithKey:key inView:view];
+  }
+
   NSIndexPath* cellPath = base::mac::ObjCCastStrict<NSIndexPath>(key);
-  if (!key)
-    return CGRectNull;
   UICollectionViewCell* cell = [self.tabs cellForItemAtIndexPath:cellPath];
   return [view convertRect:cell.bounds fromView:cell];
+}
+
+#pragma mark - MenuPresentationDelegate
+
+- (CGRect)frameForMenuPresentation:(UIPresentationController*)presentation {
+  CGSize menuSize = presentation.presentedView.frame.size;
+  CGRect menuRect;
+  menuRect.size = menuSize;
+
+  CGRect menuOriginRect = [self rectForZoomWithKey:nil inView:self.view];
+  if (CGRectIsNull(menuOriginRect)) {
+    menuRect.origin = CGPointMake(50, 50);
+    return menuRect;
+  }
+  // Calculate which corner of the menu the origin rect is in. This is
+  // determined by comparing frames, and thus is RTL-independent.
+  if (CGRectGetMinX(menuOriginRect) - CGRectGetMinX(self.view.bounds) <
+      CGRectGetMaxX(self.view.bounds) - CGRectGetMaxX(menuOriginRect)) {
+    // Origin rect is closer to the left edge of |self.view| than to the right.
+    menuRect.origin.x = CGRectGetMinX(menuOriginRect);
+  } else {
+    // Origin rect is closer to the right edge of |self.view| than to the left.
+    menuRect.origin.x = CGRectGetMaxX(menuOriginRect) - menuSize.width;
+  }
+
+  if (CGRectGetMinY(menuOriginRect) - CGRectGetMinY(self.view.bounds) <
+      CGRectGetMaxY(self.view.bounds) - CGRectGetMaxY(menuOriginRect)) {
+    // Origin rect is closer to the top edge of |self.view| than to the bottom.
+    menuRect.origin.y = CGRectGetMinY(menuOriginRect);
+  } else {
+    // Origin rect is closer to the bottom edge of |self.view| than to the top.
+    menuRect.origin.y = CGRectGetMaxY(menuOriginRect) - menuSize.height;
+  }
+
+  return menuRect;
 }
 
 #pragma mark - TabGridConsumer methods

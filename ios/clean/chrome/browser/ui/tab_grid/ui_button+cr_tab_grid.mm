@@ -36,7 +36,7 @@
           forState:UIControlStateNormal];
   [button setTintColor:[UIColor whiteColor]];
   [button addTarget:nil
-                action:@selector(showSettings:)
+                action:@selector(showToolsMenu:)
       forControlEvents:UIControlEventTouchUpInside];
   return button;
 }

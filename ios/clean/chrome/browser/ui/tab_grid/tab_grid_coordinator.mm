@@ -11,10 +11,12 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
@@ -27,9 +29,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<SettingsCommands, TabGridCommands>
+@interface TabGridCoordinator ()<SettingsCommands,
+                                 TabGridCommands,
+                                 ToolsMenuCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
+@property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
 @end
@@ -37,6 +42,7 @@
 @implementation TabGridCoordinator
 @synthesize viewController = _viewController;
 @synthesize settingsCoordinator = _settingsCoordinator;
+@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize mediator = _mediator;
 
 #pragma mark - Properties
@@ -63,18 +69,9 @@
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
 
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  // SettingsCommands
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showSettings)];
-  // TabGridCommands
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showTabGridTabAtIndex:)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(closeTabGridTabAtIndex:)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(createAndShowNewTabInTabGrid)];
-  [dispatcher startDispatchingToTarget:self forSelector:@selector(showTabGrid)];
+  [self registerForSettingsCommands];
+  [self registerForTabGridCommands];
+  [self registerForToolsMenuCommands];
 
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.dataSource = self.mediator;
@@ -97,7 +94,8 @@
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
   DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
-         [childCoordinator isKindOfClass:[TabCoordinator class]]);
+         [childCoordinator isKindOfClass:[TabCoordinator class]] ||
+         [childCoordinator isKindOfClass:[ToolsCoordinator class]]);
   [self.viewController presentViewController:childCoordinator.viewController
                                     animated:YES
                                   completion:nil];
@@ -105,7 +103,8 @@
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
   DCHECK([childCoordinator isKindOfClass:[SettingsCoordinator class]] ||
-         [childCoordinator isKindOfClass:[TabCoordinator class]]);
+         [childCoordinator isKindOfClass:[TabCoordinator class]] ||
+         [childCoordinator isKindOfClass:[ToolsCoordinator class]]);
   [childCoordinator.viewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:nil];
@@ -122,6 +121,7 @@
   tabCoordinator.presentationKey =
       [NSIndexPath indexPathForItem:index inSection:0];
   [self addChildCoordinator:tabCoordinator];
+  [self deRegisterFromToolsMenuCommands];
   [tabCoordinator start];
 }
 
@@ -145,6 +145,21 @@
   BrowserCoordinator* child = [self.children anyObject];
   [child stop];
   [self removeChildCoordinator:child];
+  [self registerForToolsMenuCommands];
+}
+
+#pragma mark - ToolsMenuCommands
+
+- (void)showToolsMenu {
+  ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
+  [self addChildCoordinator:toolsCoordinator];
+  [toolsCoordinator start];
+  self.toolsMenuCoordinator = toolsCoordinator;
+}
+
+- (void)closeToolsMenu {
+  [self.toolsMenuCoordinator stop];
+  [self removeChildCoordinator:self.toolsMenuCoordinator];
 }
 
 #pragma mark - SettingsCommands
@@ -183,6 +198,41 @@
   if (!self.children.count) {
     [self showTabGridTabAtIndex:self.webStateList.active_index()];
   }
+}
+
+#pragma mark - PrivateMethods
+
+- (void)registerForSettingsCommands {
+  [self.browser->dispatcher() startDispatchingToTarget:self
+                                           forSelector:@selector(showSettings)];
+}
+
+- (void)registerForTabGridCommands {
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(showTabGridTabAtIndex:)];
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(closeTabGridTabAtIndex:)];
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(createAndShowNewTabInTabGrid)];
+}
+
+- (void)registerForToolsMenuCommands {
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(showToolsMenu)];
+  [self.browser->dispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(closeToolsMenu)];
+}
+
+- (void)deRegisterFromToolsMenuCommands {
+  [self.browser->dispatcher()
+      stopDispatchingForSelector:@selector(showToolsMenu)];
+  [self.browser->dispatcher()
+      stopDispatchingForSelector:@selector(closeToolsMenu)];
 }
 
 @end

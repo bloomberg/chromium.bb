@@ -7,6 +7,7 @@
 #import "base/format_macros.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
@@ -27,7 +28,8 @@
 
 - (void)start {
   self.alerter = [[ProtocolAlerter alloc] initWithProtocols:@[
-    @protocol(SettingsCommands), @protocol(TabGridCommands)
+    @protocol(SettingsCommands), @protocol(TabGridCommands),
+    @protocol(ToolsMenuCommands)
   ]];
   self.alerter.baseViewController = self.baseViewController;
 
@@ -35,7 +37,8 @@
   self.viewController.title = @"Tab Grid";
   self.viewController.dataSource = self;
   self.viewController.dispatcher =
-      static_cast<id<SettingsCommands, TabGridCommands>>(self.alerter);
+      static_cast<id<SettingsCommands, TabGridCommands, ToolsMenuCommands>>(
+          self.alerter);
 
   [self.baseViewController setHidesBarsOnSwipe:YES];
   [self.baseViewController pushViewController:self.viewController animated:YES];
