@@ -252,6 +252,15 @@ config("common_linker_setup") {
     ldflags += [ "/DYNAMICBASE" ]
   }
 
+  if (win_linker_timing) {
+    ldflags += [
+      "/time",
+      "/verbose:incr",
+    ]
+  }
+}
+
+config("cfi_linker") {
   # Control Flow Guard (CFG)
   # https://msdn.microsoft.com/en-us/library/windows/desktop/mt637065.aspx
   # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG can’t be
@@ -259,14 +268,7 @@ config("common_linker_setup") {
   # TODO(thakis): Turn this on with lld once supported, https://crbug.com/693709
   if (!is_debug && !use_lld) {
     # Turn on CFG in msvc linker, regardless of compiler used.
-    ldflags += [ "/guard:cf" ]
-  }
-
-  if (win_linker_timing) {
-    ldflags += [
-      "/time",
-      "/verbose:incr",
-    ]
+    ldflags = [ "/guard:cf" ]
   }
 }
 
