@@ -2351,21 +2351,17 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   //   * Hiding the window until it's in the final position
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
   //     thus are slow and look ugly (enforced via |in_process_fullscreen_|).
-  LocationBarView* location_bar = GetLocationBarView();
-
-  if (!fullscreen) {
-    // Hide the fullscreen bubble as soon as possible, since the mode toggle can
-    // take enough time for the user to notice.
-    exclusive_access_bubble_.reset();
-  }
-
   if (fullscreen) {
     // Move focus out of the location bar if necessary.
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);
     // Look for focus in the location bar itself or any child view.
-    if (location_bar->Contains(focus_manager->GetFocusedView()))
+    if (GetLocationBarView()->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
+  } else {
+    // Hide the fullscreen bubble as soon as possible, since the mode toggle can
+    // take enough time for the user to notice.
+    exclusive_access_bubble_.reset();
   }
 
   // Toggle fullscreen mode.
