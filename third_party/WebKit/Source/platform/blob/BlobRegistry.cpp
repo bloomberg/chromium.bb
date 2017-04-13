@@ -30,25 +30,25 @@
 
 #include "platform/blob/BlobRegistry.h"
 
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/URLSecurityOriginMap.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

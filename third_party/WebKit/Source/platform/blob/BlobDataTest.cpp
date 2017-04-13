@@ -4,10 +4,10 @@
 
 #include "platform/blob/BlobData.h"
 
+#include <memory>
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

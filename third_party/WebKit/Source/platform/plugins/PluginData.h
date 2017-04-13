@@ -22,10 +22,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

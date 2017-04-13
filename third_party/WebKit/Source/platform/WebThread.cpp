@@ -5,7 +5,7 @@
 #include "public/platform/WebThread.h"
 
 #include "platform/WebTaskRunner.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 #if OS(WIN)
 #include <windows.h>

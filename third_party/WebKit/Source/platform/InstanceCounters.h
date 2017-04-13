@@ -32,8 +32,8 @@
 #define InstanceCounters_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Atomics.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Atomics.h"
 
 namespace blink {
 

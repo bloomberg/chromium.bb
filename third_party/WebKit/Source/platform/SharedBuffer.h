@@ -28,11 +28,11 @@
 #define SharedBuffer_h
 
 #include "platform/PlatformExport.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

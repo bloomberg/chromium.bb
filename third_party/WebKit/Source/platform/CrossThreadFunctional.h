@@ -5,10 +5,10 @@
 #ifndef CrossThreadFunctional_h
 #define CrossThreadFunctional_h
 
+#include <type_traits>
 #include "base/bind.h"
 #include "platform/CrossThreadCopier.h"
-#include "wtf/Functional.h"
-#include <type_traits>
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 

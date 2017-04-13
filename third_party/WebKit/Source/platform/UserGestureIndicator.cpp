@@ -26,9 +26,9 @@
 #include "platform/UserGestureIndicator.h"
 
 #include "platform/Histogram.h"
-#include "wtf/Assertions.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

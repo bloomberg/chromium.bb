@@ -31,12 +31,12 @@
 #ifndef FileMetadata_h
 #define FileMetadata_h
 
+#include <time.h>
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
-#include <time.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

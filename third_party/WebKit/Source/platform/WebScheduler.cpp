@@ -5,8 +5,8 @@
 #include "public/platform/WebScheduler.h"
 
 #include "platform/WebFrameScheduler.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
 

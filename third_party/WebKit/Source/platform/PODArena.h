@@ -26,15 +26,15 @@
 #ifndef PODArena_h
 #define PODArena_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
-#include "wtf/allocator/Partitions.h"
-#include <memory>
 #include <stdint.h>
+#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

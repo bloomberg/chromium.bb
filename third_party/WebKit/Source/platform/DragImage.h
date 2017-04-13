@@ -26,16 +26,16 @@
 #ifndef DragImage_h
 #define DragImage_h
 
+#include <memory>
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include <memory>
 
 class SkImage;
 

@@ -8,9 +8,9 @@
 #include "base/test/scoped_async_task_scheduler.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

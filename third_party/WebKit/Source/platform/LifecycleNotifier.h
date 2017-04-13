@@ -28,8 +28,8 @@
 #define LifecycleNotifier_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/AutoReset.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

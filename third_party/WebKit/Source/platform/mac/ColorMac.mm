@@ -28,8 +28,8 @@
 
 #import <AppKit/AppKit.h>
 
-#import "wtf/RetainPtr.h"
-#import "wtf/StdLibExtras.h"
+#import "platform/wtf/RetainPtr.h"
+#import "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

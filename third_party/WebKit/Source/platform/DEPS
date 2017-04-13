@@ -47,4 +47,7 @@ include_rules = [
     "-bindings",
     "-core",
     "-modules",
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf/",
 ]

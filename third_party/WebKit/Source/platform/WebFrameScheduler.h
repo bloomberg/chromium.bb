@@ -5,7 +5,7 @@
 #ifndef WebFrameScheduler_h
 #define WebFrameScheduler_h
 
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 #include <memory>
 

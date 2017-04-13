@@ -4,14 +4,14 @@
 
 #include "platform/feature_policy/FeaturePolicy.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <memory>
 #include "platform/heap/Handle.h"
 #include "platform/testing/BlinkFuzzerTestSupport.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
-#include <stddef.h>
-#include <stdint.h>
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   WTF::Vector<WTF::String> messages;

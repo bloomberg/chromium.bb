@@ -25,10 +25,10 @@
 
 #include "platform/PODArena.h"
 
-#include "platform/testing/ArenaTestHelpers.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 #include <algorithm>
+#include "platform/testing/ArenaTestHelpers.h"
+#include "platform/wtf/RefPtr.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

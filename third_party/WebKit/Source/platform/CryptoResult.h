@@ -32,8 +32,8 @@
 #define CryptoResult_h
 
 #include "platform/PlatformExport.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
 #include "public/platform/WebCrypto.h"
-#include "wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 

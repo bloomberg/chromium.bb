@@ -31,12 +31,12 @@
 #ifndef MediaStreamWebAudioSource_h
 #define MediaStreamWebAudioSource_h
 
-#include "platform/audio/AudioSourceProvider.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/build_config.h"
 #include <memory>
+#include "platform/audio/AudioSourceProvider.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

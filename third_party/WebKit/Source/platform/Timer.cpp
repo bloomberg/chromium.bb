@@ -26,17 +26,17 @@
 
 #include "platform/Timer.h"
 
+#include <limits.h>
+#include <math.h>
+#include <algorithm>
+#include <limits>
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Atomics.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashSet.h"
-#include <algorithm>
-#include <limits.h>
-#include <limits>
-#include <math.h>
 
 namespace blink {
 

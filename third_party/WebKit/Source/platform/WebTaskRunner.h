@@ -7,12 +7,12 @@
 
 #include <memory>
 #include "base/callback.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Compiler.h"
-#include "wtf/Functional.h"
-#include "wtf/RefCounted.h"
-#include "wtf/WeakPtr.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -21,7 +21,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/mac/GraphicsContextCanvas.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
 

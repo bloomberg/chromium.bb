@@ -7,9 +7,9 @@
 
 #include "cc/trees/element_id.h"
 #include "platform/PlatformExport.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashSet.h"
-#include "wtf/HashTraits.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/HashTraits.h"
 
 namespace blink {
 

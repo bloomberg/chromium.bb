@@ -6,9 +6,9 @@
 #define EventDispatchForbiddenScope_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/AutoReset.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/AutoReset.h"
 
 namespace blink {
 

@@ -31,13 +31,13 @@
 #ifndef MediaStreamCenter_h
 #define MediaStreamCenter_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaStreamCenterClient.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

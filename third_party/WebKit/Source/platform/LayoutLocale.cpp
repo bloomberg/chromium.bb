@@ -8,9 +8,9 @@
 #include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/text/ICUError.h"
 #include "platform/text/LocaleToScriptMapping.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 #include <hb.h>
 #include <unicode/locid.h>

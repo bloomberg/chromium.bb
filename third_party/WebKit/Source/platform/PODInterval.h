@@ -28,7 +28,7 @@
 
 #include "platform/heap/Handle.h"
 #ifndef NDEBUG
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringBuilder.h"
 #endif
 
 namespace blink {
@@ -71,7 +71,7 @@ namespace blink {
 // Note that this class requires a copy constructor and assignment
 // operator in order to be stored in the red-black tree.
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 #ifndef NDEBUG
 template <class T>

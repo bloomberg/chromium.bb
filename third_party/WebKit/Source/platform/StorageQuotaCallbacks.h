@@ -33,9 +33,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebStorageQuotaError.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

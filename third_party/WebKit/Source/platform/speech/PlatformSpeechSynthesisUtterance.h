@@ -29,8 +29,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

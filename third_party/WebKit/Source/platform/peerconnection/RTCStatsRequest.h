@@ -32,8 +32,8 @@
 #define RTCStatsRequest_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

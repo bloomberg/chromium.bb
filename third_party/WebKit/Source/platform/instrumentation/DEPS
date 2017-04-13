@@ -8,7 +8,4 @@ include_rules = [
     "+base/trace_event",
     "+base/values.h",
     "+skia/ext/skia_trace_memory_dump_impl.h",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]

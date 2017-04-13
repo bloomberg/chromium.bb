@@ -6,7 +6,7 @@
 #define PlatformResourceLoader_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -27,8 +27,8 @@
 #define PODFreeListArena_h
 
 #include "platform/PODArena.h"
-#include "wtf/Allocator.h"
-#include "wtf/RefCounted.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 

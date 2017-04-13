@@ -30,9 +30,9 @@
 
 #include "platform/image-encoders/PNGImageEncoder.h"
 
-#include "platform/graphics/ImageBuffer.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/graphics/ImageBuffer.h"
+#include "platform/wtf/PtrUtil.h"
 
 #include "zlib.h"
 

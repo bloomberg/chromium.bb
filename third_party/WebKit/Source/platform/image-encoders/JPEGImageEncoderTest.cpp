@@ -4,8 +4,8 @@
 
 #include "base/timer/elapsed_timer.h"
 #include "platform/image-encoders/RGBAtoRGB.h"
+#include "platform/wtf/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/build_config.h"
 
 namespace blink {
 

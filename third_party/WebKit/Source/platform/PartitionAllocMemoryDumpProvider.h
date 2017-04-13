@@ -6,9 +6,9 @@
 #define PartitionAllocMemoryDumpProvider_h
 
 #include "base/trace_event/memory_dump_provider.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/WebCommon.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace base {
 namespace trace_event {

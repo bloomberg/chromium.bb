@@ -8,7 +8,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

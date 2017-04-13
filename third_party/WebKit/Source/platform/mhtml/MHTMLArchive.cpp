@@ -38,12 +38,12 @@
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include "wtf/Assertions.h"
-#include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

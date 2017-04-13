@@ -2277,6 +2277,6 @@ inline void RemoveAll(Collection1& collection,
 
 }  // namespace WTF
 
-#include "wtf/HashIterators.h"
+#include "platform/wtf/HashIterators.h"
 
 #endif  // WTF_HashTable_h

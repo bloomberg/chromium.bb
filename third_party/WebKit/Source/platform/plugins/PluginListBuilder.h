@@ -32,9 +32,9 @@
 #define PluginListBuilder_h
 
 #include "platform/plugins/PluginData.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebPluginListBuilder.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

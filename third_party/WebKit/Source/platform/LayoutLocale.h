@@ -7,9 +7,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/text/Hyphenation.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/text/AtomicString.h"
 
 #include <unicode/uscript.h>
 

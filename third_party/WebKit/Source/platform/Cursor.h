@@ -29,8 +29,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Image.h"
-#include "wtf/Assertions.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/RefPtr.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor

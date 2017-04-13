@@ -23,15 +23,15 @@
 #ifndef Length_h
 #define Length_h
 
+#include <cstring>
 #include "platform/PlatformExport.h"
 #include "platform/animation/AnimationUtilities.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
-#include <cstring>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

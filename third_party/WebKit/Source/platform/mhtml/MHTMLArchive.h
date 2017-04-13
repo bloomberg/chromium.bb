@@ -32,9 +32,9 @@
 #define MHTMLArchive_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

@@ -31,13 +31,13 @@
 #ifndef BlobData_h
 #define BlobData_h
 
+#include <memory>
 #include "base/gtest_prod_util.h"
 #include "platform/FileMetadata.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Forward.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

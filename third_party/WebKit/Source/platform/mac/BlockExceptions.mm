@@ -25,7 +25,7 @@
 
 #import "platform/mac/BlockExceptions.h"
 
-#import "wtf/Assertions.h"
+#import "platform/wtf/Assertions.h"
 
 void ReportBlockedObjCException(NSException* exception) {
 #if DCHECK_IS_ON()

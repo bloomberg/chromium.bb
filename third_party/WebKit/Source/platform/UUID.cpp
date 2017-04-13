@@ -5,7 +5,7 @@
 #include "platform/UUID.h"
 
 #include "base/guid.h"
-#include "wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 

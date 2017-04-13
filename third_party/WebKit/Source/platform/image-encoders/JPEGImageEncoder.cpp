@@ -30,13 +30,13 @@
 
 #include "platform/image-encoders/JPEGImageEncoder.h"
 
+#include <memory>
 #include "SkColorPriv.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/image-encoders/RGBAtoRGB.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 
 extern "C" {
 #include <setjmp.h>

@@ -4,12 +4,12 @@
 
 #include "platform/WaitableEvent.h"
 
+#include <vector>
 #include "base/synchronization/waitable_event.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
-#include "wtf/Optional.h"
-#include "wtf/PtrUtil.h"
-#include <vector>
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

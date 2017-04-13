@@ -31,11 +31,11 @@
 #ifndef Decimal_h
 #define Decimal_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
 #include <stdint.h>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

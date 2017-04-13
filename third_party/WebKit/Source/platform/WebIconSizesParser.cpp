@@ -4,11 +4,11 @@
 
 #include "public/platform/WebIconSizesParser.h"
 
+#include <algorithm>
+#include "platform/wtf/text/StringToNumber.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
-#include "wtf/text/StringToNumber.h"
-#include "wtf/text/WTFString.h"
-#include <algorithm>
 
 namespace blink {
 

@@ -5,11 +5,11 @@
 #ifndef ContentSettingCallbacks_h
 #define ContentSettingCallbacks_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

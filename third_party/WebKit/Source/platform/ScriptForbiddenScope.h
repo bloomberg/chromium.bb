@@ -6,9 +6,9 @@
 #define ScriptForbiddenScope_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/AutoReset.h"
-#include "wtf/Optional.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 

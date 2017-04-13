@@ -27,11 +27,11 @@
 
 #include "platform/exported/WebSpeechSynthesizerClientImpl.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesizer.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

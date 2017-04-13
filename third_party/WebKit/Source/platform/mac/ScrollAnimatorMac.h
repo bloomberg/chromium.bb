@@ -26,6 +26,7 @@
 #ifndef ScrollAnimatorMac_h
 #define ScrollAnimatorMac_h
 
+#include <memory>
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/geometry/FloatPoint.h"
@@ -33,8 +34,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include "wtf/RetainPtr.h"
-#include <memory>
+#include "platform/wtf/RetainPtr.h"
 
 OBJC_CLASS BlinkScrollAnimationHelperDelegate;
 OBJC_CLASS BlinkScrollbarPainterControllerDelegate;

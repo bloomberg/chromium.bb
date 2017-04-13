@@ -25,6 +25,8 @@
 
 #include "platform/DragImage.h"
 
+#include <algorithm>
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
@@ -44,16 +46,14 @@
 #include "platform/text/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

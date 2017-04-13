@@ -30,10 +30,10 @@
 
 #include "platform/Decimal.h"
 
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 #include <algorithm>
 #include <float.h>

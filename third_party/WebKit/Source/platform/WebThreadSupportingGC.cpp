@@ -4,11 +4,11 @@
 
 #include "platform/WebThreadSupportingGC.h"
 
-#include "platform/heap/SafePoint.h"
-#include "public/platform/WebScheduler.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <memory>
+#include "platform/heap/SafePoint.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Threading.h"
+#include "public/platform/WebScheduler.h"
 
 namespace blink {
 

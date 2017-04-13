@@ -4,8 +4,8 @@
 
 #include "platform/UserGestureIndicator.h"
 
+#include "platform/wtf/CurrentTime.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

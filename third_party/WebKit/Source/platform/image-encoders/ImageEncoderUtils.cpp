@@ -6,7 +6,7 @@
 
 #include "platform/Histogram.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

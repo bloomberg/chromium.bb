@@ -30,6 +30,7 @@
 
 #include "platform/DragImage.h"
 
+#include <memory>
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/geometry/IntSize.h"
@@ -37,15 +38,14 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

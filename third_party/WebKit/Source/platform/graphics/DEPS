@@ -14,7 +14,4 @@ include_rules = [
     "+gpu/command_buffer/common/gpu_memory_buffer_support.h",
     "+gpu/command_buffer/common/mailbox.h",
     "+gpu/command_buffer/common/sync_token.h",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]

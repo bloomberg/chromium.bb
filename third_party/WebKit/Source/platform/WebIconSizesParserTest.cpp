@@ -4,10 +4,10 @@
 
 #include "public/platform/WebIconSizesParser.h"
 
+#include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #import "platform/mac/VersionUtilMac.h"
 #import "platform/mac/WebCoreNSCellExtras.h"
 #import "platform/scroll/ScrollableArea.h"
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 // This is a view whose sole purpose is to tell AppKit that it's flipped.
 @interface BlinkFlippedControl : NSControl

@@ -31,17 +31,17 @@
 #ifndef CrossThreadCopier_h
 #define CrossThreadCopier_h
 
-#include "platform/PlatformExport.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"  // FunctionThreadAffinity
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/TypeTraits.h"
-#include "wtf/WeakPtr.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"  // FunctionThreadAffinity
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/TypeTraits.h"
+#include "platform/wtf/WeakPtr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkRefCnt;
 

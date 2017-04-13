@@ -27,9 +27,9 @@
 #define LinkHash_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

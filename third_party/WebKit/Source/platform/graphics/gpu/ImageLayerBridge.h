@@ -9,7 +9,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Heap.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace cc {
 class SharedBitmap;

@@ -7,9 +7,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebMemoryPressureLevel.h"
 #include "public/platform/WebMemoryState.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -33,12 +33,12 @@
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringConcatenate.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/StringConcatenate.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

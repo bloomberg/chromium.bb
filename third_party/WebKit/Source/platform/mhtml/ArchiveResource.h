@@ -32,8 +32,8 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

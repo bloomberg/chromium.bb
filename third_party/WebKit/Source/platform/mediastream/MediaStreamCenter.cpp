@@ -35,13 +35,13 @@
 
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

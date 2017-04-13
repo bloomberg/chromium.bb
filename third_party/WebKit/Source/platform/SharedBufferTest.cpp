@@ -30,13 +30,13 @@
 
 #include "platform/SharedBuffer.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

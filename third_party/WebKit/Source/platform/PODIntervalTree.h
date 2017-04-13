@@ -29,9 +29,9 @@
 #include "platform/PODArena.h"
 #include "platform/PODInterval.h"
 #include "platform/PODRedBlackTree.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

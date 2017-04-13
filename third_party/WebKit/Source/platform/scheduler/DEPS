@@ -23,9 +23,6 @@ include_rules = [
   "+base/threading/platform_thread.h",
   "+base/threading/thread.h",
   "+base/threading/thread_checker.h",
-
-  # Use platform/wtf/ now (see crbug.com/691465).
-  "-wtf/",
 ]
 
 specific_include_rules = {

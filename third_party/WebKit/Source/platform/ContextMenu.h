@@ -28,8 +28,8 @@
 
 #include "platform/ContextMenuItem.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

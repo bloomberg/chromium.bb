@@ -1,7 +1,4 @@
 include_rules = [
     "+cc",
     "-cc/blink",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]

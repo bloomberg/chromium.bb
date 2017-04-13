@@ -30,16 +30,16 @@
 
 #include "platform/blob/BlobData.h"
 
+#include <memory>
 #include "platform/UUID.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/text/LineEnding.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/TextEncoding.h"
-#include <memory>
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

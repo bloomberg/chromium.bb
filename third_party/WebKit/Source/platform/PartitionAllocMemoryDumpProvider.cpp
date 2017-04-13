@@ -10,8 +10,8 @@
 #include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

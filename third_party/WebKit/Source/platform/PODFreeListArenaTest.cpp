@@ -26,9 +26,9 @@
 #include "platform/PODFreeListArena.h"
 
 #include "platform/testing/ArenaTestHelpers.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

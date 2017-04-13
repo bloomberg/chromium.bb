@@ -32,12 +32,12 @@
 #ifndef MediaStreamDescriptor_h
 #define MediaStreamDescriptor_h
 
+#include <memory>
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

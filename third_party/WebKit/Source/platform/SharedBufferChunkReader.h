@@ -32,10 +32,10 @@
 #define SharedBufferChunkReader_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

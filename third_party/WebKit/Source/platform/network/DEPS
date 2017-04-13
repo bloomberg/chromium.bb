@@ -8,7 +8,4 @@ include_rules = [
     "+net/http",
     # For URLRequestDataJob::BuildResponse().
     "+net/url_request/url_request_data_job.h",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]

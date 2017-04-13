@@ -27,12 +27,12 @@
 #define Supplementable_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Noncopyable.h"
 
 #if DCHECK_IS_ON()
-#include "wtf/Threading.h"
+#include "platform/wtf/Threading.h"
 #endif
 
 namespace blink {

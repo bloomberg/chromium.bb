@@ -11,7 +11,4 @@ include_rules = [
     "+base/test/test_io_thread.h",
     "+cc",
     "+mojo/edk/embedder",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]

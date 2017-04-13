@@ -32,15 +32,15 @@
 #ifndef MediaStreamSource_h
 #define MediaStreamSource_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/Allocator.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

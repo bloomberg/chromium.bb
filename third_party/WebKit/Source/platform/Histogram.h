@@ -5,11 +5,11 @@
 #ifndef Histogram_h
 #define Histogram_h
 
+#include <stdint.h>
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "platform/PlatformExport.h"
-#include "wtf/CurrentTime.h"
-#include <stdint.h>
+#include "platform/wtf/CurrentTime.h"
 
 namespace base {
 class HistogramBase;

@@ -25,7 +25,7 @@
 
 #import <Foundation/NSException.h>
 #import "platform/PlatformExport.h"
-#import "wtf/Assertions.h"
+#import "platform/wtf/Assertions.h"
 
 PLATFORM_EXPORT void ReportBlockedObjCException(NSException*);
 

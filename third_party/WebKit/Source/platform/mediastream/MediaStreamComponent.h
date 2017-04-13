@@ -32,13 +32,13 @@
 #ifndef MediaStreamComponent_h
 #define MediaStreamComponent_h
 
+#include <memory>
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "wtf/Forward.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

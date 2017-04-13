@@ -8,7 +8,7 @@
 #include "platform/json/JSONValues.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

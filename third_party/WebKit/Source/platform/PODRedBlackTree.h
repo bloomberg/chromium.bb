@@ -73,14 +73,14 @@
 #define PODRedBlackTree_h
 
 #include "platform/PODFreeListArena.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefPtr.h"
 #ifndef NDEBUG
-#include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/WTFString.h"
 #endif
 
 namespace blink {

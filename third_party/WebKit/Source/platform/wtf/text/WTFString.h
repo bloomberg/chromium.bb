@@ -603,5 +603,5 @@ using WTF::Equal;
 using WTF::Find;
 using WTF::IsSpaceOrNewline;
 
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/text/AtomicString.h"
 #endif  // WTFString_h

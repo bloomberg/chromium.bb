@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include "base/strings/string_util.h"
 #include "platform/wtf/ASCIICType.h"

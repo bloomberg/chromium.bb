@@ -31,9 +31,9 @@
 #ifndef WaitableEvent_h
 #define WaitableEvent_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Vector.h"
 
 namespace base {
 class WaitableEvent;

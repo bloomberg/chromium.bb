@@ -27,8 +27,8 @@
 #include "platform/SharedBuffer.h"
 
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "wtf/text/UTF8.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/text/UTF8.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

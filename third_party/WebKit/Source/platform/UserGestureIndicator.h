@@ -27,9 +27,9 @@
 #define UserGestureIndicator_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

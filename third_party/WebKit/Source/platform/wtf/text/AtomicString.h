@@ -313,5 +313,5 @@ using WTF::g_xml_atom;
 using WTF::g_xmlns_atom;
 using WTF::g_xlink_atom;
 
-#include "wtf/text/StringConcatenate.h"
+#include "platform/wtf/text/StringConcatenate.h"
 #endif  // AtomicString_h

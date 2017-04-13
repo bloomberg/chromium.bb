@@ -27,6 +27,7 @@
 
 #import <AppKit/AppKit.h>
 
+#include <memory>
 #include "platform/Timer.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/geometry/FloatRect.h"
@@ -36,11 +37,10 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMac.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 using namespace blink;
 

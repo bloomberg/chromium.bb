@@ -33,9 +33,9 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

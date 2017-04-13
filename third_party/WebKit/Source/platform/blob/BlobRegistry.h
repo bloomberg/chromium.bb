@@ -31,11 +31,11 @@
 #ifndef BlobRegistry_h
 #define BlobRegistry_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace blink {
 

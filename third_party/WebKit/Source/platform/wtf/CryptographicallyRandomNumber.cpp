@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "wtf/CryptographicallyRandomNumber.h"
+#include "platform/wtf/CryptographicallyRandomNumber.h"
 
 #include "base/rand_util.h"
 #include <string.h>

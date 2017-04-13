@@ -31,11 +31,11 @@
 #ifndef DateComponents_h
 #define DateComponents_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/text/Unicode.h"
 #include <limits>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

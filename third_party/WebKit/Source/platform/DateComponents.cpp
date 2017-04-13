@@ -31,10 +31,10 @@
 #include "platform/DateComponents.h"
 
 #include <limits.h>
-#include "wtf/ASCIICType.h"
-#include "wtf/DateMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

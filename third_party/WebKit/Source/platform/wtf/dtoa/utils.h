@@ -28,8 +28,8 @@
 #ifndef DOUBLE_CONVERSION_UTILS_H_
 #define DOUBLE_CONVERSION_UTILS_H_
 
-#include "wtf/Assertions.h"
 #include <string.h>
+#include "platform/wtf/Assertions.h"
 
 #define UNIMPLEMENTED NOTREACHED
 #define UNREACHABLE NOTREACHED

@@ -11,13 +11,13 @@
 #ifndef SOURCE_PLATFORM_CRYPTO_H_
 #define SOURCE_PLATFORM_CRYPTO_H_
 
-#include "platform/PlatformExport.h"
-#include "public/platform/WebCrypto.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashSet.h"
-#include "wtf/StringHasher.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/Vector.h"
+#include "public/platform/WebCrypto.h"
 
 namespace blink {
 

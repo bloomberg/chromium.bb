@@ -25,8 +25,8 @@
 #ifndef RTCStatsResponseBase_h
 #define RTCStatsResponseBase_h
 
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebRTCLegacyStats.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 

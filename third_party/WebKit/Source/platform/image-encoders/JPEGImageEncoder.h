@@ -31,10 +31,10 @@
 #ifndef JPEGImageEncoder_h
 #define JPEGImageEncoder_h
 
-#include "platform/geometry/IntSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/geometry/IntSize.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

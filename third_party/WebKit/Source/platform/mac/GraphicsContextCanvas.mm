@@ -7,8 +7,8 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
+#include "platform/wtf/RetainPtr.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "wtf/RetainPtr.h"
 
 namespace blink {
 

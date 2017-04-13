@@ -4,21 +4,21 @@
 
 #include "platform/Timer.h"
 
+#include <memory>
+#include <queue>
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefCounted.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebViewScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefCounted.h"
-#include <memory>
-#include <queue>
 
 using testing::ElementsAre;
 

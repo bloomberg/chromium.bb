@@ -4,9 +4,9 @@
 
 #include "public/platform/WebVector.h"
 
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

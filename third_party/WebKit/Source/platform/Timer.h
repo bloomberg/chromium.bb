@@ -29,14 +29,14 @@
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Allocator.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 

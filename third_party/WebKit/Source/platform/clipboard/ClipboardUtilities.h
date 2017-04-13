@@ -32,8 +32,8 @@
 #define ClipboardUtilities_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Forward.h"
-#include "wtf/build_config.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

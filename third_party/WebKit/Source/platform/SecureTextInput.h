@@ -32,7 +32,7 @@
 #define SecureTextInput_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

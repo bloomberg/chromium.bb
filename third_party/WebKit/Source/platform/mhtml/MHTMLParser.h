@@ -34,8 +34,8 @@
 #include "platform/SharedBufferChunkReader.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace WTF {
 class String;

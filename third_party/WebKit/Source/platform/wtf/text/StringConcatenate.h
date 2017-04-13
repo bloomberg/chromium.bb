@@ -225,5 +225,5 @@ class StringTypeAdapter<AtomicString> : public StringTypeAdapter<StringView> {
 
 }  // namespace WTF
 
-#include "wtf/text/StringOperators.h"
+#include "platform/wtf/text/StringOperators.h"
 #endif
