@@ -18,14 +18,10 @@ SettingsUIBrowserTest.prototype = {
 
 // Times out on debug builders and may time out on memory bots because
 // the Settings page can take several seconds to load in a Release build
-// and several times that in a Debug build. See https://crbug.com/558434.
-GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
+// and several times that in a Debug build. See https://crbug.com/558434
+// and http://crbug.com/711256.
 
-TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
+TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
   suite('settings-ui', function() {
     var toolbar;
     var ui;

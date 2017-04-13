@@ -30,15 +30,11 @@ SettingsEasyUnlockBrowserTest.prototype = {
 
 // Times out on debug builders and may time out on memory bots because
 // the Settings page can take several seconds to load in a Release build
-// and several times that in a Debug build. See https://crbug.com/558434.
-GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
-GEN('#define MAYBE_EasyUnlock DISABLED_EasyUnlock');
-GEN('#else');
-GEN('#define MAYBE_EasyUnlock EasyUnlock');
-GEN('#endif');
+// and several times that in a Debug build. See https://crbug.com/558434
+// and http://crbug.com/711256.
 
 // Runs easy unlock tests.
-TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
+TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
   /**
    * A test version of EasyUnlockBrowserProxy. Provides helper methods
    * for allowing tests to know when a method was called, as well as
