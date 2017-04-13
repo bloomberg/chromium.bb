@@ -207,11 +207,18 @@ Polymer({
   onPasswordClosed_: function() {
     if (!this.setModes_)
       settings.navigateTo(settings.Route.PEOPLE);
+    else
+      this.$$('#unlockType').focus();
   },
 
   /** @private */
   onPinSetupDone_: function() {
     this.$.setupPin.close();
+  },
+
+  /** @private */
+  onSetupPinClosed_: function() {
+    this.$$('#setupPinLink').focus();
   },
 
   /**

@@ -59,7 +59,7 @@
         </template>
       </iron-list>
       <div class="continuation">
-        <paper-button class="add-link action-button"
+        <paper-button id="addFingerprint" class="add-link action-button"
             on-tap="openAddFingerprintDialog_">
           $i18n{lockScreenAddFingerprint}
         </paper-button>
@@ -68,7 +68,8 @@
     <i class="settings-box continuation">$i18n{lockScreenFingerprintWarning}</i>
 
     <settings-setup-fingerprint-dialog id="setupFingerprint"
-        on-add-fingerprint="updateFingerprintsList_">
+        on-add-fingerprint="updateFingerprintsList_"
+        on-close="onSetupFingerprintDialogClose_">
     </settings-setup-fingerprint-dialog>
   </template>
   <script src="fingerprint_list.js"></script>

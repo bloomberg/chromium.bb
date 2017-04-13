@@ -115,5 +115,10 @@ Polymer({
   openAddFingerprintDialog_: function() {
     this.$.setupFingerprint.open();
   },
+
+  /** @private */
+  onSetupFingerprintDialogClose_: function() {
+    this.$$('#addFingerprint').focus();
+  },
 });
 })();

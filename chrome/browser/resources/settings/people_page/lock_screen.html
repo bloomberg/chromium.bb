@@ -36,7 +36,7 @@
 
     <div>
       <div class="list-frame">
-        <paper-radio-group selected="{{selectedUnlockType}}">
+        <paper-radio-group id="unlockType" selected="{{selectedUnlockType}}">
           <paper-radio-button name="password">
             $i18n{lockScreenPasswordOnly}
           </paper-radio-button>
@@ -46,7 +46,8 @@
         </paper-radio-group>
         <div class="list-item radio-indent"
             hidden$="[[!showConfigurePinButton_(selectedUnlockType)]]">
-          <a is="action-link" class="list-button" on-tap="onConfigurePin_">
+          <a id="setupPinLink" is="action-link" class="list-button"
+              on-tap="onConfigurePin_">
             [[getSetupPinText_(hasPin)]]
           </a>
         </div>
@@ -127,7 +128,7 @@
       </settings-password-prompt-dialog>
 
       <settings-setup-pin-dialog id="setupPin" on-done="onPinSetupDone_"
-          set-modes="[[setModes_]]">
+          on-close="onSetupPinClosed_" set-modes="[[setModes_]]">
       </settings-setup-pin-dialog>
 
       <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]">
