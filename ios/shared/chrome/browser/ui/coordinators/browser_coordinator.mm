@@ -39,17 +39,21 @@
 #pragma mark - Public API
 
 - (void)start {
+  if (self.started) {
+    return;
+  }
   self.started = YES;
   [self.parentCoordinator childCoordinatorDidStart:self];
 }
 
 - (void)stop {
+  if (!self.started) {
+    return;
+  }
   [self.parentCoordinator childCoordinatorWillStop:self];
   self.started = NO;
   for (BrowserCoordinator* child in self.children) {
-    if (child.started) {
-      [child stop];
-    }
+    [child stop];
   }
 }
 

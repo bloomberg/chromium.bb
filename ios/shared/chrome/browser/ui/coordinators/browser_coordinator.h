@@ -22,19 +22,32 @@ class Browser;
 @property(nonatomic, assign) Browser* browser;
 
 // The basic lifecycle methods for coordinators are -start and -stop. These
-// implementations only notify the parent coordinator when this coordinator did
-// start and will stop. Child classes are expected to override and call the
-// superclass method at the end of -start and at the beginning of -stop.
+// implementations notify the parent coordinator when this coordinator did start
+// and will stop. Child classes are expected to override and call the superclass
+// method at the end of -start and at the beginning of -stop.
+// If the receiver is already started, -start is a no-op. If the receiver is
+// already stopped or never started, -stop is a no-op. In those cases, the
+// overriding implementations can early return withotu calling the superclass
+// method:
+//   SubCoordinator.mm:
+//     - (void)start {
+//       if (self.started) return;
+//       ...
+//       [super start];
+//     }
 
 // Starts the user interaction managed by the receiver. Typical implementations
 // will create a view controller and then use |baseViewController| to present
 // it. This method needs to be called at the end of the overriding
 // implementation.
+// Starting a started coordinator is a no-op in this implementation.
 - (void)start NS_REQUIRES_SUPER;
 
 // Stops the user interaction managed by the receiver. This method needs to be
 // called at the beginning of the overriding implementation.
 // Calling stop on a coordinator transitively calls stop on its children.
+// Stopping a non-started or stopped coordinator is a no-op in this
+// implementation.
 - (void)stop NS_REQUIRES_SUPER;
 
 @end

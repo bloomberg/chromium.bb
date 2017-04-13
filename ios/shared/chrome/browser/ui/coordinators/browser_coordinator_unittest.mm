@@ -209,7 +209,7 @@ TEST(BrowserCoordinatorTest, StopStopsStartedChildren) {
   EXPECT_TRUE(called);
 }
 
-TEST(BrowserCoordinatorTest, StopDoesntStopNonStartedChildren) {
+TEST(BrowserCoordinatorTest, StopStopsNonStartedChildren) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];
   [parent addChildCoordinator:child];
@@ -224,7 +224,7 @@ TEST(BrowserCoordinatorTest, StopDoesntStopNonStartedChildren) {
   [parent stop];
 
   // It should not have called stop on the child.
-  EXPECT_FALSE(called);
+  EXPECT_TRUE(called);
 }
 
 }  // namespace
