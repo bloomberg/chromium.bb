@@ -321,7 +321,13 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             property_['setter'] = method_name(join_name('set', property_['name_for_methods']))
             property_['initial'] = method_name(join_name('initial', property_['name_for_methods']))
 
-        property_values = self._properties.values()
+        # Ignore shorthand properties
+        for property_ in self._properties.values():
+            if property_['field_template'] is not None:
+                assert not property_['longhands'], \
+                    "Shorthand '{}' cannot have a field_template.".format(property_['name'])
+
+        property_values = [value for value in self._properties.values() if not value['longhands']]
 
         for property_ in property_values:
             # Override the type name when field_type_path is specified
