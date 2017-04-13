@@ -8145,11 +8145,11 @@
       },
       'example_value': True,
       'id': 276,
-      'caption': '''Enable add person in profile manager''',
+      'caption': '''Enable add person in user manager''',
       'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow Add Person from the user manager.
 
-      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the profile manager.''',
+      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the user manager.''',
     },
     {
       'name': 'ForceBrowserSignin',
