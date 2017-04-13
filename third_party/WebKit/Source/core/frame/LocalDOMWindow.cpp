@@ -425,7 +425,12 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs
   // to fire asynchronously.  As per spec pageshow must be triggered
   // asynchronously.  However to be compatible with other browsers blink fires
-  // pageshow synchronously.
+  // pageshow synchronously unless we are in EventQueueScope.
+  if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
+      EnqueueWindowEvent(
+        PageTransitionEvent::Create(EventTypeNames::pageshow, persisted));
+    return;
+  }
   DispatchEvent(
       PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
       document_.Get());
