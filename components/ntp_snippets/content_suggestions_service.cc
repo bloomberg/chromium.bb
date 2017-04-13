@@ -132,13 +132,12 @@ void ContentSuggestionsService::FetchSuggestionImage(
       suggestion_id, callback);
 }
 
+// TODO(jkrcal): Split the favicon fetching into a separate class.
 void ContentSuggestionsService::FetchSuggestionFavicon(
     const ContentSuggestion::ID& suggestion_id,
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
     const ImageFetchedCallback& callback) {
-  // TODO(jkrcal): Allow the provider to provide (or possibly override) the URL
-  // for looking up the favicon.
   std::vector<ContentSuggestion>* suggestions =
       &suggestions_by_category_[suggestion_id.category()];
   auto position =
@@ -152,16 +151,17 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
     return;
   }
 
-  const GURL& publisher_url = position->url().GetWithEmptyPath();
+  const GURL& domain_with_favicon =
+      position->url_with_favicon().GetWithEmptyPath();
 
   // TODO(jkrcal): Create a general wrapper function in LargeIconService that
   // does handle the get-from-cache-and-fallback-to-google-server functionality
   // in one shot (for all clients that do not need to react in between).
   large_icon_service_->GetLargeIconImageOrFallbackStyle(
-      publisher_url, minimum_size_in_pixel, desired_size_in_pixel,
+      domain_with_favicon, minimum_size_in_pixel, desired_size_in_pixel,
       base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
-                 base::Unretained(this), publisher_url, minimum_size_in_pixel,
-                 desired_size_in_pixel, callback,
+                 base::Unretained(this), domain_with_favicon,
+                 minimum_size_in_pixel, desired_size_in_pixel, callback,
                  /*continue_to_google_server=*/true),
       &favicons_task_tracker_);
 }

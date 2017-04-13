@@ -389,11 +389,17 @@ SnippetProto RemoteSuggestion::ToProto() const {
 ContentSuggestion RemoteSuggestion::ToContentSuggestion(
     Category category) const {
   GURL url = url_;
-  if (base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
-      !amp_url_.is_empty()) {
+  bool use_amp = base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
+                 !amp_url_.is_empty();
+  if (use_amp) {
     url = amp_url_;
   }
   ContentSuggestion suggestion(category, id(), url);
+  // Set url for fetching favicons if it differs from the main url (domains of
+  // AMP URLs sometimes failed to provide favicons).
+  if (use_amp) {
+    suggestion.set_url_with_favicon(url_);
+  }
   suggestion.set_title(base::UTF8ToUTF16(title_));
   suggestion.set_snippet_text(base::UTF8ToUTF16(snippet_));
   suggestion.set_publish_date(publish_date_);

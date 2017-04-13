@@ -112,6 +112,14 @@ class ContentSuggestion {
   // This may be an AMP URL.
   const GURL& url() const { return url_; }
 
+  // The URL of a page that links to a favicon that represents the suggestion.
+  const GURL& url_with_favicon() const {
+    return url_with_favicon_.is_valid() ? url_with_favicon_ : url_;
+  }
+  void set_url_with_favicon(const GURL& url_with_favicon) {
+    url_with_favicon_ = url_with_favicon;
+  }
+
   // Title of the suggestion.
   const base::string16& title() const { return title_; }
   void set_title(const base::string16& title) { title_ = title; }
@@ -186,6 +194,7 @@ class ContentSuggestion {
  private:
   ID id_;
   GURL url_;
+  GURL url_with_favicon_;
   base::string16 title_;
   base::string16 snippet_text_;
   base::Time publish_date_;
