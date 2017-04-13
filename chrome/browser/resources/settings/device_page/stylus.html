@@ -40,7 +40,9 @@
     </div>
 
     <div class="settings-box">
-      <div class="start">$i18n{stylusNoteTakingApp}</div>
+      <div id="stylusNoteTakingAppLabel" class="start">
+        $i18n{stylusNoteTakingApp}
+      </div>
 
       <div id="no-apps" class="secondary"
           hidden$="[[!showNoApps_(appChoices_, waitingForAndroid_)]]">
@@ -54,7 +56,8 @@
 
       <div id="select-app" class="md-select-wrapper"
           hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]">
-        <select id="menu" class="md-select" on-change="onSelectedAppChanged_">
+        <select id="menu" class="md-select" on-change="onSelectedAppChanged_"
+            aria-labelledby="stylusNoteTakingAppLabel">
           <template is="dom-repeat" items="[[appChoices_]]">
             <option value="[[item.value]]" selected="[[item.preferred]]">
               [[item.name]]

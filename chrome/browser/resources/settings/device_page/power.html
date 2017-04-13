@@ -16,6 +16,7 @@
       </div>
       <div class="md-select-wrapper" hidden$="[[!showPowerSourceDropdown_]]">
         <select id="powerSource" class="md-select"
+            aria-label="$i18n{powerSourceLabel}"
             on-change="onPowerSourceChange_">
           <option value="" selected="[[isEqual_('', selectedPowerSourceId_)]]">
             $i18n{powerSourceBattery}
