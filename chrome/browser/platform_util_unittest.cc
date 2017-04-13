@@ -28,10 +28,10 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/content_client.h"
-#include "content/public/test/mock_special_storage_policy.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/fileapi/file_system_types.h"
 #else
 #include "content/public/test/test_browser_thread_bundle.h"

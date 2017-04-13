@@ -229,10 +229,12 @@ test("storage_unittests") {
     "blob/blob_data_builder_unittest.cc",
     "blob/blob_flattener_unittest.cc",
     "blob/blob_memory_controller_unittest.cc",
+    "blob/blob_reader_unittest.cc",
     "blob/blob_slice_unittest.cc",
     "blob/blob_storage_context_unittest.cc",
     "blob/blob_storage_registry_unittest.cc",
     "blob/blob_transport_request_builder_unittest.cc",
+    "blob/blob_url_request_job_unittest.cc",
     "database/database_quota_client_unittest.cc",
     "database/database_util_unittest.cc",
     "database/databases_table_unittest.cc",
@@ -252,11 +254,36 @@ test("storage_unittests") {
 
   deps = [
     ":browser",
+    ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//net:test_support",
     "//sql:test_support",
     "//testing/gtest",
     "//third_party/leveldatabase",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "test/async_file_test_helper.cc",
+    "test/async_file_test_helper.h",
+    "test/mock_special_storage_policy.cc",
+    "test/mock_special_storage_policy.h",
+    "test/test_file_system_backend.cc",
+    "test/test_file_system_backend.h",
+    "test/test_file_system_context.cc",
+    "test/test_file_system_context.h",
+    "test/test_file_system_options.cc",
+    "test/test_file_system_options.h",
+  ]
+
+  deps = [
+    ":browser",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
   ]
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_
-#define CONTENT_PUBLIC_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_
+#ifndef STORAGE_BROWSER_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_
+#define STORAGE_BROWSER_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_
 
 #include <set>
 #include <string>
@@ -26,37 +26,21 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool HasSessionOnlyOrigins() override;
   bool IsStorageDurable(const GURL& origin) override;
 
-  void AddProtected(const GURL& origin) {
-    protected_.insert(origin);
-  }
+  void AddProtected(const GURL& origin) { protected_.insert(origin); }
 
-  void AddUnlimited(const GURL& origin) {
-    unlimited_.insert(origin);
-  }
+  void AddUnlimited(const GURL& origin) { unlimited_.insert(origin); }
 
-  void RemoveUnlimited(const GURL& origin) {
-    unlimited_.erase(origin);
-  }
+  void RemoveUnlimited(const GURL& origin) { unlimited_.erase(origin); }
 
-  void AddSessionOnly(const GURL& origin) {
-    session_only_.insert(origin);
-  }
+  void AddSessionOnly(const GURL& origin) { session_only_.insert(origin); }
 
-  void AddIsolated(const GURL& origin) {
-    isolated_.insert(origin);
-  }
+  void AddIsolated(const GURL& origin) { isolated_.insert(origin); }
 
-  void RemoveIsolated(const GURL& origin) {
-    isolated_.erase(origin);
-  }
+  void RemoveIsolated(const GURL& origin) { isolated_.erase(origin); }
 
-  void SetAllUnlimited(bool all_unlimited) {
-    all_unlimited_ = all_unlimited;
-  }
+  void SetAllUnlimited(bool all_unlimited) { all_unlimited_ = all_unlimited; }
 
-  void AddDurable(const GURL& origin) {
-    durable_.insert(origin);
-  }
+  void AddDurable(const GURL& origin) { durable_.insert(origin); }
 
   void Reset() {
     protected_.clear();
@@ -75,9 +59,7 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
     SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
   }
 
-  void NotifyCleared() {
-    SpecialStoragePolicy::NotifyCleared();
-  }
+  void NotifyCleared() { SpecialStoragePolicy::NotifyCleared(); }
 
  protected:
   ~MockSpecialStoragePolicy() override;
@@ -94,4 +76,4 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
 };
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_
+#endif  // STORAGE_BROWSER_TEST_MOCK_SPECIAL_STORAGE_POLICY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
-#define CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
+#ifndef STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_BACKEND_H_
+#define STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_BACKEND_H_
 
 #include <stdint.h>
 
@@ -32,9 +32,8 @@ namespace content {
 // under the given directory.
 class TestFileSystemBackend : public storage::FileSystemBackend {
  public:
-  TestFileSystemBackend(
-      base::SequencedTaskRunner* task_runner,
-      const base::FilePath& base_path);
+  TestFileSystemBackend(base::SequencedTaskRunner* task_runner,
+                        const base::FilePath& base_path);
   ~TestFileSystemBackend() override;
 
   // FileSystemBackend implementation.
@@ -108,4 +107,4 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_TEST_FILE_SYSTEM_BACKEND_H_
+#endif  // STORAGE_BROWSER_TEST_TEST_FILE_SYSTEM_BACKEND_H_

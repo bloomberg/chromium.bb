@@ -20,8 +20,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/public/test/async_file_test_helper.h"
-#include "content/public/test/test_file_system_context.h"
 #include "content/test/fileapi_test_file_set.h"
 #include "storage/browser/fileapi/dragged_file_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -29,6 +27,8 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/local_file_util.h"
 #include "storage/browser/fileapi/native_file_util.h"
+#include "storage/browser/test/async_file_test_helper.h"
+#include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::AsyncFileTestHelper;

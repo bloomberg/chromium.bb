@@ -18,8 +18,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/public/test/async_file_test_helper.h"
-#include "content/public/test/test_file_system_context.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -39,6 +37,8 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/test/async_file_test_helper.h"
+#include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::BlobDataSnapshot;
@@ -81,11 +81,9 @@ class EmptyDataHandle : public storage::BlobDataBuilder::DataHandle {
 std::unique_ptr<disk_cache::Backend> CreateInMemoryDiskCache() {
   std::unique_ptr<disk_cache::Backend> cache;
   net::TestCompletionCallback callback;
-  int rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
-                                          net::CACHE_BACKEND_DEFAULT,
-                                          base::FilePath(), 0,
-                                          false, nullptr, nullptr, &cache,
-                                          callback.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(), 0, false,
+      nullptr, nullptr, &cache, callback.callback());
   EXPECT_EQ(net::OK, callback.GetResult(rv));
 
   return cache;
@@ -128,8 +126,8 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
 class BlobURLRequestJobTest : public testing::Test {
  public:
   // A simple ProtocolHandler implementation to create BlobURLRequestJob.
-  class MockProtocolHandler :
-      public net::URLRequestJobFactory::ProtocolHandler {
+  class MockProtocolHandler
+      : public net::URLRequestJobFactory::ProtocolHandler {
    public:
     MockProtocolHandler(BlobURLRequestJobTest* test) : test_(test) {}
 
@@ -156,7 +154,7 @@ class BlobURLRequestJobTest : public testing::Test {
     temp_file1_ = temp_dir_.GetPath().AppendASCII("BlobFile1.dat");
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData1) - 1),
               base::WriteFile(temp_file1_, kTestFileData1,
-                                   arraysize(kTestFileData1) - 1));
+                              arraysize(kTestFileData1) - 1));
     base::File::Info file_info1;
     base::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
@@ -164,7 +162,7 @@ class BlobURLRequestJobTest : public testing::Test {
     temp_file2_ = temp_dir_.GetPath().AppendASCII("BlobFile2.dat");
     ASSERT_EQ(static_cast<int>(arraysize(kTestFileData2) - 1),
               base::WriteFile(temp_file2_, kTestFileData2,
-                                   arraysize(kTestFileData2) - 1));
+                              arraysize(kTestFileData2) - 1));
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
@@ -192,8 +190,7 @@ class BlobURLRequestJobTest : public testing::Test {
         CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
-        GURL(kFileSystemURLOrigin),
-        kFileSystemType,
+        GURL(kFileSystemURLOrigin), kFileSystemType,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
                    base::Unretained(this)));
@@ -218,12 +215,12 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
   void WriteFileSystemFile(const std::string& filename,
-                           const char* buf, int buf_size,
+                           const char* buf,
+                           int buf_size,
                            base::Time* modification_time) {
     storage::FileSystemURL url =
         file_system_context_->CreateCrackedFileSystemURL(
-            GURL(kFileSystemURLOrigin),
-            kFileSystemType,
+            GURL(kFileSystemURLOrigin), kFileSystemType,
             base::FilePath().AppendASCII(filename));
 
     ASSERT_EQ(base::File::FILE_OK,
@@ -378,9 +375,9 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   large_data.reserve(kBufferSize * 5);
   for (int i = 0; i < kBufferSize * 5; ++i)
     large_data.append(1, static_cast<char>(i % 256));
-  ASSERT_EQ(static_cast<int>(large_data.size()),
-            base::WriteFile(large_temp_file, large_data.data(),
-                            large_data.size()));
+  ASSERT_EQ(
+      static_cast<int>(large_data.size()),
+      base::WriteFile(large_temp_file, large_data.data(), large_data.size()));
   blob_data_->AppendFile(large_temp_file, 0,
                          std::numeric_limits<uint64_t>::max(), base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());
@@ -450,9 +447,8 @@ TEST_F(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
 
 TEST_F(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
   SetUpFileSystem();
-  base::Time old_time =
-      temp_file_system_file_modification_time1_ -
-      base::TimeDelta::FromSeconds(10);
+  base::Time old_time = temp_file_system_file_modification_time1_ -
+                        base::TimeDelta::FromSeconds(10);
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0, 3, old_time);
   TestErrorRequest(404);
 }
@@ -460,7 +456,7 @@ TEST_F(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
 TEST_F(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 2, 4,
-                                  temp_file_system_file_modification_time1_);
+                                   temp_file_system_file_modification_time1_);
   std::string result(kTestFileSystemFileData1 + 2, 4);
   TestSuccessNonrangeRequest(result, 4);
 }

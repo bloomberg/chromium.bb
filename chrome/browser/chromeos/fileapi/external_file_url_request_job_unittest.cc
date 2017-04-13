@@ -31,7 +31,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -42,6 +41,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

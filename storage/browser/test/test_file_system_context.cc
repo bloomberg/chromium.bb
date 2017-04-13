@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_file_system_context.h"
+#include "storage/browser/test/test_file_system_context.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/mock_special_storage_policy.h"
-#include "content/public/test/test_file_system_backend.h"
-#include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
+#include "storage/browser/test/test_file_system_backend.h"
+#include "storage/browser/test/test_file_system_options.h"
 
 namespace content {
 

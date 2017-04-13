@@ -11,9 +11,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/usage_tracker.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::kQuotaStatusOk;

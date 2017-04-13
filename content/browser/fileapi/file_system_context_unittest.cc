@@ -13,11 +13,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/quota/mock_quota_manager.h"
-#include "content/public/test/mock_special_storage_policy.h"
-#include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/isolated_context.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
+#include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)

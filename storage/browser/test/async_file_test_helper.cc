@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "storage/browser/test/async_file_test_helper.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "content/public/test/async_file_test_helper.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -28,9 +28,9 @@ void AssignAndQuit(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-base::Callback<void(base::File::Error)>
-AssignAndQuitCallback(base::RunLoop* run_loop,
-                      base::File::Error* result) {
+base::Callback<void(base::File::Error)> AssignAndQuitCallback(
+    base::RunLoop* run_loop,
+    base::File::Error* result) {
   return base::Bind(&AssignAndQuit, run_loop, base::Unretained(result));
 }
 
@@ -118,8 +118,7 @@ base::File::Error AsyncFileTestHelper::Move(
     const storage::FileSystemURL& dest) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  context->operation_runner()->Move(src,
-                                    dest,
+  context->operation_runner()->Move(src, dest,
                                     storage::FileSystemOperation::OPTION_NONE,
                                     AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
@@ -158,9 +157,7 @@ base::File::Error AsyncFileTestHelper::CreateDirectory(
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateDirectory(
-      url,
-      false /* exclusive */,
-      false /* recursive */,
+      url, false /* exclusive */, false /* recursive */,
       AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
@@ -172,8 +169,7 @@ base::File::Error AsyncFileTestHelper::CreateFile(
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateFile(
-      url, false /* exclusive */,
-      AssignAndQuitCallback(&run_loop, &result));
+      url, false /* exclusive */, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -216,9 +212,10 @@ base::File::Error AsyncFileTestHelper::GetMetadata(
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->GetMetadata(
-      url, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-               storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
-               storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      url,
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
+          storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
       base::Bind(&GetMetadataCallback, &run_loop, &result, file_info));
   run_loop.Run();
   return result;
@@ -262,8 +259,7 @@ storage::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
     int64_t* quota) {
   storage::QuotaStatusCode status = storage::kQuotaStatusUnknown;
   quota_manager->GetUsageAndQuota(
-      origin,
-      FileSystemTypeToQuotaStorageType(type),
+      origin, FileSystemTypeToQuotaStorageType(type),
       base::Bind(&DidGetUsageAndQuota, &status, usage, quota));
   base::RunLoop().RunUntilIdle();
   return status;

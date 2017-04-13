@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_file_system_backend.h"
+#include "storage/browser/test/test_file_system_backend.h"
 
 #include <set>
 #include <string>
@@ -127,15 +127,13 @@ TestFileSystemBackend::TestFileSystemBackend(
       update_observers_.AddObserver(quota_util_.get(), task_runner_.get());
 }
 
-TestFileSystemBackend::~TestFileSystemBackend() {
-}
+TestFileSystemBackend::~TestFileSystemBackend() {}
 
 bool TestFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
   return (type == storage::kFileSystemTypeTest);
 }
 
-void TestFileSystemBackend::Initialize(FileSystemContext* context) {
-}
+void TestFileSystemBackend::Initialize(FileSystemContext* context) {}
 
 void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
                                        storage::OpenFileSystemMode mode,

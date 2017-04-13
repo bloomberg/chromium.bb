@@ -8,8 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "content/public/test/mock_special_storage_policy.h"
-#include "content/public/test/test_file_system_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -18,6 +16,8 @@
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
+#include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
 

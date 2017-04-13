@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/mock_special_storage_policy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 
 #include "base/stl_util.h"
 
 namespace content {
 
-MockSpecialStoragePolicy::MockSpecialStoragePolicy()
-    : all_unlimited_(false) {
-}
+MockSpecialStoragePolicy::MockSpecialStoragePolicy() : all_unlimited_(false) {}
 
 bool MockSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
   return base::ContainsKey(protected_, origin);

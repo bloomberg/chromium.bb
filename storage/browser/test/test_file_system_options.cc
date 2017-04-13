@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "storage/browser/test/test_file_system_options.h"
 #include "build/build_config.h"
-#include "content/public/test/test_file_system_options.h"
 
 #include <string>
 #include <vector>
@@ -18,8 +18,7 @@ FileSystemOptions CreateIncognitoFileSystemOptions() {
   additional_allowed_schemes.push_back("chrome-extension");
 #endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
-                           additional_allowed_schemes,
-                           NULL);
+                           additional_allowed_schemes, NULL);
 }
 
 FileSystemOptions CreateAllowFileAccessOptions() {
@@ -29,8 +28,7 @@ FileSystemOptions CreateAllowFileAccessOptions() {
   additional_allowed_schemes.push_back("chrome-extension");
 #endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
-                           additional_allowed_schemes,
-                           NULL);
+                           additional_allowed_schemes, NULL);
 }
 
 FileSystemOptions CreateDisallowFileAccessOptions() {
@@ -39,8 +37,7 @@ FileSystemOptions CreateDisallowFileAccessOptions() {
   additional_allowed_schemes.push_back("chrome-extension");
 #endif
   return FileSystemOptions(FileSystemOptions::PROFILE_MODE_NORMAL,
-                           additional_allowed_schemes,
-                           NULL);
+                           additional_allowed_schemes, NULL);
 }
 
 }  // namespace content

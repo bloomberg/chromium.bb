@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
-#define CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
+#ifndef STORAGE_BROWSER_TEST_ASYNC_FILE_TEST_HELPER_H_
+#define STORAGE_BROWSER_TEST_ASYNC_FILE_TEST_HELPER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -110,4 +110,4 @@ class AsyncFileTestHelper {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_ASYNC_FILE_TEST_HELPER_H_
+#endif  // STORAGE_BROWSER_TEST_ASYNC_FILE_TEST_HELPER_H_

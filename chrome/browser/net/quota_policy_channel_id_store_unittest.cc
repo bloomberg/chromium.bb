@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -24,6 +23,7 @@
 #include "net/test/channel_id_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "sql/statement.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const base::FilePath::CharType kTestChannelIDFilename[] =
