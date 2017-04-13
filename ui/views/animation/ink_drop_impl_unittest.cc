@@ -15,6 +15,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
+#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {
@@ -235,6 +236,13 @@ TEST_F(InkDropImplTest, LayersArentRemovedWhenPreemptingFadeOut) {
 
 TEST_F(InkDropImplTest,
        SettingHighlightStateDuringStateExitIsntAllowedDeathTest) {
+  // gtest death tests, such as EXPECT_DCHECK_DEATH(), can not work in the
+  // presence of fork() and other process launching. In views-mus, we have
+  // already launched additional processes for our service manager. Performing
+  // this test under mus is impossible.
+  if (PlatformTestHelper::IsMus())
+    return;
+
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   test::InkDropImplTestApi::SetStateOnExitHighlightState::Install(
