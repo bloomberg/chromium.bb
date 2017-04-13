@@ -109,8 +109,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
-#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h"
-#include "content/browser/renderer_host/offscreen_canvas_surface_factory_impl.h"
+#include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -1238,16 +1237,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&RenderProcessHostImpl::
-                     CreateOffscreenCanvasCompositorFrameSinkProvider,
+      base::Bind(&RenderProcessHostImpl::CreateOffscreenCanvasProvider,
                  base::Unretained(this)));
 
   AddUIThreadInterface(registry.get(),
                        base::Bind(&RenderProcessHostImpl::BindFrameSinkProvider,
                                   base::Unretained(this)));
 
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&OffscreenCanvasSurfaceFactoryImpl::Create));
   AddUIThreadInterface(
       registry.get(),
       base::Bind(&BackgroundSyncContext::CreateService,
@@ -1363,12 +1359,12 @@ void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
   gpu_client_->Add(std::move(request));
 }
 
-void RenderProcessHostImpl::CreateOffscreenCanvasCompositorFrameSinkProvider(
-    blink::mojom::OffscreenCanvasCompositorFrameSinkProviderRequest request) {
+void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
+    blink::mojom::OffscreenCanvasProviderRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!offscreen_canvas_provider_) {
-    offscreen_canvas_provider_.reset(
-        new OffscreenCanvasCompositorFrameSinkProviderImpl());
+    offscreen_canvas_provider_ =
+        base::MakeUnique<OffscreenCanvasProviderImpl>();
   }
   offscreen_canvas_provider_->Add(std::move(request));
 }

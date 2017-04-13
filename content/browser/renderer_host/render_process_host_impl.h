@@ -24,7 +24,7 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
-#include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/offscreen_canvas_provider_impl.h"
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
@@ -347,8 +347,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
   void CreateMusGpuRequest(ui::mojom::GpuRequest request);
-  void CreateOffscreenCanvasCompositorFrameSinkProvider(
-      blink::mojom::OffscreenCanvasCompositorFrameSinkProviderRequest request);
+  void CreateOffscreenCanvasProvider(
+      blink::mojom::OffscreenCanvasProviderRequest request);
   void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void CreateStoragePartitionService(
       mojo::InterfaceRequest<mojom::StoragePartitionService> request);
@@ -606,8 +606,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PushMessagingManager, BrowserThread::DeleteOnIOThread>
       push_messaging_manager_;
 
-  std::unique_ptr<OffscreenCanvasCompositorFrameSinkProviderImpl>
-      offscreen_canvas_provider_;
+  std::unique_ptr<OffscreenCanvasProviderImpl> offscreen_canvas_provider_;
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;

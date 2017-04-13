@@ -20,12 +20,6 @@ class CONTENT_EXPORT OffscreenCanvasCompositorFrameSinkManager
 
   static OffscreenCanvasCompositorFrameSinkManager* GetInstance();
 
-  // Registration of the frame sink with the given frame sink id to its parent
-  // frame sink (if it has one), so that parent frame is able to send signals
-  // to it on begin frame.
-  void RegisterFrameSinkToParent(const cc::FrameSinkId& frame_sink_id);
-  void UnregisterFrameSinkFromParent(const cc::FrameSinkId& frame_sink_id);
-
   void RegisterOffscreenCanvasSurfaceInstance(
       const cc::FrameSinkId& frame_sink_id,
       OffscreenCanvasSurfaceImpl* offscreen_canvas_surface);

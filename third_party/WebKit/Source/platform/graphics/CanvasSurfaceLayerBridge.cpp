@@ -67,15 +67,15 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
       new OffscreenCanvasSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
 
   DCHECK(!service_.is_bound());
-  mojom::blink::OffscreenCanvasSurfaceFactoryPtr service_factory;
+  mojom::blink::OffscreenCanvasProviderPtr provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_factory));
+      mojo::MakeRequest(&provider));
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
-  service_factory->CreateOffscreenCanvasSurface(
-      parent_frame_sink_id_, frame_sink_id_,
-      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&service_));
+  provider->CreateOffscreenCanvasSurface(parent_frame_sink_id_, frame_sink_id_,
+                                         binding_.CreateInterfacePtrAndBind(),
+                                         mojo::MakeRequest(&service_));
 }
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {

@@ -8,11 +8,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/frame_sink_manager_host.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_manager.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -28,10 +27,12 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
 }
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
-  if (frame_sink_id_.is_valid()) {
-    OffscreenCanvasCompositorFrameSinkManager::GetInstance()
-        ->UnregisterOffscreenCanvasSurfaceInstance(frame_sink_id_);
+  if (has_created_compositor_frame_sink_) {
+    GetFrameSinkManagerHost()->UnregisterFrameSinkHierarchy(
+        parent_frame_sink_id_, frame_sink_id_);
   }
+  OffscreenCanvasCompositorFrameSinkManager::GetInstance()
+      ->UnregisterOffscreenCanvasSurfaceInstance(frame_sink_id_);
 }
 
 // static
@@ -46,6 +47,23 @@ void OffscreenCanvasSurfaceImpl::Create(
   OffscreenCanvasSurfaceImpl* surface_service = impl.get();
   surface_service->binding_ =
       mojo::MakeStrongBinding(std::move(impl), std::move(request));
+}
+
+void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
+    cc::mojom::MojoCompositorFrameSinkClientPtr client,
+    cc::mojom::MojoCompositorFrameSinkRequest request) {
+  if (has_created_compositor_frame_sink_) {
+    DLOG(ERROR) << "CreateCompositorFrameSink() called more than once.";
+    return;
+  }
+
+  GetFrameSinkManagerHost()->CreateCompositorFrameSink(
+      frame_sink_id_, std::move(request),
+      mojo::MakeRequest(&compositor_frame_sink_private_), std::move(client));
+
+  GetFrameSinkManagerHost()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                        frame_sink_id_);
+  has_created_compositor_frame_sink_ = true;
 }
 
 void OffscreenCanvasSurfaceImpl::OnSurfaceCreated(

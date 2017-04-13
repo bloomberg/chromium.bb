@@ -48,7 +48,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     // mojo channel for this special case.
     current_local_surface_id_ = local_surface_id_allocator_.GenerateId();
     DCHECK(!sink_.is_bound());
-    mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
+    mojom::blink::OffscreenCanvasProviderPtr provider;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&provider));
     provider->CreateCompositorFrameSink(frame_sink_id_,

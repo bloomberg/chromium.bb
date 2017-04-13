@@ -31,38 +31,14 @@ OffscreenCanvasCompositorFrameSinkManager::GetInstance() {
   return g_manager.Pointer();
 }
 
-void OffscreenCanvasCompositorFrameSinkManager::RegisterFrameSinkToParent(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  auto surface_iter = registered_surface_instances_.find(child_frame_sink_id);
-  if (surface_iter == registered_surface_instances_.end())
-    return;
-  OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
-  if (surfaceImpl->parent_frame_sink_id().is_valid()) {
-    GetSurfaceManager()->RegisterFrameSinkHierarchy(
-        surfaceImpl->parent_frame_sink_id(), child_frame_sink_id);
-  }
-}
-
-void OffscreenCanvasCompositorFrameSinkManager::UnregisterFrameSinkFromParent(
-    const cc::FrameSinkId& child_frame_sink_id) {
-  auto surface_iter = registered_surface_instances_.find(child_frame_sink_id);
-  if (surface_iter == registered_surface_instances_.end())
-    return;
-  OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
-  if (surfaceImpl->parent_frame_sink_id().is_valid()) {
-    GetSurfaceManager()->UnregisterFrameSinkHierarchy(
-        surfaceImpl->parent_frame_sink_id(), child_frame_sink_id);
-  }
-}
-
 void OffscreenCanvasCompositorFrameSinkManager::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   auto surface_iter =
       registered_surface_instances_.find(surface_info.id().frame_sink_id());
   if (surface_iter == registered_surface_instances_.end())
     return;
-  OffscreenCanvasSurfaceImpl* surfaceImpl = surface_iter->second;
-  surfaceImpl->OnSurfaceCreated(surface_info);
+  OffscreenCanvasSurfaceImpl* surface_impl = surface_iter->second;
+  surface_impl->OnSurfaceCreated(surface_info);
 }
 
 void OffscreenCanvasCompositorFrameSinkManager::
