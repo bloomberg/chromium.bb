@@ -119,7 +119,7 @@ void test_clpf(int w, int h, int depth, int iterations,
       for (level = 0; level < (1 << depth) && !error;
            level += (1 + 4 * !!boundary) << (depth - 8)) {
         for (bits = 1; bits <= depth && !error; bits++) {
-          for (damp = 4; damp < depth - 1 && !error; damp++) {
+          for (damp = 4 + depth - 8; damp < depth - 1 && !error; damp++) {
             for (int i = 0; i < size * size; i++)
               s[i] = clamp((rnd.Rand16() & ((1 << bits) - 1)) + level, 0,
                            (1 << depth) - 1);
