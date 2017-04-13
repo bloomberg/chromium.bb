@@ -1730,26 +1730,30 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_ImmediateTask) {
 TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
   Initialize(1u);
 
+  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeDelta delay10s(base::TimeDelta::FromSeconds(10));
+  base::TimeDelta delay100s(base::TimeDelta::FromSeconds(100));
+  base::TimeDelta delay1s(base::TimeDelta::FromSeconds(1));
+
   MockTaskQueueObserver observer;
   runners_[0]->SetObserver(&observer);
 
   // We should get a notification when a delayed task is posted on an empty
   // queue.
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
-                               base::TimeDelta::FromSeconds(10));
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(),
+                                                 start_time + delay10s));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay10s);
   Mock::VerifyAndClearExpectations(&observer);
 
   // We should not get a notification for a longer delay.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
-                               base::TimeDelta::FromSeconds(100));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay100s);
   Mock::VerifyAndClearExpectations(&observer);
 
   // We should get a notification for a shorter delay.
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
-                               base::TimeDelta::FromSeconds(1));
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(),
+                                                 start_time + delay1s));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay1s);
   Mock::VerifyAndClearExpectations(&observer);
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
@@ -1758,7 +1762,8 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
 
   // When a queue has been enabled, we may get a notification if the
   // TimeDomain's next scheduled wake-up has changed.
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(),
+                                                 start_time + delay1s));
   voter->SetQueueEnabled(true);
 
   // Tidy up.
@@ -1772,14 +1777,18 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   runners_[0]->SetObserver(&observer);
   runners_[1]->SetObserver(&observer);
 
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _))
+  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeDelta delay1s(base::TimeDelta::FromSeconds(1));
+  base::TimeDelta delay10s(base::TimeDelta::FromSeconds(10));
+
+  EXPECT_CALL(observer,
+              OnQueueNextWakeUpChanged(runners_[0].get(), start_time + delay1s))
       .Times(1);
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[1].get(), _))
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[1].get(),
+                                                 start_time + delay10s))
       .Times(1);
-  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
-                               base::TimeDelta::FromSeconds(1));
-  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask),
-                               base::TimeDelta::FromSeconds(10));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay1s);
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay10s);
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter0 =
@@ -1793,7 +1802,8 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Re-enabling it should should also trigger a notification.
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(), _));
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[0].get(),
+                                                 start_time + delay1s));
   voter0->SetQueueEnabled(true);
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -1803,7 +1813,8 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Re-enabling it should should trigger a notification.
-  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[1].get(), _));
+  EXPECT_CALL(observer, OnQueueNextWakeUpChanged(runners_[1].get(),
+                                                 start_time + delay10s));
   voter1->SetQueueEnabled(true);
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -1811,6 +1822,56 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(AnyNumber());
   runners_[0]->UnregisterTaskQueue();
   runners_[1]->UnregisterTaskQueue();
+}
+
+class CancelableTask {
+ public:
+  explicit CancelableTask(base::TickClock* clock)
+      : clock_(clock), weak_factory_(this) {}
+
+  void RecordTimeTask(std::vector<base::TimeTicks>* run_times) {
+    run_times->push_back(clock_->NowTicks());
+  }
+
+  base::TickClock* clock_;
+  base::WeakPtrFactory<CancelableTask> weak_factory_;
+};
+
+TEST_F(TaskQueueManagerTest, TaskQueueObserver_SweepCanceledDelayedTasks) {
+  Initialize(1u);
+
+  MockTaskQueueObserver observer;
+  runners_[0]->SetObserver(&observer);
+
+  base::TimeTicks start_time = manager_->Delegate()->NowTicks();
+  base::TimeDelta delay1(base::TimeDelta::FromSeconds(5));
+  base::TimeDelta delay2(base::TimeDelta::FromSeconds(10));
+
+  EXPECT_CALL(observer,
+              OnQueueNextWakeUpChanged(runners_[0].get(), start_time + delay1))
+      .Times(1);
+
+  CancelableTask task1(now_src_.get());
+  CancelableTask task2(now_src_.get());
+  std::vector<base::TimeTicks> run_times;
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::RecordTimeTask,
+                 task1.weak_factory_.GetWeakPtr(), &run_times),
+      delay1);
+  runners_[0]->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CancelableTask::RecordTimeTask,
+                 task2.weak_factory_.GetWeakPtr(), &run_times),
+      delay2);
+
+  task1.weak_factory_.InvalidateWeakPtrs();
+
+  // Sweeping away canceled delayed tasks should trigger a notification.
+  EXPECT_CALL(observer,
+              OnQueueNextWakeUpChanged(runners_[0].get(), start_time + delay2))
+      .Times(1);
+  manager_->SweepCanceledDelayedTasks();
 }
 
 namespace {
@@ -2166,19 +2227,6 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
 
   EXPECT_EQ(2u, events.size());
 }
-
-class CancelableTask {
- public:
-  explicit CancelableTask(base::TickClock* clock)
-      : clock_(clock), weak_factory_(this) {}
-
-  void RecordTimeTask(std::vector<base::TimeTicks>* run_times) {
-    run_times->push_back(clock_->NowTicks());
-  }
-
-  base::TickClock* clock_;
-  base::WeakPtrFactory<CancelableTask> weak_factory_;
-};
 
 TEST_F(TaskQueueManagerTest, NoWakeUpsForCanceledDelayedTasks) {
   Initialize(1u);
