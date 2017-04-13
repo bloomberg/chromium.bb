@@ -66,7 +66,9 @@ class FakePlatformSupport : public TestingPlatformSupport {
 
 class DrawingBufferTest : public Test {
  protected:
-  void SetUp() override {
+  void SetUp() override { Init(kDisableMultisampling); }
+
+  void Init(UseMultisampling use_multisampling) {
     IntSize initial_size(kInitialWidth, kInitialHeight);
     std::unique_ptr<GLES2InterfaceForTests> gl =
         WTF::WrapUnique(new GLES2InterfaceForTests);
@@ -76,7 +78,8 @@ class DrawingBufferTest : public Test {
         WTF::WrapUnique(
             new WebGraphicsContext3DProviderForTests(std::move(gl)));
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve);
+        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
+        use_multisampling);
     CHECK(drawing_buffer_);
   }
 
@@ -126,6 +129,27 @@ class DrawingBufferTest : public Test {
   RefPtr<DrawingBufferForTests> drawing_buffer_;
 };
 
+class DrawingBufferTestMultisample : public DrawingBufferTest {
+ protected:
+  void SetUp() override { Init(kEnableMultisampling); }
+};
+
+TEST_F(DrawingBufferTestMultisample, verifyMultisampleResolve) {
+  // Initial state: already marked changed, multisampled
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
+  EXPECT_TRUE(drawing_buffer_->ExplicitResolveOfMultisampleData());
+
+  // Resolve the multisample buffer
+  drawing_buffer_->ResolveAndBindForReadAndDraw();
+
+  // After resolve, acknowledge new content
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
+  // No new content
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
+
+  drawing_buffer_->BeginDestruction();
+}
+
 TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   VerifyStateWasRestored();
   cc::TextureMailbox texture_mailbox;
@@ -135,7 +159,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   IntSize alternate_size(kInitialWidth, kAlternateHeight);
 
   // Produce one mailbox at size 100x100.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   VerifyStateWasRestored();
@@ -148,7 +172,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   VerifyStateWasRestored();
 
   // Produce a mailbox at this size.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
@@ -162,7 +186,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
   VerifyStateWasRestored();
 
   // Prepare another mailbox and verify that it's the correct size.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -170,7 +194,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes) {
 
   // Prepare one final mailbox and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   VerifyStateWasRestored();
@@ -193,23 +217,23 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
   IntSize initial_size(kInitialWidth, kInitialHeight);
 
   // Produce mailboxes.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_STENCIL_BUFFER_BIT);
   VerifyStateWasRestored();
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
                                                      &release_callback1));
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_DEPTH_BUFFER_BIT);
   VerifyStateWasRestored();
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox2,
                                                      &release_callback2));
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_COLOR_BUFFER_BIT);
   VerifyStateWasRestored();
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox3,
                                                      &release_callback3));
 
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
 
   drawing_buffer_->BeginDestruction();
@@ -219,11 +243,11 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased) {
   drawing_buffer_.Clear();
   ASSERT_EQ(live, true);
 
-  raw_pointer->MarkContentsChanged();
+  EXPECT_FALSE(raw_pointer->MarkContentsChanged());
   release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
   ASSERT_EQ(live, true);
 
-  raw_pointer->MarkContentsChanged();
+  EXPECT_FALSE(raw_pointer->MarkContentsChanged());
   release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
   ASSERT_EQ(live, false);
 }
@@ -239,27 +263,27 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   cc::TextureMailbox texture_mailbox3;
   std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
 
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
                                                      &release_callback1));
   VerifyStateWasRestored();
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox2,
                                                      &release_callback2));
   VerifyStateWasRestored();
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox3,
                                                      &release_callback3));
   VerifyStateWasRestored();
 
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   release_callback1->Run(gpu::SyncToken(), true /* lostResource */);
   EXPECT_EQ(live, true);
 
   drawing_buffer_->BeginDestruction();
   EXPECT_EQ(live, true);
 
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_EQ(live, true);
 
@@ -267,7 +291,7 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   drawing_buffer_.Clear();
   EXPECT_EQ(live, true);
 
-  raw_ptr->MarkContentsChanged();
+  EXPECT_FALSE(raw_ptr->MarkContentsChanged());
   release_callback3->Run(gpu::SyncToken(), true /* lostResource */);
   EXPECT_EQ(live, false);
 }
@@ -281,29 +305,29 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
   std::unique_ptr<cc::SingleReleaseCallback> release_callback3;
 
   // Produce mailboxes.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
                                                      &release_callback1));
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox2,
                                                      &release_callback2));
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox3,
                                                      &release_callback3));
 
   // Release mailboxes by specific order; 1, 3, 2.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
 
   // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order
   // because DrawingBuffer never keeps more than one mailbox.
   cc::TextureMailbox recycled_texture_mailbox1;
   std::unique_ptr<cc::SingleReleaseCallback> recycled_release_callback1;
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(
       &recycled_texture_mailbox1, &recycled_release_callback1));
   EXPECT_EQ(texture_mailbox2.mailbox(), recycled_texture_mailbox1.mailbox());
@@ -311,7 +335,7 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
   // The second recycled mailbox must be a new mailbox.
   cc::TextureMailbox recycled_texture_mailbox2;
   std::unique_ptr<cc::SingleReleaseCallback> recycled_release_callback2;
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(
       &recycled_texture_mailbox2, &recycled_release_callback2));
   EXPECT_NE(texture_mailbox1.mailbox(), recycled_texture_mailbox2.mailbox());
@@ -328,7 +352,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
 
   // Produce mailboxes.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_EQ(gpu::SyncToken(), gl_->MostRecentlyWaitedSyncToken());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
@@ -342,7 +366,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   // m_drawingBuffer will wait for the sync point when recycling.
   EXPECT_EQ(gpu::SyncToken(), gl_->MostRecentlyWaitedSyncToken());
 
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   // m_drawingBuffer waits for the sync point when recycling in
@@ -375,7 +399,8 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
     image_id0_ = gl_->NextImageIdToBeCreated();
     EXPECT_CALL(*gl_, BindTexImage2DMock(image_id0_)).Times(1);
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve);
+        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
+        kDisableMultisampling);
     CHECK(drawing_buffer_);
     testing::Mock::VerifyAndClearExpectations(gl_);
   }
@@ -399,7 +424,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   GLuint image_id1 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id1)).Times(1);
   // Produce one mailbox at size 100x100.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -423,7 +448,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   GLuint image_id3 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id3)).Times(1);
   // Produce a mailbox at this size.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
@@ -446,7 +471,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
   GLuint image_id5 = gl_->NextImageIdToBeCreated();
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id5)).Times(1);
   // Prepare another mailbox and verify that it's the correct size.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -455,7 +480,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages) {
 
   // Prepare one final mailbox and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -482,7 +507,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   // as expected.
   EXPECT_CALL(*gl_, BindTexImage2DMock(_)).Times(1);
   IntSize initial_size(kInitialWidth, kInitialHeight);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox1,
                                                      &release_callback1));
   EXPECT_TRUE(texture_mailbox1.is_overlay_candidate());
@@ -492,7 +517,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   // Force image CHROMIUM creation failure. Request another mailbox. It should
   // still be provided, but this time with allowOverlay = false.
   gl_->SetCreateImageChromiumFail(true);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox2,
                                                      &release_callback2));
   EXPECT_FALSE(texture_mailbox2.is_overlay_candidate());
@@ -502,7 +527,7 @@ TEST_F(DrawingBufferImageChromiumTest, allocationFailure) {
   // correctly created with allowOverlay = true.
   EXPECT_CALL(*gl_, BindTexImage2DMock(_)).Times(1);
   gl_->SetCreateImageChromiumFail(false);
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox3,
                                                      &release_callback3));
   EXPECT_TRUE(texture_mailbox3.is_overlay_candidate());
@@ -673,7 +698,7 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes) {
   std::unique_ptr<cc::SingleReleaseCallback> release_callback;
 
   // Produce mailboxes.
-  drawing_buffer_->MarkContentsChanged();
+  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTextureMailbox(&texture_mailbox,
                                                      &release_callback));
 

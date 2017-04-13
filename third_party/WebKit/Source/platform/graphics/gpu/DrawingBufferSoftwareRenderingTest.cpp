@@ -54,7 +54,8 @@ class DrawingBufferSoftwareRenderingTest : public Test {
             new WebGraphicsContext3DProviderSoftwareRenderingForTests(
                 std::move(gl)));
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), nullptr, initial_size, DrawingBuffer::kPreserve);
+        std::move(provider), nullptr, initial_size, DrawingBuffer::kPreserve,
+        kDisableMultisampling);
     CHECK(drawing_buffer_);
   }
 

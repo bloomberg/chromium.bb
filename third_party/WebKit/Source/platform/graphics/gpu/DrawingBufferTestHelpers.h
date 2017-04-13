@@ -18,21 +18,27 @@ enum {
   kAlternateHeight = 50,
 };
 
+enum UseMultisampling {
+  kDisableMultisampling,
+  kEnableMultisampling,
+};
+
 class DrawingBufferForTests : public DrawingBuffer {
  public:
   static PassRefPtr<DrawingBufferForTests> Create(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       DrawingBuffer::Client* client,
       const IntSize& size,
-      PreserveDrawingBuffer preserve) {
+      PreserveDrawingBuffer preserve,
+      UseMultisampling use_multisampling) {
     std::unique_ptr<Extensions3DUtil> extensions_util =
         Extensions3DUtil::Create(context_provider->ContextGL());
     RefPtr<DrawingBufferForTests> drawing_buffer =
         AdoptRef(new DrawingBufferForTests(std::move(context_provider),
                                            std::move(extensions_util), client,
                                            preserve));
-    bool multisample_extension_supported = false;
-    if (!drawing_buffer->Initialize(size, multisample_extension_supported)) {
+    if (!drawing_buffer->Initialize(
+            size, use_multisampling != kDisableMultisampling)) {
       drawing_buffer->BeginDestruction();
       return nullptr;
     }
