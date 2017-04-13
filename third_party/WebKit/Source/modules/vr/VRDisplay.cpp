@@ -673,6 +673,18 @@ void VRDisplay::OnDeactivate(
       EventTypeNames::vrdisplaydeactivate, true, false, this, reason));
 }
 
+void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
+  TRACE_EVENT1("gpu", "VRDisplay::window.rAF", "frame", vr_frame_id_);
+  auto doc = navigator_vr_->GetDocument();
+  if (!doc)
+    return;
+  auto page = doc->GetPage();
+  if (!page)
+    return;
+  // TODO(klausw): update timestamp based on scheduling delay?
+  page->Animator().ServiceScriptedAnimations(timestamp);
+}
+
 void VRDisplay::ProcessScheduledAnimations(double timestamp) {
   // Check if we still have a valid context, the animation controller
   // or document may have disappeared since we scheduled this.
@@ -686,6 +698,15 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
   pending_raf_ = false;
 
   scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
+
+  // For GVR, we shut down normal vsync processing during VR presentation.
+  // Trigger any callbacks on window.rAF manually so that they run after
+  // completing the vrDisplay.rAF processing.
+  if (is_presenting_ && !capabilities_->hasExternalDisplay()) {
+    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+        BLINK_FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
+                                   WrapWeakPersistent(this), timestamp));
+  }
 }
 
 void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,

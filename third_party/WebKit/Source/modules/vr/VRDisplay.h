@@ -142,6 +142,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   ScriptedAnimationController& EnsureScriptedAnimationController(Document*);
   void ProcessScheduledAnimations(double timestamp);
+  void ProcessScheduledWindowAnimations(double timestamp);
 
   Member<NavigatorVR> navigator_vr_;
   unsigned display_id_ = 0;
