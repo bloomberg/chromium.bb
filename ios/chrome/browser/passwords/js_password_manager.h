@@ -12,8 +12,8 @@
 
 // Loads the JavaScript file, password_controller.js, which contains password
 // form parsing and autofill functions. It will be evaluated on a page that
-// is known to have at least one password form (see hasPasswordForms in
-// core.js.) It returns contents of those password forms and also
+// is known to have at least one password form (see hasPasswordField_ in
+// password_controller.js) It returns contents of those password forms and also
 // registers functions that are later used to autofill them.
 @interface JsPasswordManager : CRWJSInjectionManager
 

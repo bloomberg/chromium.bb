@@ -4942,11 +4942,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   };
 
   // When navigating via WKBackForwardListItem to pages created or updated by
-  // calls to pushState() and replaceState(), sometimes core.js is not injected
-  // correctly.  This means that calling window.history navigation functions
-  // will invoke WKWebView's non-overridden implementations, causing a mismatch
-  // between the WKBackForwardList and NavigationManager.
-  // TODO(crbug.com/659816): Figure out how to prevent core.js injection flake.
+  // calls to pushState() and replaceState(), sometimes web_bundle.js is not
+  // injected correctly.  This means that calling window.history navigation
+  // functions will invoke WKWebView's non-overridden implementations, causing a
+  // mismatch between the WKBackForwardList and NavigationManager.
+  // TODO(crbug.com/659816): Figure out how to prevent web_bundle.js injection
+  // flake.
   if (currentItem->HasStateBeenReplaced() ||
       currentItem->IsCreatedFromPushState()) {
     defaultNavigationBlock();

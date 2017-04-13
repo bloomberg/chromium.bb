@@ -4,7 +4,7 @@
 
 goog.provide('__crWeb.dialogOverrides');
 
-goog.require('__crWeb.core');
+goog.require('__crWeb.message');
 
 __gCrWeb.dialogOverrides = {};
 

@@ -786,7 +786,8 @@ Context.getContextDataFromPoint = function(x, y) {
  * @private
  */
 Context.contextFromPoint = function(x, y) {
-  // Should this use core.js's elementFromPoint_() instead?
+  // TODO(crbug.com/711350): Evaluate whether this should use context_menu.js's
+  // elementFromPoint_() instead?
   var contextData = new ContextData();
   var element = document.elementFromPoint(x, y);
   if (!element) {
