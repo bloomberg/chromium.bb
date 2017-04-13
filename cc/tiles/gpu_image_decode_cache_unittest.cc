@@ -117,7 +117,7 @@ TEST(GpuImageDecodeCacheTest, GetTaskForImageSmallerScale) {
   cache.UnrefImage(another_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageLowerQuality DISABLED_GetTaskForImageLowerQuality
 #else
@@ -155,7 +155,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLowerQuality) {
   cache.UnrefImage(another_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageDifferentImage \
   DISABLED_GetTaskForImageDifferentImage
@@ -202,7 +202,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageDifferentImage) {
   cache.UnrefImage(second_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageLargerScale DISABLED_GetTaskForImageLargerScale
 #else
@@ -259,7 +259,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLargerScale) {
   cache.UnrefImage(third_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageLargerScaleNoReuse \
   DISABLED_GetTaskForImageLargerScaleNoReuse
@@ -316,7 +316,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageLargerScaleNoReuse) {
   cache.UnrefImage(third_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageHigherQuality DISABLED_GetTaskForImageHigherQuality
 #else
@@ -360,7 +360,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageHigherQuality) {
   cache.UnrefImage(second_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageAlreadyDecodedAndLocked \
   DISABLED_GetTaskForImageAlreadyDecodedAndLocked
@@ -414,7 +414,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyDecodedAndLocked) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageAlreadyDecodedNotLocked \
   DISABLED_GetTaskForImageAlreadyDecodedNotLocked
@@ -468,7 +468,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageAlreadyDecodedNotLocked) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageAlreadyUploaded \
   DISABLED_GetTaskForImageAlreadyUploaded
@@ -567,7 +567,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetTaskForImageCanceledGetsNewTask) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetTaskForImageCanceledWhileReffedGetsNewTask \
   DISABLED_GetTaskForImageCanceledWhileReffedGetsNewTask
@@ -628,7 +628,7 @@ TEST(GpuImageDecodeCacheTest,
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_NoTaskForImageAlreadyFailedDecoding \
   DISABLED_NoTaskForImageAlreadyFailedDecoding
@@ -670,7 +670,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_NoTaskForImageAlreadyFailedDecoding) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetDecodedImageForDraw DISABLED_GetDecodedImageForDraw
 #else
@@ -781,7 +781,7 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetDecodedImageForDrawLargerScale \
   DISABLED_GetDecodedImageForDrawLargerScale
@@ -848,7 +848,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawLargerScale) {
   cache.UnrefImage(larger_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetDecodedImageForDrawHigherQuality \
   DISABLED_GetDecodedImageForDrawHigherQuality
@@ -913,7 +913,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawHigherQuality) {
   cache.UnrefImage(higher_quality_draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetDecodedImageForDrawNegative \
   DISABLED_GetDecodedImageForDrawNegative
@@ -957,7 +957,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetDecodedImageForDrawNegative) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetLargeScaledDecodedImageForDraw \
   DISABLED_GetLargeScaledDecodedImageForDraw
@@ -1004,7 +1004,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_GetLargeScaledDecodedImageForDraw) {
   EXPECT_FALSE(cache.DiscardableIsLockedForTesting(draw_image));
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_AtRasterUsedDirectlyIfSpaceAllows \
   DISABLED_AtRasterUsedDirectlyIfSpaceAllows
@@ -1057,7 +1057,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_AtRasterUsedDirectlyIfSpaceAllows) {
   cache.UnrefImage(draw_image);
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_GetDecodedImageForDrawAtRasterDecodeMultipleTimes \
   DISABLED_GetDecodedImageForDrawAtRasterDecodeMultipleTimes
@@ -1225,7 +1225,7 @@ TEST(GpuImageDecodeCacheTest, CanceledTasksDoNotCountAgainstBudget) {
   EXPECT_EQ(0u, cache.GetBytesUsedForTesting());
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_ShouldAggressivelyFreeResources \
   DISABLED_ShouldAggressivelyFreeResources
@@ -1296,7 +1296,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_ShouldAggressivelyFreeResources) {
   }
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_OrphanedImagesFreeOnReachingZeroRefs \
   DISABLED_OrphanedImagesFreeOnReachingZeroRefs
@@ -1361,7 +1361,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_OrphanedImagesFreeOnReachingZeroRefs) {
             cache.GetDrawImageSizeForTesting(second_draw_image));
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_OrphanedZeroRefImagesImmediatelyDeleted \
   DISABLED_OrphanedZeroRefImagesImmediatelyDeleted
@@ -1419,7 +1419,7 @@ TEST(GpuImageDecodeCacheTest, MAYBE_OrphanedZeroRefImagesImmediatelyDeleted) {
             cache.GetDrawImageSizeForTesting(second_draw_image));
 }
 
-// crbug.com/697171.
+// crbug.com/709341.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_QualityCappedAtMedium DISABLED_QualityCappedAtMedium
 #else

@@ -560,7 +560,7 @@ TEST_F(VideoRendererImplTest, ReinitializeForAnotherStream) {
   InitializeRenderer(&new_stream, false, true);
 }
 
-// crbug.com/697171.
+// crbug.com/711318.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_DestroyWhileInitializing DISABLED_DestroyWhileInitializing
 #else
