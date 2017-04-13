@@ -71,14 +71,11 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
-        private final CallbackHelper mPageFailCallback;
-        private final CallbackHelper mLoadFailCallback;
+        private final CallbackHelper mFailCallback;
 
-        TestTabObserver(final CallbackHelper finishCallback, final CallbackHelper pageFailCallback,
-                final CallbackHelper loadFailCallback) {
+        TestTabObserver(final CallbackHelper finishCallback, final CallbackHelper failCallback) {
             mFinishCallback = finishCallback;
-            mPageFailCallback = pageFailCallback;
-            mLoadFailCallback = loadFailCallback;
+            mFailCallback = failCallback;
         }
 
         @Override
@@ -86,9 +83,8 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                 boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
                 boolean isFragmentNavigation, Integer pageTransition, int errorCode,
                 int httpStatusCode) {
-            if (errorCode != 0) {
-                mLoadFailCallback.notifyCalled();
-            }
+            if (errorCode == 0) return;
+            mFailCallback.notifyCalled();
         }
 
         @Override
@@ -97,20 +93,9 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
         }
 
         @Override
-        public void onPageLoadFailed(Tab tab, int errorCode) {
-            mPageFailCallback.notifyCalled();
-        }
-
-        @Override
-        public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String description,
-                String failingUrl) {
-            mLoadFailCallback.notifyCalled();
-        }
-
-        @Override
         public void onDestroyed(Tab tab) {
             // A new tab is destroyed when loading is overridden while opening it.
-            mPageFailCallback.notifyCalled();
+            mFailCallback.notifyCalled();
         }
     }
 
@@ -147,21 +132,19 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
             int expectedNewTabCount, final boolean shouldLaunchExternalIntent,
             final String expectedFinalUrl, boolean isMainFrame) throws InterruptedException {
         final CallbackHelper finishCallback = new CallbackHelper();
-        final CallbackHelper pageFailCallback = new CallbackHelper();
-        final CallbackHelper loadFailCallback = new CallbackHelper();
+        final CallbackHelper failCallback = new CallbackHelper();
         final CallbackHelper newTabCallback = new CallbackHelper();
 
         final Tab tab = getActivity().getActivityTab();
         final Tab[] latestTabHolder = new Tab[1];
         latestTabHolder[0] = tab;
-        tab.addObserver(new TestTabObserver(finishCallback, pageFailCallback, loadFailCallback));
+        tab.addObserver(new TestTabObserver(finishCallback, failCallback));
         if (expectedNewTabCount > 0) {
             getActivity().getTabModelSelector().addObserver(new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onNewTabCreated(Tab newTab) {
                     newTabCallback.notifyCalled();
-                    newTab.addObserver(new TestTabObserver(
-                            finishCallback, pageFailCallback, loadFailCallback));
+                    newTab.addObserver(new TestTabObserver(finishCallback, failCallback));
                     latestTabHolder[0] = newTab;
                 }
             });
@@ -190,13 +173,26 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
             singleClickView(tab.getView());
         }
 
-        CallbackHelper helper = isMainFrame ? pageFailCallback : loadFailCallback;
-        if (helper.getCallCount() == 0) {
+        if (failCallback.getCallCount() == 0) {
             try {
-                helper.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
+                failCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
-                fail();
+                fail("Haven't received navigation failure of intents.");
                 return;
+            }
+        }
+
+        boolean hasFallbackUrl =
+                expectedFinalUrl != null && !TextUtils.equals(url, expectedFinalUrl);
+
+        if (hasFallbackUrl) {
+            if (finishCallback.getCallCount() == 1) {
+                try {
+                    finishCallback.waitForCallback(1, 1, 20, TimeUnit.SECONDS);
+                } catch (TimeoutException ex) {
+                    fail("Fallback URL is not loaded");
+                    return;
+                }
             }
         }
 
@@ -225,6 +221,16 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
                                 || TextUtils.equals(expectedFinalUrl, tab.getUrl());
                     }
                 });
+
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(shouldLaunchExternalIntent ? 1 : 0, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return mActivityMonitor.getHits();
+                    }
+                }));
+        assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
+        assertEquals(1, failCallback.getCallCount());
     }
 
     @SmallTest
