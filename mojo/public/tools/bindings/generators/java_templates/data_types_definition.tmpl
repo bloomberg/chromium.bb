@@ -322,7 +322,8 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
                 if (m{{field|ucc}} == null) {
                     encoder0.encodeNullPointer(offset + 8, {{field.kind|is_nullable_kind|java_true_false}});
                 } else {
-                    m{{field|ucc}}.encode(encoder0.encoderForUnionPointer(offset + 8), 0);
+                    encoder0.encoderForUnionPointer(offset + 8).encode(
+                        m{{field|ucc}}, 0, {{field.kind|is_nullable_kind|java_true_false}});
                 }
 {%-     else %}
                 {{encode('m' ~ field|ucc, field.kind, 'offset + 8', 0)|indent(16)}}
@@ -352,7 +353,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
 {%-     if field.kind|is_union_kind %}
                 org.chromium.mojo.bindings.Decoder decoder1 = decoder0.readPointer(offset + org.chromium.mojo.bindings.DataHeader.HEADER_SIZE, {{field.kind|is_nullable_kind|java_true_false}});
                 if (decoder1 != null) {
-                    result.m{{field|ucc}} = {{field.kind|name}}.decode(decoder1, 0);
+                    result.m{{field|ucc}} = {{field.kind|java_type}}.decode(decoder1, 0);
                 }
 {%-     else %}
                 {{decode('result.m'~field|ucc, field.kind, 'offset + org.chromium.mojo.bindings.DataHeader.HEADER_SIZE', 0)|indent(16)}}

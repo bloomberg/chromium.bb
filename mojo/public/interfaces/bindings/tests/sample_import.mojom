@@ -36,3 +36,8 @@ struct Point {
 interface ImportedInterface {
   DoSomething();
 };
+
+union PointOrShape {
+  Point point;
+  Shape shape;
+};

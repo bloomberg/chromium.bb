@@ -4,6 +4,8 @@
 
 module mojo.test;
 
+import "mojo/public/interfaces/bindings/tests/sample_import.mojom";
+
 enum AnEnum {
   FIRST, SECOND
 };
@@ -102,4 +104,12 @@ union OldUnion {
 union NewUnion {
   int8 f_int8;
   int16 f_int16;
+};
+
+struct ImportedUnionStruct {
+  imported.PointOrShape point_or_shape;
+};
+
+union ImportedUnionUnion {
+  imported.PointOrShape point_or_shape;
 };
