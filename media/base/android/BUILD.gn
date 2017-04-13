@@ -123,10 +123,15 @@ if (is_android) {
     ]
   }
 
+  android_resources("media_java_resources") {
+    custom_package = "org.chromium.media"
+    resource_dirs = [ "java/res" ]
+  }
+
   android_library("media_java") {
     deps = [
+      ":media_java_resources",
       "//base:base_java",
-      "//content/public/android:content_java_resources",
       "//third_party/android_tools:android_support_annotations_java",
     ]
     srcjar_deps = [
