@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/ImageElementBase.h"
+#include "core/html/canvas/CanvasImageElementSource.h"
 
-#include "core/frame/ImageBitmap.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/ImageLoader.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {
 
-ImageResourceContent* ImageElementBase::CachedImage() const {
+ImageResourceContent* CanvasImageElementSource::CachedImage() const {
   return GetImageLoader().GetImage();
 }
 
-const Element& ImageElementBase::GetElement() const {
+const Element& CanvasImageElementSource::GetElement() const {
   return *GetImageLoader().GetElement();
 }
 
-bool ImageElementBase::IsSVGSource() const {
+bool CanvasImageElementSource::IsSVGSource() const {
   return CachedImage() && CachedImage()->GetImage()->IsSVGImage();
 }
 
-PassRefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
+PassRefPtr<Image> CanvasImageElementSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
@@ -56,13 +54,13 @@ PassRefPtr<Image> ImageElementBase::GetSourceImageForCanvas(
   return source_image->ImageForDefaultFrame();
 }
 
-bool ImageElementBase::WouldTaintOrigin(
+bool CanvasImageElementSource::WouldTaintOrigin(
     SecurityOrigin* destination_security_origin) const {
   return CachedImage() &&
          !CachedImage()->IsAccessAllowed(destination_security_origin);
 }
 
-FloatSize ImageElementBase::ElementSize(
+FloatSize CanvasImageElementSource::ElementSize(
     const FloatSize& default_object_size) const {
   ImageResourceContent* image = CachedImage();
   if (!image)
@@ -78,7 +76,7 @@ FloatSize ImageElementBase::ElementSize(
                                     1.0f));
 }
 
-FloatSize ImageElementBase::DefaultDestinationSize(
+FloatSize CanvasImageElementSource::DefaultDestinationSize(
     const FloatSize& default_object_size) const {
   ImageResourceContent* image = CachedImage();
   if (!image)
@@ -96,15 +94,15 @@ FloatSize ImageElementBase::DefaultDestinationSize(
   return FloatSize(size);
 }
 
-bool ImageElementBase::IsAccelerated() const {
+bool CanvasImageElementSource::IsAccelerated() const {
   return false;
 }
 
-const KURL& ImageElementBase::SourceURL() const {
+const KURL& CanvasImageElementSource::SourceURL() const {
   return CachedImage()->GetResponse().Url();
 }
 
-int ImageElementBase::SourceWidth() {
+int CanvasImageElementSource::SourceWidth() {
   SourceImageStatus status;
   RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
                                                 kSnapshotReasonUnknown,
@@ -112,7 +110,7 @@ int ImageElementBase::SourceWidth() {
   return image->width();
 }
 
-int ImageElementBase::SourceHeight() {
+int CanvasImageElementSource::SourceHeight() {
   SourceImageStatus status;
   RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
                                                 kSnapshotReasonUnknown,
@@ -120,43 +118,9 @@ int ImageElementBase::SourceHeight() {
   return image->height();
 }
 
-bool ImageElementBase::IsOpaque() const {
+bool CanvasImageElementSource::IsOpaque() const {
   Image* image = const_cast<Element&>(GetElement()).ImageContents();
   return image && image->CurrentFrameKnownToBeOpaque();
-}
-
-IntSize ImageElementBase::BitmapSourceSize() const {
-  ImageResourceContent* image = CachedImage();
-  if (!image)
-    return IntSize();
-  LayoutSize lSize =
-      image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
-                           GetElement().GetLayoutObject()),
-                       1.0f);
-  DCHECK(lSize.Fraction().IsZero());
-  return IntSize(lSize.Width().ToInt(), lSize.Height().ToInt());
-}
-
-ScriptPromise ImageElementBase::CreateImageBitmap(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options,
-    ExceptionState& exception_state) {
-  DCHECK(event_target.ToLocalDOMWindow());
-  if ((crop_rect &&
-       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
-                                       exception_state)) ||
-      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
-                                      BitmapSourceSize().Height(),
-                                      exception_state))
-    return ScriptPromise();
-  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
-    return ScriptPromise();
-  return ImageBitmapSource::FulfillImageBitmap(
-      script_state, ImageBitmap::Create(
-                        this, crop_rect,
-                        event_target.ToLocalDOMWindow()->document(), options));
 }
 
 }  // namespace blink

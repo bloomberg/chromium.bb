@@ -554,7 +554,7 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   return StaticBitmapImage::Create(PremulSkImageToUnPremul(skia_image.get()));
 }
 
-ImageBitmap::ImageBitmap(ImageElementBase* image,
+ImageBitmap::ImageBitmap(HTMLImageElement* image,
                          Optional<IntRect> crop_rect,
                          Document* document,
                          const ImageBitmapOptions& options) {
@@ -996,7 +996,7 @@ PassRefPtr<StaticBitmapImage> ImageBitmap::Transfer() {
 
 ImageBitmap::~ImageBitmap() {}
 
-ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
+ImageBitmap* ImageBitmap::Create(HTMLImageElement* image,
                                  Optional<IntRect> crop_rect,
                                  Document* document,
                                  const ImageBitmapOptions& options) {

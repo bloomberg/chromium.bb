@@ -45,7 +45,6 @@
 #include "core/html/ImageData.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
-#include "core/svg/SVGImageElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
@@ -64,16 +63,9 @@ static inline ImageBitmapSource* ToImageBitmapSourceInternal(
     ExceptionState& exception_state,
     const ImageBitmapOptions& options,
     bool has_crop_rect) {
-  ImageElementBase* image_element = nullptr;
   if (value.isHTMLImageElement()) {
-    if (!(image_element = value.getAsHTMLImageElement()))
-      return nullptr;
-  } else if (value.isSVGImageElement()) {
-    if (!(image_element = value.getAsSVGImageElement()))
-      return nullptr;
-  }
-  if (image_element) {
-    if (!image_element->CachedImage()) {
+    HTMLImageElement* image_element = value.getAsHTMLImageElement();
+    if (!image_element || !image_element->CachedImage()) {
       exception_state.ThrowDOMException(
           kInvalidStateError,
           "No image can be retrieved from the provided element.");

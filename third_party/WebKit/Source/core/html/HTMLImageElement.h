@@ -29,7 +29,8 @@
 #include "core/html/FormAssociated.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
-#include "core/html/canvas/ImageElementBase.h"
+#include "core/html/canvas/CanvasImageElementSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceResponse.h"
@@ -39,10 +40,12 @@ namespace blink {
 class HTMLFormElement;
 class ImageCandidate;
 class ShadowRoot;
+class ImageBitmapOptions;
 
 class CORE_EXPORT HTMLImageElement final
     : public HTMLElement,
-      public ImageElementBase,
+      public CanvasImageElementSource,
+      public ImageBitmapSource,
       public ActiveScriptWrappable<HTMLImageElement>,
       public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
@@ -129,6 +132,14 @@ class CORE_EXPORT HTMLImageElement final
   float SourceSize(Element&);
 
   void ForceReload() const;
+
+  // ImageBitmapSource implementation
+  IntSize BitmapSourceSize() const override;
+  ScriptPromise CreateImageBitmap(ScriptState*,
+                                  EventTarget&,
+                                  Optional<IntRect> crop_rect,
+                                  const ImageBitmapOptions&,
+                                  ExceptionState&) override;
 
   FormAssociated* ToFormAssociatedOrNull() override { return this; };
   void AssociateWith(HTMLFormElement*) override;

@@ -31,8 +31,7 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
-#include <memory>
-#include "bindings/core/v8/HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas.h"
+#include "bindings/core/v8/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -44,6 +43,7 @@
 #include "platform/Supplementable.h"
 #include "platform/geometry/IntRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include <memory>
 
 class SkImage;
 
@@ -57,7 +57,7 @@ class ImageBitmapSource;
 class ImageBitmapOptions;
 class WebTaskRunner;
 
-typedef HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
     ImageBitmapSourceUnion;
 
 class ImageBitmapFactories final
