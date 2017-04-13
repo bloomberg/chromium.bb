@@ -14,4 +14,3 @@ const char kIOSAppStoreGooglePlus[] = "447119634";
 const char kIOSAppStoreGoogleSheets[] = "842849113";
 const char kIOSAppStoreGoogleSlides[] = "879478102";
 const char kIOSAppStoreTestFlight[] = "899247664";
-const char kIOSAppStoreYouTube[] = "544007664";
