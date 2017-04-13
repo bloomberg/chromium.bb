@@ -27,6 +27,7 @@ GpuMemoryBufferHandle CloneHandleForIPC(
     case gfx::SHARED_MEMORY_BUFFER: {
       gfx::GpuMemoryBufferHandle handle;
       handle.type = gfx::SHARED_MEMORY_BUFFER;
+      handle.id = source_handle.id;
       handle.handle = base::SharedMemory::DuplicateHandle(source_handle.handle);
       handle.offset = source_handle.offset;
       handle.stride = source_handle.stride;
