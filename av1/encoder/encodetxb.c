@@ -13,6 +13,8 @@
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"
 #include "av1/common/pred_common.h"
+#include "av1/encoder/bitstream.h"
+#include "av1/encoder/encodeframe.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/rdopt.h"
@@ -88,6 +90,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   aom_write(w, eob == 0, cm->fc->txb_skip[tx_size][txb_ctx->txb_skip_ctx]);
 
   if (eob == 0) return;
+  av1_write_tx_type(cm, xd, block, w);
 
   nz_map = cm->fc->nz_map[tx_size][plane_type];
   eob_flag = cm->fc->eob_flag[tx_size][plane_type];
@@ -453,7 +456,7 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
     return;
   }
 
-  // update_tx_type_count(cm, mbmi, td, plane, block);
+  av1_update_tx_type_count(cm, xd, block, mbmi->sb_type, tx_size, td->counts);
 
   for (c = 0; c < eob; ++c) {
     tran_low_t v = qcoeff[scan[c]];
