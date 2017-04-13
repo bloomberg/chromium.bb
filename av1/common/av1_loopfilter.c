@@ -22,6 +22,8 @@
 
 #include "av1/common/seg_common.h"
 
+#define CONFIG_PARALLEL_DEBLOCKING_15TAPLUMAONLY 0
+
 // 64 bit masks for left transform size. Each 1 represents a position where
 // we should apply a loop filter across the left border of an 8x8 block
 // boundary.
@@ -2131,7 +2133,7 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
           // if the current and the previous blocks are skipped,
           // deblock the edge if the edge belongs to a PU's edge only.
           if ((currLevel || pvLvl) && (!pvSkip || !currSkipped || puEdge)) {
-#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP || CONFIG_PARALLEL_DEBLOCKING_15TAPLUMAONLY
             const TX_SIZE minTs = AOMMIN(ts, pvTs);
             if (TX_4X4 >= minTs) {
               pParams->filterLength = 4;
@@ -2139,6 +2141,12 @@ static void set_lpf_parameters(AV1_DEBLOCKING_PARAMETERS *const pParams,
               pParams->filterLength = 8;
             } else {
               pParams->filterLength = 16;
+#if CONFIG_PARALLEL_DEBLOCKING_15TAPLUMAONLY
+              // No wide filtering for chroma plane
+              if (scaleHorz || scaleVert) {
+                pParams->filterLength = 8;
+              }
+#endif
             }
 #else
             pParams->filterLength = (TX_4X4 >= AOMMIN(ts, pvTs)) ? (4) : (8);
@@ -2199,7 +2207,7 @@ static void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
           aom_lpf_vertical_8(p, dstStride, params.mblim, params.lim,
                              params.hev_thr);
           break;
-#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP || CONFIG_PARALLEL_DEBLOCKING_15TAPLUMAONLY
         // apply 16-tap filtering
         case 16:
           aom_lpf_vertical_16(p, dstStride, params.mblim, params.lim,
@@ -2253,7 +2261,7 @@ static void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
           aom_lpf_horizontal_8(p, dstStride, params.mblim, params.lim,
                                params.hev_thr);
           break;
-#if CONFIG_PARALLEL_DEBLOCKING_15TAP
+#if CONFIG_PARALLEL_DEBLOCKING_15TAP || CONFIG_PARALLEL_DEBLOCKING_15TAPLUMAONLY
         // apply 16-tap filtering
         case 16:
           aom_lpf_horizontal_edge_16(p, dstStride, params.mblim, params.lim,
