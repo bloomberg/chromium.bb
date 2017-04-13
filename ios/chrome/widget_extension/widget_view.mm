@@ -25,6 +25,8 @@ const CGFloat kFakeboxVerticalPadding = 40;
   __weak id<WidgetViewActionTarget> _target;
 }
 
+@property(nonatomic, copy) NSString* copiedURL;
+@property(nonatomic, strong) UILabel* copiedURLLabel;
 @property(nonatomic, weak) UIView* cursor;
 
 // Creates and adds a fake omnibox with blinking cursor to the view and sets the
@@ -34,6 +36,9 @@ const CGFloat kFakeboxVerticalPadding = 40;
 @end
 
 @implementation WidgetView
+
+@synthesize copiedURL = _copiedURL;
+@synthesize copiedURLLabel = _copiedURLLabel;
 
 @synthesize cursor = _cursor;
 
@@ -52,7 +57,7 @@ const CGFloat kFakeboxVerticalPadding = 40;
 
   UIGestureRecognizer* tapRecognizer =
       [[UITapGestureRecognizer alloc] initWithTarget:_target
-                                              action:@selector(openApp:)];
+                                              action:@selector(openSearch:)];
 
   [fakebox addGestureRecognizer:tapRecognizer];
   [self addSubview:fakebox];
@@ -91,6 +96,11 @@ const CGFloat kFakeboxVerticalPadding = 40;
                      self.cursor.alpha = 0.0f;
                    }
                    completion:nil];
+}
+
+- (void)updateCopiedURL:(NSString*)copiedURL {
+  self.copiedURL = copiedURL;
+  self.copiedURLLabel.text = copiedURL;
 }
 
 @end

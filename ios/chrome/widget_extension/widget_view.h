@@ -11,8 +11,16 @@
 // view.
 @protocol WidgetViewActionTarget
 
-// Called when the user taps the fake omnibox.
-- (void)openApp:(id)sender;
+// Called when the user taps the Search button.
+- (void)openSearch:(id)sender;
+// Called when the user taps the Incognito Search button.
+- (void)openIncognito:(id)sender;
+// Called when the user taps the Voice Search button.
+- (void)openVoice:(id)sender;
+// Called when the user taps the QR Code button.
+- (void)openQRCode:(id)sender;
+// Called when the user taps the Open Copied URL section.
+- (void)openCopiedURL:(id)sender;
 
 @end
 
@@ -26,6 +34,9 @@
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+// Updates the copied URL.
+- (void)updateCopiedURL:(NSString*)copiedURL;
 
 @end
 

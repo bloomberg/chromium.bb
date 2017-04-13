@@ -29,7 +29,7 @@ ios_appex_bundle("widget_extension") {
 
   deps = [
     "//base",
-    "//base:i18n",
+    "//components/open_from_clipboard:open_from_clipboard_impl",
     "//components/prefs",
     "//components/variations",
     "//components/version_info",
@@ -41,7 +41,6 @@ ios_appex_bundle("widget_extension") {
     "//ios/third_party/material_components_ios",
     "//net",
     "//ui/base",
-    "//url",
   ]
 
   libs = [

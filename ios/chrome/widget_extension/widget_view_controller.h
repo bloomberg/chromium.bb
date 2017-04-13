@@ -5,9 +5,10 @@
 #ifndef IOS_CHROME_WIDGET_EXTENSION_WIDGET_VIEW_CONTROLLER_H_
 #define IOS_CHROME_WIDGET_EXTENSION_WIDGET_VIEW_CONTROLLER_H_
 
+#import <NotificationCenter/NotificationCenter.h>
 #import <UIKit/UIKit.h>
 
-@interface WidgetViewController : UIViewController
+@interface WidgetViewController : UIViewController<NCWidgetProviding>
 
 @end
 
