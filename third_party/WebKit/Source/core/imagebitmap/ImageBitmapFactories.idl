@@ -31,6 +31,7 @@
 // https://html.spec.whatwg.org/#imagebitmapfactories
 
 typedef (HTMLImageElement or
+         SVGImageElement or
          HTMLVideoElement or
          HTMLCanvasElement or
          Blob or

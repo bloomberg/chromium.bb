@@ -23,6 +23,8 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/frame/ImageBitmap.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 

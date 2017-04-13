@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasImageElementSource_h
-#define CanvasImageElementSource_h
+#ifndef ImageElementBase_h
+#define ImageElementBase_h
 
 #include "core/CoreExport.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 
 namespace blink {
 
@@ -14,10 +15,18 @@ class Element;
 class ImageLoader;
 class ImageResourceContent;
 
-class CORE_EXPORT CanvasImageElementSource : public CanvasImageSource {
+class CORE_EXPORT ImageElementBase : public CanvasImageSource,
+                                     public ImageBitmapSource {
  public:
   virtual ImageLoader& GetImageLoader() const = 0;
   virtual FloatSize SourceDefaultObjectSize() = 0;
+
+  IntSize BitmapSourceSize() const override;
+  ScriptPromise CreateImageBitmap(ScriptState*,
+                                  EventTarget&,
+                                  Optional<IntRect>,
+                                  const ImageBitmapOptions&,
+                                  ExceptionState&) override;
 
   PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
@@ -42,11 +51,12 @@ class CORE_EXPORT CanvasImageElementSource : public CanvasImageSource {
 
   const KURL& SourceURL() const override;
 
- private:
   ImageResourceContent* CachedImage() const;
+
+ private:
   const Element& GetElement() const;
 };
 
 }  // namespace blink
 
-#endif  // CanvasImageElementSource_h
+#endif  // ImageElementBase_h
