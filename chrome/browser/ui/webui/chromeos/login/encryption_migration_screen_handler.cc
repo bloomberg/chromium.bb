@@ -49,7 +49,6 @@ namespace chromeos {
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler()
     : BaseScreenHandler(kScreenId), weak_ptr_factory_(this) {
   set_call_js_prefix(kJsScreenPath);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
 EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
@@ -101,6 +100,8 @@ void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
 void EncryptionMigrationScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
     return;
+
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   if (show_on_init_) {
     Show();
