@@ -7,7 +7,6 @@
 
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/leveldb/leveldb_mojo_proxy.h"
-#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace leveldb {
@@ -17,14 +16,13 @@ namespace leveldb {
 // synchronous and block on responses from the filesystem service. That's fine
 // since, for the most part, they merely open files or check for a file's
 // existence.
-class MojoEnv : public leveldb_env::ChromiumEnv {
+class MojoEnv : public leveldb::Env {
  public:
-  MojoEnv(const std::string& name,
-          scoped_refptr<LevelDBMojoProxy> file_thread,
+  MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
           LevelDBMojoProxy::OpaqueDir* dir);
   ~MojoEnv() override;
 
-  // Overridden from leveldb_env::EnvChromium:
+  // Overridden from leveldb::Env:
   Status NewSequentialFile(const std::string& fname,
                            SequentialFile** result) override;
   Status NewRandomAccessFile(const std::string& fname,
@@ -46,8 +44,10 @@ class MojoEnv : public leveldb_env::ChromiumEnv {
   Status GetTestDirectory(std::string* path) override;
   Status NewLogger(const std::string& fname, Logger** result) override;
 
-  // For reference, we specifically don't override Schedule(), StartThread(),
-  // NowMicros() or SleepForMicroseconds() and use the EnvChromium versions.
+  uint64_t NowMicros() override;
+  void SleepForMicroseconds(int micros) override;
+  void Schedule(void (*function)(void* arg), void* arg) override;
+  void StartThread(void (*function)(void* arg), void* arg) override;
 
  private:
   scoped_refptr<LevelDBMojoProxy> thread_;

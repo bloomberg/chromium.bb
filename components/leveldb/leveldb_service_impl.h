@@ -23,7 +23,6 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
   ~LevelDBServiceImpl() override;
 
   // Overridden from LevelDBService:
-  void SetEnvironmentName(const std::string& name) override;
   void Open(filesystem::mojom::DirectoryPtr directory,
             const std::string& dbname,
             leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
@@ -45,8 +44,6 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
   // threads that want to call file stuff, we create a dedicated thread to send
   // and receive mojo message calls.
   scoped_refptr<LevelDBMojoProxy> thread_;
-
-  std::string environment_name_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceImpl);
 };

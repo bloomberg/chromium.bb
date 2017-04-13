@@ -9,8 +9,10 @@
 #include <memory>
 
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
@@ -215,12 +217,32 @@ class MojoWritableFile : public leveldb::WritableFile {
   DISALLOW_COPY_AND_ASSIGN(MojoWritableFile);
 };
 
+class Thread : public base::PlatformThread::Delegate {
+ public:
+  Thread(void (*function)(void* arg), void* arg)
+      : function_(function), arg_(arg) {
+    base::PlatformThreadHandle handle;
+    bool success = base::PlatformThread::Create(0, this, &handle);
+    DCHECK(success);
+  }
+  ~Thread() override {}
+  void ThreadMain() override {
+    (*function_)(arg_);
+    delete this;
+  }
+
+ private:
+  void (*function_)(void* arg);
+  void* arg_;
+
+  DISALLOW_COPY_AND_ASSIGN(Thread);
+};
+
 }  // namespace
 
-MojoEnv::MojoEnv(const std::string& name,
-                 scoped_refptr<LevelDBMojoProxy> file_thread,
+MojoEnv::MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
                  LevelDBMojoProxy::OpaqueDir* dir)
-    : ChromiumEnv(name), thread_(file_thread), dir_(dir) {}
+    : thread_(file_thread), dir_(dir) {}
 
 MojoEnv::~MojoEnv() {
   thread_->UnregisterDirectory(dir_);
@@ -249,7 +271,7 @@ Status MojoEnv::NewRandomAccessFile(const std::string& fname,
   if (!f.IsValid()) {
     *result = nullptr;
     base::File::Error error_code = f.error_details();
-    return MakeIOError(fname, FileErrorString(error_code),
+    return MakeIOError(fname, base::File::ErrorToString(error_code),
                        leveldb_env::kNewRandomAccessFile, error_code);
   }
 
@@ -379,6 +401,23 @@ Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
     *result = new leveldb::ChromiumLogger(std::move(f));
     return Status::OK();
   }
+}
+
+uint64_t MojoEnv::NowMicros() {
+  return base::TimeTicks::Now().ToInternalValue();
+}
+
+void MojoEnv::SleepForMicroseconds(int micros) {
+  // Round up to the next millisecond.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(micros));
+}
+
+void MojoEnv::Schedule(void (*function)(void* arg), void* arg) {
+  base::PostTask(FROM_HERE, base::Bind(function, arg));
+}
+
+void MojoEnv::StartThread(void (*function)(void* arg), void* arg) {
+  new Thread(function, arg);  // Will self-delete.
 }
 
 }  // namespace leveldb

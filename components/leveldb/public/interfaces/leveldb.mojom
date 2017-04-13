@@ -62,11 +62,6 @@ struct OpenOptions {
 
 // Service which hands out databases.
 interface LevelDBService {
-  // Sets the name of the environment to a custom value. This is used for any
-  // databases opened after calling this method to name UMA histograms and to
-  // name the background thread that might get started.
-  SetEnvironmentName(string name);
-
   // Open the database with the specified "name" in the specified "directory".
   // Fails if the database doesn't already exist.
   Open(filesystem.mojom.Directory directory,

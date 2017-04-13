@@ -22,14 +22,9 @@ namespace leveldb {
 
 LevelDBServiceImpl::LevelDBServiceImpl(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : thread_(new LevelDBMojoProxy(std::move(file_task_runner))),
-      environment_name_("LevelDBEnv") {}
+    : thread_(new LevelDBMojoProxy(std::move(file_task_runner))) {}
 
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
-
-void LevelDBServiceImpl::SetEnvironmentName(const std::string& name) {
-  environment_name_ = name;
-}
 
 void LevelDBServiceImpl::Open(
     filesystem::mojom::DirectoryPtr directory,
@@ -60,8 +55,7 @@ void LevelDBServiceImpl::OpenWithOptions(
   LevelDBMojoProxy::OpaqueDir* dir =
       thread_->RegisterDirectory(std::move(directory));
 
-  std::unique_ptr<MojoEnv> env_mojo(
-      new MojoEnv(environment_name_, thread_, dir));
+  std::unique_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));
   options.env = env_mojo.get();
 
   leveldb::DB* db = nullptr;
@@ -107,8 +101,7 @@ void LevelDBServiceImpl::Destroy(filesystem::mojom::DirectoryPtr directory,
   // Register our directory with the file thread.
   LevelDBMojoProxy::OpaqueDir* dir =
       thread_->RegisterDirectory(std::move(directory));
-  std::unique_ptr<MojoEnv> env_mojo(
-      new MojoEnv(environment_name_, thread_, dir));
+  std::unique_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));
   options.env = env_mojo.get();
   callback.Run(LeveldbStatusToError(leveldb::DestroyDB(dbname, options)));
 }
