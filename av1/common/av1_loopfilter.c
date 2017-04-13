@@ -261,9 +261,12 @@ static const uint16_t size_mask_uv[BLOCK_SIZES] = {
 static const uint16_t left_border_uv = 0x1111;
 static const uint16_t above_border_uv = 0x000f;
 
-static const int mode_lf_lut[MB_MODE_COUNT] = {
+static const int mode_lf_lut[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // INTRA_MODES
-  1, 1, 0, 1,                    // INTER_MODES (ZEROMV == 0)
+#if CONFIG_ALT_INTRA
+  0,
+#endif
+  1, 1, 0, 1,  // INTER_MODES (ZEROMV == 0)
 #if CONFIG_EXT_INTER
   1, 1, 1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (ZERO_ZEROMV == 0)
 #endif                          // CONFIG_EXT_INTER
@@ -304,7 +307,10 @@ static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
   return lfi_n->lvl[segment_id][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
 }
 
+#define NELEMENTS(x) (sizeof((x)) / sizeof((x)[0]))
+
 void av1_loop_filter_init(AV1_COMMON *cm) {
+  assert(MB_MODE_COUNT == NELEMENTS(mode_lf_lut));
   loop_filter_info_n *lfi = &cm->lf_info;
   struct loopfilter *lf = &cm->lf;
   int lvl;
