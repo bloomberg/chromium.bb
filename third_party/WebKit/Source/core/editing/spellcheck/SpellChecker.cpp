@@ -763,9 +763,8 @@ void SpellChecker::UpdateMarkersForWordsAffectedByEditing(
   // as well. So we need to get the continous range of of marker that contains
   // the word in question, and remove marker on that whole range.
   const EphemeralRange word_range(remove_marker_start, remove_marker_end);
-  document->Markers().RemoveMarkers(
-      word_range, DocumentMarker::MisspellingMarkers(),
-      DocumentMarkerController::kRemovePartiallyOverlappingMarker);
+  document->Markers().RemoveMarkers(word_range,
+                                    DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::DidEndEditingOnTextField(Element* e) {

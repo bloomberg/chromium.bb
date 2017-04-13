@@ -77,25 +77,14 @@ class CORE_EXPORT DocumentMarkerController final
   void MoveMarkers(Node* src_node, int length, Node* dst_node);
 
   void PrepareForDestruction();
-  // When a marker partially overlaps with range, if
-  // removePartiallyOverlappingMarkers is true, we completely remove the marker.
-  // If the argument is false, we will adjust the span of the marker so that it
-  // retains the portion that is outside of the range.
-  enum RemovePartiallyOverlappingMarkerOrNot {
-    kDoNotRemovePartiallyOverlappingMarker,
-    kRemovePartiallyOverlappingMarker
-  };
-  void RemoveMarkers(const EphemeralRange&,
-                     DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),
-                     RemovePartiallyOverlappingMarkerOrNot =
-                         kDoNotRemovePartiallyOverlappingMarker);
-  void RemoveMarkers(Node*,
-                     unsigned start_offset,
-                     int length,
-                     DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),
-                     RemovePartiallyOverlappingMarkerOrNot =
-                         kDoNotRemovePartiallyOverlappingMarker);
-
+  void RemoveMarkers(
+      const EphemeralRange&,
+      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
+  void RemoveMarkers(
+      Node*,
+      unsigned start_offset,
+      int length,
+      DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   void RemoveMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   void RemoveMarkers(
@@ -147,9 +136,7 @@ class CORE_EXPORT DocumentMarkerController final
   void MergeOverlapping(MarkerList*, RenderedDocumentMarker*);
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
-  void RemoveMarkers(TextIterator&,
-                     DocumentMarker::MarkerTypes,
-                     RemovePartiallyOverlappingMarkerOrNot);
+  void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);
 
   MarkerMap markers_;
   // Provide a quick way to determine whether a particular marker type is absent

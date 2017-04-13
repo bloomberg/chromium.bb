@@ -146,9 +146,7 @@ void DocumentMarkerController::PrepareForDestruction() {
 
 void DocumentMarkerController::RemoveMarkers(
     TextIterator& marked_text,
-    DocumentMarker::MarkerTypes marker_types,
-    RemovePartiallyOverlappingMarkerOrNot
-        should_remove_partially_overlapping_marker) {
+    DocumentMarker::MarkerTypes marker_types) {
   for (; !marked_text.AtEnd(); marked_text.Advance()) {
     if (!PossiblyHasMarkers(marker_types))
       return;
@@ -157,21 +155,17 @@ void DocumentMarkerController::RemoveMarkers(
     int start_offset = marked_text.StartOffsetInCurrentContainer();
     int end_offset = marked_text.EndOffsetInCurrentContainer();
     RemoveMarkers(marked_text.CurrentContainer(), start_offset,
-                  end_offset - start_offset, marker_types,
-                  should_remove_partially_overlapping_marker);
+                  end_offset - start_offset, marker_types);
   }
 }
 
 void DocumentMarkerController::RemoveMarkers(
     const EphemeralRange& range,
-    DocumentMarker::MarkerTypes marker_types,
-    RemovePartiallyOverlappingMarkerOrNot
-        should_remove_partially_overlapping_marker) {
+    DocumentMarker::MarkerTypes marker_types) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
 
   TextIterator marked_text(range.StartPosition(), range.EndPosition());
-  DocumentMarkerController::RemoveMarkers(
-      marked_text, marker_types, should_remove_partially_overlapping_marker);
+  DocumentMarkerController::RemoveMarkers(marked_text, marker_types);
 }
 
 static bool StartsFurther(const Member<RenderedDocumentMarker>& lhv,
@@ -334,9 +328,7 @@ void DocumentMarkerController::RemoveMarkers(
     Node* node,
     unsigned start_offset,
     int length,
-    DocumentMarker::MarkerTypes marker_types,
-    RemovePartiallyOverlappingMarkerOrNot
-        should_remove_partially_overlapping_marker) {
+    DocumentMarker::MarkerTypes marker_types) {
   if (length <= 0)
     return;
 
@@ -373,34 +365,8 @@ void DocumentMarkerController::RemoveMarkers(
       if (marker.StartOffset() >= end_offset)
         break;
 
-      // at this point we know that marker and target intersect in some way
-      doc_dirty = true;
-
-      // pitch the old marker
       list->erase(i - list->begin());
-
-      if (should_remove_partially_overlapping_marker) {
-        // Stop here. Don't add resulting slices back.
-        continue;
-      }
-
-      // add either of the resulting slices that are left after removing target
-      if (start_offset > marker.StartOffset()) {
-        DocumentMarker new_left = marker;
-        new_left.SetEndOffset(start_offset);
-        size_t insert_index = i - list->begin();
-        list->insert(insert_index, RenderedDocumentMarker::Create(new_left));
-        // Move to the marker after the inserted one.
-        i = list->begin() + insert_index + 1;
-      }
-      if (marker.EndOffset() > end_offset) {
-        DocumentMarker new_right = marker;
-        new_right.SetStartOffset(end_offset);
-        size_t insert_index = i - list->begin();
-        list->insert(insert_index, RenderedDocumentMarker::Create(new_right));
-        // Move to the marker after the inserted one.
-        i = list->begin() + insert_index + 1;
-      }
+      doc_dirty = true;
     }
 
     if (list->IsEmpty()) {

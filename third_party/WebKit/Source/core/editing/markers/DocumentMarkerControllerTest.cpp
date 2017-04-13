@@ -264,8 +264,7 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
   EXPECT_TRUE(MarkerController().SetMarkersActive(range, true));
 }
 
-TEST_F(DocumentMarkerControllerTest,
-       RemoveStartOfMarkerDoRemovePartiallyOverlapping) {
+TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
   SetBodyInnerHTML("<b>abc</b>");
   GetDocument().UpdateStyleAndLayout();
   Node* b_element = GetDocument().body()->FirstChild();
@@ -279,40 +278,13 @@ TEST_F(DocumentMarkerControllerTest,
 
   // Remove markers that overlap "a"
   marker_range = EphemeralRange(Position(text, 0), Position(text, 1));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kRemovePartiallyOverlappingMarker);
+  GetDocument().Markers().RemoveMarkers(marker_range,
+                                        DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-TEST_F(DocumentMarkerControllerTest,
-       RemoveStartOfMarkerDontRemovePartiallyOverlapping) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
-  Node* b_element = GetDocument().body()->FirstChild();
-  Node* text = b_element->firstChild();
-
-  // Add marker under "abc"
-  EphemeralRange marker_range =
-      EphemeralRange(Position(text, 0), Position(text, 3));
-  GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
-
-  // Remove portion of marker that overlaps "a"
-  marker_range = EphemeralRange(Position(text, 0), Position(text, 1));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kDoNotRemovePartiallyOverlappingMarker);
-
-  EXPECT_EQ(1u, MarkerController().Markers().size());
-
-  EXPECT_EQ(1u, MarkerController().Markers()[0]->StartOffset());
-  EXPECT_EQ(3u, MarkerController().Markers()[0]->EndOffset());
-}
-
-TEST_F(DocumentMarkerControllerTest,
-       RemoveMiddleOfMarkerDoRemovePartiallyOverlapping) {
+TEST_F(DocumentMarkerControllerTest, RemoveMiddleOfMarker) {
   SetBodyInnerHTML("<b>abc</b>");
   GetDocument().UpdateStyleAndLayout();
   Node* b_element = GetDocument().body()->FirstChild();
@@ -326,43 +298,13 @@ TEST_F(DocumentMarkerControllerTest,
 
   // Remove markers that overlap "b"
   marker_range = EphemeralRange(Position(text, 1), Position(text, 2));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kRemovePartiallyOverlappingMarker);
+  GetDocument().Markers().RemoveMarkers(marker_range,
+                                        DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-TEST_F(DocumentMarkerControllerTest,
-       RemoveMiddleOfMarkerDontRemovePartiallyOverlapping) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
-  Node* b_element = GetDocument().body()->FirstChild();
-  Node* text = b_element->firstChild();
-
-  // Add marker under "abc"
-  EphemeralRange marker_range =
-      EphemeralRange(Position(text, 0), Position(text, 3));
-  GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
-
-  // Remove portion of marker that overlaps "b"
-  marker_range = EphemeralRange(Position(text, 1), Position(text, 2));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kDoNotRemovePartiallyOverlappingMarker);
-
-  EXPECT_EQ(2u, MarkerController().Markers().size());
-
-  EXPECT_EQ(0u, MarkerController().Markers()[0]->StartOffset());
-  EXPECT_EQ(1u, MarkerController().Markers()[0]->EndOffset());
-
-  EXPECT_EQ(2u, MarkerController().Markers()[1]->StartOffset());
-  EXPECT_EQ(3u, MarkerController().Markers()[1]->EndOffset());
-}
-
-TEST_F(DocumentMarkerControllerTest,
-       RemoveEndOfMarkerDoRemovePartiallyOverlapping) {
+TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
   SetBodyInnerHTML("<b>abc</b>");
   GetDocument().UpdateStyleAndLayout();
   Node* b_element = GetDocument().body()->FirstChild();
@@ -376,36 +318,10 @@ TEST_F(DocumentMarkerControllerTest,
 
   // Remove markers that overlap "c"
   marker_range = EphemeralRange(Position(text, 2), Position(text, 3));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kRemovePartiallyOverlappingMarker);
+  GetDocument().Markers().RemoveMarkers(marker_range,
+                                        DocumentMarker::AllMarkers());
 
   EXPECT_EQ(0u, MarkerController().Markers().size());
-}
-
-TEST_F(DocumentMarkerControllerTest,
-       RemoveEndOfMarkerDontRemovePartiallyOverlapping) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
-  Node* b_element = GetDocument().body()->FirstChild();
-  Node* text = b_element->firstChild();
-
-  // Add marker under "abc"
-  EphemeralRange marker_range =
-      EphemeralRange(Position(text, 0), Position(text, 3));
-  GetDocument().Markers().AddTextMatchMarker(
-      marker_range, DocumentMarker::MatchStatus::kInactive);
-
-  // Remove portion of marker that overlaps "c"
-  marker_range = EphemeralRange(Position(text, 2), Position(text, 3));
-  GetDocument().Markers().RemoveMarkers(
-      marker_range, DocumentMarker::AllMarkers(),
-      DocumentMarkerController::kDoNotRemovePartiallyOverlappingMarker);
-
-  EXPECT_EQ(1u, MarkerController().Markers().size());
-
-  EXPECT_EQ(0u, MarkerController().Markers()[0]->StartOffset());
-  EXPECT_EQ(2u, MarkerController().Markers()[0]->EndOffset());
 }
 
 }  // namespace blink

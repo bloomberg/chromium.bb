@@ -109,8 +109,7 @@ void HotModeSpellCheckRequester::CheckSpellingAt(const Position& position) {
       CurrentWordIfTypingInPartialWord(*root_editable);
   if (current_word.IsNotNull()) {
     root_editable->GetDocument().Markers().RemoveMarkers(
-        current_word, DocumentMarker::MisspellingMarkers(),
-        DocumentMarkerController::kRemovePartiallyOverlappingMarker);
+        current_word, DocumentMarker::MisspellingMarkers());
     return;
   }
 
