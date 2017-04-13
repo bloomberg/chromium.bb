@@ -165,73 +165,51 @@ void ResourcePrefetchPredictorTables::GetAllData(
   GetAllOriginDataHelper(origin_data_map);
 }
 
-void ResourcePrefetchPredictorTables::UpdateData(
-    const PrefetchData& url_data,
-    const PrefetchData& host_data,
-    const RedirectData& url_redirect_data,
-    const RedirectData& host_redirect_data) {
-  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateData");
+void ResourcePrefetchPredictorTables::UpdateResourceData(
+    const PrefetchData& data,
+    PrefetchKeyType key_type) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateResourceData");
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
     return;
 
-  DCHECK(url_data.has_primary_key() || host_data.has_primary_key() ||
-         url_redirect_data.has_primary_key() ||
-         host_redirect_data.has_primary_key());
+  UpdateDataHelper(key_type, PrefetchDataType::RESOURCE, data.primary_key(),
+                   data);
+}
 
-  DB()->BeginTransaction();
+void ResourcePrefetchPredictorTables::UpdateRedirectData(
+    const RedirectData& data,
+    PrefetchKeyType key_type) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateRedirectData");
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  if (CantAccessDatabase())
+    return;
 
-  bool success =
-      (!url_data.has_primary_key() ||
-       UpdateDataHelper(PREFETCH_KEY_TYPE_URL, PrefetchDataType::RESOURCE,
-                        url_data.primary_key(), url_data)) &&
-      (!host_data.has_primary_key() ||
-       UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::RESOURCE,
-                        host_data.primary_key(), host_data)) &&
-      (!url_redirect_data.has_primary_key() ||
-       UpdateDataHelper(PREFETCH_KEY_TYPE_URL, PrefetchDataType::REDIRECT,
-                        url_redirect_data.primary_key(), url_redirect_data)) &&
-      (!host_redirect_data.has_primary_key() ||
-       UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::REDIRECT,
-                        host_redirect_data.primary_key(), host_redirect_data));
-  if (!success)
-    DB()->RollbackTransaction();
-  else
-    DB()->CommitTransaction();
+  UpdateDataHelper(key_type, PrefetchDataType::REDIRECT, data.primary_key(),
+                   data);
 }
 
 void ResourcePrefetchPredictorTables::UpdateManifestData(
     const std::string& host,
     const precache::PrecacheManifest& manifest_data) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateManifestData");
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
     return;
 
-  DB()->BeginTransaction();
-  bool success = UpdateDataHelper(
-      PREFETCH_KEY_TYPE_HOST, PrefetchDataType::MANIFEST, host, manifest_data);
-
-  if (!success)
-    DB()->RollbackTransaction();
-  else
-    DB()->CommitTransaction();
+  UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::MANIFEST, host,
+                   manifest_data);
 }
 
 void ResourcePrefetchPredictorTables::UpdateOriginData(
     const OriginData& origin_data) {
+  TRACE_EVENT0("browser", "ResourcePrefetchPredictor::UpdateOriginData");
   DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (CantAccessDatabase())
     return;
 
-  std::string host = origin_data.host();
-  DB()->BeginTransaction();
-  bool success = UpdateDataHelper(PREFETCH_KEY_TYPE_HOST,
-                                  PrefetchDataType::ORIGIN, host, origin_data);
-
-  if (!success)
-    DB()->RollbackTransaction();
-  else
-    DB()->CommitTransaction();
+  UpdateDataHelper(PREFETCH_KEY_TYPE_HOST, PrefetchDataType::ORIGIN,
+                   origin_data.host(), origin_data);
 }
 
 void ResourcePrefetchPredictorTables::DeleteResourceData(
@@ -385,23 +363,31 @@ void ResourcePrefetchPredictorTables::GetAllOriginDataHelper(
   }
 }
 
-bool ResourcePrefetchPredictorTables::UpdateDataHelper(
+void ResourcePrefetchPredictorTables::UpdateDataHelper(
     PrefetchKeyType key_type,
     PrefetchDataType data_type,
     const std::string& key,
     const MessageLite& data) {
+  DB()->BeginTransaction();
+
   // Delete the older data from the table.
   std::unique_ptr<sql::Statement> deleter(
       GetTableUpdateStatement(key_type, data_type, TableOperationType::REMOVE));
   deleter->BindString(0, key);
-  if (!deleter->Run())
-    return false;
+  bool success = deleter->Run();
 
-  // Add the new data to the table.
-  std::unique_ptr<sql::Statement> inserter(
-      GetTableUpdateStatement(key_type, data_type, TableOperationType::INSERT));
-  BindProtoDataToStatement(key, data, inserter.get());
-  return inserter->Run();
+  if (success) {
+    // Add the new data to the table.
+    std::unique_ptr<sql::Statement> inserter(GetTableUpdateStatement(
+        key_type, data_type, TableOperationType::INSERT));
+    BindProtoDataToStatement(key, data, inserter.get());
+    success = inserter->Run();
+  }
+
+  if (!success)
+    DB()->RollbackTransaction();
+  else
+    DB()->CommitTransaction();
 }
 
 void ResourcePrefetchPredictorTables::DeleteDataHelper(

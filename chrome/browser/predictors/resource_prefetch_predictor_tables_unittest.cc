@@ -291,14 +291,20 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
       google.add_resources(), "http://www.resources.google.com/script.js",
       content::RESOURCE_TYPE_SCRIPT, 12, 0, 0, 8.5, net::MEDIUM, true, true);
 
+  tables_->UpdateResourceData(google, PREFETCH_KEY_TYPE_URL);
+
   PrefetchData yahoo = CreatePrefetchData("www.yahoo.com", 7);
   InitializeResourceData(
       yahoo.add_resources(), "http://www.yahoo.com/image.png",
       content::RESOURCE_TYPE_IMAGE, 120, 1, 1, 10.0, net::MEDIUM, true, false);
 
+  tables_->UpdateResourceData(yahoo, PREFETCH_KEY_TYPE_HOST);
+
   RedirectData facebook = CreateRedirectData("http://fb.com/google", 20);
   InitializeRedirectStat(facebook.add_redirect_endpoints(),
                          "https://facebook.fr/google", 4, 2, 1);
+
+  tables_->UpdateRedirectData(facebook, PREFETCH_KEY_TYPE_URL);
 
   RedirectData microsoft = CreateRedirectData("microsoft.com", 21);
   InitializeRedirectStat(microsoft.add_redirect_endpoints(), "m.microsoft.com",
@@ -306,7 +312,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   InitializeRedirectStat(microsoft.add_redirect_endpoints(), "microsoft.org", 7,
                          2, 0);
 
-  tables_->UpdateData(google, yahoo, facebook, microsoft);
+  tables_->UpdateRedirectData(microsoft, PREFETCH_KEY_TYPE_HOST);
 
   precache::PrecacheManifest theverge;
   InitializePrecacheResource(theverge.add_resource(),
@@ -589,9 +595,6 @@ void ResourcePrefetchPredictorTablesTest::AddKey(OriginDataMap* m,
 }
 
 void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
-  PrefetchData empty_resource_data;
-  RedirectData empty_redirect_data;
-
   {  // Url data.
     PrefetchData google = CreatePrefetchData("http://www.google.com", 1);
     InitializeResourceData(google.add_resources(),
@@ -632,12 +635,9 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_data_.insert(std::make_pair(reddit.primary_key(), reddit));
     test_url_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->UpdateData(google, empty_resource_data, empty_redirect_data,
-                        empty_redirect_data);
-    tables_->UpdateData(reddit, empty_resource_data, empty_redirect_data,
-                        empty_redirect_data);
-    tables_->UpdateData(yahoo, empty_resource_data, empty_redirect_data,
-                        empty_redirect_data);
+    tables_->UpdateResourceData(google, PREFETCH_KEY_TYPE_URL);
+    tables_->UpdateResourceData(reddit, PREFETCH_KEY_TYPE_URL);
+    tables_->UpdateResourceData(yahoo, PREFETCH_KEY_TYPE_URL);
   }
 
   {  // Host data.
@@ -671,10 +671,8 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_data_.insert(std::make_pair(facebook.primary_key(), facebook));
     test_host_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->UpdateData(empty_resource_data, facebook, empty_redirect_data,
-                        empty_redirect_data);
-    tables_->UpdateData(empty_resource_data, yahoo, empty_redirect_data,
-                        empty_redirect_data);
+    tables_->UpdateResourceData(facebook, PREFETCH_KEY_TYPE_HOST);
+    tables_->UpdateResourceData(yahoo, PREFETCH_KEY_TYPE_HOST);
   }
 
   {  // Url redirect data.
@@ -700,12 +698,9 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_redirect_data_.insert(
         std::make_pair(google.primary_key(), google));
 
-    tables_->UpdateData(empty_resource_data, empty_resource_data, facebook,
-                        empty_redirect_data);
-    tables_->UpdateData(empty_resource_data, empty_resource_data, nytimes,
-                        empty_redirect_data);
-    tables_->UpdateData(empty_resource_data, empty_resource_data, google,
-                        empty_redirect_data);
+    tables_->UpdateRedirectData(facebook, PREFETCH_KEY_TYPE_URL);
+    tables_->UpdateRedirectData(nytimes, PREFETCH_KEY_TYPE_URL);
+    tables_->UpdateRedirectData(google, PREFETCH_KEY_TYPE_URL);
   }
 
   {  // Host redirect data.
@@ -723,10 +718,9 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_redirect_data_.insert(std::make_pair(bbc.primary_key(), bbc));
     test_host_redirect_data_.insert(
         std::make_pair(microsoft.primary_key(), microsoft));
-    tables_->UpdateData(empty_resource_data, empty_resource_data,
-                        empty_redirect_data, bbc);
-    tables_->UpdateData(empty_resource_data, empty_resource_data,
-                        empty_redirect_data, microsoft);
+
+    tables_->UpdateRedirectData(bbc, PREFETCH_KEY_TYPE_HOST);
+    tables_->UpdateRedirectData(microsoft, PREFETCH_KEY_TYPE_HOST);
   }
 
   {  // Manifest data.

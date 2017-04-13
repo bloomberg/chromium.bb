@@ -137,11 +137,10 @@ class MockResourcePrefetchPredictorTables
                     RedirectDataMap* host_redirect_data_map,
                     ManifestDataMap* manifest_data_map,
                     OriginDataMap* origin_data_map));
-  MOCK_METHOD4(UpdateData,
-               void(const PrefetchData& url_data,
-                    const PrefetchData& host_data,
-                    const RedirectData& url_redirect_data,
-                    const RedirectData& host_redirect_data));
+  MOCK_METHOD2(UpdateResourceData,
+               void(const PrefetchData& data, PrefetchKeyType key_type));
+  MOCK_METHOD2(UpdateRedirectData,
+               void(const RedirectData& data, PrefetchKeyType key_type));
   MOCK_METHOD2(UpdateManifestData,
                void(const std::string& host,
                     const precache::PrecacheManifest& manifest_data));
@@ -270,8 +269,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   RedirectDataMap test_host_redirect_data_;
   ManifestDataMap test_manifest_data_;
   OriginDataMap test_origin_data_;
-  PrefetchData empty_resource_data_;
-  RedirectData empty_redirect_data_;
 
   MockURLRequestJobFactory url_request_job_factory_;
   EmptyURLRequestDelegate url_request_delegate_;
@@ -282,9 +279,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
     : thread_bundle_(),
       profile_(new TestingProfile()),
-      mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
-      empty_resource_data_(),
-      empty_redirect_data_() {}
+      mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()) {}
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
   profile_.reset(NULL);
@@ -494,10 +489,9 @@ void ResourcePrefetchPredictorTest::TestRedirectStatusHistogram(
 
   // Navigation simulation.
   using testing::_;
-  EXPECT_CALL(*mock_tables_.get(), UpdateData(_, _, _, _))
-      .Times(testing::AtLeast(1));
+  EXPECT_CALL(*mock_tables_.get(), UpdateResourceData(_, _));
+  EXPECT_CALL(*mock_tables_.get(), UpdateRedirectData(_, _));
   EXPECT_CALL(*mock_tables_.get(), UpdateOriginData(_));
-
   URLRequestSummary initial =
       CreateURLRequestSummary(1, navigation_initial_url);
   predictor_->RecordURLRequest(initial);
@@ -628,8 +622,8 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
       host_data.add_resources(), "https://google.com/script2.js",
       content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(host_data, PREFETCH_KEY_TYPE_HOST));
+
   OriginData origin_data = CreateOriginData("www.google.com");
   InitializeOriginStat(origin_data.add_origins(), "https://google.com/", 1, 0,
                        0, 1., false, true);
@@ -639,8 +633,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "www.google.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -730,8 +723,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
                          content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 7.0,
                          net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(url_data, PREFETCH_KEY_TYPE_URL));
 
   OriginData origin_data = CreateOriginData("www.google.com");
   InitializeOriginStat(origin_data.add_origins(), "http://static.google.com/",
@@ -747,22 +739,19 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
   PrefetchData host_data = CreatePrefetchData("www.google.com");
   host_data.mutable_resources()->CopyFrom(url_data.resources());
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(host_data, PREFETCH_KEY_TYPE_HOST));
 
   RedirectData url_redirect_data = CreateRedirectData("http://www.google.com/");
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "http://www.google.com/", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         url_redirect_data, empty_redirect_data_));
+              UpdateRedirectData(url_redirect_data, PREFETCH_KEY_TYPE_URL));
 
   RedirectData host_redirect_data = CreateRedirectData("www.google.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "www.google.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -853,8 +842,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
       url_data.add_resources(), "http://google.com/script2.js",
       content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(url_data, PREFETCH_KEY_TYPE_URL));
   EXPECT_CALL(*mock_tables_.get(),
               DeleteSingleResourceDataPoint("www.facebook.com",
                                             PREFETCH_KEY_TYPE_HOST));
@@ -875,22 +863,19 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                          content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 7.0,
                          net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(host_data, PREFETCH_KEY_TYPE_HOST));
 
   RedirectData url_redirect_data = CreateRedirectData("http://www.google.com/");
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "http://www.google.com/", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         url_redirect_data, empty_redirect_data_));
+              UpdateRedirectData(url_redirect_data, PREFETCH_KEY_TYPE_URL));
 
   RedirectData host_redirect_data = CreateRedirectData("www.google.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "www.google.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   OriginData origin_data = CreateOriginData("www.google.com");
   InitializeOriginStat(origin_data.add_origins(), "http://static.google.com/",
@@ -964,28 +949,24 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                          content::RESOURCE_TYPE_IMAGE, 1, 0, 0, 2.0,
                          net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(url_data, PREFETCH_KEY_TYPE_URL));
 
   PrefetchData host_data = CreatePrefetchData("www.nike.com");
   host_data.mutable_resources()->CopyFrom(url_data.resources());
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
-                         empty_redirect_data_));
+              UpdateResourceData(host_data, PREFETCH_KEY_TYPE_HOST));
 
   RedirectData url_redirect_data = CreateRedirectData("http://www.nike.com/");
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "http://www.nike.com/", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         url_redirect_data, empty_redirect_data_));
+              UpdateRedirectData(url_redirect_data, PREFETCH_KEY_TYPE_URL));
 
   RedirectData host_redirect_data = CreateRedirectData("www.nike.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "www.nike.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   EXPECT_CALL(*mock_tables_.get(), UpdateOriginData(testing::_));
 
@@ -1030,15 +1011,13 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "https://facebook.com/google", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         url_redirect_data, empty_redirect_data_));
+              UpdateRedirectData(url_redirect_data, PREFETCH_KEY_TYPE_URL));
 
   RedirectData host_redirect_data = CreateRedirectData("fb.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "facebook.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   predictor_->RecordMainFrameLoadComplete(fb_end);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -1103,15 +1082,13 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   // Existing redirect to https://facebook.com/login will be deleted because of
   // too many consecutive misses.
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         url_redirect_data, empty_redirect_data_));
+              UpdateRedirectData(url_redirect_data, PREFETCH_KEY_TYPE_URL));
 
   RedirectData host_redirect_data = CreateRedirectData("fb.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "facebook.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_resource_data_, empty_resource_data_,
-                         empty_redirect_data_, host_redirect_data));
+              UpdateRedirectData(host_redirect_data, PREFETCH_KEY_TYPE_HOST));
 
   predictor_->RecordMainFrameLoadComplete(fb_end);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -1906,7 +1883,8 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
 
 TEST_F(ResourcePrefetchPredictorTest, TestPrecisionRecallHistograms) {
   using testing::_;
-  EXPECT_CALL(*mock_tables_.get(), UpdateData(_, _, _, _)).Times(2);
+  EXPECT_CALL(*mock_tables_.get(), UpdateResourceData(_, _));
+  EXPECT_CALL(*mock_tables_.get(), UpdateRedirectData(_, _));
   EXPECT_CALL(*mock_tables_.get(), UpdateOriginData(_));
 
   // Fill the database with 3 resources: 1 useful, 2 useless.

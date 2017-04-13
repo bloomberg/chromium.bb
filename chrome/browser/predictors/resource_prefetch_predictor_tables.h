@@ -51,13 +51,17 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                           ManifestDataMap* manifest_map,
                           OriginDataMap* origin_data_map);
 
-  // Updates data for a Url and a host. If any of the arguments has an empty
-  // primary key, it will be ignored.
-  // Note that all the keys should be less |kMaxStringLength| in length.
-  virtual void UpdateData(const PrefetchData& url_data,
-                          const PrefetchData& host_data,
-                          const RedirectData& url_redirect_data,
-                          const RedirectData& host_redirect_data);
+  // Updates resource data for the input |data|.
+  // Note that the primary key in |data| should be less than |kMaxStringLength|
+  // in length.
+  virtual void UpdateResourceData(const PrefetchData& data,
+                                  PrefetchKeyType key_type);
+
+  // Updates redirect data for the input |data|.
+  // Note that the primary key in |data| should be less than |kMaxStringLength|
+  // in length.
+  virtual void UpdateRedirectData(const RedirectData& data,
+                                  PrefetchKeyType key_type);
 
   // Updates manifest data for the input |host|.
   virtual void UpdateManifestData(
@@ -150,7 +154,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   void GetAllManifestDataHelper(ManifestDataMap* manifest_map);
   void GetAllOriginDataHelper(OriginDataMap* manifest_map);
 
-  bool UpdateDataHelper(PrefetchKeyType key_type,
+  void UpdateDataHelper(PrefetchKeyType key_type,
                         PrefetchDataType data_type,
                         const std::string& key,
                         const google::protobuf::MessageLite& data);

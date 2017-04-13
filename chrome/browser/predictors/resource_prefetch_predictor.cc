@@ -1205,8 +1205,6 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HistoryVisitCountForUrl",
                        url_visit_count);
 
-  // TODO(alexilin): make only one request to DB thread.
-
   if (config_.is_url_learning_enabled) {
     // URL level data - merge only if we already saved the data, or it
     // meets the cutoff requirement.
@@ -1387,16 +1385,10 @@ void ResourcePrefetchPredictor::LearnNavigation(
             &ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint,
             tables_, key, key_type));
   } else {
-    PrefetchData empty_data;
-    RedirectData empty_redirect_data;
-    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
-    const PrefetchData& host_data = is_host ? data : empty_data;
-    const PrefetchData& url_data = is_host ? empty_data : data;
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
-                   url_data, host_data, empty_redirect_data,
-                   empty_redirect_data));
+        base::Bind(&ResourcePrefetchPredictorTables::UpdateResourceData,
+                   tables_, data, key_type));
   }
 
   // Predictor learns about both redirected and non-redirected destinations to
@@ -1464,18 +1456,10 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
             &ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint,
             tables_, key, key_type));
   } else {
-    RedirectData empty_redirect_data;
-    PrefetchData empty_data;
-    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
-    const RedirectData& host_redirect_data =
-        is_host ? data : empty_redirect_data;
-    const RedirectData& url_redirect_data =
-        is_host ? empty_redirect_data : data;
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
-                   empty_data, empty_data, url_redirect_data,
-                   host_redirect_data));
+        base::Bind(&ResourcePrefetchPredictorTables::UpdateRedirectData,
+                   tables_, data, key_type));
   }
 }
 
