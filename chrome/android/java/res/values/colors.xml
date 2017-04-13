@@ -206,6 +206,9 @@
     <color name="payments_section_chevron">#b2b2b2</color>
     <color name="payments_section_separator">#e0e0e0</color>
 
+    <!-- Translate Infobar colors -->
+    <color name="translate_overflow_menu_divider_color">#e0e0e0</color>
+
     <!-- Other colors -->
     <color name="selectable_list_item_highlight_color">#804281f4</color>
     <color name="media_viewer_bg">#000000</color>

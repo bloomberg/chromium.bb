@@ -469,6 +469,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/TranslateOptions.java",
   "java/src/org/chromium/chrome/browser/infobar/TranslateSubPanel.java",
   "java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
+  "java/src/org/chromium/chrome/browser/infobar/translate/TranslateMenuHelper.java",
   "java/src/org/chromium/chrome/browser/infobar/translate/TranslateTabContent.java",
   "java/src/org/chromium/chrome/browser/infobar/translate/TranslateTabLayout.java",
   "java/src/org/chromium/chrome/browser/init/AsyncInitializationActivity.java",
