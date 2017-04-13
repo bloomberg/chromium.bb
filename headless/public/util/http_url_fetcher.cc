@@ -4,7 +4,9 @@
 
 #include "headless/public/util/http_url_fetcher.h"
 
+#include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -16,6 +18,7 @@ class HttpURLFetcher::Delegate : public net::URLRequest::Delegate {
  public:
   Delegate(const GURL& rewritten_url,
            const std::string& method,
+           const std::string& post_data,
            const net::HttpRequestHeaders& request_headers,
            const net::URLRequestContext* url_request_context,
            ResultListener* result_listener);
@@ -56,6 +59,7 @@ class HttpURLFetcher::Delegate : public net::URLRequest::Delegate {
 HttpURLFetcher::Delegate::Delegate(
     const GURL& rewritten_url,
     const std::string& method,
+    const std::string& post_data,
     const net::HttpRequestHeaders& request_headers,
     const net::URLRequestContext* url_request_context,
     ResultListener* result_listener)
@@ -66,6 +70,14 @@ HttpURLFetcher::Delegate::Delegate(
                                                   this)),
       result_listener_(result_listener) {
   request_->set_method(method);
+
+  if (!post_data.empty()) {
+    request_->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+        base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+                                                        post_data.size()),
+        0));
+  }
+
   request_->SetExtraRequestHeaders(request_headers);
   request_->Start();
 }
@@ -183,11 +195,12 @@ HttpURLFetcher::~HttpURLFetcher() {}
 
 void HttpURLFetcher::StartFetch(const GURL& rewritten_url,
                                 const std::string& method,
+                                const std::string& post_data,
                                 const net::HttpRequestHeaders& request_headers,
-                                const std::string& devtools_request_id,
                                 ResultListener* result_listener) {
-  delegate_.reset(new Delegate(rewritten_url, method, request_headers,
-                               url_request_context_, result_listener));
+  delegate_.reset(new Delegate(rewritten_url, method, post_data,
+                               request_headers, url_request_context_,
+                               result_listener));
 }
 
 }  // namespace headless

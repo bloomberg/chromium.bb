@@ -22,27 +22,20 @@ class DeterministicHttpProtocolHandler::NopGenericURLRequestJobDelegate
   ~NopGenericURLRequestJobDelegate() override {}
 
   // GenericURLRequestJob::Delegate methods:
-  bool BlockOrRewriteRequest(
-      const GURL& url,
-      const std::string& devtools_id,
-      const std::string& method,
-      const std::string& referrer,
-      GenericURLRequestJob::RewriteCallback callback) override {
-    return false;
+  void OnPendingRequest(PendingRequest* pending_request) override {
+    pending_request->AllowRequest();
   }
 
-  const GenericURLRequestJob::HttpResponse* MaybeMatchResource(
-      const GURL& url,
-      const std::string& devtools_id,
-      const std::string& method,
-      const net::HttpRequestHeaders& request_headers) override {
-    return nullptr;
+  void OnResourceLoadFailed(const Request* request, net::Error error) override {
   }
 
-  void OnResourceLoadComplete(const GURL& final_url,
-                              const std::string& devtools_id,
-                              const std::string& mime_type,
-                              int http_response_code) override {}
+  void OnResourceLoadComplete(
+      const Request* request,
+      const GURL& final_url,
+      int http_response_code,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const char* body,
+      size_t body_size) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NopGenericURLRequestJobDelegate);

@@ -25,28 +25,25 @@ class HEADLESS_EXPORT MockGenericURLRequestJobDelegate
   MockGenericURLRequestJobDelegate();
   ~MockGenericURLRequestJobDelegate() override;
 
-  bool BlockOrRewriteRequest(
-      const GURL& url,
-      const std::string& devtools_id,
-      const std::string& method,
-      const std::string& referrer,
-      GenericURLRequestJob::RewriteCallback callback) override;
+  // GenericURLRequestJob::Delegate methods:
+  void OnPendingRequest(PendingRequest* pending_request) override;
+  void OnResourceLoadFailed(const Request* request, net::Error error) override;
+  void OnResourceLoadComplete(
+      const Request* request,
+      const GURL& final_url,
+      int http_response_code,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const char* body,
+      size_t body_size) override;
 
-  const GenericURLRequestJob::HttpResponse* MaybeMatchResource(
-      const GURL& url,
-      const std::string& devtools_id,
-      const std::string& method,
-      const net::HttpRequestHeaders& request_headers) override;
+  using Policy = base::Callback<void(PendingRequest* pending_request)>;
 
-  void OnResourceLoadComplete(const GURL& final_url,
-                              const std::string& devtools_id,
-                              const std::string& mime_type,
-                              int http_response_code) override;
-
-  void SetShouldBlock(bool should_block) { should_block_ = should_block; }
+  void SetPolicy(Policy policy);
 
  private:
-  bool should_block_;
+  void ApplyPolicy(PendingRequest* pending_request);
+
+  Policy policy_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGenericURLRequestJobDelegate);

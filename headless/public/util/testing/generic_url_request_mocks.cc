@@ -15,45 +15,43 @@ namespace headless {
 
 // MockGenericURLRequestJobDelegate
 MockGenericURLRequestJobDelegate::MockGenericURLRequestJobDelegate()
-    : should_block_(false),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+
 MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
 
-bool MockGenericURLRequestJobDelegate::BlockOrRewriteRequest(
-    const GURL& url,
-    const std::string& devtools_id,
-    const std::string& method,
-    const std::string& referrer,
-    GenericURLRequestJob::RewriteCallback callback) {
-  if (should_block_) {
-    // Simulate the client acknowledging the callback from a different thread.
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-                       [](GenericURLRequestJob::RewriteCallback callback,
-                          std::string method) {
-                         callback.Run(
-                             GenericURLRequestJob::RewriteResult::kDeny, GURL(),
-                             method);
-                       },
-                       callback, method));
-  }
-  return should_block_;
+// GenericURLRequestJob::Delegate methods:
+void MockGenericURLRequestJobDelegate::OnPendingRequest(
+    PendingRequest* pending_request) {
+  // Simulate the client acknowledging the callback from a different thread.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&MockGenericURLRequestJobDelegate::ApplyPolicy,
+                            base::Unretained(this), pending_request));
 }
 
-const GenericURLRequestJob::HttpResponse*
-MockGenericURLRequestJobDelegate::MaybeMatchResource(
-    const GURL& url,
-    const std::string& devtools_id,
-    const std::string& method,
-    const net::HttpRequestHeaders& request_headers) {
-  return nullptr;
+void MockGenericURLRequestJobDelegate::SetPolicy(Policy policy) {
+  policy_ = policy;
 }
+
+void MockGenericURLRequestJobDelegate::ApplyPolicy(
+    PendingRequest* pending_request) {
+  if (policy_.is_null()) {
+    pending_request->AllowRequest();
+  } else {
+    policy_.Run(pending_request);
+  }
+}
+
+void MockGenericURLRequestJobDelegate::OnResourceLoadFailed(
+    const Request* request,
+    net::Error error) {}
 
 void MockGenericURLRequestJobDelegate::OnResourceLoadComplete(
+    const Request* request,
     const GURL& final_url,
-    const std::string& devtools_id,
-    const std::string& mime_type,
-    int http_response_code) {}
+    int http_response_code,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const char* body,
+    size_t body_size) {}
 
 // MockCookieStore
 MockCookieStore::MockCookieStore() {}

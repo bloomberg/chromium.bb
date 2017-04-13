@@ -438,7 +438,6 @@ test("headless_browsertests") {
     "lib/headless_web_contents_browsertest.cc",
     "public/util/dom_tree_extractor_browsertest.cc",
     "public/util/flat_dom_tree_extractor_browsertest.cc",
-    "public/util/protocol_handler_request_id_browsertest.cc",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_test_launcher.cc",

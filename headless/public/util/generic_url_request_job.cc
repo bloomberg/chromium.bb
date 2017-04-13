@@ -8,10 +8,14 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "headless/public/util/url_request_dispatcher.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
@@ -42,6 +46,8 @@ GenericURLRequestJob::GenericURLRequestJob(
       url_fetcher_(std::move(url_fetcher)),
       origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delegate_(delegate),
+      request_resource_info_(
+          content::ResourceRequestInfo::ForRequest(request_)),
       weak_factory_(this) {}
 
 GenericURLRequestJob::~GenericURLRequestJob() {
@@ -53,67 +59,21 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   extra_request_headers_ = headers;
 
-  if (extra_request_headers_.GetHeader(kDevtoolsRequestId,
-                                       &devtools_request_id_)) {
-    extra_request_headers_.RemoveHeader(kDevtoolsRequestId);
-  }
+  // TODO(alexclarke): Remove kDevtoolsRequestId
+  extra_request_headers_.RemoveHeader(kDevtoolsRequestId);
 }
 
 void GenericURLRequestJob::Start() {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
-  if (!delegate_->BlockOrRewriteRequest(
-          request_->url(), devtools_request_id_, request_->method(),
-          request_->referrer(),
-          base::Bind(&GenericURLRequestJob::OnRewriteResult,
-                     weak_factory_.GetWeakPtr(), origin_task_runner_))) {
-    PrepareCookies(request_->url(), request_->method(),
-                   url::Origin(request_->first_party_for_cookies()));
-  }
+  PrepareCookies(request_->url(), request_->method(),
+                 url::Origin(request_->first_party_for_cookies()),
+                 base::Bind(&Delegate::OnPendingRequest,
+                            base::Unretained(delegate_), this));
 }
-
-// static
-void GenericURLRequestJob::OnRewriteResult(
-    base::WeakPtr<GenericURLRequestJob> weak_this,
-    const scoped_refptr<base::SingleThreadTaskRunner>& origin_task_runner,
-    RewriteResult result,
-    const GURL& url,
-    const std::string& method) {
-  if (!origin_task_runner->RunsTasksOnCurrentThread()) {
-    origin_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&GenericURLRequestJob::OnRewriteResultOnOriginThread,
-                   weak_this, result, url, method));
-    return;
-  }
-  if (weak_this)
-    weak_this->OnRewriteResultOnOriginThread(result, url, method);
-}
-
-void GenericURLRequestJob::OnRewriteResultOnOriginThread(
-    RewriteResult result,
-    const GURL& url,
-    const std::string& method) {
-  DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
-  switch (result) {
-    case RewriteResult::kAllow:
-      // Note that we use the rewritten url for selecting cookies.
-      // Also, rewriting does not affect the request initiator.
-      PrepareCookies(url, method, url::Origin(url));
-      break;
-    case RewriteResult::kDeny:
-      DispatchStartError(net::ERR_FILE_NOT_FOUND);
-      break;
-    case RewriteResult::kFailure:
-      DispatchStartError(net::ERR_UNEXPECTED);
-      break;
-    default:
-      DCHECK(false);
-  }
-};
 
 void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
                                           const std::string& method,
-                                          const url::Origin& site_for_cookies) {
+                                          const url::Origin& site_for_cookies,
+                                          const base::Closure& done_callback) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   net::CookieStore* cookie_store = request_->context()->cookie_store();
   net::CookieOptions options;
@@ -138,12 +98,14 @@ void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
   cookie_store->GetCookieListWithOptionsAsync(
       rewritten_url, options,
       base::Bind(&GenericURLRequestJob::OnCookiesAvailable,
-                 weak_factory_.GetWeakPtr(), rewritten_url, method));
+                 weak_factory_.GetWeakPtr(), rewritten_url, method,
+                 done_callback));
 }
 
 void GenericURLRequestJob::OnCookiesAvailable(
     const GURL& rewritten_url,
     const std::string& method,
+    const base::Closure& done_callback,
     const net::CookieList& cookie_list) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   // TODO(alexclarke): Set user agent.
@@ -155,23 +117,13 @@ void GenericURLRequestJob::OnCookiesAvailable(
   extra_request_headers_.SetHeader(net::HttpRequestHeaders::kReferer,
                                    request_->referrer());
 
-  // The resource may have been supplied in the request.
-  const HttpResponse* matched_resource = delegate_->MaybeMatchResource(
-      rewritten_url, devtools_request_id_, method, extra_request_headers_);
-
-  if (matched_resource) {
-    OnFetchCompleteExtractHeaders(
-        matched_resource->final_url, matched_resource->http_response_code,
-        matched_resource->response_data, matched_resource->response_data_size);
-  } else {
-    url_fetcher_->StartFetch(rewritten_url, method, extra_request_headers_,
-                             devtools_request_id_, this);
-  }
+  done_callback.Run();
 }
 
 void GenericURLRequestJob::OnFetchStartError(net::Error error) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   DispatchStartError(error);
+  delegate_->OnResourceLoadFailed(this, error);
 }
 
 void GenericURLRequestJob::OnFetchComplete(
@@ -189,11 +141,8 @@ void GenericURLRequestJob::OnFetchComplete(
 
   DispatchHeadersComplete();
 
-  std::string mime_type;
-  GetMimeType(&mime_type);
-
-  delegate_->OnResourceLoadComplete(final_url, devtools_request_id_, mime_type,
-                                    http_response_code);
+  delegate_->OnResourceLoadComplete(this, final_url, http_response_code,
+                                    response_headers_, body_, body_size_);
 }
 
 int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
@@ -234,6 +183,147 @@ void GenericURLRequestJob::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
   // TODO(alexclarke): Investigate setting the other members too where possible.
   load_timing_info->receive_headers_end = response_time_;
+}
+
+const net::URLRequest* GenericURLRequestJob::GetURLRequest() const {
+  return request_;
+}
+
+int GenericURLRequestJob::GetFrameTreeNodeId() const {
+  return request_resource_info_->GetFrameTreeNodeId();
+}
+
+std::string GenericURLRequestJob::GetDevToolsAgentHostId() const {
+  return content::DevToolsAgentHost::GetOrCreateFor(
+             request_resource_info_->GetWebContentsGetterForRequest().Run())
+      ->GetId();
+}
+
+Request::ResourceType GenericURLRequestJob::GetResourceType() const {
+  switch (request_resource_info_->GetResourceType()) {
+    case content::RESOURCE_TYPE_MAIN_FRAME:
+      return Request::ResourceType::MAIN_FRAME;
+    case content::RESOURCE_TYPE_SUB_FRAME:
+      return Request::ResourceType::SUB_FRAME;
+    case content::RESOURCE_TYPE_STYLESHEET:
+      return Request::ResourceType::STYLESHEET;
+    case content::RESOURCE_TYPE_SCRIPT:
+      return Request::ResourceType::SCRIPT;
+    case content::RESOURCE_TYPE_IMAGE:
+      return Request::ResourceType::IMAGE;
+    case content::RESOURCE_TYPE_FONT_RESOURCE:
+      return Request::ResourceType::FONT_RESOURCE;
+    case content::RESOURCE_TYPE_SUB_RESOURCE:
+      return Request::ResourceType::SUB_RESOURCE;
+    case content::RESOURCE_TYPE_OBJECT:
+      return Request::ResourceType::OBJECT;
+    case content::RESOURCE_TYPE_MEDIA:
+      return Request::ResourceType::MEDIA;
+    case content::RESOURCE_TYPE_WORKER:
+      return Request::ResourceType::WORKER;
+    case content::RESOURCE_TYPE_SHARED_WORKER:
+      return Request::ResourceType::SHARED_WORKER;
+    case content::RESOURCE_TYPE_PREFETCH:
+      return Request::ResourceType::PREFETCH;
+    case content::RESOURCE_TYPE_FAVICON:
+      return Request::ResourceType::FAVICON;
+    case content::RESOURCE_TYPE_XHR:
+      return Request::ResourceType::XHR;
+    case content::RESOURCE_TYPE_PING:
+      return Request::ResourceType::PING;
+    case content::RESOURCE_TYPE_SERVICE_WORKER:
+      return Request::ResourceType::SERVICE_WORKER;
+    case content::RESOURCE_TYPE_CSP_REPORT:
+      return Request::ResourceType::CSP_REPORT;
+    case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
+      return Request::ResourceType::PLUGIN_RESOURCE;
+    default:
+      NOTREACHED() << "Unrecognized resource type";
+      return Request::ResourceType::MAIN_FRAME;
+  }
+}
+
+namespace {
+std::string GetUploadData(net::URLRequest* request) {
+  if (!request->has_upload())
+    return "";
+
+  const net::UploadDataStream* stream = request->get_upload();
+  if (!stream->GetElementReaders())
+    return "";
+
+  DCHECK_EQ(1u, stream->GetElementReaders()->size());
+  const net::UploadBytesElementReader* reader =
+      (*stream->GetElementReaders())[0]->AsBytesReader();
+  return std::string(reader->bytes(), reader->length());
+}
+}  // namespace
+
+const Request* GenericURLRequestJob::GetRequest() const {
+  return this;
+}
+
+void GenericURLRequestJob::AllowRequest() {
+  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+    origin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GenericURLRequestJob::AllowRequest,
+                              weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  url_fetcher_->StartFetch(request_->url(), request_->method(),
+                           GetUploadData(request_), extra_request_headers_,
+                           this);
+}
+
+void GenericURLRequestJob::BlockRequest(net::Error error) {
+  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+    origin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GenericURLRequestJob::BlockRequest,
+                              weak_factory_.GetWeakPtr(), error));
+    return;
+  }
+
+  DispatchStartError(error);
+}
+
+void GenericURLRequestJob::ModifyRequest(
+    const GURL& url,
+    const std::string& method,
+    const std::string& post_data,
+    const net::HttpRequestHeaders& request_headers) {
+  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+    origin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GenericURLRequestJob::ModifyRequest,
+                              weak_factory_.GetWeakPtr(), url, method,
+                              post_data, request_headers));
+    return;
+  }
+
+  extra_request_headers_ = request_headers;
+  PrepareCookies(
+      request_->url(), request_->method(),
+      url::Origin(request_->first_party_for_cookies()),
+      base::Bind(&URLFetcher::StartFetch, base::Unretained(url_fetcher_.get()),
+                 url, method, post_data, request_headers, this));
+}
+
+void GenericURLRequestJob::MockResponse(
+    std::unique_ptr<MockResponseData> mock_response) {
+  if (!origin_task_runner_->RunsTasksOnCurrentThread()) {
+    origin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GenericURLRequestJob::MockResponse,
+                              weak_factory_.GetWeakPtr(),
+                              base::Passed(std::move(mock_response))));
+    return;
+  }
+
+  mock_response_ = std::move(mock_response);
+
+  OnFetchCompleteExtractHeaders(request_->url(),
+                                mock_response_->http_response_code,
+                                mock_response_->response_data.data(),
+                                mock_response_->response_data.size());
 }
 
 }  // namespace headless

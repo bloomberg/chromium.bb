@@ -24,8 +24,8 @@ class HttpURLFetcher : public URLFetcher {
   // URLFetcher implementation:
   void StartFetch(const GURL& rewritten_url,
                   const std::string& method,
+                  const std::string& post_data,
                   const net::HttpRequestHeaders& request_headers,
-                  const std::string& devtools_request_id,
                   ResultListener* result_listener) override;
 
  private:

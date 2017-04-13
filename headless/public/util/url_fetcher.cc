@@ -37,17 +37,4 @@ void URLFetcher::ResultListener::OnFetchCompleteExtractHeaders(
                   response_data_size - read_offset);
 }
 
-void URLFetcher::StartFetch(const GURL& rewritten_url,
-                            const std::string& method,
-                            const net::HttpRequestHeaders& request_headers,
-                            const std::string& devtools_request_id,
-                            ResultListener* result_listener) {
-  StartFetch(rewritten_url, method, request_headers, result_listener);
-}
-
-void URLFetcher::StartFetch(const GURL& rewritten_url,
-                            const std::string& method,
-                            const net::HttpRequestHeaders& request_headers,
-                            ResultListener* result_listener) {}
-
 }  // namespace headless

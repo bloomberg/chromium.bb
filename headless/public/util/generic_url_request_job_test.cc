@@ -18,10 +18,14 @@
 #include "headless/public/util/expedited_dispatcher.h"
 #include "headless/public/util/testing/generic_url_request_mocks.h"
 #include "headless/public/util/url_fetcher.h"
+#include "net/base/elements_upload_data_stream.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
 
 std::ostream& operator<<(std::ostream& os, const base::Value& value) {
   std::string json;
@@ -41,21 +45,25 @@ namespace headless {
 
 namespace {
 
+class MockDelegate : public MockGenericURLRequestJobDelegate {
+ public:
+  MOCK_METHOD2(OnResourceLoadFailed,
+               void(const Request* request, net::Error error));
+};
+
 class MockFetcher : public URLFetcher {
  public:
   MockFetcher(base::DictionaryValue* fetch_request,
-              const std::string& json_reply)
-      : fetch_reply_(base::JSONReader::Read(json_reply, base::JSON_PARSE_RFC)),
-        fetch_request_(fetch_request) {
-    CHECK(fetch_reply_) << "Invalid json: " << json_reply;
-  }
+              std::map<std::string, std::string>* json_fetch_reply_map)
+      : json_fetch_reply_map_(json_fetch_reply_map),
+        fetch_request_(fetch_request) {}
 
   ~MockFetcher() override {}
 
   void StartFetch(const GURL& url,
                   const std::string& method,
+                  const std::string& post_data,
                   const net::HttpRequestHeaders& request_headers,
-                  const std::string& devtools_request_id,
                   ResultListener* result_listener) override {
     // Record the request.
     fetch_request_->SetString("url", url.spec());
@@ -65,10 +73,22 @@ class MockFetcher : public URLFetcher {
       headers->SetString(it.name(), it.value());
     }
     fetch_request_->Set("headers", std::move(headers));
+    if (!post_data.empty())
+      fetch_request_->SetString("post_data", post_data);
+
+    const auto find_it = json_fetch_reply_map_->find(url.spec());
+    if (find_it == json_fetch_reply_map_->end()) {
+      result_listener->OnFetchStartError(net::ERR_ADDRESS_UNREACHABLE);
+      return;
+    }
 
     // Return the canned response.
+    std::unique_ptr<base::Value> fetch_reply(
+        base::JSONReader::Read(find_it->second, base::JSON_PARSE_RFC));
+    CHECK(fetch_reply) << "Invalid json: " << find_it->second;
+
     base::DictionaryValue* reply_dictionary;
-    ASSERT_TRUE(fetch_reply_->GetAsDictionary(&reply_dictionary));
+    ASSERT_TRUE(fetch_reply->GetAsDictionary(&reply_dictionary));
     std::string final_url;
     ASSERT_TRUE(reply_dictionary->GetString("url", &final_url));
     int http_response_code;
@@ -94,7 +114,7 @@ class MockFetcher : public URLFetcher {
   }
 
  private:
-  std::unique_ptr<base::Value> fetch_reply_;
+  std::map<std::string, std::string>* json_fetch_reply_map_;  // NOT OWNED
   base::DictionaryValue* fetch_request_;  // NOT OWNED
   std::string response_data_;  // Here to ensure the required lifetime.
 };
@@ -102,13 +122,13 @@ class MockFetcher : public URLFetcher {
 class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // Details of the fetch will be stored in |fetch_request|.
-  // The fetch response will be created from parsing |json_fetch_reply_|.
+  // The fetch response will be created from parsing |json_fetch_reply_map|.
   MockProtocolHandler(base::DictionaryValue* fetch_request,
-                      std::string* json_fetch_reply,
+                      std::map<std::string, std::string>* json_fetch_reply_map,
                       URLRequestDispatcher* dispatcher,
                       GenericURLRequestJob::Delegate* job_delegate)
       : fetch_request_(fetch_request),
-        json_fetch_reply_(json_fetch_reply),
+        json_fetch_reply_map_(json_fetch_reply_map),
         job_delegate_(job_delegate),
         dispatcher_(dispatcher) {}
 
@@ -118,13 +138,13 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::NetworkDelegate* network_delegate) const override {
     return new GenericURLRequestJob(
         request, network_delegate, dispatcher_,
-        base::MakeUnique<MockFetcher>(fetch_request_, *json_fetch_reply_),
+        base::MakeUnique<MockFetcher>(fetch_request_, json_fetch_reply_map_),
         job_delegate_);
   }
 
  private:
   base::DictionaryValue* fetch_request_;          // NOT OWNED
-  std::string* json_fetch_reply_;                 // NOT OWNED
+  std::map<std::string, std::string>* json_fetch_reply_map_;  // NOT OWNED
   GenericURLRequestJob::Delegate* job_delegate_;  // NOT OWNED
   URLRequestDispatcher* dispatcher_;              // NOT OWNED
 };
@@ -136,16 +156,16 @@ class GenericURLRequestJobTest : public testing::Test {
   GenericURLRequestJobTest() : dispatcher_(message_loop_.task_runner()) {
     url_request_job_factory_.SetProtocolHandler(
         "https", base::WrapUnique(new MockProtocolHandler(
-                     &fetch_request_, &json_fetch_reply_, &dispatcher_,
+                     &fetch_request_, &json_fetch_reply_map_, &dispatcher_,
                      &job_delegate_)));
     url_request_context_.set_job_factory(&url_request_job_factory_);
     url_request_context_.set_cookie_store(&cookie_store_);
   }
 
-  std::unique_ptr<net::URLRequest> CreateAndCompleteJob(
+  std::unique_ptr<net::URLRequest> CreateAndCompleteGetJob(
       const GURL& url,
       const std::string& json_reply) {
-    json_fetch_reply_ = json_reply;
+    json_fetch_reply_map_[url.spec()] = json_reply;
 
     std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
         url, net::DEFAULT_PRIORITY, &request_delegate_));
@@ -164,17 +184,21 @@ class GenericURLRequestJobTest : public testing::Test {
 
   MockURLRequestDelegate request_delegate_;
   base::DictionaryValue fetch_request_;  // The request sent to MockFetcher.
-  std::string json_fetch_reply_;         // The reply to be sent by MockFetcher.
-  MockGenericURLRequestJobDelegate job_delegate_;
+  std::map<std::string, std::string>
+      json_fetch_reply_map_;  // Replies to be sent by MockFetcher.
+  MockDelegate job_delegate_;
 };
 
-TEST_F(GenericURLRequestJobTest, BasicRequestParams) {
-  // TODO(alexclarke): Lobby for raw string literals and use them here!
-  json_fetch_reply_ =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/plain\"}}";
+TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
   std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
       GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
@@ -185,30 +209,79 @@ TEST_F(GenericURLRequestJobTest, BasicRequestParams) {
   request->Start();
   base::RunLoop().RunUntilIdle();
 
-  std::string expected_request_json =
-      "{\"url\": \"https://example.com/\","
-      " \"method\": \"GET\","
-      " \"headers\": {"
-      "   \"Accept\": \"text/plain\","
-      "   \"Cookie\": \"\","
-      "   \"Extra-Header\": \"Value\","
-      "   \"Referer\": \"https://referrer.example.com/\","
-      "   \"User-Agent\": \"TestBrowser\""
-      " }"
-      "}";
+  std::string expected_request_json = R"(
+      {
+        "url": "https://example.com/",
+        "method": "GET",
+        "headers": {
+          "Accept": "text/plain",
+          "Cookie": "",
+          "Extra-Header": "Value",
+          "Referer": "https://referrer.example.com/",
+          "User-Agent": "TestBrowser"
+        }
+      })";
+
+  EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
+}
+
+TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+  request->SetReferrer("https://referrer.example.com");
+  request->SetExtraRequestHeaderByName("Extra-Header", "Value", true);
+  request->SetExtraRequestHeaderByName("User-Agent", "TestBrowser", true);
+  request->SetExtraRequestHeaderByName("Accept", "text/plain", true);
+  request->set_method("POST");
+
+  std::string post_data = "lorem ipsom";
+  request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+      base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+                                                      post_data.size()),
+      0));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  std::string expected_request_json = R"(
+      {
+        "url": "https://example.com/",
+        "method": "POST",
+        "post_data": "lorem ipsom",
+        "headers": {
+          "Accept": "text/plain",
+          "Cookie": "",
+          "Extra-Header": "Value",
+          "Referer": "https://referrer.example.com/",
+          "User-Agent": "TestBrowser"
+        }
+      })";
 
   EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
 }
 
 TEST_F(GenericURLRequestJobTest, BasicRequestProperties) {
-  std::string reply =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
   std::unique_ptr<net::URLRequest> request(
-      CreateAndCompleteJob(GURL("https://example.com"), reply));
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
 
   EXPECT_EQ(200, request->GetResponseCode());
 
@@ -227,14 +300,18 @@ TEST_F(GenericURLRequestJobTest, BasicRequestProperties) {
 }
 
 TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
-  std::string reply =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
   std::unique_ptr<net::URLRequest> request(
-      CreateAndCompleteJob(GURL("https://example.com"), reply));
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
 
   const int kBufferSize = 256;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -249,14 +326,18 @@ TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
 }
 
 TEST_F(GenericURLRequestJobTest, ReadInParts) {
-  std::string reply =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
   std::unique_ptr<net::URLRequest> request(
-      CreateAndCompleteJob(GURL("https://example.com"), reply));
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
 
   const int kBufferSize = 3;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -332,41 +413,200 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       /* http_only */ false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT));
 
-  std::string reply =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
   std::unique_ptr<net::URLRequest> request(
-      CreateAndCompleteJob(GURL("https://example.com"), reply));
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
 
-  std::string expected_request_json =
-      "{\"url\": \"https://example.com/\","
-      " \"method\": \"GET\","
-      " \"headers\": {"
-      "   \"Cookie\": \"basic_cookie=1; secure_cookie=2; http_only_cookie=3\","
-      "   \"Referer\": \"\""
-      " }"
-      "}";
+  std::string expected_request_json = R"(
+      {
+        "url": "https://example.com/",
+        "method": "GET",
+        "headers": {
+          "Cookie": "basic_cookie=1; secure_cookie=2; http_only_cookie=3",
+          "Referer": ""
+        }
+      })";
 
   EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
 }
 
 TEST_F(GenericURLRequestJobTest, DelegateBlocksLoading) {
-  std::string reply =
-      "{\"url\":\"https://example.com\","
-      " \"http_response_code\":200,"
-      " \"data\":\"Reply\","
-      " \"headers\":{\"Content-Type\":\"text/html; charset=UTF-8\"}}";
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
 
-  job_delegate_.SetShouldBlock(true);
+  job_delegate_.SetPolicy(base::Bind([](PendingRequest* pending_request) {
+    pending_request->BlockRequest(net::ERR_FILE_NOT_FOUND);
+  }));
 
   std::unique_ptr<net::URLRequest> request(
-      CreateAndCompleteJob(GURL("https://example.com"), reply));
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error());
+}
+
+TEST_F(GenericURLRequestJobTest, DelegateModifiesRequest) {
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Welcome to example.com",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  json_fetch_reply_map_["https://othersite.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Welcome to othersite.com",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  // Turn the GET into a POST to a different site.
+  job_delegate_.SetPolicy(base::Bind([](PendingRequest* pending_request) {
+    net::HttpRequestHeaders headers;
+    headers.SetHeader("TestHeader", "Hello");
+    pending_request->ModifyRequest(GURL("https://othersite.com"), "POST",
+                                   "Some post data!", headers);
+  }));
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  std::string expected_request_json = R"(
+      {
+        "url": "https://othersite.com/",
+        "method": "POST",
+        "post_data": "Some post data!",
+        "headers": {
+          "TestHeader": "Hello"
+        }
+      })";
+
+  EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
+
+  EXPECT_EQ(200, request->GetResponseCode());
+  // The modification should not be visible to the URlRequest.
+  EXPECT_EQ("https://example.com/", request->url().spec());
+  EXPECT_EQ("GET", request->method());
+
+  const int kBufferSize = 256;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  int bytes_read;
+  EXPECT_TRUE(request->Read(buffer.get(), kBufferSize, &bytes_read));
+  EXPECT_EQ(24, bytes_read);
+  EXPECT_EQ("Welcome to othersite.com",
+            std::string(buffer->data(), bytes_read));
+}
+
+TEST_F(GenericURLRequestJobTest, DelegateMocks404Response) {
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  job_delegate_.SetPolicy(base::Bind([](PendingRequest* pending_request) {
+    std::unique_ptr<GenericURLRequestJob::MockResponseData> mock_response_data(
+        new GenericURLRequestJob::MockResponseData());
+    mock_response_data->http_response_code = 404;
+    mock_response_data->response_data = "HTTP/1.1 404 Not Found\r\n\r\n";
+    pending_request->MockResponse(std::move(mock_response_data));
+  }));
+
+  std::unique_ptr<net::URLRequest> request(
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
+
+  EXPECT_EQ(404, request->GetResponseCode());
+}
+
+TEST_F(GenericURLRequestJobTest, DelegateMocks302Response) {
+  job_delegate_.SetPolicy(base::Bind([](PendingRequest* pending_request) {
+    if (pending_request->GetRequest()->GetURLRequest()->url().spec() ==
+        "https://example.com/") {
+      std::unique_ptr<GenericURLRequestJob::MockResponseData>
+          mock_response_data(new GenericURLRequestJob::MockResponseData());
+      mock_response_data->http_response_code = 302;
+      mock_response_data->response_data =
+          "HTTP/1.1 302 Found\r\n"
+          "Location: https://foo.com/\r\n\r\n";
+      pending_request->MockResponse(std::move(mock_response_data));
+    } else {
+      pending_request->AllowRequest();
+    }
+  }));
+
+  json_fetch_reply_map_["https://example.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Welcome to example.com",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  json_fetch_reply_map_["https://foo.com/"] = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Welcome to foo.com",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://example.com"), net::DEFAULT_PRIORITY, &request_delegate_));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(200, request->GetResponseCode());
+  EXPECT_EQ("https://foo.com/", request->url().spec());
+
+  const int kBufferSize = 256;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  int bytes_read;
+  EXPECT_TRUE(request->Read(buffer.get(), kBufferSize, &bytes_read));
+  EXPECT_EQ(18, bytes_read);
+  EXPECT_EQ("Welcome to foo.com", std::string(buffer->data(), bytes_read));
+}
+
+TEST_F(GenericURLRequestJobTest, OnResourceLoadFailed) {
+  EXPECT_CALL(job_delegate_,
+              OnResourceLoadFailed(_, net::ERR_ADDRESS_UNREACHABLE));
+
+  std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+      GURL("https://i-dont-exist.com"), net::DEFAULT_PRIORITY,
+      &request_delegate_));
+  request->Start();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace headless
