@@ -27,6 +27,11 @@
       showcase::kUseCaseKey : @"Tools menu",
     },
     @{
+      showcase::kClassForDisplayKey : @"NTPViewController",
+      showcase::kClassForInstantiationKey : @"SCNTPCoordinator",
+      showcase::kUseCaseKey : @"NTP",
+    },
+    @{
       showcase::kClassForDisplayKey : @"PaymentRequestEditViewController",
       showcase::kClassForInstantiationKey : @"SCPaymentsEditorCoordinator",
       showcase::kUseCaseKey : @"Generic payment request editor",
