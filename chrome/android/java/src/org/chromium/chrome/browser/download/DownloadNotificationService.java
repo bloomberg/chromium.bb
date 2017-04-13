@@ -35,7 +35,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -587,7 +586,9 @@ public class DownloadNotificationService extends Service {
 
     @VisibleForTesting
     void cancelOffTheRecordDownloads() {
-        boolean cancelActualDownload = LibraryLoader.isInitialized()
+        boolean cancelActualDownload =
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()
                 && Profile.getLastUsedProfile().hasOffTheRecordProfile();
 
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
