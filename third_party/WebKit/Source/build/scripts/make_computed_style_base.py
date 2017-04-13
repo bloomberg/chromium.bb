@@ -307,7 +307,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'ComputedStyleBase.h': self.generate_base_computed_style_h,
             'ComputedStyleBase.cpp': self.generate_base_computed_style_cpp,
             'ComputedStyleBaseConstants.h': self.generate_base_computed_style_constants,
-            'CSSValueIDMappingsGenerated.h': self.generate_css_value_mappings,
         }
 
         # TODO(shend): Remove this once we move NONPROPERTIES to its own JSON file,
@@ -398,22 +397,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._generated_enums,
             'fields': self._fields,
-        }
-
-    @template_expander.use_jinja('CSSValueIDMappingsGenerated.h.tmpl')
-    def generate_css_value_mappings(self):
-        mappings = {}
-
-        for property_ in self._properties.values():
-            if property_['field_template'] == 'keyword':
-                mappings[property_['type_name']] = {
-                    'default_value': enum_value_name(property_['default_value']),
-                    'mapping': [(enum_value_name(k), enum_for_css_keyword(k)) for k in property_['keywords']],
-                }
-
-        return {
-            'include_paths': self._include_paths,
-            'mappings': mappings,
         }
 
 if __name__ == '__main__':
