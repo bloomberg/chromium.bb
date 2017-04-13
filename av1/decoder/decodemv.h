@@ -32,4 +32,13 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
 }  // extern "C"
 #endif
 
+void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
+#if CONFIG_SUPERTX
+                      int supertx_enabled,
+#endif
+#if CONFIG_LV_MAP
+                      int block,
+#endif
+                      aom_reader *r);
+
 #endif  // AV1_DECODER_DECODEMV_H_

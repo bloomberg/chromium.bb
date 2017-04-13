@@ -739,12 +739,15 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 }
 #endif  // CONFIG_EXT_INTRA
 
-static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                         MB_MODE_INFO *mbmi,
+void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
-                         int supertx_enabled,
+                      int supertx_enabled,
 #endif
-                         aom_reader *r) {
+#if CONFIG_LV_MAP
+                      int block,
+#endif
+                      aom_reader *r) {
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
 #if CONFIG_VAR_TX
   const TX_SIZE tx_size = inter_block ? mbmi->min_tx_size : mbmi->tx_size;
@@ -755,6 +758,12 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 #else
   FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+
+#if !CONFIG_LV_MAP
+  TX_TYPE *tx_type = &mbmi->tx_type;
+#else
+  TX_TYPE *tx_type = &mbmi->txk_type[block];
 #endif
 
   if (!FIXED_TX_TYPE) {
@@ -776,36 +785,34 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       if (inter_block) {
         if (eset > 0) {
 #if CONFIG_EC_MULTISYMBOL
-          mbmi->tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
+          *tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
               r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
               ext_tx_cnt_inter[eset], ACCT_STR)];
 #else
-          mbmi->tx_type = aom_read_tree(
+          *tx_type = aom_read_tree(
               r, av1_ext_tx_inter_tree[eset],
               ec_ctx->inter_ext_tx_prob[eset][square_tx_size], ACCT_STR);
 #endif
-          if (counts)
-            ++counts->inter_ext_tx[eset][square_tx_size][mbmi->tx_type];
+          if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
         }
       } else if (ALLOW_INTRA_EXT_TX) {
         if (eset > 0) {
 #if CONFIG_EC_MULTISYMBOL
-          mbmi->tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
+          *tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
               r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
               ext_tx_cnt_intra[eset], ACCT_STR)];
 #else
-          mbmi->tx_type = aom_read_tree(
+          *tx_type = aom_read_tree(
               r, av1_ext_tx_intra_tree[eset],
               ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
               ACCT_STR);
 #endif
           if (counts)
-            ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode]
-                                  [mbmi->tx_type];
+            ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
         }
       }
     } else {
-      mbmi->tx_type = DCT_DCT;
+      *tx_type = DCT_DCT;
     }
 #else
 
@@ -821,28 +828,28 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (inter_block) {
 #if CONFIG_EC_MULTISYMBOL
-        mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
+        *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
 #else
-        mbmi->tx_type = aom_read_tree(
-            r, av1_ext_tx_tree, ec_ctx->inter_ext_tx_prob[tx_size], ACCT_STR);
+        *tx_type = aom_read_tree(r, av1_ext_tx_tree,
+                                 ec_ctx->inter_ext_tx_prob[tx_size], ACCT_STR);
 #endif
-        if (counts) ++counts->inter_ext_tx[tx_size][mbmi->tx_type];
+        if (counts) ++counts->inter_ext_tx[tx_size][*tx_type];
       } else {
         const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
 #if CONFIG_EC_MULTISYMBOL
-        mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
+        *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
             ACCT_STR)];
 #else
-        mbmi->tx_type = aom_read_tree(
+        *tx_type = aom_read_tree(
             r, av1_ext_tx_tree, ec_ctx->intra_ext_tx_prob[tx_size][tx_type_nom],
             ACCT_STR);
 #endif
-        if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][mbmi->tx_type];
+        if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][*tx_type];
       }
     } else {
-      mbmi->tx_type = DCT_DCT;
+      *tx_type = DCT_DCT;
     }
 #endif  // CONFIG_EXT_TX
   }
@@ -971,11 +978,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     read_filter_intra_mode_info(cm, xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
-  read_tx_type(cm, xd, mbmi,
+#if !CONFIG_LV_MAP
+  av1_read_tx_type(cm, xd,
 #if CONFIG_SUPERTX
-               0,
+                   0,
 #endif
-               r);
+                   r);
+#endif  // !CONFIG_LV_MAP
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
@@ -2178,11 +2187,13 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   else
     read_intra_block_mode_info(cm, mi_row, mi_col, xd, mi, r);
 
-  read_tx_type(cm, xd, mbmi,
+#if !CONFIG_LV_MAP
+  av1_read_tx_type(cm, xd,
 #if CONFIG_SUPERTX
-               supertx_enabled,
+                   supertx_enabled,
 #endif
-               r);
+                   r);
+#endif  // !CONFIG_LV_MAP
 }
 
 void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
