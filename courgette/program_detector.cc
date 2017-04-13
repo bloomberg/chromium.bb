@@ -46,6 +46,27 @@ std::unique_ptr<Disassembler> DetectDisassembler(const uint8_t* buffer,
   return nullptr;
 }
 
+Status ParseDetectedExecutableInternal(
+    const uint8_t* buffer,
+    size_t length,
+    bool annotate_labels,
+    std::unique_ptr<AssemblyProgram>* output) {
+  output->reset();
+
+  std::unique_ptr<Disassembler> disassembler(
+      DetectDisassembler(buffer, length));
+  if (!disassembler)
+    return C_INPUT_NOT_RECOGNIZED;
+
+  std::unique_ptr<AssemblyProgram> program =
+      disassembler->Disassemble(annotate_labels);
+  if (!program.get())
+    return C_DISASSEMBLY_FAILED;
+
+  *output = std::move(program);
+  return C_OK;
+}
+
 }  // namespace
 
 Status DetectExecutableType(const uint8_t* buffer,
@@ -69,19 +90,14 @@ Status DetectExecutableType(const uint8_t* buffer,
 Status ParseDetectedExecutable(const uint8_t* buffer,
                                size_t length,
                                std::unique_ptr<AssemblyProgram>* output) {
-  output->reset();
+  return ParseDetectedExecutableInternal(buffer, length, false, output);
+}
 
-  std::unique_ptr<Disassembler> disassembler(
-      DetectDisassembler(buffer, length));
-  if (!disassembler)
-    return C_INPUT_NOT_RECOGNIZED;
-
-  std::unique_ptr<AssemblyProgram> program = disassembler->Disassemble();
-  if (!program.get())
-    return C_DISASSEMBLY_FAILED;
-
-  *output = std::move(program);
-  return C_OK;
+Status ParseDetectedExecutableWithAnnotation(
+    const uint8_t* buffer,
+    size_t length,
+    std::unique_ptr<AssemblyProgram>* output) {
+  return ParseDetectedExecutableInternal(buffer, length, true, output);
 }
 
 }  // namespace courgette

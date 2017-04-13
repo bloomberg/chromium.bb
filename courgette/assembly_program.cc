@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "courgette/courgette.h"
+#include "courgette/disassembler.h"
 #include "courgette/encoded_program.h"
 
 namespace courgette {
@@ -104,10 +105,10 @@ class InstructionCountReceptor : public InstructionReceptor {
  public:
   InstructionCountReceptor() = default;
 
-  size_t size() const { return size_; }
+  size_t abs_count() const { return abs_count_; }
+  size_t rel_count() const { return rel_count_; }
 
   // InstructionReceptor:
-  // TODO(huangs): 2016/11: Populate these with size_ += ...
   CheckBool EmitPeRelocs() override { return true; }
   CheckBool EmitElfRelocation() override { return true; }
   CheckBool EmitElfARMRelocation() override { return true; }
@@ -116,18 +117,29 @@ class InstructionCountReceptor : public InstructionReceptor {
   CheckBool EmitMultipleBytes(const uint8_t* bytes, size_t len) override {
     return true;
   }
-  CheckBool EmitRel32(Label* label) override { return true; }
+  CheckBool EmitRel32(Label* label) override {
+    ++rel_count_;
+    return true;
+  }
   CheckBool EmitRel32ARM(uint16_t op,
                          Label* label,
                          const uint8_t* arm_op,
                          uint16_t op_size) override {
+    ++rel_count_;
     return true;
   }
-  CheckBool EmitAbs32(Label* label) override { return true; }
-  CheckBool EmitAbs64(Label* label) override { return true; }
+  CheckBool EmitAbs32(Label* label) override {
+    ++abs_count_;
+    return true;
+  }
+  CheckBool EmitAbs64(Label* label) override {
+    ++abs_count_;
+    return true;
+  }
 
  private:
-  size_t size_ = 0;
+  size_t abs_count_ = 0;
+  size_t rel_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(InstructionCountReceptor);
 };
@@ -137,15 +149,15 @@ class InstructionCountReceptor : public InstructionReceptor {
 // An InstructionReceptor that stores emitted instructions.
 class InstructionStoreReceptor : public InstructionReceptor {
  public:
-  explicit InstructionStoreReceptor(AssemblyProgram* program)
-      : program_(program) {
+  InstructionStoreReceptor(AssemblyProgram* program, bool annotate_labels)
+      : program_(program), annotate_labels_(annotate_labels) {
     CHECK(program_);
   }
 
-  // TODO(huangs): 2016/11: Add Reserve().
+  // TODO(huangs): 2017/04: Add Reserve().
 
   // InstructionReceptor:
-  // TODO(huangs): 2016/11: Replace stub with implementation.
+  // TODO(huangs): 2017/04: Move implementations here.
   CheckBool EmitPeRelocs() override { return program_->EmitPeRelocs(); }
   CheckBool EmitElfRelocation() override {
     return program_->EmitElfRelocation();
@@ -161,23 +173,32 @@ class InstructionStoreReceptor : public InstructionReceptor {
     return program_->EmitMultipleBytes(bytes, len);
   }
   CheckBool EmitRel32(Label* label) override {
+    if (annotate_labels_)
+      program_->mutable_rel32_label_annotations()->push_back(label);
     return program_->EmitRel32(label);
   }
   CheckBool EmitRel32ARM(uint16_t op,
                          Label* label,
                          const uint8_t* arm_op,
                          uint16_t op_size) override {
+    if (annotate_labels_)
+      program_->mutable_rel32_label_annotations()->push_back(label);
     return program_->EmitRel32ARM(op, label, arm_op, op_size);
   }
   CheckBool EmitAbs32(Label* label) override {
+    if (annotate_labels_)
+      program_->mutable_abs32_label_annotations()->push_back(label);
     return program_->EmitAbs32(label);
   }
   CheckBool EmitAbs64(Label* label) override {
+    if (annotate_labels_)
+      program_->mutable_abs32_label_annotations()->push_back(label);
     return program_->EmitAbs64(label);
   }
 
  private:
   AssemblyProgram* program_;
+  const bool annotate_labels_;
 
   DISALLOW_COPY_AND_ASSIGN(InstructionStoreReceptor);
 };
@@ -294,28 +315,24 @@ Label* AssemblyProgram::FindRel32Label(RVA rva) {
   return rel32_label_manager_.Find(rva);
 }
 
-void AssemblyProgram::HandleInstructionLabels(
-    const AssemblyProgram::LabelHandlerMap& handler_map) const {
-  for (const Instruction* instruction : instructions_) {
-    LabelHandlerMap::const_iterator it = handler_map.find(instruction->op());
-    if (it != handler_map.end()) {
-      it->second.Run(
-          static_cast<const InstructionWithLabel*>(instruction)->label());
-    }
-  }
-}
-
-CheckBool AssemblyProgram::GenerateInstructions(
-    const InstructionGenerator& gen) {
-  // Pass 1: Count the space needed to store instructions.
+CheckBool AssemblyProgram::GenerateInstructions(const InstructionGenerator& gen,
+                                                bool annotate_labels) {
+  // Pass 1: Count storage space required and reserve in advance.
   InstructionCountReceptor count_receptor;
   if (!gen.Run(&count_receptor))
     return false;
 
-  // Pass 2: Emit all instructions to preallocated buffer (uses Phase 1 count).
-  InstructionStoreReceptor store_receptor(this);
-  // TODO(huangs): 2017/03: Pass |count_receptor->size()| to |store_receptor_|
-  // to reserve space for raw data.
+  if (annotate_labels) {
+    DCHECK(abs32_label_annotations_.empty());
+    abs32_label_annotations_.reserve(count_receptor.abs_count());
+    DCHECK(rel32_label_annotations_.empty());
+    rel32_label_annotations_.reserve(count_receptor.rel_count());
+  }
+
+  // Pass 2: Emit all instructions to reserved buffer (uses Phase 1 count).
+  // Populates |abs32_label_annotations_| and |re32_label_annotations_| if
+  // |annotate_labels| is true.
+  InstructionStoreReceptor store_receptor(this, annotate_labels);
   return gen.Run(&store_receptor);
 }
 

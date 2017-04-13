@@ -91,9 +91,9 @@ class Disassembler : public AddressTranslator {
   virtual bool ParseHeader() = 0;
 
   // Extracts and stores references from the main image. Returns a new
-  // AssemblyProgram initialized using data parsed from the main image, or null
-  // on failure.
-  std::unique_ptr<AssemblyProgram> Disassemble();
+  // AssemblyProgram initialized using data parsed from the main image and
+  // |annotate_labels|, or null on failure.
+  std::unique_ptr<AssemblyProgram> Disassemble(bool annotate_labels);
 
   // ok() may always be called but returns true only after ParseHeader()
   // succeeds.

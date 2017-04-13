@@ -29,7 +29,7 @@ Status DetectExecutableType(const uint8_t* buffer,
                             ExecutableType* type,
                             size_t* detected_length);
 
-// Attempts to detect the type of executable, and parse it with the appropriate
+// Attempts to detect the type of executable by parsing it with the appropriate
 // tools.
 // On success:
 //   Parses the executable into a new AssemblyProgram in |*output|, and returns
@@ -39,6 +39,13 @@ Status DetectExecutableType(const uint8_t* buffer,
 Status ParseDetectedExecutable(const uint8_t* buffer,
                                size_t length,
                                std::unique_ptr<AssemblyProgram>* output);
+
+// ParseDetectedExecutable(), with Label annotations generated and stored in
+// |output|.
+Status ParseDetectedExecutableWithAnnotation(
+    const uint8_t* buffer,
+    size_t length,
+    std::unique_ptr<AssemblyProgram>* output);
 
 }  // namespace courgette
 

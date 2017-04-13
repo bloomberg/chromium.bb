@@ -91,7 +91,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   EXPECT_EQ('L', offset_p[2]);
   EXPECT_EQ('F', offset_p[3]);
 
-  std::unique_ptr<AssemblyProgram> program = disassembler->Disassemble();
+  std::unique_ptr<AssemblyProgram> program = disassembler->Disassemble(false);
   EXPECT_TRUE(nullptr != program.get());
 
   const std::vector<RVA>& abs32_list = disassembler->Abs32Locations();

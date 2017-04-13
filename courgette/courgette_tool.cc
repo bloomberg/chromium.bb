@@ -124,8 +124,7 @@ bool Supported(const base::FilePath& input_file) {
   // If the detection fails, we just fall back on UNKNOWN
   std::string format = "Unsupported";
 
-  switch (type)
-  {
+  switch (type) {
     case courgette::EXE_UNKNOWN:
       break;
 
@@ -214,17 +213,18 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
   BufferedFileReader model_buffer(model_file, "old");
   BufferedFileReader program_buffer(program_file, "new");
 
+  auto parser = adjust ? courgette::ParseDetectedExecutableWithAnnotation
+                       : courgette::ParseDetectedExecutable;
+
   std::unique_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
-      courgette::ParseDetectedExecutable(model_buffer.data(),
-                                         model_buffer.length(), &model);
+      parser(model_buffer.data(), model_buffer.length(), &model);
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
   std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
-      courgette::ParseDetectedExecutable(program_buffer.data(),
-                                         program_buffer.length(), &program);
+      parser(program_buffer.data(), program_buffer.length(), &program);
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input (code = %d).", parse_program_status);
 

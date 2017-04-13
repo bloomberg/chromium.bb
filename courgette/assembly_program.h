@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -78,12 +78,23 @@ class Instruction {
 class AssemblyProgram {
  public:
   using LabelHandler = base::Callback<void(Label*)>;
-  using LabelHandlerMap = std::map<OP, LabelHandler>;
 
   AssemblyProgram(ExecutableType kind, uint64_t image_base);
   ~AssemblyProgram();
 
   ExecutableType kind() const { return kind_; }
+  const std::vector<Label*>& abs32_label_annotations() const {
+    return abs32_label_annotations_;
+  }
+  const std::vector<Label*>& rel32_label_annotations() const {
+    return rel32_label_annotations_;
+  }
+  std::vector<Label*>* mutable_abs32_label_annotations() {
+    return &abs32_label_annotations_;
+  }
+  std::vector<Label*>* mutable_rel32_label_annotations() {
+    return &rel32_label_annotations_;
+  }
 
   // Traverses RVAs in |abs32_visitor| and |rel32_visitor| to precompute Labels.
   void PrecomputeLabels(RvaVisitor* abs32_visitor, RvaVisitor* rel32_visitor);
@@ -102,18 +113,15 @@ class AssemblyProgram {
   // Looks up rel32 label. Returns null if none found.
   Label* FindRel32Label(RVA rva);
 
-  std::unique_ptr<EncodedProgram> Encode() const;
-
-  // For each |instruction| in |instructions_|, looks up its opcode from
-  // |handler_map| for a handler. If a handler exists, invoke it by passing the
-  // |instruction|'s label. We assume that |handler_map| has correct keys, i.e.,
-  // opcodes for an instruction that have label.
-  void HandleInstructionLabels(const LabelHandlerMap& handler_map) const;
-
   // Calls |gen| in 2 passes to emit instructions. In pass 1 we provide a
   // receptor to count space requirement. In pass 2 we provide a receptor to
-  // store instructions.
-  CheckBool GenerateInstructions(const InstructionGenerator& gen);
+  // store instructions. If |annotate_labels| is true, then extracts Label
+  // annotations into |*_label_annotations_|.
+  CheckBool GenerateInstructions(const InstructionGenerator& gen,
+                                 bool annotate_labels);
+
+  // Returns an EncodeProgram that converts program to encoded form.
+  std::unique_ptr<EncodedProgram> Encode() const;
 
   // TODO(huangs): Implement these in InstructionStoreReceptor.
   // Instructions will be assembled in the order they are emitted.
@@ -180,6 +188,11 @@ class AssemblyProgram {
   // separate abs32 and rel32 labels.
   LabelManager abs32_label_manager_;
   LabelManager rel32_label_manager_;
+
+  // Label pointers for each abs32 and rel32 location, sorted by file offset.
+  // These are used by Label adjustment during patch generation.
+  std::vector<Label*> abs32_label_annotations_;
+  std::vector<Label*> rel32_label_annotations_;
 
   DISALLOW_COPY_AND_ASSIGN(AssemblyProgram);
 };

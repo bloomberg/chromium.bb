@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -595,16 +594,10 @@ class GraphAdjuster : public AdjustmentMethod {
  private:
   void CollectTraces(const AssemblyProgram* program, Trace* abs32, Trace* rel32,
                      bool is_model) {
-    AssemblyProgram::LabelHandler abs32_handler =
-        base::Bind(&GraphAdjuster::ReferenceLabel, base::Unretained(this),
-                   abs32, is_model);
-    AssemblyProgram::LabelHandler rel32_handler =
-        base::Bind(&GraphAdjuster::ReferenceLabel, base::Unretained(this),
-                   rel32, is_model);
-
-    program->HandleInstructionLabels({{ABS32, abs32_handler},
-                                      {REL32, rel32_handler},
-                                      {REL32ARM, rel32_handler}});
+    for (Label* label : program->abs32_label_annotations())
+      ReferenceLabel(abs32, is_model, label);
+    for (Label* label : program->rel32_label_annotations())
+      ReferenceLabel(rel32, is_model, label);
 
     // TODO(sra): we could simply append all the labels in index order to
     // incorporate some costing for entropy (bigger deltas) that will be

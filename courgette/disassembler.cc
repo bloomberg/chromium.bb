@@ -54,7 +54,8 @@ const uint8_t* Disassembler::RVAToPointer(RVA rva) const {
   return FileOffsetToPointer(file_offset);
 }
 
-std::unique_ptr<AssemblyProgram> Disassembler::Disassemble() {
+std::unique_ptr<AssemblyProgram> Disassembler::Disassemble(
+    bool annotate_labels) {
   if (!ok() || !ExtractAbs32Locations() || !ExtractRel32Locations())
     return nullptr;
 
@@ -64,8 +65,10 @@ std::unique_ptr<AssemblyProgram> Disassembler::Disassemble() {
   PrecomputeLabels(program.get());
   RemoveUnusedRel32Locations(program.get());
 
-  if (!program->GenerateInstructions(GetInstructionGenerator(program.get())))
+  if (!program->GenerateInstructions(GetInstructionGenerator(program.get()),
+                                     annotate_labels)) {
     return nullptr;
+  }
 
   program->DefaultAssignIndexes();
   return program;

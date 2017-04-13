@@ -5,8 +5,8 @@
 // This is the transformation and adjustment for all executables.
 // The executable type is determined by ParseDetectedExecutable function.
 
-#ifndef COURGETTE_WIN32_X86_GENERATOR_H_
-#define COURGETTE_WIN32_X86_GENERATOR_H_
+#ifndef COURGETTE_PATCH_GENERATOR_X86_32_H_
+#define COURGETTE_PATCH_GENERATOR_X86_32_H_
 
 #include <memory>
 
@@ -65,10 +65,9 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
     // Generate old version of program using |corrected_parameters|.
     // TODO(sra): refactor to use same code from patcher_.
     std::unique_ptr<AssemblyProgram> old_program;
-    Status old_parse_status =
-        ParseDetectedExecutable(old_element_->region().start(),
-                                old_element_->region().length(),
-                                &old_program);
+    Status old_parse_status = ParseDetectedExecutableWithAnnotation(
+        old_element_->region().start(), old_element_->region().length(),
+        &old_program);
     if (old_parse_status != C_OK) {
       LOG(ERROR) << "Cannot parse an executable " << old_element_->Name();
       return old_parse_status;
@@ -77,10 +76,9 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
     // TODO(huangs): Move the block below to right before |new_program| gets
     // used, so we can reduce Courgette-gen peak memory.
     std::unique_ptr<AssemblyProgram> new_program;
-    Status new_parse_status =
-        ParseDetectedExecutable(new_element_->region().start(),
-                                new_element_->region().length(),
-                                &new_program);
+    Status new_parse_status = ParseDetectedExecutableWithAnnotation(
+        new_element_->region().start(), new_element_->region().length(),
+        &new_program);
     if (new_parse_status != C_OK) {
       LOG(ERROR) << "Cannot parse an executable " << new_element_->Name();
       return new_parse_status;
@@ -132,4 +130,4 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
 
 }  // namespace courgette
 
-#endif  // COURGETTE_WIN32_X86_GENERATOR_H_
+#endif  // COURGETTE_PATCH_GENERATOR_X86_32_H_

@@ -65,7 +65,9 @@ class AdjustmentMethodTest : public testing::Test {
         },
         labelA, labelB);
 
-    EXPECT_TRUE(prog->GenerateInstructions(gen));
+    EXPECT_TRUE(prog->GenerateInstructions(gen, true));
+    EXPECT_EQ(6U, prog->abs32_label_annotations().size());
+    EXPECT_EQ(0U, prog->rel32_label_annotations().size());
 
     if (kind == 0) {
       labelA->index_ = 0;
