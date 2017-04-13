@@ -48,9 +48,8 @@ table UrlRule {
   anchor_right : AnchorType = NONE;
 
   // The list of domains to be included/excluded from the filter's affected set.
-  // If a particular string in the list starts with '~' then the respective
-  // domain is excluded, otherwise included.
-  domains : [string];
+  domains_included : [string];
+  domains_excluded : [string];
 
   // A URL pattern in the format defined by |url_pattern_type|.
   url_pattern : string;

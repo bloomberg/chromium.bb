@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
@@ -372,73 +373,89 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithThirdParty) {
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
-  const struct {
-    const char* url_pattern;
-    std::vector<std::string> domains;
+  constexpr const char* kUrl = "http://example.com";
 
-    const char* url;
+  const struct {
+    std::vector<std::string> domains;
     const char* document_origin;
+
     bool expect_allowed;
   } kTestCases[] = {
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       "http://domain1.com",
-       false},
+      {std::vector<std::string>(), nullptr, false},
+      {std::vector<std::string>(), "http://domain.com", false},
 
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       "http://not_domain1.com",
+      {{"domain.com"}, nullptr, true},
+      {{"domain.com"}, "http://domain.com", false},
+      {{"ddomain.com"}, "http://domain.com", true},
+      {{"domain.com"}, "http://ddomain.com", true},
+      {{"domain.com"}, "http://sub.domain.com", false},
+      {{"sub.domain.com"}, "http://domain.com", true},
+      {{"sub.domain.com"}, "http://sub.domain.com", false},
+      {{"sub.domain.com"}, "http://a.b.c.sub.domain.com", false},
+      {{"sub.domain.com"}, "http://sub.domain.com.com", true},
+
+      // TODO(pkalinnikov): Probably need to canonicalize domain patterns to
+      // avoid subtleties like below.
+      {{"domain.com"}, "http://domain.com.", false},
+      {{"domain.com"}, "http://.domain.com", false},
+      {{"domain.com"}, "http://.domain.com.", false},
+      {{".domain.com"}, "http://.domain.com", false},
+      {{"domain.com."}, "http://domain.com", true},
+      {{"domain.com."}, "http://domain.com.", false},
+
+      {{"domain..com"}, "http://domain.com", true},
+      {{"domain.com"}, "http://domain..com", true},
+      {{"domain..com"}, "http://domain..com", false},
+
+      {{"~domain.com"}, nullptr, false},
+      {{"~domain.com"}, "http://domain.com", true},
+      {{"~ddomain.com"}, "http://domain.com", false},
+      {{"~domain.com"}, "http://ddomain.com", false},
+      {{"~domain.com"}, "http://sub.domain.com", true},
+      {{"~sub.domain.com"}, "http://domain.com", false},
+      {{"~sub.domain.com"}, "http://sub.domain.com", true},
+      {{"~sub.domain.com"}, "http://a.b.c.sub.domain.com", true},
+      {{"~sub.domain.com"}, "http://sub.domain.com.com", false},
+
+      {{"domain1.com", "domain2.com"}, nullptr, true},
+      {{"domain1.com", "domain2.com"}, "http://domain1.com", false},
+      {{"domain1.com", "domain2.com"}, "http://domain2.com", false},
+      {{"domain1.com", "domain2.com"}, "http://domain3.com", true},
+      {{"domain1.com", "domain2.com"}, "http://not_domain1.com", true},
+      {{"domain1.com", "domain2.com"}, "http://sub.domain1.com", false},
+      {{"domain1.com", "domain2.com"}, "http://a.b.c.sub.domain2.com", false},
+
+      {{"~domain1.com", "~domain2.com"}, "http://domain1.com", true},
+      {{"~domain1.com", "~domain2.com"}, "http://domain2.com", true},
+      {{"~domain1.com", "~domain2.com"}, "http://domain3.com", false},
+
+      {{"domain.com", "~sub.domain.com"}, "http://domain.com", false},
+      {{"domain.com", "~sub.domain.com"}, "http://sub.domain.com", true},
+      {{"domain.com", "~sub.domain.com"}, "http://a.b.sub.domain.com", true},
+      {{"domain.com", "~sub.domain.com"}, "http://ssub.domain.com", false},
+
+      {{"domain.com", "~a.domain.com", "~b.domain.com"},
+       "http://domain.com",
+       false},
+      {{"domain.com", "~a.domain.com", "~b.domain.com"},
+       "http://a.domain.com",
+       true},
+      {{"domain.com", "~a.domain.com", "~b.domain.com"},
+       "http://b.domain.com",
        true},
 
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       "http://domain2.com",
+      {{"domain.com", "~a.domain.com", "b.a.domain.com"},
+       "http://domain.com",
        false},
-
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       "http://subdomain.domain2.com",
+      {{"domain.com", "~a.domain.com", "b.a.domain.com"},
+       "http://a.domain.com",
+       true},
+      {{"domain.com", "~a.domain.com", "b.a.domain.com"},
+       "http://b.a.domain.com",
        false},
-
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       "http://domain3.com",
-       true},
-
-      {"example.com",
-       {"~domain1.com", "~domain2.com"},
-       "http://example.com",
-       "http://domain2.com",
-       true},
-
-      {"example.com",
-       {"~domain1.com", "~domain2.com"},
-       "http://example.com",
-       "http://domain3.com",
+      {{"domain.com", "~a.domain.com", "b.a.domain.com"},
+       "http://c.b.a.domain.com",
        false},
-
-      {"example.com",
-       {"domain1.com", "~subdomain1.domain1.com"},
-       "http://example.com",
-       "http://subdomain2.domain1.com",
-       false},
-
-      {"example.com",
-       {"domain1.com", "~subdomain1.domain1.com"},
-       "http://example.com",
-       "http://subdomain1.domain1.com",
-       true},
-
-      {"example.com",
-       {"domain1.com", "domain2.com"},
-       "http://example.com",
-       nullptr,
-       true},
 
       // The following test addresses a former bug in domain list matcher. When
       // "domain.com" was matched, the positive filters lookup stopped, and the
@@ -446,27 +463,66 @@ TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithDomainList) {
       // skipped (supposing it's a '~') and the remainder was considered a
       // domain. So "ddomain.com" would be matched and thus the whole rule would
       // be classified as non-matching, which is not correct.
-      {"ex.com",
-       {"domain.com", "ddomain.com", "~sub.domain.com"},
-       "http://ex.com",
+      {{"domain.com", "ddomain.com", "~sub.domain.com"},
        "http://domain.com",
        false},
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern
-                 << "; URL: " << test_case.url
+                 << "Domains: " << base::JoinString(test_case.domains, "|")
                  << "; document: " << test_case.document_origin);
 
-    UrlRuleBuilder builder(UrlPattern(test_case.url_pattern, kSubstring));
+    UrlRuleBuilder builder(UrlPattern(kUrl, kSubstring));
     builder.AddDomains(test_case.domains);
     AddUrlRule(builder.rule());
     Finish();
 
     EXPECT_EQ(test_case.expect_allowed,
-              ShouldAllow(test_case.url, test_case.document_origin));
+              ShouldAllow(kUrl, test_case.document_origin));
     Reset();
+  }
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, OneRuleWithLongDomainList) {
+  constexpr const char* kUrl = "http://example.com";
+  constexpr size_t kDomains = 200;
+
+  std::vector<std::string> domains;
+  for (size_t i = 0; i < kDomains; ++i) {
+    const std::string domain = "domain" + std::to_string(i) + ".com";
+    domains.push_back(domain);
+    domains.push_back("~sub." + domain);
+    domains.push_back("a.sub." + domain);
+    domains.push_back("b.sub." + domain);
+    domains.push_back("c.sub." + domain);
+    domains.push_back("~aa.sub." + domain);
+    domains.push_back("~ab.sub." + domain);
+    domains.push_back("~ba.sub." + domain);
+    domains.push_back("~bb.sub." + domain);
+    domains.push_back("~sub.sub.c.sub." + domain);
+  }
+
+  UrlRuleBuilder builder(UrlPattern(kUrl, kSubstring));
+  builder.AddDomains(domains);
+  AddUrlRule(builder.rule());
+  Finish();
+
+  for (size_t i = 0; i < kDomains; ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration: " << i);
+    const std::string domain = "domain" + std::to_string(i) + ".com";
+
+    EXPECT_FALSE(ShouldAllow(kUrl, ("http://" + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://sub." + domain).c_str()));
+    EXPECT_FALSE(ShouldAllow(kUrl, ("http://a.sub." + domain).c_str()));
+    EXPECT_FALSE(ShouldAllow(kUrl, ("http://b.sub." + domain).c_str()));
+    EXPECT_FALSE(ShouldAllow(kUrl, ("http://c.sub." + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://aa.sub." + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://ab.sub." + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://ba.sub." + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://bb.sub." + domain).c_str()));
+    EXPECT_FALSE(ShouldAllow(kUrl, ("http://sub.c.sub." + domain).c_str()));
+    EXPECT_TRUE(ShouldAllow(kUrl, ("http://sub.sub.c.sub." + domain).c_str()));
   }
 }
 
