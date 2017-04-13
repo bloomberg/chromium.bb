@@ -786,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 }
 
 // Verifies that setDefaultBackgroundColor and captureScreenshot support a
-// transparent background.
+// transparent background, and that setDeviceMetricsOverride doesn't affect it.
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
   if (base::SysInfo::IsLowEndDevice())
     return;
@@ -815,6 +815,16 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
                             ->GetPhysicalBackingSize();
   expected_bitmap.allocN32Pixels(view_size.width(), view_size.height());
   expected_bitmap.eraseColor(SK_ColorTRANSPARENT);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+
+  // Check that device emulation does not affect the transparency.
+  params.reset(new base::DictionaryValue());
+  params->SetInteger("width", view_size.width());
+  params->SetInteger("height", view_size.height());
+  params->SetDouble("deviceScaleFactor", 0);
+  params->SetBoolean("mobile", false);
+  params->SetBoolean("fitWindow", false);
+  SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
   CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
 }
 

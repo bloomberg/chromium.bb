@@ -223,12 +223,7 @@ void DevToolsEmulator::EnableDeviceEmulation(
     GetMemoryCache()->EvictResources();
 
   emulation_params_ = params;
-
-  if (!device_metrics_enabled_) {
-    device_metrics_enabled_ = true;
-    if (params.view_size.width || params.view_size.height)
-      web_view_impl_->SetBackgroundColorOverride(Color::kDarkGray);
-  }
+  device_metrics_enabled_ = true;
 
   web_view_impl_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
       calculateDeviceScaleAdjustment(params.view_size.width,
@@ -258,7 +253,6 @@ void DevToolsEmulator::DisableDeviceEmulation() {
 
   GetMemoryCache()->EvictResources();
   device_metrics_enabled_ = false;
-  web_view_impl_->ClearBackgroundColorOverride();
   web_view_impl_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
       embedder_device_scale_adjustment_);
   DisableMobileEmulation();

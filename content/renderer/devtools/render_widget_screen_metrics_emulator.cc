@@ -145,9 +145,6 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 
   delegate_->SetScreenRects(applied_widget_rect_, window_screen_rect);
 
-  modified_resize_params.physical_backing_size =
-      gfx::ScaleToCeiledSize(original_resize_params_.new_size,
-                             original_screen_info().device_scale_factor);
   modified_resize_params.new_size = applied_widget_rect_.size();
   modified_resize_params.visible_viewport_size = applied_widget_rect_.size();
   modified_resize_params.needs_resize_ack = false;
