@@ -266,13 +266,6 @@ struct CONTENT_EXPORT WebPreferences {
   // If enabled, disabled video track when the video is in the background.
   bool background_video_track_optimization_enabled;
 
-  // If background video track optimization is enabled, don't disable video
-  // track for videos with the average keyframe distance greater than this
-  // value.
-  // TODO(avayvod, asvitkine): Query the value directly when it is available in
-  // the renderer process. See https://crbug.com/681160.
-  base::TimeDelta max_keyframe_distance_to_disable_background_video;
-
   // When memory pressure based garbage collection is enabled for MSE, the
   // |enable_instant_source_buffer_gc| flag controls whether the GC is done
   // immediately on memory pressure notification or during the next SourceBuffer

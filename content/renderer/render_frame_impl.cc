@@ -24,6 +24,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -2875,6 +2876,11 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   base::WeakPtr<media::MediaObserver> media_observer = nullptr;
 #endif
 
+  base::TimeDelta max_keyframe_distance_to_disable_background_video =
+      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          media::kBackgroundVideoTrackOptimization, "max_keyframe_distance_ms",
+          base::TimeDelta::FromSeconds(10).InMilliseconds()));
+
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
@@ -2887,9 +2893,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::MainThreadIsolate())),
       initial_cdm, media_surface_manager_, media_observer,
-      // TODO(avayvod, asvitkine): Query the value directly when it is available
-      // in the renderer process. See https://crbug.com/681160.
-      GetWebkitPreferences().max_keyframe_distance_to_disable_background_video,
+      max_keyframe_distance_to_disable_background_video,
       GetWebkitPreferences().enable_instant_source_buffer_gc,
       GetContentClient()->renderer()->AllowMediaSuspend(),
       embedded_media_experience_enabled);

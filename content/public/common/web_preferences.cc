@@ -225,8 +225,6 @@ WebPreferences::WebPreferences()
 #endif
       hide_download_ui(false),
       background_video_track_optimization_enabled(false),
-      max_keyframe_distance_to_disable_background_video(
-          base::TimeDelta::FromSeconds(10)),
       enable_instant_source_buffer_gc(false),
       presentation_receiver(false),
       media_controls_enabled(true),
