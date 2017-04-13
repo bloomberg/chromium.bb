@@ -596,21 +596,23 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Offset properties.
-  static Length InitialOffset() { return Length(); }
-
   // left
+  static Length InitialLeft() { return Length(); }
   const Length& Left() const { return surround_->left_; }
   void SetLeft(const Length& v) { SET_VAR(surround_, left_, v); }
 
   // right
+  static Length InitialRight() { return Length(); }
   const Length& Right() const { return surround_->right_; }
   void SetRight(const Length& v) { SET_VAR(surround_, right_, v); }
 
   // top
+  static Length InitialTop() { return Length(); }
   const Length& Top() const { return surround_->top_; }
   void SetTop(const Length& v) { SET_VAR(surround_, top_, v); }
 
   // bottom
+  static Length InitialBottom() { return Length(); }
   const Length& Bottom() const { return surround_->bottom_; }
   void SetBottom(const Length& v) { SET_VAR(surround_, bottom_, v); }
 
