@@ -1047,7 +1047,7 @@ TEST_P(ScrollingCoordinatorTest,
   }
 }
 
-class NonCompositedMainThreadScrollingReasonTest
+class StyleRelatedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
   static const uint32_t kLCDTextRelatedReasons =
       MainThreadScrollingReason::kHasOpacityAndLCDText |
@@ -1055,188 +1055,132 @@ class NonCompositedMainThreadScrollingReasonTest
       MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
 
  protected:
-  NonCompositedMainThreadScrollingReasonTest() {
+  StyleRelatedMainThreadScrollingReasonTest() {
     RegisterMockedHttpURLLoad("two_scrollable_area.html");
     NavigateTo(base_url_ + "two_scrollable_area.html");
   }
-  void TestNonCompositedReasons(const std::string& target,
-                                const uint32_t reason) {
+  void TestStyle(const std::string& target, const uint32_t reason) {
     GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
         false);
     Document* document = GetFrame()->GetDocument();
     Element* container = document->GetElementById("scroller1");
     container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
+    container = document->GetElementById("scroller2");
+    container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
     ForceFullCompositingUpdate();
-
-    PaintLayerScrollableArea* scrollable_area =
-        ToLayoutBoxModelObject(container->GetLayoutObject())
-            ->GetScrollableArea();
-    ASSERT_TRUE(scrollable_area);
-    EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-                reason);
-
-    Element* container2 = document->GetElementById("scroller2");
-    PaintLayerScrollableArea* scrollable_area2 =
-        ToLayoutBoxModelObject(container2->GetLayoutObject())
-            ->GetScrollableArea();
-    ASSERT_TRUE(scrollable_area2);
-    // Different scrollable area should remain unaffected.
-    EXPECT_FALSE(
-        scrollable_area2->GetNonCompositedMainThreadScrollingReasons() &
-        reason);
 
     FrameView* frame_view = GetFrame()->View();
     ASSERT_TRUE(frame_view);
-    EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
+    ASSERT_TRUE(frame_view->GetMainThreadScrollingReasons() & reason);
 
-    // Remove attribute from the scroller 1 would lead to scroll on impl.
+    // Remove the target attribute from one of the scrollers.
+    // Still need to scroll on main thread.
+    container = document->GetElementById("scroller1");
+    DCHECK(container);
+
     container->removeAttribute("class");
     ForceFullCompositingUpdate();
 
-    EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-                 reason);
-    EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
+    ASSERT_TRUE(frame_view->GetMainThreadScrollingReasons() & reason);
+
+    // Remove attribute from the other scroller would lead to
+    // scroll on impl.
+    container = document->GetElementById("scroller2");
+    DCHECK(container);
+
+    container->removeAttribute("class");
+    ForceFullCompositingUpdate();
+
+    ASSERT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
 
     // Add target attribute would again lead to scroll on main thread
     container->setAttribute("class", target.c_str(), ASSERT_NO_EXCEPTION);
     ForceFullCompositingUpdate();
 
-    EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-                reason);
-    EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
+    ASSERT_TRUE(frame_view->GetMainThreadScrollingReasons() & reason);
 
     if ((reason & kLCDTextRelatedReasons) &&
         !(reason & ~kLCDTextRelatedReasons)) {
       GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
           true);
       ForceFullCompositingUpdate();
-      EXPECT_FALSE(
-          scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-      EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons());
+      ASSERT_FALSE(frame_view->GetMainThreadScrollingReasons());
     }
   }
 };
 
 INSTANTIATE_TEST_CASE_P(All,
-                        NonCompositedMainThreadScrollingReasonTest,
+                        StyleRelatedMainThreadScrollingReasonTest,
                         ::testing::Bool());
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
-  TestNonCompositedReasons("transparent",
-                           MainThreadScrollingReason::kHasOpacityAndLCDText);
+// TODO(yigu): This test and all other style realted main thread scrolling
+// reason tests below have been disabled due to https://crbug.com/701355.
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_TransparentTest) {
+  TestStyle("transparent", MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, TransformTest) {
-  TestNonCompositedReasons("transform",
-                           MainThreadScrollingReason::kHasTransformAndLCDText);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_TransformTest) {
+  TestStyle("transform", MainThreadScrollingReason::kHasTransformAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
-  TestNonCompositedReasons(
-      "background-not-opaque",
-      MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest,
+       DISABLED_BackgroundNotOpaqueTest) {
+  TestStyle("background-not-opaque",
+            MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, BorderRadiusTest) {
-  TestNonCompositedReasons("border-radius",
-                           MainThreadScrollingReason::kHasBorderRadius);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_BorderRadiusTest) {
+  TestStyle("border-radius", MainThreadScrollingReason::kHasBorderRadius);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipTest) {
-  TestNonCompositedReasons("clip",
-                           MainThreadScrollingReason::kHasClipRelatedProperty);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_ClipTest) {
+  TestStyle("clip", MainThreadScrollingReason::kHasClipRelatedProperty);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
-  uint32_t clip_reason = MainThreadScrollingReason::kHasClipRelatedProperty;
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_ClipPathTest) {
+  uint32_t reason = MainThreadScrollingReason::kHasClipRelatedProperty;
   GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   Document* document = GetFrame()->GetDocument();
   // Test ancestor with ClipPath
   Element* element = document->body();
-  ASSERT_TRUE(element);
+  DCHECK(element);
   element->setAttribute(HTMLNames::styleAttr,
                         "clip-path:circle(115px at 20px 20px);");
-  Element* container = document->getElementById("scroller1");
-  ASSERT_TRUE(container);
   ForceFullCompositingUpdate();
-
-  PaintLayerScrollableArea* scrollable_area =
-      ToLayoutBoxModelObject(container->GetLayoutObject())->GetScrollableArea();
-  ASSERT_TRUE(scrollable_area);
-  EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-              clip_reason);
 
   FrameView* frame_view = GetFrame()->View();
   ASSERT_TRUE(frame_view);
-  EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
+  ASSERT_TRUE(frame_view->GetMainThreadScrollingReasons() & reason);
 
   // Remove clip path from ancestor.
   element->removeAttribute(HTMLNames::styleAttr);
   ForceFullCompositingUpdate();
 
-  EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-               clip_reason);
-  EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
+  ASSERT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
 
   // Test descendant with ClipPath
   element = document->GetElementById("content1");
-  ASSERT_TRUE(element);
+  DCHECK(element);
   element->setAttribute(HTMLNames::styleAttr,
                         "clip-path:circle(115px at 20px 20px);");
   ForceFullCompositingUpdate();
-  EXPECT_TRUE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-              clip_reason);
-  EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
+  ASSERT_TRUE(frame_view->GetMainThreadScrollingReasons() & reason);
 
   // Remove clip path from descendant.
   element->removeAttribute(HTMLNames::styleAttr);
   ForceFullCompositingUpdate();
-  EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons() &
-               clip_reason);
-  EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
+  ASSERT_FALSE(frame_view->GetMainThreadScrollingReasons() & reason);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
-  TestNonCompositedReasons("transparent border-radius",
-                           MainThreadScrollingReason::kHasOpacityAndLCDText |
-                               MainThreadScrollingReason::kHasBorderRadius);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_LCDTextEnabledTest) {
+  TestStyle("transparent border-radius",
+            MainThreadScrollingReason::kHasOpacityAndLCDText |
+                MainThreadScrollingReason::kHasBorderRadius);
 }
 
-TEST_P(NonCompositedMainThreadScrollingReasonTest, BoxShadowTest) {
-  TestNonCompositedReasons(
-      "box-shadow", MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
-}
-
-TEST_P(NonCompositedMainThreadScrollingReasonTest,
-       CompositedWithLCDTextRelatedReasonsTest) {
-  // With "will-change:transform" we composite elements with
-  // LCDTextRelatedReasons only. For elements with other
-  // NonCompositedReasons, we don't create scrollingLayer for their
-  // CompositedLayerMapping therefore they don't get composited.
-  GetWebViewImpl()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
-  Document* document = GetFrame()->GetDocument();
-  Element* container = document->getElementById("scroller1");
-  ASSERT_TRUE(container);
-  container->setAttribute("class", "composited transparent",
-                          ASSERT_NO_EXCEPTION);
-  ForceFullCompositingUpdate();
-
-  PaintLayerScrollableArea* scrollable_area =
-      ToLayoutBoxModelObject(container->GetLayoutObject())->GetScrollableArea();
-  ASSERT_TRUE(scrollable_area);
-  EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-
-  Element* container2 = document->getElementById("scroller2");
-  ASSERT_TRUE(container2);
-  container2->setAttribute("class", "composited border-radius",
-                           ASSERT_NO_EXCEPTION);
-  ForceFullCompositingUpdate();
-  PaintLayerScrollableArea* scrollable_area2 =
-      ToLayoutBoxModelObject(container2->GetLayoutObject())
-          ->GetScrollableArea();
-  ASSERT_TRUE(scrollable_area2);
-  EXPECT_TRUE(scrollable_area2->GetNonCompositedMainThreadScrollingReasons() &
-              MainThreadScrollingReason::kHasBorderRadius);
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_BoxShadowTest) {
+  TestStyle("box-shadow",
+            MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
 }
 
 }  // namespace blink

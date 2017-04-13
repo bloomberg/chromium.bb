@@ -210,7 +210,10 @@ FrameView::FrameView(LocalFrame& frame)
       needs_scrollbars_update_(false),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
-      main_thread_scrolling_reasons_(0) {
+      main_thread_scrolling_reasons_(0),
+      main_thread_scrolling_reasons_counter_(
+          MainThreadScrollingReason::kMainThreadScrollingReasonCount,
+          0) {
   Init();
 }
 
@@ -5173,8 +5176,6 @@ void FrameView::UpdateSubFrameScrollOnMainReason(
 
   if (frame.IsMainFrame())
     main_thread_scrolling_reasons_ = reasons;
-  DCHECK(!MainThreadScrollingReason::HasNonCompositedScrollReasons(
-      main_thread_scrolling_reasons_));
 }
 
 MainThreadScrollingReasons FrameView::MainThreadScrollingReasonsPerFrame()
@@ -5233,7 +5234,6 @@ MainThreadScrollingReasons FrameView::GetMainThreadScrollingReasons() const {
         ToLocalFrame(frame)->View()->MainThreadScrollingReasonsPerFrame();
   }
 
-  DCHECK(!MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
   return reasons;
 }
 
@@ -5265,6 +5265,29 @@ String FrameView::MainThreadScrollingReasonsAsText() const {
                     main_thread_scrolling_reasons_)
                     .c_str());
   return result;
+}
+
+void FrameView::AdjustStyleRelatedMainThreadScrollingReasons(
+    const uint32_t reason,
+    bool increase) {
+  int index = MainThreadScrollingReason::getReasonIndex(reason);
+  DCHECK_GE(index, 0);
+  main_thread_scrolling_reasons_counter_[index] += increase ? 1 : -1;
+  DCHECK_GE(main_thread_scrolling_reasons_counter_[index], 0);
+}
+
+MainThreadScrollingReasons
+FrameView::GetStyleRelatedMainThreadScrollingReasons() const {
+  MainThreadScrollingReasons reasons =
+      static_cast<MainThreadScrollingReasons>(0);
+  for (uint32_t reason = 0;
+       reason < MainThreadScrollingReason::kMainThreadScrollingReasonCount;
+       ++reason) {
+    if (main_thread_scrolling_reasons_counter_[reason] > 0) {
+      reasons |= 1 << reason;
+    }
+  }
+  return reasons;
 }
 
 void FrameView::SetViewportIntersectionFromParent(

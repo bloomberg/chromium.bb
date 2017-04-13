@@ -114,7 +114,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       scroll_corner_(nullptr),
       resizer_(nullptr),
       scroll_anchor_(this),
-      non_composited_main_thread_scrolling_reasons_(0)
+      reasons_(0)
 #if DCHECK_IS_ON()
       ,
       has_been_disposed_(false)
@@ -152,7 +152,7 @@ void PaintLayerScrollableArea::Dispose() {
     }
   }
 
-  non_composited_main_thread_scrolling_reasons_ = 0;
+  RemoveStyleRelatedMainThreadScrollingReasons();
 
   if (ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator())
     scrolling_coordinator->WillDestroyScrollableArea(this);
@@ -1796,7 +1796,6 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     const LCDTextMode mode,
     const PaintLayer* layer) {
-  non_composited_main_thread_scrolling_reasons_ = 0;
   if (!layer->ScrollsOverflow())
     return false;
 
@@ -1811,14 +1810,14 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     return false;
 
   bool needs_composited_scrolling = true;
+  uint32_t main_thread_scrolling_reasons = 0;
 
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
   bool background_supports_lcd_text =
       RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
       layer->GetLayoutObject().Style()->IsStackingContext() &&
-      layer->GetBackgroundPaintLocation(
-          &non_composited_main_thread_scrolling_reasons_) &
+      layer->GetBackgroundPaintLocation(&main_thread_scrolling_reasons) &
           kBackgroundPaintInScrollingContents &&
       layer->BackgroundIsKnownToBeOpaqueInRect(
           ToLayoutBox(layer->GetLayoutObject()).PaddingBoxRect()) &&
@@ -1828,16 +1827,16 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
       !layer->Compositor()->PreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
     if (layer->CompositesWithOpacity()) {
-      non_composited_main_thread_scrolling_reasons_ |=
+      main_thread_scrolling_reasons |=
           MainThreadScrollingReason::kHasOpacityAndLCDText;
     }
     if (layer->CompositesWithTransform()) {
-      non_composited_main_thread_scrolling_reasons_ |=
+      main_thread_scrolling_reasons |=
           MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->BackgroundIsKnownToBeOpaqueInRect(
             ToLayoutBox(layer->GetLayoutObject()).PaddingBoxRect())) {
-      non_composited_main_thread_scrolling_reasons_ |=
+      main_thread_scrolling_reasons |=
           MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
     }
 
@@ -1849,24 +1848,68 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   // behind dashed borders). Resolve this case, or not, and update this check
   // with the results.
   if (layer->GetLayoutObject().Style()->HasBorderRadius()) {
-    non_composited_main_thread_scrolling_reasons_ |=
+    main_thread_scrolling_reasons |=
         MainThreadScrollingReason::kHasBorderRadius;
     needs_composited_scrolling = false;
   }
   if (layer->GetLayoutObject().HasClip() ||
       layer->HasDescendantWithClipPath() || layer->HasAncestorWithClipPath()) {
-    non_composited_main_thread_scrolling_reasons_ |=
+    main_thread_scrolling_reasons |=
         MainThreadScrollingReason::kHasClipRelatedProperty;
     needs_composited_scrolling = false;
   }
 
-  DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
-           ~MainThreadScrollingReason::kNonCompositedReasons));
+  if (main_thread_scrolling_reasons) {
+    AddStyleRelatedMainThreadScrollingReasons(main_thread_scrolling_reasons);
+  }
+
   return needs_composited_scrolling;
+}
+
+void PaintLayerScrollableArea::AddStyleRelatedMainThreadScrollingReasons(
+    const uint32_t reasons) {
+  LocalFrame* frame = Box().GetFrame();
+  if (!frame)
+    return;
+  FrameView* frame_view = frame->View();
+  if (!frame_view)
+    return;
+
+  for (uint32_t reason = 1;
+       reason < 1 << MainThreadScrollingReason::kMainThreadScrollingReasonCount;
+       reason <<= 1) {
+    if (reasons & reason) {
+      frame_view->AdjustStyleRelatedMainThreadScrollingReasons(reason, true);
+      reasons_ |= reason;
+    }
+  }
+}
+
+void PaintLayerScrollableArea::RemoveStyleRelatedMainThreadScrollingReasons() {
+  LocalFrame* frame = Box().GetFrame();
+  if (!frame)
+    return;
+  FrameView* frame_view = frame->View();
+  if (!frame_view)
+    return;
+
+  // Decrease the number of layers that have any main thread
+  // scrolling reasons stored in FrameView
+  for (uint32_t i = 0;
+       i < MainThreadScrollingReason::kMainThreadScrollingReasonCount; ++i) {
+    uint32_t reason = 1 << i;
+    if (HasMainThreadScrollingReason(reason)) {
+      reasons_ &= ~reason;
+      frame_view->AdjustStyleRelatedMainThreadScrollingReasons(reason, false);
+    }
+  }
 }
 
 void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
     LCDTextMode mode) {
+  // Clear all style related main thread scrolling reasons, if any,
+  // before calling computeNeedsCompositedScrolling
+  RemoveStyleRelatedMainThreadScrollingReasons();
   const bool needs_composited_scrolling =
       ComputeNeedsCompositedScrolling(mode, Layer());
 
