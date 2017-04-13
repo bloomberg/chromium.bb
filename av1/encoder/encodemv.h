@@ -31,6 +31,11 @@ void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
 
 void av1_update_mv_count(ThreadData *td);
 
+#if CONFIG_INTRABC
+void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
+                   nmv_context *mvctx);
+#endif  // CONFIG_INTRABC
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

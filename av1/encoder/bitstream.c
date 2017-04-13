@@ -221,6 +221,9 @@ static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
                                 const MODE_INFO *mi, const MODE_INFO *above_mi,
                                 const MODE_INFO *left_mi, int block,
                                 PREDICTION_MODE mode, aom_writer *w) {
+#if CONFIG_INTRABC
+  assert(!is_intrabc_block(&mi->mbmi));
+#endif  // CONFIG_INTRABC
 #if CONFIG_EC_MULTISYMBOL
   aom_write_symbol(w, av1_intra_mode_ind[mode],
                    get_y_mode_cdf(frame_ctx, mi, above_mi, left_mi, block),
@@ -2093,6 +2096,21 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif
       !xd->lossless[mbmi->segment_id])
     write_selected_tx_size(cm, xd, w);
+
+#if CONFIG_INTRABC
+  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
+    int use_intrabc = is_intrabc_block(mbmi);
+    aom_write(w, use_intrabc, INTRABC_PROB);
+    if (use_intrabc) {
+      assert(mbmi->mode == DC_PRED);
+      assert(mbmi->uv_mode == DC_PRED);
+      int_mv dv_ref;
+      av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+      av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
+      return;
+    }
+  }
+#endif  // CONFIG_INTRABC
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
     write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);

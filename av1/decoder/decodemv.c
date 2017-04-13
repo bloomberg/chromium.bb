@@ -902,6 +902,32 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_INTRABC
+static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
+                           nmv_context *ctx, nmv_context_counts *counts,
+                           int allow_hp);
+
+static INLINE int is_mv_valid(const MV *mv);
+
+static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
+                            const int_mv *ref_mv, int mi_row, int mi_col,
+                            BLOCK_SIZE bsize, aom_reader *r) {
+#if CONFIG_EC_ADAPT
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#else
+  FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+  FRAME_COUNTS *counts = xd->counts;
+  nmv_context_counts *const dv_counts = counts ? &counts->dv : NULL;
+  read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts, 0);
+  int valid = is_mv_valid(&mv->as_mv) &&
+              is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize);
+  // TODO(aconverse@google.com): additional validation
+  return valid;
+}
+#endif  // CONFIG_INTRABC
+
 static void read_intra_frame_mode_info(AV1_COMMON *const cm,
                                        MACROBLOCKD *const xd, int mi_row,
                                        int mi_col, aom_reader *r) {
@@ -941,6 +967,21 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
+
+#if CONFIG_INTRABC
+  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools) {
+    mbmi->use_intrabc = aom_read(r, INTRABC_PROB, ACCT_STR);
+    if (mbmi->use_intrabc) {
+      int_mv dv_ref;
+      mbmi->mode = mbmi->uv_mode = DC_PRED;
+      mbmi->interp_filter = BILINEAR;
+      av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+      xd->corrupted |=
+          !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
+      return;
+    }
+  }
+#endif  // CONFIG_INTRABC
 
 #if CONFIG_CB4X4
   (void)i;
@@ -2282,6 +2323,10 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
   MODE_INFO *const mi = xd->mi[0];
   MV_REF *frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
   int w, h;
+
+#if CONFIG_INTRABC
+  mi->mbmi.use_intrabc = 0;
+#endif  // CONFIG_INTRABC
 
   if (frame_is_intra_only(cm)) {
     read_intra_frame_mode_info(cm, xd, mi_row, mi_col, r);

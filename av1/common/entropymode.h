@@ -69,6 +69,10 @@ extern "C" {
 #define PALETTE_MAX_BLOCK_SIZE (64 * 64)
 #endif  // CONFIG_PALETTE
 
+#if CONFIG_INTRABC
+#define INTRABC_PROB 192
+#endif  // CONFIG_INTRABC
+
 struct AV1Common;
 
 typedef struct {
@@ -218,6 +222,9 @@ typedef struct frame_contexts {
   nmv_context nmvc[NMV_CONTEXTS];
 #else
   nmv_context nmvc;
+#endif
+#if CONFIG_INTRABC
+  nmv_context ndvc;
 #endif
   int initialized;
 #if CONFIG_EXT_TX
@@ -380,6 +387,9 @@ typedef struct FRAME_COUNTS {
   nmv_context_counts mv[NMV_CONTEXTS];
 #else
   nmv_context_counts mv;
+#endif
+#if CONFIG_INTRABC
+  nmv_context_counts dv;
 #endif
 #if CONFIG_DELTA_Q
   unsigned int delta_q[DELTA_Q_PROBS][2];

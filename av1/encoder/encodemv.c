@@ -278,6 +278,25 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   }
 }
 
+#if CONFIG_INTRABC
+void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
+                   nmv_context *mvctx) {
+  const MV diff = { mv->row - ref->row, mv->col - ref->col };
+  const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
+
+#if CONFIG_EC_MULTISYMBOL
+  aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
+#else
+  av1_write_token(w, av1_mv_joint_tree, mvctx->joints, &mv_joint_encodings[j]);
+#endif
+  if (mv_joint_vertical(j))
+    encode_mv_component(w, diff.row, &mvctx->comps[0], 0);
+
+  if (mv_joint_horizontal(j))
+    encode_mv_component(w, diff.col, &mvctx->comps[1], 0);
+}
+#endif  // CONFIG_INTRABC
+
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
                               const nmv_context *ctx, int usehp) {
   av1_cost_tokens(mvjoint, ctx->joints, av1_mv_joint_tree);

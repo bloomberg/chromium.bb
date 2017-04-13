@@ -9166,6 +9166,39 @@ static int64_t handle_inter_mode(
   return 0;  // The rate-distortion cost will be re-calculated by caller.
 }
 
+#if CONFIG_INTRABC
+// This is a dummy function that forces intrabc on for testing purposes
+// TODO(aconverse@google.com): Implement a real intrabc search
+static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
+                                       RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                       int64_t best_rd) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  (void)best_rd;
+  if (bsize >= BLOCK_8X8 && cpi->common.allow_screen_content_tools) {
+    if (xd->mb_to_top_edge == -MAX_SB_SIZE * 8) {
+      MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+      mbmi->use_intrabc = 1;
+      mbmi->mode = DC_PRED;
+      mbmi->uv_mode = DC_PRED;
+      mbmi->mv[0].as_mv.row = -MAX_SB_SIZE * 8;
+      mbmi->mv[0].as_mv.col = 0;
+      mbmi->interp_filter = BILINEAR;
+      mbmi->skip = 1;
+      x->skip = 1;
+      const int mi_row = -xd->mb_to_top_edge / (8 * MI_SIZE);
+      const int mi_col = -xd->mb_to_left_edge / (8 * MI_SIZE);
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+      rd_cost->rate = 1;
+      rd_cost->dist = 0;
+      rd_cost->rdcost =
+          RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
+      return rd_cost->rdcost;
+    }
+  }
+  return INT64_MAX;
+}
+#endif  // CONFIG_INTRABC
+
 void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                RD_COST *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd) {
@@ -9181,6 +9214,9 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   ctx->skip = 0;
   xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
   xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
+#if CONFIG_INTRABC
+  xd->mi[0]->mbmi.use_intrabc = 0;
+#endif  // CONFIG_INTRABC
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
     if (rd_pick_intra_sby_mode(cpi, x, &rate_y, &rate_y_tokenonly, &dist_y,
@@ -9219,6 +9255,12 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
         rate_y + rate_uv + av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
     rd_cost->dist = dist_y + dist_uv;
   }
+
+#if CONFIG_INTRABC
+  if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
+    ctx->skip = x->skip;  // FIXME where is the proper place to set this?!
+  }
+#endif
 
   ctx->mic = *xd->mi[0];
   ctx->mbmi_ext = *x->mbmi_ext;

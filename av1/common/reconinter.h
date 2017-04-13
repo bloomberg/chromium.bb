@@ -57,6 +57,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
       av1_get_interp_filter_params(interp_filter);
 #endif
 
+  assert(sf);
 #if CONFIG_DUAL_FILTER
   if (interp_filter_params_x.taps == SUBPEL_TAPS &&
       interp_filter_params_y.taps == SUBPEL_TAPS && w > 2 && h > 2 &&

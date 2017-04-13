@@ -332,7 +332,10 @@ void av1_init_mv_probs(AV1_COMMON *cm) {
   }
 #else
   cm->fc->nmvc = default_nmv_context;
-#endif
+#endif  // CONFIG_REF_MV
+#if CONFIG_INTRABC
+  cm->fc->ndvc = default_nmv_context;
+#endif  // CONFIG_INTRABC
 #if CONFIG_GLOBAL_MOTION
   av1_copy(cm->fc->global_motion_types_prob, default_global_motion_types_prob);
 #endif  // CONFIG_GLOBAL_MOTION

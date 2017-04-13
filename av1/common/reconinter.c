@@ -906,6 +906,18 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_MOTION_VAR
   const int is_compound = has_second_ref(&mi->mbmi);
   int ref;
+#if CONFIG_INTRABC
+  const int is_intrabc = is_intrabc_block(&mi->mbmi);
+  struct scale_factors sf_identity;
+#if CONFIG_HIGHBITDEPTH
+  av1_setup_scale_factors_for_frame(
+      &sf_identity, 64, 64, 64, 64,
+      xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
+#else
+  av1_setup_scale_factors_for_frame(&sf_identity, 64, 64, 64, 64);
+#endif  // CONFIG_HIGHBITDEPTH
+  assert(IMPLIES(is_intrabc, !is_compound));
+#endif  // CONFIG_INTRABC
 #if CONFIG_GLOBAL_MOTION
   int is_global[2];
   for (ref = 0; ref < 1 + is_compound; ++ref) {
@@ -946,9 +958,15 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
       for (idx = 0; idx < b8_s; idx += b4_w) {
         const int chr_idx = (idy * 2) + idx;
         for (ref = 0; ref < 1 + is_compound; ++ref) {
+          struct buf_2d *const dst_buf = &pd->dst;
+#if CONFIG_INTRABC
+          const struct scale_factors *const sf =
+              is_intrabc ? &sf_identity : &xd->block_refs[ref]->sf;
+          struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+#else
           const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
           struct buf_2d *const pre_buf = &pd->pre[ref];
-          struct buf_2d *const dst_buf = &pd->dst;
+#endif  // CONFIG_INTRABC
           uint8_t *dst = dst_buf->buf;
           const MV mv = mi->bmi[chr_idx].as_mv[ref].as_mv;
           const MV mv_q4 = clamp_mv_to_umv_border_sb(
@@ -1038,8 +1056,14 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_CONVOLVE_ROUND
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
+#if CONFIG_INTRABC
+      const struct scale_factors *const sf =
+          is_intrabc ? &sf_identity : &xd->block_refs[ref]->sf;
+      struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+#else
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = &pd->pre[ref];
+#endif  // CONFIG_INTRABC
 #if CONFIG_CB4X4
       const MV mv = mi->mbmi.mv[ref].as_mv;
 #else
@@ -1090,8 +1114,14 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     ConvolveParams conv_params = get_conv_params(ref, plane);
 #endif  // CONFIG_CONVOLVE_ROUND
     for (ref = 0; ref < 1 + is_compound; ++ref) {
+#if CONFIG_INTRABC
+      const struct scale_factors *const sf =
+          is_intrabc ? &sf_identity : &xd->block_refs[ref]->sf;
+      struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+#else
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = &pd->pre[ref];
+#endif  // CONFIG_INTRABC
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
       WarpTypesAllowed warp_types;
 #if CONFIG_GLOBAL_MOTION
