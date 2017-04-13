@@ -1224,6 +1224,9 @@ void DownloadItemImpl::Start(
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
                                        new_create_info);
+  if (job_->UsesParallelRequests())
+    RecordParallelDownloadCount(START_COUNT);
+
   deferred_interrupt_reason_ = DOWNLOAD_INTERRUPT_REASON_NONE;
 
   if (state_ == CANCELLED_INTERNAL) {
@@ -1273,6 +1276,8 @@ void DownloadItemImpl::Start(
 
   if (state_ == INITIAL_INTERNAL) {
     RecordDownloadCount(NEW_DOWNLOAD_COUNT);
+    if (job_->UsesParallelRequests())
+      RecordParallelDownloadCount(NEW_DOWNLOAD_COUNT);
     RecordDownloadMimeType(mime_type_);
     if (!GetBrowserContext()->IsOffTheRecord()) {
       RecordDownloadCount(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE);
@@ -1286,9 +1291,6 @@ void DownloadItemImpl::Start(
 
   if (state_ == RESUMING_INTERNAL)
     UpdateValidatorsOnResumption(new_create_info);
-
-  if (state_ == INITIAL_INTERNAL && job_->UsesParallelRequests())
-    RecordParallelDownloadCount(START_COUNT);
 
   TransitionTo(TARGET_PENDING_INTERNAL);
 
