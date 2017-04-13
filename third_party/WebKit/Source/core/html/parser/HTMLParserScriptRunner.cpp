@@ -339,8 +339,8 @@ void HTMLParserScriptRunner::PossiblyFetchBlockedDocWriteScript(
   CHECK_EQ(pending_script->GetScriptType(), ScriptType::kClassic);
 
   if (!pending_script->ErrorOccurred()) {
-    EmitWarningForDocWriteScripts(pending_script->Url().GetString(),
-                                  *document_);
+    EmitWarningForDocWriteScripts(
+        pending_script->UrlForClassicScript().GetString(), *document_);
     return;
   }
 
@@ -348,7 +348,8 @@ void HTMLParserScriptRunner::PossiblyFetchBlockedDocWriteScript(
   // ERR_CACHE_MISS but other errors are rare with
   // WebCachePolicy::ReturnCacheDataDontLoad.
 
-  EmitErrorForDocWriteScripts(pending_script->Url().GetString(), *document_);
+  EmitErrorForDocWriteScripts(pending_script->UrlForClassicScript().GetString(),
+                              *document_);
   TextPosition starting_position = ParserBlockingScript()->StartingPosition();
   bool is_parser_inserted = script_loader->IsParserInserted();
   // Remove this resource entry from memory cache as the new request

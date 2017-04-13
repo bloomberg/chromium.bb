@@ -229,7 +229,7 @@ bool ClassicPendingScript::WasCanceled() const {
   return GetResource()->WasCanceled();
 }
 
-KURL ClassicPendingScript::Url() const {
+KURL ClassicPendingScript::UrlForClassicScript() const {
   return GetResource()->Url();
 }
 

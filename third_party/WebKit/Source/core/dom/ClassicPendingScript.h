@@ -49,11 +49,11 @@ class CORE_EXPORT ClassicPendingScript final
   ClassicScript* GetSource(const KURL& document_url,
                            bool& error_occurred) const override;
   bool IsReady() const override;
-  KURL Url() const override;
   bool IsExternal() const override { return GetResource(); }
   bool ErrorOccurred() const override;
   bool WasCanceled() const override;
   void StartStreamingIfPossible(Document*, ScriptStreamer::Type) override;
+  KURL UrlForClassicScript() const override;
   void RemoveFromMemoryCache() override;
   void DisposeInternal() override;
 
