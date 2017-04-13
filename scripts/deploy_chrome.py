@@ -129,6 +129,12 @@ class DeployChrome(object):
                                     error_code_ok=True, capture_output=True)
     return result.returncode == 0
 
+  def _Reboot(self):
+    # A reboot in developer mode takes a while (and has delays), so the user
+    # will have time to read and act on the USB boot instructions below.
+    logging.info('Please remember to press Ctrl-U if you are booting from USB.')
+    self.device.Reboot()
+
   def _DisableRootfsVerification(self):
     if not self.options.force:
       logging.error('Detected that the device has rootfs verification enabled.')
@@ -152,10 +158,7 @@ class DeployChrome(object):
     for partition in (KERNEL_A_PARTITION, KERNEL_B_PARTITION):
       self.device.RunCommand(cmd % partition, error_code_ok=True)
 
-    # A reboot in developer mode takes a while (and has delays), so the user
-    # will have time to read and act on the USB boot instructions below.
-    logging.info('Please remember to press Ctrl-U if you are booting from USB.')
-    self.device.Reboot()
+    self._Reboot()
 
     # Now that the machine has been rebooted, we need to kill Chrome again.
     self._KillProcsIfNeeded()
@@ -242,6 +245,8 @@ class DeployChrome(object):
                       'hang during the transfer.')
 
   def _Deploy(self):
+    old_dbus_checksums = self._GetDBusChecksums()
+
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
     dest_path = _CHROME_DIR
@@ -262,6 +267,12 @@ class DeployChrome(object):
         # Set mode if necessary.
         self.device.RunCommand('chmod %o %s/%s' % (
             p.mode, dest_path, p.src if not p.dest else p.dest))
+
+    new_dbus_checksums = self._GetDBusChecksums()
+    if old_dbus_checksums != new_dbus_checksums:
+      logging.info('Detected change to D-Bus service files, rebooting.')
+      self._Reboot()
+      return
 
     if self.options.startui:
       logging.info('Starting UI...')
@@ -307,6 +318,15 @@ class DeployChrome(object):
                                                      self.options.mount_dir))
     # Chrome needs partition to have exec and suid flags set
     self.device.RunCommand(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
+
+  def _GetDBusChecksums(self):
+    """Returns Checksums for D-Bus files deployed with Chrome.
+
+    This is used to determine if a reboot is required after deploying Chrome.
+    """
+    result = self.device.RunCommand('md5sum /opt/google/chrome/dbus/*',
+                                    error_code_ok=True)
+    return result.output
 
   def Cleanup(self):
     """Clean up RemoteDevice."""
