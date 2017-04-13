@@ -20,7 +20,7 @@ onResponseReceived:
   timing available: true
   requestHeaders['Service-Worker-Navigation-Preload']: hello
 onRequestFinished:
-  localizedFailDescription: Navigation Preload Error
+  localizedFailDescription: net::ERR_INVALID_CHUNKED_ENCODING
 The iframe loaded.
 -----------------
 Loading another iframe.

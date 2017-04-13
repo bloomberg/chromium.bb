@@ -696,9 +696,11 @@ void NetworkHandler::NavigationPreloadCompleted(
     return;
   if (completion_status.error_code != net::OK) {
     frontend_->LoadingFailed(
-        request_id, base::TimeTicks::Now().ToInternalValue() /
-                        static_cast<double>(base::Time::kMicrosecondsPerSecond),
-        Page::ResourceTypeEnum::Other, "Navigation Preload Error",
+        request_id,
+        base::TimeTicks::Now().ToInternalValue() /
+            static_cast<double>(base::Time::kMicrosecondsPerSecond),
+        Page::ResourceTypeEnum::Other,
+        net::ErrorToString(completion_status.error_code),
         completion_status.error_code == net::Error::ERR_ABORTED);
   }
   frontend_->LoadingFinished(
