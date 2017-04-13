@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -21,10 +20,6 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 #include "content/public/browser/browser_context.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
-#endif
 
 namespace policy {
 
@@ -156,16 +151,11 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
   const base::FilePath component_policy_cache_dir =
       context->GetPath().Append(kPolicy).Append(kComponentsDir);
 
-  auto manager = base::MakeUnique<UserCloudPolicyManager>(
+  std::unique_ptr<UserCloudPolicyManager> manager;
+  manager.reset(new UserCloudPolicyManager(
       std::move(store), component_policy_cache_dir,
       std::unique_ptr<CloudExternalDataManager>(),
-      base::ThreadTaskRunnerHandle::Get(), file_task_runner, io_task_runner);
-
-#if defined(OS_ANDROID)
-  // TODO(treib): Remove this again. crbug.com/708191
-  if (base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature))
-    manager->SetChromeHomeEnabled();
-#endif
+      base::ThreadTaskRunnerHandle::Get(), file_task_runner, io_task_runner));
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());

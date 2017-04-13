@@ -48,9 +48,6 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~UserCloudPolicyManager() override;
 
-  // TODO(treib): Remove this again. crbug.com/708191
-  void SetChromeHomeEnabled() { chrome_home_enabled_ = true; }
-
   // ConfigurationPolicyProvider overrides:
   void Shutdown() override;
 
@@ -95,9 +92,6 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
 
   // Manages external data referenced by policies.
   std::unique_ptr<CloudExternalDataManager> external_data_manager_;
-
-  // TODO(treib): Remove this again. crbug.com/708191
-  bool chrome_home_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManager);
 };

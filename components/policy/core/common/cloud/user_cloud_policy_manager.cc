@@ -38,8 +38,7 @@ UserCloudPolicyManager::UserCloudPolicyManager(
                          io_task_runner),
       store_(std::move(store)),
       component_policy_cache_path_(component_policy_cache_path),
-      external_data_manager_(std::move(external_data_manager)),
-      chrome_home_enabled_(false) {}
+      external_data_manager_(std::move(external_data_manager)) {}
 
 UserCloudPolicyManager::~UserCloudPolicyManager() {}
 
@@ -107,13 +106,8 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
   // given that this is an enterprise user.
   // TODO(treib,atwilson): We should just call SetEnterpriseUsersDefaults here,
   // see crbug.com/640950.
-  // Temporary hack: If Chrome Home is enabled, then do not set the default
-  // value for the NTPContentSuggestionsEnabled policy, so that dogfooders
-  // won't see an almost-empty Chrome Home.
-  // TODO(treib): Remove this before M59 branch point. crbug.com/708191
   if (store()->has_policy() &&
-      !policy_map->Get(key::kNTPContentSuggestionsEnabled) &&
-      !chrome_home_enabled_) {
+      !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {
     policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
                     base::MakeUnique<base::Value>(false),
