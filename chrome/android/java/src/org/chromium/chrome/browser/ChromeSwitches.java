@@ -182,6 +182,9 @@ public abstract class ChromeSwitches {
     public static final String ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP =
             "always-extract-webapk-dex-on-startup";
 
+    /** Enable non-'org.chromium.webapk' prefixed package names with proper signature. */
+    public static final String ENABLE_ANY_WEBAPK_PACKAGE_NAME = "any-webapk-package-name";
+
     /**
      * Forces a check for whether the WebAPK's Web Manifest has changed each time that a WebAPK is
      * launched.
