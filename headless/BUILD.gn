@@ -316,11 +316,15 @@ static_library("headless_lib") {
     ]
   }
 
+  public_deps = [
+    "//base",
+    "//net",
+  ]
+
   deps = [
     ":gen_devtools_client_api",
     ":tab_socket",
     ":version_header",
-    "//base",
     "//components/crash/content/browser",
     "//components/security_state/content",
     "//components/security_state/core",
@@ -329,7 +333,6 @@ static_library("headless_lib") {
     "//content/public/child:child",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//net",
     "//services/service_manager/public/cpp",
     "//third_party/mesa:osmesa",
     "//ui/base",
