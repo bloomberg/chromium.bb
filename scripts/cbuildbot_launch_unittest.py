@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import mock
 import os
-import unittest
 
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
@@ -17,7 +16,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cbuildbot_launch
 
-# pylint
+
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
 
@@ -78,19 +77,11 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
         mock.call().Sync()
     ])
 
-
-class CbuildbotLaunchGlobalTest(cros_test_lib.TestCase):
-  """Validate our global setup function."""
-  def setUp(self):
-    self.originalUmask = os.umask(0) # Have to set it to read it, make it bogus
-
-  def teardown(self):
-    os.umask(self.originalUmask)
-
-  @unittest.skip("Global side effects break other tests. Run serially?")
   def testConfigureGlobalEnvironment(self):
+    """Ensure that we can setup our global runtime environment correctly."""
     cbuildbot_launch.ConfigureGlobalEnvironment()
 
+    # So far, we only have to modify the umask to ensure safety.
     self.assertEqual(os.umask(0), 0o22)
 
 
@@ -193,7 +184,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
         cwd='/buildroot', error_code_ok=True)
 
 
-class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
+class CleanBuildrootTest(cros_test_lib.MockTempDirTestCase):
   """Tests for CleanBuildroot method."""
 
   def setUp(self):
@@ -205,10 +196,9 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     self.general = os.path.join(self.root, 'general/general')
     # TODO: Add .cache, and distfiles.
 
-  def populateBuildroot(self, state=None, group_readable=True):
+  def populateBuildroot(self, state=None):
     """Create standard buildroot contents for cleanup."""
-    buildroot_mode = 0o775 if group_readable else 0o700
-    osutils.SafeMakedirs(self.root, mode=buildroot_mode)
+    osutils.SafeMakedirs(self.root)
 
     if state:
       osutils.WriteFile(self.state, state)
@@ -221,7 +211,7 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
     """Test CleanBuildroot with no history."""
     cbuildbot_launch.CleanBuildroot(None, self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), 'TOT')
+    self.assertEqual(osutils.ReadFile(self.state), '1 default')
 
   def testBuildrootNoState(self):
     """Test CleanBuildroot with no state information."""
@@ -229,41 +219,110 @@ class CleanBuildrootTest(cros_test_lib.TempDirTestCase):
 
     cbuildbot_launch.CleanBuildroot(None, self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), 'TOT')
-    self.assertExists(self.repo)
+    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertNotExists(self.repo)
     self.assertNotExists(self.chroot)
-    self.assertExists(self.general)
+    self.assertNotExists(self.general)
+
+  def testBuildrootFormatMismatch(self):
+    """Test CleanBuildroot with no state information."""
+    self.populateBuildroot('0 default')
+
+    cbuildbot_launch.CleanBuildroot(None, self.root)
+
+    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertNotExists(self.repo)
+    self.assertNotExists(self.chroot)
+    self.assertNotExists(self.general)
 
   def testBuildrootBranchChange(self):
     """Test CleanBuildroot with a change in branches."""
-    self.populateBuildroot('branchA')
+    self.populateBuildroot('1 branchA')
 
     cbuildbot_launch.CleanBuildroot('branchB', self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), 'branchB')
+    self.assertEqual(osutils.ReadFile(self.state), '1 branchB')
     self.assertExists(self.repo)
     self.assertNotExists(self.chroot)
     self.assertExists(self.general)
 
   def testBuildrootBranchMatch(self):
     """Test CleanBuildroot with no change in branch."""
-    self.populateBuildroot('branchA')
+    self.populateBuildroot('1 branchA')
 
     cbuildbot_launch.CleanBuildroot('branchA', self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), 'branchA')
+    self.assertEqual(osutils.ReadFile(self.state), '1 branchA')
     self.assertExists(self.repo)
     self.assertExists(self.chroot)
     self.assertExists(self.general)
 
-
-  def testBuildrootNotGroupReadable(self):
-    """Test CleanBuildroot with no state information."""
-    self.populateBuildroot(group_readable=False)
+  def testBuildrootBranchChangeToDefault(self):
+    """Test CleanBuildroot with a change in branches."""
+    self.populateBuildroot('1 branchA')
 
     cbuildbot_launch.CleanBuildroot(None, self.root)
 
-    self.assertEqual(osutils.ReadFile(self.state), 'TOT')
-    self.assertNotExists(self.repo)
+    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertExists(self.repo)
     self.assertNotExists(self.chroot)
-    self.assertNotExists(self.general)
+    self.assertExists(self.general)
+
+  def testBuildrootBranchMatchDefault(self):
+    """Test CleanBuildroot with no change in branch."""
+    self.populateBuildroot('1 default')
+
+    cbuildbot_launch.CleanBuildroot(None, self.root)
+
+    self.assertEqual(osutils.ReadFile(self.state), '1 default')
+    self.assertExists(self.repo)
+    self.assertExists(self.chroot)
+    self.assertExists(self.general)
+
+  def testGetBuildrootState(self):
+    """Test GetBuildrootState."""
+    # No root dir.
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (0, ''))
+
+    # Empty root dir.
+    osutils.SafeMakedirs(self.root)
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (0, ''))
+
+    # Empty Contents
+    osutils.WriteFile(self.state, '')
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (0, ''))
+
+    # Old Format Contents
+    osutils.WriteFile(self.state, 'happy-branch')
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (0, ''))
+
+    # Expected Contents
+    osutils.WriteFile(self.state, '1 happy-branch')
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (1, 'happy-branch'))
+
+    # Future Contents
+    osutils.WriteFile(self.state, '22 master')
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (22, 'master'))
+
+    # Read Write
+    cbuildbot_launch.SetBuildrootState('happy-branch', self.root)
+    results = cbuildbot_launch.GetBuildrootState(self.root)
+    self.assertEqual(results, (1, 'happy-branch'))
+
+  def testSetBuildrootState(self):
+    """Test SetBuildrootState."""
+    # Write out a state file.
+    osutils.SafeMakedirs(self.root)
+    cbuildbot_launch.SetBuildrootState('happy-branch', self.root)
+    self.assertEqual(osutils.ReadFile(self.state), '1 happy-branch')
+
+    # Change to a future version.
+    self.PatchObject(cbuildbot_launch, 'BUILDROOT_BUILDROOT_LAYOUT', 22)
+    cbuildbot_launch.SetBuildrootState('happy-branch', self.root)
+    self.assertEqual(osutils.ReadFile(self.state), '22 happy-branch')
