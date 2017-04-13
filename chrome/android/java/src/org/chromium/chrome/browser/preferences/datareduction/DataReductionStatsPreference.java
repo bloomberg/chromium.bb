@@ -15,9 +15,11 @@ import android.preference.Preference;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
@@ -127,6 +129,15 @@ public class DataReductionStatsPreference extends Preference {
     }
 
     /**
+     * Keep the graph labels LTR oriented. In RTL languages, numbers and plots remain LTR.
+     */
+    @SuppressLint("RtlHardcoded")
+    private void forceLayoutGravityOfGraphLabels() {
+        ((FrameLayout.LayoutParams) mStartDateTextView.getLayoutParams()).gravity = Gravity.LEFT;
+        ((FrameLayout.LayoutParams) mEndDateTextView.getLayoutParams()).gravity = Gravity.RIGHT;
+    }
+
+    /**
      * Sets up a data usage chart and text views containing data reduction statistics.
      * @param view The current view.
      */
@@ -142,6 +153,7 @@ public class DataReductionStatsPreference extends Preference {
         mEndDateTextView = (TextView) view.findViewById(R.id.data_reduction_end_date);
         mDataReductionBreakdownView =
                 (DataReductionSiteBreakdownView) view.findViewById(R.id.breakdown);
+        forceLayoutGravityOfGraphLabels();
         updateReductionStatistics();
         setDetailText();
 
