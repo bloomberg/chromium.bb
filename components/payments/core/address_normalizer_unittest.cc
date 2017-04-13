@@ -25,6 +25,8 @@ using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 using ::i18n::addressinput::TestdataSource;
 
+const char kLocale[] = "US";
+
 // The requester of normalization for this test.
 class NormalizationDelegate : public AddressNormalizer::Delegate {
  public:
@@ -33,22 +35,26 @@ class NormalizationDelegate : public AddressNormalizer::Delegate {
 
   ~NormalizationDelegate() override {}
 
-  void OnAddressNormalized(
-      const autofill::AutofillProfile& normalized_profile) override {
+  void OnAddressNormalized(const autofill::AutofillProfile& profile) override {
     normalized_called_ = true;
+    profile_ = profile;
   }
 
   void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override {
     not_normalized_called_ = true;
+    profile_ = profile;
   }
 
-  bool normalized_called() { return normalized_called_; }
+  bool normalized_called() const { return normalized_called_; }
 
-  bool not_normalized_called() { return not_normalized_called_; }
+  bool not_normalized_called() const { return not_normalized_called_; }
+
+  const AutofillProfile& profile() const { return profile_; }
 
  private:
   bool normalized_called_;
   bool not_normalized_called_;
+  AutofillProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalizationDelegate);
 };
@@ -60,7 +66,7 @@ class ChromiumTestdataSource : public TestdataSource {
 
   ~ChromiumTestdataSource() override {}
 
-  // For this test, only load the rules for the "US".
+  // For this test, only load the rules for the kLocale.
   void Get(const std::string& key, const Callback& data_ready) const override {
     data_ready(
         true, key,
@@ -121,13 +127,13 @@ class AddressNormalizerTest : public testing::Test {
 
 // Tests that rules are not loaded by default.
 TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_NotLoaded) {
-  EXPECT_FALSE(normalizer_->AreRulesLoadedForRegion("US"));
+  EXPECT_FALSE(normalizer_->AreRulesLoadedForRegion(kLocale));
 }
 
 // Tests that the rules are loaded correctly.
 TEST_F(AddressNormalizerTest, AreRulesLoadedForRegion_Loaded) {
-  normalizer_->LoadRulesForRegion("US");
-  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion("US"));
+  normalizer_->LoadRulesForRegion(kLocale);
+  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion(kLocale));
 }
 
 // Tests that if the rules are loaded before the normalization is started, the
@@ -137,11 +143,11 @@ TEST_F(AddressNormalizerTest, StartNormalization_RulesLoaded) {
   AutofillProfile profile;
 
   // Load the rules.
-  normalizer_->LoadRulesForRegion("US");
-  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion("US"));
+  normalizer_->LoadRulesForRegion(kLocale);
+  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion(kLocale));
 
   // Start the normalization.
-  normalizer_->StartAddressNormalization(profile, "US", 0, &delegate);
+  normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
 
   // Since the rules are already loaded, the address should be normalized
   // synchronously.
@@ -161,7 +167,7 @@ TEST_F(AddressNormalizerTest, StartNormalization_RulesNotLoaded_WillNotLoad) {
   normalizer_->ShouldLoadRules(false);
 
   // Start the normalization.
-  normalizer_->StartAddressNormalization(profile, "US", 0, &delegate);
+  normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
 
   // Let the timeout execute.
   base::RunLoop().RunUntilIdle();
@@ -179,15 +185,63 @@ TEST_F(AddressNormalizerTest, StartNormalization_RulesNotLoaded_WillLoad) {
   AutofillProfile profile;
 
   // Start the normalization.
-  normalizer_->StartAddressNormalization(profile, "US", 0, &delegate);
+  normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
 
   // Even if the rules are not loaded before the call to
   // StartAddressNormalization, they should get loaded in the call. Since our
   // test source is synchronous, the normalization will happen synchronously
   // too.
-  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion("US"));
+  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion(kLocale));
   EXPECT_TRUE(delegate.normalized_called());
   EXPECT_FALSE(delegate.not_normalized_called());
+}
+
+// Tests that the phone number is formatted when the address is normalized.
+TEST_F(AddressNormalizerTest, FormatPhone_AddressNormalized) {
+  NormalizationDelegate delegate;
+  AutofillProfile profile;
+  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                     base::UTF8ToUTF16("(515) 123-1234"));
+
+  // Load the rules.
+  normalizer_->LoadRulesForRegion(kLocale);
+  EXPECT_TRUE(normalizer_->AreRulesLoadedForRegion(kLocale));
+
+  // Start the normalization.
+  normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
+
+  // Make sure the address was normalized.
+  EXPECT_TRUE(delegate.normalized_called());
+
+  // Expect that the phone number was formatted.
+  EXPECT_EQ("+15151231234", base::UTF16ToUTF8(delegate.profile().GetRawInfo(
+                                autofill::PHONE_HOME_WHOLE_NUMBER)));
+}
+
+// Tests that the phone number is formatted even when the address is not
+// normalized.
+TEST_F(AddressNormalizerTest, FormatPhone_AddressNotNormalized) {
+  NormalizationDelegate delegate;
+  AutofillProfile profile;
+  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                     base::UTF8ToUTF16("515-123-1234"));
+
+  // Make sure the rules will not be loaded in the StartAddressNormalization
+  // call.
+  normalizer_->ShouldLoadRules(false);
+
+  // Start the normalization.
+  normalizer_->StartAddressNormalization(profile, kLocale, 0, &delegate);
+
+  // Let the timeout execute.
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure the address was not normalized.
+  EXPECT_TRUE(delegate.not_normalized_called());
+
+  // Expect that the phone number was formatted.
+  EXPECT_EQ("+15151231234", base::UTF16ToUTF8(delegate.profile().GetRawInfo(
+                                autofill::PHONE_HOME_WHOLE_NUMBER)));
 }
 
 }  // namespace payments

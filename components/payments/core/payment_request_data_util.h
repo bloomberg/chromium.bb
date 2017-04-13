@@ -53,6 +53,20 @@ bool ParseBasicCardSupportedNetworks(
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_supported_networks);
 
+// Formats the given number |phone_number| to
+// i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL format
+// by using i18n::phonenumbers::PhoneNumberUtil::Format.
+std::string FormatPhoneForDisplay(const std::string& phone_number,
+                                  const std::string& country_code);
+
+// Formats the given number |phone_number| to
+// i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164 format by using
+// i18n::phonenumbers::PhoneNumberUtil::Format, as defined in the Payment
+// Request spec
+// (https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm)
+std::string FormatPhoneForResponse(const std::string& phone_number,
+                                   const std::string& country_code);
+
 }  // namespace data_util
 }  // namespace payments
 

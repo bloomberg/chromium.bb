@@ -191,7 +191,7 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"5454545454545454", "12", "Bob", "Google",
-                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "+1 650-253-0000"});
+                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "+16502530000"});
     }
 
     /** Quickly pressing on "add card" and then [X] should not crash. */

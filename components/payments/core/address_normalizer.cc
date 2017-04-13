@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -62,6 +63,9 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
       return;
     has_responded_ = true;
 
+    // In either case, format the phone number.
+    FormatPhoneNumberForResponse();
+
     if (!success) {
       delegate_->OnCouldNotNormalize(profile_);
       return;
@@ -90,6 +94,22 @@ class AddressNormalizationRequest : public AddressNormalizer::Request {
   }
 
  private:
+  // Tries to format the phone number to the E.164 format to send in the Payment
+  // Response, as defined in the Payment Request spec. Keeps the original
+  // if it cannot be formatted. More info at:
+  // https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm
+  void FormatPhoneNumberForResponse() {
+    const std::string original_number = base::UTF16ToUTF8(profile_.GetInfo(
+        autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+        region_code_));
+
+    std::string formatted_number =
+        data_util::FormatPhoneForResponse(original_number, region_code_);
+
+    profile_.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                        base::UTF8ToUTF16(formatted_number));
+  }
+
   AutofillProfile profile_;
   std::string region_code_;
   AddressNormalizer::Delegate* delegate_;

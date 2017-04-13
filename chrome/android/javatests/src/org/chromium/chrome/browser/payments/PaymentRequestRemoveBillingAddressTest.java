@@ -74,6 +74,6 @@ public class PaymentRequestRemoveBillingAddressTest extends PaymentRequestTestBa
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"4111111111111111", "Alice", "12", "123", "Jane Smith",
                 "Google", "1600 Amphitheatre Pkwy", "CA", "Mountain View", "94043", "US",
-                "555-555-5555", "en-US"});
+                "+15555555555", "en-US"});
     }
 }

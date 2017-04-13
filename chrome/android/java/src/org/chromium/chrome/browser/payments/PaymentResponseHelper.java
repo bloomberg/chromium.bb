@@ -129,6 +129,6 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
 
     @Override
     public void onCouldNotNormalize(AutofillProfile profile) {
-        onAddressNormalized(null);
+        onAddressNormalized(profile);
     }
 }

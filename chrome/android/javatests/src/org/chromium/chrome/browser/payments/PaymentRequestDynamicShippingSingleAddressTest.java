@@ -66,8 +66,8 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "californiaShippingOption"});
+                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "+16502530000", "US",
+                "en", "californiaShippingOption"});
     }
 
     /** Expand the shipping address section, select an address, edit it and click "Pay." */
@@ -91,8 +91,8 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Jane Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "californiaShippingOption"});
+                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "+16502530000", "US",
+                "en", "californiaShippingOption"});
     }
 
     /** Expand the shipping address section, select address, edit but cancel editing, and "Pay". */
@@ -117,8 +117,8 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
-                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
-                "californiaShippingOption"});
+                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "+16502530000", "US",
+                "en", "californiaShippingOption"});
     }
 
     /** Attempt to add an invalid address and cancel the transaction. */
@@ -158,7 +158,7 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "+1 650-253-0000"});
+                "Mountain View", "CA", "94043", "+16502530000"});
     }
 
     /** Quickly pressing "add address" and then [X] should not crash. */

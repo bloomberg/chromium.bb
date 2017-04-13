@@ -84,7 +84,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "+1 650-253-0000"});
+                "Mountain View", "CA", "94043", "+16502530000"});
     }
 
     /** Change the country in the spinner, add a valid address, and complete the transaction. */
@@ -103,7 +103,7 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {
-                "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "+1 650-253-0000"});
+                "Alice", "Supreme Court", "Airport Road", "Kabul", "1043", "+16502530000"});
     }
 
     /** Quickly pressing on "add address" and then [X] should not crash. */

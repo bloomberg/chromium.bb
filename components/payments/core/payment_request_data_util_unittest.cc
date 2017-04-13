@@ -72,5 +72,24 @@ TEST(PaymentRequestDataUtilTest, GetBasicCardResponseFromAutofillCreditCard) {
       json_response);
 }
 
+// Tests that the phone numbers are correctly formatted for the Payment
+// Response.
+TEST(PaymentRequestDataUtilTest, FormatPhoneForResponse) {
+  EXPECT_EQ("+15151231234", payments::data_util::FormatPhoneForResponse(
+                                "(515) 123-1234", "US"));
+  EXPECT_EQ("+15151231234", payments::data_util::FormatPhoneForResponse(
+                                "(1) 515-123-1234", "US"));
+  EXPECT_EQ("+33142685300",
+            payments::data_util::FormatPhoneForResponse("1 42 68 53 00", "FR"));
+}
+
+// Tests that the phone numbers are correctly formatted to display to the user.
+TEST(PaymentRequestDataUtilTest, FormatPhoneForDisplay) {
+  EXPECT_EQ("+1 515-123-1234",
+            payments::data_util::FormatPhoneForDisplay("5151231234", "US"));
+  EXPECT_EQ("+33 1 42 68 53 00",
+            payments::data_util::FormatPhoneForDisplay("142685300", "FR"));
+}
+
 }  // namespace data_util
 }  // namespace payments

@@ -6,5 +6,6 @@ include_rules = [
   "+components/strings",
   "+components/ukm",
   "+third_party/libaddressinput",
+  "+third_party/libphonenumber",
   "+ui/base",
 ]

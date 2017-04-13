@@ -35,6 +35,7 @@ static_library("core") {
     "//components/autofill/core/browser",
     "//components/strings:components_strings_grit",
     "//components/ukm",
+    "//third_party/libphonenumber",
     "//ui/base",
     "//url",
   ]

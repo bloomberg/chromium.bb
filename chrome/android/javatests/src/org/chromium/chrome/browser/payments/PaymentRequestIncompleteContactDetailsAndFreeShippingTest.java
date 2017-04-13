@@ -64,7 +64,7 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
         clickInContactInfoAndWait(R.id.payments_first_radio_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "+1 650-253-0000", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+16502530000", "jon.doe@google.com"});
     }
 
     /** Add a shipping address with valid data and see that the contacts section is updated. */
@@ -97,6 +97,6 @@ public class PaymentRequestIncompleteContactDetailsAndFreeShippingTest
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "+1 650-253-0000", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+16502530000", "jon.doe@google.com"});
     }
 }
