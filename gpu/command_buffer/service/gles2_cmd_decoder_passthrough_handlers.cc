@@ -1315,13 +1315,14 @@ error::Error GLES2DecoderPassthroughImpl::HandleMapBufferRange(
     return error::kOutOfBounds;
   }
 
-  error::Error error = DoMapBufferRange(target, offset, size, access, mem,
-                                        c.data_shm_id, c.data_shm_offset);
+  error::Error error =
+      DoMapBufferRange(target, offset, size, access, mem, c.data_shm_id,
+                       c.data_shm_offset, result);
   if (error != error::kNoError) {
+    DCHECK(*result == 0);
     return error;
   }
 
-  *result = 1;
   return error::kNoError;
 }
 

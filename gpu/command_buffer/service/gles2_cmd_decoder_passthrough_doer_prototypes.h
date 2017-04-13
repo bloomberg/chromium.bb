@@ -722,7 +722,8 @@ error::Error DoMapBufferRange(GLenum target,
                               GLbitfield access,
                               void* ptr,
                               int32_t data_shm_id,
-                              uint32_t data_shm_offset);
+                              uint32_t data_shm_offset,
+                              uint32_t* result);
 error::Error DoUnmapBuffer(GLenum target);
 error::Error DoResizeCHROMIUM(GLuint width,
                               GLuint height,

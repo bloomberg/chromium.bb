@@ -2746,7 +2746,8 @@ error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
     GLbitfield access,
     void* ptr,
     int32_t data_shm_id,
-    uint32_t data_shm_offset) {
+    uint32_t data_shm_offset,
+    uint32_t* result) {
   FlushErrors();
 
   GLbitfield filtered_access = access;
@@ -2771,6 +2772,7 @@ error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
   void* mapped_ptr = glMapBufferRange(target, offset, size, filtered_access);
   if (FlushErrors() || mapped_ptr == nullptr) {
     // Had an error while mapping, don't copy any data
+    *result = 0;
     return error::kNoError;
   }
 
@@ -2795,6 +2797,7 @@ error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
   resources_->mapped_buffer_map.insert(
       std::make_pair(client_buffer, mapped_buffer_info));
 
+  *result = 1;
   return error::kNoError;
 }
 
