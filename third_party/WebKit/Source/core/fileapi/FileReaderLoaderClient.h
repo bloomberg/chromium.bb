@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

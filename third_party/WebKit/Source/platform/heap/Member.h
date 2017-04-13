@@ -5,6 +5,7 @@
 #ifndef Member_h
 #define Member_h
 
+#include "platform/heap/HeapPage.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTraits.h"
