@@ -49,6 +49,7 @@ namespace safe_browsing {
 
 namespace {
 
+using chrome_cleaner::mojom::ElevationStatus;
 using chrome_cleaner::mojom::PromptAcceptance;
 
 // Special switches passed by the parent process (test case) to the reporter
@@ -136,14 +137,16 @@ void SendScanResults(const std::string& chrome_mojo_pipe_token,
     uws->observed_behaviours = chrome_cleaner::mojom::ObservedBehaviours::New();
     removable_uws_found.push_back(std::move(uws));
   }
-  const bool elevation_required =
-      command_line.HasSwitch(kReportElevationRequiredSwitch);
+  const ElevationStatus elevation_status =
+      command_line.HasSwitch(kReportElevationRequiredSwitch)
+          ? ElevationStatus::REQUIRED
+          : ElevationStatus::NOT_REQUIRED;
   const PromptAcceptance expected_prompt_acceptance =
       PromptAcceptanceFromCommandLine(command_line);
 
   (*g_chrome_prompt_ptr)
       ->PromptUser(
-          std::move(removable_uws_found), elevation_required,
+          std::move(removable_uws_found), elevation_status,
           base::Bind(&PromptUserCallback, done, expected_prompt_acceptance,
                      expected_value_received));
 }
@@ -208,20 +211,22 @@ MULTIPROCESS_TEST_MAIN(MockSwReporterProcess) {
 //  - bool in_browser_cleaner_ui: indicates if InBrowserCleanerUI experiment
 //    is enabled; if so, the parent and the child processes will communicate
 //    via a Mojo IPC;
-//  - bool elevation_required: indicates if the scan results sent by the child
-//    process should consider that elevation will be required for cleanup.
+//  - ElevationStatus elevation_status: indicates if the scan results sent by
+//    the child process should consider that elevation will be required for
+//    cleanup.
 class SRTFetcherTest
     : public InProcessBrowserTest,
       public SwReporterTestingDelegate,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, ElevationStatus>> {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
 
-    std::tie(in_browser_cleaner_ui_, elevation_required_) = GetParam();
-    // The config should only accept elevation_required_ if InBrowserCleanerUI
+    std::tie(in_browser_cleaner_ui_, elevation_status_) = GetParam();
+    // The config should only accept elevation_status_ if InBrowserCleanerUI
     // feature is enabled.
-    ASSERT_TRUE(!elevation_required_ || in_browser_cleaner_ui_);
+    ASSERT_TRUE(elevation_status_ == ElevationStatus::NOT_REQUIRED ||
+                in_browser_cleaner_ui_);
 
     if (in_browser_cleaner_ui_)
       scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
@@ -284,7 +289,7 @@ class SRTFetcherTest
       AddPromptAcceptanceToCommandLine(PromptAcceptance::DENIED, &command_line);
       if (exit_code_to_report_ == kSwReporterCleanupNeeded) {
         command_line.AppendSwitch(kReportUwSFoundSwitch);
-        if (elevation_required_)
+        if (elevation_status_ == ElevationStatus::REQUIRED)
           command_line.AppendSwitch(kReportElevationRequiredSwitch);
       }
     }
@@ -459,7 +464,7 @@ class SRTFetcherTest
   scoped_refptr<base::SingleThreadTaskRunner> saved_task_runner_;
 
   bool in_browser_cleaner_ui_;
-  bool elevation_required_;
+  ElevationStatus elevation_status_;
 
   bool prompt_trigger_called_ = false;
   int reporter_launch_count_ = 0;
@@ -794,15 +799,18 @@ IN_PROC_BROWSER_TEST_P(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
 }
 
-INSTANTIATE_TEST_CASE_P(NoInBrowserCleanerUI,
-                        SRTFetcherTest,
-                        testing::Combine(testing::Values(false),
-                                         testing::Values(false)));
+INSTANTIATE_TEST_CASE_P(
+    NoInBrowserCleanerUI,
+    SRTFetcherTest,
+    testing::Combine(testing::Values(false),
+                     testing::Values(ElevationStatus::NOT_REQUIRED)));
 
-INSTANTIATE_TEST_CASE_P(InBrowserCleanerUI,
-                        SRTFetcherTest,
-                        testing::Combine(testing::Values(true),
-                                         testing::Bool()));
+INSTANTIATE_TEST_CASE_P(
+    InBrowserCleanerUI,
+    SRTFetcherTest,
+    testing::Combine(testing::Values(true),
+                     testing::Values(ElevationStatus::NOT_REQUIRED,
+                                     ElevationStatus::REQUIRED)));
 
 // This provide tests which allows explicit invocation of the SRT Prompt
 // useful for checking dialog layout or any other interactive functionality

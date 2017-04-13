@@ -10,6 +10,7 @@ namespace safe_browsing {
 
 using chrome_cleaner::mojom::ChromePrompt;
 using chrome_cleaner::mojom::ChromePromptRequest;
+using chrome_cleaner::mojom::ElevationStatus;
 using chrome_cleaner::mojom::PromptAcceptance;
 using chrome_cleaner::mojom::UwSPtr;
 
@@ -20,7 +21,7 @@ ChromePromptImpl::~ChromePromptImpl() {}
 
 void ChromePromptImpl::PromptUser(
     std::vector<UwSPtr> removable_uws_found,
-    bool elevation_required,
+    ElevationStatus elevation_status,
     const ChromePrompt::PromptUserCallback& callback) {
   // Placeholder. The actual implementation will show the prompt dialog to the
   // user and invoke this callback depending on the user's response.

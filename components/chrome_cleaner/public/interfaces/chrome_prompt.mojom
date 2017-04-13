@@ -30,6 +30,13 @@ struct UwS {
   array<string> files_to_delete;
 };
 
+// Indicates if elevation will be required for cleanup.
+[Extensible]
+enum ElevationStatus {
+  NOT_REQUIRED = 0,
+  REQUIRED = 1,
+};
+
 [Extensible]
 enum PromptAcceptance {
   UNSPECIFIED = 0,
@@ -55,11 +62,11 @@ enum PromptAcceptance {
 interface ChromePrompt {
   // Params:
   //  - removable_uws_found: the list of UwS detected by the reporter;
-  //  - elevation_required: if the cleaner will need to run in elevated mode.
+  //  - elevation_status: if the cleaner will need to run in elevated mode.
   // Returns:
   //  - prompt_acceptance: indicates if the user accepted the prompt; if the
   //                       prompt is accepted, it also indicates if logs
   //                       uploading is allowed.
-  PromptUser(array<UwS> removable_uws_found, bool elevation_required)
+  PromptUser(array<UwS> removable_uws_found, ElevationStatus elevation_status)
       => (PromptAcceptance prompt_acceptance);
 };
