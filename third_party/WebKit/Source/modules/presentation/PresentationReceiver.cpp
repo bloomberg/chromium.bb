@@ -9,7 +9,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -47,7 +46,7 @@ PresentationReceiver* PresentationReceiver::From(Document& document) {
 ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
   if (!connection_list_property_)
     connection_list_property_ =
-        new ConnectionListProperty(ExecutionContext::From(script_state), this,
+        new ConnectionListProperty(script_state->GetExecutionContext(), this,
                                    ConnectionListProperty::kReady);
 
   if (!connection_list_->IsEmpty() && connection_list_property_->GetState() ==

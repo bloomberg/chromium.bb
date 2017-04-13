@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BodyStreamBuffer.h"
@@ -219,7 +218,7 @@ BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
   using Command = BytesConsumerTestUtil::Command;
   BytesConsumerTestUtil::ReplayingBytesConsumer* src =
       new BytesConsumerTestUtil::ReplayingBytesConsumer(
-          ExecutionContext::From(script_state));
+          script_state->GetExecutionContext());
   src->Add(Command(Command::kData, "Hello, "));
   src->Add(Command(Command::kData, "world"));
   src->Add(Command(Command::kDone));

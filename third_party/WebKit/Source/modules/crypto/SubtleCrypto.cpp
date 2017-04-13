@@ -61,16 +61,15 @@ static bool ParseAlgorithm(const AlgorithmIdentifier& raw,
 static bool CanAccessWebCrypto(ScriptState* script_state,
                                CryptoResult* result) {
   String error_message;
-  if (!ExecutionContext::From(script_state)
-           ->IsSecureContext(error_message,
-                             ExecutionContext::kWebCryptoSecureContextCheck)) {
+  if (!script_state->GetExecutionContext()->IsSecureContext(
+          error_message, ExecutionContext::kWebCryptoSecureContextCheck)) {
     result->CompleteWithError(kWebCryptoErrorTypeNotSupported, error_message);
     return false;
   }
 
-  if (!ExecutionContext::From(script_state)->IsSecureContext()) {
+  if (!script_state->GetExecutionContext()->IsSecureContext()) {
     Deprecation::CountDeprecation(
-        ExecutionContext::From(script_state),
+        script_state->GetExecutionContext(),
         UseCounter::kSubtleCryptoOnlyStrictSecureContextCheckFailed);
   }
 
@@ -214,7 +213,7 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* script_state,
                                   kWebCryptoKeyUsageEncrypt, result))
     return promise;
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, key->Key());
   Platform::Current()->Crypto()->Encrypt(normalized_algorithm, key->Key(),
                                          std::move(data), result->Result());
@@ -255,7 +254,7 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* script_state,
                                   kWebCryptoKeyUsageDecrypt, result))
     return promise;
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, key->Key());
   Platform::Current()->Crypto()->Decrypt(normalized_algorithm, key->Key(),
                                          std::move(data), result->Result());
@@ -296,7 +295,7 @@ ScriptPromise SubtleCrypto::sign(ScriptState* script_state,
                                   result))
     return promise;
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, key->Key());
   Platform::Current()->Crypto()->Sign(normalized_algorithm, key->Key(),
                                       std::move(data), result->Result());
@@ -343,7 +342,7 @@ ScriptPromise SubtleCrypto::verifySignature(
                                   kWebCryptoKeyUsageVerify, result))
     return promise;
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, key->Key());
   Platform::Current()->Crypto()->VerifySignature(
       normalized_algorithm, key->Key(), std::move(signature), std::move(data),
@@ -374,8 +373,7 @@ ScriptPromise SubtleCrypto::digest(ScriptState* script_state,
                       normalized_algorithm, result))
     return promise;
 
-  HistogramAlgorithm(ExecutionContext::From(script_state),
-                     normalized_algorithm);
+  HistogramAlgorithm(script_state->GetExecutionContext(), normalized_algorithm);
   Platform::Current()->Crypto()->Digest(normalized_algorithm, std::move(data),
                                         result->Result());
   return promise;
@@ -411,8 +409,7 @@ ScriptPromise SubtleCrypto::generateKey(
   // keys. This normative requirement is enforced by the platform
   // implementation in the call below.
 
-  HistogramAlgorithm(ExecutionContext::From(script_state),
-                     normalized_algorithm);
+  HistogramAlgorithm(script_state->GetExecutionContext(), normalized_algorithm);
   Platform::Current()->Crypto()->GenerateKey(normalized_algorithm, extractable,
                                              key_usages, result->Result());
   return promise;
@@ -498,8 +495,7 @@ ScriptPromise SubtleCrypto::importKey(
                       normalized_algorithm, result))
     return promise;
 
-  HistogramAlgorithm(ExecutionContext::From(script_state),
-                     normalized_algorithm);
+  HistogramAlgorithm(script_state->GetExecutionContext(), normalized_algorithm);
   Platform::Current()->Crypto()->ImportKey(format, std::move(key_data),
                                            normalized_algorithm, extractable,
                                            key_usages, result->Result());
@@ -530,7 +526,7 @@ ScriptPromise SubtleCrypto::exportKey(ScriptState* script_state,
     return promise;
   }
 
-  HistogramKey(ExecutionContext::From(script_state), key->Key());
+  HistogramKey(script_state->GetExecutionContext(), key->Key());
   Platform::Current()->Crypto()->ExportKey(format, key->Key(),
                                            result->Result());
   return promise;
@@ -589,9 +585,9 @@ ScriptPromise SubtleCrypto::wrapKey(
     return promise;
   }
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, wrapping_key->Key());
-  HistogramKey(ExecutionContext::From(script_state), key->Key());
+  HistogramKey(script_state->GetExecutionContext(), key->Key());
   Platform::Current()->Crypto()->WrapKey(
       format, key->Key(), wrapping_key->Key(), normalized_algorithm,
       result->Result());
@@ -664,9 +660,9 @@ ScriptPromise SubtleCrypto::unwrapKey(
   // normative requirement is enforced by the platform implementation in the
   // call below.
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, unwrapping_key->Key());
-  HistogramAlgorithm(ExecutionContext::From(script_state),
+  HistogramAlgorithm(script_state->GetExecutionContext(),
                      normalized_key_algorithm);
   Platform::Current()->Crypto()->UnwrapKey(
       format, std::move(wrapped_key), unwrapping_key->Key(),
@@ -706,7 +702,7 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* script_state,
                                        kWebCryptoKeyUsageDeriveBits, result))
     return promise;
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, base_key->Key());
   Platform::Current()->Crypto()->DeriveBits(
       normalized_algorithm, base_key->Key(), length_bits, result->Result());
@@ -776,9 +772,9 @@ ScriptPromise SubtleCrypto::deriveKey(
   // normative requirement is enforced by the platform implementation in the
   // call below.
 
-  HistogramAlgorithmAndKey(ExecutionContext::From(script_state),
+  HistogramAlgorithmAndKey(script_state->GetExecutionContext(),
                            normalized_algorithm, base_key->Key());
-  HistogramAlgorithm(ExecutionContext::From(script_state),
+  HistogramAlgorithm(script_state->GetExecutionContext(),
                      normalized_derived_key_algorithm);
   Platform::Current()->Crypto()->DeriveKey(
       normalized_algorithm, base_key->Key(), normalized_derived_key_algorithm,

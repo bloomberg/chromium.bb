@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/NotShared.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1355,7 +1354,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   }
 
   if (OriginClean() &&
-      WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
+      WouldTaintOrigin(image_source, script_state->GetExecutionContext()))
     SetOriginTainted();
 }
 
@@ -1470,7 +1469,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   DCHECK(image_for_rendering);
 
   bool origin_clean =
-      !WouldTaintOrigin(image_source, ExecutionContext::From(script_state));
+      !WouldTaintOrigin(image_source, script_state->GetExecutionContext());
 
   return CanvasPattern::Create(image_for_rendering.Release(), repeat_mode,
                                origin_clean);

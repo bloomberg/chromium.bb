@@ -198,7 +198,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
 
   if (!availability_property_) {
     availability_property_ = new PresentationAvailabilityProperty(
-        ExecutionContext::From(script_state), this,
+        script_state->GetExecutionContext(), this,
         PresentationAvailabilityProperty::kReady);
 
     client->GetAvailability(urls_,

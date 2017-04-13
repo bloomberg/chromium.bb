@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebSecurityOrigin.h"
 
@@ -57,7 +56,7 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
     }
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   ServiceWorkerGlobalScopeClient* client =
       ServiceWorkerGlobalScopeClient::From(execution_context);
 

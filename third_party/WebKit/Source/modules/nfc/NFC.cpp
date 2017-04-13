@@ -11,7 +11,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/nfc/NFCError.h"
 #include "modules/nfc/NFCMessage.h"
@@ -625,7 +624,7 @@ ScriptPromise NFC::push(ScriptState* script_state,
         script_state, DOMException::Create(kSyntaxError));
 
   if (!SetURL(
-          ExecutionContext::From(script_state)->GetSecurityOrigin()->ToString(),
+          script_state->GetExecutionContext()->GetSecurityOrigin()->ToString(),
           message))
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kSyntaxError));
@@ -776,7 +775,7 @@ void NFC::OnWatch(const WTF::Vector<uint32_t>& ids,
 
 ScriptPromise NFC::RejectIfNotSupported(ScriptState* script_state) {
   String error_message;
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  ExecutionContext* context = script_state->GetExecutionContext();
   if (!context->IsSecureContext(error_message)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kSecurityError, error_message));

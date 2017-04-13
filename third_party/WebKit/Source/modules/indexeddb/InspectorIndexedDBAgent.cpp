@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
@@ -219,7 +218,7 @@ class ExecutableWithDatabase
   virtual void Execute(IDBDatabase*) = 0;
   virtual RequestCallback* GetRequestCallback() = 0;
   ExecutionContext* Context() const {
-    return ExecutionContext::From(script_state_.Get());
+    return script_state_->GetExecutionContext();
   }
   ScriptState* GetScriptState() const { return script_state_.Get(); }
 
@@ -573,8 +572,7 @@ class OpenCursorCallback final : public EventListener {
       return;
     }
 
-    Document* document =
-        ToDocument(ExecutionContext::From(script_state_.Get()));
+    Document* document = ToDocument(script_state_->GetExecutionContext());
     if (!document)
       return;
     ScriptState* script_state = script_state_.Get();

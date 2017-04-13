@@ -8,7 +8,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/Fullscreen.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -74,7 +73,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   }
 
   UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplays);
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   if (!execution_context->IsSecureContext())
     UseCounter::Count(*GetDocument(), UseCounter::kVRGetDisplaysInsecureOrigin);
 

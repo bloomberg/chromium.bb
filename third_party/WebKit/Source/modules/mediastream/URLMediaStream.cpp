@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMURL.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "modules/mediastream/MediaStream.h"
 
@@ -43,7 +42,7 @@ String URLMediaStream::createObjectURL(ScriptState* script_state,
   // Since WebWorkers cannot obtain Stream objects, we should be on the main
   // thread.
   DCHECK(IsMainThread());
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   DCHECK(execution_context);
   DCHECK(stream);
 

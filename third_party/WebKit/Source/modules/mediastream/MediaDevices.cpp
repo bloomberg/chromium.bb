@@ -10,7 +10,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "modules/mediastream/MediaErrorState.h"
 #include "modules/mediastream/MediaStream.h"
@@ -79,7 +78,7 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 MediaDevices::~MediaDevices() {}
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
-  Document* document = ToDocument(ExecutionContext::From(script_state));
+  Document* document = ToDocument(script_state->GetExecutionContext());
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media)
@@ -104,7 +103,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* script_state,
   NavigatorUserMediaErrorCallback* error_callback =
       new PromiseErrorCallback(resolver);
 
-  Document* document = ToDocument(ExecutionContext::From(script_state));
+  Document* document = ToDocument(script_state->GetExecutionContext());
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media)

@@ -34,7 +34,6 @@
 #include "bindings/modules/v8/WebGLAny.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/ImageBitmap.h"
@@ -648,7 +647,7 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   DCHECK(!canvas || IsMainThread());
 
   auto execution_context = canvas ? canvas->GetDocument().GetExecutionContext()
-                                  : ExecutionContext::From(script_state);
+                                  : script_state->GetExecutionContext();
   Platform::ContextAttributes context_attributes = ToPlatformContextAttributes(
       attributes, web_gl_version,
       SupportOwnOffscreenSurface(execution_context));
@@ -656,7 +655,7 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
   const auto& url = canvas ? canvas->GetDocument().TopDocument().Url()
-                           : ExecutionContext::From(script_state)->Url();
+                           : script_state->GetExecutionContext()->Url();
   if (IsMainThread()) {
     context_provider = WTF::WrapUnique(
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
@@ -737,7 +736,7 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
     ScriptState* script_state) {
   UseCounter::Feature feature =
       UseCounter::kOffscreenCanvasTransferToImageBitmapWebGL;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
+  UseCounter::Count(script_state->GetExecutionContext(), feature);
   if (!GetDrawingBuffer())
     return nullptr;
   return ImageBitmap::Create(GetDrawingBuffer()->TransferToStaticBitmapImage());
@@ -747,7 +746,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   UseCounter::Feature feature = UseCounter::kOffscreenCanvasCommitWebGL;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
+  UseCounter::Count(script_state->GetExecutionContext(), feature);
   if (!offscreenCanvas()) {
     exception_state.ThrowDOMException(kInvalidStateError,
                                       "Commit() was called on a rendering "

@@ -18,7 +18,6 @@
 #include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/UseCounter.h"
@@ -65,7 +64,7 @@ FetchResponseData* CreateFetchResponseDataFromWebResponse(
   }
 
   response->ReplaceBodyStreamBuffer(new BodyStreamBuffer(
-      script_state, new BlobBytesConsumer(ExecutionContext::From(script_state),
+      script_state, new BlobBytesConsumer(script_state->GetExecutionContext(),
                                           web_response.GetBlobDataHandle())));
 
   // Filter the response according to |webResponse|'s ResponseType.
@@ -135,7 +134,7 @@ Response* Response::Create(ScriptState* script_state,
                            ExceptionState& exception_state) {
   v8::Local<v8::Value> body = body_value.V8Value();
   v8::Isolate* isolate = script_state->GetIsolate();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
 
   BodyStreamBuffer* body_buffer = nullptr;
   String content_type;
@@ -215,7 +214,7 @@ Response* Response::Create(ScriptState* script_state,
 
   // "3. Let |r| be a new Response object, associated with a new response,
   // Headers object, and Body object."
-  Response* r = new Response(ExecutionContext::From(script_state));
+  Response* r = new Response(script_state->GetExecutionContext());
 
   // "4. Set |r|'s response's status to |init|'s status member."
   r->response_->SetStatus(init.status());
@@ -284,14 +283,14 @@ Response* Response::Create(ScriptState* script_state,
                            const WebServiceWorkerResponse& web_response) {
   FetchResponseData* response_data =
       CreateFetchResponseDataFromWebResponse(script_state, web_response);
-  return new Response(ExecutionContext::From(script_state), response_data);
+  return new Response(script_state->GetExecutionContext(), response_data);
 }
 
 Response* Response::error(ScriptState* script_state) {
   FetchResponseData* response_data =
       FetchResponseData::CreateNetworkErrorResponse();
   Response* r =
-      new Response(ExecutionContext::From(script_state), response_data);
+      new Response(script_state->GetExecutionContext(), response_data);
   r->headers_->SetGuard(Headers::kImmutableGuard);
   return r;
 }
@@ -300,7 +299,7 @@ Response* Response::redirect(ScriptState* script_state,
                              const String& url,
                              unsigned short status,
                              ExceptionState& exception_state) {
-  KURL parsed_url = ExecutionContext::From(script_state)->CompleteURL(url);
+  KURL parsed_url = script_state->GetExecutionContext()->CompleteURL(url);
   if (!parsed_url.IsValid()) {
     exception_state.ThrowTypeError("Failed to parse URL from " + url);
     return nullptr;
@@ -311,7 +310,7 @@ Response* Response::redirect(ScriptState* script_state,
     return nullptr;
   }
 
-  Response* r = new Response(ExecutionContext::From(script_state));
+  Response* r = new Response(script_state->GetExecutionContext());
   r->headers_->SetGuard(Headers::kImmutableGuard);
   r->response_->SetStatus(status);
   r->response_->HeaderList()->Set("Location", parsed_url);

@@ -5,7 +5,6 @@
 #include "modules/netinfo/WorkerNavigatorNetworkInformation.h"
 
 #include "bindings/core/v8/ScriptState.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerNavigator.h"
 #include "modules/netinfo/NetworkInformation.h"
 
@@ -43,7 +42,7 @@ const char* WorkerNavigatorNetworkInformation::SupplementName() {
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(
     ScriptState* script_state,
     WorkerNavigator& navigator) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
+  ExecutionContext* context = script_state->GetExecutionContext();
   return WorkerNavigatorNetworkInformation::From(navigator, context)
       .connection(context);
 }

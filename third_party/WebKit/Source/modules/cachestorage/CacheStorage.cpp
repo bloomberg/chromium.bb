@@ -10,7 +10,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/Request.h"
@@ -29,7 +28,7 @@ DOMException* CreateNoImplementationException() {
 }
 
 bool CommonChecks(ScriptState* script_state, ExceptionState& exception_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   // FIXME: May be null due to worker termination: http://crbug.com/413518.
   if (!execution_context)
     return false;

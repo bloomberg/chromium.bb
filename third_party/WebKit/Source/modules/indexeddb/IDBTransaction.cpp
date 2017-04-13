@@ -125,7 +125,7 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
                                const HashSet<String>& scope,
                                WebIDBTransactionMode mode,
                                IDBDatabase* db)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ContextLifecycleObserver(script_state->GetExecutionContext()),
       id_(id),
       database_(db),
       mode_(mode),

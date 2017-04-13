@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/CompositorWorkerProxyClient.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
@@ -77,7 +76,7 @@ void CompositorWorkerGlobalScope::postMessage(
     ExceptionState& exception_state) {
   // Disentangle the port in preparation for sending it to the remote context.
   MessagePortChannelArray channels = MessagePort::DisentanglePorts(
-      ExecutionContext::From(script_state), ports, exception_state);
+      script_state->GetExecutionContext(), ports, exception_state);
   if (exception_state.HadException())
     return;
   WorkerObjectProxy().PostMessageToWorkerObject(std::move(message),

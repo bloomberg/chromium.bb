@@ -5,7 +5,6 @@
 #include "modules/mediasession/NavigatorMediaSession.h"
 
 #include "bindings/core/v8/ScriptState.h"
-#include "core/dom/ExecutionContext.h"
 #include "modules/mediasession/MediaSession.h"
 #include "platform/Supplementable.h"
 
@@ -37,7 +36,7 @@ MediaSession* NavigatorMediaSession::mediaSession(ScriptState* script_state,
                                                   Navigator& navigator) {
   NavigatorMediaSession& self = NavigatorMediaSession::From(navigator);
   if (!self.session_)
-    self.session_ = MediaSession::Create(ExecutionContext::From(script_state));
+    self.session_ = MediaSession::Create(script_state->GetExecutionContext());
   return self.session_.Get();
 }
 

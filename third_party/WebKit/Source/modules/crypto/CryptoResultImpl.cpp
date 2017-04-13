@@ -123,7 +123,7 @@ CryptoResultImpl::CryptoResultImpl(ScriptState* script_state)
     : resolver_(Resolver::Create(script_state, this)),
       cancel_(ResultCancel::Create()) {
   // Sync cancellation state.
-  if (ExecutionContext::From(script_state)->IsContextDestroyed())
+  if (script_state->GetExecutionContext()->IsContextDestroyed())
     cancel_->Cancel();
 }
 

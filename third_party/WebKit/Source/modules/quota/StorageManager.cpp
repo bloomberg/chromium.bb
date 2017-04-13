@@ -9,7 +9,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
@@ -64,7 +63,7 @@ class EstimateCallbacks final : public StorageQuotaCallbacks {
 ScriptPromise StorageManager::persist(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
   if (security_origin->IsUnique()) {
@@ -75,7 +74,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
 
   DCHECK(execution_context->IsDocument());
   PermissionService* permission_service =
-      GetPermissionService(ExecutionContext::From(script_state));
+      GetPermissionService(script_state->GetExecutionContext());
   if (!permission_service) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError,
@@ -84,7 +83,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
   }
   permission_service->RequestPermission(
       CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
       UserGestureIndicator::ProcessingUserGesture(),
       ConvertToBaseCallback(
           WTF::Bind(&StorageManager::PermissionRequestComplete,
@@ -96,7 +95,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
 ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
   if (security_origin->IsUnique()) {
@@ -106,7 +105,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   }
 
   PermissionService* permission_service =
-      GetPermissionService(ExecutionContext::From(script_state));
+      GetPermissionService(script_state->GetExecutionContext());
   if (!permission_service) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError,
@@ -115,7 +114,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   }
   permission_service->HasPermission(
       CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
+      script_state->GetExecutionContext()->GetSecurityOrigin(),
       ConvertToBaseCallback(
           WTF::Bind(&StorageManager::PermissionRequestComplete,
                     WrapPersistent(this), WrapPersistent(resolver))));
@@ -125,7 +124,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
 ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
   if (security_origin->IsUnique()) {

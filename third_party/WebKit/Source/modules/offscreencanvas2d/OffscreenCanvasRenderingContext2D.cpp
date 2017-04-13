@@ -5,7 +5,6 @@
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 
 #include "bindings/modules/v8/OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/Settings.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -27,7 +26,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributes& attrs)
     : CanvasRenderingContext(nullptr, canvas, attrs) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = script_state->GetExecutionContext();
   if (execution_context->IsDocument()) {
     if (ToDocument(execution_context)
             ->GetSettings()
@@ -51,7 +50,7 @@ ScriptPromise OffscreenCanvasRenderingContext2D::commit(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   UseCounter::Feature feature = UseCounter::kOffscreenCanvasCommit2D;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
+  UseCounter::Count(script_state->GetExecutionContext(), feature);
   if (!offscreenCanvas()->HasPlaceholderCanvas()) {
     // If an OffscreenCanvas has no associated canvas Id, it indicates that
     // it is not an OffscreenCanvas created by transfering control from html
@@ -158,7 +157,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
   UseCounter::Feature feature =
       UseCounter::kOffscreenCanvasTransferToImageBitmap2D;
-  UseCounter::Count(ExecutionContext::From(script_state), feature);
+  UseCounter::Count(script_state->GetExecutionContext(), feature);
   RefPtr<StaticBitmapImage> image = TransferToStaticBitmapImage();
   if (!image)
     return nullptr;

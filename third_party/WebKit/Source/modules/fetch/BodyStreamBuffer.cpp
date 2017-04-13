@@ -11,7 +11,6 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/streams/ReadableStreamController.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/Body.h"
@@ -170,9 +169,9 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
   ASSERT(!loader_);
   ASSERT(script_state_->ContextIsValid());
   loader_ = loader;
-  loader->Start(ReleaseHandle(),
-                new LoaderClient(ExecutionContext::From(script_state_.Get()),
-                                 this, client));
+  loader->Start(
+      ReleaseHandle(),
+      new LoaderClient(script_state_->GetExecutionContext(), this, client));
 }
 
 void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
@@ -192,8 +191,8 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   }
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(ExecutionContext::From(script_state_.Get()),
-                     ReleaseHandle(), &dest1, &dest2);
+  BytesConsumer::Tee(script_state_->GetExecutionContext(), ReleaseHandle(),
+                     &dest1, &dest2);
   *branch1 = new BodyStreamBuffer(script_state_.Get(), dest1);
   *branch2 = new BodyStreamBuffer(script_state_.Get(), dest2);
 }

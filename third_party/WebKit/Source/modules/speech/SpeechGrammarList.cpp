@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
@@ -45,7 +44,7 @@ SpeechGrammar* SpeechGrammarList::item(unsigned index) const {
 void SpeechGrammarList::addFromUri(ScriptState* script_state,
                                    const String& src,
                                    double weight) {
-  Document* document = ToDocument(ExecutionContext::From(script_state));
+  Document* document = ToDocument(script_state->GetExecutionContext());
   grammars_.push_back(
       SpeechGrammar::Create(document->CompleteURL(src), weight));
 }

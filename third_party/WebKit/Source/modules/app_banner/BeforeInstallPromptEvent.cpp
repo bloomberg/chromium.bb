@@ -7,7 +7,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "modules/app_banner/BeforeInstallPromptEventInit.h"
 
@@ -52,7 +51,7 @@ Vector<String> BeforeInstallPromptEvent::platforms() const {
 }
 
 ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
-  UseCounter::Count(ExecutionContext::From(script_state),
+  UseCounter::Count(script_state->GetExecutionContext(),
                     UseCounter::kBeforeInstallPromptEventUserChoice);
   // |m_binding| must be bound to allow the AppBannerService to resolve the
   // userChoice promise.
@@ -75,7 +74,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
                              "following preventDefault()."));
   }
 
-  UseCounter::Count(ExecutionContext::From(script_state),
+  UseCounter::Count(script_state->GetExecutionContext(),
                     UseCounter::kBeforeInstallPromptEventPrompt);
 
   prompt_called_ = true;
