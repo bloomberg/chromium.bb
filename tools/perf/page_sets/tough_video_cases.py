@@ -45,17 +45,17 @@ class ToughVideoCasesPage(page_module.Page):
     action_runner.LoopMedia(loop_count=50, selector='#single_audio')
 
   def PlayAction(self, action_runner):
+    # Play the media until it has finished or it times out.
     action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
                             ended_event_timeout_in_seconds=60)
 
   def SeekBeforeAndAfterPlayhead(self, action_runner,
                                  action_timeout_in_seconds=60):
     timeout = action_timeout_in_seconds
-    # Because an ended timeout is passed, this won't return until the media has
-    # played through.
-    action_runner.PlayMedia(playing_event_timeout_in_seconds=timeout,
-                            ended_event_timeout_in_seconds=timeout)
-    # Wait 1 second for no reason in particular.
+    # Start the media playback.
+    action_runner.PlayMedia(
+        playing_event_timeout_in_seconds=timeout)
+    # Wait for 1 second so that we know the play-head is at ~1s.
     action_runner.Wait(1)
     # Seek to before the play-head location.
     action_runner.SeekMedia(seconds=0.5, timeout_in_seconds=timeout,
@@ -576,7 +576,8 @@ class Page37(ToughVideoCasesPage):
 
   def __init__(self, page_set):
     super(Page37, self).__init__(
-      url='file://tough_video_cases/video.html?src=crowd1080_vp9.webm&canvas=true',
+      url=('file://tough_video_cases/video.html?src=crowd1080_vp9.webm&canvas='
+           'true'),
       page_set=page_set,
       tags=['vp9', 'video_only'])
 
@@ -602,7 +603,8 @@ class Page39(ToughVideoCasesPage):
 
   def __init__(self, page_set):
     super(Page39, self).__init__(
-      url='file://tough_video_cases/video.html?src=garden2_10s.webm&canvas=true',
+      url=('file://tough_video_cases/video.html?src=garden2_10s.webm&canvas='
+           'true'),
       page_set=page_set,
       tags=['is_4k', 'vp8', 'vorbis', 'audio_video'])
 
@@ -634,6 +636,10 @@ class ToughVideoCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughVideoCasesPageSet, self).__init__(
             cloud_storage_bucket=story.PARTNER_BUCKET)
+    # TODO(crouleau): Pages 36 and 38 are in ToughVideoCasesPageSet even though
+    # they both report seek time instead of time_to_play.
+    # This may be a non-issue because we plan to merge these two page sets back
+    # together and use tags to allow teams to filter which pages they want.
 
     self.AddStory(Page1(self))
     self.AddStory(Page2(self))
@@ -665,7 +671,8 @@ class ToughVideoCasesPageSet(story.StorySet):
 
 class ToughVideoCasesExtraPageSet(story.StorySet):
   """
-  Description: Video Stack Perf benchmark that don't report time_to_play.
+  Description: Video Stack Perf benchmarks that report seek time and audio
+  avg_loop_time.
   """
   def __init__(self):
     super(ToughVideoCasesExtraPageSet, self).__init__(
