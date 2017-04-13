@@ -13,7 +13,6 @@ import datetime
 import itertools
 import os
 import re
-import shutil
 import sys
 import time
 from xml.etree import ElementTree
@@ -387,22 +386,6 @@ class SyncStage(generic_stages.BuilderStage):
 
   def _InitializeRepo(self):
     """Set up the RepoRepository object."""
-    # If we have no repository at all, but we have a warm cache path, copy in
-    # the warm cache. This is done so builders can try to avoid doing a sync
-    # from scratch on a new builder (especially GCE instances).
-    if (not repository.IsARepoRoot(self._build_root) and
-        self._run.options.repo_cache and
-        repository.IsARepoRoot(self._run.options.repo_cache)):
-      # If the warm cache is invalid, the wrong branch, or from the wrong
-      # manifest, Repository will repair it.
-      logging.info('Using warm cache "%s" to populate buildroot "%s"',
-                   self._run.options.repo_cache,
-                   self._build_root)
-
-      shutil.copytree(os.path.join(self._run.options.repo_cache, '.repo'),
-                      os.path.join(self._build_root, '.repo'),
-                      symlinks=True)
-
     self.repo = self.GetRepoRepository()
 
   def GetNextManifest(self):

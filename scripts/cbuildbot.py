@@ -555,11 +555,8 @@ def _CreateParser():
                                'artifacts and such. This should only be '
                                'used if you are confident in what you are '
                                'doing, as it will make automated commits.')
-  parser.add_remote_option('--repo-cache', type='path',
-                           help='Directory from which to copy a repo checkout '
-                                'if our build root is empty, to avoid '
-                                'excessive GoB load with a fresh sync.'
-                                'Deprecated in favor of --git-cache-dir.')
+  parser.add_remote_option('--repo-cache', type='path', dest='_repo_cache',
+                           help='Present for backwards compatibility, ignored.')
   group.add_remote_option('--no-buildbot-tags', action='store_false',
                           dest='enable_buildbot_tags', default=True,
                           help='Suppress buildbot specific tags from log '
