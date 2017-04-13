@@ -259,7 +259,10 @@ class GIT(object):
     if not branch:
       branch = GIT.GetUpstreamBranch(cwd)
     command = ['show', '%s:%s' % (branch, filename)]
-    return GIT.Capture(command, cwd=cwd, strip_out=False)
+    try:
+      return GIT.Capture(command, cwd=cwd, strip_out=False)
+    except subprocess2.CalledProcessError:
+      return ''
 
   @staticmethod
   def GenerateDiff(cwd, branch=None, branch_head='HEAD', full_move=False,
