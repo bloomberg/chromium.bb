@@ -199,7 +199,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLCompressedTextureS3TC>(
       webgl_compressed_texture_s3tc_, kApprovedExtension, kBothPrefixes);
   RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3t_cs_rgb_, kDraftExtension, kBothPrefixes);
+      webgl_compressed_texture_s3tc_srgb_, kDraftExtension, kBothPrefixes);
   RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
   RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
   RegisterExtension<WebGLDepthTexture>(webgl_depth_texture_, kApprovedExtension,
@@ -234,7 +234,7 @@ DEFINE_TRACE(WebGLRenderingContext) {
   visitor->Trace(webgl_compressed_texture_etc1_);
   visitor->Trace(webgl_compressed_texture_pvrtc_);
   visitor->Trace(webgl_compressed_texture_s3tc_);
-  visitor->Trace(webgl_compressed_texture_s3t_cs_rgb_);
+  visitor->Trace(webgl_compressed_texture_s3tc_srgb_);
   visitor->Trace(webgl_depth_texture_);
   WebGLRenderingContextBase::Trace(visitor);
 }

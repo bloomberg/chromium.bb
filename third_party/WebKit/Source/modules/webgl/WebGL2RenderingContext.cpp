@@ -168,7 +168,7 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
       webgl_compressed_texture_pvrtc_);
   RegisterExtension<WebGLCompressedTextureS3TC>(webgl_compressed_texture_s3tc_);
   RegisterExtension<WebGLCompressedTextureS3TCsRGB>(
-      webgl_compressed_texture_s3t_cs_rgb_, kDraftExtension);
+      webgl_compressed_texture_s3tc_srgb_, kDraftExtension);
   RegisterExtension<WebGLDebugRendererInfo>(webgl_debug_renderer_info_);
   RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
   RegisterExtension<WebGLGetBufferSubDataAsync>(
@@ -187,7 +187,7 @@ DEFINE_TRACE(WebGL2RenderingContext) {
   visitor->Trace(webgl_compressed_texture_etc1_);
   visitor->Trace(webgl_compressed_texture_pvrtc_);
   visitor->Trace(webgl_compressed_texture_s3tc_);
-  visitor->Trace(webgl_compressed_texture_s3t_cs_rgb_);
+  visitor->Trace(webgl_compressed_texture_s3tc_srgb_);
   visitor->Trace(webgl_debug_renderer_info_);
   visitor->Trace(webgl_debug_shaders_);
   visitor->Trace(webgl_get_buffer_sub_data_async_);

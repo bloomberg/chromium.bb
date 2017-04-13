@@ -119,7 +119,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLCompressedTextureETC1> webgl_compressed_texture_etc1_;
   Member<WebGLCompressedTexturePVRTC> webgl_compressed_texture_pvrtc_;
   Member<WebGLCompressedTextureS3TC> webgl_compressed_texture_s3tc_;
-  Member<WebGLCompressedTextureS3TCsRGB> webgl_compressed_texture_s3t_cs_rgb_;
+  Member<WebGLCompressedTextureS3TCsRGB> webgl_compressed_texture_s3tc_srgb_;
   Member<WebGLDepthTexture> webgl_depth_texture_;
 };
 
