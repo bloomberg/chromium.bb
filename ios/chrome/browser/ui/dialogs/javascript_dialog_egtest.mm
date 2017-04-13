@@ -555,6 +555,11 @@ void TapSuppressDialogsButton() {
                           @"correctly.");
 #endif
 
+  // TODO(crbug.com/711291): reenable this on tablets.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
+  }
+
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
   id<GREYMatcher> webViewMatcher =
