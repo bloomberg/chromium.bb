@@ -247,14 +247,19 @@ void extractEntityFromTopLevelObject(const JSONObject& val,
   extractTopLevelEntity(val, entities);
 }
 
-bool extractMetadata(const Element& root, Vector<EntityPtr>& entities) {
+// ExtractionStatus is used in UMA, hence is append-only.
+// kCount must be the last entry.
+enum ExtractionStatus { kOK, kEmpty, kParseFailure, kWrongType, kCount };
+
+ExtractionStatus extractMetadata(const Element& root,
+                                 Vector<EntityPtr>& entities) {
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
     if (element.HasTagName(HTMLNames::scriptTag) &&
         element.getAttribute(HTMLNames::typeAttr) == "application/ld+json") {
       std::unique_ptr<JSONValue> json = ParseJSON(element.textContent());
       if (!json) {
         LOG(ERROR) << "Failed to parse json.";
-        return false;
+        return kParseFailure;
       }
       switch (json->GetType()) {
         case JSONValue::ValueType::kTypeArray:
@@ -265,11 +270,14 @@ bool extractMetadata(const Element& root, Vector<EntityPtr>& entities) {
                                           entities);
           break;
         default:
-          return false;
+          return kWrongType;
       }
     }
   }
-  return !entities.IsEmpty();
+  if (entities.IsEmpty()) {
+    return kEmpty;
+  }
+  return kOK;
 }
 
 }  // namespace
@@ -284,21 +292,30 @@ WebPagePtr CopylessPasteExtractor::extract(const Document& document) {
   if (!html)
     return nullptr;
 
-  double start_time = MonotonicallyIncreasingTime();
-
   WebPagePtr page = WebPage::New();
 
   // Traverse the DOM tree and extract the metadata.
-  if (!extractMetadata(*html, page->entities))
-    return nullptr;
-  page->url = document.Url();
-  page->title = document.title();
-
+  double start_time = MonotonicallyIncreasingTime();
+  ExtractionStatus status = extractMetadata(*html, page->entities);
   double elapsed_time = MonotonicallyIncreasingTime() - start_time;
 
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, status_histogram,
+                      ("CopylessPaste.ExtractionStatus", kCount));
+  status_histogram.Count(status);
+
+  if (status != kOK) {
+    DEFINE_STATIC_LOCAL(
+        CustomCountHistogram, extractionHistogram,
+        ("CopylessPaste.ExtractionFailedUs", 1, 1000 * 1000, 50));
+    extractionHistogram.Count(1e6 * elapsed_time);
+    return nullptr;
+  }
   DEFINE_STATIC_LOCAL(CustomCountHistogram, extractionHistogram,
-                      ("CopylessPaste.ExtractionUs", 1, 1000000, 50));
-  extractionHistogram.Count(static_cast<int>(1e6 * elapsed_time));
+                      ("CopylessPaste.ExtractionUs", 1, 1000 * 1000, 50));
+  extractionHistogram.Count(1e6 * elapsed_time);
+
+  page->url = document.Url();
+  page->title = document.title();
   return page;
 }
 
