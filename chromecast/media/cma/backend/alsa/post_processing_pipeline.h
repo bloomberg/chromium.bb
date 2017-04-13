@@ -30,8 +30,7 @@ class PostProcessingPipeline {
                          int channels);
   ~PostProcessingPipeline();
 
-  // TODO(bshaya): Switch to float*
-  int ProcessFrames(uint8_t* data,
+  int ProcessFrames(const std::vector<float*>& data,
                     int num_frames,
                     float current_volume,
                     bool is_silence);

@@ -64,7 +64,7 @@ PostProcessingPipeline::PostProcessingPipeline(
 
 PostProcessingPipeline::~PostProcessingPipeline() = default;
 
-int PostProcessingPipeline::ProcessFrames(uint8_t* data,
+int PostProcessingPipeline::ProcessFrames(const std::vector<float*>& data,
                                           int num_frames,
                                           float current_volume,
                                           bool is_silence) {

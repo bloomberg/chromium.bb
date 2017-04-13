@@ -80,7 +80,7 @@ class FilterGroup {
 
   const std::unordered_set<std::string> input_types_;
   const AudioContentType content_type_;
-  const int channels_;
+  const int num_channels_;
   std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
@@ -93,6 +93,7 @@ class FilterGroup {
   std::unique_ptr<::media::AudioBus> temp_;
   std::unique_ptr<::media::AudioBus> mixed_;
   std::vector<uint8_t> interleaved_;
+  std::vector<float*> channels_;
 
   std::unique_ptr<PostProcessingPipeline> post_processing_pipeline_;
 

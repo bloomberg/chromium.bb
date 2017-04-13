@@ -37,7 +37,9 @@ class Governor : public AudioPostProcessor {
   ~Governor() override;
 
   bool SetSampleRate(int sample_rate) override;
-  int ProcessFrames(uint8_t* data, int frames, float volume) override;
+  int ProcessFrames(const std::vector<float*>& data,
+                    int frames,
+                    float volume) override;
   int GetRingingTimeInFrames() override;
 
  private:
@@ -72,15 +74,22 @@ bool Governor::SetSampleRate(int sample_rate) {
   return true;
 }
 
-int Governor::ProcessFrames(uint8_t* data, int frames, float volume) {
+int Governor::ProcessFrames(const std::vector<float*>& data,
+                            int frames,
+                            float volume) {
+  DCHECK_EQ(data.size(), static_cast<size_t>(channels_));
+
   if (volume != volume_) {
     volume_ = volume;
     governor_.SetVolume(GetGovernorMultiplier());
   }
 
-  if (!governor_.ProcessInterleaved(reinterpret_cast<int32_t*>(data), frames)) {
-    LOG(ERROR) << "Error in SlewVolume::ProcessInterleaved";
+  for (int c = 0; c < channels_; ++c) {
+    DCHECK(data[c]);
+    governor_.ProcessFMAC(c != 0 /* repeat_transition */, data[c], frames,
+                          data[c]);
   }
+
   return 0;  // No delay in this pipeline.
 }
 

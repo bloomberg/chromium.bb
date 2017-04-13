@@ -23,6 +23,8 @@ class AudioPostProcessor;
 // Chromium dependencies.
 // Called from StreamMixerAlsa when shared objects are listed in
 // /etc/cast_audio.json
+// AudioPostProcessors are created on startup and only destroyed/reset
+// if the output sample rate changes.
 extern "C" CHROMECAST_EXPORT chromecast::media::AudioPostProcessor*
 AudioPostProcessorShlib_Create(const std::string& config, int channels);
 
@@ -38,14 +40,21 @@ class AudioPostProcessor {
   virtual bool SetSampleRate(int sample_rate) = 0;
 
   // Processes audio frames from |data|, overwriting contents.
-  // |data| will always be 32-bit interleaved float.
-  // Always provides |frames| frames of data back (may output 0’s)
-  // |volume| is the current attenuation level of the stream.
+  // |data| will always be 32-bit planar float.
+  // |frames| is the number of audio frames in data and is
+  // always non-zero and less than or equal to 20ms of audio.
+  // AudioPostProcessor must always provide |frames| frames of data back
+  // (may output 0’s)
+  // |volume| is the attenuation level (multiplier) of the stream.
+  // |volume| is between 0 and 1 inclusive.
   // AudioPostProcessor should assume that it has already been applied.
+  // TODO(bshaya): Change |volume| to Cast System Volume.
   // Returns the current rendering delay of the filter in frames,
   // or negative if an error occurred during processing.
   // If an error occurred during processing, |data| should be unchanged.
-  virtual int ProcessFrames(uint8_t* data, int frames, float volume) = 0;
+  virtual int ProcessFrames(const std::vector<float*>& data,
+                            int frames,
+                            float volume) = 0;
 
   // Returns the number of frames of silence it will take for the
   // processor to come to rest.
