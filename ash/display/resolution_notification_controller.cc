@@ -162,7 +162,7 @@ ResolutionNotificationController::~ResolutionNotificationController() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
-void ResolutionNotificationController::PrepareNotification(
+bool ResolutionNotificationController::PrepareNotificationAndSetDisplayMode(
     int64_t display_id,
     const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
     const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
@@ -170,7 +170,14 @@ void ResolutionNotificationController::PrepareNotification(
   DCHECK(old_resolution);
   DCHECK(new_resolution);
 
-  DCHECK(!display::Display::IsInternalDisplayId(display_id));
+  display::DisplayManager* const display_manager =
+      Shell::Get()->display_manager();
+  if (display::Display::IsInternalDisplayId(display_id)) {
+    // We don't show notifications to confirm/revert the resolution change in
+    // the case of an internal display.
+    return display_manager->SetDisplayMode(display_id, new_resolution);
+  }
+
   // If multiple resolution changes are invoked for the same display,
   // the original resolution for the first resolution change has to be used
   // instead of the specified |old_resolution|.
@@ -192,6 +199,15 @@ void ResolutionNotificationController::PrepareNotification(
                                               new_resolution, accept_callback));
   if (original_resolution && !original_resolution->size().IsEmpty())
     change_info_->old_resolution = original_resolution;
+
+  if (!display_manager->SetDisplayMode(display_id, new_resolution)) {
+    // Discard the prepared notification data since we failed to set the new
+    // resolution.
+    change_info_.reset();
+    return false;
+  }
+
+  return true;
 }
 
 bool ResolutionNotificationController::DoesNotificationTimeout() {

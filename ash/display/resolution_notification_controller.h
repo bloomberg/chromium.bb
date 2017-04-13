@@ -31,23 +31,34 @@ class ASH_EXPORT ResolutionNotificationController
   ResolutionNotificationController();
   ~ResolutionNotificationController() override;
 
-  // Prepare a resolution change notification for |display_id| from
-  // |old_resolution| to |new_resolution|, which offers a button to revert the
-  // change in case something goes wrong. The notification times out if there's
-  // only one display connected and the user is trying to modify its resolution.
-  // In that case, the timeout has to be set since the user cannot make any
-  // changes if something goes wrong.
+  // If |display_id| is not the internal display, Prepare a resolution change
+  // notification for |display_id| from |old_resolution| to |new_resolution|,
+  // which offers a button to revert the change in case something goes wrong.
+  // The notification times out if there's only one display connected and the
+  // user is trying to modify its resolution. In that case, the timeout has to
+  // be set since the user cannot make any changes if something goes wrong.
+  //
+  // Then call DisplayManager::SetDisplayMode() to apply the resolution change,
+  // and return the result; true if success, false otherwise.
+  // In case SetDisplayMode() fails, the prepared notification will be
+  // discarded.
+  //
+  // If |display_id| is the internal display, the resolution change is applied
+  // directly without preparing the confirm/revert notification (this kind of
+  // notification is only useful for external displays).
   //
   // This method does not create a notification itself. The notification will be
   // created the next OnDisplayConfigurationChanged(), which will be called
-  // asynchronously after the resolution change is requested. So typically this
-  // method will be combined with resolution change methods like
-  // DisplayManager::SetDisplayMode().
-  void PrepareNotification(
+  // asynchronously after the resolution change is requested by this method.
+  //
+  // |accept_callback| will be called when the user accepts the resoltion change
+  // by closing the notification bubble or clicking on the accept button (if
+  // any).
+  bool PrepareNotificationAndSetDisplayMode(
       int64_t display_id,
       const scoped_refptr<display::ManagedDisplayMode>& old_resolution,
       const scoped_refptr<display::ManagedDisplayMode>& new_resolution,
-      const base::Closure& accept_callback);
+      const base::Closure& accept_callback) WARN_UNUSED_RESULT;
 
   // Returns true if the notification is visible or scheduled to be visible and
   // the notification times out.

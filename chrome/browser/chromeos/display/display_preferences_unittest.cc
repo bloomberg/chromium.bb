@@ -573,10 +573,9 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
       new display::ManagedDisplayMode(gfx::Size(400, 300)));
   scoped_refptr<display::ManagedDisplayMode> new_mode(
       new display::ManagedDisplayMode(gfx::Size(500, 400)));
-  if (shell->display_manager()->SetDisplayMode(id, new_mode)) {
-    shell->resolution_notification_controller()->PrepareNotification(
-        id, old_mode, new_mode, base::Closure());
-  }
+  EXPECT_TRUE(shell->resolution_notification_controller()
+                  ->PrepareNotificationAndSetDisplayMode(id, old_mode, new_mode,
+                                                         base::Closure()));
   UpdateDisplay("500x400#500x400|400x300|300x200");
 
   const base::DictionaryValue* properties =

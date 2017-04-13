@@ -377,27 +377,37 @@ bool DisplayManager::SetDisplayMode(
         display_property_changed = true;
       } else {
         display_modes_[display_id] = *iter;
-        if (info.bounds_in_native().size() != display_mode->size())
+        if (info.bounds_in_native().size() != display_mode->size()) {
+          // If resolution changes, then we can break right here. No need to
+          // continue to fill |display_info_list|, since we won't be
+          // synchronously updating the displays here.
           resolution_changed = true;
+          break;
+        }
         if (info.device_scale_factor() != display_mode->device_scale_factor()) {
           info.set_device_scale_factor(display_mode->device_scale_factor());
           display_property_changed = true;
         }
       }
     }
-    display_info_list.push_back(info);
+    display_info_list.emplace_back(info);
   }
-  if (display_property_changed) {
+
+  if (display_property_changed && !resolution_changed) {
+    // We shouldn't synchronously update the displays here if the resolution
+    // changed. This should happen asynchronously when configuration is
+    // triggered.
     AddMirrorDisplayInfoIfAny(&display_info_list);
     UpdateDisplaysWith(display_info_list);
   }
-  if (resolution_changed && IsInUnifiedMode()) {
+
+  if (resolution_changed && IsInUnifiedMode())
     ReconfigureDisplays();
 #if defined(OS_CHROMEOS)
-  } else if (resolution_changed && configure_displays_) {
+  else if (resolution_changed && configure_displays_)
     delegate_->display_configurator()->OnConfigurationChanged();
-#endif
-  }
+#endif  // defined(OS_CHROMEOS)
+
   return resolution_changed || display_property_changed;
 }
 

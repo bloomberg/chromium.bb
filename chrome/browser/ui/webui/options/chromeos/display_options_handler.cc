@@ -491,17 +491,20 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
   display::DisplayManager* display_manager = GetDisplayManager();
   scoped_refptr<display::ManagedDisplayMode> current_mode =
       display_manager->GetActiveModeForDisplayId(display_id);
-  if (!display_manager->SetDisplayMode(display_id, mode)) {
-    LOG(ERROR) << "Unable to set display mode for: " << display_id
-               << " Mode: " << *mode_data;
+
+  if (mode->IsEquivalent(current_mode)) {
+    LOG(ERROR) << "New display mode matches current mode.";
     return;
   }
-  if (display::Display::IsInternalDisplayId(display_id))
-    return;
-  // For external displays, show a notification confirming the resolution
-  // change.
-  ash::Shell::Get()->resolution_notification_controller()->PrepareNotification(
-      display_id, current_mode, mode, base::Bind(&chromeos::StoreDisplayPrefs));
+
+  if (!ash::Shell::Get()
+           ->resolution_notification_controller()
+           ->PrepareNotificationAndSetDisplayMode(
+               display_id, current_mode, mode,
+               base::Bind(&chromeos::StoreDisplayPrefs))) {
+    LOG(ERROR) << "Unable to set display mode for: " << display_id
+               << " Mode: " << *mode_data;
+  }
 }
 
 void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {

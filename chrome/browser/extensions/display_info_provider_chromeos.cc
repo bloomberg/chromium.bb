@@ -352,18 +352,18 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
       return false;
     }
 
-    if (!display_manager->SetDisplayMode(id, new_mode)) {
+    // If it's the internal display, the display mode will be applied directly,
+    // otherwise a confirm/revert notification will be prepared first, and the
+    // display mode will be applied. If the user accepts the mode change by
+    // dismissing the notification, StoreDisplayPrefs() will be called back to
+    // persist the new preferences.
+    if (!ash::Shell::Get()
+             ->resolution_notification_controller()
+             ->PrepareNotificationAndSetDisplayMode(
+                 id, current_mode, new_mode,
+                 base::Bind(&chromeos::StoreDisplayPrefs))) {
       *error = "Unable to set the display mode.";
       return false;
-    }
-
-    if (!display::Display::IsInternalDisplayId(id)) {
-      // For external displays, show a notification confirming the resolution
-      // change.
-      ash::Shell::Get()
-          ->resolution_notification_controller()
-          ->PrepareNotification(id, current_mode, new_mode,
-                                base::Bind(&chromeos::StoreDisplayPrefs));
     }
   }
   return true;
