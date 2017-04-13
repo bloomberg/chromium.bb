@@ -46,7 +46,7 @@
     </style>
 
     <div class="settings-box first">
-      <a is="action-link" on-tap="onAddPrinterTap_"
+      <a id="addPrinter" is="action-link" on-tap="onAddPrinterTap_"
           hidden="[[!canAddPrinter_]]">
         $i18n{addCupsPrinter}
       </a>
@@ -58,7 +58,8 @@
       </div>
     </div>
 
-    <settings-cups-add-printer-dialog id="addPrinterDialog">
+    <settings-cups-add-printer-dialog id="addPrinterDialog"
+        on-close="onAddPrinterDialogClose_">
     </settings-cups-add-printer-dialog>
 
     <settings-cups-printers-list printers="{{printers}}"

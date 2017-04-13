@@ -479,4 +479,9 @@ Polymer({
         .resetToPrefValue();
     this.$.confirmAllowSharedDialog.close();
   },
+
+  /** @private */
+  onAllowSharedDialogClose_: function() {
+    this.$$('#allowShared').focus();
+  },
 });

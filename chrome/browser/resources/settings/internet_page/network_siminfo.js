@@ -99,8 +99,7 @@ Polymer({
     if (!showUnlockPuk)
       return;
 
-    this.error_ = ErrorType.NONE;
-    this.$.unlockPukDialog.showModal();
+    this.showUnlockPukDialog_();
   },
 
   /**
@@ -220,17 +219,13 @@ Polymer({
     }.bind(this));
   },
 
-  /**
-   * Opens the Unlock PUK dialog.
-   * @param {Event} event
-   * @private
-   */
-  unlockPuk_: function(event) {
+  /** @private */
+  showUnlockPukDialog_: function() {
     this.error_ = ErrorType.NONE;
-    this.$.unlockPukDialog.showModal();
     this.$.unlockPuk.value = '';
     this.$.unlockPin1.value = '';
     this.$.unlockPin2.value = '';
+    this.$.unlockPukDialog.showModal();
   },
 
   /**
@@ -342,6 +337,21 @@ Polymer({
       return false;
     }
     return true;
-  }
+  },
+
+  /** @private */
+  onEnterPinDialogClosed_: function() {
+    this.$$('#simLockButton').focus();
+  },
+
+  /** @private */
+  onChangePinDialogClose_: function() {
+    this.$$('#changePinButton').focus();
+  },
+
+  /** @private */
+  onUnlockPinDialogClose_: function() {
+    this.$$('#unlockPinButton').focus();
+  },
 });
 })();

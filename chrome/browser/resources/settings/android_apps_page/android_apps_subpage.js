@@ -90,4 +90,9 @@ Polymer({
   onConfirmDisableDialogCancel_: function() {
     this.$.confirmDisableDialog.close();
   },
+
+  /** @private */
+  onConfirmDisableDialogClose_: function() {
+    this.$$('#remove button').focus();
+  },
 });

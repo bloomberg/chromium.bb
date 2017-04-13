@@ -160,7 +160,7 @@
         </div>
       </template>
 
-      <div class="settings-box embedded two-line"
+      <div id="overscan" class="settings-box embedded two-line"
           on-tap="onOverscanTap_" hidden$="[[selectedDisplay.isInternal]]"
           actionable>
         <div class="start">
@@ -175,7 +175,8 @@
       </div>
 
       <settings-display-overscan-dialog id="displayOverscan"
-          display-id="{{overscanDisplayId}}">
+          display-id="{{overscanDisplayId}}"
+          on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
       <div class="settings-box embedded two-line"

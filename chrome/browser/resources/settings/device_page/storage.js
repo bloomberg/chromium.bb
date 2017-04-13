@@ -302,4 +302,9 @@ Polymer({
         return '';
     }
   },
+
+  /** @private */
+  onCloseDriveCacheDialog_: function() {
+    this.$$('#deleteButton').focus();
+  },
 });

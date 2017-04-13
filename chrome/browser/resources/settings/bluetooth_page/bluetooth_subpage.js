@@ -465,8 +465,12 @@ Polymer({
   },
 
   /** @private */
-  onDialogClosed_: function() {
+  onDialogClose_: function() {
     this.dialogId_ = '';
     this.pairingDevice_ = undefined;
+    // The list is dynamic so focus the first item.
+    var device = this.$$('#unpairedContainer bluetooth-device-list-item');
+    if (device)
+      device.focus();
   },
 });

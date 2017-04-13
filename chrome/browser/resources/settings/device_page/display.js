@@ -485,6 +485,11 @@ Polymer({
   },
 
   /** @private */
+  onCloseOverscanDialog_: function() {
+    this.$$('#overscan button').focus();
+  },
+
+  /** @private */
   updateDisplayInfo_: function() {
     var displayIds = '';
     var primaryDisplay = undefined;
