@@ -231,12 +231,8 @@ bool CanvasRenderingContext::WouldTaintOrigin(
       return true;
   }
 
-  DCHECK_EQ(!canvas(),
-            !!destination_security_origin);  // Must have one or the other
-  bool taint_origin = image_source->WouldTaintOrigin(
-      destination_security_origin ? destination_security_origin
-                                  : canvas()->GetSecurityOrigin());
-
+  bool taint_origin =
+      image_source->WouldTaintOrigin(destination_security_origin);
   if (has_url) {
     if (taint_origin)
       dirty_urls_.insert(source_url.GetString());

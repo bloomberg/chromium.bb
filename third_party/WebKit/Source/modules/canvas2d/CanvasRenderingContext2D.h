@@ -159,8 +159,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   // BaseRenderingContext2D implementation
   bool OriginClean() const final;
   void SetOriginTainted() final;
-  bool WouldTaintOrigin(CanvasImageSource* source, ExecutionContext*) final {
-    return CanvasRenderingContext::WouldTaintOrigin(source);
+  bool WouldTaintOrigin(CanvasImageSource* source,
+                        ExecutionContext* execution_context) final {
+    return CanvasRenderingContext::WouldTaintOrigin(
+        source, execution_context->GetSecurityOrigin());
   }
 
   int Width() const final;

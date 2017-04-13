@@ -621,13 +621,13 @@ typedef unrestricted float GLclampf;
     void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageData pixels);
-    [RaisesException] void texImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLImageElement image);
-    [RaisesException] void texImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLCanvasElement canvas);
-    [RaisesException] void texImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement video);
     [RaisesException] void texImage2D(
@@ -641,13 +641,13 @@ typedef unrestricted float GLclampf;
     void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, ImageData pixels);
-    [RaisesException] void texSubImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLImageElement image);
-    [RaisesException] void texSubImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLCanvasElement canvas);
-    [RaisesException] void texSubImage2D(
+    [CallWith=ExecutionContext, RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement video);
     [RaisesException] void texSubImage2D(

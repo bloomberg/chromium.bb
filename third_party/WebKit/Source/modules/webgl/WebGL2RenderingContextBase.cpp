@@ -1195,7 +1195,8 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                           GetTextureSourceSubRectangle(width, height), 0);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1212,13 +1213,15 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLImageElement(kTexImage2D, target, level, internalformat,
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
+                                 kTexImage2D, target, level, internalformat,
                                  format, type, 0, 0, 0, image,
                                  GetTextureSourceSubRectangle(width, height), 1,
                                  unpack_image_height_, exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1235,12 +1238,15 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
+
   TexImageHelperHTMLCanvasElement(
-      kTexImage2D, target, level, internalformat, format, type, 0, 0, 0, canvas,
+      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
+      internalformat, format, type, 0, 0, 0, canvas,
       GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1257,8 +1263,10 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
+
   TexImageHelperHTMLVideoElement(
-      kTexImage2D, target, level, internalformat, format, type, 0, 0, 0, video,
+      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
+      internalformat, format, type, 0, 0, 0, video,
       GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
 }
 
@@ -1302,7 +1310,8 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                                         type, image_data);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLenum format,
@@ -1316,11 +1325,14 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  WebGLRenderingContextBase::texImage2D(target, level, internalformat, format,
-                                        type, image, exception_state);
+
+  WebGLRenderingContextBase::texImage2D(execution_context, target, level,
+                                        internalformat, format, type, image,
+                                        exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLenum format,
@@ -1334,11 +1346,14 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  WebGLRenderingContextBase::texImage2D(target, level, internalformat, format,
-                                        type, canvas, exception_state);
+
+  WebGLRenderingContextBase::texImage2D(execution_context, target, level,
+                                        internalformat, format, type, canvas,
+                                        exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target,
+void WebGL2RenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLenum format,
@@ -1352,8 +1367,10 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  WebGLRenderingContextBase::texImage2D(target, level, internalformat, format,
-                                        type, video, exception_state);
+
+  WebGLRenderingContextBase::texImage2D(execution_context, target, level,
+                                        internalformat, format, type, video,
+                                        exception_state);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1441,6 +1458,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1458,13 +1476,15 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLImageElement(kTexSubImage2D, target, level, 0, format, type,
-                                 xoffset, yoffset, 0, image,
-                                 GetTextureSourceSubRectangle(width, height), 1,
-                                 0, exception_state);
+
+  TexImageHelperHTMLImageElement(
+      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
+      format, type, xoffset, yoffset, 0, image,
+      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1482,13 +1502,15 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLCanvasElement(kTexSubImage2D, target, level, 0, format,
-                                  type, xoffset, yoffset, 0, canvas,
-                                  GetTextureSourceSubRectangle(width, height),
-                                  1, 0, exception_state);
+
+  TexImageHelperHTMLCanvasElement(
+      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
+      format, type, xoffset, yoffset, 0, canvas,
+      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1506,10 +1528,11 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLVideoElement(kTexSubImage2D, target, level, 0, format, type,
-                                 xoffset, yoffset, 0, video,
-                                 GetTextureSourceSubRectangle(width, height), 1,
-                                 0, exception_state);
+
+  TexImageHelperHTMLVideoElement(
+      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
+      format, type, xoffset, yoffset, 0, video,
+      GetTextureSourceSubRectangle(width, height), 1, 0, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1556,6 +1579,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1571,11 +1595,14 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  WebGLRenderingContextBase::texSubImage2D(
-      target, level, xoffset, yoffset, format, type, image, exception_state);
+
+  WebGLRenderingContextBase::texSubImage2D(execution_context, target, level,
+                                           xoffset, yoffset, format, type,
+                                           image, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1591,11 +1618,14 @@ void WebGL2RenderingContextBase::texSubImage2D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  WebGLRenderingContextBase::texSubImage2D(
-      target, level, xoffset, yoffset, format, type, canvas, exception_state);
+
+  WebGLRenderingContextBase::texSubImage2D(execution_context, target, level,
+                                           xoffset, yoffset, format, type,
+                                           canvas, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1604,8 +1634,9 @@ void WebGL2RenderingContextBase::texSubImage2D(
     GLenum type,
     HTMLVideoElement* video,
     ExceptionState& exception_state) {
-  WebGLRenderingContextBase::texSubImage2D(
-      target, level, xoffset, yoffset, format, type, video, exception_state);
+  WebGLRenderingContextBase::texSubImage2D(execution_context, target, level,
+                                           xoffset, yoffset, format, type,
+                                           video, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(
@@ -1748,7 +1779,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                           unpack_image_height_);
 }
 
-void WebGL2RenderingContextBase::texImage3D(GLenum target,
+void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1766,13 +1798,16 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLImageElement(kTexImage3D, target, level, internalformat,
+
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
+                                 kTexImage3D, target, level, internalformat,
                                  format, type, 0, 0, 0, image,
                                  GetTextureSourceSubRectangle(width, height),
                                  depth, unpack_image_height_, exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage3D(GLenum target,
+void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1790,13 +1825,16 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLCanvasElement(kTexImage3D, target, level, internalformat,
+
+  TexImageHelperHTMLCanvasElement(execution_context->GetSecurityOrigin(),
+                                  kTexImage3D, target, level, internalformat,
                                   format, type, 0, 0, 0, canvas,
                                   GetTextureSourceSubRectangle(width, height),
                                   depth, unpack_image_height_, exception_state);
 }
 
-void WebGL2RenderingContextBase::texImage3D(GLenum target,
+void WebGL2RenderingContextBase::texImage3D(ExecutionContext* execution_context,
+                                            GLenum target,
                                             GLint level,
                                             GLint internalformat,
                                             GLsizei width,
@@ -1814,7 +1852,9 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLVideoElement(kTexImage3D, target, level, internalformat,
+
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
+                                 kTexImage3D, target, level, internalformat,
                                  format, type, 0, 0, 0, video,
                                  GetTextureSourceSubRectangle(width, height),
                                  depth, unpack_image_height_, exception_state);
@@ -1927,6 +1967,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1946,13 +1987,16 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLImageElement(kTexSubImage3D, target, level, 0, format, type,
+
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
+                                 kTexSubImage3D, target, level, 0, format, type,
                                  xoffset, yoffset, zoffset, image,
                                  GetTextureSourceSubRectangle(width, height),
                                  depth, unpack_image_height_, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1972,13 +2016,16 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLCanvasElement(kTexSubImage3D, target, level, 0, format,
+
+  TexImageHelperHTMLCanvasElement(execution_context->GetSecurityOrigin(),
+                                  kTexSubImage3D, target, level, 0, format,
                                   type, xoffset, yoffset, zoffset, canvas,
                                   GetTextureSourceSubRectangle(width, height),
                                   depth, unpack_image_height_, exception_state);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(
+    ExecutionContext* execution_context,
     GLenum target,
     GLint level,
     GLint xoffset,
@@ -1998,7 +2045,9 @@ void WebGL2RenderingContextBase::texSubImage3D(
                       "a buffer is bound to PIXEL_UNPACK_BUFFER");
     return;
   }
-  TexImageHelperHTMLVideoElement(kTexSubImage3D, target, level, 0, format, type,
+
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
+                                 kTexSubImage3D, target, level, 0, format, type,
                                  xoffset, yoffset, zoffset, video,
                                  GetTextureSourceSubRectangle(width, height),
                                  depth, unpack_image_height_, exception_state);

@@ -208,7 +208,7 @@ class CORE_EXPORT CanvasRenderingContext
   OffscreenCanvas* offscreenCanvas() const { return offscreen_canvas_; }
   virtual ImageBitmap* TransferToImageBitmap(ScriptState*) { return nullptr; }
 
-  bool WouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
+  bool WouldTaintOrigin(CanvasImageSource*, SecurityOrigin*);
   void DidMoveToNewDocument(Document*);
 
   void DetachCanvas() { canvas_ = nullptr; }

@@ -355,21 +355,24 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                   GLenum format,
                   GLenum type,
                   ImageData*);
-  void texImage2D(GLenum target,
+  void texImage2D(ExecutionContext*,
+                  GLenum target,
                   GLint level,
                   GLint internalformat,
                   GLenum format,
                   GLenum type,
                   HTMLImageElement*,
                   ExceptionState&);
-  void texImage2D(GLenum target,
+  void texImage2D(ExecutionContext*,
+                  GLenum target,
                   GLint level,
                   GLint internalformat,
                   GLenum format,
                   GLenum type,
                   HTMLCanvasElement*,
                   ExceptionState&);
-  void texImage2D(GLenum target,
+  void texImage2D(ExecutionContext*,
+                  GLenum target,
                   GLint level,
                   GLint internalformat,
                   GLenum format,
@@ -403,7 +406,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLenum format,
                      GLenum type,
                      ImageData*);
-  void texSubImage2D(GLenum target,
+  void texSubImage2D(ExecutionContext*,
+                     GLenum target,
                      GLint level,
                      GLint xoffset,
                      GLint yoffset,
@@ -411,7 +415,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLenum type,
                      HTMLImageElement*,
                      ExceptionState&);
-  void texSubImage2D(GLenum target,
+  void texSubImage2D(ExecutionContext*,
+                     GLenum target,
                      GLint level,
                      GLint xoffset,
                      GLint yoffset,
@@ -419,7 +424,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLenum type,
                      HTMLCanvasElement*,
                      ExceptionState&);
-  void texSubImage2D(GLenum target,
+  void texSubImage2D(ExecutionContext*,
+                     GLenum target,
                      GLint level,
                      GLint xoffset,
                      GLint yoffset,
@@ -1150,7 +1156,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebGLTexture* ValidateTextureBinding(const char* function_name,
                                        GLenum target);
 
-  // Wrapper function for validateTexture2D(3D)Binding, used in texImageHelper
+  // Wrapper function for validateTexture2D(3D)Binding, used in TexImageHelper
   // functions.
   virtual WebGLTexture* ValidateTexImageBinding(const char*,
                                                 TexImageFunctionID,
@@ -1415,19 +1421,23 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Helper function for tex{Sub}Image2D to make sure image is ready and
   // wouldn't taint Origin.
-  bool ValidateHTMLImageElement(const char* function_name,
+
+  bool ValidateHTMLImageElement(SecurityOrigin*,
+                                const char* function_name,
                                 HTMLImageElement*,
                                 ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure canvas is ready and
   // wouldn't taint Origin.
-  bool ValidateHTMLCanvasElement(const char* function_name,
+  bool ValidateHTMLCanvasElement(SecurityOrigin*,
+                                 const char* function_name,
                                  HTMLCanvasElement*,
                                  ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't
   // taint Origin.
-  bool ValidateHTMLVideoElement(const char* function_name,
+  bool ValidateHTMLVideoElement(SecurityOrigin*,
+                                const char* function_name,
                                 HTMLVideoElement*,
                                 ExceptionState&);
 
@@ -1563,7 +1573,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                ImageData*,
                                const IntRect&,
                                GLint);
-  void TexImageHelperHTMLImageElement(TexImageFunctionID,
+
+  void TexImageHelperHTMLImageElement(SecurityOrigin*,
+                                      TexImageFunctionID,
                                       GLenum,
                                       GLint,
                                       GLint,
@@ -1577,7 +1589,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLsizei,
                                       GLint,
                                       ExceptionState&);
-  void TexImageHelperHTMLCanvasElement(TexImageFunctionID,
+
+  void TexImageHelperHTMLCanvasElement(SecurityOrigin*,
+                                       TexImageFunctionID,
                                        GLenum,
                                        GLint,
                                        GLint,
@@ -1591,7 +1605,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLsizei,
                                        GLint,
                                        ExceptionState&);
-  void TexImageHelperHTMLVideoElement(TexImageFunctionID,
+
+  void TexImageHelperHTMLVideoElement(SecurityOrigin*,
+                                      TexImageFunctionID,
                                       GLenum,
                                       GLint,
                                       GLint,

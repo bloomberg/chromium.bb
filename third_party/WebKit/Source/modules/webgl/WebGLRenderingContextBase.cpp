@@ -4853,6 +4853,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
 }
 
 void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
+    SecurityOrigin* security_origin,
     TexImageFunctionID function_id,
     GLenum target,
     GLint level,
@@ -4870,7 +4871,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
   const char* func_name = GetTexImageFunctionName(function_id);
   if (isContextLost())
     return;
-  if (!ValidateHTMLImageElement(func_name, image, exception_state))
+
+  if (!ValidateHTMLImageElement(security_origin, func_name, image,
+                                exception_state))
     return;
   if (!ValidateTexImageBinding(func_name, function_id, target))
     return;
@@ -4903,14 +4906,16 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
                unpack_image_height);
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target,
+void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                           GLenum target,
                                            GLint level,
                                            GLint internalformat,
                                            GLenum format,
                                            GLenum type,
                                            HTMLImageElement* image,
                                            ExceptionState& exception_state) {
-  TexImageHelperHTMLImageElement(kTexImage2D, target, level, internalformat,
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
+                                 kTexImage2D, target, level, internalformat,
                                  format, type, 0, 0, 0, image,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
@@ -5085,6 +5090,7 @@ void WebGLRenderingContextBase::TexImageByGPU(
 }
 
 void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
+    SecurityOrigin* security_origin,
     TexImageFunctionID function_id,
     GLenum target,
     GLint level,
@@ -5102,7 +5108,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
   const char* func_name = GetTexImageFunctionName(function_id);
   if (isContextLost())
     return;
-  if (!ValidateHTMLCanvasElement(func_name, canvas, exception_state))
+
+  if (!ValidateHTMLCanvasElement(security_origin, func_name, canvas,
+                                 exception_state))
     return;
   WebGLTexture* texture =
       ValidateTexImageBinding(func_name, function_id, target);
@@ -5182,7 +5190,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
   }
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target,
+void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                           GLenum target,
                                            GLint level,
                                            GLint internalformat,
                                            GLenum format,
@@ -5190,7 +5199,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            HTMLCanvasElement* canvas,
                                            ExceptionState& exception_state) {
   TexImageHelperHTMLCanvasElement(
-      kTexImage2D, target, level, internalformat, format, type, 0, 0, 0, canvas,
+      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
+      internalformat, format, type, 0, 0, 0, canvas,
       GetTextureSourceSize(canvas), 1, 0, exception_state);
 }
 
@@ -5208,6 +5218,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
 }
 
 void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
+    SecurityOrigin* security_origin,
     TexImageFunctionID function_id,
     GLenum target,
     GLint level,
@@ -5225,7 +5236,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   const char* func_name = GetTexImageFunctionName(function_id);
   if (isContextLost())
     return;
-  if (!ValidateHTMLVideoElement(func_name, video, exception_state))
+
+  if (!ValidateHTMLVideoElement(security_origin, func_name, video,
+                                exception_state))
     return;
   WebGLTexture* texture =
       ValidateTexImageBinding(func_name, function_id, target);
@@ -5350,14 +5363,16 @@ void WebGLRenderingContextBase::TexImageBitmapByGPU(
       IntPoint(xoffset, yoffset), source_sub_rect);
 }
 
-void WebGLRenderingContextBase::texImage2D(GLenum target,
+void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
+                                           GLenum target,
                                            GLint level,
                                            GLint internalformat,
                                            GLenum format,
                                            GLenum type,
                                            HTMLVideoElement* video,
                                            ExceptionState& exception_state) {
-  TexImageHelperHTMLVideoElement(kTexImage2D, target, level, internalformat,
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
+                                 kTexImage2D, target, level, internalformat,
                                  format, type, 0, 0, 0, video,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
@@ -5603,41 +5618,50 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                           0);
 }
 
-void WebGLRenderingContextBase::texSubImage2D(GLenum target,
-                                              GLint level,
-                                              GLint xoffset,
-                                              GLint yoffset,
-                                              GLenum format,
-                                              GLenum type,
-                                              HTMLImageElement* image,
-                                              ExceptionState& exception_state) {
-  TexImageHelperHTMLImageElement(kTexSubImage2D, target, level, 0, format, type,
+void WebGLRenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLenum format,
+    GLenum type,
+    HTMLImageElement* image,
+    ExceptionState& exception_state) {
+  TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(),
+                                 kTexSubImage2D, target, level, 0, format, type,
                                  xoffset, yoffset, 0, image,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
 
-void WebGLRenderingContextBase::texSubImage2D(GLenum target,
-                                              GLint level,
-                                              GLint xoffset,
-                                              GLint yoffset,
-                                              GLenum format,
-                                              GLenum type,
-                                              HTMLCanvasElement* canvas,
-                                              ExceptionState& exception_state) {
+void WebGLRenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLenum format,
+    GLenum type,
+    HTMLCanvasElement* canvas,
+    ExceptionState& exception_state) {
   TexImageHelperHTMLCanvasElement(
-      kTexSubImage2D, target, level, 0, format, type, xoffset, yoffset, 0,
-      canvas, GetTextureSourceSize(canvas), 1, 0, exception_state);
+      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
+      format, type, xoffset, yoffset, 0, canvas, GetTextureSourceSize(canvas),
+      1, 0, exception_state);
 }
 
-void WebGLRenderingContextBase::texSubImage2D(GLenum target,
-                                              GLint level,
-                                              GLint xoffset,
-                                              GLint yoffset,
-                                              GLenum format,
-                                              GLenum type,
-                                              HTMLVideoElement* video,
-                                              ExceptionState& exception_state) {
-  TexImageHelperHTMLVideoElement(kTexSubImage2D, target, level, 0, format, type,
+void WebGLRenderingContextBase::texSubImage2D(
+    ExecutionContext* execution_context,
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLenum format,
+    GLenum type,
+    HTMLVideoElement* video,
+    ExceptionState& exception_state) {
+  TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(),
+                                 kTexSubImage2D, target, level, 0, format, type,
                                  xoffset, yoffset, 0, video,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
@@ -7314,6 +7338,7 @@ void WebGLRenderingContextBase::RemoveBoundBuffer(WebGLBuffer* buffer) {
 }
 
 bool WebGLRenderingContextBase::ValidateHTMLImageElement(
+    SecurityOrigin* security_origin,
     const char* function_name,
     HTMLImageElement* image,
     ExceptionState& exception_state) {
@@ -7327,7 +7352,7 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
     return false;
   }
 
-  if (WouldTaintOrigin(image)) {
+  if (WouldTaintOrigin(image, security_origin)) {
     exception_state.ThrowSecurityError("The cross-origin image at " +
                                        url.ElidedString() +
                                        " may not be loaded.");
@@ -7337,6 +7362,7 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
 }
 
 bool WebGLRenderingContextBase::ValidateHTMLCanvasElement(
+    SecurityOrigin* security_origin,
     const char* function_name,
     HTMLCanvasElement* canvas,
     ExceptionState& exception_state) {
@@ -7344,7 +7370,8 @@ bool WebGLRenderingContextBase::ValidateHTMLCanvasElement(
     SynthesizeGLError(GL_INVALID_VALUE, function_name, "no canvas");
     return false;
   }
-  if (WouldTaintOrigin(canvas)) {
+
+  if (WouldTaintOrigin(canvas, security_origin)) {
     exception_state.ThrowSecurityError("Tainted canvases may not be loaded.");
     return false;
   }
@@ -7352,6 +7379,7 @@ bool WebGLRenderingContextBase::ValidateHTMLCanvasElement(
 }
 
 bool WebGLRenderingContextBase::ValidateHTMLVideoElement(
+    SecurityOrigin* security_origin,
     const char* function_name,
     HTMLVideoElement* video,
     ExceptionState& exception_state) {
@@ -7360,7 +7388,7 @@ bool WebGLRenderingContextBase::ValidateHTMLVideoElement(
     return false;
   }
 
-  if (WouldTaintOrigin(video)) {
+  if (WouldTaintOrigin(video, security_origin)) {
     exception_state.ThrowSecurityError(
         "The video element contains cross-origin data, and may not be loaded.");
     return false;
