@@ -30,6 +30,16 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }
 
+// This returns the smallest rectangle in target space that contains the quad.
+gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
+  gfx::RectF quad_rect = MathUtil::MapClippedRect(
+      quad->shared_quad_state->quad_to_target_transform,
+      gfx::RectF(quad->rect));
+  if (quad->shared_quad_state->is_clipped)
+    quad_rect.Intersect(gfx::RectF(quad->shared_quad_state->clip_rect));
+  return quad_rect;
+}
+
 // Find a rectangle containing all the quads in a list that occlude the area
 // in target_quad.
 gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
@@ -38,13 +48,11 @@ gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
   gfx::RectF occlusion_bounding_box;
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
-    gfx::RectF overlap_rect = MathUtil::MapClippedRect(
-        overlap_iter->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(overlap_iter->rect));
     float opacity = overlap_iter->shared_quad_state->opacity;
     if (opacity < std::numeric_limits<float>::epsilon())
       continue;
     const DrawQuad* quad = *overlap_iter;
+    gfx::RectF overlap_rect = ClippedQuadRectangle(quad);
     if (quad->material == DrawQuad::SOLID_COLOR) {
       SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
       float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
@@ -130,8 +138,7 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
       continue;
     }
 
-    gfx::Rect quad_rectangle = MathUtil::MapEnclosingClippedRect(
-        it->shared_quad_state->quad_to_target_transform, it->rect);
+    gfx::Rect quad_rectangle = gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
     gfx::RectF occlusion_bounding_box =
         GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it);
     if (occlusion_bounding_box.IsEmpty()) {
@@ -139,7 +146,7 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
       // underneath it.
       if (it->shared_quad_state->quad_to_target_transform
               .Preserves2dAxisAlignment() &&
-          !display_rect_changed) {
+          !display_rect_changed && !it->ShouldDrawWithBlending()) {
         damage_rect->Subtract(quad_rectangle);
       }
       quad_list->EraseAndInvalidateAllPointers(it);

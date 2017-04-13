@@ -1873,6 +1873,80 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
   }
 }
 
+TEST_F(DCLayerOverlayTest, ClipRect) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
+
+  // Process twice. The second time through the overlay list shouldn't change,
+  // which will allow the damage rect to reflect just the changes in that
+  // frame.
+  for (size_t i = 0; i < 2; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    CreateOpaqueQuadAt(resource_provider_.get(),
+                       pass->shared_quad_state_list.back(), pass.get(),
+                       gfx::Rect(0, 2, 100, 100), SK_ColorWHITE);
+    pass->shared_quad_state_list.back()->is_clipped = true;
+    pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(0, 3, 100, 100);
+    SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+    shared_state->opacity = 1.f;
+    CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
+                                          shared_state, pass.get());
+    shared_state->is_clipped = true;
+    // Clipped rect shouldn't be overlapped by clipped opaque quad rect.
+    shared_state->clip_rect = gfx::Rect(0, 0, 100, 3);
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    RenderPassFilterList render_pass_filters;
+    RenderPassFilterList render_pass_background_filters;
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), pass.get(), render_pass_filters,
+        render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
+        &damage_rect_, &content_bounds_);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    // Because of clip rects the overlay isn't occluded and shouldn't be an
+    // underlay.
+    EXPECT_EQ(1, dc_layer_list.back().shared_state->z_order);
+    if (i == 1) {
+      // The damage rect should only contain contents that aren't in the
+      // clipped overlay rect.
+      EXPECT_EQ(gfx::Rect(1, 3, 10, 8), damage_rect_);
+    }
+  }
+}
+
+TEST_F(DCLayerOverlayTest, TransparentOnTop) {
+  base::test::ScopedFeatureList feature_list;
+
+  // Process twice. The second time through the overlay list shouldn't change,
+  // which will allow the damage rect to reflect just the changes in that
+  // frame.
+  for (size_t i = 0; i < 2; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
+                                          pass->shared_quad_state_list.back(),
+                                          pass.get());
+    pass->shared_quad_state_list.back()->opacity = 0.5f;
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    RenderPassFilterList render_pass_filters;
+    RenderPassFilterList render_pass_background_filters;
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), pass.get(), render_pass_filters,
+        render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
+        &damage_rect_, &content_bounds_);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(1, dc_layer_list.back().shared_state->z_order);
+    // Quad isn't opaque, so underlying damage must remain the same.
+    EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
+  }
+}
+
 class OverlayInfoRendererGL : public GLRenderer {
  public:
   OverlayInfoRendererGL(const RendererSettings* settings,
