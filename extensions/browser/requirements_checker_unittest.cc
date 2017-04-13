@@ -165,7 +165,6 @@ TEST_F(RequirementsCheckerTest, RequirementsFailWebGL) {
 
   // TODO(michaelpg): Check that the runner actually finishes, which requires
   // waiting for the GPU check to succeed: crbug.com/706204.
-  runner_.WaitForIdle();
   if (runner_.errors().size()) {
     EXPECT_THAT(runner_.errors(), testing::UnorderedElementsAre(
                                       PreloadCheck::WEBGL_NOT_SUPPORTED));

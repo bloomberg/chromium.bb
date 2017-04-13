@@ -31,7 +31,7 @@ class PreloadCheckRunner {
   void RunUntilComplete(PreloadCheck* check);
 
   // Runs the message loop until OnCheckComplete is called.
-  void WaitForCompletion();
+  void WaitForComplete();
 
   // Runs the message loop until idle. Useful to see whether OnCheckComplete is
   // called without waiting indefinitely.
@@ -54,28 +54,24 @@ class PreloadCheckRunner {
   DISALLOW_COPY_AND_ASSIGN(PreloadCheckRunner);
 };
 
-// Stub for a PreloadCheck that returns the desired error(s).
+// Stub for a PreloadCheck that calls the callback with the given error(s).
 class PreloadCheckStub : public PreloadCheck {
  public:
-  PreloadCheckStub();
+  explicit PreloadCheckStub(const Errors& errors);
   ~PreloadCheckStub() override;
 
-  void AddError(Error error);
-  void set_error_message(const base::string16& message) { message_ = message; }
-
-  bool is_async() const { return is_async_; }
   void set_is_async(bool is_async) { is_async_ = is_async; }
+  bool started() const { return started_; }
 
   // PreloadCheck:
   void Start(ResultCallback callback) override;
-  base::string16 GetErrorMessage() const override;
 
  private:
   void RunCallback(ResultCallback callback);
 
   bool is_async_ = false;
+  bool started_ = false;
   Errors errors_;
-  base::string16 message_;
 
   base::WeakPtrFactory<PreloadCheckStub> weak_ptr_factory_;
 

@@ -20,14 +20,6 @@ namespace extensions {
 PreloadCheckRunner::PreloadCheckRunner() : called_(false) {}
 PreloadCheckRunner::~PreloadCheckRunner() {}
 
-void PreloadCheckRunner::OnCheckComplete(PreloadCheck::Errors errors) {
-  ASSERT_FALSE(called_);
-  called_ = true;
-  errors_ = errors;
-  if (run_loop_)
-    run_loop_->Quit();
-}
-
 void PreloadCheckRunner::Run(PreloadCheck* check) {
   check->Start(GetCallback());
 }
@@ -36,14 +28,13 @@ void PreloadCheckRunner::RunUntilComplete(PreloadCheck* check) {
   Run(check);
   ASSERT_FALSE(called_);
 
-  run_loop_ = base::MakeUnique<base::RunLoop>();
-  run_loop_->Run();
+  WaitForComplete();
   ASSERT_TRUE(called_);
 }
 
-PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
-  return base::Bind(&PreloadCheckRunner::OnCheckComplete,
-                    base::Unretained(this));
+void PreloadCheckRunner::WaitForComplete() {
+  run_loop_ = base::MakeUnique<base::RunLoop>();
+  run_loop_->Run();
 }
 
 void PreloadCheckRunner::WaitForIdle() {
@@ -51,18 +42,29 @@ void PreloadCheckRunner::WaitForIdle() {
   run_loop_->RunUntilIdle();
 }
 
+PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
+  return base::Bind(&PreloadCheckRunner::OnCheckComplete,
+                    base::Unretained(this));
+}
+
+void PreloadCheckRunner::OnCheckComplete(PreloadCheck::Errors errors) {
+  ASSERT_FALSE(called_);
+  called_ = true;
+  errors_ = errors;
+
+  if (run_loop_)
+    run_loop_->Quit();
+}
+
 // PreloadCheckStub:
-PreloadCheckStub::PreloadCheckStub()
-    : PreloadCheck(nullptr), is_async_(false), weak_ptr_factory_(this) {}
+PreloadCheckStub::PreloadCheckStub(const Errors& errors)
+    : PreloadCheck(nullptr), errors_(errors), weak_ptr_factory_(this) {}
 
 PreloadCheckStub::~PreloadCheckStub() {}
 
-void PreloadCheckStub::AddError(Error error) {
-  errors_.insert(error);
-}
-
 void PreloadCheckStub::Start(ResultCallback callback) {
   DCHECK(!callback.is_null());
+  started_ = true;
   if (is_async_) {
     // TODO(michaelpg): Bind the callback directly and remove RunCallback
     // once crbug.com/704027 is addressed.
@@ -77,10 +79,6 @@ void PreloadCheckStub::Start(ResultCallback callback) {
 
 void PreloadCheckStub::RunCallback(ResultCallback callback) {
   std::move(callback).Run(errors_);
-}
-
-base::string16 PreloadCheckStub::GetErrorMessage() const {
-  return message_;
 }
 
 }  // namespace extensions

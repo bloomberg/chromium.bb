@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "extensions/browser/preload_check.h"
 
 class ExtensionService;
 class Profile;
@@ -21,7 +22,7 @@ class Profile;
 namespace extensions {
 
 class Extension;
-class ExtensionInstallChecker;
+class PreloadCheckGroup;
 
 // Installs and loads an unpacked extension. Because internal state needs to be
 // held about the instalation process, only one call to Load*() should be made
@@ -89,8 +90,8 @@ class UnpackedInstaller
   // Begin management policy and requirements checks.
   void StartInstallChecks();
 
-  // Callback from ExtensionInstallChecker.
-  void OnInstallChecksComplete(int failed_checks);
+  // Callback from PreloadCheckGroup.
+  void OnInstallChecksComplete(PreloadCheck::Errors errors);
 
   // Verifies if loading unpacked extensions is allowed.
   bool IsLoadingUnpackedAllowed() const;
@@ -144,9 +145,12 @@ class UnpackedInstaller
   // Whether or not to be noisy (show a dialog) on failure. Defaults to true.
   bool be_noisy_on_failure_;
 
-  // Checks management policies and requirements before the extension can be
-  // installed.
-  std::unique_ptr<ExtensionInstallChecker> install_checker_;
+  // Checks to run before the extension can be installed.
+  std::unique_ptr<PreloadCheck> policy_check_;
+  std::unique_ptr<PreloadCheck> requirements_check_;
+
+  // Runs the above checks.
+  std::unique_ptr<PreloadCheckGroup> check_group_;
 
   CompletionCallback callback_;
 

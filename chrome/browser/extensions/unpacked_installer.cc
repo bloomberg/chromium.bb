@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -27,6 +26,9 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/policy_check.h"
+#include "extensions/browser/preload_check_group.h"
+#include "extensions/browser/requirements_checker.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -243,28 +245,34 @@ void UnpackedInstaller::StartInstallChecks() {
     }
   }
 
-  install_checker_ = base::MakeUnique<ExtensionInstallChecker>(
-      profile_, extension_,
-      ExtensionInstallChecker::CHECK_REQUIREMENTS |
-          ExtensionInstallChecker::CHECK_MANAGEMENT_POLICY,
-      true /* fail fast */);
-  install_checker_->Start(
-      base::Bind(&UnpackedInstaller::OnInstallChecksComplete, this));
+  policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension_);
+  requirements_check_ = base::MakeUnique<RequirementsChecker>(extension_);
+
+  check_group_ = base::MakeUnique<PreloadCheckGroup>();
+  check_group_->set_stop_on_first_error(true);
+
+  check_group_->AddCheck(policy_check_.get());
+  check_group_->AddCheck(requirements_check_.get());
+  check_group_->Start(
+      base::BindOnce(&UnpackedInstaller::OnInstallChecksComplete, this));
 }
 
-void UnpackedInstaller::OnInstallChecksComplete(int failed_checks) {
+void UnpackedInstaller::OnInstallChecksComplete(PreloadCheck::Errors errors) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::string16 error_message = install_checker_->policy_error();
-  if (error_message.empty())
-    error_message = install_checker_->requirements_error_message();
-
-  if (!error_message.empty()) {
-    ReportExtensionLoadError(base::UTF16ToUTF8(error_message));
+  if (errors.empty()) {
+    InstallExtension();
     return;
   }
 
-  InstallExtension();
+  base::string16 error_message;
+  if (errors.count(PreloadCheck::DISALLOWED_BY_POLICY))
+    error_message = policy_check_->GetErrorMessage();
+  else
+    error_message = requirements_check_->GetErrorMessage();
+
+  DCHECK(!error_message.empty());
+  ReportExtensionLoadError(base::UTF16ToUTF8(error_message));
 }
 
 int UnpackedInstaller::GetFlags() {

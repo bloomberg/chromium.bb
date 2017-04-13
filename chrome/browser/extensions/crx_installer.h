@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/preload_check.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -36,8 +37,8 @@ class SequencedTaskRunner;
 
 namespace extensions {
 class CrxInstallError;
-class ExtensionInstallChecker;
 class ExtensionUpdaterTest;
+class PreloadCheckGroup;
 
 // This class installs a crx file into a profile.
 //
@@ -240,8 +241,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // checks on the extension.
   void CheckInstall();
 
-  // Runs on the UI thread. Callback from ExtensionInstallChecker.
-  void OnInstallChecksComplete(int failed_checks);
+  // Runs on the UI thread. Callback from PreloadCheckGroup.
+  void OnInstallChecksComplete(PreloadCheck::Errors errors);
 
   // Runs on the UI thread. Confirms the installation to the ExtensionService.
   void ConfirmInstall();
@@ -439,8 +440,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // The flags for ExtensionService::OnExtensionInstalled.
   int install_flags_;
 
-  // Performs requirements, policy and blacklist checks on the extension.
-  std::unique_ptr<ExtensionInstallChecker> install_checker_;
+  // Checks that may run before installing the extension.
+  std::unique_ptr<PreloadCheck> policy_check_;
+  std::unique_ptr<PreloadCheck> requirements_check_;
+  std::unique_ptr<PreloadCheck> blacklist_check_;
+
+  // Runs the above checks.
+  std::unique_ptr<PreloadCheckGroup> check_group_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

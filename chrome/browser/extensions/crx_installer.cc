@@ -23,11 +23,11 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/blacklist_check.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -48,7 +48,9 @@
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/preload_check.h"
+#include "extensions/browser/policy_check.h"
+#include "extensions/browser/preload_check_group.h"
+#include "extensions/browser/requirements_checker.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
@@ -507,69 +509,82 @@ void CrxInstaller::CheckInstall() {
     }
   }
 
-  // Run the policy, requirements and blacklist checks in parallel. Skip the
-  // checks if the extension is a bookmark app.
+  // Skip the checks if the extension is a bookmark app.
   if (extension()->from_bookmark()) {
     ConfirmInstall();
-  } else {
-    install_checker_ = base::MakeUnique<ExtensionInstallChecker>(
-        profile_, extension_, ExtensionInstallChecker::CHECK_ALL,
-        false /* fail fast */);
-    install_checker_->Start(
-        base::Bind(&CrxInstaller::OnInstallChecksComplete, this));
+    return;
   }
+
+  // Run the policy, requirements and blacklist checks in parallel.
+  check_group_ = base::MakeUnique<PreloadCheckGroup>();
+
+  policy_check_ = base::MakeUnique<PolicyCheck>(profile_, extension());
+  requirements_check_ = base::MakeUnique<RequirementsChecker>(extension());
+  blacklist_check_ =
+      base::MakeUnique<BlacklistCheck>(Blacklist::Get(profile_), extension_);
+
+  check_group_->AddCheck(policy_check_.get());
+  check_group_->AddCheck(requirements_check_.get());
+  check_group_->AddCheck(blacklist_check_.get());
+
+  check_group_->Start(
+      base::BindOnce(&CrxInstaller::OnInstallChecksComplete, this));
 }
 
-void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
+void CrxInstaller::OnInstallChecksComplete(PreloadCheck::Errors errors) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_)
     return;
 
+  if (errors.empty()) {
+    ConfirmInstall();
+    return;
+  }
+
   // Check for requirement errors.
-  if (!install_checker_->requirements_error_message().empty()) {
+  if (!requirements_check_->GetErrorMessage().empty()) {
     if (error_on_unsupported_requirements_) {
       ReportFailureFromUIThread(
           CrxInstallError(CrxInstallError::ERROR_DECLINED,
-                          install_checker_->requirements_error_message()));
+                          requirements_check_->GetErrorMessage()));
       return;
     }
     install_flags_ |= kInstallFlagHasRequirementErrors;
   }
 
   // Check the blacklist state.
-  if (install_checker_->blacklist_error() == PreloadCheck::BLACKLISTED_ID) {
-    install_flags_ |= kInstallFlagIsBlacklistedForMalware;
+  if (errors.count(PreloadCheck::BLACKLISTED_ID) ||
+      errors.count(PreloadCheck::BLACKLISTED_UNKNOWN)) {
+    if (allow_silent_install_) {
+      // NOTE: extension may still be blacklisted, but we're forced to silently
+      // install it. In this case, ExtensionService::OnExtensionInstalled needs
+      // to deal with it.
+      if (errors.count(PreloadCheck::BLACKLISTED_ID))
+        install_flags_ |= kInstallFlagIsBlacklistedForMalware;
+    } else {
+      // User tried to install a blacklisted extension. Show an error and
+      // refuse to install it.
+      ReportFailureFromUIThread(CrxInstallError(
+          CrxInstallError::ERROR_DECLINED,
+          l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
+                                     base::UTF8ToUTF16(extension()->name()))));
+      UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
+                                extension()->location(),
+                                Manifest::NUM_LOCATIONS);
+      return;
+    }
   }
-
-  if ((install_checker_->blacklist_error() == PreloadCheck::BLACKLISTED_ID ||
-       install_checker_->blacklist_error() ==
-           PreloadCheck::BLACKLISTED_UNKNOWN) &&
-      !allow_silent_install_) {
-    // User tried to install a blacklisted extension. Show an error and
-    // refuse to install it.
-    ReportFailureFromUIThread(CrxInstallError(
-        CrxInstallError::ERROR_DECLINED,
-        l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
-                                   base::UTF8ToUTF16(extension()->name()))));
-    UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlockCRX",
-                              extension()->location(),
-                              Manifest::NUM_LOCATIONS);
-    return;
-  }
-
-  // NOTE: extension may still be blacklisted, but we're forced to silently
-  // install it. In this case, ExtensionService::OnExtensionInstalled needs to
-  // deal with it.
 
   // Check for policy errors.
-  if (!install_checker_->policy_error().empty()) {
+  if (errors.count(PreloadCheck::DISALLOWED_BY_POLICY)) {
     // We don't want to show the error infobar for installs from the WebStore,
     // because the WebStore already shows an error dialog itself.
     // Note: |client_| can be NULL in unit_tests!
     if (extension()->from_webstore() && client_)
       client_->install_ui()->SetSkipPostInstallUI(true);
+
     ReportFailureFromUIThread(CrxInstallError(
-        CrxInstallError::ERROR_DECLINED, install_checker_->policy_error()));
+        CrxInstallError::ERROR_DECLINED, policy_check_->GetErrorMessage()));
     return;
   }
 

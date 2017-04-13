@@ -575,8 +575,6 @@ static_library("extensions") {
     "extension_gcm_app_handler.h",
     "extension_icon_manager.cc",
     "extension_icon_manager.h",
-    "extension_install_checker.cc",
-    "extension_install_checker.h",
     "extension_install_error_menu_item_id_provider.cc",
     "extension_install_error_menu_item_id_provider.h",
     "extension_install_prompt.cc",
