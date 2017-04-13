@@ -46,3 +46,23 @@ source_set("tools_ui") {
     "//ios/third_party/material_components_ios",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "tools_coordinator_unittest.mm",
+    "tools_mediator_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":tools",
+    ":tools_ui",
+    "//base/test:test_support",
+    "//ios/chrome/test/base",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
