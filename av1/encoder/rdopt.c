@@ -1938,9 +1938,6 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
 #if CONFIG_REF_MV
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
 #endif  // CONFIG_REF_MV
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (!is_rect_tx(tx_size)) return 1;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
   if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, tx_size))
     return 1;
   if (!is_inter && x->use_default_intra_tx_type &&
@@ -2266,6 +2263,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   last_rd = INT64_MAX;
   for (n = start_tx; n >= end_tx; --n) {
+#if CONFIG_EXT_TX && CONFIG_RECT_TX
+    if (is_rect_tx(n)) break;
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
     TX_TYPE tx_start = DCT_DCT;
     TX_TYPE tx_end = TX_TYPES;
 #if CONFIG_LV_MAP
