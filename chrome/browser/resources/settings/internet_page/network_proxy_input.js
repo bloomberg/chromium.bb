@@ -46,8 +46,6 @@ Polymer({
    * @private
    */
   onValueChange_: function() {
-    if (!this.value.Host)
-      return;
     var port = parseInt(this.value.Port, 10);
     if (isNaN(port))
       port = 80;
