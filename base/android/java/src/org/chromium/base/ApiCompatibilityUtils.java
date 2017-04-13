@@ -627,7 +627,7 @@ public class ApiCompatibilityUtils {
      * @return URI for |file|.
      */
     public static Uri getUriForDownloadedFile(File file) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.M
                 ? FileUtils.getUriForFile(file)
                 : Uri.fromFile(file);
     }
