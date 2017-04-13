@@ -87,6 +87,9 @@ class URLPattern {
   // Returns true if the given |scheme| is considered valid for extensions.
   static bool IsValidSchemeForExtensions(base::StringPiece scheme);
 
+  // Returns the mask for all schemes considered valid for extensions.
+  static int GetValidSchemeMaskForExtensions();
+
   explicit URLPattern(int valid_schemes);
 
   // Convenience to construct a URLPattern from a string. If the string is not

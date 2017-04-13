@@ -30,12 +30,12 @@ namespace internal {
 // The settings applied to all extensions are the default settings and can be
 // overridden by per-extension or per-update-url settings.
 // There are multiple fields in this class. Unspecified fields in per-extension
-// and per-update-url settings will take value from default settings (or merge
-// from that, see per-field comments below for details). Unspecified fields in
-// default extensions will take the default fall back value instead.
+// and per-update-url settings will take the default fallback value, and do not
+// inherit from default settings.
 // Since update URL is not directly associated to extension ID, per-extension
 // and per-update-url settings might be enforced at the same time, see per-field
 // comments below for details.
+// Some features do not support per-update-url setttings.
 struct IndividualSettings {
   enum ParsingScope {
     // Parses the default settings.
@@ -67,8 +67,9 @@ struct IndividualSettings {
   // be specified, containing the update URL for this extension.
   // Note that |update_url| will be ignored for INSTALLATION_ALLOWED and
   // INSTALLATION_BLOCKED installation mode.
-  // This setting will override the default settings, and unspecified
-  // setting will take value from default settings.
+  // This setting will NOT merge from the default settings. Any settings from
+  // the default settings that should be applied to an individual extension
+  // should be re-declared.
   // In case this setting is specified in both per-extensions and
   // per-update-url settings, per-extension settings will override
   // per-update-url settings.
@@ -81,12 +82,44 @@ struct IndividualSettings {
   // permission which has been blacklisted, this extension will not be allowed
   // to load. And if it contains a blocked permission as optional requirement,
   // it will be allowed to load (of course, with permission granted from user if
-  // necessary), but conflicting permissions will be dropped. This setting will
-  // merge from the default settings, and unspecified settings will take value
-  // from default settings.
+  // necessary), but conflicting permissions will be dropped.
+  // This setting will NOT merge from the default settings. Any settings from
+  // the default settings that should be applied to an individual extension
+  // should be re-declared.
   // In case this setting is specified in both per-extensions and per-update-url
   // settings, both settings will be enforced.
   APIPermissionSet blocked_permissions;
+
+  // This setting will provide a list of hosts that are blocked for each
+  // extension at runtime. That is, if an extension attempts to use an API
+  // call which requires a host permission specified in runtime_blocked_hosts
+  // it will fail no matter which host permissions are declared in the
+  // extension manifest. This setting will NOT merge from the default settings.
+  // Either the default settings will be applied, or an extension specific
+  // setting.
+  // If a URL is specified in the runtime_allowed_hosts, and in the
+  // runtime_blocked_hosts, the runtime_allowed_hosts wins and the call will be
+  // allowed.
+  // This setting is only supported per-extensions or default
+  // (per-update-url not supported)
+  URLPatternSet runtime_blocked_hosts;
+
+  // This setting will provide a list of hosts that are exempted from the
+  // runtime_blocked_hosts setting and may be used at runtime. That is,
+  // if an extension attempts to use an API call which requires a host
+  // permission that was blocked using runtime_blocked_hosts it will
+  // fail unless also declared here.
+  // A generic pattern may be declared in runtime_blocked_hosts and a
+  // more specific pattern declared here. For example, if we block
+  // "*://*.example.com/*" with runtime_blocked_hosts we can then
+  // allow "http://good.example.com/*" in runtime_allowed_hosts.
+  // This setting will NOT merge from the default settings. Either the
+  // default settings will be applied, or an extension specific setting.
+  // If a URL is specified in runtime_blocked_hosts, and in
+  // runtime_allowed_hosts, the allowed list wins.
+  // This setting is only supported per-extensions or default
+  // (per-update-url not supported)
+  URLPatternSet runtime_allowed_hosts;
 
   // Minimum version required for an extensions, applies to per-extension
   // settings only. Extension (with specified extension ID) with version older

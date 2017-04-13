@@ -114,6 +114,16 @@ class ExtensionManagement : public KeyedService {
   // Returns the list of blocked API permissions for |extension|.
   APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
 
+  // Returns the list of hosts blocked by policy for |extension|.
+  const URLPatternSet& GetRuntimeBlockedHosts(const Extension* extension) const;
+
+  // Returns the list of hosts |extension| is limited to by policy.
+  const URLPatternSet& GetRuntimeAllowedHosts(const Extension* extension) const;
+
+  // Checks if a URL is on the blocked host permissions list for a specific
+  // extension.
+  bool IsBlockedHost(const Extension* extension, const GURL& url) const;
+
   // Returns blocked permission set for |extension|.
   std::unique_ptr<const PermissionSet> GetBlockedPermissions(
       const Extension* extension) const;

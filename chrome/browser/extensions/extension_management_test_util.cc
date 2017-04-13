@@ -161,6 +161,34 @@ void ExtensionManagementPrefUpdaterBase::RemoveBlockedPermission(
                        permission);
 }
 
+// Helper functions for 'runtime_blocked_hosts' manipulation ------------------
+
+void ExtensionManagementPrefUpdaterBase::UnsetRuntimeBlockedHosts(
+    const std::string& prefix) {
+  DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
+  pref_->Remove(make_path(prefix, schema::kRuntimeBlockedHosts), nullptr);
+}
+
+void ExtensionManagementPrefUpdaterBase::ClearRuntimeBlockedHosts(
+    const std::string& prefix) {
+  DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
+  ClearList(make_path(prefix, schema::kRuntimeBlockedHosts));
+}
+
+void ExtensionManagementPrefUpdaterBase::AddRuntimeBlockedHost(
+    const std::string& prefix,
+    const std::string& host) {
+  DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
+  AddStringToList(make_path(prefix, schema::kRuntimeBlockedHosts), host);
+}
+
+void ExtensionManagementPrefUpdaterBase::RemoveRuntimeBlockedHost(
+    const std::string& prefix,
+    const std::string& host) {
+  DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
+  RemoveStringFromList(make_path(prefix, schema::kRuntimeBlockedHosts), host);
+}
+
 // Helper functions for 'allowed_permissions' manipulation ---------------------
 
 void ExtensionManagementPrefUpdaterBase::UnsetAllowedPermissions(

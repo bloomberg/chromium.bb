@@ -129,6 +129,14 @@ bool URLPattern::IsValidSchemeForExtensions(base::StringPiece scheme) {
   return false;
 }
 
+// static
+int URLPattern::GetValidSchemeMaskForExtensions() {
+  int result = 0;
+  for (size_t i = 0; i < arraysize(kValidSchemeMasks); ++i)
+    result |= kValidSchemeMasks[i];
+  return result;
+}
+
 URLPattern::URLPattern()
     : valid_schemes_(SCHEME_NONE),
       match_all_urls_(false),

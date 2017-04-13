@@ -43,33 +43,40 @@ const char kExampleDictPreference[] =
     "{"
     "  \"abcdefghijklmnopabcdefghijklmnop\": {"  // kTargetExtension
     "    \"installation_mode\": \"allowed\","
-    "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
+    "    \"blocked_permissions\": [\"fileSystem\", "
+    "                              \"bookmarks\", "
+    "                              \"downloads\"],"
     "    \"minimum_version_required\": \"1.1.0\","
+    "    \"runtime_allowed_hosts\": [\"<all_urls>\"],"
     "  },"
     "  \"bcdefghijklmnopabcdefghijklmnopa\": {"  // kTargetExtension2
     "    \"installation_mode\": \"force_installed\","
     "    \"update_url\": \"http://example.com/update_url\","
-    "    \"allowed_permissions\": [\"fileSystem\", \"bookmarks\"],"
+    "    \"blocked_permissions\": [\"downloads\"],"
     "  },"
     "  \"cdefghijklmnopabcdefghijklmnopab\": {"  // kTargetExtension3
     "    \"installation_mode\": \"normal_installed\","
     "    \"update_url\": \"http://example.com/update_url\","
-    "    \"allowed_permissions\": [\"fileSystem\", \"downloads\"],"
     "    \"blocked_permissions\": [\"fileSystem\", \"history\"],"
     "  },"
     "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
     "    \"installation_mode\": \"blocked\","
+    "    \"runtime_blocked_hosts\": [\"*://*.foo.com/*\", "
+    "\"https://bar.org/test\"],"
+    "  },"
+    "  \"jdkrmdirkjskemfioeesiofoielsmroi\": {"  // kTargetExtension5
+    "    \"installation_mode\": \"normal_installed\","
     "  },"
     "  \"update_url:http://example.com/update_url\": {"  // kExampleUpdateUrl
     "    \"installation_mode\": \"allowed\","
-    "    \"allowed_permissions\": [\"downloads\"],"
-    "    \"blocked_permissions\": [\"bookmarks\"],"
+    "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
     "  },"
     "  \"*\": {"
     "    \"installation_mode\": \"blocked\","
     "    \"install_sources\": [\"*://foo.com/*\"],"
     "    \"allowed_types\": [\"theme\", \"user_script\"],"
     "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
+    "    \"runtime_blocked_hosts\": [\"*://*.example.com/default*\"],"
     "  },"
     "}";
 
@@ -169,6 +176,14 @@ class ExtensionManagementServiceTest : public testing::Test {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, update_url);
     return extension_management_->GetInstallationMode(extension.get());
+  }
+
+  // Wrapper of ExtensionManagement::GetRuntimeBlockedHosts, |id| is used
+  // to construct an Extension for testing.
+  URLPatternSet GetRuntimeBlockedHosts(const std::string& id) {
+    scoped_refptr<const Extension> extension =
+        CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
+    return extension_management_->GetRuntimeBlockedHosts(extension.get());
   }
 
   // Wrapper of ExtensionManagement::GetBlockedAPIPermissions, |id| and
@@ -429,6 +444,11 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
             ExtensionManagement::INSTALLATION_BLOCKED);
   EXPECT_EQ(GetInstallationModeByUpdateUrl(kExampleUpdateUrl),
             ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_TRUE(GetRuntimeBlockedHosts(kTargetExtension).is_empty());
+  EXPECT_TRUE(GetRuntimeBlockedHosts(kTargetExtension4)
+                  .MatchesURL(GURL("http://test.foo.com/test")));
+  EXPECT_TRUE(GetRuntimeBlockedHosts(kTargetExtension4)
+                  .MatchesURL(GURL("https://bar.org/test")));
 
   // Verifies global settings.
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_install_sources);
@@ -436,6 +456,8 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_EQ(allowed_sites.size(), 1u);
   EXPECT_TRUE(allowed_sites.MatchesURL(GURL("http://foo.com/entry")));
   EXPECT_FALSE(allowed_sites.MatchesURL(GURL("http://bar.com/entry")));
+  EXPECT_TRUE(GetRuntimeBlockedHosts(kNonExistingExtension)
+                  .MatchesURL(GURL("http://example.com/default")));
 
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_allowed_types);
   const std::vector<Manifest::Type>& allowed_types =

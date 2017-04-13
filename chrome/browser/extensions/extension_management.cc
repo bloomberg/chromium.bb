@@ -198,6 +198,30 @@ APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
   return default_settings_->blocked_permissions;
 }
 
+const URLPatternSet& ExtensionManagement::GetRuntimeBlockedHosts(
+    const Extension* extension) const {
+  auto iter_id = settings_by_id_.find(extension->id());
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->runtime_blocked_hosts;
+  return default_settings_->runtime_blocked_hosts;
+}
+
+const URLPatternSet& ExtensionManagement::GetRuntimeAllowedHosts(
+    const Extension* extension) const {
+  auto iter_id = settings_by_id_.find(extension->id());
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->runtime_allowed_hosts;
+  return default_settings_->runtime_allowed_hosts;
+}
+
+bool ExtensionManagement::IsBlockedHost(const Extension* extension,
+                                        const GURL& url) const {
+  auto iter_id = settings_by_id_.find(extension->id());
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->runtime_blocked_hosts.MatchesURL(url);
+  return default_settings_->runtime_blocked_hosts.MatchesURL(url);
+}
+
 std::unique_ptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
     const Extension* extension) const {
   // Only api permissions are supported currently.

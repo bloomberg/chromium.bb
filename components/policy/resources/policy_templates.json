@@ -2359,9 +2359,9 @@
           'id': 168,
           'caption': '''Configure allowed app/extension types''',
           'tags': [],
-          'desc': '''Controls which app/extension types are allowed to be installed.
+          'desc': '''Controls which app/extension types are allowed to be installed and limits runtime access.
 
-          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
+          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
 
           Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
 
@@ -2399,6 +2399,16 @@
                     'type': 'string',
                     'pattern': '^[0-9]+([.][0-9]+)*$',
                   },
+                  'runtime_blocked_hosts': {
+                    'type': 'array',
+                    'items': {
+                      'type': 'string'
+                    },
+                    'id': 'ListOfUrlPatterns'
+                  },
+                  'runtime_allowed_hosts': {
+                    '$ref': 'ListOfUrlPatterns'
+                  }
                 },
               },
               '^update_url:': {
@@ -2434,6 +2444,12 @@
                   'allowed_types': {
                     '$ref': 'ExtensionAllowedTypes',
                   },
+                  'runtime_blocked_hosts': {
+                    '$ref': 'ListOfUrlPatterns'
+                  },
+                  'runtime_allowed_hosts': {
+                    '$ref': 'ListOfUrlPatterns'
+                  }
                 },
               },
             },

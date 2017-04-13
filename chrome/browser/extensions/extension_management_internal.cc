@@ -84,52 +84,64 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
   const base::ListValue* list_value = nullptr;
   base::string16 error;
 
-  // If applicable, inherit from global block list and remove all explicitly
-  // allowed permissions.
-  if (scope != SCOPE_DEFAULT &&
-      dict->GetListWithoutPathExpansion(schema_constants::kAllowedPermissions,
+  // Set default blocked permissions, or replace with extension specific blocks.
+  APIPermissionSet parsed_blocked_permissions;
+  APIPermissionSet explicitly_allowed_permissions;
+  if (dict->GetListWithoutPathExpansion(schema_constants::kAllowedPermissions,
                                         &list_value)) {
-    // It is assumed that Parse() is already called for SCOPE_DEFAULT and
-    // settings specified for |this| is initialized by copying from default
-    // settings, including the |blocked_permissions| setting here.
-    // That is, |blocked_permissions| should be the default block permissions
-    // list settings here.
-    APIPermissionSet globally_blocked_permissions = blocked_permissions;
-    APIPermissionSet explicitly_allowed_permissions;
-    // Reuses code for parsing API permissions from manifest. But note that we
-    // only support list of strings type.
     if (!APIPermissionSet::ParseFromJSON(
-            list_value,
-            APIPermissionSet::kDisallowInternalPermissions,
-            &explicitly_allowed_permissions,
-            &error,
-            nullptr)) {
-      // There might be unknown permissions, warn and just ignore them;
+            list_value, APIPermissionSet::kDisallowInternalPermissions,
+            &explicitly_allowed_permissions, &error, nullptr)) {
       LOG(WARNING) << error;
     }
-    APIPermissionSet::Difference(globally_blocked_permissions,
-                                 explicitly_allowed_permissions,
-                                 &blocked_permissions);
   }
-
-  // Then add all newly blocked permissions to the list.
   if (dict->GetListWithoutPathExpansion(schema_constants::kBlockedPermissions,
                                         &list_value)) {
-    // The |blocked_permissions| might be the result of the routines above,
-    // or remains the same as default block permissions settings.
-    APIPermissionSet permissions_to_merge_from = blocked_permissions;
-    APIPermissionSet permissions_parsed;
     if (!APIPermissionSet::ParseFromJSON(
-            list_value,
-            APIPermissionSet::kDisallowInternalPermissions,
-            &permissions_parsed,
-            &error,
-            nullptr)) {
+            list_value, APIPermissionSet::kDisallowInternalPermissions,
+            &parsed_blocked_permissions, &error, nullptr)) {
       LOG(WARNING) << error;
     }
-    APIPermissionSet::Union(
-        permissions_to_merge_from, permissions_parsed, &blocked_permissions);
   }
+  APIPermissionSet::Difference(parsed_blocked_permissions,
+                               explicitly_allowed_permissions,
+                               &blocked_permissions);
+
+  // Parses list of Match Patterns into a URLPatternSet.
+  auto parse_url_pattern_set = [](const base::DictionaryValue* dict,
+                                  const char key[], URLPatternSet* out_value) {
+    const base::ListValue* host_list_value = nullptr;
+
+    // Get the list of URLPatterns.
+    if (dict->GetListWithoutPathExpansion(key,
+                                          &host_list_value)) {
+      out_value->ClearPatterns();
+      const int extension_scheme_mask =
+          URLPattern::GetValidSchemeMaskForExtensions();
+      for (size_t i = 0; i < host_list_value->GetSize(); ++i) {
+        std::string unparsed_str;
+        host_list_value->GetString(i, &unparsed_str);
+        URLPattern pattern = URLPattern(extension_scheme_mask);
+        URLPattern::ParseResult parse_result = pattern.Parse(unparsed_str);
+        if (parse_result != URLPattern::PARSE_SUCCESS) {
+          LOG(WARNING) << kMalformedPreferenceWarning;
+          LOG(WARNING) << "Invalid URL pattern '" + unparsed_str +
+                              "' for attribute " + key;
+          return false;
+        }
+        out_value->AddPattern(pattern);
+      }
+    }
+    return true;
+  };
+
+  if (!parse_url_pattern_set(dict, schema_constants::kRuntimeBlockedHosts,
+                             &runtime_blocked_hosts))
+    return false;
+
+  if (!parse_url_pattern_set(dict, schema_constants::kRuntimeAllowedHosts,
+                             &runtime_allowed_hosts))
+    return false;
 
   // Parses the minimum version settings.
   std::string minimum_version_required_str;
@@ -154,6 +166,8 @@ void IndividualSettings::Reset() {
   installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
   update_url.clear();
   blocked_permissions.clear();
+  runtime_blocked_hosts.ClearPatterns();
+  runtime_allowed_hosts.ClearPatterns();
 }
 
 GlobalSettings::GlobalSettings() {

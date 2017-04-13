@@ -140,21 +140,34 @@ TEST_F(PermissionsBasedManagementPolicyProviderTest, APIPermissions) {
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
   EXPECT_TRUE(error16.empty());
 
-  // Explictly blocks kCookie for test extension. It should be blocked again.
+  // Explictly blocks kCookie for test extension. It should still be allowed.
   {
     PrefUpdater pref(pref_service_.get());
     pref.AddBlockedPermission(extension->id(),
                               GetAPIPermissionName(APIPermission::kCookie));
   }
   error16.clear();
-  EXPECT_FALSE(provider_.UserMayLoad(extension.get(), &error16));
-  EXPECT_FALSE(error16.empty());
+  EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
+  EXPECT_TRUE(error16.empty());
 
-  // Blocks kDownloads by default. It should be blocked.
+  // Any extension specific definition overrides all defaults, even if blank.
   {
     PrefUpdater pref(pref_service_.get());
     pref.UnsetBlockedPermissions(extension->id());
     pref.UnsetAllowedPermissions(extension->id());
+    pref.ClearBlockedPermissions("*");
+    pref.AddBlockedPermission("*",
+                              GetAPIPermissionName(APIPermission::kDownloads));
+  }
+  error16.clear();
+  EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
+  EXPECT_TRUE(error16.empty());
+
+  // Blocks kDownloads by default. It should be blocked.
+  {
+    PrefUpdater pref(pref_service_.get());
+    pref.UnsetPerExtensionSettings(extension->id());
+    pref.UnsetPerExtensionSettings(extension->id());
     pref.ClearBlockedPermissions("*");
     pref.AddBlockedPermission("*",
                               GetAPIPermissionName(APIPermission::kDownloads));
