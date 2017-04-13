@@ -62,8 +62,8 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testShieldGamepadMappings() throws Exception {
-        GamepadMappings mappings = GamepadMappings.getMappings(
-                GamepadMappings.NVIDIA_SHIELD_DEVICE_NAME_PREFIX, null);
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.NVIDIA_SHIELD_DEVICE_NAME_PREFIX);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertShieldGamepadMappings();
@@ -72,8 +72,8 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testXBox360GamepadMappings() throws Exception {
-        GamepadMappings mappings = GamepadMappings.getMappings(
-                GamepadMappings.MICROSOFT_XBOX_PAD_DEVICE_NAME, null);
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.MICROSOFT_XBOX_PAD_DEVICE_NAME);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertShieldGamepadMappings();
@@ -82,8 +82,8 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testPS3SixAxisGamepadMappings() throws Exception {
-        GamepadMappings mappings = GamepadMappings.getMappings(
-                GamepadMappings.PS3_SIXAXIS_DEVICE_NAME, null);
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.PS3_SIXAXIS_DEVICE_NAME);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
@@ -109,8 +109,8 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testSamsungEIGP20GamepadMappings() throws Exception {
-        GamepadMappings mappings = GamepadMappings.getMappings(
-                GamepadMappings.SAMSUNG_EI_GP20_DEVICE_NAME, null);
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.SAMSUNG_EI_GP20_DEVICE_NAME);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -128,8 +128,8 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testAmazonFireGamepadMappings() throws Exception {
-        GamepadMappings mappings = GamepadMappings.getMappings(
-                GamepadMappings.AMAZON_FIRE_DEVICE_NAME, null);
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.AMAZON_FIRE_DEVICE_NAME);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -158,7 +158,7 @@ public class GamepadMappingsTest {
             MotionEvent.AXIS_HAT_Y
         };
 
-        GamepadMappings mappings = GamepadMappings.getMappings("", axes);
+        GamepadMappings mappings = GamepadMappings.getUnknownGamepadMappings(axes);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -187,7 +187,7 @@ public class GamepadMappingsTest {
             MotionEvent.AXIS_HAT_Y
         };
 
-        GamepadMappings mappings = GamepadMappings.getMappings("", axes);
+        GamepadMappings mappings = GamepadMappings.getUnknownGamepadMappings(axes);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -216,7 +216,7 @@ public class GamepadMappingsTest {
             MotionEvent.AXIS_HAT_Y
         };
 
-        GamepadMappings mappings = GamepadMappings.getMappings("", axes);
+        GamepadMappings mappings = GamepadMappings.getUnknownGamepadMappings(axes);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -241,7 +241,7 @@ public class GamepadMappingsTest {
             MotionEvent.AXIS_RZ
         };
 
-        GamepadMappings mappings = GamepadMappings.getMappings("", axes);
+        GamepadMappings mappings = GamepadMappings.getUnknownGamepadMappings(axes);
         mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
         assertMappedCommonXYABButtons();
@@ -253,6 +253,42 @@ public class GamepadMappingsTest {
         assertMappedXYAxes();
         assertMappedZAndRZAxesToRightStick();
 
+        assertMapping();
+    }
+
+    @Test
+    @Feature({"Gamepad"})
+    public void testPS4GamepadMappings() throws Exception {
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.PS_DUALSHOCK_4_PRODUCT_ID,
+                        GamepadMappings.PS_DUALSHOCK_4_VENDOR_ID);
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER],
+                mRawAxes[MotionEvent.AXIS_RX], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
+                mRawAxes[MotionEvent.AXIS_RY], ERROR_TOLERANCE);
+
+        assertMappedCommonStartSelectMetaButtons();
+        assertMappedXYAxes();
+        assertMappedHatAxisToDpadButtons();
+        assertMappedZAndRZAxesToRightStick();
+
+        expectNoThumbstickButtons();
         assertMapping();
     }
 
@@ -279,6 +315,11 @@ public class GamepadMappingsTest {
 
     public void expectNoMetaButton() {
         mUnmappedButtons.set(CanonicalButtonIndex.META);
+    }
+
+    public void expectNoThumbstickButtons() {
+        mUnmappedButtons.set(CanonicalButtonIndex.LEFT_THUMBSTICK);
+        mUnmappedButtons.set(CanonicalButtonIndex.RIGHT_THUMBSTICK);
     }
 
     public void assertMapping() {
