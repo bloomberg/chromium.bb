@@ -134,5 +134,7 @@ TEST_F(WebAppManifestSectionTableTest, AddAndGetMultipleManifests) {
   ASSERT_TRUE(alicepay_manifest->fingerprints[0] == fingerprint_three);
   ASSERT_TRUE(alicepay_manifest->fingerprints[1] == fingerprint_four);
 }
-}
-}  // payments
+
+}  // namespace
+
+}  // namespace payments

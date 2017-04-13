@@ -4,6 +4,8 @@
 
 static_library("android") {
   sources = [
+    "payment_method_manifest_table.cc",
+    "payment_method_manifest_table.h",
     "web_app_manifest_section_table.cc",
     "web_app_manifest_section_table.h",
   ]
@@ -18,6 +20,7 @@ static_library("android") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "payment_method_manifest_table_unittest.cc",
     "web_app_manifest_section_table_unittest.cc",
   ]
 

@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "components/payments/android/payment_method_manifest_table.h"
 #include "components/payments/android/web_app_manifest_section_table.h"
 #endif
 
@@ -98,6 +99,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   web_database_->AddTable(base::MakeUnique<LoginsTable>());
   web_database_->AddTable(base::MakeUnique<TokenServiceTable>());
 #if defined(OS_ANDROID)
+  web_database_->AddTable(
+      base::MakeUnique<payments::PaymentMethodManifestTable>());
   web_database_->AddTable(
       base::MakeUnique<payments::WebAppManifestSectionTable>());
 #endif

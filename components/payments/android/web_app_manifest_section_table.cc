@@ -8,9 +8,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "sql/statement.h"
-#include "sql/transaction.h"
 
 namespace payments {
 namespace {
@@ -143,4 +141,4 @@ mojom::WebAppManifestSectionPtr WebAppManifestSectionTable::GetWebAppManifest(
   return manifest;
 }
 
-}  // payments
+}  // namespace payments
