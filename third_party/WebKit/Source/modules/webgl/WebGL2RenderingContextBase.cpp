@@ -3463,20 +3463,28 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
 
 bool WebGL2RenderingContextBase::ValidateClearBuffer(const char* function_name,
                                                      GLenum buffer,
-                                                     GLsizei size) {
+                                                     GLsizei size,
+                                                     GLuint src_offset) {
+  CheckedNumeric<GLsizei> checked_size(size);
+  checked_size -= src_offset;
+  if (!checked_size.IsValid()) {
+    SynthesizeGLError(GL_INVALID_VALUE, function_name,
+                      "invalid array size / srcOffset");
+    return false;
+  }
   switch (buffer) {
     case GL_COLOR:
-      if (size < 4) {
+      if (checked_size.ValueOrDie() < 4) {
         SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                          "invalid array size");
+                          "invalid array size / srcOffset");
         return false;
       }
       break;
     case GL_DEPTH:
     case GL_STENCIL:
-      if (size < 1) {
+      if (checked_size.ValueOrDie() < 1) {
         SynthesizeGLError(GL_INVALID_VALUE, function_name,
-                          "invalid array size");
+                          "invalid array size / srcOffset");
         return false;
       }
       break;
@@ -3498,64 +3506,74 @@ WebGLTexture* WebGL2RenderingContextBase::ValidateTexImageBinding(
 
 void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
                                                GLint drawbuffer,
-                                               NotShared<DOMInt32Array> value) {
+                                               NotShared<DOMInt32Array> value,
+                                               GLuint src_offset) {
   if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferiv", buffer, value.View()->length()))
+      !ValidateClearBuffer("clearBufferiv", buffer, value.View()->length(),
+                           src_offset))
     return;
 
-  ContextGL()->ClearBufferiv(buffer, drawbuffer, value.View()->Data());
+  ContextGL()->ClearBufferiv(buffer, drawbuffer,
+                             value.View()->Data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
                                                GLint drawbuffer,
-                                               const Vector<GLint>& value) {
+                                               const Vector<GLint>& value,
+                                               GLuint src_offset) {
   if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferiv", buffer, value.size()))
+      !ValidateClearBuffer("clearBufferiv", buffer, value.size(), src_offset))
     return;
 
-  ContextGL()->ClearBufferiv(buffer, drawbuffer, value.Data());
-}
-
-void WebGL2RenderingContextBase::clearBufferuiv(
-    GLenum buffer,
-    GLint drawbuffer,
-    NotShared<DOMUint32Array> value) {
-  if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferuiv", buffer, value.View()->length()))
-    return;
-
-  ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.View()->Data());
+  ContextGL()->ClearBufferiv(buffer, drawbuffer, value.Data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
                                                 GLint drawbuffer,
-                                                const Vector<GLuint>& value) {
+                                                NotShared<DOMUint32Array> value,
+                                                GLuint src_offset) {
   if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferuiv", buffer, value.size()))
+      !ValidateClearBuffer("clearBufferuiv", buffer, value.View()->length(),
+                           src_offset))
     return;
 
-  ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.Data());
+  ContextGL()->ClearBufferuiv(buffer, drawbuffer,
+                              value.View()->Data() + src_offset);
 }
 
-void WebGL2RenderingContextBase::clearBufferfv(
-    GLenum buffer,
-    GLint drawbuffer,
-    NotShared<DOMFloat32Array> value) {
+void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
+                                                GLint drawbuffer,
+                                                const Vector<GLuint>& value,
+                                                GLuint src_offset) {
   if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferfv", buffer, value.View()->length()))
+      !ValidateClearBuffer("clearBufferuiv", buffer, value.size(), src_offset))
     return;
 
-  ContextGL()->ClearBufferfv(buffer, drawbuffer, value.View()->Data());
+  ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.Data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
                                                GLint drawbuffer,
-                                               const Vector<GLfloat>& value) {
+                                               NotShared<DOMFloat32Array> value,
+                                               GLuint src_offset) {
   if (isContextLost() ||
-      !ValidateClearBuffer("clearBufferfv", buffer, value.size()))
+      !ValidateClearBuffer("clearBufferfv", buffer, value.View()->length(),
+                           src_offset))
     return;
 
-  ContextGL()->ClearBufferfv(buffer, drawbuffer, value.Data());
+  ContextGL()->ClearBufferfv(buffer, drawbuffer,
+                             value.View()->Data() + src_offset);
+}
+
+void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
+                                               GLint drawbuffer,
+                                               const Vector<GLfloat>& value,
+                                               GLuint src_offset) {
+  if (isContextLost() ||
+      !ValidateClearBuffer("clearBufferfv", buffer, value.size(), src_offset))
+    return;
+
+  ContextGL()->ClearBufferfv(buffer, drawbuffer, value.Data() + src_offset);
 }
 
 void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,

@@ -843,12 +843,12 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   /* Multiple Render Targets */
   void drawBuffers(const Vector<GLenum>&);
-  void clearBufferiv(GLenum, GLint, NotShared<DOMInt32Array>);
-  void clearBufferiv(GLenum, GLint, const Vector<GLint>&);
-  void clearBufferuiv(GLenum, GLint, NotShared<DOMUint32Array>);
-  void clearBufferuiv(GLenum, GLint, const Vector<GLuint>&);
-  void clearBufferfv(GLenum, GLint, NotShared<DOMFloat32Array>);
-  void clearBufferfv(GLenum, GLint, const Vector<GLfloat>&);
+  void clearBufferiv(GLenum, GLint, NotShared<DOMInt32Array>, GLuint);
+  void clearBufferiv(GLenum, GLint, const Vector<GLint>&, GLuint);
+  void clearBufferuiv(GLenum, GLint, NotShared<DOMUint32Array>, GLuint);
+  void clearBufferuiv(GLenum, GLint, const Vector<GLuint>&, GLuint);
+  void clearBufferfv(GLenum, GLint, NotShared<DOMFloat32Array>, GLuint);
+  void clearBufferfv(GLenum, GLint, const Vector<GLfloat>&, GLuint);
   void clearBufferfi(GLenum, GLint, GLfloat, GLint);
 
   /* Query Objects */
@@ -982,7 +982,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
   bool ValidateClearBuffer(const char* function_name,
                            GLenum buffer,
-                           GLsizei length);
+                           GLsizei length,
+                           GLuint src_offset);
 
   enum TexStorageType {
     kTexStorageType2D,
