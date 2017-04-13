@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
@@ -574,9 +575,18 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)setup {
-  base::scoped_nsobject<UIPanGestureRecognizer> panGesture(
-      [[UIPanGestureRecognizer alloc] initWithTarget:self
-                                              action:@selector(panGesture:)]);
+  base::scoped_nsobject<UIPanGestureRecognizer> panGesture;
+  // Workaround a bug occuring when Speak Selection is enabled.
+  // See crbug.com/699655.
+  if (UIAccessibilityIsSpeakSelectionEnabled()) {
+    panGesture.reset([[OverscrollActionsGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(panGesture:)]);
+  } else {
+    panGesture.reset([[UIPanGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(panGesture:)]);
+  }
   [panGesture setMaximumNumberOfTouches:1];
   [panGesture setDelegate:self];
   [[self scrollView] addGestureRecognizer:panGesture];
