@@ -324,11 +324,15 @@ component("media") {
       "filters/ffmpeg_demuxer.cc",
       "filters/ffmpeg_demuxer.h",
       "filters/ffmpeg_glue.cc",
-      "filters/ffmpeg_video_decoder.cc",
-      "filters/ffmpeg_video_decoder.h",
       "filters/in_memory_url_protocol.cc",
       "filters/in_memory_url_protocol.h",
     ]
+    if (!disable_ffmpeg_video_decoders) {
+      sources += [
+        "filters/ffmpeg_video_decoder.cc",
+        "filters/ffmpeg_video_decoder.h",
+      ]
+    }
     if (proprietary_codecs) {
       sources += [
         "filters/ffmpeg_aac_bitstream_converter.cc",
@@ -372,24 +376,21 @@ component("media") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (is_android) {
-    # On Android, FFmpeg is built without video decoders. We only
-    # support hardware video decoding.
-    if (disable_ffmpeg_video_decoders) {
+  if (disable_ffmpeg_video_decoders) {
       sources -= [
-        "filters/ffmpeg_video_decoder.cc",
-        "filters/ffmpeg_video_decoder.h",
+        "filters/decrypting_video_decoder.cc",
+        "filters/decrypting_video_decoder.h",
       ]
-    }
-    sources += [
-      "filters/android/media_codec_audio_decoder.cc",
-      "filters/android/media_codec_audio_decoder.h",
-    ]
+  }
+
+  if (is_android) {
     sources -= [
       "filters/decrypting_audio_decoder.cc",
       "filters/decrypting_audio_decoder.h",
-      "filters/decrypting_video_decoder.cc",
-      "filters/decrypting_video_decoder.h",
+    ]
+    sources += [
+      "filters/android/media_codec_audio_decoder.cc",
+      "filters/android/media_codec_audio_decoder.h",
     ]
   }
 
@@ -624,7 +625,7 @@ source_set("unit_tests") {
 
   data_deps = []
 
-  if (is_android) {
+  if (disable_ffmpeg_video_decoders) {
     sources -= [
       "filters/decrypting_audio_decoder_unittest.cc",
       "filters/decrypting_video_decoder_unittest.cc",
@@ -657,9 +658,8 @@ source_set("unit_tests") {
       "//third_party/opus",
     ]
 
-    if (!is_android) {
+    if (!disable_ffmpeg_video_decoders) {
       sources += [
-        # FFmpeg on Android does not include video decoders.
         "filters/ffmpeg_video_decoder_unittest.cc",
       ]
     }
