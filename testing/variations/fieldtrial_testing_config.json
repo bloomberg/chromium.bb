@@ -2872,29 +2872,6 @@
             ]
         }
     ],
-    "TranslateRanker": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "EnforcementEnabled",
-                    "params": {
-                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/02/translate_ranker_model_20170217.pb.bin"
-                    },
-                    "enable_features": [
-                        "TranslateRankerEnforcement"
-                    ]
-                }
-            ]
-        }
-    ],
     "TranslateRankerLogging": [
         {
             "platforms": [
@@ -2910,6 +2887,29 @@
                     "name": "TranslateRankerLogging",
                     "enable_features": [
                         "TranslateRankerLogging"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TranslateRankerModel": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enforcement",
+                    "params": {
+                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
+                    },
+                    "enable_features": [
+                        "TranslateRankerEnforcement"
                     ]
                 }
             ]
