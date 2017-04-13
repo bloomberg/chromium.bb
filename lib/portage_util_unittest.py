@@ -584,9 +584,9 @@ class ListOverlaysTest(cros_test_lib.TempDirTestCase):
 class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to finding overlays."""
 
-  FAKE, PUB_PRIV, PUB_PRIV_VARIANT, PUB_ONLY, PUB2_ONLY, PRIV_ONLY, BRICK = (
+  FAKE, PUB_PRIV, PUB_PRIV_VARIANT, PUB_ONLY, PUB2_ONLY, PRIV_ONLY = (
       'fake!board', 'pub-priv-board', 'pub-priv-board_variant',
-      'pub-only-board', 'pub2-only-board', 'priv-only-board', 'brick',
+      'pub-only-board', 'pub2-only-board', 'priv-only-board',
   )
   PRIVATE = constants.PRIVATE_OVERLAYS
   PUBLIC = constants.PUBLIC_OVERLAYS
@@ -619,12 +619,6 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
                 D('portage-stable', overlay_files),
             )),
         )),
-        D('projects', (
-            D(self.BRICK, (
-                D('packages', overlay_files),
-                'config.json',
-            )),
-        )),
     )
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
@@ -645,12 +639,6 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
         settings['masters'] += board.split('_')[0]
       osutils.WriteFile(conf_path % settings,
                         conf_data % settings)
-
-    # Seed the brick, with PUB_ONLY overlay as its primary overlay.
-    osutils.WriteFile(os.path.join(self.tempdir, 'projects', self.BRICK,
-                                   'packages', 'metadata', 'layout.conf'),
-                      'repo-name = %s\nmasters = %s' % (self.BRICK,
-                                                        self.PUB_ONLY))
 
     for board in (self.PUB_PRIV, self.PUB_PRIV_VARIANT, self.PRIV_ONLY):
       settings = {
@@ -676,7 +664,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     # Now build up the list of overlays that we'll use in tests below.
     self.overlays = {}
     for b in (None, self.FAKE, self.PUB_PRIV, self.PUB_PRIV_VARIANT,
-              self.PUB_ONLY, self.PUB2_ONLY, self.PRIV_ONLY, self.BRICK):
+              self.PUB_ONLY, self.PUB2_ONLY, self.PRIV_ONLY):
       self.overlays[b] = d = {}
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         try:
@@ -714,7 +702,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
     find all public and all private overlays.
     """
     for b, d in self.overlays.items():
-      if b == self.FAKE or b == self.BRICK:
+      if b == self.FAKE:
         continue
       self.assertGreaterEqual(set(d[self.BOTH]), set(d[self.PUBLIC]))
       self.assertGreater(set(d[self.BOTH]), set(d[self.PRIVATE]))
@@ -755,13 +743,6 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
                      self.overlays[self.PUB2_ONLY][self.PUBLIC][:-1])
     self.assertNotEqual(self.overlays[self.PUB_ONLY][self.PUBLIC][-1],
                         self.overlays[self.PUB2_ONLY][self.PUBLIC][-1])
-
-  def testBrickPrimaryOverlay(self):
-    """Verify that a brick's stacking correctly picks up its primary overlay."""
-    primary = portage_util.FindPrimaryOverlay(
-        self.BOTH, self.BRICK, self.tempdir)
-    self.assertIn(primary, self.overlays[self.PUB_ONLY][self.BOTH])
-    self.assertEqual(primary, self.overlays[self.PUB_ONLY][self.PUBLIC][-1])
 
   def testReadOverlayFileOrder(self):
     """Verify that the boards are examined in the right order."""

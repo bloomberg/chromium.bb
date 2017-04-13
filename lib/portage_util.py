@@ -74,11 +74,7 @@ def GetOverlayRoot(path):
   """Get the overlay root folder for |path|.
 
   For traditional portage overlays, the root folder is |path|.
-  For bricks, the root folder is in the 'packages' sub-folder.
   """
-  if os.path.exists(os.path.join(path, 'config.json')):
-    # A brick has its overlay root in the packages subdirectory.
-    return os.path.join(path, 'packages')
   return path
 
 
@@ -719,18 +715,13 @@ class EBuild(object):
     else:
       dir_ = 'third_party'
 
-    # Obtain brick source directory (used for non-core packages).
-    # TODO(garnold) This manipulates brick internal structure directly instead
-    # of referring to brick_lib; the latter could not be used because of a
-    # cyclic dependency, but should be used once its dependency on portage_util
-    # is eliminated.
     srcbase = ''
     if any(srcpaths):
-      brick_dir = os.path.dirname(os.path.dirname(os.path.dirname(
+      base_dir = os.path.dirname(os.path.dirname(os.path.dirname(
           os.path.dirname(self._unstable_ebuild_path))))
-      srcbase = os.path.join(brick_dir, 'src')
+      srcbase = os.path.join(base_dir, 'src')
       if not os.path.isdir(srcbase):
-        cros_build_lib.Die('_SRCPATH used but brick source path not found.')
+        cros_build_lib.Die('_SRCPATH used but source path not found.')
 
     subdir_paths = []
     rows = zip(localnames, subdirs, projects, srcpaths)
@@ -738,8 +729,7 @@ class EBuild(object):
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
         if not os.path.isdir(subdir_path):
-          cros_build_lib.Die('Source for package %s not found in brick.' %
-                             self.pkgname)
+          cros_build_lib.Die('Source for package %s not found.' % self.pkgname)
       else:
         subdir_path = os.path.realpath(os.path.join(srcroot, dir_, local, sub))
         if dir_ == '' and not os.path.isdir(subdir_path):
