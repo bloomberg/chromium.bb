@@ -3280,4 +3280,53 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(child->current_url(), first_url);
 }
 
+// Ensures that POST requests bypass self-referential URL checks. See
+// https://crbug.com/710008.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       SelfReferencingFramesWithPOST) {
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  GURL child_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_EQ(url, root->current_url());
+  EXPECT_EQ(child_url, child->current_url());
+
+  // Navigate the child frame to the same URL as parent via POST.
+  std::string script =
+      "var f = document.createElement('form');\n"
+      "f.method = 'POST';\n"
+      "f.action = '/page_with_iframe.html';\n"
+      "document.body.appendChild(f);\n"
+      "f.submit();";
+  {
+    TestFrameNavigationObserver observer(child);
+    EXPECT_TRUE(ExecuteScript(child, script));
+    observer.Wait();
+  }
+
+  FrameTreeNode* grandchild = child->child_at(0);
+  EXPECT_EQ(url, child->current_url());
+  EXPECT_EQ(child_url, grandchild->current_url());
+
+  // Now navigate the grandchild to the same URL as its two ancestors. This
+  // should be allowed since it uses POST; it was blocked prior to
+  // fixing https://crbug.com/710008.
+  {
+    TestFrameNavigationObserver observer(grandchild);
+    EXPECT_TRUE(ExecuteScript(grandchild, script));
+    observer.Wait();
+  }
+
+  EXPECT_EQ(url, grandchild->current_url());
+  ASSERT_EQ(1U, grandchild->child_count());
+  EXPECT_EQ(child_url, grandchild->child_at(0)->current_url());
+}
+
 }  // namespace content

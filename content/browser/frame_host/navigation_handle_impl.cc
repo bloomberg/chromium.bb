@@ -975,6 +975,12 @@ bool NavigationHandleImpl::IsSelfReferentialURL() {
   if (!is_renderer_initiated_)
     return false;
 
+  // Some sites rely on constructing frame hierarchies where frames are loaded
+  // via POSTs with the same URLs, so exempt POST requests.  See
+  // https://crbug.com/710008.
+  if (method_ == "POST")
+    return false;
+
   // We allow one level of self-reference because some sites depend on that,
   // but we don't allow more than one.
   bool found_self_reference = false;
