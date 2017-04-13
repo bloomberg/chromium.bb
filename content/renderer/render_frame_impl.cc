@@ -5270,7 +5270,17 @@ void RenderFrameImpl::OnFailedNavigation(
 
   // On load failure, a frame can ask its owner to render fallback content.
   // When that happens, don't load an error page.
-  if (frame_->MaybeRenderFallbackContent(error)) {
+  WebLocalFrame::FallbackContentResult fallback_result =
+      frame_->MaybeRenderFallbackContent(error);
+  if (fallback_result != WebLocalFrame::NoFallbackContent) {
+    if (fallback_result == WebLocalFrame::NoLoadInProgress) {
+      // If the frame wasn't loading but was fallback-eligible, the fallback
+      // content won't be shown. However, showing an error page isn't right
+      // either, as the frame has already been populated with something
+      // unrelated to this navigation failure. In that case, just send a stop
+      // IPC to the browser to unwind its state, and leave the frame as-is.
+      Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    }
     browser_side_navigation_pending_ = false;
     return;
   }

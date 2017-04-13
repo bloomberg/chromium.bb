@@ -2108,16 +2108,21 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
       history_item, static_cast<HistoryLoadType>(web_history_load_type));
 }
 
-bool WebLocalFrameImpl::MaybeRenderFallbackContent(
-    const WebURLError& error) const {
+WebLocalFrame::FallbackContentResult
+WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   DCHECK(GetFrame());
 
   if (!GetFrame()->Owner() || !GetFrame()->Owner()->CanRenderFallbackContent())
-    return false;
+    return NoFallbackContent;
 
-  DCHECK(GetFrame()->Loader().ProvisionalDocumentLoader());
+  // provisionalDocumentLoader() can be null if a navigation started and
+  // completed (e.g. about:blank) while waiting for the navigation that wants
+  // to show fallback content.
+  if (!GetFrame()->Loader().ProvisionalDocumentLoader())
+    return NoLoadInProgress;
+
   GetFrame()->Loader().ProvisionalDocumentLoader()->LoadFailed(error);
-  return true;
+  return FallbackRendered;
 }
 
 // Called when a navigation is blocked because a Content Security Policy (CSP)

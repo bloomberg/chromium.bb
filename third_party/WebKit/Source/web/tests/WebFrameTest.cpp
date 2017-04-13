@@ -11885,4 +11885,67 @@ TEST_F(WebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
   view->Close();
 }
 
+class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+ public:
+  explicit TestFallbackWebFrameClient() : child_client_(nullptr) {}
+
+  void SetChildWebFrameClient(TestFallbackWebFrameClient* client) {
+    child_client_ = client;
+  }
+
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString&,
+      const WebString&,
+      WebSandboxFlags,
+      const WebFrameOwnerProperties& frameOwnerProperties) override {
+    DCHECK(child_client_);
+    WebLocalFrame* frame =
+        WebLocalFrame::Create(scope, child_client_, nullptr, nullptr);
+    parent->AppendChild(frame);
+    return frame;
+  }
+
+  WebNavigationPolicy DecidePolicyForNavigation(
+      const NavigationPolicyInfo& info) override {
+    if (child_client_ || KURL(info.url_request.Url()) == BlankURL())
+      return kWebNavigationPolicyCurrentTab;
+    return kWebNavigationPolicyHandledByClient;
+  }
+
+ private:
+  TestFallbackWebFrameClient* child_client_;
+};
+
+TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
+  RegisterMockedHttpURLLoad("fallback.html");
+  TestFallbackWebFrameClient mainClient;
+  TestFallbackWebFrameClient childClient;
+  mainClient.SetChildWebFrameClient(&childClient);
+
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  webViewHelper.Initialize(true, &mainClient);
+
+  WebLocalFrameImpl* main_frame = webViewHelper.WebView()->MainFrameImpl();
+  WebURLRequest request(ToKURL(base_url_ + "fallback.html"));
+  main_frame->LoadRequest(request);
+
+  // Because the child frame will be HandledByClient, the main frame will not
+  // finish loading, so we cant use
+  // FrameTestHelpers::pumpPendingRequestsForFrameToLoad.
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+
+  // Overwrite the client-handled child frame navigation with about:blank.
+  WebLocalFrame* child = main_frame->FirstChild()->ToWebLocalFrame();
+  child->LoadRequest(WebURLRequest(BlankURL()));
+
+  // Failing the original child frame navigation and trying to render fallback
+  // content shouldn't crash. It should return NoLoadInProgress. This is so the
+  // caller won't attempt to replace the correctly empty frame with an error
+  // page.
+  EXPECT_EQ(WebLocalFrame::NoLoadInProgress,
+            child->MaybeRenderFallbackContent(WebURLError()));
+}
+
 }  // namespace blink

@@ -153,9 +153,17 @@ class WebLocalFrame : public WebFrame {
                         WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
                         bool is_client_redirect = false) = 0;
 
-  // On load failure, attempts to make frame's parent rendering fallback content
-  // and stop this frame loading.
-  virtual bool MaybeRenderFallbackContent(const WebURLError&) const = 0;
+  enum FallbackContentResult {
+    // An error page should be shown instead of fallback.
+    NoFallbackContent,
+    // Something else committed, no fallback content or error page needed.
+    NoLoadInProgress,
+    // Fallback content rendered, no error page needed.
+    FallbackRendered
+  };
+  // On load failure, attempts to make frame's parent render fallback content.
+  virtual FallbackContentResult MaybeRenderFallbackContent(
+      const WebURLError&) const = 0;
 
   // Called when a navigation is blocked because a Content Security Policy (CSP)
   // is infringed.
