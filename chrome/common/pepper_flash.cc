@@ -102,10 +102,7 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
                               base::Version* version_out) {
   std::string name;
   manifest.GetStringASCII("name", &name);
-  // TODO(viettrungluu): Support WinFlapper for now, while we change the format
-  // of the manifest. (Should be safe to remove checks for "WinFlapper" in, say,
-  // Nov. 2011.)  crbug.com/98458
-  if (name != kPepperFlashManifestName && name != "WinFlapper")
+  if (name != kPepperFlashManifestName)
     return false;
 
   std::string proposed_version;
@@ -116,12 +113,6 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   if (!CheckPepperFlashInterfaces(manifest))
     return false;
-
-  // TODO(viettrungluu): See above TODO.
-  if (name == "WinFlapper") {
-    *version_out = version;
-    return true;
-  }
 
   std::string os;
   manifest.GetStringASCII("x-ppapi-os", &os);
