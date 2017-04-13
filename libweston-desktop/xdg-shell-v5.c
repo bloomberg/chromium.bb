@@ -118,18 +118,56 @@ weston_desktop_xdg_surface_send_configure(void *data)
 	wl_array_release(&states);
 };
 
+static bool
+weston_desktop_xdg_surface_state_compare(struct weston_desktop_xdg_surface *surface)
+{
+	struct weston_surface *wsurface =
+		weston_desktop_surface_get_surface(surface->surface);
+
+	if (surface->requested_state.activated != surface->state.activated)
+		return false;
+	if (surface->requested_state.fullscreen != surface->state.fullscreen)
+		return false;
+	if (surface->requested_state.maximized != surface->state.maximized)
+		return false;
+	if (surface->requested_state.resizing != surface->state.resizing)
+		return false;
+
+	if (wsurface->width == surface->requested_size.width &&
+	    wsurface->height == surface->requested_size.height)
+		return true;
+
+	if (surface->requested_size.width == 0 &&
+	    surface->requested_size.height == 0)
+		return true;
+
+	return false;
+}
+
 static void
-weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface)
+weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface,
+					      bool force)
 {
 	struct wl_display *display = weston_desktop_get_display(surface->desktop);
 	struct wl_event_loop *loop = wl_display_get_event_loop(display);
+	bool requested_same =
+		!force && weston_desktop_xdg_surface_state_compare(surface);
 
-	if (surface->configure_idle != NULL)
-		return;
-	surface->configure_idle =
-		wl_event_loop_add_idle(loop,
-				       weston_desktop_xdg_surface_send_configure,
-				       surface);
+	if (surface->configure_idle != NULL) {
+		if (!requested_same)
+			return;
+
+		wl_event_source_remove(surface->configure_idle);
+		surface->configure_idle = NULL;
+	} else {
+		if (requested_same)
+			return;
+
+		surface->configure_idle =
+			wl_event_loop_add_idle(loop,
+					       weston_desktop_xdg_surface_send_configure,
+					       surface);
+	}
 }
 
 static void
@@ -138,11 +176,8 @@ weston_desktop_xdg_surface_set_maximized(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	if (surface->state.maximized == maximized)
-		return;
-
 	surface->requested_state.maximized = maximized;
-	weston_desktop_xdg_surface_schedule_configure(surface);
+	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
 static void
@@ -151,11 +186,8 @@ weston_desktop_xdg_surface_set_fullscreen(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	if (surface->state.fullscreen == fullscreen)
-		return;
-
 	surface->requested_state.fullscreen = fullscreen;
-	weston_desktop_xdg_surface_schedule_configure(surface);
+	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
 static void
@@ -164,11 +196,8 @@ weston_desktop_xdg_surface_set_resizing(struct weston_desktop_surface *dsurface,
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	if (surface->state.resizing == resizing)
-		return;
-
 	surface->requested_state.resizing = resizing;
-	weston_desktop_xdg_surface_schedule_configure(surface);
+	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
 static void
@@ -177,11 +206,8 @@ weston_desktop_xdg_surface_set_activated(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
 
-	if (surface->state.activated == activated)
-		return;
-
 	surface->requested_state.activated = activated;
-	weston_desktop_xdg_surface_schedule_configure(surface);
+	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
 static void
@@ -190,16 +216,11 @@ weston_desktop_xdg_surface_set_size(struct weston_desktop_surface *dsurface,
 				    int32_t width, int32_t height)
 {
 	struct weston_desktop_xdg_surface *surface = user_data;
-	struct weston_surface *wsurface = weston_desktop_surface_get_surface(surface->surface);
 
 	surface->requested_size.width = width;
 	surface->requested_size.height = height;
 
-	if ((wsurface->width == width && wsurface->height == height) ||
-	    (width == 0 && height == 0))
-		return;
-
-	weston_desktop_xdg_surface_schedule_configure(surface);
+	weston_desktop_xdg_surface_schedule_configure(surface, false);
 }
 
 static void
@@ -217,7 +238,7 @@ weston_desktop_xdg_surface_committed(struct weston_desktop_surface *dsurface,
 			      surface->requested_size.height != wsurface->height;
 
 	if (reconfigure) {
-		weston_desktop_xdg_surface_schedule_configure(surface);
+		weston_desktop_xdg_surface_schedule_configure(surface, true);
 	} else {
 		surface->state = surface->next_state;
 		if (surface->has_next_geometry) {

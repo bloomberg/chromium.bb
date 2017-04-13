@@ -281,7 +281,8 @@ static const struct zxdg_positioner_v6_interface weston_desktop_xdg_positioner_i
 };
 
 static void
-weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface);
+weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface,
+					      bool force);
 
 static void
 weston_desktop_xdg_toplevel_ensure_added(struct weston_desktop_xdg_toplevel *toplevel)
@@ -291,7 +292,7 @@ weston_desktop_xdg_toplevel_ensure_added(struct weston_desktop_xdg_toplevel *top
 
 	weston_desktop_api_surface_added(toplevel->base.desktop,
 					 toplevel->base.desktop_surface);
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, true);
 	toplevel->added = true;
 }
 
@@ -554,11 +555,8 @@ weston_desktop_xdg_toplevel_set_maximized(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	if (toplevel->state.maximized == maximized)
-		return;
-
 	toplevel->requested_state.maximized = maximized;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
 static void
@@ -567,11 +565,8 @@ weston_desktop_xdg_toplevel_set_fullscreen(struct weston_desktop_surface *dsurfa
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	if (toplevel->state.fullscreen == fullscreen)
-		return;
-
 	toplevel->requested_state.fullscreen = fullscreen;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
 static void
@@ -580,11 +575,8 @@ weston_desktop_xdg_toplevel_set_resizing(struct weston_desktop_surface *dsurface
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	if (toplevel->state.resizing == resizing)
-		return;
-
 	toplevel->requested_state.resizing = resizing;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
 static void
@@ -593,11 +585,8 @@ weston_desktop_xdg_toplevel_set_activated(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
-	if (toplevel->state.activated == activated)
-		return;
-
 	toplevel->requested_state.activated = activated;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
 static void
@@ -606,17 +595,11 @@ weston_desktop_xdg_toplevel_set_size(struct weston_desktop_surface *dsurface,
 				     int32_t width, int32_t height)
 {
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
-	struct weston_surface *wsurface =
-		weston_desktop_surface_get_surface(toplevel->base.desktop_surface);
 
 	toplevel->requested_size.width = width;
 	toplevel->requested_size.height = height;
 
-	if ((wsurface->width == width && wsurface->height == height) ||
-	    (width == 0 && height == 0))
-		return;
-
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
 }
 
 static void
@@ -793,7 +776,7 @@ static void
 weston_desktop_xdg_popup_committed(struct weston_desktop_xdg_popup *popup)
 {
 	if (!popup->committed)
-		weston_desktop_xdg_surface_schedule_configure(&popup->base);
+		weston_desktop_xdg_surface_schedule_configure(&popup->base, true);
 	popup->committed = true;
 	weston_desktop_xdg_popup_update_position(popup->base.desktop_surface,
 						 popup);
@@ -874,18 +857,64 @@ weston_desktop_xdg_surface_send_configure(void *user_data)
 	zxdg_surface_v6_send_configure(surface->resource, surface->configure_serial);
 }
 
+static bool
+weston_desktop_xdg_toplevel_state_compare(struct weston_desktop_xdg_toplevel *toplevel)
+{
+	if (toplevel->requested_state.activated != toplevel->state.activated)
+		return false;
+	if (toplevel->requested_state.fullscreen != toplevel->state.fullscreen)
+		return false;
+	if (toplevel->requested_state.maximized != toplevel->state.maximized)
+		return false;
+	if (toplevel->requested_state.resizing != toplevel->state.resizing)
+		return false;
+
+	if (toplevel->base.surface->width == toplevel->requested_size.width &&
+	    toplevel->base.surface->height == toplevel->requested_size.height)
+		return true;
+
+	if (toplevel->requested_size.width == 0 &&
+	    toplevel->requested_size.height == 0)
+		return true;
+
+	return false;
+}
+
 static void
-weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface)
+weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface,
+					      bool force)
 {
 	struct wl_display *display = weston_desktop_get_display(surface->desktop);
 	struct wl_event_loop *loop = wl_display_get_event_loop(display);
+	bool requested_same = !force;
 
-	if (surface->configure_idle != NULL)
-		return;
-	surface->configure_idle =
-		wl_event_loop_add_idle(loop,
-				       weston_desktop_xdg_surface_send_configure,
-				       surface);
+	switch (surface->role) {
+	case WESTON_DESKTOP_XDG_SURFACE_ROLE_NONE:
+		assert(0 && "not reached");
+		break;
+	case WESTON_DESKTOP_XDG_SURFACE_ROLE_TOPLEVEL:
+		requested_same = requested_same &&
+			weston_desktop_xdg_toplevel_state_compare((struct weston_desktop_xdg_toplevel *) surface);
+		break;
+	case WESTON_DESKTOP_XDG_SURFACE_ROLE_POPUP:
+		break;
+	}
+
+	if (surface->configure_idle != NULL) {
+		if (!requested_same)
+			return;
+
+		wl_event_source_remove(surface->configure_idle);
+		surface->configure_idle = NULL;
+	} else {
+		if (requested_same)
+			return;
+
+		surface->configure_idle =
+			wl_event_loop_add_idle(loop,
+					       weston_desktop_xdg_surface_send_configure,
+					       surface);
+	}
 }
 
 static void
