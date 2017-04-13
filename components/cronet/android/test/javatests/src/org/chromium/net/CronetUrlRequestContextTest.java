@@ -21,6 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.net.MetricsTestUtil.TestExecutor;
@@ -232,6 +233,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @DisabledTest(message = "Disabled due to flaky assert. See crbug.com/710626")
     public void testRealTimeNetworkQualityObservationsNotEnabled() throws Exception {
         ExperimentalCronetEngine.Builder mCronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
