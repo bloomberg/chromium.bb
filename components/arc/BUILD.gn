@@ -216,6 +216,7 @@ source_set("unit_tests") {
     "intent_helper/link_handler_model_impl_unittest.cc",
     "intent_helper/local_activity_resolver_unittest.cc",
     "intent_helper/page_transition_util_unittest.cc",
+    "kiosk/arc_kiosk_bridge_unittest.cc",
   ]
 
   deps = [
@@ -225,6 +226,7 @@ source_set("unit_tests") {
     "//chromeos",
     "//device/bluetooth",
     "//mojo/public/cpp/system:system",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
     "//ui/aura:test_support",
