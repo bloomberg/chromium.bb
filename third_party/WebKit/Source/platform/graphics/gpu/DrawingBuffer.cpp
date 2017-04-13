@@ -311,7 +311,7 @@ bool DrawingBuffer::FinishPrepareTextureMailboxSoftware(
     WebGLImageConversion::AlphaOp op =
         need_premultiply ? WebGLImageConversion::kAlphaDoPremultiply
                          : WebGLImageConversion::kAlphaDoNothing;
-    ReadBackFramebuffer(pixels, size().Width(), size().Height(), kReadbackSkia,
+    ReadBackFramebuffer(pixels, Size().Width(), Size().Height(), kReadbackSkia,
                         op);
   }
 
@@ -1052,8 +1052,8 @@ bool DrawingBuffer::PaintRenderingResultsToImageData(
   ScopedStateRestorer scoped_state_restorer(this);
 
   DCHECK(!premultiplied_alpha_);
-  width = size().Width();
-  height = size().Height();
+  width = Size().Width();
+  height = Size().Height();
 
   CheckedNumeric<int> data_size = 4;
   data_size *= width;

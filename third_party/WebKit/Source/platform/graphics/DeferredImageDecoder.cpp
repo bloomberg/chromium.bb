@@ -179,8 +179,8 @@ bool DeferredImageDecoder::HasEmbeddedColorSpace() const {
                          : has_embedded_color_space_;
 }
 
-IntSize DeferredImageDecoder::size() const {
-  return actual_decoder_ ? actual_decoder_->size() : size_;
+IntSize DeferredImageDecoder::Size() const {
+  return actual_decoder_ ? actual_decoder_->Size() : size_;
 }
 
 IntSize DeferredImageDecoder::FrameSizeAtIndex(size_t index) const {
@@ -255,7 +255,7 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
   if (frame_generator_)
     return;
 
-  size_ = actual_decoder_->size();
+  size_ = actual_decoder_->Size();
   has_hot_spot_ = actual_decoder_->HotSpot(hot_spot_);
   filename_extension_ = actual_decoder_->FilenameExtension();
   // JPEG images support YUV decoding; other decoders do not. (WebP could in the

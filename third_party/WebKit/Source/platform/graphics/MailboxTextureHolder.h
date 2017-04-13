@@ -20,7 +20,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   bool IsSkiaTextureHolder() final { return false; }
   bool IsMailboxTextureHolder() final { return true; }
   unsigned SharedContextId() final;
-  IntSize size() const final { return size_; }
+  IntSize Size() const final { return size_; }
   bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final { return false; }
 
   gpu::Mailbox GetMailbox() final { return mailbox_; }

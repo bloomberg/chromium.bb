@@ -219,7 +219,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageData) {
   ASSERT_TRUE(V8ImageData::hasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::toImpl(result.As<v8::Object>());
   EXPECT_NE(image_data, new_image_data);
-  EXPECT_EQ(image_data->size(), new_image_data->size());
+  EXPECT_EQ(image_data->Size(), new_image_data->Size());
   EXPECT_EQ(image_data->data()->length(), new_image_data->data()->length());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
@@ -237,7 +237,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV9) {
       V8ScriptValueDeserializer(script_state, input).Deserialize();
   ASSERT_TRUE(V8ImageData::hasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::toImpl(result.As<v8::Object>());
-  EXPECT_EQ(IntSize(2, 1), new_image_data->size());
+  EXPECT_EQ(IntSize(2, 1), new_image_data->Size());
   EXPECT_EQ(8u, new_image_data->data()->length());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
@@ -252,7 +252,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV16) {
       V8ScriptValueDeserializer(script_state, input).Deserialize();
   ASSERT_TRUE(V8ImageData::hasInstance(result, scope.GetIsolate()));
   ImageData* new_image_data = V8ImageData::toImpl(result.As<v8::Object>());
-  EXPECT_EQ(IntSize(2, 1), new_image_data->size());
+  EXPECT_EQ(IntSize(2, 1), new_image_data->Size());
   EXPECT_EQ(8u, new_image_data->data()->length());
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
@@ -391,7 +391,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::toImpl(result.As<v8::Object>());
-  ASSERT_EQ(IntSize(10, 7), new_image_bitmap->size());
+  ASSERT_EQ(IntSize(10, 7), new_image_bitmap->Size());
 
   // Check that the pixel at (3, 3) is red.
   uint8_t pixel[4] = {};
@@ -428,7 +428,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmap) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::toImpl(result.As<v8::Object>());
-  ASSERT_EQ(IntSize(2, 1), new_image_bitmap->size());
+  ASSERT_EQ(IntSize(2, 1), new_image_bitmap->Size());
 
   // Check that the pixels are opaque red and green, respectively.
   uint8_t pixels[8] = {};
@@ -494,7 +494,7 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.GetIsolate()));
   ImageBitmap* new_image_bitmap =
       V8ImageBitmap::toImpl(result.As<v8::Object>());
-  ASSERT_EQ(IntSize(10, 7), new_image_bitmap->size());
+  ASSERT_EQ(IntSize(10, 7), new_image_bitmap->Size());
 
   // Check that the pixel at (3, 3) is red.
   uint8_t pixel[4] = {};
@@ -523,7 +523,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   ASSERT_TRUE(V8OffscreenCanvas::hasInstance(result, scope.GetIsolate()));
   OffscreenCanvas* new_canvas =
       V8OffscreenCanvas::toImpl(result.As<v8::Object>());
-  EXPECT_EQ(IntSize(10, 7), new_canvas->size());
+  EXPECT_EQ(IntSize(10, 7), new_canvas->Size());
   EXPECT_EQ(519, new_canvas->PlaceholderCanvasId());
   EXPECT_TRUE(canvas->IsNeutered());
   EXPECT_FALSE(new_canvas->IsNeutered());

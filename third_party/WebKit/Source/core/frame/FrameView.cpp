@@ -1444,7 +1444,7 @@ FloatSize FrameView::ViewportSizeForViewportUnits() const {
     // be the viewport with browser controls showing, we add the browser
     // controls height, compensating for page scale as well, since we want to
     // use the viewport with browser controls hidden for vh (to match Safari).
-    int viewport_width = frame_->GetPage()->GetVisualViewport().size().Width();
+    int viewport_width = frame_->GetPage()->GetVisualViewport().Size().Width();
     if (frame_->IsMainFrame() && layout_size.Width() && viewport_width) {
       float page_scale_at_layout_width = viewport_width / layout_size.Width();
       layout_size.Expand(

@@ -60,7 +60,7 @@ class WebWidget {
   virtual void Close() {}
 
   // Returns the current size of the WebWidget.
-  virtual WebSize size() { return WebSize(); }
+  virtual WebSize Size() { return WebSize(); }
 
   // Called to resize the WebWidget.
   virtual void Resize(const WebSize&) {}

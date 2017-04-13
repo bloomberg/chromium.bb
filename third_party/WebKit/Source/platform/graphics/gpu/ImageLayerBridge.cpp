@@ -111,7 +111,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
         bitmap.get(), gfx::Size(image_->width(), image_->height()));
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedSoftware,
                           weak_ptr_factory_.CreateWeakPtr(),
-                          base::Passed(&bitmap), image_->size());
+                          base::Passed(&bitmap), image_->Size());
     *out_release_callback = cc::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   }
@@ -126,17 +126,17 @@ bool ImageLayerBridge::PrepareTextureMailbox(
 std::unique_ptr<cc::SharedBitmap> ImageLayerBridge::CreateOrRecycleBitmap() {
   auto it = std::remove_if(recycled_bitmaps_.begin(), recycled_bitmaps_.end(),
                            [this](const RecycledBitmap& bitmap) {
-                             return bitmap.size != image_->size();
+                             return bitmap.size != image_->Size();
                            });
   recycled_bitmaps_.Shrink(it - recycled_bitmaps_.begin());
 
   if (!recycled_bitmaps_.IsEmpty()) {
     RecycledBitmap recycled = std::move(recycled_bitmaps_.back());
     recycled_bitmaps_.pop_back();
-    DCHECK(recycled.size == image_->size());
+    DCHECK(recycled.size == image_->Size());
     return std::move(recycled.bitmap);
   }
-  return Platform::Current()->AllocateSharedBitmap(image_->size());
+  return Platform::Current()->AllocateSharedBitmap(image_->Size());
 }
 
 void ImageLayerBridge::MailboxReleasedGpu(RefPtr<StaticBitmapImage> image,

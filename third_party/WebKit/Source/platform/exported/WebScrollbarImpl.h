@@ -50,7 +50,7 @@ class PLATFORM_EXPORT WebScrollbarImpl final : public WebScrollbar {
   bool IsOverlay() const override;
   int Value() const override;
   WebPoint Location() const override;
-  WebSize size() const override;
+  WebSize Size() const override;
   bool Enabled() const override;
   int Maximum() const override;
   int TotalSize() const override;

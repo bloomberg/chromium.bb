@@ -728,7 +728,7 @@ String HTMLCanvasElement::ToDataURLInternal(
   if (!image_data)  // allocation failure
     return String("data:,");
 
-  return ImageDataBuffer(image_data->size(), image_data->data()->Data())
+  return ImageDataBuffer(image_data->Size(), image_data->data()->Data())
       .ToDataURL(encoding_mime_type, quality);
 }
 
@@ -792,7 +792,7 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
   }
 
   CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
-      image_data->data(), encoding_mime_type, image_data->size(), callback,
+      image_data->data(), encoding_mime_type, image_data->Size(), callback,
       start_time, &GetDocument());
 
   async_creator->ScheduleAsyncBlobCreation(quality);
@@ -1338,7 +1338,7 @@ FloatSize HTMLCanvasElement::ElementSize(const FloatSize&) const {
     return FloatSize(0, 0);
   }
   if (PlaceholderFrame())
-    return FloatSize(PlaceholderFrame()->size());
+    return FloatSize(PlaceholderFrame()->Size());
   return FloatSize(width(), height());
 }
 

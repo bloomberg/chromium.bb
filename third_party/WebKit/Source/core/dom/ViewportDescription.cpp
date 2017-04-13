@@ -278,7 +278,7 @@ void ViewportDescription::ReportMobilePageStats(
         // entire page to be visible.
         int viewport_width = max_width.IntValue();
         int window_width =
-            main_frame->GetPage()->GetVisualViewport().size().Width();
+            main_frame->GetPage()->GetVisualViewport().Size().Width();
         int overview_zoom_percent =
             100 * window_width / static_cast<float>(viewport_width);
         DEFINE_STATIC_LOCAL(SparseHistogram, overview_zoom_histogram,

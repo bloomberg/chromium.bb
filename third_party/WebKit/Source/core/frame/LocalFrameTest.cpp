@@ -53,7 +53,7 @@ TEST_F(LocalFrameTest, nodeImage) {
       "<div id=sample></div>");
   Element* sample = GetDocument().GetElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
-  EXPECT_EQ(IntSize(100, 100), image->size());
+  EXPECT_EQ(IntSize(100, 100), image->Size());
 }
 
 TEST_F(LocalFrameTest, nodeImageWithNestedElement) {
@@ -80,7 +80,7 @@ TEST_F(LocalFrameTest, nodeImageWithPsuedoClassWebKitDrag) {
       "<div id=sample></div>");
   Element* sample = GetDocument().GetElementById("sample");
   const std::unique_ptr<DragImage> image = GetFrame().NodeImage(*sample);
-  EXPECT_EQ(IntSize(200, 200), image->size())
+  EXPECT_EQ(IntSize(200, 200), image->Size())
       << ":-webkit-drag should affect dragged image.";
 }
 
@@ -137,10 +137,10 @@ TEST_F(LocalFrameTest, dragImageForSelectionUsesPageScaleFactor) {
   const std::unique_ptr<DragImage> image2(
       GetFrame().DragImageForSelection(0.75f));
 
-  EXPECT_GT(image1->size().Width(), 0);
-  EXPECT_GT(image1->size().Height(), 0);
-  EXPECT_EQ(image1->size().Width() * 2, image2->size().Width());
-  EXPECT_EQ(image1->size().Height() * 2, image2->size().Height());
+  EXPECT_GT(image1->Size().Width(), 0);
+  EXPECT_GT(image1->Size().Height(), 0);
+  EXPECT_EQ(image1->Size().Width() * 2, image2->Size().Width());
+  EXPECT_EQ(image1->Size().Height() * 2, image2->Size().Height());
 }
 
 }  // namespace blink

@@ -235,7 +235,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   LayoutUnit Height() const {
     return IsHorizontal() ? LogicalHeight() : LogicalWidth();
   }
-  LayoutSize size() const { return LayoutSize(Width(), Height()); }
+  LayoutSize Size() const { return LayoutSize(Width(), Height()); }
 
   // The logicalLeft position is the left edge of the line box in a horizontal
   // line and the top edge in a vertical line.

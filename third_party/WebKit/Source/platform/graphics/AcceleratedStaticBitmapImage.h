@@ -37,7 +37,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       IntSize mailbox_size);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
-  IntSize size() const override;
+  IntSize Size() const override;
   sk_sp<SkImage> ImageForCurrentFrame() override;
   bool IsTextureBacked() const override { return true; }
 

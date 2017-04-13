@@ -614,7 +614,7 @@ void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
     GenerateCulledLineBoxRects(yield, this);
   } else if (InlineFlowBox* curr = FirstLineBox()) {
     for (; curr; curr = curr->NextLineBox())
-      yield(LayoutRect(curr->Location(), curr->size()));
+      yield(LayoutRect(curr->Location(), curr->Size()));
   }
 }
 

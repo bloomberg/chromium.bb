@@ -77,9 +77,9 @@ bool WebImageDecoder::IsSizeAvailable() const {
   return private_->IsSizeAvailable();
 }
 
-WebSize WebImageDecoder::size() const {
+WebSize WebImageDecoder::Size() const {
   DCHECK(private_);
-  return private_->size();
+  return private_->Size();
 }
 
 size_t WebImageDecoder::FrameCount() const {

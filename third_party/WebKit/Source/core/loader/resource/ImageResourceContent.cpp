@@ -249,7 +249,7 @@ LayoutSize ImageResourceContent::ImageSize(
       should_respect_image_orientation == kRespectImageOrientation) {
     size = LayoutSize(ToBitmapImage(image_.Get())->SizeRespectingOrientation());
   } else {
-    size = LayoutSize(image_->size());
+    size = LayoutSize(image_->Size());
   }
 
   if (size_type == kIntrinsicCorrectedToDPR &&
@@ -372,7 +372,7 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
 
       if (info_->ShouldShowPlaceholder() && all_data_received) {
         if (image_ && !image_->IsNull()) {
-          IntSize dimensions = image_->size();
+          IntSize dimensions = image_->Size();
           ClearImage();
           image_ = PlaceholderImage::Create(this, dimensions);
         }

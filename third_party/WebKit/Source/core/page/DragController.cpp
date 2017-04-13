@@ -1029,8 +1029,8 @@ static std::unique_ptr<DragImage> DragImageForImage(
     orientation = ToBitmapImage(image)->CurrentFrameOrientation();
 
   IntSize image_size = orientation.UsesWidthAsHeight()
-                           ? image->size().TransposedSize()
-                           : image->size();
+                           ? image->Size().TransposedSize()
+                           : image->Size();
 
   FloatSize image_scale =
       DragImage::ClampedImageScale(image_size, image_element_size_in_pixels,
@@ -1043,7 +1043,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
     IntSize original_size = image_element_size_in_pixels;
     origin = image_element_location;
 
-    IntSize new_size = drag_image->size();
+    IntSize new_size = drag_image->Size();
 
     // Properly orient the drag image and orient it differently if it's smaller
     // than the original
@@ -1071,7 +1071,7 @@ static std::unique_ptr<DragImage> DragImageForLink(
   std::unique_ptr<DragImage> drag_image = DragImage::Create(
       link_url, link_text, font_description, device_scale_factor);
 
-  IntSize size = drag_image ? drag_image->size() : IntSize();
+  IntSize size = drag_image ? drag_image->Size() : IntSize();
   IntPoint drag_image_offset(-size.Width() / 2, -kLinkDragBorderInset);
   drag_loc = IntPoint(mouse_dragged_point.X() + drag_image_offset.X(),
                       mouse_dragged_point.Y() + drag_image_offset.Y());

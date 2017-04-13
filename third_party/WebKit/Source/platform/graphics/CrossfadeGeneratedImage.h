@@ -50,7 +50,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
   bool UsesContainerSize() const override { return false; }
   bool HasRelativeSize() const override { return false; }
 
-  IntSize size() const override { return crossfade_size_; }
+  IntSize Size() const override { return crossfade_size_; }
 
  protected:
   void Draw(PaintCanvas*,

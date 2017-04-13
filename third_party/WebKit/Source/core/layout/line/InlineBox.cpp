@@ -327,7 +327,7 @@ void InlineBox::ClearKnownToHaveNoOverflow() {
 }
 
 LayoutPoint InlineBox::PhysicalLocation() const {
-  LayoutRect rect(Location(), size());
+  LayoutRect rect(Location(), Size());
   FlipForWritingMode(rect);
   return rect.Location();
 }

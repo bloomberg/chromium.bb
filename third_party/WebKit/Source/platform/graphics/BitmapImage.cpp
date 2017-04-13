@@ -175,7 +175,7 @@ void BitmapImage::UpdateSize() const {
   have_size_ = true;
 }
 
-IntSize BitmapImage::size() const {
+IntSize BitmapImage::Size() const {
   UpdateSize();
   return size_;
 }
@@ -332,7 +332,7 @@ bool BitmapImage::IsSizeAvailable() {
 
   size_available_ = source_.IsSizeAvailable();
 
-  if (size_available_ && HasVisibleImageSize(size())) {
+  if (size_available_ && HasVisibleImageSize(Size())) {
     BitmapImageMetrics::CountDecodedImageType(source_.FilenameExtension());
     if (source_.FilenameExtension() == "jpg")
       BitmapImageMetrics::CountImageOrientation(

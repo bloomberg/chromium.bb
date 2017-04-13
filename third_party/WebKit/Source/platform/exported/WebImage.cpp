@@ -126,7 +126,7 @@ bool WebImage::IsNull() const {
   return bitmap_.isNull();
 }
 
-WebSize WebImage::size() const {
+WebSize WebImage::Size() const {
   return WebSize(bitmap_.width(), bitmap_.height());
 }
 

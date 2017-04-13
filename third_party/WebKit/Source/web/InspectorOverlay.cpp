@@ -412,7 +412,7 @@ void InspectorOverlay::RebuildOverlayPage() {
 
   IntRect visible_rect_in_document =
       view->GetScrollableArea()->VisibleContentRect();
-  IntSize viewport_size = frame->GetPage()->GetVisualViewport().size();
+  IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
   OverlayMainFrame()->View()->Resize(viewport_size);
   OverlayPage()->GetVisualViewport().SetSize(viewport_size);
   OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());

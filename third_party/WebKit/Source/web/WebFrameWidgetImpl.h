@@ -75,7 +75,7 @@ class WebFrameWidgetImpl final
 
   // WebWidget functions:
   void Close() override;
-  WebSize size() override;
+  WebSize Size() override;
   void Resize(const WebSize&) override;
   void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;

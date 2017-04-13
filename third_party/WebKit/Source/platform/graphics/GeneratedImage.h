@@ -39,7 +39,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
   bool UsesContainerSize() const override { return true; }
   bool HasRelativeSize() const override { return true; }
 
-  IntSize size() const override { return size_; }
+  IntSize Size() const override { return size_; }
 
   // Assume that generated content has no decoded data we need to worry about
   void DestroyDecodedData() override {}

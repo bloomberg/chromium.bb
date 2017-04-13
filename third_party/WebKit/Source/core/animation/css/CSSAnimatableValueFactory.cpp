@@ -264,7 +264,7 @@ inline static PassRefPtr<AnimatableValue> CreateFromFillLayers(
                property == CSSPropertyWebkitMaskSize) {
       if (!fill_layer->IsSizeSet())
         break;
-      values.push_back(CreateFromFillSize(fill_layer->size(), style));
+      values.push_back(CreateFromFillSize(fill_layer->Size(), style));
     } else {
       NOTREACHED();
     }

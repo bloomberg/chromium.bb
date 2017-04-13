@@ -109,7 +109,7 @@ class WEB_EXPORT WebViewImpl final
 
   // WebWidget methods:
   void Close() override;
-  WebSize size() override;
+  WebSize Size() override;
   void Resize(const WebSize&) override;
   void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;

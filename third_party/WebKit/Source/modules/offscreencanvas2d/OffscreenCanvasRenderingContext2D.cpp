@@ -186,7 +186,7 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
       image_buffer_->NewSkImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
-    image_data = ImageData::Create(offscreenCanvas()->size());
+    image_data = ImageData::Create(offscreenCanvas()->Size());
     SkImageInfo image_info =
         SkImageInfo::Make(this->Width(), this->Height(), kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType);
@@ -232,11 +232,11 @@ AffineTransform OffscreenCanvasRenderingContext2D::BaseTransform() const {
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {}
 
 bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilterForOffscreenCanvas(offscreenCanvas()->size());
+  return GetState().HasFilterForOffscreenCanvas(offscreenCanvas()->Size());
 }
 
 sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilterForOffscreenCanvas(offscreenCanvas()->size());
+  return GetState().GetFilterForOffscreenCanvas(offscreenCanvas()->Size());
 }
 
 void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {

@@ -323,7 +323,7 @@ bool ImageBuffer::CopyRenderingResultsFromDrawingBuffer(
 
   return drawing_buffer->CopyToPlatformTexture(
       gl, GL_TEXTURE_2D, texture_id, true, false, IntPoint(0, 0),
-      IntRect(IntPoint(0, 0), drawing_buffer->size()), source_buffer);
+      IntRect(IntPoint(0, 0), drawing_buffer->Size()), source_buffer);
 }
 
 void ImageBuffer::Draw(GraphicsContext& context,

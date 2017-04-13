@@ -140,11 +140,11 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
-  virtual IntSize size() const { return size_; }
+  virtual IntSize Size() const { return size_; }
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
-  virtual IntSize DecodedSize() const { return size(); }
+  virtual IntSize DecodedSize() const { return Size(); }
 
   // Image decoders that support YUV decoding must override this to
   // provide the size of each component.
@@ -165,7 +165,7 @@ class PLATFORM_EXPORT ImageDecoder {
   // sizes. This does NOT differ from size() for GIF or WebP, since
   // decoding GIF or WebP composites any smaller frames against previous
   // frames to create full-size frames.
-  virtual IntSize FrameSizeAtIndex(size_t) const { return size(); }
+  virtual IntSize FrameSizeAtIndex(size_t) const { return Size(); }
 
   // Returns whether the size is legal (i.e. not going to result in
   // overflow elsewhere).  If not, marks decoding as failed.

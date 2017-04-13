@@ -44,7 +44,7 @@ WebPoint WebScrollbarImpl::Location() const {
   return scrollbar_->Location();
 }
 
-WebSize WebScrollbarImpl::size() const {
+WebSize WebScrollbarImpl::Size() const {
   return scrollbar_->Size();
 }
 

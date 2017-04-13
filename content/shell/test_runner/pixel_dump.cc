@@ -91,7 +91,7 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
 void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   dump_request->web_view->UpdateAllLifecyclePhases();
 
-  blink::WebSize page_size_in_pixels = dump_request->web_view->size();
+  blink::WebSize page_size_in_pixels = dump_request->web_view->Size();
   blink::WebFrame* web_frame = dump_request->web_view->MainFrame();
 
   int page_count = web_frame->PrintBegin(page_size_in_pixels);

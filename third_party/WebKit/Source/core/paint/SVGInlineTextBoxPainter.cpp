@@ -59,7 +59,7 @@ FloatRect SVGInlineTextBoxPainter::BoundsForDrawingRecorder(
     const LayoutPoint& paint_offset,
     bool include_selection_rect) const {
   LayoutRect bounds(svg_inline_text_box_.Location() + paint_offset,
-                    svg_inline_text_box_.size());
+                    svg_inline_text_box_.Size());
   if (HasShadow(paint_info, style))
     bounds.Expand(style.TextShadow()->RectOutsetsIncludingOriginal());
   if (include_selection_rect) {

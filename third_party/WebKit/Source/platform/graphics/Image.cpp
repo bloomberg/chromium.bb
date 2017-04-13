@@ -94,7 +94,7 @@ void Image::DrawTiledBackground(GraphicsContext& ctxt,
                                 const FloatSize& scaled_tile_size,
                                 SkBlendMode op,
                                 const FloatSize& repeat_spacing) {
-  FloatSize intrinsic_tile_size(size());
+  FloatSize intrinsic_tile_size(Size());
   if (HasRelativeSize()) {
     intrinsic_tile_size.SetWidth(scaled_tile_size.Width());
     intrinsic_tile_size.SetHeight(scaled_tile_size.Height());

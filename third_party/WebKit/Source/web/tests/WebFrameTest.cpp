@@ -3041,7 +3041,7 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
       web_view_helper.Resize(
           WebSize(viewport_size.width, viewport_size.height));
       web_view_helper.WebView()->SetPageScaleFactor(initial_page_scale_factor);
-      ASSERT_EQ(viewport_size, web_view_helper.WebView()->size());
+      ASSERT_EQ(viewport_size, web_view_helper.WebView()->Size());
       ASSERT_EQ(initial_page_scale_factor,
                 web_view_helper.WebView()->PageScaleFactor());
       web_view_helper.Resize(
@@ -7422,8 +7422,8 @@ TEST_P(ParameterizedWebFrameTest, WebNodeImageContents) {
   WebElement element = node.To<WebElement>();
   WebImage image = element.ImageContents();
   ASSERT_FALSE(image.IsNull());
-  EXPECT_EQ(image.size().width, 10);
-  EXPECT_EQ(image.size().height, 10);
+  EXPECT_EQ(image.Size().width, 10);
+  EXPECT_EQ(image.Size().height, 10);
   SkBitmap bitmap = image.GetSkBitmap();
   SkAutoLockPixels locker(bitmap);
   EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
@@ -8523,8 +8523,8 @@ static void NodeImageTestValidation(const IntSize& reference_bitmap_size,
   SkCanvas canvas(bitmap);
   canvas.drawColor(SK_ColorGREEN);
 
-  EXPECT_EQ(reference_bitmap_size.Width(), drag_image->size().Width());
-  EXPECT_EQ(reference_bitmap_size.Height(), drag_image->size().Height());
+  EXPECT_EQ(reference_bitmap_size.Width(), drag_image->Size().Width());
+  EXPECT_EQ(reference_bitmap_size.Height(), drag_image->Size().Height());
   const SkBitmap& drag_bitmap = drag_image->Bitmap();
   SkAutoLockPixels lock_pixel(drag_bitmap);
   EXPECT_EQ(
@@ -8728,8 +8728,8 @@ TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
   // after swapping to a local frame.
   Page* page =
       ToWebViewImpl(local_frame->View())->GetPage()->MainFrame()->GetPage();
-  EXPECT_EQ(size.width, page->GetVisualViewport().size().Width());
-  EXPECT_EQ(size.height, page->GetVisualViewport().size().Height());
+  EXPECT_EQ(size.width, page->GetVisualViewport().Size().Width());
+  EXPECT_EQ(size.height, page->GetVisualViewport().Size().Height());
 
   // Manually reset to break WebViewHelper's dependency on the stack allocated
   // TestWebFrameClient.

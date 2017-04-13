@@ -232,14 +232,14 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
 
     if (length < frame_offset) {
       EXPECT_FALSE(decoder->IsSizeAvailable());
-      EXPECT_TRUE(decoder->size().IsEmpty());
+      EXPECT_TRUE(decoder->Size().IsEmpty());
       EXPECT_FALSE(decoder->HasEmbeddedColorSpace());
       EXPECT_EQ(0u, decoder->FrameCount());
       EXPECT_EQ(kCAnimationLoopOnce, decoder->RepetitionCount());
       EXPECT_FALSE(decoder->FrameBufferAtIndex(0));
     } else {
       EXPECT_TRUE(decoder->IsSizeAvailable());
-      EXPECT_FALSE(decoder->size().IsEmpty());
+      EXPECT_FALSE(decoder->Size().IsEmpty());
       EXPECT_EQ(decoder->HasEmbeddedColorSpace(), has_color_space);
       EXPECT_EQ(1u, decoder->FrameCount());
       EXPECT_EQ(expected_repetition_count, decoder->RepetitionCount());

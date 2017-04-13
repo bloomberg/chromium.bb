@@ -562,7 +562,7 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   const FloatSize intrinsic_tile_size =
       image_context.GetImage()->HasRelativeSize()
           ? image_tile.Size()
-          : FloatSize(image_context.GetImage()->size());
+          : FloatSize(image_context.GetImage()->Size());
   const FloatRect src_rect = Image::ComputeSubsetForTile(
       image_tile, border.Rect(), intrinsic_tile_size);
 

@@ -65,13 +65,13 @@ void ICOImageDecoder::OnSetData(SegmentReader* data) {
     SetDataForPNGDecoderAtIndex(i);
 }
 
-IntSize ICOImageDecoder::size() const {
-  return frame_size_.IsEmpty() ? ImageDecoder::size() : frame_size_;
+IntSize ICOImageDecoder::Size() const {
+  return frame_size_.IsEmpty() ? ImageDecoder::Size() : frame_size_;
 }
 
 IntSize ICOImageDecoder::FrameSizeAtIndex(size_t index) const {
   return (index && (index < dir_entries_.size())) ? dir_entries_[index].size_
-                                                  : size();
+                                                  : Size();
 }
 
 bool ICOImageDecoder::SetSize(unsigned width, unsigned height) {
@@ -220,7 +220,7 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
   if (png_decoder->IsSizeAvailable()) {
     // Fail if the size the PNGImageDecoder calculated does not match the size
     // in the directory.
-    if (png_decoder->size() != dir_entry.size_)
+    if (png_decoder->Size() != dir_entry.size_)
       return SetFailed();
 
     const auto* frame = png_decoder->FrameBufferAtIndex(0);

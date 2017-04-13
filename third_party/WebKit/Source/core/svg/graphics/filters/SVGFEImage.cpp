@@ -125,7 +125,7 @@ FloatRect FEImage::MapInputs(const FloatRect&) const {
     }
     dest_rect.Intersect(src_rect);
   } else {
-    src_rect = FloatRect(FloatPoint(), FloatSize(image_->size()));
+    src_rect = FloatRect(FloatPoint(), FloatSize(image_->Size()));
     preserve_aspect_ratio_->TransformRect(dest_rect, src_rect);
   }
   return dest_rect;
@@ -144,7 +144,7 @@ LayoutObject* FEImage::ReferencedLayoutObject() const {
 TextStream& FEImage::ExternalRepresentation(TextStream& ts, int indent) const {
   IntSize image_size;
   if (image_) {
-    image_size = image_->size();
+    image_size = image_->Size();
   } else if (LayoutObject* layout_object = ReferencedLayoutObject()) {
     image_size =
         EnclosingIntRect(GetLayoutObjectRepaintRect(layout_object)).Size();
@@ -207,7 +207,7 @@ sk_sp<SkImageFilter> FEImage::CreateImageFilter() {
     return CreateTransparentBlack();
   }
 
-  FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(image_->size()));
+  FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(image_->Size()));
   FloatRect dst_rect = FilterPrimitiveSubregion();
 
   preserve_aspect_ratio_->TransformRect(dst_rect, src_rect);

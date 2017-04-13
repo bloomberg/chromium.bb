@@ -1122,7 +1122,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
     return IntRect();
   // TODO(tkent): Can we check invisibility by scrollable non-frame elements?
 
-  IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().size();
+  IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().Size();
   IntRect rect(0, 0, viewport_size.Width(), viewport_size.Height());
   // We don't use absoluteBoundingBoxRect() because it can return an IntRect
   // larger the actual size by 1px. crbug.com/470503

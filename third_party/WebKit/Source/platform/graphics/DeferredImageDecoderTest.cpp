@@ -114,7 +114,7 @@ class DeferredImageDecoderTest : public ::testing::Test,
     repetition_count_ = kCAnimationNone;
     status_ = ImageFrame::kFrameComplete;
     frame_duration_ = 0;
-    decoded_size_ = actual_decoder_->size();
+    decoded_size_ = actual_decoder_->Size();
   }
 
   void TearDown() override { ImageDecodingStore::Instance().Clear(); }

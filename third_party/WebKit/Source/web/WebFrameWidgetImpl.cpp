@@ -154,7 +154,7 @@ void WebFrameWidgetImpl::Close() {
   self_keep_alive_.Clear();
 }
 
-WebSize WebFrameWidgetImpl::size() {
+WebSize WebFrameWidgetImpl::Size() {
   return size_;
 }
 

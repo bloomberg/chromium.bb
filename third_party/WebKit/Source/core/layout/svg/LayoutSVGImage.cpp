@@ -73,7 +73,7 @@ FloatSize LayoutSVGImage::CalculateObjectSize() const {
       !cached_image->IsSizeAvailable())
     return object_bounding_box_.Size();
 
-  FloatSize intrinsic_size = FloatSize(cached_image->GetImage()->size());
+  FloatSize intrinsic_size = FloatSize(cached_image->GetImage()->Size());
   if (StyleRef().Width().IsAuto() && StyleRef().Height().IsAuto())
     return intrinsic_size;
 

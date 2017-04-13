@@ -445,7 +445,7 @@ bool InlineTextBox::NodeAtPoint(HitTestResult& result,
 
   LayoutPoint box_origin = PhysicalLocation();
   box_origin.MoveBy(accumulated_offset);
-  LayoutRect rect(box_origin, size());
+  LayoutRect rect(box_origin, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       location_in_container.Intersects(rect)) {
     GetLineLayoutItem().UpdateHitTestResult(

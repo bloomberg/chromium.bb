@@ -159,7 +159,7 @@ class BrowserControlsTest : public ::testing::Test {
 TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   WebViewImpl* web_view = Initialize();
   // initialize browser controls to be shown.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollBegin));
@@ -196,7 +196,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
 TEST_F(BrowserControlsTest, MAYBE(ShowOnScrollUp)) {
   WebViewImpl* web_view = Initialize();
   // initialize browser controls to be hidden.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, false);
   web_view->GetBrowserControls().SetShownRatio(0);
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollBegin));
@@ -222,7 +222,7 @@ TEST_F(BrowserControlsTest, MAYBE(ShowOnScrollUp)) {
 TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   WebViewImpl* web_view = Initialize();
   // initialize browser controls to be shown and position page at 100px.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 100),
                                                            kProgrammaticScroll);
@@ -278,7 +278,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
 TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
   WebViewImpl* web_view = Initialize();
   // initialize browser controls to be hidden and position page at 100px.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, false);
   web_view->GetBrowserControls().SetShownRatio(0);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 100),
                                                            kProgrammaticScroll);
@@ -315,7 +315,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
 TEST_F(BrowserControlsTest, MAYBE(HorizontalScroll)) {
   WebViewImpl* web_view = Initialize();
   // initialize browser controls to be shown.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollBegin));
@@ -344,7 +344,7 @@ TEST_F(BrowserControlsTest, MAYBE(PageScaleHasNoImpact)) {
   web_view->SetPageScaleFactor(2.0);
 
   // Initialize browser controls to be shown.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollBegin));
@@ -399,7 +399,7 @@ TEST_F(BrowserControlsTest, MAYBE(FloatingPointSlippage)) {
   web_view->SetPageScaleFactor(2.0);
 
   // Initialize browser controls to be shown.
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
 
   web_view->GetBrowserControls().ScrollBegin();
@@ -416,7 +416,7 @@ TEST_F(BrowserControlsTest, MAYBE(FloatingPointSlippage)) {
 // Scrollable subregions should scroll before browser controls
 TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   WebViewImpl* web_view = Initialize("overflow-scrolling.html");
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 50),
                                                            kProgrammaticScroll);
@@ -472,7 +472,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
 // Scrollable iframes should scroll before browser controls
 TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   WebViewImpl* web_view = Initialize("iframe-scrolling.html");
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 50),
                                                            kProgrammaticScroll);
@@ -528,13 +528,13 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
 // Browser controls visibility should remain consistent when height is changed.
 TEST_F(BrowserControlsTest, MAYBE(HeightChangeMaintainsVisibility)) {
   WebViewImpl* web_view = Initialize();
-  web_view->ResizeWithBrowserControls(web_view->size(), 20.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 20.f, false);
   web_view->GetBrowserControls().SetShownRatio(0);
 
-  web_view->ResizeWithBrowserControls(web_view->size(), 20.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 20.f, false);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
-  web_view->ResizeWithBrowserControls(web_view->size(), 40.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 40.f, false);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
   // Scroll up to show browser controls.
@@ -543,14 +543,14 @@ TEST_F(BrowserControlsTest, MAYBE(HeightChangeMaintainsVisibility)) {
 
   // Changing height of a fully shown browser controls should correctly adjust
   // content offset
-  web_view->ResizeWithBrowserControls(web_view->size(), 30.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 30.f, false);
   EXPECT_FLOAT_EQ(30.f, web_view->GetBrowserControls().ContentOffset());
 }
 
 // Zero delta should not have any effect on browser controls.
 TEST_F(BrowserControlsTest, MAYBE(ZeroHeightMeansNoEffect)) {
   WebViewImpl* web_view = Initialize();
-  web_view->ResizeWithBrowserControls(web_view->size(), 0, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 0, false);
   web_view->GetBrowserControls().SetShownRatio(0);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 100),
                                                            kProgrammaticScroll);
@@ -577,7 +577,7 @@ TEST_F(BrowserControlsTest, MAYBE(ZeroHeightMeansNoEffect)) {
 TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
   WebViewImpl* web_view = Initialize();
   // Initialize browser controls to be shown
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, true);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, true);
   web_view->GetBrowserControls().SetShownRatio(1);
   // Use 2x scale so that both visual viewport and frameview are scrollable
   web_view->SetPageScaleFactor(2.0);
@@ -609,7 +609,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
 // Browser controls should honor its constraints
 TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   WebViewImpl* web_view = Initialize();
-  web_view->ResizeWithBrowserControls(web_view->size(), 50.f, false);
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, false);
   GetFrame()->View()->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 100),
                                                            kProgrammaticScroll);
 

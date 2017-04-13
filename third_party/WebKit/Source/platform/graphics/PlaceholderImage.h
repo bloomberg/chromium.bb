@@ -28,7 +28,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   ~PlaceholderImage() override;
 
-  IntSize size() const override { return size_; }
+  IntSize Size() const override { return size_; }
 
   sk_sp<SkImage> ImageForCurrentFrame() override;
 

@@ -205,8 +205,8 @@ IntRect ChromeClientImpl::RootWindowRect() {
     // These numbers will be fairly wrong. The window's x/y coordinates will
     // be the top left corner of the screen and the size will be the content
     // size instead of the window size.
-    rect.width = web_view_->size().width;
-    rect.height = web_view_->size().height;
+    rect.width = web_view_->Size().width;
+    rect.height = web_view_->Size().height;
   }
   return IntRect(rect);
 }

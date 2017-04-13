@@ -24,7 +24,7 @@ class PLATFORM_EXPORT TextureHolder {
   virtual bool IsSkiaTextureHolder() = 0;
   virtual bool IsMailboxTextureHolder() = 0;
   virtual unsigned SharedContextId() = 0;
-  virtual IntSize size() const = 0;
+  virtual IntSize Size() const = 0;
   virtual bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) = 0;
 
   // Methods overrided by MailboxTextureHolder

@@ -245,7 +245,7 @@ void WEBPImageDecoder::OnInitFrameBuffer(size_t frame_index) {
       buffer.RequiredPreviousFrameIndex();
   if (required_previous_frame_index == kNotFound) {
     frame_background_has_alpha_ =
-        !buffer.OriginalFrameRect().Contains(IntRect(IntPoint(), size()));
+        !buffer.OriginalFrameRect().Contains(IntRect(IntPoint(), Size()));
   } else {
     const ImageFrame& prev_buffer =
         frame_buffer_cache_[required_previous_frame_index];
@@ -397,7 +397,7 @@ void WEBPImageDecoder::InitializeNewFrame(size_t index) {
   IntRect frame_rect(animated_frame.x_offset, animated_frame.y_offset,
                      animated_frame.width, animated_frame.height);
   buffer->SetOriginalFrameRect(
-      Intersection(frame_rect, IntRect(IntPoint(), size())));
+      Intersection(frame_rect, IntRect(IntPoint(), Size())));
   buffer->SetDuration(animated_frame.duration);
   buffer->SetDisposalMethod(animated_frame.dispose_method ==
                                     WEBP_MUX_DISPOSE_BACKGROUND
@@ -460,7 +460,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
   DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
 
   if (buffer.GetStatus() == ImageFrame::kFrameEmpty) {
-    if (!buffer.AllocatePixelData(size().Width(), size().Height(),
+    if (!buffer.AllocatePixelData(Size().Width(), Size().Height(),
                                   ColorSpaceForSkImages()))
       return SetFailed();
     buffer.ZeroFillPixelData();
@@ -469,7 +469,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
     // loading. The correct alpha value for the frame will be set when it is
     // fully decoded.
     buffer.SetHasAlpha(true);
-    buffer.SetOriginalFrameRect(IntRect(IntPoint(), size()));
+    buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
   }
 
   const IntRect& frame_rect = buffer.OriginalFrameRect();
@@ -490,7 +490,7 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
     WebPInitDecBuffer(&decoder_buffer_);
     decoder_buffer_.colorspace = mode;
     decoder_buffer_.u.RGBA.stride =
-        size().Width() * sizeof(ImageFrame::PixelData);
+        Size().Width() * sizeof(ImageFrame::PixelData);
     decoder_buffer_.u.RGBA.size =
         decoder_buffer_.u.RGBA.stride * frame_rect.Height();
     decoder_buffer_.is_external_memory = 1;

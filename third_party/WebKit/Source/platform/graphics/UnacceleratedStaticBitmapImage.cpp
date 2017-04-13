@@ -21,7 +21,7 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
 
 UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {}
 
-IntSize UnacceleratedStaticBitmapImage::size() const {
+IntSize UnacceleratedStaticBitmapImage::Size() const {
   return IntSize(image_->width(), image_->height());
 }
 

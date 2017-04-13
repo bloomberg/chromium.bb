@@ -236,7 +236,7 @@ TEST_F(BitmapImageTest, correctDecodedDataSize) {
   LoadImage("/LayoutTests/images/resources/anim_none.gif", false);
   FrameAtIndex(1);
   int frame_size =
-      static_cast<int>(image_->size().Area() * sizeof(ImageFrame::PixelData));
+      static_cast<int>(image_->Size().Area() * sizeof(ImageFrame::PixelData));
   EXPECT_EQ(frame_size, LastDecodedSizeChange());
 }
 

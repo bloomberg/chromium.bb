@@ -113,7 +113,7 @@ void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
   fullscreen_style->SetPosition(EPosition::kFixed);
   fullscreen_style->SetLeft(Length(0, blink::kFixed));
   fullscreen_style->SetTop(Length(0, blink::kFixed));
-  IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().size();
+  IntSize viewport_size = GetDocument().GetPage()->GetVisualViewport().Size();
   fullscreen_style->SetWidth(Length(viewport_size.Width(), blink::kFixed));
   fullscreen_style->SetHeight(Length(viewport_size.Height(), blink::kFixed));
 

@@ -120,7 +120,7 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
 
 TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
   EXPECT_EQ(initial_size_, widget()->size());
-  EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->size()));
+  EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->Size()));
   EXPECT_TRUE(next_paint_is_resize_ack());
 }
 

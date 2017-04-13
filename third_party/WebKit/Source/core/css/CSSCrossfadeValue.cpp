@@ -159,8 +159,8 @@ IntSize CSSCrossfadeValue::FixedSize(const LayoutObject& layout_object,
   if (!from_image || !to_image)
     return IntSize();
 
-  IntSize from_image_size = from_image->size();
-  IntSize to_image_size = to_image->size();
+  IntSize from_image_size = from_image->Size();
+  IntSize to_image_size = to_image->Size();
 
   if (from_image->IsSVGImage())
     from_image_size = RoundedIntSize(

@@ -1739,7 +1739,7 @@ void WebLocalFrameImpl::CreateFrameView() {
   bool is_main_frame = !Parent();
   IntSize initial_size = (is_main_frame || !FrameWidget())
                              ? web_view->MainFrameSize()
-                             : (IntSize)FrameWidget()->size();
+                             : (IntSize)FrameWidget()->Size();
   Color base_background_color = web_view->BaseBackgroundColor();
   if (!is_main_frame && Parent()->IsWebRemoteFrame())
     base_background_color = Color::kTransparent;

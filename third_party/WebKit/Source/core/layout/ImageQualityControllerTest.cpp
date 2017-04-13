@@ -54,7 +54,7 @@ class TestImageAnimated : public Image {
       MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
-  IntSize size() const override { return IntSize(); }
+  IntSize Size() const override { return IntSize(); }
   void DestroyDecodedData() override {}
   void Draw(PaintCanvas*,
             const PaintFlags&,
@@ -83,7 +83,7 @@ class TestImageWithContrast : public Image {
       MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
-  IntSize size() const override { return IntSize(); }
+  IntSize Size() const override { return IntSize(); }
   void DestroyDecodedData() override {}
   void Draw(PaintCanvas*,
             const PaintFlags&,
@@ -117,7 +117,7 @@ class TestImageLowQuality : public Image {
       MetadataMode = kUseCurrentMetadata) override {
     return false;
   }
-  IntSize size() const override { return IntSize(1, 1); }
+  IntSize Size() const override { return IntSize(1, 1); }
   void DestroyDecodedData() override {}
   void Draw(PaintCanvas*,
             const PaintFlags&,

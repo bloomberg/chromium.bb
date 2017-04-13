@@ -116,7 +116,7 @@ class CORE_EXPORT VisualViewport final
 
   // Sets the size of the inner viewport when unscaled in CSS pixels.
   void SetSize(const IntSize&);
-  IntSize size() const { return size_; }
+  IntSize Size() const { return size_; }
 
   // Gets the scaled size, i.e. the viewport in root view space.
   FloatSize VisibleSize() const;

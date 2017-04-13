@@ -762,7 +762,7 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
     if (web_frame->IsWebLocalFrame())
       prev_scroll_offset_ = web_frame->GetScrollOffset();
   }
-  prev_view_size_ = web_view->size();
+  prev_view_size_ = web_view->Size();
 
   web_view->Resize(print_layout_size);
 }

@@ -271,7 +271,7 @@ void FullscreenController::UpdatePageScaleConstraints(bool remove_constraints) {
   PageScaleConstraints fullscreen_constraints;
   if (!remove_constraints) {
     fullscreen_constraints = PageScaleConstraints(1.0, 1.0, 1.0);
-    fullscreen_constraints.layout_size = FloatSize(web_view_impl_->size());
+    fullscreen_constraints.layout_size = FloatSize(web_view_impl_->Size());
   }
   web_view_impl_->GetPageScaleConstraintsSet().SetFullscreenConstraints(
       fullscreen_constraints);

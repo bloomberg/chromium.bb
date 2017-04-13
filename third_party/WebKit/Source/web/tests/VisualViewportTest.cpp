@@ -205,22 +205,22 @@ TEST_P(VisualViewportTest, TestResize) {
 
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
 
-  IntSize webViewSize = webViewImpl()->size();
+  IntSize webViewSize = webViewImpl()->Size();
 
   // Make sure the visual viewport was initialized.
-  EXPECT_SIZE_EQ(webViewSize, visualViewport.size());
+  EXPECT_SIZE_EQ(webViewSize, visualViewport.Size());
 
   // Resizing the WebView should change the VisualViewport.
   webViewSize = IntSize(640, 480);
   webViewImpl()->Resize(webViewSize);
-  EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->size()));
-  EXPECT_SIZE_EQ(webViewSize, visualViewport.size());
+  EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->Size()));
+  EXPECT_SIZE_EQ(webViewSize, visualViewport.Size());
 
   // Resizing the visual viewport shouldn't affect the WebView.
   IntSize newViewportSize = IntSize(320, 200);
   visualViewport.SetSize(newViewportSize);
-  EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->size()));
-  EXPECT_SIZE_EQ(newViewportSize, visualViewport.size());
+  EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->Size()));
+  EXPECT_SIZE_EQ(newViewportSize, visualViewport.Size());
 }
 
 // Make sure that the visibleContentRect method acurately reflects the scale and
@@ -459,7 +459,7 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   VisualViewport& visualViewport = frame()->GetPage()->GetVisualViewport();
 
   // Initial visible rect should be the whole frame.
-  EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), visualViewport.size());
+  EXPECT_SIZE_EQ(IntSize(webViewImpl()->Size()), visualViewport.Size());
 
   // Viewport is whole frame.
   IntSize size = IntSize(400, 200);
@@ -472,7 +472,7 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   expectedRect.Scale(0.5);
   visualViewport.SetScale(2);
   EXPECT_EQ(2, visualViewport.Scale());
-  EXPECT_SIZE_EQ(size, visualViewport.size());
+  EXPECT_SIZE_EQ(size, visualViewport.Size());
   EXPECT_FLOAT_RECT_EQ(expectedRect, visualViewport.VisibleRect());
 
   // Move the viewport.
@@ -703,13 +703,13 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResizeAndScale) {
   // typically the scale will be clamped to prevent it from actually being
   // larger.
   visualViewport.SetSize(IntSize(330, 250));
-  EXPECT_SIZE_EQ(IntSize(330, 250), visualViewport.size());
+  EXPECT_SIZE_EQ(IntSize(330, 250), visualViewport.Size());
 
   // Resize both the viewport and the frame to be larger.
   webViewImpl()->Resize(IntSize(640, 480));
   webViewImpl()->UpdateAllLifecyclePhases();
-  EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()), visualViewport.size());
-  EXPECT_SIZE_EQ(IntSize(webViewImpl()->size()),
+  EXPECT_SIZE_EQ(IntSize(webViewImpl()->Size()), visualViewport.Size());
+  EXPECT_SIZE_EQ(IntSize(webViewImpl()->Size()),
                  frame()->View()->FrameRect().Size());
   visualViewport.SetLocation(FloatPoint(1000, 1000));
   EXPECT_FLOAT_POINT_EQ(FloatPoint(320, 240),
@@ -819,8 +819,8 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
 TEST_P(VisualViewportTest, TestVisualViewportGetsSizeInAutoSizeMode) {
   initializeWithDesktopSettings();
 
-  EXPECT_SIZE_EQ(IntSize(0, 0), IntSize(webViewImpl()->size()));
-  EXPECT_SIZE_EQ(IntSize(0, 0), frame()->GetPage()->GetVisualViewport().size());
+  EXPECT_SIZE_EQ(IntSize(0, 0), IntSize(webViewImpl()->Size()));
+  EXPECT_SIZE_EQ(IntSize(0, 0), frame()->GetPage()->GetVisualViewport().Size());
 
   webViewImpl()->EnableAutoResizeMode(WebSize(10, 10), WebSize(1000, 1000));
 
@@ -828,7 +828,7 @@ TEST_P(VisualViewportTest, TestVisualViewportGetsSizeInAutoSizeMode) {
   navigateTo(m_baseURL + "200-by-300.html");
 
   EXPECT_SIZE_EQ(IntSize(200, 300),
-                 frame()->GetPage()->GetVisualViewport().size());
+                 frame()->GetPage()->GetVisualViewport().Size());
 }
 
 // Test that the text selection handle's position accounts for the visual
@@ -1445,7 +1445,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
                                    browserControlsHeight / minPageScale),
                  frameView.FrameRect().Size());
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - browserControlsHeight),
-                 visualViewport.size());
+                 visualViewport.Size());
 
   // Scroll all the way to the bottom, hiding the browser controls in the
   // process.
@@ -1474,7 +1474,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   webViewImpl()->ResizeWithBrowserControls(WebSize(500, visualViewportHeight),
                                            20, false);
 
-  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
+  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.Size());
   EXPECT_SIZE_EQ(IntSize(250, visualViewportHeight / pageScale),
                  visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight),
@@ -1514,7 +1514,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
                  visualViewport.VisibleRect().Size());
   EXPECT_SIZE_EQ(IntSize(1000, layoutViewportHeight),
                  frameView.FrameRect().Size());
-  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.size());
+  EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight), visualViewport.Size());
 
   // Scroll all the way to the bottom, showing the the browser controls in the
   // process. (This could happen via window.scrollTo during a scroll, for
@@ -1548,7 +1548,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
       WebSize(500, visualViewportHeight - browserControlsHeight), 20, true);
 
   EXPECT_SIZE_EQ(IntSize(500, visualViewportHeight - browserControlsHeight),
-                 visualViewport.size());
+                 visualViewport.Size());
   EXPECT_SIZE_EQ(
       IntSize(250, (visualViewportHeight - browserControlsHeight) / pageScale),
       visualViewport.VisibleRect().Size());
@@ -1565,7 +1565,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 // the main frame's scroll offset. crbug.com/428193.
 TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   initializeWithAndroidSettings();
-  webViewImpl()->ResizeWithBrowserControls(webViewImpl()->size(), 500, false);
+  webViewImpl()->ResizeWithBrowserControls(webViewImpl()->Size(), 500, false);
   webViewImpl()->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), 1, 1);
   webViewImpl()->ResizeWithBrowserControls(WebSize(1000, 1000), 500, true);

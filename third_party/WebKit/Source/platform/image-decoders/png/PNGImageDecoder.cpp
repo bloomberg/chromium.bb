@@ -129,7 +129,7 @@ void PNGImageDecoder::InitializeNewFrame(size_t index) {
   const PNGImageReader::FrameInfo& frame_info = reader_->GetFrameInfo(index);
   ImageFrame& buffer = frame_buffer_cache_[index];
 
-  DCHECK(IntRect(IntPoint(), size()).Contains(frame_info.frame_rect));
+  DCHECK(IntRect(IntPoint(), Size()).Contains(frame_info.frame_rect));
   buffer.SetOriginalFrameRect(frame_info.frame_rect);
 
   buffer.SetDuration(frame_info.duration);
@@ -292,7 +292,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     if (PNG_INTERLACE_ADAM7 ==
         png_get_interlace_type(png, reader_->InfoPtr())) {
       unsigned color_channels = has_alpha_channel_ ? 4 : 3;
-      reader_->CreateInterlaceBuffer(color_channels * size().Area());
+      reader_->CreateInterlaceBuffer(color_channels * Size().Area());
       if (!reader_->InterlaceBuffer()) {
         longjmp(JMPBUF(png), 1);
         return;
@@ -303,7 +303,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
   }
 
   const IntRect& frame_rect = buffer.OriginalFrameRect();
-  DCHECK(IntRect(IntPoint(), size()).Contains(frame_rect));
+  DCHECK(IntRect(IntPoint(), Size()).Contains(frame_rect));
 
   /* libpng comments (here to explain what follows).
    *
@@ -332,7 +332,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
   int y = row_index + frame_rect.Y();
   if (y < 0)
     return;
-  DCHECK_LT(y, size().Height());
+  DCHECK_LT(y, Size().Height());
 
   /* libpng comments (continued).
    *
@@ -358,7 +358,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
 
   if (png_bytep interlace_buffer = reader_->InterlaceBuffer()) {
     unsigned color_channels = has_alpha ? 4 : 3;
-    row = interlace_buffer + (row_index * color_channels * size().Width());
+    row = interlace_buffer + (row_index * color_channels * Size().Width());
     png_progressive_combine_row(reader_->PngPtr(), row, row_buffer);
   }
 

@@ -72,7 +72,7 @@ class BLINK_PLATFORM_EXPORT WebScrollbar {
   virtual int Value() const = 0;
 
   virtual WebPoint Location() const = 0;
-  virtual WebSize size() const = 0;
+  virtual WebSize Size() const = 0;
   virtual bool Enabled() const = 0;
   virtual int Maximum() const = 0;
   virtual int TotalSize() const = 0;

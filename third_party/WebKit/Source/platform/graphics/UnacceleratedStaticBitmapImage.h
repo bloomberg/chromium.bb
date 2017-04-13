@@ -16,7 +16,7 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
   static PassRefPtr<UnacceleratedStaticBitmapImage> Create(sk_sp<SkImage>);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
-  IntSize size() const override;
+  IntSize Size() const override;
   sk_sp<SkImage> ImageForCurrentFrame() override;
 
   void Draw(PaintCanvas*,

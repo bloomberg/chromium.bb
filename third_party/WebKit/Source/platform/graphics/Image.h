@@ -90,15 +90,15 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual bool CurrentFrameHasSingleSecurityOrigin() const { return false; }
 
   static Image* NullImage();
-  bool IsNull() const { return size().IsEmpty(); }
+  bool IsNull() const { return Size().IsEmpty(); }
 
   virtual bool UsesContainerSize() const { return false; }
   virtual bool HasRelativeSize() const { return false; }
 
-  virtual IntSize size() const = 0;
-  IntRect Rect() const { return IntRect(IntPoint(), size()); }
-  int width() const { return size().Width(); }
-  int height() const { return size().Height(); }
+  virtual IntSize Size() const = 0;
+  IntRect Rect() const { return IntRect(IntPoint(), Size()); }
+  int width() const { return Size().Width(); }
+  int height() const { return Size().Height(); }
   virtual bool GetHotSpot(IntPoint&) const { return false; }
 
   enum SizeAvailability { kSizeAvailable, kSizeUnavailable };

@@ -34,7 +34,7 @@ SkiaTextureHolder::SkiaTextureHolder(
   DCHECK(texture_holder->IsMailboxTextureHolder());
   const gpu::Mailbox mailbox = texture_holder->GetMailbox();
   const gpu::SyncToken sync_token = texture_holder->GetSyncToken();
-  const IntSize mailbox_size = texture_holder->size();
+  const IntSize mailbox_size = texture_holder->Size();
 
   gpu::gles2::GLES2Interface* shared_gl = SharedGpuContext::Gl();
   GrContext* shared_gr_context = SharedGpuContext::Gr();

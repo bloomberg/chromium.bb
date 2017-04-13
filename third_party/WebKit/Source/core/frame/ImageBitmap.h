@@ -102,7 +102,7 @@ class CORE_EXPORT ImageBitmap final
       DataColorFormat = kRGBAColorType);
   unsigned long width() const;
   unsigned long height() const;
-  IntSize size() const;
+  IntSize Size() const;
 
   bool IsNeutered() const { return is_neutered_; }
   bool OriginClean() const { return image_->OriginClean(); }
@@ -128,7 +128,7 @@ class CORE_EXPORT ImageBitmap final
   bool IsAccelerated() const override;
 
   // ImageBitmapSource implementation
-  IntSize BitmapSourceSize() const override { return size(); }
+  IntSize BitmapSourceSize() const override { return Size(); }
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   Optional<IntRect>,

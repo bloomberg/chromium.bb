@@ -337,7 +337,7 @@ void LayoutText::AbsoluteRects(Vector<IntRect>& rects,
                                const LayoutPoint& accumulated_offset) const {
   for (InlineTextBox* box = FirstTextBox(); box; box = box->NextTextBox()) {
     rects.push_back(EnclosingIntRect(LayoutRect(
-        LayoutPoint(accumulated_offset) + box->Location(), box->size())));
+        LayoutPoint(accumulated_offset) + box->Location(), box->Size())));
   }
 }
 

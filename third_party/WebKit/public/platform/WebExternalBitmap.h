@@ -37,7 +37,7 @@ namespace blink {
 
 class WebExternalBitmap {
  public:
-  virtual WebSize size() = 0;
+  virtual WebSize Size() = 0;
 
   // Sets the size of the bitmap. This may reallocate the bitmap and
   // invalidate the pointer returned from pixels if the size changes.

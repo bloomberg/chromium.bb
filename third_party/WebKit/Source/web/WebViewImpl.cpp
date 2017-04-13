@@ -1794,7 +1794,7 @@ void WebViewImpl::Close() {
   Deref();  // Balances ref() acquired in WebView::create
 }
 
-WebSize WebViewImpl::size() {
+WebSize WebViewImpl::Size() {
   return size_;
 }
 
@@ -2852,7 +2852,7 @@ void WebViewImpl::ComputeScaleAndScrollForFocusedNode(
   if (!need_animation)
     return;
 
-  FloatSize target_viewport_size(visual_viewport.size());
+  FloatSize target_viewport_size(visual_viewport.Size());
   target_viewport_size.Scale(1 / new_scale);
 
   if (textbox_rect_in_document.Width() <= target_viewport_size.Width()) {

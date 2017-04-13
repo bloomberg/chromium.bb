@@ -53,7 +53,7 @@ std::unique_ptr<ImageDecoder> CreateDecoderWithPngData(const char* png_file) {
 void TestSize(const char* png_file, IntSize expected_size) {
   auto decoder = CreateDecoderWithPngData(png_file);
   EXPECT_TRUE(decoder->IsSizeAvailable());
-  EXPECT_EQ(expected_size, decoder->size());
+  EXPECT_EQ(expected_size, decoder->Size());
 }
 
 // Test whether querying for the size of the image works if we present the
@@ -74,11 +74,11 @@ void TestSizeByteByByte(const char* png_file,
 
     if (length < bytes_needed_to_decode_size) {
       EXPECT_FALSE(decoder->IsSizeAvailable());
-      EXPECT_TRUE(decoder->size().IsEmpty());
+      EXPECT_TRUE(decoder->Size().IsEmpty());
       EXPECT_FALSE(decoder->Failed());
     } else {
       EXPECT_TRUE(decoder->IsSizeAvailable());
-      EXPECT_EQ(expected_size, decoder->size());
+      EXPECT_EQ(expected_size, decoder->Size());
     }
   }
   EXPECT_FALSE(decoder->Failed());
@@ -625,7 +625,7 @@ TEST(AnimatedPNGTests, VerifyFrameOutsideImageSizeFails) {
 
   IntSize expected_size(5, 5);
   EXPECT_TRUE(decoder->IsSizeAvailable());
-  EXPECT_EQ(expected_size, decoder->size());
+  EXPECT_EQ(expected_size, decoder->Size());
 
   const size_t kExpectedFrameCount = 0;
   EXPECT_EQ(kExpectedFrameCount, decoder->FrameCount());
@@ -892,7 +892,7 @@ TEST(AnimatedPNGTests, DecodeFromIndependentFrame) {
   frame = decoder->FrameBufferAtIndex(1);
   ASSERT_TRUE(frame);
   ASSERT_FALSE(decoder->Failed());
-  ASSERT_NE(IntRect({}, decoder->size()), frame->OriginalFrameRect());
+  ASSERT_NE(IntRect({}, decoder->Size()), frame->OriginalFrameRect());
   ASSERT_EQ(kNotFound, frame->RequiredPreviousFrameIndex());
 
   const auto hash = HashBitmap(frame->Bitmap());

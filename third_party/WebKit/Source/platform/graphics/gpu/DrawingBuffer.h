@@ -154,7 +154,7 @@ class PLATFORM_EXPORT DrawingBuffer
   // Bind the default framebuffer to |target|. |target| must be
   // GL_FRAMEBUFFER, GL_READ_FRAMEBUFFER, or GL_DRAW_FRAMEBUFFER.
   void Bind(GLenum target);
-  IntSize size() const { return size_; }
+  IntSize Size() const { return size_; }
 
   // Resolves the multisample color buffer to the normal color buffer and leaves
   // the resolved color buffer bound to GL_READ_FRAMEBUFFER and

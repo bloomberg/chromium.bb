@@ -136,7 +136,7 @@ void RotationViewportAnchor::SetAnchor() {
 
   // Note, we specifically use the unscaled visual viewport size here as the
   // conversion into content-space below will apply the scale.
-  FloatPoint anchor_offset(visual_viewport_->size());
+  FloatPoint anchor_offset(visual_viewport_->Size());
   anchor_offset.Scale(anchor_in_inner_view_coords_.Width(),
                       anchor_in_inner_view_coords_.Height());
 
@@ -168,7 +168,7 @@ void RotationViewportAnchor::RestoreToAnchor() {
       page_scale_constraints_set_.FinalConstraints().ClampToConstraints(
           new_page_scale_factor);
 
-  FloatSize visual_viewport_size(visual_viewport_->size());
+  FloatSize visual_viewport_size(visual_viewport_->Size());
   visual_viewport_size.Scale(1 / new_page_scale_factor);
 
   IntPoint main_frame_origin;

@@ -121,7 +121,7 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
       CanvasPixelFormat,
       ImageDataStorageFormat);
 
-  IntSize size() const { return size_; }
+  IntSize Size() const { return size_; }
   int width() const { return size_.Width(); }
   int height() const { return size_.Height(); }
 

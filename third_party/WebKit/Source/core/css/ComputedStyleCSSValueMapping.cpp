@@ -652,7 +652,7 @@ static CSSValueList* ValuesForBackgroundShorthand(
         CSSPropertyBackgroundPosition, *curr_layer, style));
     list->Append(*before_slash);
     CSSValueList* after_slash = CSSValueList::CreateSpaceSeparated();
-    after_slash->Append(*ValueForFillSize(curr_layer->size(), style));
+    after_slash->Append(*ValueForFillSize(curr_layer->Size(), style));
     after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Origin()));
     after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Clip()));
     list->Append(*after_slash);
@@ -2108,7 +2108,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
                                         ? &style.MaskLayers()
                                         : &style.BackgroundLayers();
       for (; curr_layer; curr_layer = curr_layer->Next())
-        list->Append(*ValueForFillSize(curr_layer->size(), style));
+        list->Append(*ValueForFillSize(curr_layer->Size(), style));
       return list;
     }
     case CSSPropertyBackgroundRepeat:

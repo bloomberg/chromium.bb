@@ -86,14 +86,14 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
     DEFINE_STATIC_REF(Image, resize_corner_image_hi_res,
                       (Image::LoadPlatformResource("textAreaResizeCorner@2x")));
     resize_corner_image = resize_corner_image_hi_res;
-    corner_resizer_size = resize_corner_image->size();
+    corner_resizer_size = resize_corner_image->Size();
     if (old_device_scale_factor >= 2)
       corner_resizer_size.Scale(0.5f);
   } else {
     DEFINE_STATIC_REF(Image, resize_corner_image_lo_res,
                       (Image::LoadPlatformResource("textAreaResizeCorner")));
     resize_corner_image = resize_corner_image_lo_res;
-    corner_resizer_size = resize_corner_image->size();
+    corner_resizer_size = resize_corner_image->Size();
   }
 
   if (GetScrollableArea()

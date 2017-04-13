@@ -50,7 +50,7 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   // ImageDecoder:
   String FilenameExtension() const override { return "ico"; }
   void OnSetData(SegmentReader*) override;
-  IntSize size() const override;
+  IntSize Size() const override;
   IntSize FrameSizeAtIndex(size_t) const override;
   bool SetSize(unsigned width, unsigned height) override;
   bool FrameIsCompleteAtIndex(size_t) const override;

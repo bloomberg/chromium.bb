@@ -117,8 +117,8 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   // Initialize the framebuffer if needed.
   DCHECK(buffer_);  // Parent should set this before asking us to decode!
   if (buffer_->GetStatus() == ImageFrame::kFrameEmpty) {
-    if (!buffer_->AllocatePixelData(parent_->size().Width(),
-                                    parent_->size().Height(),
+    if (!buffer_->AllocatePixelData(parent_->Size().Width(),
+                                    parent_->Size().Height(),
                                     parent_->ColorSpaceForSkImages())) {
       return parent_->SetFailed();  // Unable to allocate.
     }
@@ -130,10 +130,10 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
     buffer_->SetHasAlpha(false);
 
     // For BMPs, the frame always fills the entire image.
-    buffer_->SetOriginalFrameRect(IntRect(IntPoint(), parent_->size()));
+    buffer_->SetOriginalFrameRect(IntRect(IntPoint(), parent_->Size()));
 
     if (!is_top_down_)
-      coord_.SetY(parent_->size().Height() - 1);
+      coord_.SetY(parent_->Size().Height() - 1);
   }
 
   // Decode the data.
@@ -150,7 +150,7 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
        !seen_non_zero_alpha_pixel_)) {
     // Reset decoding coordinates to start of image.
     coord_.SetX(0);
-    coord_.SetY(is_top_down_ ? 0 : (parent_->size().Height() - 1));
+    coord_.SetY(is_top_down_ ? 0 : (parent_->Size().Height() - 1));
 
     // The AND mask is stored as 1-bit data.
     info_header_.bi_bit_count = 1;
@@ -643,7 +643,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
       switch (code) {
         case 0:  // Magic token: EOL
           // Skip any remaining pixels in this row.
-          if (coord_.X() < parent_->size().Width())
+          if (coord_.X() < parent_->Size().Width())
             buffer_->SetHasAlpha(true);
           MoveBufferToNextRow();
 
@@ -652,8 +652,8 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
 
         case 1:  // Magic token: EOF
           // Skip any remaining pixels in the image.
-          if ((coord_.X() < parent_->size().Width()) ||
-              (is_top_down_ ? (coord_.Y() < (parent_->size().Height() - 1))
+          if ((coord_.X() < parent_->Size().Width()) ||
+              (is_top_down_ ? (coord_.Y() < (parent_->Size().Height() - 1))
                             : (coord_.Y() > 0)))
             buffer_->SetHasAlpha(true);
           // There's no need to move |m_coord| here to trigger the caller
@@ -674,7 +674,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
           const uint8_t dy = ReadUint8(3);
           if (dx || dy)
             buffer_->SetHasAlpha(true);
-          if (((coord_.X() + dx) > parent_->size().Width()) ||
+          if (((coord_.X() + dx) > parent_->Size().Width()) ||
               PastEndOfImage(dy))
             return kFailure;
 
@@ -704,7 +704,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
       // The following color data is repeated for |count| total pixels.
       // Strangely, some BMPs seem to specify excessively large counts
       // here; ignore pixels past the end of the row.
-      const int end_x = std::min(coord_.X() + count, parent_->size().Width());
+      const int end_x = std::min(coord_.X() + count, parent_->Size().Width());
 
       if (info_header_.bi_compression == RLE24) {
         // Bail if there isn't enough data.
@@ -746,11 +746,11 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
     return kInsufficientData;
 
   if (!in_rle)
-    num_pixels = parent_->size().Width();
+    num_pixels = parent_->Size().Width();
 
   // Fail if we're being asked to decode more pixels than remain in the row.
   const int end_x = coord_.X() + num_pixels;
-  if (end_x > parent_->size().Width())
+  if (end_x > parent_->Size().Width())
     return kFailure;
 
   // Determine how many bytes of data the requested number of pixels

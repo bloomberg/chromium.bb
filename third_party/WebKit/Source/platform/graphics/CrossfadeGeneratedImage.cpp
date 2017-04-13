@@ -44,8 +44,8 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(PassRefPtr<Image> from_image,
 void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
                                             const PaintFlags& flags,
                                             ImageClampingMode clamp_mode) {
-  FloatRect from_image_rect(FloatPoint(), FloatSize(from_image_->size()));
-  FloatRect to_image_rect(FloatPoint(), FloatSize(to_image_->size()));
+  FloatRect from_image_rect(FloatPoint(), FloatSize(from_image_->Size()));
+  FloatRect to_image_rect(FloatPoint(), FloatSize(to_image_->Size()));
   FloatRect dest_rect((FloatPoint()), FloatSize(crossfade_size_));
 
   // TODO(junov): The various effects encoded into paint should probably be

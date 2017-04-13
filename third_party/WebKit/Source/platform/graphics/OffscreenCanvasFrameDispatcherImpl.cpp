@@ -203,7 +203,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     bool
         is_web_gl_software_rendering /* This flag is true when WebGL's commit is
     called on SwiftShader. */) {
-  if (!image || !VerifyImageSize(image->size()))
+  if (!image || !VerifyImageSize(image->Size()))
     return;
   if (!frame_sink_id_.is_valid()) {
     PostImageToPlaceholder(std::move(image));

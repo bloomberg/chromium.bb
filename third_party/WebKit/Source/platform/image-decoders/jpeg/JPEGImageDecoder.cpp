@@ -758,7 +758,7 @@ size_t JPEGImageDecoder::DecodedYUVWidthBytes(int component) const {
 }
 
 unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
-  size_t original_bytes = size().Width() * size().Height() * 4;
+  size_t original_bytes = Size().Width() * Size().Height() * 4;
 
   if (original_bytes <= max_decoded_bytes_)
     return scaleDenominator;
@@ -949,7 +949,7 @@ bool JPEGImageDecoder::OutputScanlines() {
     buffer.SetHasAlpha(true);
 
     // For JPEGs, the frame always fills the entire image.
-    buffer.SetOriginalFrameRect(IntRect(IntPoint(), size()));
+    buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
   }
 
 #if defined(TURBO_JPEG_RGB_SWIZZLE)

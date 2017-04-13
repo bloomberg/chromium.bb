@@ -59,7 +59,7 @@ class TestImage : public Image {
     return AdoptRef(new TestImage(size));
   }
 
-  IntSize size() const override {
+  IntSize Size() const override {
     ASSERT(image_);
 
     return IntSize(image_->width(), image_->height());
@@ -118,7 +118,7 @@ TEST(DragImageTest, NonNullHandling) {
   ASSERT_TRUE(drag_image);
 
   drag_image->Scale(0.5, 0.5);
-  IntSize size = drag_image->size();
+  IntSize size = drag_image->Size();
   EXPECT_EQ(1, size.Width());
   EXPECT_EQ(1, size.Height());
 }
@@ -150,7 +150,7 @@ TEST(DragImageTest, TrimWhitespace) {
   std::unique_ptr<DragImage> expected_image = DragImage::Create(
       url, expected_label, font_description, device_scale_factor);
 
-  EXPECT_EQ(test_image->size().Width(), expected_image->size().Width());
+  EXPECT_EQ(test_image->Size().Width(), expected_image->Size().Width());
 }
 
 TEST(DragImageTest, InterpolationNone) {

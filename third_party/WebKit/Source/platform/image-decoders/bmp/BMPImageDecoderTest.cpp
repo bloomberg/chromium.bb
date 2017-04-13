@@ -31,8 +31,8 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
   decoder->SetData(data.Get(), true);
   EXPECT_TRUE(decoder->IsSizeAvailable());
-  EXPECT_EQ(256, decoder->size().Width());
-  EXPECT_EQ(256, decoder->size().Height());
+  EXPECT_EQ(256, decoder->Size().Width());
+  EXPECT_EQ(256, decoder->Size().Height());
 }
 
 TEST(BMPImageDecoderTest, parseAndDecode) {

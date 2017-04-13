@@ -403,7 +403,7 @@ void ImageDocument::UpdateImageStyle() {
           // The checker pattern is initialized based on how large the image is
           // relative to the viewport.
           int viewport_width =
-              GetFrame()->GetPage()->GetVisualViewport().size().Width();
+              GetFrame()->GetPage()->GetVisualViewport().Size().Width();
           scale = viewport_width / static_cast<double>(CalculateDivWidth());
         }
 
@@ -517,7 +517,7 @@ int ImageDocument::CalculateDivWidth() {
   // * Images smaller in either dimension are centered along that axis.
   LayoutSize image_size = CachedImageSize(image_element_);
   int viewport_width =
-      GetFrame()->GetPage()->GetVisualViewport().size().Width();
+      GetFrame()->GetPage()->GetVisualViewport().Size().Width();
 
   // For huge images, minimum-scale=0.1 is still too big on small screens.
   // Set the <div> width so that the image will shrink to fit the width of the
@@ -541,7 +541,7 @@ void ImageDocument::WindowSizeChanged() {
     // can display the full image without shrinking it, allowing a full-width
     // reading mode for normal-width-huge-height images.
     float viewport_aspect_ratio =
-        GetFrame()->GetPage()->GetVisualViewport().size().AspectRatio();
+        GetFrame()->GetPage()->GetVisualViewport().Size().AspectRatio();
     int div_height =
         std::max(image_size.Height().ToInt(),
                  static_cast<int>(div_width / viewport_aspect_ratio));

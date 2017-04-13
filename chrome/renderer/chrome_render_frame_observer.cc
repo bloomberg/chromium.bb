@@ -82,7 +82,7 @@ SkBitmap Downscale(const blink::WebImage& image,
   if (image.IsNull())
     return SkBitmap();
 
-  gfx::Size image_size = image.size();
+  gfx::Size image_size = image.Size();
 
   if (image_size.GetArea() < thumbnail_min_area_pixels)
     return image.GetSkBitmap();
@@ -196,7 +196,7 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
   gfx::Size original_size;
   if (!context_node.IsNull() && context_node.IsElementNode()) {
     blink::WebImage image = context_node.To<WebElement>().ImageContents();
-    original_size = image.size();
+    original_size = image.Size();
     thumbnail = Downscale(image,
                           thumbnail_min_area_pixels,
                           thumbnail_max_size_pixels);

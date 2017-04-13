@@ -343,7 +343,7 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
           : nullptr;
 
   CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
-      image_data->data(), encoding_mime_type, image_data->size(), start_time,
+      image_data->data(), encoding_mime_type, image_data->Size(), start_time,
       document, resolver);
 
   async_creator->ScheduleAsyncBlobCreation(options.quality());

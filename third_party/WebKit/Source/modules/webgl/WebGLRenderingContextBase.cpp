@@ -770,8 +770,8 @@ ScriptPromise WebGLRenderingContextBase::commit(
 
   RefPtr<StaticBitmapImage> image;
   if (CreationAttributes().preserveDrawingBuffer()) {
-    int width = GetDrawingBuffer()->size().Width();
-    int height = GetDrawingBuffer()->size().Height();
+    int width = GetDrawingBuffer()->Size().Width();
+    int height = GetDrawingBuffer()->Size().Height();
     SkImageInfo image_info =
         SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                           CreationAttributes().alpha() ? kPremul_SkAlphaType
@@ -830,7 +830,7 @@ sk_sp<SkImage> WebGLRenderingContextBase::MakeImageSnapshot(
 
   GetDrawingBuffer()->CopyToPlatformTexture(
       gl, texture_target, texture_id, true, false, IntPoint(0, 0),
-      IntRect(IntPoint(0, 0), GetDrawingBuffer()->size()), kBackBuffer);
+      IntRect(IntPoint(0, 0), GetDrawingBuffer()->Size()), kBackBuffer);
   return surface->makeImageSnapshot();
 }
 
@@ -845,15 +845,15 @@ ImageData* WebGLRenderingContextBase::ToImageData(SnapshotReason reason) {
       return image_data;
     }
 
-    int width = GetDrawingBuffer()->size().Width();
-    int height = GetDrawingBuffer()->size().Height();
+    int width = GetDrawingBuffer()->Size().Width();
+    int height = GetDrawingBuffer()->Size().Height();
     SkImageInfo image_info =
         SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                           CreationAttributes().alpha() ? kPremul_SkAlphaType
                                                        : kOpaque_SkAlphaType);
     sk_sp<SkImage> snapshot = MakeImageSnapshot(image_info);
     if (snapshot) {
-      image_data = ImageData::Create(GetDrawingBuffer()->size());
+      image_data = ImageData::Create(GetDrawingBuffer()->Size());
       snapshot->readPixels(image_info, image_data->data()->Data(),
                            image_info.minRowBytes(), 0, 0);
     }
@@ -1615,11 +1615,11 @@ void WebGLRenderingContextBase::Reshape(int width, int height) {
 }
 
 int WebGLRenderingContextBase::drawingBufferWidth() const {
-  return isContextLost() ? 0 : GetDrawingBuffer()->size().Width();
+  return isContextLost() ? 0 : GetDrawingBuffer()->Size().Width();
 }
 
 int WebGLRenderingContextBase::drawingBufferHeight() const {
-  return isContextLost() ? 0 : GetDrawingBuffer()->size().Height();
+  return isContextLost() ? 0 : GetDrawingBuffer()->Size().Height();
 }
 
 void WebGLRenderingContextBase::activeTexture(GLenum texture) {
@@ -4587,7 +4587,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   if (!image->CurrentFrameKnownToBeOpaque())
     buf->Canvas()->clear(SK_ColorTRANSPARENT);
 
-  IntRect src_rect(IntPoint(), image->size());
+  IntRect src_rect(IntPoint(), image->Size());
   IntRect dest_rect(0, 0, size.Width(), size.Height());
   PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
@@ -4803,7 +4803,7 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
     }
     if (!WebGLImageConversion::ExtractImageData(
             pixels->data()->Data(),
-            WebGLImageConversion::DataFormat::kDataFormatRGBA8, pixels->size(),
+            WebGLImageConversion::DataFormat::kDataFormatRGBA8, pixels->Size(),
             adjusted_source_image_rect, depth, unpack_image_height, format,
             type, unpack_flip_y_, unpack_premultiply_alpha_, data)) {
       SynthesizeGLError(GL_INVALID_VALUE, func_name, "bad image data");
@@ -5459,12 +5459,12 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
     if ((is_pixel_data_bgra &&
          !WebGLImageConversion::ExtractImageData(
              pixel_data_ptr, WebGLImageConversion::DataFormat::kDataFormatBGRA8,
-             bitmap->size(), source_sub_rect, depth, unpack_image_height,
+             bitmap->Size(), source_sub_rect, depth, unpack_image_height,
              format, type, false, false, data)) ||
         (is_pixel_data_rgba &&
          !WebGLImageConversion::ExtractImageData(
              pixel_data_ptr, WebGLImageConversion::DataFormat::kDataFormatRGBA8,
-             bitmap->size(), source_sub_rect, depth, unpack_image_height,
+             bitmap->Size(), source_sub_rect, depth, unpack_image_height,
              format, type, false, false, data))) {
       SynthesizeGLError(GL_INVALID_VALUE, func_name, "bad image data");
       return;

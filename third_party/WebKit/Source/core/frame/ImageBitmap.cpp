@@ -689,7 +689,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
   SourceImageStatus status;
   RefPtr<Image> input = offscreen_canvas->GetSourceImageForCanvas(
       &status, kPreferNoAcceleration, kSnapshotReasonCreateImageBitmap,
-      FloatSize(offscreen_canvas->size()));
+      FloatSize(offscreen_canvas->Size()));
   if (status != kNormalSourceImageStatus)
     return;
   ParsedOptions parsed_options = ParseOptions(
@@ -780,7 +780,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
                          Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
   // TODO(xidachen): implement the resize option
-  IntRect data_src_rect = IntRect(IntPoint(), data->size());
+  IntRect data_src_rect = IntRect(IntPoint(), data->Size());
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, data->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options))
@@ -798,17 +798,17 @@ ImageBitmap::ImageBitmap(ImageData* data,
         parsed_options.crop_rect.Width(), parsed_options.crop_rect.Height(),
         kN32_SkColorType, kUnpremul_SkAlphaType, data->GetSkColorSpace());
     unsigned bytes_per_pixel = static_cast<unsigned>(info.bytesPerPixel());
-    unsigned src_pixel_bytes_per_row = bytes_per_pixel * data->size().Width();
+    unsigned src_pixel_bytes_per_row = bytes_per_pixel * data->Size().Width();
     unsigned dst_pixel_bytes_per_row =
         bytes_per_pixel * parsed_options.crop_rect.Width();
     sk_sp<SkImage> sk_image;
-    if (parsed_options.crop_rect == IntRect(IntPoint(), data->size())) {
-      SwizzleImageData(src_addr, data->size().Height(), src_pixel_bytes_per_row,
+    if (parsed_options.crop_rect == IntRect(IntPoint(), data->Size())) {
+      SwizzleImageData(src_addr, data->Size().Height(), src_pixel_bytes_per_row,
                        parsed_options.flip_y);
       sk_image = SkImage::MakeRasterCopy(
           SkPixmap(info, src_addr, dst_pixel_bytes_per_row));
       // restore the original ImageData
-      SwizzleImageData(src_addr, data->size().Height(), src_pixel_bytes_per_row,
+      SwizzleImageData(src_addr, data->Size().Height(), src_pixel_bytes_per_row,
                        parsed_options.flip_y);
     } else {
       RefPtr<ArrayBuffer> dst_buffer = ArrayBuffer::CreateOrNull(
@@ -831,10 +831,10 @@ ImageBitmap::ImageBitmap(ImageData* data,
                                       (parsed_options.crop_rect.Y() >= 0)
                                           ? 0
                                           : -parsed_options.crop_rect.Y());
-        int copy_height = data->size().Height() - src_point.Y();
+        int copy_height = data->Size().Height() - src_point.Y();
         if (parsed_options.crop_rect.Height() < copy_height)
           copy_height = parsed_options.crop_rect.Height();
-        int copy_width = data->size().Width() - src_point.X();
+        int copy_width = data->Size().Width() - src_point.X();
         if (parsed_options.crop_rect.Width() < copy_width)
           copy_width = parsed_options.crop_rect.Width();
         for (int i = 0; i < copy_height; i++) {
@@ -915,7 +915,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   if (parsed_options.crop_rect.Y() < 0)
     dst_point.SetY(-parsed_options.crop_rect.Y());
 
-  buffer->PutByteArray(kUnmultiplied, data->data()->Data(), data->size(),
+  buffer->PutByteArray(kUnmultiplied, data->data()->Data(), data->Size(),
                        src_rect, dst_point);
   sk_sp<SkImage> sk_image =
       buffer->NewSkImageSnapshot(kPreferNoAcceleration, kSnapshotReasonUnknown);
@@ -950,7 +950,7 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
   if (!input)
     return;
   ParsedOptions parsed_options =
-      ParseOptions(options, crop_rect, input->size());
+      ParseOptions(options, crop_rect, input->Size());
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
@@ -969,7 +969,7 @@ ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image,
                          const ImageBitmapOptions& options) {
   bool origin_clean = image->OriginClean();
   ParsedOptions parsed_options =
-      ParseOptions(options, crop_rect, image->size());
+      ParseOptions(options, crop_rect, image->Size());
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
@@ -1096,7 +1096,7 @@ bool ImageBitmap::IsAccelerated() const {
   return image_ && (image_->IsTextureBacked() || image_->HasMailbox());
 }
 
-IntSize ImageBitmap::size() const {
+IntSize ImageBitmap::Size() const {
   if (!image_)
     return IntSize();
   ASSERT(image_->width() > 0 && image_->height() > 0);

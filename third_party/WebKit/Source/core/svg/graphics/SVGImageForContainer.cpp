@@ -27,7 +27,7 @@
 
 namespace blink {
 
-IntSize SVGImageForContainer::size() const {
+IntSize SVGImageForContainer::Size() const {
   FloatSize scaled_container_size(container_size_);
   scaled_container_size.Scale(zoom_);
   return RoundedIntSize(scaled_container_size);
@@ -62,7 +62,7 @@ bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
 }
 
 sk_sp<SkImage> SVGImageForContainer::ImageForCurrentFrame() {
-  return image_->ImageForCurrentFrameForContainer(url_, size());
+  return image_->ImageForCurrentFrameForContainer(url_, Size());
 }
 
 }  // namespace blink

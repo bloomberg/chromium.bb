@@ -195,7 +195,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   // the end of the image.  Here "plus" means "toward the end of the
   // image", so downwards for m_isTopDown images and upwards otherwise.
   inline bool PastEndOfImage(int num_rows) {
-    return is_top_down_ ? ((coord_.Y() + num_rows) >= parent_->size().Height())
+    return is_top_down_ ? ((coord_.Y() + num_rows) >= parent_->Size().Height())
                         : ((coord_.Y() - num_rows) < 0);
   }
 

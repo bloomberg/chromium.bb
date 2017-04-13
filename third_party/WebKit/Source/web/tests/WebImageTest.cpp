@@ -49,7 +49,7 @@ TEST(WebImageTest, PNGImage) {
   ASSERT_TRUE(data.Get());
 
   WebImage image = WebImage::FromData(WebData(data), WebSize());
-  EXPECT_TRUE(image.size() == WebSize(1, 1));
+  EXPECT_TRUE(image.Size() == WebSize(1, 1));
   SkAutoLockPixels auto_lock(image.GetSkBitmap());
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
             image.GetSkBitmap().getColor(0, 0));
@@ -61,8 +61,8 @@ TEST(WebImageTest, ICOImage) {
 
   WebVector<WebImage> images = WebImage::FramesFromData(WebData(data));
   ASSERT_EQ(2u, images.size());
-  EXPECT_TRUE(images[0].size() == WebSize(2, 2));
-  EXPECT_TRUE(images[1].size() == WebSize(1, 1));
+  EXPECT_TRUE(images[0].Size() == WebSize(2, 2));
+  EXPECT_TRUE(images[1].Size() == WebSize(1, 1));
   SkAutoLockPixels auto_lock1(images[0].GetSkBitmap());
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
             images[0].GetSkBitmap().getColor(0, 0));

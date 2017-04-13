@@ -301,7 +301,7 @@ bool SVGInlineTextBox::NodeAtPoint(HitTestResult& result,
         (hit_rules.can_hit_fill &&
          (GetLineLayoutItem().Style()->SvgStyle().HasFill() ||
           !hit_rules.require_fill))) {
-      LayoutRect rect(Location(), size());
+      LayoutRect rect(Location(), Size());
       rect.MoveBy(accumulated_offset);
       if (location_in_container.Intersects(rect)) {
         LineLayoutSVGInlineText line_layout_item =

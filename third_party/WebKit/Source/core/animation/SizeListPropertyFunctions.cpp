@@ -43,7 +43,7 @@ SizeList SizeListPropertyFunctions::GetSizeList(CSSPropertyID property,
   SizeList result;
   for (const FillLayer* fill_layer = GetFillLayerForSize(property, style);
        fill_layer && fill_layer->IsSizeSet(); fill_layer = fill_layer->Next())
-    result.push_back(fill_layer->size());
+    result.push_back(fill_layer->Size());
   return result;
 }
 

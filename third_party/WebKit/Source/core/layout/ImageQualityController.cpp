@@ -206,7 +206,7 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
     }
   }
 
-  if (layout_size == image->size()) {
+  if (layout_size == image->Size()) {
     // There is no scale in effect. If we had a scale in effect before, we can
     // just remove this object from the list.
     RemoveLayer(object, inner_map, layer);

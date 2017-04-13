@@ -68,7 +68,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   bool IsSizeAvailable();
   bool HasEmbeddedColorSpace() const;
-  IntSize size() const;
+  IntSize Size() const;
   IntSize FrameSizeAtIndex(size_t index) const;
   size_t FrameCount();
   int RepetitionCount() const;

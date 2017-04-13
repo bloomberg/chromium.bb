@@ -56,7 +56,7 @@ int WebScrollbarThemeClientImpl::Height() const {
 }
 
 IntSize WebScrollbarThemeClientImpl::Size() const {
-  return scrollbar_.size();
+  return scrollbar_.Size();
 }
 
 IntPoint WebScrollbarThemeClientImpl::Location() const {

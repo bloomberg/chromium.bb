@@ -18,7 +18,7 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   bool IsSkiaTextureHolder() final { return true; }
   bool IsMailboxTextureHolder() final { return false; }
   unsigned SharedContextId() final;
-  IntSize size() const final {
+  IntSize Size() const final {
     return IntSize(image_->width(), image_->height());
   }
   bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final {

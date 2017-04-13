@@ -51,7 +51,7 @@ class CORE_EXPORT OffscreenCanvas final
                               const ImageEncodeOptions&,
                               ExceptionState&);
 
-  IntSize size() const { return size_; }
+  IntSize Size() const { return size_; }
   void SetSize(const IntSize&);
 
   void SetPlaceholderCanvasId(int canvas_id) {

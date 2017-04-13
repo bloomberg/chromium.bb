@@ -2648,7 +2648,7 @@ String Internals::getCurrentCursorInfo() {
   result.Append(',');
   result.AppendNumber(cursor.HotSpot().Y());
   if (cursor.GetImage()) {
-    IntSize size = cursor.GetImage()->size();
+    IntSize size = cursor.GetImage()->Size();
     result.Append(" image=");
     result.AppendNumber(size.Width());
     result.Append('x');

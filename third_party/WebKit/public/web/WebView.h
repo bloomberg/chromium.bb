@@ -81,7 +81,7 @@ class WebView : protected WebWidget {
 
   // WebWidget overrides.
   using WebWidget::Close;
-  using WebWidget::size;
+  using WebWidget::Size;
   using WebWidget::Resize;
   using WebWidget::ResizeVisualViewport;
   using WebWidget::DidEnterFullscreen;

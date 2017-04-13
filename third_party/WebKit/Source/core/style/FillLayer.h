@@ -85,7 +85,7 @@ class CORE_EXPORT FillLayer {
   EFillSizeType SizeType() const {
     return static_cast<EFillSizeType>(size_type_);
   }
-  FillSize size() const {
+  FillSize Size() const {
     return FillSize(static_cast<EFillSizeType>(size_type_), size_length_);
   }
   EMaskSourceType MaskSourceType() const {

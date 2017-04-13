@@ -275,7 +275,7 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
 }
 
 sk_sp<SkImage> SVGImage::ImageForCurrentFrame() {
-  return ImageForCurrentFrameForContainer(KURL(), size());
+  return ImageForCurrentFrameForContainer(KURL(), Size());
 }
 
 void SVGImage::DrawPatternForContainer(GraphicsContext& context,

@@ -77,7 +77,7 @@ class WebImage {
   BLINK_PLATFORM_EXPORT void Assign(const WebImage&);
 
   BLINK_PLATFORM_EXPORT bool IsNull() const;
-  BLINK_PLATFORM_EXPORT WebSize size() const;
+  BLINK_PLATFORM_EXPORT WebSize Size() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebImage(WTF::PassRefPtr<Image>);

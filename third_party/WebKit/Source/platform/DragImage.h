@@ -70,7 +70,7 @@ class PLATFORM_EXPORT DragImage {
 
   const SkBitmap& Bitmap() { return bitmap_; }
   float ResolutionScale() const { return resolution_scale_; }
-  IntSize size() const { return IntSize(bitmap_.width(), bitmap_.height()); }
+  IntSize Size() const { return IntSize(bitmap_.width(), bitmap_.height()); }
 
   void Scale(float scale_x, float scale_y);
 

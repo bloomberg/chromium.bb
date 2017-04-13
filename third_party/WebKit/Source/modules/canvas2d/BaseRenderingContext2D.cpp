@@ -1511,7 +1511,7 @@ bool BaseRenderingContext2D::ComputeDirtyRect(
 ImageData* BaseRenderingContext2D::createImageData(
     ImageData* image_data,
     ExceptionState& exception_state) const {
-  ImageData* result = ImageData::Create(image_data->size());
+  ImageData* result = ImageData::Create(image_data->Size());
   if (!result)
     exception_state.ThrowRangeError("Out of memory at ImageData creation");
   return result;

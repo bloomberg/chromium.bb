@@ -629,7 +629,7 @@ void TextAutosizer::UpdatePageInfo() {
 IntSize TextAutosizer::WindowSize() const {
   Page* page = document_->GetPage();
   DCHECK(page);
-  return page->GetVisualViewport().size();
+  return page->GetVisualViewport().Size();
 }
 
 void TextAutosizer::ResetMultipliers() {

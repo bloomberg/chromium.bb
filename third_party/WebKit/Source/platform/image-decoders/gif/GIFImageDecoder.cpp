@@ -112,10 +112,10 @@ bool GIFImageDecoder::HaveDecodedRow(size_t frame_index,
   const int x_begin = frame_context->xOffset();
   const int y_begin = frame_context->yOffset() + row_number;
   const int x_end = std::min(static_cast<int>(frame_context->xOffset() + width),
-                             size().Width());
+                             Size().Width());
   const int y_end = std::min(
       static_cast<int>(frame_context->yOffset() + row_number + repeat_count),
-      size().Height());
+      Size().Height());
   if (!width || (x_begin < 0) || (y_begin < 0) || (x_end <= x_begin) ||
       (y_end <= y_begin))
     return true;
@@ -222,7 +222,7 @@ void GIFImageDecoder::InitializeNewFrame(size_t index) {
   ImageFrame* buffer = &frame_buffer_cache_[index];
   const GIFFrameContext* frame_context = reader_->frameContext(index);
   buffer->SetOriginalFrameRect(
-      Intersection(frame_context->frameRect(), IntRect(IntPoint(), size())));
+      Intersection(frame_context->frameRect(), IntRect(IntPoint(), Size())));
   buffer->SetDuration(frame_context->delayTime());
   buffer->SetDisposalMethod(frame_context->getDisposalMethod());
   buffer->SetRequiredPreviousFrameIndex(

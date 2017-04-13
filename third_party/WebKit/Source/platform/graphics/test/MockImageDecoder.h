@@ -76,7 +76,7 @@ class MockImageDecoder : public ImageDecoder {
   ~MockImageDecoder() { client_->DecoderBeingDestroyed(); }
 
   IntSize DecodedSize() const override {
-    return client_->DecodedSize().IsEmpty() ? size() : client_->DecodedSize();
+    return client_->DecodedSize().IsEmpty() ? Size() : client_->DecodedSize();
   }
 
   String FilenameExtension() const override { return "mock"; }
@@ -114,7 +114,7 @@ class MockImageDecoder : public ImageDecoder {
 
   void InitializeNewFrame(size_t index) override {
     if (frame_buffer_cache_[index].AllocatePixelData(
-            size().Width(), size().Height(), ColorSpaceForSkImages()))
+            Size().Width(), Size().Height(), ColorSpaceForSkImages()))
       frame_buffer_cache_[index].ZeroFillPixelData();
     frame_buffer_cache_[index].SetHasAlpha(false);
   }

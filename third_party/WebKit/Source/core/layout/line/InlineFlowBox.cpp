@@ -70,7 +70,7 @@ LayoutUnit InlineFlowBox::GetFlowSpacingLogicalWidth() {
 }
 
 LayoutRect InlineFlowBox::FrameRect() const {
-  return LayoutRect(Location(), size());
+  return LayoutRect(Location(), Size());
 }
 
 static void SetHasTextDescendantsOnAncestors(InlineFlowBox* box) {

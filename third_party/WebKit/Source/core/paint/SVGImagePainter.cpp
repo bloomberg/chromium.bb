@@ -113,7 +113,7 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
         ->ConcreteObjectSize(layout_svg_image_.ObjectBoundingBox().Size());
   }
 
-  return FloatSize(cached_image->GetImage()->size());
+  return FloatSize(cached_image->GetImage()->Size());
 }
 
 }  // namespace blink

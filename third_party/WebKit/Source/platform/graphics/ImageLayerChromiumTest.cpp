@@ -49,7 +49,7 @@ class TestImage : public Image {
     return image_->isOpaque();
   }
 
-  IntSize size() const override { return size_; }
+  IntSize Size() const override { return size_; }
 
   sk_sp<SkImage> ImageForCurrentFrame() override { return image_; }
 

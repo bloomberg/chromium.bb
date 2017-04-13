@@ -37,8 +37,8 @@ void WebViewFrameWidget::Close() {
   delete this;
 }
 
-WebSize WebViewFrameWidget::size() {
-  return web_view_->size();
+WebSize WebViewFrameWidget::Size() {
+  return web_view_->Size();
 }
 
 void WebViewFrameWidget::Resize(const WebSize& size) {

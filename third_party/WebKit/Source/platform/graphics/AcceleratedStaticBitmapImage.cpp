@@ -56,8 +56,8 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {}
 
-IntSize AcceleratedStaticBitmapImage::size() const {
-  return texture_holder_->size();
+IntSize AcceleratedStaticBitmapImage::Size() const {
+  return texture_holder_->Size();
 }
 
 void AcceleratedStaticBitmapImage::UpdateSyncToken(gpu::SyncToken sync_token) {

@@ -128,7 +128,7 @@ ScriptPromise ShapeDetector::detect(
                                                   : kDontPremultiplyAlpha,
                                               kN32ColorType);
     pixel_data_ptr = pixel_data->Data();
-    allocation_size = image_bitmap->size().Area() * 4 /* bytes per pixel */;
+    allocation_size = image_bitmap->Size().Area() * 4 /* bytes per pixel */;
   } else {
     // TODO(mcasas): retrieve the pixels from elsewhere.
     NOTREACHED();
@@ -151,13 +151,13 @@ ScriptPromise ShapeDetector::DetectShapesOnImageData(
     ImageData* image_data) {
   ScriptPromise promise = resolver->Promise();
 
-  if (image_data->size().IsZero()) {
+  if (image_data->Size().IsZero()) {
     resolver->Resolve(HeapVector<Member<DOMRect>>());
     return promise;
   }
 
   uint8_t* const data = image_data->data()->Data();
-  WTF::CheckedNumeric<int> allocation_size = image_data->size().Area() * 4;
+  WTF::CheckedNumeric<int> allocation_size = image_data->Size().Area() * 4;
 
   mojo::ScopedSharedBufferHandle shared_buffer_handle =
       GetSharedBufferOnData(resolver, data, allocation_size.ValueOrDefault(0));

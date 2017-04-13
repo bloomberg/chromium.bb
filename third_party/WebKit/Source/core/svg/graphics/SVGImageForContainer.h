@@ -68,7 +68,7 @@ class SVGImageForContainer final : public Image {
                                              zoom, url));
   }
 
-  IntSize size() const override;
+  IntSize Size() const override;
 
   bool UsesContainerSize() const override {
     return image_->UsesContainerSize();
