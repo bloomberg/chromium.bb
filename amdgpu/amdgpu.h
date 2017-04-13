@@ -907,6 +907,29 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 				 uint64_t flags,
 				 uint32_t *expired);
 
+/**
+ *  Wait for multiple fences
+ *
+ * \param   fences      - \c [in] The fence array to wait
+ * \param   fence_count - \c [in] The fence count
+ * \param   wait_all    - \c [in] If true, wait all fences to be signaled,
+ *                                otherwise, wait at least one fence
+ * \param   timeout_ns  - \c [in] The timeout to wait, in nanoseconds
+ * \param   status      - \c [out] '1' for signaled, '0' for timeout
+ * \param   first       - \c [out] the index of the first signaled fence from @fences
+ *
+ * \return  0 on success
+ *          <0 - Negative POSIX Error code
+ *
+ * \note    Currently it supports only one amdgpu_device. All fences come from
+ *          the same amdgpu_device with the same fd.
+*/
+int amdgpu_cs_wait_fences(struct amdgpu_cs_fence *fences,
+			  uint32_t fence_count,
+			  bool wait_all,
+			  uint64_t timeout_ns,
+			  uint32_t *status, uint32_t *first);
+
 /*
  * Query / Info API
  *

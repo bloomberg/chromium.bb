@@ -443,6 +443,77 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 	return r;
 }
 
+static int amdgpu_ioctl_wait_fences(struct amdgpu_cs_fence *fences,
+				    uint32_t fence_count,
+				    bool wait_all,
+				    uint64_t timeout_ns,
+				    uint32_t *status,
+				    uint32_t *first)
+{
+	struct drm_amdgpu_fence *drm_fences;
+	amdgpu_device_handle dev = fences[0].context->dev;
+	union drm_amdgpu_wait_fences args;
+	int r;
+	uint32_t i;
+
+	drm_fences = alloca(sizeof(struct drm_amdgpu_fence) * fence_count);
+	for (i = 0; i < fence_count; i++) {
+		drm_fences[i].ctx_id = fences[i].context->id;
+		drm_fences[i].ip_type = fences[i].ip_type;
+		drm_fences[i].ip_instance = fences[i].ip_instance;
+		drm_fences[i].ring = fences[i].ring;
+		drm_fences[i].seq_no = fences[i].fence;
+	}
+
+	memset(&args, 0, sizeof(args));
+	args.in.fences = (uint64_t)(uintptr_t)drm_fences;
+	args.in.fence_count = fence_count;
+	args.in.wait_all = wait_all;
+	args.in.timeout_ns = amdgpu_cs_calculate_timeout(timeout_ns);
+
+	r = drmIoctl(dev->fd, DRM_IOCTL_AMDGPU_WAIT_FENCES, &args);
+	if (r)
+		return -errno;
+
+	*status = args.out.status;
+
+	if (first)
+		*first = args.out.first_signaled;
+
+	return 0;
+}
+
+int amdgpu_cs_wait_fences(struct amdgpu_cs_fence *fences,
+			  uint32_t fence_count,
+			  bool wait_all,
+			  uint64_t timeout_ns,
+			  uint32_t *status,
+			  uint32_t *first)
+{
+	uint32_t i;
+
+	/* Sanity check */
+	if (NULL == fences)
+		return -EINVAL;
+	if (NULL == status)
+		return -EINVAL;
+	if (fence_count <= 0)
+		return -EINVAL;
+	for (i = 0; i < fence_count; i++) {
+		if (NULL == fences[i].context)
+			return -EINVAL;
+		if (fences[i].ip_type >= AMDGPU_HW_IP_NUM)
+			return -EINVAL;
+		if (fences[i].ring >= AMDGPU_CS_MAX_RINGS)
+			return -EINVAL;
+	}
+
+	*status = 0;
+
+	return amdgpu_ioctl_wait_fences(fences, fence_count, wait_all,
+					timeout_ns, status, first);
+}
+
 int amdgpu_cs_create_semaphore(amdgpu_semaphore_handle *sem)
 {
 	struct amdgpu_semaphore *gpu_semaphore;

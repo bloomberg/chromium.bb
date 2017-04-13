@@ -33,6 +33,7 @@ amdgpu_cs_query_fence_status
 amdgpu_cs_query_reset_state
 amdgpu_cs_signal_semaphore
 amdgpu_cs_submit
+amdgpu_cs_wait_fences
 amdgpu_cs_wait_semaphore
 amdgpu_device_deinitialize
 amdgpu_device_initialize
