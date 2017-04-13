@@ -44,7 +44,7 @@ function focus(element) {
   // concerned, the shadow host is the active element. We need to go through the
   // tree of shadow DOMs to check that the element we gave focus to is now
   // active.
-  if (element != activeElement) {
+  if (element != activeElement && !element.contains(activeElement)) {
     var shadowRoot = activeElement.shadowRoot;
     while (shadowRoot) {
       var activeElement = shadowRoot.activeElement;
@@ -57,6 +57,6 @@ function focus(element) {
       shadowRoot = activeElement.shadowRoot;
     }
   }
-  if (element != activeElement)
+  if (element != activeElement && !element.contains(activeElement))
     throw new Error('cannot focus element');
 }
