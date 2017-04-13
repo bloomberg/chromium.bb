@@ -40,7 +40,8 @@ public class ChildProcessLauncher {
 
     private static final boolean SPARE_CONNECTION_ALWAYS_IN_FOREGROUND = false;
 
-    private static ChildProcessConnection allocateConnection(
+    @VisibleForTesting
+    static ChildProcessConnection allocateConnection(
             ChildSpawnData spawnData, Bundle childProcessCommonParams, boolean forWarmUp) {
         ChildProcessConnection.DeathCallback deathCallback =
                 new ChildProcessConnection.DeathCallback() {
@@ -92,7 +93,8 @@ public class ChildProcessLauncher {
         }
     }
 
-    private static Bundle createCommonParamsBundle(ChildProcessCreationParams params) {
+    @VisibleForTesting
+    static Bundle createCommonParamsBundle(ChildProcessCreationParams params) {
         Bundle commonParams = new Bundle();
         commonParams.putParcelable(
                 ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
@@ -101,8 +103,10 @@ public class ChildProcessLauncher {
         return commonParams;
     }
 
-    private static ChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
+    @VisibleForTesting
+    static ChildProcessConnection allocateBoundConnection(ChildSpawnData spawnData,
             ChildProcessConnection.StartCallback startCallback, boolean forWarmUp) {
+        assert LauncherThread.runningOnLauncherThread();
         final Context context = spawnData.getContext();
         final boolean inSandbox = spawnData.isInSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
@@ -313,9 +317,9 @@ public class ChildProcessLauncher {
      * @param commandLine The child process command line argv.
      * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
      */
-    // TODO(boliu): All tests should use this over startForTesting.
     static void start(Context context, int paramId, final String[] commandLine, int childProcessId,
             FileDescriptorInfo[] filesToBeMapped, LaunchCallback launchCallback) {
+        assert LauncherThread.runningOnLauncherThread();
         IBinder childProcessCallback = null;
         boolean inSandbox = true;
         boolean alwaysInForeground = false;
@@ -355,11 +359,13 @@ public class ChildProcessLauncher {
                 childProcessCallback, inSandbox, alwaysInForeground, params);
     }
 
-    private static ChildProcessConnection startInternal(final Context context,
+    @VisibleForTesting
+    public static ChildProcessConnection startInternal(final Context context,
             final String[] commandLine, final int childProcessId,
             final FileDescriptorInfo[] filesToBeMapped, final LaunchCallback launchCallback,
             final IBinder childProcessCallback, final boolean inSandbox,
             final boolean alwaysInForeground, final ChildProcessCreationParams creationParams) {
+        assert LauncherThread.runningOnLauncherThread();
         try {
             TraceEvent.begin("ChildProcessLauncher.startInternal");
 
@@ -450,6 +456,7 @@ public class ChildProcessLauncher {
     static void triggerConnectionSetup(final ChildProcessConnection connection,
             String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped,
             final IBinder childProcessCallback, final LaunchCallback launchCallback) {
+        assert LauncherThread.runningOnLauncherThread();
         ChildProcessConnection.ConnectionCallback connectionCallback =
                 new ChildProcessConnection.ConnectionCallback() {
                     @Override
@@ -489,89 +496,10 @@ public class ChildProcessLauncher {
         freeConnection(connection);
     }
 
-    @VisibleForTesting
-    public static ChildProcessConnection startForTesting(Context context, String[] commandLine,
-            FileDescriptorInfo[] filesToMap, ChildProcessCreationParams params) {
-        return startInternal(context, commandLine, 0 /* childProcessId */, filesToMap,
-                null /* launchCallback */, null /* childProcessCallback */, true /* inSandbox */,
-                false /* alwaysInForeground */, params);
-    }
-
-    @VisibleForTesting
-    static ChildProcessConnection allocateBoundConnectionForTesting(Context context,
-            ChildProcessCreationParams creationParams) {
-        return allocateBoundConnection(
-                new ChildSpawnData(context, null /* commandLine */, 0 /* childProcessId */,
-                        null /* filesToBeMapped */, null /* LaunchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, creationParams),
-                null /* startCallback */, false /* forWarmUp */);
-    }
-
-    @VisibleForTesting
-    static ChildProcessConnection allocateConnectionForTesting(
-            Context context, ChildProcessCreationParams creationParams) {
-        return allocateConnection(
-                new ChildSpawnData(context, null /* commandLine */, 0 /* childProcessId */,
-                        null /* filesToBeMapped */, null /* launchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, creationParams),
-                createCommonParamsBundle(creationParams), false /* forWarmUp */);
-    }
-
-    /**
-     * Queue up a spawn requests for testing.
-     */
-    @VisibleForTesting
-    static void enqueuePendingSpawnForTesting(Context context, String[] commandLine,
-            ChildProcessCreationParams creationParams, boolean inSandbox) {
-        String packageName = creationParams != null ? creationParams.getPackageName()
-                : context.getPackageName();
-        ChildConnectionAllocator allocator =
-                ChildConnectionAllocator.getAllocator(context, packageName, inSandbox);
-        allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
-                1 /* childProcessId */, new FileDescriptorInfo[0], null /* launchCallback */,
-                null /* childProcessCallback */, true /* inSandbox */,
-                false /* alwaysInForeground */, creationParams));
-    }
-
-    /**
-     * @return the number of sandboxed connections of given {@link packageName} managed by the
-     * allocator.
-     */
-    @VisibleForTesting
-    static int allocatedSandboxedConnectionsCountForTesting(Context context, String packageName) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
-                .allocatedConnectionsCountForTesting();
-    }
-
-    /**
-     * @return gets the service connection array for a specific package name.
-     */
-    @VisibleForTesting
-    static ChildProcessConnection[] getSandboxedConnectionArrayForTesting(
-            Context context, String packageName) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
-                .connectionArrayForTesting();
-    }
-
     /** @return the count of services set up and working */
     @VisibleForTesting
     static int connectedServicesCountForTesting() {
         return sServiceMap.size();
-    }
-
-    /**
-     * @param context The context.
-     * @param packageName The package name of the {@link ChildProcessAlocator}.
-     * @param inSandbox Whether the connection is sandboxed.
-     * @return the count of pending spawns in the queue.
-     */
-    @VisibleForTesting
-    static int pendingSpawnsCountForTesting(
-            Context context, String packageName, boolean inSandbox) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, inSandbox)
-                .pendingSpawnsCountForTesting();
     }
 
     /**

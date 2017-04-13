@@ -31,7 +31,6 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
 
 /**
  * Instrumentation tests for ChildProcessLauncher.
@@ -66,7 +65,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // using the instrumentation context (getContext()) instead of the app context
         // (getTargetContext()).
         Context context = getInstrumentation().getContext();
-        ChildProcessLauncher.allocateBoundConnectionForTesting(
+        allocateBoundConnectionForTesting(
                 context, getDefaultChildProcessCreationParams(context.getPackageName()));
 
         // Verify that the connection is not considered as allocated.
@@ -191,10 +190,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // until the browser restart.
         final String packageName = appContext.getPackageName();
         final boolean inSandbox = true;
-        ChildProcessLauncher.enqueuePendingSpawnForTesting(appContext, sProcessWaitArguments,
+        enqueuePendingSpawnForTesting(appContext, sProcessWaitArguments,
                 getDefaultChildProcessCreationParams(packageName), inSandbox);
-        assertEquals(1, ChildProcessLauncher.pendingSpawnsCountForTesting(appContext, packageName,
-                inSandbox));
+        assertEquals(1, pendingSpawnsCountForTesting(appContext, packageName, inSandbox));
 
         // Initiate the connection setup.
         triggerConnectionSetup(connection);
@@ -223,8 +221,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
             @Override
             public Integer call() {
-                return ChildProcessLauncher.pendingSpawnsCountForTesting(appContext, packageName,
-                        inSandbox);
+                return pendingSpawnsCountForTesting(appContext, packageName, inSandbox);
             }
         }));
 
@@ -255,8 +252,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
             sandboxedServiceCount = 4, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testServiceNumberAllocation() {
         Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
-                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+        assertEquals(0,
+                allocatedSandboxedConnectionsCountForTesting(
+                        appContext, EXTERNAL_APK_PACKAGE_NAME));
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
         // Start and connect to a new service of an external APK.
@@ -267,8 +265,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
         // Verify that one connection is allocated for an external APK and a regular tab
         // respectively.
-        assertEquals(1, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
-                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+        assertEquals(1,
+                allocatedSandboxedConnectionsCountForTesting(
+                        appContext, EXTERNAL_APK_PACKAGE_NAME));
         assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
         // Verify that connections allocated for an external APK and the regular tab are from
@@ -289,8 +288,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
             sandboxedServiceCount = 1, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testExceedMaximumConnectionNumber() {
         Context appContext = getInstrumentation().getTargetContext();
-        assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
-                                appContext, EXTERNAL_APK_PACKAGE_NAME));
+        assertEquals(0,
+                allocatedSandboxedConnectionsCountForTesting(
+                        appContext, EXTERNAL_APK_PACKAGE_NAME));
 
         // Setup a connection for an external APK to reach the maximum allowed connection number.
         ChildProcessConnectionImpl externalApkConnection =
@@ -391,8 +391,9 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         final ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
                 context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
-        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(
-                context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
+        final ChildProcessConnection conn =
+                ChildProcessLauncherTestHelperService.startInternalForTesting(
+                        context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Failed waiting for instrumentation-bound service") {
@@ -405,8 +406,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertEquals(0, conn.getServiceNumber());
 
         final ChildProcessConnection[] sandboxedConnections =
-                ChildProcessLauncher.getSandboxedConnectionArrayForTesting(
-                        context, context.getPackageName());
+                getSandboxedConnectionArrayForTesting(context, context.getPackageName());
 
         // Wait for the retry to succeed.
         CriteriaHelper.pollInstrumentationThread(
@@ -463,30 +463,19 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         });
     }
 
-    private static void runOnLauncherThreadBlocking(final Runnable runnable) {
-        final Semaphore done = new Semaphore(0);
-        LauncherThread.post(new Runnable() {
-            @Override
-            public void run() {
-                runnable.run();
-                done.release();
-            }
-        });
-        done.acquireUninterruptibly();
-    }
-
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testWarmUp() {
         final Context context = getInstrumentation().getTargetContext();
         warmUpOnUiThreadBlocking(context);
-        runOnLauncherThreadBlocking(new Runnable() {
+        ChildProcessLauncherTestHelperService.runOnLauncherThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertEquals(1, allocatedChromeSandboxedConnectionsCount());
 
-                final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(
-                        context, new String[0], new FileDescriptorInfo[0], null);
+                final ChildProcessConnection conn =
+                        ChildProcessLauncherTestHelperService.startInternalForTesting(
+                                context, new String[0], new FileDescriptorInfo[0], null);
                 assertEquals(
                         1, allocatedChromeSandboxedConnectionsCount()); // Used warmup connection.
 
@@ -507,7 +496,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 getDefaultChildProcessCreationParams(context.getPackageName()));
 
         warmUpOnUiThreadBlocking(context);
-        runOnLauncherThreadBlocking(new Runnable() {
+        ChildProcessLauncherTestHelperService.runOnLauncherThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertEquals(1, allocatedChromeSandboxedConnectionsCount());
@@ -528,7 +517,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
         final ChildProcessConnectionImpl connection =
-                (ChildProcessConnectionImpl) ChildProcessLauncher.allocateBoundConnectionForTesting(
+                (ChildProcessConnectionImpl) allocateBoundConnectionForTesting(
                         context, getDefaultChildProcessCreationParams(context.getPackageName()));
 
         // Wait for the service to connect.
@@ -544,10 +533,28 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
     private static void startRendererProcess(
             Context context, int paramId, FileDescriptorInfo[] filesToMap) {
+        assert LauncherThread.runningOnLauncherThread();
         ChildProcessLauncher.start(context, paramId,
                 new String[] {"--" + ContentSwitches.SWITCH_PROCESS_TYPE + "="
                         + ContentSwitches.SWITCH_RENDERER_PROCESS},
                 0 /* childProcessId */, filesToMap, null /* launchCallback */);
+    }
+
+    private static ChildProcessConnection allocateBoundConnectionForTesting(
+            final Context context, final ChildProcessCreationParams creationParams) {
+        return ChildProcessLauncherTestHelperService.runOnLauncherAndGetResult(
+                new Callable<ChildProcessConnection>() {
+                    @Override
+                    public ChildProcessConnection call() {
+                        return ChildProcessLauncher.allocateBoundConnection(
+                                new ChildSpawnData(context, null /* commandLine */,
+                                        0 /* childProcessId */, null /* filesToBeMapped */,
+                                        null /* LaunchCallback */, null /* childProcessCallback */,
+                                        true /* inSandbox */, false /* alwaysInForeground */,
+                                        creationParams),
+                                null /* startCallback */, false /* forWarmUp */);
+                    }
+                });
     }
 
     /**
@@ -558,8 +565,45 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     private ChildProcessConnectionImpl allocateConnection(String packageName) {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
-        return (ChildProcessConnectionImpl) ChildProcessLauncher.allocateConnectionForTesting(
-                        context, getDefaultChildProcessCreationParams(packageName));
+        ChildProcessCreationParams creationParams =
+                getDefaultChildProcessCreationParams(packageName);
+        return (ChildProcessConnectionImpl) ChildProcessLauncher.allocateConnection(
+                new ChildSpawnData(context, null /* commandLine */, 0 /* childProcessId */,
+                        null /* filesToBeMapped */, null /* launchCallback */,
+                        null /* childProcessCallback */, true /* inSandbox */,
+                        false /* alwaysInForeground */, creationParams),
+                ChildProcessLauncher.createCommonParamsBundle(creationParams),
+                false /* forWarmUp */);
+    }
+
+    private static void enqueuePendingSpawnForTesting(Context context, String[] commandLine,
+            ChildProcessCreationParams creationParams, boolean inSandbox) {
+        String packageName =
+                creationParams != null ? creationParams.getPackageName() : context.getPackageName();
+        ChildConnectionAllocator allocator =
+                ChildConnectionAllocator.getAllocator(context, packageName, inSandbox);
+        allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
+                1 /* childProcessId */, new FileDescriptorInfo[0], null /* launchCallback */,
+                null /* childProcessCallback */, true /* inSandbox */,
+                false /* alwaysInForeground */, creationParams));
+    }
+
+    private static int allocatedSandboxedConnectionsCountForTesting(
+            Context context, String packageName) {
+        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
+                .allocatedConnectionsCountForTesting();
+    }
+
+    private static ChildProcessConnection[] getSandboxedConnectionArrayForTesting(
+            Context context, String packageName) {
+        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
+                .connectionArrayForTesting();
+    }
+
+    private static int pendingSpawnsCountForTesting(
+            Context context, String packageName, boolean inSandbox) {
+        return ChildConnectionAllocator.getAllocator(context, packageName, inSandbox)
+                .pendingSpawnsCountForTesting();
     }
 
     /**
@@ -567,8 +611,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     private int allocatedChromeSandboxedConnectionsCount() {
         Context context = getInstrumentation().getTargetContext();
-        return ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
-                context, context.getPackageName());
+        return allocatedSandboxedConnectionsCountForTesting(context, context.getPackageName());
     }
 
     private ChildProcessCreationParams getDefaultChildProcessCreationParams(String packageName) {
@@ -576,9 +619,14 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */);
     }
 
-    private void triggerConnectionSetup(ChildProcessConnectionImpl connection) {
-        ChildProcessLauncher.triggerConnectionSetup(connection, sProcessWaitArguments,
-                1 /* childProcessId */, new FileDescriptorInfo[0], null /* launchCallback */,
-                null /* childProcessCallback */);
+    private void triggerConnectionSetup(final ChildProcessConnectionImpl connection) {
+        ChildProcessLauncherTestHelperService.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ChildProcessLauncher.triggerConnectionSetup(connection, sProcessWaitArguments,
+                        1 /* childProcessId */, new FileDescriptorInfo[0],
+                        null /* launchCallback */, null /* childProcessCallback */);
+            }
+        });
     }
 }

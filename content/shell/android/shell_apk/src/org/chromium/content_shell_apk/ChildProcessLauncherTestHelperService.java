@@ -5,6 +5,7 @@
 package org.chromium.content_shell_apk;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -22,6 +23,11 @@ import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.LauncherThread;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
 
 /**
  * A Service that assists the ChildProcessLauncherTest that responds to one message, which
@@ -47,6 +53,53 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
     private final HandlerThread mHandlerThread = new HandlerThread("Helper Service Handler");
 
+    public static void runOnLauncherThreadBlocking(final Runnable runnable) {
+        if (LauncherThread.runningOnLauncherThread()) {
+            runnable.run();
+            return;
+        }
+        final Semaphore done = new Semaphore(0);
+        LauncherThread.post(new Runnable() {
+            @Override
+            public void run() {
+                runnable.run();
+                done.release();
+            }
+        });
+        done.acquireUninterruptibly();
+    }
+
+    public static <R> R runOnLauncherAndGetResult(Callable<R> callable) {
+        if (LauncherThread.runningOnLauncherThread()) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            FutureTask<R> task = new FutureTask<R>(callable);
+            LauncherThread.post(task);
+            return task.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ChildProcessConnection startInternalForTesting(final Context context,
+            final String[] commandLine, final FileDescriptorInfo[] filesToMap,
+            final ChildProcessCreationParams params) {
+        return runOnLauncherAndGetResult(new Callable<ChildProcessConnection>() {
+            @Override
+            public ChildProcessConnection call() {
+                return ChildProcessLauncher.startInternal(context, commandLine,
+                        0 /* childProcessId */, filesToMap, null /* launchCallback */,
+                        null /* childProcessCallback */, true /* inSandbox */,
+                        false /* alwaysInForeground */, params);
+            }
+        });
+    }
+
     @Override
     public void onCreate() {
         CommandLine.init(null);
@@ -71,8 +124,8 @@ public class ChildProcessLauncherTestHelperService extends Service {
         final boolean bindToCaller = true;
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
-        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(this, commandLine,
-                new FileDescriptorInfo[0], params);
+        final ChildProcessConnection conn =
+                startInternalForTesting(this, commandLine, new FileDescriptorInfo[0], params);
 
         // Poll the connection until it is set up. The main test in ChildProcessLauncherTest, which
         // has bound the connection to this service, manages the timeout via the lifetime of this

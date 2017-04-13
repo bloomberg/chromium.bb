@@ -29,10 +29,10 @@ class ChildProcessLauncherHelper {
     private long mNativeChildProcessLauncherHelper;
     private int mPid;
 
-    // Called on launcher thread.
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
             int id, int fd, boolean autoClose, long offset, long size) {
+        assert LauncherThread.runningOnLauncherThread();
         ParcelFileDescriptor pFd;
         if (autoClose) {
             // Adopt the FD, it will be closed when we close the ParcelFileDescriptor.
@@ -48,17 +48,18 @@ class ChildProcessLauncherHelper {
         return new FileDescriptorInfo(id, pFd, offset, size);
     }
 
-    // Called on launcher thread.
     @CalledByNative
     private static ChildProcessLauncherHelper create(long nativePointer, Context context,
             int paramId, final String[] commandLine, int childProcessId,
             FileDescriptorInfo[] filesToBeMapped) {
+        assert LauncherThread.runningOnLauncherThread();
         return new ChildProcessLauncherHelper(
                 nativePointer, context, paramId, commandLine, childProcessId, filesToBeMapped);
     }
 
     private ChildProcessLauncherHelper(long nativePointer, Context context, int paramId,
             final String[] commandLine, int childProcessId, FileDescriptorInfo[] filesToBeMapped) {
+        assert LauncherThread.runningOnLauncherThread();
         mNativeChildProcessLauncherHelper = nativePointer;
 
         ChildProcessLauncher.start(context, paramId, commandLine, childProcessId, filesToBeMapped,
@@ -80,13 +81,14 @@ class ChildProcessLauncherHelper {
         return ChildProcessLauncher.getBindingManager().isOomProtected(mPid);
     }
 
-    // Called on launcher thread.
     @CalledByNative
     private void setInForeground(int pid, boolean inForeground) {
+        assert LauncherThread.runningOnLauncherThread();
         assert mPid == pid;
         ChildProcessLauncher.getBindingManager().setInForeground(mPid, inForeground);
     }
 
+    // Called on client (UI or IO) thread and launcher thread.
     @CalledByNative
     private static void stop(int pid) {
         ChildProcessLauncher.stop(pid);
