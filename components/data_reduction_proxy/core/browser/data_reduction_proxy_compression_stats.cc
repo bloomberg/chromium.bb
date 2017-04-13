@@ -705,6 +705,44 @@ void DataReductionProxyCompressionStats::SetDataUsageReportingEnabled(
 void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
   DeleteHistoricalDataUsage();
 
+  pref_service_->ClearPref(prefs::kDailyHttpContentLengthLastUpdateDate);
+  pref_service_->ClearPref(prefs::kHttpReceivedContentLength);
+  pref_service_->ClearPref(prefs::kHttpOriginalContentLength);
+
+  pref_service_->ClearPref(prefs::kDailyHttpOriginalContentLengthApplication);
+  pref_service_->ClearPref(prefs::kDailyHttpOriginalContentLengthVideo);
+  pref_service_->ClearPref(prefs::kDailyHttpOriginalContentLengthUnknown);
+  pref_service_->ClearPref(prefs::kDailyHttpReceivedContentLengthApplication);
+  pref_service_->ClearPref(prefs::kDailyHttpReceivedContentLengthVideo);
+  pref_service_->ClearPref(prefs::kDailyHttpReceivedContentLengthUnknown);
+
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthViaDataReductionProxyApplication);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthViaDataReductionProxyVideo);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthViaDataReductionProxyUnknown);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthViaDataReductionProxyApplication);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthViaDataReductionProxyVideo);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthViaDataReductionProxyUnknown);
+
+  pref_service_->ClearPref(
+      prefs::
+          kDailyOriginalContentLengthWithDataReductionProxyEnabledApplication);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabledVideo);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthWithDataReductionProxyEnabledApplication);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthWithDataReductionProxyEnabledVideo);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthWithDataReductionProxyEnabledUnknown);
+
   pref_service_->ClearPref(
       prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled);
   pref_service_->ClearPref(
