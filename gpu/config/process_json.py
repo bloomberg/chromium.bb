@@ -7,6 +7,7 @@ import json
 import os
 import platform
 import sys
+from optparse import OptionParser
 from subprocess import call
 
 """Generate data struct from GPU blacklist and driver bug workarounds json."""
@@ -577,31 +578,31 @@ def write_header_file_guard(file, filename, path, begin):
     file.write('\n#endif  // %s\n' % token)
 
 
-def process_json_file(json_filename, list_tag,
+def process_json_file(json_filepath, list_tag,
                       feature_header_filename, total_features, feature_tag,
-                      output_header_filename, output_data_filename,
-                      output_helper_filename, output_exception_filename, path,
-                      export_tag):
-  current_dir = os.getcwd()
-  os.chdir('../../' + path) # assume python script is under gpu/config
-
-  json_file = open(json_filename, 'rb')
+                      output_header_filepath, output_data_filepath,
+                      output_helper_filepath, output_exception_filepath, path,
+                      export_tag, git_format):
+  output_header_filename = os.path.basename(output_header_filepath)
+  output_helper_filename = os.path.basename(output_helper_filepath)
+  output_exception_filename = os.path.basename(output_exception_filepath)
+  json_file = open(json_filepath, 'rb')
   json_data = json.load(json_file)
   json_file.close()
-  data_file = open(output_data_filename, 'wb')
+  data_file = open(output_data_filepath, 'wb')
   data_file.write(_LICENSE)
   data_file.write(_DO_NOT_EDIT_WARNING)
   data_file.write('#include "%s/%s"\n\n' % (path, output_header_filename))
   data_file.write('#include "%s/%s"\n' % (path, output_helper_filename))
   data_file.write('#include "%s/%s"\n\n' % (path, output_exception_filename))
-  data_helper_file = open(output_helper_filename, 'wb')
+  data_helper_file = open(output_helper_filepath, 'wb')
   data_helper_file.write(_LICENSE)
   data_helper_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_helper_file, output_helper_filename, path, True)
   data_helper_file.write('#include "gpu/config/%s"\n\n' %
                          feature_header_filename)
   data_helper_file.write('namespace gpu {\n')
-  data_exception_file = open(output_exception_filename, 'wb')
+  data_exception_file = open(output_exception_filepath, 'wb')
   data_exception_file.write(_LICENSE)
   data_exception_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_exception_file, output_exception_filename, path,
@@ -633,7 +634,7 @@ def process_json_file(json_filename, list_tag,
   write_header_file_guard(data_exception_file, output_exception_filename, path,
                           False)
   data_exception_file.close()
-  data_header_file = open(output_header_filename, 'wb')
+  data_header_file = open(output_header_filepath, 'wb')
   data_header_file.write(_LICENSE)
   data_header_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(data_header_file, output_header_filename, path, True)
@@ -652,67 +653,94 @@ def process_json_file(json_filename, list_tag,
   data_header_file.write('}  // namespace gpu\n')
   write_header_file_guard(data_header_file, output_header_filename, path, False)
   data_header_file.close()
-  format_files([output_header_filename, output_data_filename,
-                output_helper_filename, output_exception_filename])
-
-  os.chdir(current_dir)
-
-
-def process_software_rendering_list():
-  total_features = load_software_rendering_list_features('gpu_feature_type.h')
-  process_json_file('software_rendering_list.json', 'SoftwareRenderingList',
-                    'gpu_feature_type.h', total_features, 'GPU_FEATURE_TYPE_',
-                    'software_rendering_list_autogen.h',
-                    'software_rendering_list_autogen.cc',
-                    'software_rendering_list_arrays_and_structs_autogen.h',
-                    'software_rendering_list_exceptions_autogen.h',
-                    'gpu/config', 'GPU_EXPORT ')
+  if git_format:
+    format_files([output_header_filepath, output_data_filepath,
+                  output_helper_filepath, output_exception_filepath])
 
 
-def process_gpu_driver_bug_list():
+def process_software_rendering_list(script_dir, output_dir):
+  total_features = load_software_rendering_list_features(
+      os.path.join(script_dir, 'gpu_feature_type.h'))
+  process_json_file(
+      os.path.join(script_dir, 'software_rendering_list.json'),
+      'SoftwareRenderingList',
+      'gpu_feature_type.h',
+      total_features,
+      'GPU_FEATURE_TYPE_',
+      os.path.join(output_dir, 'software_rendering_list_autogen.h'),
+      os.path.join(output_dir, 'software_rendering_list_autogen.cc'),
+      os.path.join(output_dir,
+                   'software_rendering_list_arrays_and_structs_autogen.h'),
+      os.path.join(output_dir, 'software_rendering_list_exceptions_autogen.h'),
+      'gpu/config',
+      'GPU_EXPORT ',
+      False)
+
+
+def process_gpu_driver_bug_list(script_dir, output_dir):
   total_features = load_gpu_driver_bug_workarounds(
-    'gpu_driver_bug_workaround_type.h')
-  process_json_file('gpu_driver_bug_list.json', 'GpuDriverBugList',
-                    'gpu_driver_bug_workaround_type.h', total_features, '',
-                    'gpu_driver_bug_list_autogen.h',
-                    'gpu_driver_bug_list_autogen.cc',
-                    'gpu_driver_bug_list_arrays_and_structs_autogen.h',
-                    'gpu_driver_bug_list_exceptions_autogen.h',
-                    'gpu/config', 'GPU_EXPORT ')
+      os.path.join(script_dir, 'gpu_driver_bug_workaround_type.h'))
+  process_json_file(
+      os.path.join(script_dir, 'gpu_driver_bug_list.json'),
+      'GpuDriverBugList',
+      'gpu_driver_bug_workaround_type.h',
+      total_features,
+      '',
+      os.path.join(output_dir, 'gpu_driver_bug_list_autogen.h'),
+      os.path.join(output_dir, 'gpu_driver_bug_list_autogen.cc'),
+      os.path.join(output_dir,
+                   'gpu_driver_bug_list_arrays_and_structs_autogen.h'),
+      os.path.join(output_dir, 'gpu_driver_bug_list_exceptions_autogen.h'),
+      'gpu/config',
+      'GPU_EXPORT ',
+      False)
 
 
-def process_gpu_control_list_testing():
+def process_gpu_control_list_testing(script_dir, output_dir):
   total_features = ['test_feature_0', 'test_feature_1', 'test_feature_2']
-  process_json_file('gpu_control_list_testing.json', 'GpuControlListTesting',
-                    'gpu_control_list_testing_data.h', total_features, '',
-                    'gpu_control_list_testing_autogen.h',
-                    'gpu_control_list_testing_autogen.cc',
-                    'gpu_control_list_testing_arrays_and_structs_autogen.h',
-                    'gpu_control_list_testing_exceptions_autogen.h',
-                    'gpu/config', '')
+  process_json_file(
+      os.path.join(script_dir, 'gpu_control_list_testing.json'),
+      'GpuControlListTesting',
+      'gpu_control_list_testing_data.h',
+      total_features,
+      '',
+      os.path.join(output_dir, 'gpu_control_list_testing_autogen.h'),
+      os.path.join(output_dir, 'gpu_control_list_testing_autogen.cc'),
+      os.path.join(output_dir,
+                   'gpu_control_list_testing_arrays_and_structs_autogen.h'),
+      os.path.join(output_dir, 'gpu_control_list_testing_exceptions_autogen.h'),
+      'gpu/config',
+      '',
+      True)
 
 
-def process_gpu_data_manager_testing():
-  total_features = load_software_rendering_list_features('gpu_feature_type.h')
-  process_json_file('gpu_data_manager_testing.json', 'GpuDataManagerTesting',
-                    'gpu_feature_type.h', total_features, 'GPU_FEATURE_TYPE_',
-                    'gpu_data_manager_testing_autogen.h',
-                    'gpu_data_manager_testing_autogen.cc',
-                    'gpu_data_manager_testing_arrays_and_structs_autogen.h',
-                    'gpu_data_manager_testing_exceptions_autogen.h',
-                    'content/browser/gpu', '')
+def process_gpu_data_manager_testing(script_dir, output_dir):
+  total_features = load_software_rendering_list_features(
+      os.path.join(script_dir, 'gpu_feature_type.h'))
+  process_json_file(
+      os.path.join(output_dir, 'gpu_data_manager_testing.json'),
+      'GpuDataManagerTesting',
+      'gpu_feature_type.h',
+      total_features,
+      'GPU_FEATURE_TYPE_',
+      os.path.join(output_dir, 'gpu_data_manager_testing_autogen.h'),
+      os.path.join(output_dir, 'gpu_data_manager_testing_autogen.cc'),
+      os.path.join(output_dir,
+                   'gpu_data_manager_testing_arrays_and_structs_autogen.h'),
+      os.path.join(output_dir, 'gpu_data_manager_testing_exceptions_autogen.h'),
+      'content/browser/gpu',
+      '',
+      True)
 
 
-def write_test_entry_enums(input_json_filename, output_entry_enums_filename,
+def write_test_entry_enums(input_json_filepath, output_entry_enums_filepath,
                            path, list_tag):
-  current_dir = os.getcwd()
-  os.chdir('../../' + path) # assume python script is under gou/config
-
-  json_file = open(input_json_filename, 'rb')
+  json_file = open(input_json_filepath, 'rb')
   json_data = json.load(json_file)
   json_file.close()
 
-  enum_file = open(output_entry_enums_filename, 'wb')
+  output_entry_enums_filename = os.path.basename(output_entry_enums_filepath)
+  enum_file = open(output_entry_enums_filepath, 'wb')
   enum_file.write(_LICENSE)
   enum_file.write(_DO_NOT_EDIT_WARNING)
   write_header_file_guard(enum_file, output_entry_enums_filename, path, True)
@@ -731,27 +759,45 @@ def write_test_entry_enums(input_json_filename, output_entry_enums_filename,
   enum_file.write('}  // namespace gpu\n')
   write_header_file_guard(enum_file, output_entry_enums_filename, path, False)
   enum_file.close()
-  format_files([output_entry_enums_filename])
-
-  os.chdir(current_dir)
+  format_files([output_entry_enums_filepath])
 
 
-def main():
-  dir_path = os.path.dirname(os.path.realpath(__file__))
-  os.chdir(dir_path)
-  process_software_rendering_list()
-  process_gpu_driver_bug_list()
-  process_gpu_control_list_testing()
-  write_test_entry_enums('gpu_control_list_testing.json',
-                         'gpu_control_list_testing_entry_enums_autogen.h',
-                         'gpu/config',
-                         'GpuControlListTesting')
-  process_gpu_data_manager_testing()
-  write_test_entry_enums('gpu_data_manager_testing.json',
-                         'gpu_data_manager_testing_entry_enums_autogen.h',
-                         'content/browser/gpu',
-                         'GpuDataManagerTesting')
+def main(argv):
+  parser = OptionParser()
+  parser.add_option("--output-dir",
+                    help="output directory for SoftwareRenderingList and "
+                    "GpuDriverBugList data files. "
+                    "If unspecified, these files are not generated.")
+  parser.add_option("--skip-testing-data", action="store_false",
+                    dest="generate_testing_data", default=True,
+                    help="skip testing data generation.")
+  (options, args) = parser.parse_args(args=argv)
+
+  script_dir = os.path.dirname(os.path.realpath(__file__))
+
+  if options.output_dir != None:
+    process_software_rendering_list(script_dir, options.output_dir)
+    process_gpu_driver_bug_list(script_dir, options.output_dir)
+
+  if options.generate_testing_data:
+    # Testing data files are generated by calling the script manually.
+    process_gpu_control_list_testing(script_dir, script_dir)
+    write_test_entry_enums(
+        os.path.join(script_dir, 'gpu_control_list_testing.json'),
+        os.path.join(script_dir,
+                     'gpu_control_list_testing_entry_enums_autogen.h'),
+        'gpu/config',
+        'GpuControlListTesting')
+    chrome_root_dir = os.path.abspath(os.path.join(script_dir, '../../'))
+    gpu_data_manager_dir = os.path.join(chrome_root_dir, 'content/browser/gpu')
+    process_gpu_data_manager_testing(script_dir, gpu_data_manager_dir)
+    write_test_entry_enums(
+        os.path.join(gpu_data_manager_dir, 'gpu_data_manager_testing.json'),
+        os.path.join(gpu_data_manager_dir,
+                     'gpu_data_manager_testing_entry_enums_autogen.h'),
+        'content/browser/gpu',
+        'GpuDataManagerTesting')
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

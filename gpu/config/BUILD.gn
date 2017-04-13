@@ -28,6 +28,36 @@ source_set("crash_keys") {
   ]
 }
 
+process_json_outputs = [
+  "$target_gen_dir/gpu_driver_bug_list_arrays_and_structs_autogen.h",
+  "$target_gen_dir/gpu_driver_bug_list_autogen.cc",
+  "$target_gen_dir/gpu_driver_bug_list_autogen.h",
+  "$target_gen_dir/gpu_driver_bug_list_exceptions_autogen.h",
+  "$target_gen_dir/software_rendering_list_arrays_and_structs_autogen.h",
+  "$target_gen_dir/software_rendering_list_autogen.cc",
+  "$target_gen_dir/software_rendering_list_autogen.h",
+  "$target_gen_dir/software_rendering_list_exceptions_autogen.h",
+]
+
+action("process_json") {
+  script = "process_json.py"
+
+  inputs = [
+    "gpu_driver_bug_list.json",
+    "gpu_driver_bug_workaround_type.h",
+    "gpu_feature_type.h",
+    "software_rendering_list.json",
+  ]
+
+  outputs = process_json_outputs
+
+  args = [
+    "--output-dir",
+    rebase_path("$target_gen_dir", root_build_dir),
+    "--skip-testing-data",
+  ]
+}
+
 source_set("config_sources") {
   # External code should depend on this via //gpu/config above rather than
   # depending on this directly or the component build will break.
@@ -42,10 +72,6 @@ source_set("config_sources") {
     "gpu_control_list.h",
     "gpu_driver_bug_list.cc",
     "gpu_driver_bug_list.h",
-    "gpu_driver_bug_list_arrays_and_structs_autogen.h",
-    "gpu_driver_bug_list_autogen.cc",
-    "gpu_driver_bug_list_autogen.h",
-    "gpu_driver_bug_list_exceptions_autogen.h",
     "gpu_driver_bug_workaround_type.h",
     "gpu_driver_bug_workarounds.cc",
     "gpu_driver_bug_workarounds.h",
@@ -71,11 +97,9 @@ source_set("config_sources") {
     "gpu_test_expectations_parser.h",
     "gpu_util.cc",
     "gpu_util.h",
-    "software_rendering_list_arrays_and_structs_autogen.h",
-    "software_rendering_list_autogen.cc",
-    "software_rendering_list_autogen.h",
-    "software_rendering_list_exceptions_autogen.h",
   ]
+
+  sources += process_json_outputs
 
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -85,6 +109,7 @@ source_set("config_sources") {
 
   deps = [
     ":crash_keys",
+    ":process_json",
     "//base",
     "//third_party/re2",
     "//ui/gl",
