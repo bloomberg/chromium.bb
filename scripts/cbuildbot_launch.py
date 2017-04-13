@@ -166,9 +166,6 @@ def RunCbuildbot(options):
 
 def ConfigureGlobalEnvironment():
   """Setup process wide environmental changes."""
-  # Turn on strict sudo checks.
-  cros_build_lib.STRICT_SUDO = True
-
   # Set umask to 022 so files created by buildbot are readable.
   os.umask(0o22)
 

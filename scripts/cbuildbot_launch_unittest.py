@@ -82,20 +82,15 @@ class CbuildbotLaunchTest(cros_test_lib.MockTestCase):
 class CbuildbotLaunchGlobalTest(cros_test_lib.TestCase):
   """Validate our global setup function."""
   def setUp(self):
-    self.originalSudo = cros_build_lib.STRICT_SUDO
     self.originalUmask = os.umask(0) # Have to set it to read it, make it bogus
 
   def teardown(self):
-    cros_build_lib.STRICT_SUDO = self.originalSudo
     os.umask(self.originalUmask)
 
   @unittest.skip("Global side effects break other tests. Run serially?")
   def testConfigureGlobalEnvironment(self):
-    cros_build_lib.STRICT_SUDO = False
-
     cbuildbot_launch.ConfigureGlobalEnvironment()
 
-    self.assertTrue(cros_build_lib.STRICT_SUDO)
     self.assertEqual(os.umask(0), 0o22)
 
 
