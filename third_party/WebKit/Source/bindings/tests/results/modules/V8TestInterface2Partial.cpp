@@ -19,7 +19,7 @@
 #include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/tests/idls/modules/TestInterface2Partial.h"
 #include "bindings/tests/idls/modules/TestInterface2Partial2.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"

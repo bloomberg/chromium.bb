@@ -33,12 +33,11 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ClientRect.h"
+#include "core/dom/Node.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-class Node;
 
 class LayerRect final : public GarbageCollectedFinalized<LayerRect>,
                         public ScriptWrappable {

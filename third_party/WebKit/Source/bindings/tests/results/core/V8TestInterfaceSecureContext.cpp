@@ -16,7 +16,7 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"

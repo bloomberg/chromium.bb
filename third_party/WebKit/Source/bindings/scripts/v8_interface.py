@@ -63,7 +63,7 @@ INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/V8DOMConfiguration.h',
     'bindings/core/v8/V8ObjectConstructor.h',
-    'core/dom/Document.h',
+    'core/dom/ExecutionContext.h',
     'platform/wtf/GetPtr.h',
     'platform/wtf/RefPtr.h',
 ])
@@ -306,6 +306,10 @@ def interface_context(interface, interfaces):
         if not interface.is_partial:
             raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
                             '%s' % interface.name)
+
+    # [ConstructorCallWith=Document]
+    if has_extended_attribute_value(interface, 'ConstructorCallWith', 'Document'):
+        includes.add('core/dom/Document.h')
 
     # [Unscopable] attributes and methods
     unscopables = []

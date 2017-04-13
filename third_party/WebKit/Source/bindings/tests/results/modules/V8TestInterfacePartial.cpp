@@ -24,7 +24,7 @@
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/tests/idls/modules/TestInterfacePartial3Implementation.h"
 #include "bindings/tests/idls/modules/TestInterfacePartial4.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/GetPtr.h"

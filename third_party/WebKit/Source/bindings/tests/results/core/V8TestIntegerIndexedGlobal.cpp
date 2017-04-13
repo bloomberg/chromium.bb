@@ -18,7 +18,7 @@
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 

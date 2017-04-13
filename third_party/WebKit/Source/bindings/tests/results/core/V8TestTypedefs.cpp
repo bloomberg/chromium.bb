@@ -24,7 +24,7 @@
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8XMLHttpRequest.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/StaticNodeList.h"

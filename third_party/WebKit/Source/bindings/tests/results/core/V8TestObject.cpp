@@ -59,7 +59,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/DOMArrayBufferBase.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/dom/NotShared.h"
 #include "core/dom/TagCollection.h"

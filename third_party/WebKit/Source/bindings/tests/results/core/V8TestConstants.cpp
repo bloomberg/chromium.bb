@@ -15,7 +15,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/origin_trials/OriginTrials.h"

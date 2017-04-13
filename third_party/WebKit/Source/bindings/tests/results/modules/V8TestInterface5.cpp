@@ -19,7 +19,7 @@
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
 #include "bindings/modules/v8/VoidCallbackFunctionModules.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"

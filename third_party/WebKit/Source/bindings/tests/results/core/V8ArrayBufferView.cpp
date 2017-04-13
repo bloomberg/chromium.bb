@@ -29,7 +29,7 @@
 #include "bindings/core/v8/V8Uint32Array.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
-#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
 
