@@ -686,12 +686,13 @@ Polymer({
   },
 
   /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the shared message should be shown.
    * @private
    */
-  showShared_: function() {
-    return this.networkProperties.Source == 'Device' ||
-        this.networkProperties.Source == 'DevicePolicy';
+  showShared_: function(networkProperties) {
+    return networkProperties.Source == 'Device' ||
+        networkProperties.Source == 'DevicePolicy';
   },
 
   /**
@@ -700,7 +701,7 @@ Polymer({
    * @private
    */
   showAutoConnect_: function(networkProperties) {
-    return this.networkProperties.Type != CrOnc.Type.ETHERNET &&
+    return networkProperties.Type != CrOnc.Type.ETHERNET &&
         this.isRemembered_(networkProperties);
   },
 
@@ -881,23 +882,36 @@ Polymer({
 
   /**
    * @param {string} type The network type.
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the network type matches 'type'.
    * @private
    */
-  isType_: function(type) {
-    return this.networkProperties.Type == type;
+  isType_: function(type, networkProperties) {
+    return networkProperties.Type == type;
   },
 
   /**
-   * @return {boolean} True if the Cellular SIM section should be shown.
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
    * @private
    */
-  showCellularSim_: function() {
-    if (this.networkProperties.Type != 'Cellular' ||
-        !this.networkProperties.Cellular) {
+  showCellularSim_: function(networkProperties) {
+    if (networkProperties.Type != 'Cellular' ||
+        !networkProperties.Cellular) {
       return false;
     }
-    return this.networkProperties.Cellular.Family == 'GSM';
+    return networkProperties.Cellular.Family == 'GSM';
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  showIpConfig_: function(networkProperties) {
+    if (!this.isRememberedOrConnected_(networkProperties))
+      return false;
+    return !!networkProperties.IPAddressConfigType;
   },
 
   /**

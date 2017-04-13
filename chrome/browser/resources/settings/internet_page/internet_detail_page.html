@@ -267,8 +267,7 @@
             </template>
 
             <!-- IP Config, Nameservers -->
-            <template is="dom-if"
-                if="[[isRememberedOrConnected_(networkProperties)]]">
+            <template is="dom-if" if="[[showIpConfig_(networkProperties)]]">
               <network-ip-config editable on-ip-change="onIPConfigChange_"
                   network-properties="[[networkProperties]]">
               </network-ip-config>
