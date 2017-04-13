@@ -12,6 +12,8 @@ cbiesinger@chromium.org
 chrishtr@chromium.org
 dcheng@chromium.org
 dglazkov@chromium.org
+# dtapuska reviews input-related changes
+dtapuska@chromium.org
 dgozman@chromium.org
 dominicc@chromium.org
 dpranke@chromium.org
@@ -48,7 +50,6 @@ pdr@chromium.org
 pfeldman@chromium.org
 pkasting@chromium.org
 rego@igalia.com
-# rbyers reviews input related changes (eg. event handling, mouse cursors, touch hit testing, scrolling coordinator)
 rbyers@chromium.org
 rob.buis@samsung.com
 robhogan@gmail.com
