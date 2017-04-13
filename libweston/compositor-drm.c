@@ -865,6 +865,16 @@ drm_output_repaint(struct weston_output *output_base,
 
 	assert(!output->fb_last);
 
+	/* If disable_planes is set then assign_planes() wasn't
+	 * called for this render, so we could still have a stale
+	 * cursor plane set up.
+	 */
+	if (output->base.disable_planes) {
+		output->cursor_view = NULL;
+		output->cursor_plane.x = INT32_MIN;
+		output->cursor_plane.y = INT32_MIN;
+	}
+
 	drm_output_render(output, damage);
 	if (!output->fb_pending)
 		return -1;
