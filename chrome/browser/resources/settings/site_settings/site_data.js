@@ -34,6 +34,30 @@ Polymer({
 
     /** @private */
     confirmationDeleteMsg_: String,
+
+    /** @type {!Map<string, string>} */
+    focusConfig: {
+      type: Object,
+      observer: 'focusConfigChanged_',
+    },
+  },
+
+  /**
+   * @param {!Map<string, string>} newConfig
+   * @param {?Map<string, string>} oldConfig
+   * @private
+   */
+  focusConfigChanged_: function(newConfig, oldConfig) {
+    // focusConfig is set only once on the parent, so this observer should only
+    // fire once.
+    assert(!oldConfig);
+
+    // Populate the |focusConfig| map of the parent <settings-animated-pages>
+    // element, with additional entries that correspond to subpage trigger
+    // elements residing in this element's Shadow DOM.
+    this.focusConfig.set(
+        settings.Route.SITE_SETTINGS_DATA_DETAILS.path,
+        '* /deep/ #filter /deep/ #searchInput');
   },
 
   /** @override */

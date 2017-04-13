@@ -49,7 +49,6 @@ Polymer({
       }
     },
 
-
     /** @type {!Map<string, string>} */
     focusConfig: {
       type: Object,

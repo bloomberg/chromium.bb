@@ -59,10 +59,18 @@ Polymer({
     if (!this.focusConfig || !this.previousRoute_)
       return;
 
+    // Don't attempt to focus any anchor element, unless last navigation was a
+    // 'pop' (backwards) navigation.
+    if (!settings.lastRouteChangeWasPopstate())
+      return;
+
     // Only handle iron-select events from neon-animatable elements and the
-    // SITE_SETTINGS subpage only.
+    // given whitelist of settings-subpage instances.
     if (!e.detail.item.matches(
-        'neon-animatable, settings-subpage#site-settings')) {
+        'neon-animatable, ' +
+        'settings-subpage#site-settings, ' +
+        'settings-subpage[route-path=\"' +
+            settings.Route.SITE_SETTINGS_COOKIES.path + '\"]')) {
       return;
     }
 

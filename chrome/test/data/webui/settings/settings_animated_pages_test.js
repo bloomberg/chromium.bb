@@ -5,7 +5,8 @@
 suite('settings-animated-pages', function() {
   test('focuses subpage trigger when exiting subpage', function(done) {
     document.body.innerHTML = `
-      <settings-animated-pages section="test-section">
+      <settings-animated-pages
+          section="${settings.Route.SEARCH_ENGINES.section}">
         <neon-animatable route-path="default">
           <button id="subpage-trigger"></button>
         </neon-animatable>
@@ -19,14 +20,13 @@ suite('settings-animated-pages', function() {
     animatedPages.focusConfig.set(
         settings.Route.SEARCH_ENGINES.path, '#subpage-trigger');
 
-    animatedPages.$.animatedPages.selected = settings.Route.SEARCH_ENGINES.path;
-
     var trigger = document.body.querySelector('#subpage-trigger');
     assertTrue(!!trigger);
     trigger.addEventListener('focus', function() { done(); });
 
-    // Trigger subpage exit.
-    animatedPages.currentRouteChanged(
-        settings.Route.BASIC, settings.Route.SEARCH_ENGINES);
+    // Trigger subpage exit navigation.
+    settings.navigateTo(settings.Route.BASIC);
+    settings.navigateTo(settings.Route.SEARCH_ENGINES);
+    settings.navigateToPreviousRoute();
   });
 });
