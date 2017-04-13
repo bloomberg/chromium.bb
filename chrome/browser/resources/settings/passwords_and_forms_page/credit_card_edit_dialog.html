@@ -13,8 +13,14 @@
       width: var(--paper-input-max-width);
     }
 
+    .md-select-wrapper {
+      /* Mitigate for md-select's start padding, to make it look aligned with
+       * other elements on the page. */
+      -webkit-margin-start: -12px;
+    }
+
     .md-select-wrapper + .md-select-wrapper {
-      -webkit-margin-start: 16px;
+      -webkit-margin-start: 8px;
     }
 
     #expired {

@@ -773,9 +773,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         assertEquals(address.postalCode, cols[2].value);
         // Country
         row = rows[4];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
-        var countrySelect = /** @type {!HTMLSelectElement} */ (cols[0]);
+        var countrySelect = row.querySelector('select');
+        assertTrue(!!countrySelect);
         assertEquals(
             'United States',
             countrySelect.selectedOptions[0].textContent.trim());
@@ -832,10 +831,11 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         assertEquals(address.postalCode, cols[0].value);
         // Country
         row = rows[5];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
+        var countrySelect = row.querySelector('select');
+        assertTrue(!!countrySelect);
         assertEquals(
-            'United Kingdom', cols[0].selectedOptions[0].textContent.trim());
+            'United Kingdom',
+            countrySelect.selectedOptions[0].textContent.trim());
         // Phone, Email
         row = rows[6];
         cols = row.querySelectorAll('.address-column');
@@ -886,10 +886,10 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         assertEquals(address.postalCode, cols[1].value);
         // Country
         row = rows[4];
-        cols = row.querySelectorAll('.address-column');
-        assertEquals(1, cols.length);
+        var countrySelect = row.querySelector('select');
+        assertTrue(!!countrySelect);
         assertEquals(
-            'Israel', cols[0].selectedOptions[0].textContent.trim());
+            'Israel', countrySelect.selectedOptions[0].textContent.trim());
         // Phone, Email
         row = rows[5];
         cols = row.querySelectorAll('.address-column');

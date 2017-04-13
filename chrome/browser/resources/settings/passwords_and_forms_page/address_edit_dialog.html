@@ -29,13 +29,18 @@
         width: calc((var(--paper-input-max-width) - 16px) / 2);
       }
 
-      .md-select.address-column {
-        -webkit-margin-end: 0;
-        margin-bottom: 0;
-      }
-
       #select-row {
         display: block;
+      }
+
+      .md-select-wrapper {
+        /* Mitigate for md-select's start padding, to make it look aligned with
+         * other elements on the page. */
+        -webkit-margin-start: -12px;
+      }
+
+      .md-select {
+        --md-select-width: var(--paper-input-max-width);
       }
 
       #select-label {
@@ -106,8 +111,7 @@
         <div id="select-row" class="address-row">
           <div id="select-label">$i18n{addressCountry}</div>
           <span class="md-select-wrapper">
-            <select class="md-select address-column long"
-                aria-labelledby="select-label"
+            <select class="md-select" aria-labelledby="select-label"
                 value="[[countryCode_]]" on-change="onCountryChange_">
               <option value=""></option>
               <template is="dom-repeat" items="[[countries_]]">

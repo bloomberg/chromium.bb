@@ -113,7 +113,7 @@ Polymer({
   },
 
   updateCanSave_: function() {
-    var inputs = this.$.dialog.querySelectorAll('.address-column');
+    var inputs = this.$.dialog.querySelectorAll('.address-column, select');
 
     for (var i = 0; i < inputs.length; ++i) {
       if (inputs[i].value) {
