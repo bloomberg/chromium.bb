@@ -418,7 +418,8 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // All the values should be less than the total amount of memory.
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_IOS)
+  // TODO(crbug.com/711450): re-enable the following assertion on iOS.
   EXPECT_LT(info.free, info.total);
 #endif
 #if defined(OS_LINUX) || defined(OS_ANDROID)
