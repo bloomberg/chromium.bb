@@ -13,18 +13,6 @@ grit("resources") {
     "file_manager_resources.pak",
     "file_manager_resources.rc",
   ]
-  if (enable_nacl) {
-    zip_archiver_pexe = "$root_gen_dir/ui/file_manager/zip_archiver_pnacl.pexe.js"
-    grit_flags = [
-      "-E",
-      "zip_archiver_pexe=" + rebase_path(zip_archiver_pexe, root_build_dir),
-      "-D",
-      "enable_nacl",
-    ]
-    deps = [
-      "//ui/file_manager/zip_archiver/:zip_archiver",
-    ]
-  }
 }
 
 component("file_manager") {
