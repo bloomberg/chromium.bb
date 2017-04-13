@@ -167,6 +167,8 @@ URLLoaderImpl::URLLoaderImpl(
       GURL(request.url), net::DEFAULT_PRIORITY, this);
   url_request_->set_method(request.method);
 
+  url_request_->set_first_party_for_cookies(request.first_party_for_cookies);
+
   const Referrer referrer(request.referrer, request.referrer_policy);
   Referrer::SetReferrerForRequest(url_request_.get(), referrer);
 
