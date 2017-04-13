@@ -231,6 +231,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private LocaleManager mLocaleManager;
 
+    private AppIndexingUtil mAppIndexingUtil;
+
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
@@ -314,6 +316,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public ChromeTabbedActivity() {
         mActivityStopMetrics = new ActivityStopMetrics();
         mMainIntentMetrics = new MainIntentBehaviorMetrics(this);
+        mAppIndexingUtil = new AppIndexingUtil();
     }
 
     @Override
@@ -1237,7 +1240,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             @Override
             public void onPageLoadFinished(final Tab tab) {
-                AppIndexingUtil.extractCopylessPasteMetadata(tab);
+                mAppIndexingUtil.extractCopylessPasteMetadata(tab);
             }
 
             @Override

@@ -29,6 +29,15 @@ public class AppIndexingReporter {
     }
 
     /**
+     * Reports view of provided url to on-device index.
+     * Base class does not implement any reporting, and call is a no-op. Child classes should
+     * implement this functionality.
+     */
+    public void reportWebPageView(String url, String title) {
+        // Overriden by private class. Base class does nothing.
+    }
+
+    /**
      * Clears history of reported entities.
      * Currently, we do not support clearing only a subset of history. Base class does not implement
      * any reporting, and call is a no-op. Child classes should implement this functionality.

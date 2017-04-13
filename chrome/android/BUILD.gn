@@ -360,7 +360,10 @@ junit_binary("chrome_junit_tests") {
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
+    "//mojo/public/java:bindings_java",
+    "//mojo/public/java:system_java",
     "//net/android:net_java",
+    "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/WebKit/public:mojo_bindings_java",
     "//third_party/android_tools:android_support_annotations_java",
@@ -370,6 +373,7 @@ junit_binary("chrome_junit_tests") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/hamcrest:hamcrest_java",
     "//ui/android:ui_java",
+    "//url/mojo:url_mojom_gurl_java",
     google_play_services_library,
   ]
   srcjar_deps = [ "//base:base_build_config_gen" ]
