@@ -333,20 +333,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kWebPayments));
 #endif
 
-  // Sets the RuntimeEnabledFeatures for Navigation Preload feature only when
-  // '--enable-features' command line flag is given. While experimenting this
-  // feature using Origin-Trial, this base::Feature is enabled by default in
-  // content_features.cc. So FeatureList::IsEnabled() always returns true. But,
-  // unless the command line explicitly enabled the feature, this feature should
-  // be available only when a valid origin trial token is set. This check is
-  // done by the generated code of
-  // blink::OriginTrials::serviceWorkerNavigationPreloadEnabled(). See the
-  // comments in service_worker_version.h for the details.
-  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kServiceWorkerNavigationPreload.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
-    WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(true);
-  }
+  WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(
+      base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload));
 
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::EnableGamepadExtensions(true);

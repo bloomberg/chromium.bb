@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/debug/alias.h"
-#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -44,7 +43,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
@@ -1059,42 +1057,6 @@ void ServiceWorkerVersion::OnSimpleEventFinished(
   FinishRequest(request_id, status == SERVICE_WORKER_OK, dispatch_event_time);
 
   callback.Run(status);
-}
-
-ServiceWorkerVersion::NavigationPreloadSupportStatus
-ServiceWorkerVersion::GetNavigationPreloadSupportStatus() const {
-  // The origin trial of Navigation Preload started from M57. And the worker
-  // entry in the database written by Chrome (>= M56) must have the
-  // origin_trial_tokens field.
-  const bool has_valid_token =
-      origin_trial_tokens_ &&
-      base::ContainsKey(*origin_trial_tokens_,
-                        "ServiceWorkerNavigationPreload");
-  if (!has_valid_token) {
-    if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-            features::kServiceWorkerNavigationPreload.name,
-            base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
-      return NavigationPreloadSupportStatus::SUPPORTED;
-    } else {
-      return NavigationPreloadSupportStatus::
-          NOT_SUPPORTED_NO_VALID_ORIGIN_TRIAL_TOKEN;
-    }
-  }
-  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kServiceWorkerNavigationPreload.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
-    return NavigationPreloadSupportStatus::SUPPORTED;
-  }
-  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kServiceWorkerNavigationPreload.name,
-          base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
-    return NavigationPreloadSupportStatus::
-        NOT_SUPPORTED_DISABLED_BY_COMMAND_LINE;
-  }
-  if (base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload)) {
-    return NavigationPreloadSupportStatus::SUPPORTED;
-  }
-  return NavigationPreloadSupportStatus::NOT_SUPPORTED_FIELD_TRIAL_STOPPED;
 }
 
 void ServiceWorkerVersion::CountFeature(uint32_t feature) {

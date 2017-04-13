@@ -202,10 +202,6 @@ const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Navigation preload feature of service workers.
-// Enables this base::Feature by default for Origin-Trial, but enables the
-// corresponding blink::WebRuntimeFeatures only when '--enable-features' command
-// line flag is given. See the comments in runtime_features.cc and
-// service_worker_version.h for the details.
 const base::Feature kServiceWorkerNavigationPreload{
     "ServiceWorkerNavigationPreload", base::FEATURE_ENABLED_BY_DEFAULT};
 

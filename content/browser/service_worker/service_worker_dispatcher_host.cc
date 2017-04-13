@@ -80,27 +80,6 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
   return WebContents::FromRenderFrameHost(rfh);
 }
 
-std::string GetNavigationPreloadDisabledErrorMessage(
-    ServiceWorkerVersion::NavigationPreloadSupportStatus support_status) {
-  switch (support_status) {
-    case ServiceWorkerVersion::NavigationPreloadSupportStatus::SUPPORTED:
-      NOTREACHED();
-      break;
-    case ServiceWorkerVersion::NavigationPreloadSupportStatus::
-        NOT_SUPPORTED_FIELD_TRIAL_STOPPED:
-      return "The Navigation Preload Origin Trial has ended.";
-    case ServiceWorkerVersion::NavigationPreloadSupportStatus::
-        NOT_SUPPORTED_DISABLED_BY_COMMAND_LINE:
-      return "Navigation Preload is disabled by command line flag.";
-    case ServiceWorkerVersion::NavigationPreloadSupportStatus::
-        NOT_SUPPORTED_NO_VALID_ORIGIN_TRIAL_TOKEN:
-      return "The service worker script does not have a valid Navigation "
-             "Preload Origin Trial token.";
-  }
-  NOTREACHED();
-  return "";
-}
-
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
@@ -723,17 +702,6 @@ void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
     return;
   }
 
-  ServiceWorkerVersion::NavigationPreloadSupportStatus support_status =
-      registration->active_version()->GetNavigationPreloadSupportStatus();
-  if (support_status !=
-      ServiceWorkerVersion::NavigationPreloadSupportStatus::SUPPORTED) {
-    Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
-        thread_id, request_id, WebServiceWorkerError::kErrorTypeAbort,
-        std::string(kEnableNavigationPreloadErrorPrefix) +
-            GetNavigationPreloadDisabledErrorMessage(support_status)));
-    return;
-  }
-
   std::vector<GURL> urls = {provider_host->document_url(),
                             registration->pattern()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
@@ -876,16 +844,6 @@ void ServiceWorkerDispatcherHost::OnSetNavigationPreloadHeader(
     return;
   }
 
-  ServiceWorkerVersion::NavigationPreloadSupportStatus support_status =
-      registration->active_version()->GetNavigationPreloadSupportStatus();
-  if (support_status !=
-      ServiceWorkerVersion::NavigationPreloadSupportStatus::SUPPORTED) {
-    Send(new ServiceWorkerMsg_SetNavigationPreloadHeaderError(
-        thread_id, request_id, WebServiceWorkerError::kErrorTypeAbort,
-        std::string(kSetNavigationPreloadHeaderErrorPrefix) +
-            GetNavigationPreloadDisabledErrorMessage(support_status)));
-    return;
-  }
   std::vector<GURL> urls = {provider_host->document_url(),
                             registration->pattern()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {

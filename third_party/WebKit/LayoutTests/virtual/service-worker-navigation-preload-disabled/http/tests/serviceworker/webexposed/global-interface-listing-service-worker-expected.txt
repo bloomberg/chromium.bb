@@ -387,7 +387,6 @@ interface FaceDetector
 interface FetchEvent : ExtendableEvent
     getter clientId
     getter isReload
-    getter preloadResponse
     getter request
     method constructor
     method respondWith
@@ -622,12 +621,6 @@ interface MessagePort : EventTarget
     method postMessage
     method start
     setter onmessage
-interface NavigationPreloadManager
-    method constructor
-    method disable
-    method enable
-    method getState
-    method setHeaderValue
 interface NetworkInformation : EventTarget
     getter downlinkMax
     getter onchange
@@ -867,7 +860,6 @@ interface ServiceWorkerRegistration : EventTarget
     getter active
     getter backgroundFetch
     getter installing
-    getter navigationPreload
     getter onupdatefound
     getter paymentManager
     getter pushManager

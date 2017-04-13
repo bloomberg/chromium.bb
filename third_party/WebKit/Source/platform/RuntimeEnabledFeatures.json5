@@ -849,7 +849,7 @@
     },
     {
       name: "ServiceWorkerNavigationPreload",
-      origin_trial_feature_name: "ServiceWorkerNavigationPreload",
+      status: "stable",
     },
     {
       name: "SetRootScroller",

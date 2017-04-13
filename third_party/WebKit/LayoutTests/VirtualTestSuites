@@ -121,7 +121,7 @@
   {
     "prefix": "origin-trials-runtimeflags-disabled",
     "base": "http/tests/origin_trials/webexposed",
-    "args": ["--disable-blink-features=ForeignFetch,InstalledApp,LinkServiceWorker,LongTaskObserver,ServiceWorkerNavigationPreload,SetRootScroller,WebUSB,WebVR,WebShare"]
+    "args": ["--disable-blink-features=ForeignFetch,InstalledApp,LinkServiceWorker,LongTaskObserver,SetRootScroller,WebUSB,WebVR,WebShare"]
   },
   {
     "prefix": "android",
@@ -423,18 +423,13 @@
     "args": ["--enable-features=AsmJsToWebAssembly"]
   },
   {
-    "prefix": "service-worker-navigation-preload",
-    "base": "http/tests/serviceworker",
-    "args": ["--enable-features=ServiceWorkerNavigationPreload"]
-  },
-  {
-    "prefix": "service-worker-navigation-preload-wpt",
-    "base": "external/wpt/service-workers/service-worker/navigation-preload",
-    "args": ["--enable-features=ServiceWorkerNavigationPreload"]
+    "prefix": "service-worker-navigation-preload-disabled",
+    "base": "webexposed",
+    "args": ["--disable-features=ServiceWorkerNavigationPreload"]
   },
   {
     "prefix": "service-worker-navigation-preload-disabled",
-    "base": "http/tests/serviceworker/chromium",
+    "base": "http/tests/serviceworker/webexposed",
     "args": ["--disable-features=ServiceWorkerNavigationPreload"]
   },
   {

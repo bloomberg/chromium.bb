@@ -2614,6 +2614,31 @@
             ]
         }
     ],
+    "ServiceWorkerNavigationPreload": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerNavigationPreload"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "ServiceWorkerNavigationPreload"
+                    ]
+                }
+            ]
+        }
+    ],
     "SettingsEnforcement": [
         {
             "platforms": [

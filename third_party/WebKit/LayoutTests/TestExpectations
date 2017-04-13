@@ -699,12 +699,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space
 
 # ====== LayoutNG-only failures until here ======
 
-# Requires ServiceWorkerNavigationPreload feature enabled. Run under
-# virtual/service-worker-navigation-preload only.
-crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
-crbug.com/649558 external/wpt/service-workers/service-worker/navigation-preload/ [ Skip ]
-crbug.com/649558 virtual/mojo-loading/http/tests/serviceworker/navigation-preload/ [ Skip ]
-
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 

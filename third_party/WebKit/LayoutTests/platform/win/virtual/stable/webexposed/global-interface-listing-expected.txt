@@ -3502,6 +3502,13 @@ interface NamedNodeMap
     method removeNamedItemNS
     method setNamedItem
     method setNamedItemNS
+interface NavigationPreloadManager
+    attribute @@toStringTag
+    method constructor
+    method disable
+    method enable
+    method getState
+    method setHeaderValue
 interface Navigator
     attribute @@toStringTag
     getter appCodeName
@@ -5417,6 +5424,7 @@ interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
     getter installing
+    getter navigationPreload
     getter onupdatefound
     getter pushManager
     getter scope

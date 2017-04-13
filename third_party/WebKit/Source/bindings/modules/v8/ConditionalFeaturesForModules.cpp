@@ -13,13 +13,11 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerNavigator.h"
 #include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
-#include "bindings/modules/v8/V8FetchEvent.h"
 #include "bindings/modules/v8/V8Gamepad.h"
 #include "bindings/modules/v8/V8GamepadButton.h"
 #include "bindings/modules/v8/V8InstallEvent.h"
 #include "bindings/modules/v8/V8NavigatorPartial.h"
 #include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
-#include "bindings/modules/v8/V8ServiceWorkerRegistration.h"
 #include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8WindowPartial.h"
 #include "bindings/modules/v8/V8WorkerNavigatorPartial.h"
@@ -94,30 +92,6 @@ void InstallConditionalFeaturesForModules(
       V8WindowPartial::installGamepadExtensions(
           isolate, world, instance_object, prototype_object, interface_object);
     }
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8WindowPartial::installServiceWorkerNavigationPreload(
-          isolate, world, instance_object, prototype_object, interface_object);
-    }
-  } else if (wrapper_type_info ==
-             &V8DedicatedWorkerGlobalScope::wrapperTypeInfo) {
-    v8::Local<v8::Object> instance_object =
-        script_state->GetContext()->Global();
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8DedicatedWorkerGlobalScopePartial::
-          installServiceWorkerNavigationPreload(isolate, world, instance_object,
-                                                prototype_object,
-                                                interface_object);
-    }
-  } else if (wrapper_type_info == &V8SharedWorkerGlobalScope::wrapperTypeInfo) {
-    v8::Local<v8::Object> instance_object =
-        script_state->GetContext()->Global();
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8SharedWorkerGlobalScopePartial::installServiceWorkerNavigationPreload(
-          isolate, world, instance_object, prototype_object, interface_object);
-    }
   } else if (wrapper_type_info ==
              &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
     v8::Local<v8::Object> instance_object =
@@ -125,26 +99,6 @@ void InstallConditionalFeaturesForModules(
     if (OriginTrials::foreignFetchEnabled(execution_context)) {
       V8ServiceWorkerGlobalScope::installForeignFetch(
           isolate, world, instance_object, prototype_object, interface_object);
-    }
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8ServiceWorkerGlobalScope::installServiceWorkerNavigationPreload(
-          isolate, world, instance_object, prototype_object, interface_object);
-    }
-  } else if (wrapper_type_info ==
-             &V8ServiceWorkerRegistration::wrapperTypeInfo) {
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
-    }
-  } else if (wrapper_type_info == &V8FetchEvent::wrapperTypeInfo) {
-    if (OriginTrials::serviceWorkerNavigationPreloadEnabled(
-            execution_context)) {
-      V8FetchEvent::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
     }
   } else if (wrapper_type_info == &V8InstallEvent::wrapperTypeInfo) {
     if (OriginTrials::foreignFetchEnabled(execution_context)) {
@@ -196,27 +150,6 @@ void InstallPendingConditionalFeatureForModules(
             &V8Navigator::wrapperTypeInfo, &prototype_object,
             &interface_object)) {
       V8NavigatorPartial::installInstalledApp(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
-    }
-    return;
-  }
-  if (feature == "ServiceWorkerNavigationPreload") {
-    global_instance_object = script_state->GetContext()->Global();
-    V8WindowPartial::installServiceWorkerNavigationPreload(
-        isolate, world, global_instance_object, v8::Local<v8::Object>(),
-        v8::Local<v8::Function>());
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8FetchEvent::wrapperTypeInfo, &prototype_object,
-            &interface_object)) {
-      V8FetchEvent::installServiceWorkerNavigationPreload(
-          isolate, world, v8::Local<v8::Object>(), prototype_object,
-          interface_object);
-    }
-    if (context_data->GetExistingConstructorAndPrototypeForType(
-            &V8ServiceWorkerRegistration::wrapperTypeInfo, &prototype_object,
-            &interface_object)) {
-      V8ServiceWorkerRegistration::installServiceWorkerNavigationPreload(
           isolate, world, v8::Local<v8::Object>(), prototype_object,
           interface_object);
     }
