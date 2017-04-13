@@ -321,19 +321,14 @@ public class EditorView extends AlwaysDismissedDialog implements OnClickListener
             EditorFieldModel nextFieldModel = null;
 
             boolean isLastField = i == mEditorModel.getFields().size() - 1;
-            // Dropdown fields will take a full line
-            boolean useFullLine = fieldModel.isFullLine() || isLastField
-                    || (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN);
-
-            if (!useFullLine) {
+            boolean useFullLine = fieldModel.isFullLine();
+            if (!isLastField && !useFullLine) {
                 // If the next field isn't full, stretch it out.
                 nextFieldModel = mEditorModel.getFields().get(i + 1);
-                useFullLine = useFullLine || nextFieldModel.isFullLine()
-                        || (nextFieldModel.getInputTypeHint()
-                                   == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN);
+                if (nextFieldModel.isFullLine()) useFullLine = true;
             }
 
-            if (useFullLine) {
+            if (useFullLine || isLastField) {
                 addFieldViewToEditor(mDataView, fieldModel);
             } else {
                 // Create a LinearLayout to put it and the next view side by side.
