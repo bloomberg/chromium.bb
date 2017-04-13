@@ -5754,6 +5754,51 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 }
 #endif
 
+void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
+#if CONFIG_LV_MAP
+                              int block,
+#endif
+                              BLOCK_SIZE bsize, TX_SIZE tx_size,
+                              FRAME_COUNTS *counts) {
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  int is_inter = is_inter_block(mbmi);
+#if !CONFIG_LV_MAP
+  TX_TYPE tx_type = mbmi->tx_type;
+#else
+  TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
+#endif
+#if CONFIG_EXT_TX
+  if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
+      cm->base_qindex > 0 && !mbmi->skip &&
+      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+    const int eset =
+        get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
+    if (eset > 0) {
+      if (is_inter) {
+        ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
+      } else {
+        ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
+                              [tx_type];
+      }
+    }
+  }
+#else
+  (void)bsize;
+  if (tx_size < TX_32X32 &&
+      ((!cm->seg.enabled && cm->base_qindex > 0) ||
+       (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
+      !mbmi->skip &&
+      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+    if (is_inter) {
+      ++counts->inter_ext_tx[tx_size][tx_type];
+    } else {
+      ++counts->intra_ext_tx[tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
+                            [tx_type];
+    }
+  }
+#endif  // CONFIG_EXT_TX
+}
+
 static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
                               TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
                               int mi_col, BLOCK_SIZE bsize,
@@ -6000,38 +6045,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     ++td->counts->tx_size_totals[txsize_sqr_map[tx_size]];
     ++td->counts
           ->tx_size_totals[txsize_sqr_map[get_uv_tx_size(mbmi, &xd->plane[1])]];
-#if CONFIG_EXT_TX
-    if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
-            1 &&
-        cm->base_qindex > 0 && !mbmi->skip &&
-        !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      const int eset =
-          get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
-      if (eset > 0) {
-        if (is_inter) {
-          ++td->counts
-                ->inter_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->tx_type];
-        } else {
-          ++td->counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
-                                    [mbmi->tx_type];
-        }
-      }
-    }
-#else
-    if (tx_size < TX_32X32 &&
-        ((!cm->seg.enabled && cm->base_qindex > 0) ||
-         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-        !mbmi->skip &&
-        !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      if (is_inter) {
-        ++td->counts->inter_ext_tx[tx_size][mbmi->tx_type];
-      } else {
-        ++td->counts
-              ->intra_ext_tx[tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
-                            [mbmi->tx_type];
-      }
-    }
-#endif  // CONFIG_EXT_TX
+#if !CONFIG_LV_MAP
+    av1_update_tx_type_count(cm, xd, bsize, tx_size, td->counts);
+#endif
   }
 
 #if CONFIG_VAR_TX
