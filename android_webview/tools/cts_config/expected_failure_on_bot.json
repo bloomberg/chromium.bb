@@ -7,6 +7,10 @@
     {
       "name": "testJavascriptInterfaceForClientPopup",
       "_bug_id": "crbug.com/698369"
+    },
+    {
+      "name": "testClearFormData",
+      "_bug_id": "crbug.com/711338"
     }
   ],
   "android.webkit.cts.WebSettingsTest": [
