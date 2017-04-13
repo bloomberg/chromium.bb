@@ -118,6 +118,7 @@ const char kEnrollmentJSPath[] = "enrollment.js";
 const char kArcPlaystoreCSSPath[] = "playstore.css";
 const char kArcPlaystoreJSPath[] = "playstore.js";
 const char kArcPlaystoreLogoPath[] = "playstore.svg";
+const char kProductLogoPath[] = "product-logo.png";
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -162,6 +163,9 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
   source->AddResourcePath(kArcPlaystoreLogoPath,
       IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+
+  // Required in encryption migration screen.
+  source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(

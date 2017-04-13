@@ -2,6 +2,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -12,95 +14,106 @@
     <link rel="stylesheet" href="encryption_migration.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <template is="dom-if" if="[[isInitial_(uiState)]]">
-      <oobe-dialog tabindex="0" has-buttons>
-        <p>Checking the system...</p>
-      </oobe-dialog>
+      <oobe-dialog tabindex="0" has-buttons></oobe-dialog>
     </template>
     <template is="dom-if" if="[[isReady_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons>
+        <iron-icon class="oobe-icon chrome-logo"></iron-icon>
         <div class="header">
-          <h1 class="title">Your file system needs upgrade</h1>
-          <div class="subtitle">
-            Your file system needs to be upgraded to use Android applications.
-            String TBD.
-          </div>
+          <h1 class="title">$i18n{migrationReadyTitle}</h1>
+          <div class="subtitle">$i18n{migrationReadyDescription}</div>
         </div>
-        <template is="dom-if" if="[[!isEnoughBattery]]">
-          <div class="footer flex layout vertical">
-            <div>Battery too low for update. <span>[[batteryPercent]]</span>%
-            </div>
-            <div>Please plug your Chromebook into a power source.</div>
+        <template is="dom-if" if="[[isEnoughBattery]]">
+          <div class="footer layout vertical center">
+            <img srcset="images/security_update_1x.png 1x,
+                         images/security_update_2x.png 2x">
           </div>
         </template>
+        <template is="dom-if" if="[[!isEnoughBattery]]">
+          <div class="footer layout vertical">
+            <div class="warning">
+              [[computeBatteryWarningLabel_(batteryPercent)]]
+            </div>
+            <template is="dom-if" if="[[isCharging]]">
+              <div>$i18n{migrationChargingLabel}</div>
+            </template>
+            <template is="dom-if" if="[[!isCharging]]">
+              <div>$i18n{migrationAskChargeMessage}</div>
+            </template>
+            <div>[[computeNecessaryBatteryLevelLabel_()]]</div>
+          </div>
+        </template>
+        </div>
         <template is="dom-if" if="[[!isResuming]]">
           <div class="bottom-buttons flex layout horizontal">
             <div class="flex"></div>
-            <oobe-text-button on-tap="onSkip_">Skip</oobe-text-button>
+            <oobe-text-button border on-tap="onSkip_">
+              <div>$i18n{migrationButtonSkip}</div>
+            </oobe-text-button>
             <oobe-text-button inverse on-tap="onUpgrade_"
-                disabled="[[isMigrationAccepted]]">Upgrade</oobe-text-button>
+                disabled="[[isMigrationAccepted]]">
+              <div>$i18n{migrationButtonUpdate}</div>
+            </oobe-text-button>
           </div>
         </template>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isMigrating_(uiState)]]">
       <oobe-dialog tabindex="0">
+        <iron-icon class="oobe-icon chrome-logo"></iron-icon>
         <div class="header">
-          <h1 class="title">Upgrading...</h1>
-          <div class="subtitle">Please do not shutdown. String TBD.</div>
+          <h1 class="title">$i18n{migrationMigratingTitle}</h1>
+          <div class="subtitle">$i18n{migrationMigratingDescription}</div>
         </div>
         <div class="footer flex layout vertical">
           <paper-progress value="[[progress]]" max="1" step="0.001"
               indeterminate="[[isProgressIndeterminate_(progress)]]">
           </paper-progress>
-        </div>
-      </oobe-dialog>
-    </template>
-    <template is="dom-if" if="[[isMigrationSucceeded_(uiState)]]">
-      <oobe-dialog tabindex="0" has-buttons>
-        <div class="header">
-          <h1 class="title">Upgrade successfully finished</h1>
-          <div class="subtitle">
-            The system will restart automatically. String TBD.
-          </div>
-        </div>
-        <div class="bottom-buttons flex layout horizontal">
-          <div class="flex"></div>
-          <oobe-text-button inverse on-tap="onRestart_">Restart Now
-          </oobe-text-button>
+          <template is="dom-if" if="[[!isProgressIndeterminate_(progress)]]">
+            <div>[[computeProgressLabel_(progress)]]</div>
+          </template>
         </div>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isMigrationFailed_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons>
+        <iron-icon icon="cr:warning" class="oobe-icon warning"></iron-icon>
         <div class="header">
-          <h1 class="title">Upgrade failed</h1>
-          <div class="subtitle">
-            The system encountered a problem during migration. String TBD.
-          </div>
+          <h1 class="title">$i18n{migrationFailedTitle}</h1>
+          <div class="subtitle">$i18n{migrationFailedSubtitle}</div>
         </div>
+        <div class="footer"><div>$i18n{migrationFailedMessage}</div></div>
         <div class="bottom-buttons flex layout horizontal">
           <div class="flex"></div>
-          <oobe-text-button inverse on-tap="onRestart_">Restart
+          <oobe-text-button inverse on-tap="onRestart_">
+            <div>$i18n{migrationButtonRestart}</div>
           </oobe-text-button>
         </div>
       </oobe-dialog>
     </template>
     <template is="dom-if" if="[[isNotEnoughSpace_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons>
+        <iron-icon class="oobe-icon chrome-logo"></iron-icon>
         <div class="header">
-          <h1 class="title">Not enough storage for update</h1>
-          <div class="subtitle">
-            Please free up some space on your device and sign in again.
-          </div>
+          <h1 class="title">$i18n{migrationReadyTitle}</h1>
+          <div class="subtitle">$i18n{migrationReadyDescription}</div>
+        </div>
+        <div class="footer layout vertical">
+          <div class="warning">$i18n{migrationNospaceWarningLabel}</div>
+          <div>$i18n{migrationAskFreeSpaceMessage}</div>
+          <div>[[computeAvailableSpaceLabel_(availableSpaceInString)]]</div>
+          <div>[[computeNecessarySpaceLabel_(necessarySpaceInString)]]</div>
         </div>
         <div class="bottom-buttons flex layout horizontal">
           <div class="flex"></div>
           <template is="dom-if" if="[[!isResuming]]">
-            <oobe-text-button inverse on-tap="onSkip_">Continue
+            <oobe-text-button inverse on-tap="onSkip_">
+              <div>$i18n{migrationButtonContinue}</div>
             </oobe-text-button>
           </template>
           <template is="dom-if" if="[[isResuming]]">
-            <oobe-text-button inverse on-tap="onRestart_">Restart
+            <oobe-text-button inverse on-tap="onRestart_">
+              <div>$i18n{migrationButtonRestart}</div>
             </oobe-text-button>
           </template>
         </div>

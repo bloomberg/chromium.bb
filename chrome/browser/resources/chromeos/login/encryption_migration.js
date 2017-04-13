@@ -16,13 +16,14 @@ var EncryptionMigrationUIState = {
   INITIAL: 0,
   READY: 1,
   MIGRATING: 2,
-  MIGRATION_SUCCEEDED: 3,
-  MIGRATION_FAILED: 4,
-  NOT_ENOUGH_SPACE: 5
+  MIGRATION_FAILED: 3,
+  NOT_ENOUGH_SPACE: 4
 };
 
 Polymer({
   is: 'encryption-migration',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /**
@@ -68,11 +69,35 @@ Polymer({
     },
 
     /**
+     * True if the device is charging.
+     */
+    isCharging: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
      * True if the user already accepted the migration.
      */
     isMigrationAccepted: {
       type: Boolean,
       value: false
+    },
+
+    /**
+     * Formatted string of the current available space size.
+     */
+    availableSpaceInString: {
+      type: String,
+      value: ''
+    },
+
+    /**
+     * Formatted string of the necessary space size for migration.
+     */
+    necessarySpaceInString: {
+      type: String,
+      value: ''
     },
   },
 
@@ -104,15 +129,6 @@ Polymer({
   },
 
   /**
-   * Returns true if the migration is finished successfully.
-   * @param {EncryptionMigrationUIState} state Current UI state
-   * @private
-   */
-  isMigrationSucceeded_: function(state) {
-    return state == EncryptionMigrationUIState.MIGRATION_SUCCEEDED;
-  },
-
-  /**
    * Returns true if the migration failed.
    * @param {EncryptionMigrationUIState} state Current UI state
    * @private
@@ -137,6 +153,55 @@ Polymer({
    */
   isProgressIndeterminate_: function(progress) {
     return progress < 0;
+  },
+
+  /**
+   * Computes the label shown under progress bar.
+   * @param {number} progress
+   * @return {string}
+   * @private
+   */
+  computeProgressLabel_: function(progress) {
+    return this.i18n('migrationProgressLabel', Math.floor(progress * 100));
+  },
+
+  /**
+   * Computes the warning label when battery level is not enough.
+   * @param {number} batteryPercent
+   * @return {string}
+   * @private
+   */
+  computeBatteryWarningLabel_: function(batteryPercent) {
+    return this.i18n('migrationBatteryWarningLabel', batteryPercent);
+  },
+
+  /**
+   * Computes the label to show the necessary battery level for migration.
+   * @return {string}
+   * @private
+   */
+  computeNecessaryBatteryLevelLabel_: function() {
+    return this.i18n('migrationNecessaryBatteryLevelLabel', 30);
+  },
+
+  /**
+   * Computes the label to show the current available space.
+   * @param {string} availableSpaceInString
+   * @return {string}
+   * @private
+   */
+  computeAvailableSpaceLabel_: function(availableSpaceInString) {
+    return this.i18n('migrationAvailableSpaceLabel', availableSpaceInString);
+  },
+
+  /**
+   * Computes the label to show the necessary space to start migration.
+   * @param {string} necessarySpaceInString
+   * @return {string}
+   * @private
+   */
+  computeNecessarySpaceLabel_: function(necessarySpaceInString) {
+    return this.i18n('migrationNecessarySpaceLabel', necessarySpaceInString);
   },
 
   /**

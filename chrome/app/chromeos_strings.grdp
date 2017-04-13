@@ -5627,6 +5627,71 @@ Battery full
     This device was locked by the owner.
   </message>
 
+  <!-- Encryption migration dialog -->
+  <message name="IDS_ENCRYPTION_MIGRATION_READY_TITLE" desc="Title shown in encryption migration screen, which asks the user to install a critical update.">
+    Install critical update
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_READY_DESCRIPTION" desc="Description shown in encryption migration screen, which asks the user to install a critical update.">
+    To download and use Android apps, first you need to install an update. While your device is updating, you can’t use it. Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart after installation completes.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_MIGRATING_TITLE" desc="Title shown in encryption migration screen when the migration is ongoing.">
+    Installing critical update
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_MIGRATING_DESCRIPTION" desc="Description shown in encryption migration screen when the migration is ongoing.">
+    Don’t turn off or close your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> until the update finishes. Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will restart after installation completes.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_PROGRESS_LABEL" desc="Label to show the progress of the migration.">
+    <ph name="PROGRESS_PERCENT">$1<ex>90</ex></ph>% done
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BATTERY_WARNING_LABEL" desc="Label to tell the user that the battery level is too low to start the migration.">
+    Battery too low for update (<ph name="PROGRESS_PERCENT">$1<ex>10</ex></ph>%)
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_ASK_CHARGE_MESSAGE" desc="Label to ask the user to charge the device.">
+    Please plug your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> into a power source.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_NECESSARY_BATTERY_LEVEL_MESSAGE" desc="Explanation about how to start migration when the battery level is low.">
+    Update will begin when battery reaches <ph name="BATTERY_LEVEL">$1<ex>30</ex></ph>%.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_CHARGING_LABEL" desc="Label which is shown when the device is charging.">
+    Charging.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_FAILED_TITLE" desc="Title shown in encryption migration screen when the migration fails.">
+    Something went wrong
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_FAILED_SUBTITLE" desc="In encryption migration screen, explanation about the failure of migration.">
+    Sorry, some files were damaged and the update wasn’t successful. Your synced files are safe.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_FAILED_MESSAGE" desc="In encryption migration screen, label to ask user to create the account again.">
+    Unfortunately, you'll need to add your account to this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> again.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_NOSPACE_WARNING_LABEL" desc="Label to tell the user that migration can not start due to low storage space.">
+    Not enough storage for update
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_ASK_FREE_SPACE_MESSAGE" desc="In encryption migration screen, message to ask the user to free some space on the device.">
+    Please free up some space on your device.
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_AVAILABLE_SPACE_LABEL" desc="In encryption migration screen, label to tell the user how much space is available now.">
+    Available: <ph name="AVAILABLE_SPACE">$1<ex>5 MB</ex></ph>
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_NECESSARY_SPACE_LABEL" desc="In encryption migration screen, label to tell the user how much space is necessary to start migration.">
+    Needed to update: <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph>
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BUTTON_UPDATE" desc="In encryption migration screen, button label to start migration (i.e. update the encryption of user data).">
+    Update
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BUTTON_SKIP" desc="In encryption migration screen, button label to skip the migration.">
+    Skip
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BUTTON_RESTART" desc="In encryption migration screen, button label to restart the device.">
+    Restart
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BUTTON_CONTINUE" desc="In encryption migration screen, button label to continue to sign in to the user's session.">
+    Continue
+  </message>
+  <message name="IDS_ENCRYPTION_MIGRATION_BUTTON_SIGNIN" desc="In encryption migration screen, button label to sign in to the user's session.">
+    Sign in
+  </message>
+
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">
     Are you still there?

@@ -2,13 +2,48 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+oobe-dialog {
+  max-width: 768px;
+}
+
+oobe-dialog div {
+  line-height: 1.54;  /* 20px height for 13px font. */
+}
+
 paper-progress {
   --paper-progress-active-color: var(--google-blue-500);
-  bottom: 0;
   height: 3px;
+  margin-bottom: 28px;
   width: 100%;
 }
 
 .bottom-buttons {
   -webkit-padding-end: 16px;
+}
+
+oobe-text-button {
+  color: rgb(90, 90, 90);
+}
+
+oobe-dialog > iron-icon {
+  height: 32px;
+  width: 32px;
+}
+
+oobe-dialog > iron-icon.warning {
+  --iron-icon-fill-color: rgb(219, 68, 55);
+}
+
+.chrome-logo {
+  background: url(chrome://oobe/product-logo.png) center/100% no-repeat;
+}
+
+.footer div {
+  color: rgb(51, 51, 51);
+  font-size: 13px;
+}
+
+.footer div.warning {
+  color: rgb(197, 57, 41);
+  font-weight: 500;
 }

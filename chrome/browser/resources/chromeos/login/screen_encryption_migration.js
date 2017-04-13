@@ -9,7 +9,9 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
       'setUIState',
       'setMigrationProgress',
       'setIsResuming',
-      'setBatteryPercent',
+      'setBatteryState',
+      'setAvailableSpaceInString',
+      'setNecessarySpaceInString',
     ],
 
     /**
@@ -73,11 +75,29 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
      * Updates battery level of the device.
      * @param {number} batteryPercent Battery level in percent.
      * @param {boolean} isEnoughBattery True if the battery is enough.
+     * @param {boolena} isCharging True if the device is connected to power.
      */
-    setBatteryPercent: function(batteryPercent, isEnoughBattery) {
-      $('encryption-migration-element').batteryPercent =
-          Math.floor(batteryPercent);
-      $('encryption-migration-element').isEnoughBattery = isEnoughBattery;
+    setBatteryState: function(batteryPercent, isEnoughBattery, isCharging) {
+      var element = $('encryption-migration-element');
+      element.batteryPercent = Math.floor(batteryPercent);
+      element.isEnoughBattery = isEnoughBattery;
+      element.isCharging = isCharging;
+    },
+
+    /**
+     * Updates the string representation of available space size.
+     * @param {string} space
+     */
+    setAvailableSpaceInString: function(space) {
+      $('encryption-migration-element').availableSpaceInString = space;
+    },
+
+    /**
+     * Updates the string representation of necessary space size.
+     * @param {string} space
+     */
+    setNecessarySpaceInString: function(space) {
+      $('encryption-migration-element').necessarySpaceInString = space;
     },
   };
 });

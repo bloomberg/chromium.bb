@@ -43,9 +43,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
     INITIAL = 0,
     READY = 1,
     MIGRATING = 2,
-    MIGRATION_SUCCEEDED = 3,
-    MIGRATION_FAILED = 4,
-    NOT_ENOUGH_STORAGE = 5,
+    MIGRATION_FAILED = 3,
+    NOT_ENOUGH_STORAGE = 4,
   };
 
   // WebUIMessageHandler implementation:

@@ -7,17 +7,21 @@
 #include <string>
 #include <utility>
 
+#include "ash/system/devicetype_utils.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/login/localized_values_builder.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 
@@ -95,7 +99,49 @@ void EncryptionMigrationScreenHandler::SetupInitialView() {
 }
 
 void EncryptionMigrationScreenHandler::DeclareLocalizedValues(
-    ::login::LocalizedValuesBuilder* builder) {}
+    ::login::LocalizedValuesBuilder* builder) {
+  builder->Add("migrationReadyTitle", IDS_ENCRYPTION_MIGRATION_READY_TITLE);
+  builder->Add("migrationReadyDescription",
+               ash::SubstituteChromeOSDeviceType(
+                   IDS_ENCRYPTION_MIGRATION_READY_DESCRIPTION));
+  builder->Add("migrationMigratingTitle",
+               IDS_ENCRYPTION_MIGRATION_MIGRATING_TITLE);
+  builder->Add("migrationMigratingDescription",
+               ash::SubstituteChromeOSDeviceType(
+                   IDS_ENCRYPTION_MIGRATION_MIGRATING_DESCRIPTION));
+  builder->Add("migrationProgressLabel",
+               IDS_ENCRYPTION_MIGRATION_PROGRESS_LABEL);
+  builder->Add("migrationBatteryWarningLabel",
+               IDS_ENCRYPTION_MIGRATION_BATTERY_WARNING_LABEL);
+  builder->Add("migrationAskChargeMessage",
+               ash::SubstituteChromeOSDeviceType(
+                   IDS_ENCRYPTION_MIGRATION_ASK_CHARGE_MESSAGE));
+  builder->Add("migrationNecessaryBatteryLevelLabel",
+               IDS_ENCRYPTION_MIGRATION_NECESSARY_BATTERY_LEVEL_MESSAGE);
+  builder->Add("migrationChargingLabel",
+               IDS_ENCRYPTION_MIGRATION_CHARGING_LABEL);
+  builder->Add("migrationFailedTitle", IDS_ENCRYPTION_MIGRATION_FAILED_TITLE);
+  builder->Add("migrationFailedSubtitle",
+               IDS_ENCRYPTION_MIGRATION_FAILED_SUBTITLE);
+  builder->Add("migrationFailedMessage",
+               ash::SubstituteChromeOSDeviceType(
+                   IDS_ENCRYPTION_MIGRATION_FAILED_MESSAGE));
+  builder->Add("migrationNospaceWarningLabel",
+               IDS_ENCRYPTION_MIGRATION_NOSPACE_WARNING_LABEL);
+  builder->Add("migrationAskFreeSpaceMessage",
+               IDS_ENCRYPTION_MIGRATION_ASK_FREE_SPACE_MESSAGE);
+  builder->Add("migrationAvailableSpaceLabel",
+               IDS_ENCRYPTION_MIGRATION_AVAILABLE_SPACE_LABEL);
+  builder->Add("migrationNecessarySpaceLabel",
+               IDS_ENCRYPTION_MIGRATION_NECESSARY_SPACE_LABEL);
+  builder->Add("migrationButtonUpdate", IDS_ENCRYPTION_MIGRATION_BUTTON_UPDATE);
+  builder->Add("migrationButtonSkip", IDS_ENCRYPTION_MIGRATION_BUTTON_SKIP);
+  builder->Add("migrationButtonRestart",
+               IDS_ENCRYPTION_MIGRATION_BUTTON_RESTART);
+  builder->Add("migrationButtonContinue",
+               IDS_ENCRYPTION_MIGRATION_BUTTON_CONTINUE);
+  builder->Add("migrationButtonSignIn", IDS_ENCRYPTION_MIGRATION_BUTTON_SIGNIN);
+}
 
 void EncryptionMigrationScreenHandler::Initialize() {
   if (!page_is_ready() || !delegate_)
@@ -121,8 +167,10 @@ void EncryptionMigrationScreenHandler::RegisterMessages() {
 void EncryptionMigrationScreenHandler::PowerChanged(
     const power_manager::PowerSupplyProperties& proto) {
   current_battery_percent_ = proto.battery_percent();
-  CallJS("setBatteryPercent", current_battery_percent_,
-         current_battery_percent_ >= kMinimumBatteryPercent);
+  CallJS("setBatteryState", current_battery_percent_,
+         current_battery_percent_ >= kMinimumBatteryPercent,
+         proto.battery_state() ==
+             power_manager::PowerSupplyProperties_BatteryState_CHARGING);
 
   // If the migration was already requested and the bettery level is enough now,
   // The migration should start immediately.
@@ -150,9 +198,6 @@ void EncryptionMigrationScreenHandler::HandleSkipMigration() {
 }
 
 void EncryptionMigrationScreenHandler::HandleRequestRestart() {
-  // TODO(fukino): If the migration finished successfully, we don't need to
-  // restart the device. Let's sign in to the desktop using the already-provided
-  // user credential.
   chrome::AttemptRestart();
 }
 
@@ -188,6 +233,9 @@ void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
       UpdateUIState(UIState::READY);
     }
   } else {
+    CallJS("setAvailableSpaceInString", ui::FormatBytes(size));
+    CallJS("setNecessarySpaceInString",
+           ui::FormatBytes(kMinimumAvailableStorage));
     UpdateUIState(UIState::NOT_ENOUGH_STORAGE);
   }
 }
@@ -244,10 +292,11 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       CallJS("setMigrationProgress", static_cast<double>(current) / total);
       break;
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
+      // Restart immediately after successful migration.
+      chrome::AttemptRestart();
+      break;
     case cryptohome::DIRCRYPTO_MIGRATION_FAILED:
-      UpdateUIState(status == cryptohome::DIRCRYPTO_MIGRATION_SUCCESS
-                        ? UIState::MIGRATION_SUCCEEDED
-                        : UIState::MIGRATION_FAILED);
+      UpdateUIState(UIState::MIGRATION_FAILED);
       // Stop listening to the progress updates.
       DBusThreadManager::Get()
           ->GetCryptohomeClient()
