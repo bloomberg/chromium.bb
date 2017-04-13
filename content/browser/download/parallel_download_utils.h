@@ -57,6 +57,11 @@ CONTENT_EXPORT base::TimeDelta GetParallelRequestRemainingTimeConfig();
 // Print the states of received slices for debugging.
 CONTENT_EXPORT void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices);
 
+// Given an ordered array of slices, get the maximum size of a contiguous data
+// block that starts from offset 0. If the first slice doesn't start from offset
+// 0, return 0.
+CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
+    const DownloadItem::ReceivedSlices& slices);
 }  //  namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_UTILS_H_

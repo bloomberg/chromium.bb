@@ -1292,6 +1292,14 @@ void DownloadItemImpl::Start(
   if (state_ == RESUMING_INTERNAL)
     UpdateValidatorsOnResumption(new_create_info);
 
+  // If the download uses parallel requests, and choose not to create parallel
+  // request during resumption, clear the received_slices_ vector.
+  if (!job_->UsesParallelRequests() && !received_slices_.empty()) {
+    received_bytes_ =
+        GetMaxContiguousDataBlockSizeFromBeginning(received_slices_);
+    received_slices_.clear();
+  }
+
   TransitionTo(TARGET_PENDING_INTERNAL);
 
   job_->Start();

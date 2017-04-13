@@ -167,4 +167,17 @@ void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices) {
   }
 }
 
+CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
+    const DownloadItem::ReceivedSlices& slices) {
+  std::vector<DownloadItem::ReceivedSlice>::const_iterator iter =
+      slices.begin();
+
+  int64_t size = 0;
+  while (iter != slices.end() && iter->offset == size) {
+    size += iter->received_bytes;
+    iter++;
+  }
+  return size;
+}
+
 }  // namespace content

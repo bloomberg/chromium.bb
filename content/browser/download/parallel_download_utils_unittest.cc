@@ -123,4 +123,18 @@ TEST(ParallelDownloadUtilsTest, FindSlicesForRemainingContentMinSliceSize) {
   EXPECT_EQ(0, slices[0].received_bytes);
 }
 
+TEST(ParallelDownloadUtilsTest, GetMaxContiguousDataBlockSizeFromBeginning) {
+  std::vector<DownloadItem::ReceivedSlice> slices;
+  slices.emplace_back(500, 500);
+  EXPECT_EQ(0, GetMaxContiguousDataBlockSizeFromBeginning(slices));
+
+  DownloadItem::ReceivedSlice slice1(0, 200);
+  AddOrMergeReceivedSliceIntoSortedArray(slice1, slices);
+  EXPECT_EQ(200, GetMaxContiguousDataBlockSizeFromBeginning(slices));
+
+  DownloadItem::ReceivedSlice slice2(200, 300);
+  AddOrMergeReceivedSliceIntoSortedArray(slice2, slices);
+  EXPECT_EQ(1000, GetMaxContiguousDataBlockSizeFromBeginning(slices));
+}
+
 }  // namespace content
