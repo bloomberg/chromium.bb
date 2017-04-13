@@ -485,6 +485,22 @@ ExecutionContext* IDBTransaction::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
+const char* IDBTransaction::InactiveErrorMessage() const {
+  switch (state_) {
+    case kActive:
+      // Callers should check !IsActive() before calling.
+      NOTREACHED();
+      return nullptr;
+    case kInactive:
+      return IDBDatabase::kTransactionInactiveErrorMessage;
+    case kFinishing:
+    case kFinished:
+      return IDBDatabase::kTransactionFinishedErrorMessage;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 DispatchEventResult IDBTransaction::DispatchEventInternal(Event* event) {
   IDB_TRACE("IDBTransaction::dispatchEvent");
   if (!GetExecutionContext()) {

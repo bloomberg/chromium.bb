@@ -141,6 +141,10 @@ class MODULES_EXPORT IDBTransaction final
     return old_database_metadata_.max_object_store_id;
   }
 
+  // Returns a detailed message to use when throwing TransactionInactiveError,
+  // depending on whether the transaction is just inactive or has finished.
+  const char* InactiveErrorMessage() const;
+
  protected:
   // EventTarget
   DispatchEventResult DispatchEventInternal(Event*) override;

@@ -29,16 +29,9 @@ void IDBObserver::observe(IDBDatabase* database,
                           IDBTransaction* transaction,
                           const IDBObserverInit& options,
                           ExceptionState& exception_state) {
-  if (transaction->IsFinished() || transaction->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction->InactiveErrorMessage());
     return;
   }
   if (transaction->IsVersionChange()) {

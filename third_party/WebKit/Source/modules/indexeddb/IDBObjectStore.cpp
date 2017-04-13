@@ -89,16 +89,9 @@ void IDBObjectStore::setName(const String& name,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
 
@@ -140,16 +133,9 @@ IDBRequest* IDBObjectStore::get(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
@@ -184,16 +170,9 @@ IDBRequest* IDBObjectStore::getKey(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
@@ -239,16 +218,9 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   IDBKeyRange* range = IDBKeyRange::FromScriptValue(
@@ -289,16 +261,9 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   IDBKeyRange* range = IDBKeyRange::FromScriptValue(
@@ -398,16 +363,9 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (transaction_->IsReadOnly()) {
@@ -564,16 +522,9 @@ IDBRequest* IDBObjectStore::deleteFunction(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (transaction_->IsReadOnly()) {
@@ -612,16 +563,9 @@ IDBRequest* IDBObjectStore::clear(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (transaction_->IsReadOnly()) {
@@ -756,16 +700,9 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (ContainsIndex(name)) {
@@ -869,16 +806,9 @@ void IDBObjectStore::deleteIndex(const String& name,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
   int64_t index_id = FindIndexId(name);
@@ -914,16 +844,9 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
@@ -967,16 +890,9 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
@@ -1013,16 +929,9 @@ IDBRequest* IDBObjectStore::count(ScriptState* script_state,
         kInvalidStateError, IDBDatabase::kObjectStoreDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 

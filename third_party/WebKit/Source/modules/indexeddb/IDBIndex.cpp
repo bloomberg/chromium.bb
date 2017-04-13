@@ -77,16 +77,9 @@ void IDBIndex::setName(const String& name, ExceptionState& exception_state) {
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
 
@@ -128,16 +121,9 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   WebIDBCursorDirection direction =
@@ -177,16 +163,9 @@ IDBRequest* IDBIndex::count(ScriptState* script_state,
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
@@ -218,16 +197,9 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   WebIDBCursorDirection direction =
@@ -305,16 +277,9 @@ IDBRequest* IDBIndex::GetInternal(ScriptState* script_state,
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
@@ -353,16 +318,9 @@ IDBRequest* IDBIndex::GetAllInternal(ScriptState* script_state,
                                       IDBDatabase::kIndexDeletedErrorMessage);
     return nullptr;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
 

@@ -104,16 +104,9 @@ IDBRequest* IDBCursor::update(ScriptState* script_state,
                               ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::update");
 
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (transaction_->IsReadOnly()) {
@@ -152,16 +145,9 @@ void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
         "than 0.");
     return;
   }
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
   if (IsDeleted()) {
@@ -185,16 +171,9 @@ void IDBCursor::continueFunction(ScriptState* script_state,
                                  ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continue");
 
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
   if (!got_value_) {
@@ -228,16 +207,9 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continuePrimaryKey");
 
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return;
   }
 
@@ -336,16 +308,9 @@ void IDBCursor::Continue(IDBKey* key,
 IDBRequest* IDBCursor::deleteFunction(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::delete");
-  if (transaction_->IsFinished() || transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!transaction_->IsActive()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+    exception_state.ThrowDOMException(kTransactionInactiveError,
+                                      transaction_->InactiveErrorMessage());
     return nullptr;
   }
   if (transaction_->IsReadOnly()) {
