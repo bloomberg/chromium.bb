@@ -56,14 +56,6 @@ std::unique_ptr<base::Value> MappedHostResolver::GetDnsConfigAsValue() const {
   return impl_->GetDnsConfigAsValue();
 }
 
-void MappedHostResolver::SetDefaultAddressFamily(AddressFamily address_family) {
-  impl_->SetDefaultAddressFamily(address_family);
-}
-
-AddressFamily MappedHostResolver::GetDefaultAddressFamily() const {
-  return impl_->GetDefaultAddressFamily();
-}
-
 void MappedHostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
   impl_->SetNoIPv6OnWifi(no_ipv6_on_wifi);
 }

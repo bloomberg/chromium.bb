@@ -132,14 +132,6 @@ void HostResolver::InitializePersistence(
     const PersistCallback& persist_callback,
     std::unique_ptr<const base::Value> old_data) {}
 
-void HostResolver::SetDefaultAddressFamily(AddressFamily address_family) {
-  NOTREACHED();
-}
-
-AddressFamily HostResolver::GetDefaultAddressFamily() const {
-  return ADDRESS_FAMILY_UNSPECIFIED;
-}
-
 void HostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
   NOTREACHED();
 }

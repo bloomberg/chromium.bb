@@ -158,9 +158,6 @@ class NET_EXPORT HostResolverImpl
       const PersistCallback& persist_callback,
       std::unique_ptr<const base::Value> old_data) override;
 
-  void SetDefaultAddressFamily(AddressFamily address_family) override;
-  AddressFamily GetDefaultAddressFamily() const override;
-
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;
 
@@ -355,10 +352,6 @@ class NET_EXPORT HostResolverImpl
 
   // Number of consecutive failures of DnsTask, counted when fallback succeeds.
   unsigned num_dns_failures_;
-
-  // Address family to use when the request doesn't specify one. See
-  // http://crbug.com/696569 for why the option is needed.
-  AddressFamily default_address_family_;
 
   // True if IPv6 should not be attempted when on a WiFi connection. See
   // https://crbug.com/696569 for further context.

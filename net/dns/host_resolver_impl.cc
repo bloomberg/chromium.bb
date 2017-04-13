@@ -2046,7 +2046,6 @@ HostResolverImpl::HostResolverImpl(
       net_log_(net_log),
       received_dns_config_(false),
       num_dns_failures_(0),
-      default_address_family_(ADDRESS_FAMILY_UNSPECIFIED),
       assume_ipv6_failure_on_wifi_(false),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
@@ -2223,15 +2222,6 @@ int HostResolverImpl::ResolveStaleFromCache(
   return rv;
 }
 
-void HostResolverImpl::SetDefaultAddressFamily(AddressFamily address_family) {
-  DCHECK(CalledOnValidThread());
-  default_address_family_ = address_family;
-}
-
-AddressFamily HostResolverImpl::GetDefaultAddressFamily() const {
-  return default_address_family_;
-}
-
 void HostResolverImpl::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
   DCHECK(CalledOnValidThread());
   assume_ipv6_failure_on_wifi_ = no_ipv6_on_wifi;
@@ -2253,11 +2243,6 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
 
   *net_error = OK;
   AddressFamily family = GetAddressFamily(*ip_address);
-  if (family == ADDRESS_FAMILY_IPV6 &&
-      default_address_family_ == ADDRESS_FAMILY_IPV4) {
-    // Don't return IPv6 addresses if default address family is set to IPv4.
-    *net_error = ERR_NAME_NOT_RESOLVED;
-  }
   if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
       key.address_family != family) {
     // Don't return IPv6 addresses for IPv4 queries, and vice versa.
@@ -2399,9 +2384,6 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   HostResolverFlags effective_flags =
       info.host_resolver_flags() | additional_resolver_flags_;
   AddressFamily effective_address_family = info.address_family();
-
-  if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED)
-    effective_address_family = default_address_family_;
 
   if (effective_address_family == ADDRESS_FAMILY_UNSPECIFIED &&
       // When resolving IPv4 literals, there's no need to probe for IPv6.
