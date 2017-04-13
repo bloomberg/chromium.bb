@@ -4915,7 +4915,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
 
-bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum type) {
+bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
+                                                    GLenum type) {
 #if OS(MACOSX)
   // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
   // Though, glCopyTextureCHROMIUM can handle RGB5_A1 internalformat by doing a
@@ -4925,6 +4926,23 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum type) {
   if (type == GL_UNSIGNED_SHORT_5_5_5_1)
     return false;
 #endif
+  // TODO(kbr): bugs were observed when using CopyTextureCHROMIUM to
+  // copy hardware-accelerated video textures to red-channel textures.
+  // These bugs were seen on macOS but may indicate more general
+  // problems. Investigate the root cause of this and fix it.
+  // crbug.com/710673
+  if (format == GL_RED || format == GL_RED_INTEGER)
+    return false;
+
+#if OS(ANDROID)
+  // TODO(kbr): bugs were seen on Android devices with NVIDIA GPUs
+  // when copying hardware-accelerated video textures to
+  // floating-point textures. Investigate the root cause of this and
+  // fix it. crbug.com/710874
+  if (type == GL_FLOAT)
+    return false;
+#endif
+
   // OES_texture_half_float doesn't support HALF_FLOAT_OES type for
   // CopyTexImage/CopyTexSubImage. And OES_texture_half_float doesn't require
   // HALF_FLOAT_OES type texture to be renderable. So, HALF_FLOAT_OES type
@@ -5116,7 +5134,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     // float/integer/sRGB internal format.
     // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is
     // upgraded to handle more formats.
-    if (!canvas->IsAccelerated() || !CanUseTexImageByGPU(type)) {
+    if (!canvas->IsAccelerated() || !CanUseTexImageByGPU(format, type)) {
       // 2D canvas has only FrontBuffer.
       TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                    zoffset, format, type,
@@ -5228,9 +5246,10 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
       source_image_rect == SentinelEmptyRect() ||
       source_image_rect ==
           IntRect(0, 0, video->videoWidth(), video->videoHeight());
-  const bool use_copyTextureCHROMIUM =
-      function_id == kTexImage2D && source_image_rect_is_default &&
-      depth == 1 && GL_TEXTURE_2D == target && CanUseTexImageByGPU(type);
+  const bool use_copyTextureCHROMIUM = function_id == kTexImage2D &&
+                                       source_image_rect_is_default &&
+                                       depth == 1 && GL_TEXTURE_2D == target &&
+                                       CanUseTexImageByGPU(format, type);
   // Format of source video may be 16-bit format, e.g. Y16 format.
   // glCopyTextureCHROMIUM requires the source texture to be in 8-bit format.
   // Converting 16-bits formated source texture to 8-bits formated texture will
@@ -5244,16 +5263,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // to system memory if possible.  Otherwise, it will fall back to the normal
     // SW path.
 
-    // Note that neither
-    // HTMLVideoElement::copyVideoTextureToPlatformTexture nor
-    // ImageBuffer::copyToPlatformTexture allocate the destination texture
-    // any more.
-    TexImage2DBase(target, level, internalformat, video->videoWidth(),
-                   video->videoHeight(), 0, format, type, nullptr);
-
-    if (video->CopyVideoTextureToPlatformTexture(ContextGL(), texture->Object(),
-                                                 unpack_premultiply_alpha_,
-                                                 unpack_flip_y_)) {
+    if (video->CopyVideoTextureToPlatformTexture(
+            ContextGL(), texture->Object(), internalformat, format, type,
+            unpack_premultiply_alpha_, unpack_flip_y_)) {
       texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
       return;
     }
@@ -5296,6 +5308,11 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
 
         // This is a straight GPU-GPU copy, any necessary color space conversion
         // was handled in the paintCurrentFrameInContext() call.
+
+        // Note that copyToPlatformTexture no longer allocates the destination
+        // texture.
+        TexImage2DBase(target, level, internalformat, video->videoWidth(),
+                       video->videoHeight(), 0, format, type, nullptr);
 
         if (image_buffer->CopyToPlatformTexture(
                 FunctionIDToSnapshotReason(function_id), ContextGL(), target,
@@ -5393,7 +5410,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
 
   // TODO(kbr): make this work for sub-rectangles of ImageBitmaps.
   if (function_id != kTexSubImage3D && function_id != kTexImage3D &&
-      bitmap->IsAccelerated() && CanUseTexImageByGPU(type) &&
+      bitmap->IsAccelerated() && CanUseTexImageByGPU(format, type) &&
       !selecting_sub_rectangle) {
     if (function_id == kTexImage2D) {
       TexImage2DBase(target, level, internalformat, width, height, 0, format,
