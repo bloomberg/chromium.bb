@@ -6568,6 +6568,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON" desc="Label for the button in the notification that navigates the user to sign-out for completing the encryption update step.">
     Sign out &amp; sign back in
   </message>
+  <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE" desc="Message of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
+    Update successful. You can now use Android apps.
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_WAITING_NOTIFICATION_MESSAGE" desc="Message of the waiting-for-printing notification.">
