@@ -872,6 +872,9 @@ void TemplateURLService::OnHistoryURLVisited(const URLVisitedDetails& details) {
 }
 
 void TemplateURLService::Shutdown() {
+  for (auto& observer : model_observers_)
+    observer.OnTemplateURLServiceShuttingDown();
+
   if (client_)
     client_->Shutdown();
   // This check has to be done at Shutdown() instead of in the dtor to ensure
