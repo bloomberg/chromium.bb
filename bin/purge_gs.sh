@@ -26,6 +26,3 @@ mv -f "${LOG}" "${LOG}.previous"
 # Wait a while.
 echo "Sleeping for 24 hours."
 sleep 24h
-
-# Clean machine will relaunch this script.
-reboot
