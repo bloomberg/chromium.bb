@@ -309,11 +309,11 @@ void ImeListView::HandleViewClicked(views::View* view) {
 
 void ImeListView::HandleButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  if (keyboard_status_row_ && sender == keyboard_status_row_->toggle()) {
-    ShellPort::Get()->ToggleIgnoreExternalKeyboard();
-    last_selected_item_id_.clear();
-    last_item_selected_with_keyboard_ = false;
-  }
+  DCHECK_EQ(sender, keyboard_status_row_->toggle());
+
+  ShellPort::Get()->ToggleIgnoreExternalKeyboard();
+  last_selected_item_id_.clear();
+  last_item_selected_with_keyboard_ = false;
 }
 
 void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
