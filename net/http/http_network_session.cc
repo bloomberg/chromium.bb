@@ -127,6 +127,7 @@ HttpNetworkSession::Params::Params()
       enable_quic_alternative_service_with_different_host(true),
       enable_quic(false),
       mark_quic_broken_when_network_blackholes(false),
+      retry_without_alt_svc_on_quic_errors(false),
       quic_always_require_handshake_confirmation(false),
       quic_disable_connection_pooling(false),
       quic_load_server_info_timeout_srtt_multiplier(0.25f),

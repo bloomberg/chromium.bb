@@ -851,9 +851,11 @@ int HttpNetworkTransaction::DoCreateStream() {
   response_.network_accessed = true;
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
-  // IP based pooling and Alternative Services are disabled under the same
-  // circumstances: on a retry after 421 Misdirected Request is received.
-  DCHECK(enable_ip_based_pooling_ == enable_alternative_services_);
+  // IP based pooling is only enabled on a retry after 421 Misdirected Request
+  // is received. Alternative Services are also disabled in this case (though
+  // they can also be disabled when retrying after a QUIC error).
+  if (!enable_ip_based_pooling_)
+    DCHECK(!enable_alternative_services_);
   if (ForWebSocketHandshake()) {
     stream_request_.reset(
         session_->http_stream_factory_for_websocket()
@@ -1356,6 +1358,14 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
     // again in ~HttpNetworkTransaction.  Clean that up.
 
     // The next Read call will return 0 (EOF).
+
+    // This transaction was successful. If it had been retried because of an
+    // error with an alternative service, mark that alternative service broken.
+    if (!enable_alternative_services_ &&
+        retried_alternative_service_.protocol != kProtoUnknown) {
+      session_->http_server_properties()->MarkAlternativeServiceBroken(
+          retried_alternative_service_);
+    }
   }
 
   // Clear these to avoid leaving around old state.
@@ -1556,19 +1566,35 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       ResetConnectionAndRequestForResend();
       error = OK;
       break;
-    case ERR_QUIC_PROTOCOL_ERROR: {
-      AlternativeService alternative_service;
-      if (GetResponseHeaders() == nullptr &&
-          stream_->GetAlternativeService(&alternative_service) &&
-          session_->http_server_properties()->IsAlternativeServiceBroken(
-              alternative_service)) {
+    case ERR_QUIC_PROTOCOL_ERROR:
+      if (GetResponseHeaders() != nullptr ||
+          !stream_->GetAlternativeService(&retried_alternative_service_)) {
+        // If the response headers have already been recieved and passed up
+        // then the request can not be retried. Also, if there was no
+        // alternative service used for this request, then there is no
+        // alternative service to be disabled.
+        break;
+      }
+      if (session_->http_server_properties()->IsAlternativeServiceBroken(
+              retried_alternative_service_)) {
+        // If the alternative service was marked as broken while the request
+        // was in flight, retry the request which will not use the broken
+        // alternative service.
+        net_log_.AddEventWithNetErrorCode(
+            NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
+        ResetConnectionAndRequestForResend();
+        error = OK;
+      } else if (session_->params().retry_without_alt_svc_on_quic_errors) {
+        // Disable alternative services for this request and retry it. If the
+        // retry succeeds, then the alternative service will be marked as
+        // broken then.
+        enable_alternative_services_ = false;
         net_log_.AddEventWithNetErrorCode(
             NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
         ResetConnectionAndRequestForResend();
         error = OK;
       }
       break;
-    }
     case ERR_MISDIRECTED_REQUEST:
       // If this is the second try, just give up.
       if (!enable_ip_based_pooling_ && !enable_alternative_services_)
