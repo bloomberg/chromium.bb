@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CHROMIUM_MOCK_NETWORK_CHANGE_NOTIFIER_H_
-#define NET_QUIC_CHROMIUM_MOCK_NETWORK_CHANGE_NOTIFIER_H_
+#ifndef NET_BASE_MOCK_NETWORK_CHANGE_NOTIFIER_H_
+#define NET_BASE_MOCK_NETWORK_CHANGE_NOTIFIER_H_
 
 #include "net/base/network_change_notifier.h"
 
@@ -71,4 +71,4 @@ class ScopedMockNetworkChangeNotifier {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_CHROMIUM_MOCK_NETWORK_CHANGE_NOTIFIER_H_
+#endif  // NET_BASE_MOCK_NETWORK_CHANGE_NOTIFIER_H_

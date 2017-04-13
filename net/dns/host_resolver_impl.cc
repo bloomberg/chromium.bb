@@ -231,39 +231,6 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
                         kSuffix, kSuffixLenTrimmed);
 }
 
-// Attempts to connect a UDP socket to |dest|:53.
-bool IsGloballyReachable(const IPAddress& dest,
-                         const NetLogWithSource& net_log) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable"));
-
-  std::unique_ptr<DatagramClientSocket> socket(
-      ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
-          DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log.net_log(),
-          net_log.source()));
-  int rv = socket->Connect(IPEndPoint(dest, 53));
-  if (rv != OK)
-    return false;
-  IPEndPoint endpoint;
-  rv = socket->GetLocalAddress(&endpoint);
-  if (rv != OK)
-    return false;
-  DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
-  const IPAddress& address = endpoint.address();
-
-  bool is_link_local =
-      (address.bytes()[0] == 0xFE) && ((address.bytes()[1] & 0xC0) == 0x80);
-  if (is_link_local)
-    return false;
-
-  const uint8_t kTeredoPrefix[] = {0x20, 0x01, 0, 0};
-  if (IPAddressStartsWith(address, kTeredoPrefix))
-    return false;
-
-  return true;
-}
-
 // Provide a common macro to simplify code and readability. We must use a
 // macro as the underlying HISTOGRAM macro creates static variables.
 #define DNS_HISTOGRAM(name, time) UMA_HISTOGRAM_CUSTOM_TIMES(name, time, \
@@ -2080,6 +2047,7 @@ HostResolverImpl::HostResolverImpl(
       received_dns_config_(false),
       num_dns_failures_(0),
       default_address_family_(ADDRESS_FAMILY_UNSPECIFIED),
+      assume_ipv6_failure_on_wifi_(false),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       resolved_known_ipv6_hostname_(false),
@@ -2264,6 +2232,15 @@ AddressFamily HostResolverImpl::GetDefaultAddressFamily() const {
   return default_address_family_;
 }
 
+void HostResolverImpl::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
+  DCHECK(CalledOnValidThread());
+  assume_ipv6_failure_on_wifi_ = no_ipv6_on_wifi;
+}
+
+bool HostResolverImpl::GetNoIPv6OnWifi() {
+  return assume_ipv6_failure_on_wifi_;
+}
+
 bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    const RequestInfo& info,
                                    const IPAddress* ip_address,
@@ -2442,6 +2419,14 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
 }
 
 bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
+  // Don't bother checking if the device is on WiFi and IPv6 is assumed to not
+  // work on WiFi.
+  if (assume_ipv6_failure_on_wifi_ &&
+      NetworkChangeNotifier::GetConnectionType() ==
+          NetworkChangeNotifier::CONNECTION_WIFI) {
+    return false;
+  }
+
   // Cache the result for kIPv6ProbePeriodMs (measured from after
   // IsGloballyReachable() completes).
   bool cached = true;
@@ -2456,6 +2441,38 @@ bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
                    base::Bind(&NetLogIPv6AvailableCallback,
                               last_ipv6_probe_result_, cached));
   return last_ipv6_probe_result_;
+}
+
+bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
+                                           const NetLogWithSource& net_log) {
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable"));
+
+  std::unique_ptr<DatagramClientSocket> socket(
+      ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
+          DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log.net_log(),
+          net_log.source()));
+  int rv = socket->Connect(IPEndPoint(dest, 53));
+  if (rv != OK)
+    return false;
+  IPEndPoint endpoint;
+  rv = socket->GetLocalAddress(&endpoint);
+  if (rv != OK)
+    return false;
+  DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
+  const IPAddress& address = endpoint.address();
+
+  bool is_link_local =
+      (address.bytes()[0] == 0xFE) && ((address.bytes()[1] & 0xC0) == 0x80);
+  if (is_link_local)
+    return false;
+
+  const uint8_t kTeredoPrefix[] = {0x20, 0x01, 0, 0};
+  if (IPAddressStartsWith(address, kTeredoPrefix))
+    return false;
+
+  return true;
 }
 
 void HostResolverImpl::RunLoopbackProbeJob() {

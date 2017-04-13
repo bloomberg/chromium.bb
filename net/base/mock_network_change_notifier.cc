@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/chromium/mock_network_change_notifier.h"
+#include "net/base/mock_network_change_notifier.h"
 
 #include "base/run_loop.h"
 

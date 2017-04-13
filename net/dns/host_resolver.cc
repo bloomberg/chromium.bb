@@ -140,6 +140,14 @@ AddressFamily HostResolver::GetDefaultAddressFamily() const {
   return ADDRESS_FAMILY_UNSPECIFIED;
 }
 
+void HostResolver::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
+  NOTREACHED();
+}
+
+bool HostResolver::GetNoIPv6OnWifi() {
+  return false;
+}
+
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
     const Options& options,

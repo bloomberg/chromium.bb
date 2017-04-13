@@ -82,10 +82,10 @@ const char kStaleDnsAllowOtherNetwork[] = "allow_other_network";
 const char kHostResolverRulesFieldTrialName[] = "HostResolverRules";
 const char kHostResolverRules[] = "host_resolver_rules";
 
-// Disable IPv6. This should almost never be necessary because the network stack
-// has IPv6 detection logic. Please do not turn on this option without first
-// reporting a bug. See http://crbug.com/696569 for the currently known issue.
-const char kDisableIPv6[] = "disable_ipv6";
+// Disable IPv6 when on WiFi. This is a workaround for a known issue on certain
+// Android phones, and should not be necessary when not on one of those devices.
+// See https://crbug.com/696569 for details.
+const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
@@ -122,7 +122,7 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
   bool async_dns_enable = false;
   bool stale_dns_enable = false;
   bool host_resolver_rules_enable = false;
-  bool disable_ipv6 = false;
+  bool disable_ipv6_on_wifi = false;
 
   std::unique_ptr<base::DictionaryValue> effective_experimental_options =
       dict->CreateDeepCopy();
@@ -277,8 +277,8 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
       }
       host_resolver_rules_enable = host_resolver_rules_args->GetString(
           kHostResolverRules, &host_resolver_rules_string);
-    } else if (it.key() == kDisableIPv6) {
-      if (!it.value().GetAsBoolean(&disable_ipv6)) {
+    } else if (it.key() == kDisableIPv6OnWifi) {
+      if (!it.value().GetAsBoolean(&disable_ipv6_on_wifi)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
                    << "\" is not a bool";
         effective_experimental_options->Remove(it.key(), nullptr);
@@ -307,19 +307,19 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
   }
 
   if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable ||
-      disable_ipv6) {
+      disable_ipv6_on_wifi) {
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
     if (stale_dns_enable) {
-      DCHECK(!disable_ipv6);
+      DCHECK(!disable_ipv6_on_wifi);
       host_resolver.reset(new StaleHostResolver(
           net::HostResolver::CreateDefaultResolverImpl(net_log),
           stale_dns_options));
     } else {
       host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
     }
-    if (disable_ipv6)
-      host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+    if (disable_ipv6_on_wifi)
+      host_resolver->SetNoIPv6OnWifi(true);
     if (async_dns_enable)
       host_resolver->SetDnsClientEnabled(true);
     if (host_resolver_rules_enable) {
