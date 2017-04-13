@@ -483,7 +483,7 @@ CHAR-LIMIT guidelines:
         Search and site suggestions
       </message>
       <message name="IDS_SEARCH_SITE_SUGGESTIONS_SUMMARY" desc="Summary for search and site suggestions.">
-        Use prediction services to suggest searches and websites
+        Use prediction services to suggest search terms and websites
       </message>
       <message name="IDS_SAFE_BROWSING_EXTENDED_REPORTING_TITLE" desc="Title for checkbox that controls whether details of possible security incidents will be sent to Google.">
         Security incidents
@@ -1026,7 +1026,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
         This feature may interfere with access to premium data services provided by your carrier.
       </message>
-      
+
       <!-- Old Data Saver stats page strings-->
       <message name="IDS_DATA_REDUCTION_STATS_TITLE" desc="Data reduction statistics title.">
         Data savings
