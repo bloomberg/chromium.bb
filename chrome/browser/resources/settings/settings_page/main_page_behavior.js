@@ -85,7 +85,11 @@ var MainPageBehaviorImpl = {
         oldRouteWasSection || oldRoute == settings.Route.BASIC ||
         oldRoute == settings.Route.ABOUT;
 
-    if (oldRoute && (oldRoute.isSubpage() || newRoute.isSubpage()))
+    // TODO(dschuyler): This doesn't set the flag in the case of going to or
+    // from the main page. It seems sensible to set the flag in those cases,
+    // unfortunately bug 708465 happens. Figure out why that is and then set
+    // this flag more broadly.
+    if (oldRoute && oldRoute.isSubpage() && newRoute.isSubpage())
       this.isSubpageAnimating = true;
 
     // For previously uncreated pages (including on first load), allow the page
