@@ -227,8 +227,8 @@ def UpdateHistogramEnum(histogram_enum_name, source_enum_path,
   """
 
   Log('Reading histogram enum definition from "{0}".'.format(source_enum_path))
-  source_enum_values = ReadHistogramValues(source_enum_path, start_marker,
-                                           end_marker)
+  source_enum_values, ignored = ReadHistogramValues(source_enum_path,
+      start_marker, end_marker)
 
   UpdateHistogramFromDict(histogram_enum_name, source_enum_values,
       source_enum_path)

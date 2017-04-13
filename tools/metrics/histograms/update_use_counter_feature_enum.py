@@ -38,7 +38,8 @@ if __name__ == '__main__':
   END_MARKER = '^NumberOfFeatures'
 
   if options.dashboard:
-    enum_dict = ReadHistogramValues(source_path, START_MARKER, END_MARKER)
+    enum_dict, ignored = ReadHistogramValues(source_path, START_MARKER,
+        END_MARKER)
     PrintEnumForDashboard(enum_dict)
   else:
     UpdateHistogramEnum(
