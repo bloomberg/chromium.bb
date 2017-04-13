@@ -68,7 +68,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
 
   EXPECT_TRUE(params_.enable_quic);
   EXPECT_FALSE(params_.mark_quic_broken_when_network_blackholes);
-  EXPECT_FALSE(params_.retry_without_alt_svc_on_quic_errors);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
@@ -132,17 +131,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.mark_quic_broken_when_network_blackholes);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, RetryWithoutAltSvcOnQuicErrors) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["retry_without_alt_svc_on_quic_errors"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.retry_without_alt_svc_on_quic_errors);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
