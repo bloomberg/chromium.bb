@@ -634,6 +634,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public boolean useLightDrawables() {
+        return !mUseDarkColors;
+    }
+
+    @Override
     public boolean onLongClick(View v) {
         if (v == mCloseButton) {
             return showAccessibilityToast(v, getResources().getString(R.string.close_tab));

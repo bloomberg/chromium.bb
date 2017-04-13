@@ -144,6 +144,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private int mFullscreenFocusToken = FullscreenManager.INVALID_TOKEN;
     private int mFullscreenFindInPageToken = FullscreenManager.INVALID_TOKEN;
     private int mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
+    private int mFullscreenHighlightToken = FullscreenManager.INVALID_TOKEN;
 
     private int mPreselectedTabId = Tab.INVALID_TAB_ID;
 
@@ -827,6 +828,21 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 } else {
                     mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenMenuToken);
                     mFullscreenMenuToken = FullscreenManager.INVALID_TOKEN;
+                }
+            }
+
+            @Override
+            public void onMenuHighlightChanged(boolean highlighting) {
+                mToolbar.setMenuButtonHighlight(highlighting);
+
+                if (mControlsVisibilityDelegate == null) return;
+                if (highlighting) {
+                    mFullscreenHighlightToken =
+                            mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
+                                    mFullscreenHighlightToken);
+                } else {
+                    mControlsVisibilityDelegate.hideControlsPersistent(mFullscreenHighlightToken);
+                    mFullscreenHighlightToken = FullscreenManager.INVALID_TOKEN;
                 }
             }
         });

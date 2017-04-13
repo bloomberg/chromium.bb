@@ -516,6 +516,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     }
                 }
             }
+
+            @Override
+            public void onMenuHighlightChanged(boolean highlighting) {}
         });
     }
 

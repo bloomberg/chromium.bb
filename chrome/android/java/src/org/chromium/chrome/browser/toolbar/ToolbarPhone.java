@@ -1454,6 +1454,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
+    // TODO(dtrainor): This is always true when in the tab switcher (crbug.com/710750).
     private boolean isTabSwitcherAnimationRunning() {
         return mTabSwitcherState == ENTERING_TAB_SWITCHER
                 || mTabSwitcherState == EXITING_TAB_SWITCHER;
@@ -2137,6 +2138,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
 
+        setMenuButtonHighlightDrawable(mHighlightingMenu);
         if (mShowMenuBadge && inOrEnteringStaticTab) {
             setAppMenuUpdateBadgeDrawable(mUseLightToolbarDrawables);
         }
@@ -2177,6 +2179,17 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public LocationBar getLocationBar() {
         return mLocationBar;
+    }
+
+    @Override
+    public boolean useLightDrawables() {
+        return mUseLightToolbarDrawables;
+    }
+
+    @Override
+    protected void setMenuButtonHighlightDrawable(boolean highlighting) {
+        highlighting &= !isTabSwitcherAnimationRunning();
+        super.setMenuButtonHighlightDrawable(highlighting);
     }
 
     @Override

@@ -79,6 +79,12 @@ public interface Toolbar {
     void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost);
 
     /**
+     * Sets whether or not the menu button should be highlighted.
+     * @param highlight Whether or not the menu button should be highlighted.
+     */
+    void setMenuButtonHighlight(boolean highlight);
+
+    /**
      * Show the update badge on the app menu button. Will have no effect if there is no app menu
      * button for the current Activity.
      */

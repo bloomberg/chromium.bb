@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -76,6 +77,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     private long mFirstDrawTimeMs;
 
     private boolean mFindInPageToolbarShowing;
+
+    protected boolean mHighlightingMenu;
+    private PulseDrawable mHighlightDrawable;
 
     protected boolean mShowMenuBadge;
     private AnimatorSet mMenuBadgeAnimatorSet;
@@ -654,6 +658,11 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public abstract LocationBar getLocationBar();
 
     /**
+     * @return Whether or not this toolbar should use light or dark assets based on the theme.
+     */
+    public abstract boolean useLightDrawables();
+
+    /**
      * Navigates the current Tab back.
      * @return Whether or not the current Tab did go back.
      */
@@ -688,6 +697,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void openHomepage() {
         getLocationBar().hideSuggestions();
         if (mToolbarTabController != null) mToolbarTabController.openHomepage();
+    }
+
+    @Override
+    public void setMenuButtonHighlight(boolean highlight) {
+        mHighlightingMenu = highlight;
+        setMenuButtonHighlightDrawable(mHighlightingMenu);
     }
 
     @Override
@@ -792,6 +807,28 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected void setAppMenuUpdateBadgeDrawable(boolean useLightDrawable) {
         mMenuBadge.setImageResource(useLightDrawable ? R.drawable.badge_update_light
                 : R.drawable.badge_update_dark);
+    }
+
+    /**
+     * Sets the menu button's background depending on whether or not we are highlighting and whether
+     * or not we are using light or dark assets.
+     * @param highlighting Whether or not the menu button should be highlighted.
+     */
+    protected void setMenuButtonHighlightDrawable(boolean highlighting) {
+        if (highlighting) {
+            if (mHighlightDrawable == null) {
+                mHighlightDrawable = PulseDrawable.createCircle();
+                mHighlightDrawable.setInset(ApiCompatibilityUtils.getPaddingStart(mMenuButton),
+                        mMenuButton.getPaddingTop(),
+                        ApiCompatibilityUtils.getPaddingEnd(mMenuButton),
+                        mMenuButton.getPaddingBottom());
+            }
+            mHighlightDrawable.setUseLightPulseColor(useLightDrawables());
+            mMenuButtonWrapper.setBackground(mHighlightDrawable);
+            mHighlightDrawable.start();
+        } else {
+            mMenuButtonWrapper.setBackground(null);
+        }
     }
 
     /**

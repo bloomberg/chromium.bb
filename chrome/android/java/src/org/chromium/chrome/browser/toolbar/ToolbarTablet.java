@@ -356,6 +356,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mUseLightColorAssets = incognito;
         }
 
+        setMenuButtonHighlightDrawable(mHighlightingMenu);
         updateNtp();
     }
 
@@ -463,6 +464,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
                 setAppMenuUpdateBadgeToVisible(false);
             }
         }
+        setMenuButtonHighlightDrawable(mHighlightingMenu);
     }
 
     @Override
@@ -499,6 +501,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     @Override
     public LocationBar getLocationBar() {
         return mLocationBar;
+    }
+
+    @Override
+    public boolean useLightDrawables() {
+        return mUseLightColorAssets;
     }
 
     @Override

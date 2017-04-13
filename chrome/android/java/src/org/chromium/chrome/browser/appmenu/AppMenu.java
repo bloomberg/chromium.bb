@@ -12,6 +12,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.IdRes;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -128,18 +129,22 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     /**
      * Creates and shows the app menu anchored to the specified view.
      *
-     * @param context The context of the AppMenu (ensure the proper theme is set on this context).
-     * @param anchorView The anchor {@link View} of the {@link ListPopupWindow}.
+     * @param context             The context of the AppMenu (ensure the proper theme is set on this
+     * context).
+     * @param anchorView          The anchor {@link View} of the {@link ListPopupWindow}.
      * @param isByPermanentButton Whether or not permanent hardware button triggered it. (oppose to
      *                            software button or keyboard).
-     * @param screenRotation Current device screen rotation.
+     * @param screenRotation      Current device screen rotation.
      * @param visibleDisplayFrame The display area rect in which AppMenu is supposed to fit in.
-     * @param screenHeight Current device screen height.
-     * @param footerResourceId The resource id for a view to add to the end of the menu list.
-     *                         Can be 0 if no such view is required.
+     * @param screenHeight        Current device screen height.
+     * @param footerResourceId    The resource id for a view to add to the end of the menu list. Can
+     *                            be 0 if no such view is required.
+     * @param highlightedItemId   The resource id of the menu item that should be highlighted.  Can
+     *                            be 0 if no item should be highlighted.
      */
     void show(Context context, View anchorView, boolean isByPermanentButton, int screenRotation,
-            Rect visibleDisplayFrame, int screenHeight, int footerResourceId) {
+            Rect visibleDisplayFrame, int screenHeight, @IdRes int footerResourceId,
+            @IdRes int highlightedItemId) {
         mPopup = new ListPopupWindow(context, null, android.R.attr.popupMenuStyle);
         mPopup.setModal(true);
         mPopup.setAnchorView(anchorView);
@@ -221,7 +226,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
-        mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context));
+        mAdapter = new AppMenuAdapter(
+                this, menuItems, LayoutInflater.from(context), highlightedItemId);
         mPopup.setAdapter(mAdapter);
 
         setMenuHeight(

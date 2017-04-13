@@ -1187,6 +1187,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/ProgressAnimationSmooth.java",
   "java/src/org/chromium/chrome/browser/widget/PromoDialog.java",
   "java/src/org/chromium/chrome/browser/widget/PromoDialogLayout.java",
+  "java/src/org/chromium/chrome/browser/widget/PulseDrawable.java",
+  "java/src/org/chromium/chrome/browser/widget/PulseInterpolator.java",
   "java/src/org/chromium/chrome/browser/widget/RadioButtonWithDescription.java",
   "java/src/org/chromium/chrome/browser/widget/RoundedIconGenerator.java",
   "java/src/org/chromium/chrome/browser/widget/TintedDrawable.java",
