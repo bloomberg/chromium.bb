@@ -51,12 +51,14 @@ html[screen=user-adding] #signin-banner {
   display: inline-block;
 }
 
+html[screen=login] #signin-banner,
 html[screen=lock] #signin-banner {
   display: inline-block;
   opacity: 0;
   visibility: hidden;
 }
 
+html[screen=login] #signin-banner.message-set,
 html[screen=lock] #signin-banner.message-set {
   opacity: 1;
   transition: opacity 1s;

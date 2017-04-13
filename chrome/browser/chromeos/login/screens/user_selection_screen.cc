@@ -8,6 +8,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -27,12 +29,18 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/grit/generated_resources.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -132,6 +140,87 @@ bool AllowFingerprintForUser(user_manager::User* user) {
 }
 
 }  // namespace
+
+// Helper class to call cryptohome to check whether a user needs dircrypto
+// migration. The check results are cached to limit calls to cryptohome.
+class UserSelectionScreen::DircryptoMigrationChecker {
+ public:
+  explicit DircryptoMigrationChecker(UserSelectionScreen* owner)
+      : owner_(owner), weak_ptr_factory_(this) {}
+  ~DircryptoMigrationChecker() = default;
+
+  // Start to check whether the given user needs dircrypto migration.
+  void Check(const AccountId& account_id) {
+    focused_user_ = account_id;
+
+    auto it = needs_dircrypto_migration_cache_.find(account_id);
+    if (it != needs_dircrypto_migration_cache_.end()) {
+      UpdateUI(account_id, it->second);
+      return;
+    }
+
+    DBusThreadManager::Get()
+        ->GetCryptohomeClient()
+        ->WaitForServiceToBeAvailable(
+            base::Bind(&DircryptoMigrationChecker::RunCryptohomeCheck,
+                       weak_ptr_factory_.GetWeakPtr(), account_id));
+  }
+
+ private:
+  // WaitForServiceToBeAvailable callback to invoke NeedsDircryptoMigration when
+  // cryptohome service is available.
+  void RunCryptohomeCheck(const AccountId& account_id, bool service_is_ready) {
+    if (!service_is_ready) {
+      LOG(ERROR) << "Cryptohome is not available.";
+      return;
+    }
+
+    const cryptohome::Identification cryptohome_id(account_id);
+    DBusThreadManager::Get()->GetCryptohomeClient()->NeedsDircryptoMigration(
+        cryptohome_id,
+        base::Bind(&DircryptoMigrationChecker::
+                       OnCryptohomeNeedsDircryptoMigrationCallback,
+                   weak_ptr_factory_.GetWeakPtr(), account_id));
+  }
+
+  // Callback invoked when NeedsDircryptoMigration call is finished.
+  void OnCryptohomeNeedsDircryptoMigrationCallback(
+      const AccountId& account_id,
+      DBusMethodCallStatus call_status,
+      bool needs_migration) {
+    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+      LOG(ERROR) << "Failed to call cryptohome NeedsDircryptoMigration.";
+      return;
+    }
+
+    needs_dircrypto_migration_cache_[account_id] = needs_migration;
+    UpdateUI(account_id, needs_migration);
+  }
+
+  // Update UI for the given user when the check result is available.
+  void UpdateUI(const AccountId& account_id, bool needs_migration) {
+    // Bail if the user is not the currently focused.
+    if (account_id != focused_user_)
+      return;
+
+    owner_->ShowBannerMessage(
+        needs_migration ? l10n_util::GetStringUTF16(
+                              IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER)
+                        : base::string16());
+  }
+
+  UserSelectionScreen* const owner_;
+  AccountId focused_user_ = EmptyAccountId();
+
+  // Cached result of NeedsDircryptoMigration cryptohome check. Key is the
+  // account id of users. True value means the user needs dircrypto migration
+  // and false means dircrypto migration is done.
+  std::map<AccountId, bool> needs_dircrypto_migration_cache_;
+
+  base::WeakPtrFactory<DircryptoMigrationChecker> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DircryptoMigrationChecker);
+};
 
 UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
     : BaseScreen(nullptr, OobeScreen::SCREEN_USER_SELECTION),
@@ -446,6 +535,15 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
     token_handle_util_->CheckToken(
         account_id, base::Bind(&UserSelectionScreen::OnUserStatusChecked,
                                weak_factory_.GetWeakPtr()));
+  }
+
+  // Run dircrypto migration check only on the login screen.
+  if (display_type_ == OobeUI::kLoginDisplay) {
+    if (!dircrypto_migration_checker_) {
+      dircrypto_migration_checker_ =
+          base::MakeUnique<DircryptoMigrationChecker>(this);
+    }
+    dircrypto_migration_checker_->Check(account_id);
   }
 }
 

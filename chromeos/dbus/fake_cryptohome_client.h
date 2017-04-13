@@ -207,6 +207,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void SetFirmwareManagementParametersInTpm(
       const cryptohome::SetFirmwareManagementParametersRequest& request,
       const ProtobufMethodCallback& callback) override;
+  void NeedsDircryptoMigration(const cryptohome::Identification& cryptohome_id,
+                               const BoolDBusMethodCallback& callback) override;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
@@ -227,6 +229,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // Returns the stub system salt as raw bytes. (not as a string encoded in the
   // format used by SystemSaltGetter::ConvertRawSaltToHexString()).
   static std::vector<uint8_t> GetStubSystemSalt();
+
+  // Sets the needs dircrypto migration value.
+  void set_needs_dircrypto_migration(bool needs_migration) {
+    needs_dircrypto_migration_ = needs_migration;
+  }
 
  private:
   void ReturnProtobufMethodCallback(
@@ -269,6 +276,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
   base::RepeatingTimer dircrypto_migration_progress_timer_;
   uint64_t dircrypto_migration_progress_;
+
+  bool needs_dircrypto_migration_ = false;
 
   base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
 

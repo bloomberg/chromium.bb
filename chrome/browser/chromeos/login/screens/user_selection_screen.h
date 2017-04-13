@@ -123,6 +123,8 @@ class UserSelectionScreen
       public_session_recommended_locales_;
 
  private:
+  class DircryptoMigrationChecker;
+
   EasyUnlockService* GetEasyUnlockServiceForUser(
       const AccountId& account_id) const;
 
@@ -151,6 +153,9 @@ class UserSelectionScreen
 
   // Token handler util for checking user OAuth token status.
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
+
+  // Helper to check whether a user needs dircrypto migration.
+  std::unique_ptr<DircryptoMigrationChecker> dircrypto_migration_checker_;
 
   base::WeakPtrFactory<UserSelectionScreen> weak_factory_;
 

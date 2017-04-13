@@ -941,6 +941,24 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void NeedsDircryptoMigration(
+      const cryptohome::Identification& cryptohome_id,
+      const BoolDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeNeedsDircryptoMigration);
+
+    cryptohome::AccountIdentifier id_proto;
+    FillIdentificationProtobuf(cryptohome_id, &id_proto);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id_proto);
+
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnBoolMethod,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(

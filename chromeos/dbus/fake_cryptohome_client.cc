@@ -615,6 +615,14 @@ void FakeCryptohomeClient::SetFirmwareManagementParametersInTpm(
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), callback);
 }
 
+void FakeCryptohomeClient::NeedsDircryptoMigration(
+    const cryptohome::Identification& cryptohome_id,
+    const BoolDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
+                            needs_dircrypto_migration_));
+}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (is_available) {

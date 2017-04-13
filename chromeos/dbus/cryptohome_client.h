@@ -594,6 +594,12 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::SetFirmwareManagementParametersRequest& request,
       const ProtobufMethodCallback& callback) = 0;
 
+  // Calls NeedsDircryptoMigration to find out whether the given user needs
+  // dircrypto migration.
+  virtual void NeedsDircryptoMigration(
+      const cryptohome::Identification& cryptohome_id,
+      const BoolDBusMethodCallback& callback) = 0;
+
  protected:
   // Create() should be used instead.
   CryptohomeClient();
