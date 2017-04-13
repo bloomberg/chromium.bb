@@ -664,17 +664,18 @@ void WizardController::OnHIDDetectionCompleted() {
 }
 
 void WizardController::OnNetworkConnected() {
-  if (is_official_build_) {
-    if (!StartupUtils::IsEulaAccepted()) {
+  if (!StartupUtils::IsEulaAccepted()) {
+    if (is_official_build_) {
       ShowEulaScreen();
     } else {
-      // Possible cases:
-      // 1. EULA was accepted, forced shutdown/reboot during update.
-      // 2. EULA was accepted, planned reboot after update.
-      // Make sure that device is up to date.
-      InitiateOOBEUpdate();
+      // Follow the same flow as if EULA had been accepted.
+      OnEulaAccepted();
     }
   } else {
+    // Possible cases:
+    // 1. EULA was accepted, forced shutdown/reboot during update.
+    // 2. EULA was accepted, planned reboot after update.
+    // Make sure that device is up to date.
     InitiateOOBEUpdate();
   }
 }
