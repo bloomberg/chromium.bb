@@ -535,10 +535,17 @@ void SVGElement::UpdateRelativeLengthsInformation(
     SVGElement* client_element) {
   DCHECK(client_element);
 
+  // Through an unfortunate chain of events, we can end up calling this while a
+  // subtree is being removed, and before the subtree has been properly
+  // "disconnected". Hence check the entire ancestor chain to avoid propagating
+  // relative length clients up into ancestors that have already been
+  // disconnected.
   // If we're not yet in a document, this function will be called again from
   // insertedInto(). Do nothing now.
-  if (!isConnected())
-    return;
+  for (Node& current_node : NodeTraversal::InclusiveAncestorsOf(*this)) {
+    if (!current_node.isConnected())
+      return;
+  }
 
   // An element wants to notify us that its own relative lengths state changed.
   // Register it in the relative length map, and register us in the parent
