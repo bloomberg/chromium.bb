@@ -31,6 +31,7 @@
 
 #include "core/layout/LayoutSliderThumb.h"
 
+#include "core/html/forms/SliderThumbElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/style/ComputedStyle.h"
 

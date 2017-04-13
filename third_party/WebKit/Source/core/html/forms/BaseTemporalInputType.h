@@ -31,8 +31,8 @@
 #ifndef BaseTemporalInputType_h
 #define BaseTemporalInputType_h
 
+#include "core/html/forms/DateTimeEditElement.h"
 #include "core/html/forms/InputType.h"
-#include "core/html/shadow/DateTimeEditElement.h"
 #include "platform/DateComponents.h"
 
 namespace blink {

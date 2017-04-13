@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/shadow/DateTimeEditElement.h"
+#include "core/html/forms/DateTimeEditElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
@@ -31,8 +31,8 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
 #include "core/events/MouseEvent.h"
+#include "core/html/forms/DateTimeFieldElements.h"
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/shadow/DateTimeFieldElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleInheritedData.h"

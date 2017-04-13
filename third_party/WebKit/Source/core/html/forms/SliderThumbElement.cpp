@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/SliderThumbElement.h"
+#include "core/html/forms/SliderThumbElement.h"
 
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"

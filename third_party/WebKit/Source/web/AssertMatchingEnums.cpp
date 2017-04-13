@@ -49,7 +49,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/shadow/TextControlInnerElements.h"
+#include "core/html/forms/TextControlInnerElements.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"

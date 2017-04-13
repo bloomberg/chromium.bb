@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/shadow/DateTimeSymbolicFieldElement.h"
+#include "core/html/forms/DateTimeSymbolicFieldElement.h"
 
 #include "core/events/KeyboardEvent.h"
 #include "platform/fonts/Font.h"

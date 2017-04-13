@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/forms/SpinButtonElement.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/TaskRunnerHelper.h"

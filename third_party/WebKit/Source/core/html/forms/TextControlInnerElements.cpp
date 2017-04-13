@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/TextControlInnerElements.h"
+#include "core/html/forms/TextControlInnerElements.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/resolver/StyleAdjuster.h"

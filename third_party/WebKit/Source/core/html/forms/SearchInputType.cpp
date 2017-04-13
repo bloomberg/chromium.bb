@@ -37,8 +37,8 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/forms/TextControlInnerElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/LayoutSearchField.h"
 
 namespace blink {

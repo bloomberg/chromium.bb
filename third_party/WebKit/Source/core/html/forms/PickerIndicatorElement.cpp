@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/PickerIndicatorElement.h"
+#include "core/html/forms/PickerIndicatorElement.h"
 
 #include "core/events/Event.h"
 #include "core/events/KeyboardEvent.h"

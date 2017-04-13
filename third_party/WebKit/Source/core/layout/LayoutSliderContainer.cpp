@@ -33,9 +33,9 @@
 
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/forms/SliderThumbElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
 

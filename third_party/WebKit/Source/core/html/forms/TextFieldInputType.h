@@ -33,7 +33,7 @@
 
 #include "core/html/forms/InputType.h"
 #include "core/html/forms/InputTypeView.h"
-#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/forms/SpinButtonElement.h"
 
 namespace blink {
 

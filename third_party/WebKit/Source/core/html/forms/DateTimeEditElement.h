@@ -26,8 +26,8 @@
 #ifndef DateTimeEditElement_h
 #define DateTimeEditElement_h
 
+#include "core/html/forms/DateTimeFieldElement.h"
 #include "core/html/forms/StepRange.h"
-#include "core/html/shadow/DateTimeFieldElement.h"
 #include "platform/DateComponents.h"
 #include "platform/wtf/Allocator.h"
 #include "public/platform/WebFocusType.h"

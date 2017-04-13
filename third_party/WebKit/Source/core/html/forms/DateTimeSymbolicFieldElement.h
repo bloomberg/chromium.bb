@@ -26,8 +26,8 @@
 #ifndef DateTimeSymbolicFieldElement_h
 #define DateTimeSymbolicFieldElement_h
 
+#include "core/html/forms/DateTimeFieldElement.h"
 #include "core/html/forms/TypeAhead.h"
-#include "core/html/shadow/DateTimeFieldElement.h"
 
 namespace blink {
 

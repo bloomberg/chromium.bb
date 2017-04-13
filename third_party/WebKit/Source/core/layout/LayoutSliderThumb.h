@@ -32,7 +32,6 @@
 #ifndef LayoutSliderThumb_h
 #define LayoutSliderThumb_h
 
-#include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {

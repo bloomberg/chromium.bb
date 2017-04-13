@@ -31,11 +31,11 @@
 #ifndef MultipleFieldsTemporalInputTypeView_h
 #define MultipleFieldsTemporalInputTypeView_h
 
+#include "core/html/forms/ClearButtonElement.h"
+#include "core/html/forms/DateTimeEditElement.h"
 #include "core/html/forms/InputTypeView.h"
-#include "core/html/shadow/ClearButtonElement.h"
-#include "core/html/shadow/DateTimeEditElement.h"
-#include "core/html/shadow/PickerIndicatorElement.h"
-#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/forms/PickerIndicatorElement.h"
+#include "core/html/forms/SpinButtonElement.h"
 #include "public/platform/WebFocusType.h"
 
 namespace blink {

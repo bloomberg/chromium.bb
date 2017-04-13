@@ -26,8 +26,8 @@
 #ifndef DateTimeFieldElements_h
 #define DateTimeFieldElements_h
 
-#include "core/html/shadow/DateTimeNumericFieldElement.h"
-#include "core/html/shadow/DateTimeSymbolicFieldElement.h"
+#include "core/html/forms/DateTimeNumericFieldElement.h"
+#include "core/html/forms/DateTimeSymbolicFieldElement.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

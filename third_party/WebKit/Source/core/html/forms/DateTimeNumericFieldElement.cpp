@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/shadow/DateTimeNumericFieldElement.h"
+#include "core/html/forms/DateTimeNumericFieldElement.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"

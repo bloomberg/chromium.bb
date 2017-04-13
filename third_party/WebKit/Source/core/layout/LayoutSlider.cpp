@@ -22,8 +22,8 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/forms/SliderThumbElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/html/shadow/SliderThumbElement.h"
 #include "core/layout/LayoutSliderThumb.h"
 #include "platform/wtf/MathExtras.h"
 

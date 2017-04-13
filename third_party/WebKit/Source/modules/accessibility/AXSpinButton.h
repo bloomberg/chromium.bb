@@ -26,7 +26,7 @@
 #ifndef AXSpinButton_h
 #define AXSpinButton_h
 
-#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/forms/SpinButtonElement.h"
 #include "modules/accessibility/AXMockObject.h"
 
 namespace blink {

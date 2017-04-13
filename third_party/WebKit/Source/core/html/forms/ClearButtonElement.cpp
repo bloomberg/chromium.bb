@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/shadow/ClearButtonElement.h"
+#include "core/html/forms/ClearButtonElement.h"
 
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"

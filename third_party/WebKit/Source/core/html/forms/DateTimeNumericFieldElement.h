@@ -26,7 +26,7 @@
 #ifndef DateTimeNumericFieldElement_h
 #define DateTimeNumericFieldElement_h
 
-#include "core/html/shadow/DateTimeFieldElement.h"
+#include "core/html/forms/DateTimeFieldElement.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
