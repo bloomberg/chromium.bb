@@ -10,17 +10,12 @@
 ClipboardRecentContentGeneric::ClipboardRecentContentGeneric() {}
 
 bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  base::Time last_modified_time = clipboard->GetClipboardLastModifiedTime();
-  if (!last_modified_time_to_suppress_.is_null() &&
-      (last_modified_time == last_modified_time_to_suppress_))
-    return false;
-
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
     return false;
 
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadAsciiText(ui::CLIPBOARD_TYPE_COPY_PASTE, &gurl_string);
   base::TrimWhitespaceASCII(gurl_string, base::TrimPositions::TRIM_ALL,
                             &gurl_string);
@@ -53,7 +48,7 @@ bool ClipboardRecentContentGeneric::GetRecentURLFromClipboard(GURL* url) {
 
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {
   const base::Time last_modified_time =
-      ui::Clipboard::GetForCurrentThread()->GetClipboardLastModifiedTime();
+      ui::Clipboard::GetForCurrentThread()->GetLastModifiedTime();
   const base::Time now = base::Time::Now();
   // In case of system clock change, assume the last modified time is now.
   // (Don't return a negative age, i.e., a time in the future.)
@@ -64,9 +59,7 @@ base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {
 
 void ClipboardRecentContentGeneric::SuppressClipboardContent() {
   // User cleared the user data.  The pasteboard entry must be removed from the
-  // omnibox list.  Do this by suppressing all clipboard content with the
-  // current clipboard content's time.  Then we only suggest the clipboard
-  // content later if the time changed.
-  last_modified_time_to_suppress_ =
-      ui::Clipboard::GetForCurrentThread()->GetClipboardLastModifiedTime();
+  // omnibox list.  Do this by pretending the current clipboard is ancient,
+  // not recent.
+  ui::Clipboard::GetForCurrentThread()->ClearLastModifiedTime();
 }

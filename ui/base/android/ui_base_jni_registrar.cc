@@ -7,13 +7,15 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
+#include "ui/base/clipboard/clipboard_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
 
 namespace ui {
 namespace android {
 
 static base::android::RegistrationMethod kUiRegisteredMethods[] = {
-  { "LocalizationUtils", l10n_util::RegisterLocalizationUtil },
+    {"LocalizationUtils", l10n_util::RegisterLocalizationUtil},
+    {"ClipboardAndroid", ui::RegisterClipboardAndroid},
 };
 
 bool RegisterJni(JNIEnv* env) {

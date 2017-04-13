@@ -27,11 +27,6 @@ class ClipboardRecentContentGeneric : public ClipboardRecentContent {
   void SuppressClipboardContent() override;
 
  private:
-  // When told to suppress clipboard content, store the time of the last
-  // modified clipboard and suppress suggestions that correspond to that time.
-  // Set to base::Time() if not suppressing clipboard content.
-  base::Time last_modified_time_to_suppress_;
-
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContentGeneric);
 };
 

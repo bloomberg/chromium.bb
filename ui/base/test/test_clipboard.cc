@@ -26,7 +26,7 @@ Clipboard* TestClipboard::CreateForCurrentThread() {
   return clipboard;
 }
 
-void TestClipboard::SetClipboardLastModifiedTime(const base::Time& time) {
+void TestClipboard::SetLastModifiedTime(const base::Time& time) {
   last_modified_time_ = time;
 }
 
@@ -130,8 +130,12 @@ void TestClipboard::ReadData(const FormatType& format,
     *result = it->second;
 }
 
-base::Time TestClipboard::GetClipboardLastModifiedTime() const {
+base::Time TestClipboard::GetLastModifiedTime() const {
   return last_modified_time_;
+}
+
+void TestClipboard::ClearLastModifiedTime() {
+  last_modified_time_ = base::Time();
 }
 
 void TestClipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {

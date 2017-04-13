@@ -207,7 +207,10 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   // Returns an estimate of the time the clipboard was last updated.  If the
   // time is unknown, returns Time::Time().
-  virtual base::Time GetClipboardLastModifiedTime() const;
+  virtual base::Time GetLastModifiedTime() const;
+
+  // Resets the clipboard last modified time to Time::Time().
+  virtual void ClearLastModifiedTime();
 
   // Gets the FormatType corresponding to an arbitrary format string,
   // registering it with the system if needed. Due to Windows/Linux
