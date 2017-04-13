@@ -19,7 +19,9 @@ base::MessageLoop* LauncherThread::GetMessageLoop() {
 
 LauncherThread::LauncherThread()
     : java_handler_thread_(Java_LauncherThread_getHandlerThread(
-          base::android::AttachCurrentThread())) {}
+          base::android::AttachCurrentThread())) {
+  java_handler_thread_.Start();
+}
 
 LauncherThread::~LauncherThread() {}
 

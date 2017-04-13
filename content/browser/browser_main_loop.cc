@@ -1069,6 +1069,7 @@ int BrowserMainLoop::CreateThreads() {
         // concerns are not a problem in practice.
         redirect_thread = false;
         message_loop = android::LauncherThread::GetMessageLoop();
+        DCHECK(message_loop);
 #endif
         if (redirect_thread) {
           non_ui_non_io_task_runner_traits
@@ -1127,7 +1128,8 @@ int BrowserMainLoop::CreateThreads() {
       (*thread_to_start)
           .reset(message_loop ? new BrowserProcessSubThread(id, message_loop)
                               : new BrowserProcessSubThread(id));
-      if (!(*thread_to_start)->StartWithOptions(options))
+      // Start the thread if an existing |message_loop| wasn't provided.
+      if (!message_loop && !(*thread_to_start)->StartWithOptions(options))
         LOG(FATAL) << "Failed to start the browser thread: id == " << id;
     } else {
       scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
