@@ -217,6 +217,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mac_installer_unittests"
       },
       {
@@ -642,6 +648,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mac_installer_unittests"
       },
       {
@@ -1017,6 +1029,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "mac_installer_unittests"
       },
       {
@@ -1365,6 +1383,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "libjingle_xmpp_unittests"
       },
       {
         "swarming": {

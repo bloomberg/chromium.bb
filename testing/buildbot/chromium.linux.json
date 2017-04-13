@@ -693,6 +693,37 @@
         "test": "ipc_tests"
       },
       {
+        "override_isolate_target": "libjingle_xmpp_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
         "override_isolate_target": "media_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1908,6 +1939,37 @@
         "test": "ipc_tests"
       },
       {
+        "override_isolate_target": "libjingle_xmpp_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "android_devices": "4",
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
         "override_isolate_target": "media_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2593,6 +2655,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "media_blink_unittests"
       },
       {
@@ -2751,6 +2819,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "libjingle_xmpp_unittests"
       },
       {
         "swarming": {
@@ -3168,6 +3242,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "leveldb_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "libjingle_xmpp_unittests"
       },
       {
         "swarming": {
@@ -3858,6 +3938,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "media_blink_unittests"
       },
       {
@@ -4334,6 +4420,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "leveldb_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "libjingle_xmpp_unittests"
       },
       {
         "swarming": {

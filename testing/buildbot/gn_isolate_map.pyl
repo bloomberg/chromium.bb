@@ -625,6 +625,10 @@
     "label": "//third_party/libaddressinput:libaddressinput_unittests",
     "type": "console_test_launcher",
   },
+  "libjingle_xmpp_unittests": {
+    "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
+    "type": "console_test_launcher",
+  },
   # See http://crbug.com/585151
   "libphonenumber_unittests": {
     "label": "//third_party/libphonenumber:libphonenumber_unittests",
