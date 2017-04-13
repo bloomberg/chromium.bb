@@ -10,6 +10,8 @@ import android.view.View.OnClickListener;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
+import java.util.Locale;
+
 /**
  * The interface that controls contextual text selection.
  */
@@ -78,7 +80,8 @@ public interface ContextSelectionProvider {
      * @param end   The index pointing to the first character that comes after
      *              the selected text inside the textual context.
      */
-    public void sendSuggestAndClassifyRequest(CharSequence text, int start, int end);
+    public void sendSuggestAndClassifyRequest(
+            CharSequence text, int start, int end, Locale[] locales);
 
     /**
      * Sends asynchronous request to obtain the selection and analyze its type.
@@ -87,7 +90,7 @@ public interface ContextSelectionProvider {
      * @param end   The index pointing to the first character that comes after
      *              the selected text inside the textual context.
      */
-    public void sendClassifyRequest(CharSequence text, int start, int end);
+    public void sendClassifyRequest(CharSequence text, int start, int end, Locale[] locales);
 
     /**
      * Cancel all asynchronous requests.

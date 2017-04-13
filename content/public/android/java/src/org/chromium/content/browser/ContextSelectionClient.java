@@ -137,11 +137,11 @@ public class ContextSelectionClient implements SelectionClient {
 
         switch (callbackData) {
             case SUGGEST_AND_CLASSIFY:
-                mProvider.sendSuggestAndClassifyRequest(text, start, end);
+                mProvider.sendSuggestAndClassifyRequest(text, start, end, null);
                 break;
 
             case CLASSIFY:
-                mProvider.sendClassifyRequest(text, start, end);
+                mProvider.sendClassifyRequest(text, start, end, null);
                 break;
 
             default:
