@@ -4067,6 +4067,14 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Loca
   impl->setTestInterfaceGarbageCollectedOrNullAttribute(cppValue);
 }
 
+static void sizeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::toImpl(holder);
+
+  V8SetReturnValueUnsigned(info, impl->size());
+}
+
 static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::toImpl(info.Holder());
 
@@ -10745,6 +10753,10 @@ void V8TestObject::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCa
   TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestObject::sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::sizeAttributeGetter(info);
+}
+
 void V8TestObject::unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::unscopableVoidMethodMethod(info);
 }
@@ -12000,6 +12012,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
     {"testInterfaceAttribute", V8TestObject::testInterfaceAttributeAttributeGetterCallback, V8TestObject::testInterfaceAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceGarbageCollectedAttribute", V8TestObject::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, V8TestObject::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceGarbageCollectedOrNullAttribute", V8TestObject::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, V8TestObject::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
+    {"size", V8TestObject::sizeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {

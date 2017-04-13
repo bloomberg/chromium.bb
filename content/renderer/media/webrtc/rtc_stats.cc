@@ -95,6 +95,10 @@ std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
   return std::unique_ptr<blink::WebRTCStats>();
 }
 
+size_t RTCStatsReport::Size() const {
+  return stats_report_->size();
+}
+
 RTCStats::RTCStats(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
     const webrtc::RTCStats* stats)

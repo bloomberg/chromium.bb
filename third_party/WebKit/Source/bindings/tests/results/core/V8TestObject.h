@@ -375,6 +375,7 @@ class V8TestObject {
   CORE_EXPORT static void testInterfaceGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void unscopableRuntimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

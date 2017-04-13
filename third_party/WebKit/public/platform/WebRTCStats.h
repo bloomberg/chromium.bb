@@ -48,6 +48,8 @@ class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
   virtual std::unique_ptr<WebRTCStats> GetStats(WebString id) const = 0;
   // The next stats object, or null if the end has been reached.
   virtual std::unique_ptr<WebRTCStats> Next() = 0;
+  // The number of stats objects.
+  virtual size_t Size() const = 0;
 };
 
 class BLINK_PLATFORM_EXPORT WebRTCStats {

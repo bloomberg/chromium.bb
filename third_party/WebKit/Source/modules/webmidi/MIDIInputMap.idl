@@ -5,6 +5,5 @@
 // https://webaudio.github.io/web-midi-api/#MIDIInput
 
 interface MIDIInputMap {
-    readonly attribute unsigned long size;
     readonly maplike<DOMString, MIDIInput>;
 };

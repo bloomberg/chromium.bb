@@ -25,6 +25,8 @@ class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
  public:
   RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
 
+  size_t size() const { return report_->Size(); }
+
   // Maplike<String, v8::Local<v8::Value>>
   PairIterable<String, v8::Local<v8::Value>>::IterationSource* StartIteration(
       ScriptState*,

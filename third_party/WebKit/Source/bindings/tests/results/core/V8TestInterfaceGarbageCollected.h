@@ -51,6 +51,7 @@ class V8TestInterfaceGarbageCollected {
 
   CORE_EXPORT static void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
   CORE_EXPORT static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

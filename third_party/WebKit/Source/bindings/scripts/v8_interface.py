@@ -35,7 +35,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 from operator import or_
 
-from idl_definitions import IdlOperation, IdlArgument
+from idl_definitions import IdlAttribute, IdlOperation, IdlArgument
 from idl_types import IdlType, inherits_interface
 from overload_set_algorithm import effective_overload_set_by_length
 from overload_set_algorithm import method_overloads_by_name
@@ -350,13 +350,7 @@ def interface_context(interface, interfaces):
     })
 
     # Attributes
-    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
-                  for attribute in interface.attributes]
-
-    has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)
-    if has_conditional_attributes and interface.is_partial:
-        raise Exception('Conditional attributes between partial interfaces in modules and the original interfaces(%s) in core are not allowed.' % interface.name)
-
+    attributes = attributes_context(interface, interfaces)
     context.update({
         'attributes': attributes,
         # Elements in attributes are broken in following members.
@@ -460,6 +454,45 @@ def interface_context(interface, interfaces):
     })
 
     return context
+
+
+def attributes_context(interface, interfaces):
+    """Creates a list of Jinja template contexts for attributes of an interface.
+
+    Args:
+        interface: An interface to create contexts for
+        interfaces: A dict which maps an interface name to the definition
+            which can be referred if needed
+
+    Returns:
+        A list of attribute contexts
+    """
+
+    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
+                  for attribute in interface.attributes]
+
+    has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)
+    if has_conditional_attributes and interface.is_partial:
+        raise Exception(
+            'Conditional attributes between partial interfaces in modules '
+            'and the original interfaces(%s) in core are not allowed.'
+            % interface.name)
+
+    # See also comment in methods_context.
+    if not interface.is_partial and (interface.maplike or interface.setlike):
+        if any(attribute['name'] == 'size' for attribute in attributes):
+            raise ValueError(
+                'An interface cannot define an attribute called "size"; it is '
+                'implied by maplike/setlike in the IDL.')
+        size_attribute = IdlAttribute()
+        size_attribute.name = 'size'
+        size_attribute.idl_type = IdlType('unsigned long')
+        size_attribute.is_read_only = True
+        size_attribute.extended_attributes['NotEnumerable'] = None
+        attributes.append(v8_attributes.attribute_context(
+            interface, size_attribute, interfaces))
+
+    return attributes
 
 
 def methods_context(interface):

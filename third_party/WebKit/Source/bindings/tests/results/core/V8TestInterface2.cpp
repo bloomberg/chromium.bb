@@ -59,6 +59,14 @@ static_assert(
 
 namespace TestInterface2V8Internal {
 
+static void sizeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterface2* impl = V8TestInterface2::toImpl(holder);
+
+  V8SetReturnValueUnsigned(info, impl->size());
+}
+
 static void legacyCallerMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface2", "legacyCaller");
 
@@ -473,6 +481,10 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 
 } // namespace TestInterface2V8Internal
 
+void V8TestInterface2::sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2V8Internal::sizeAttributeGetter(info);
+}
+
 void V8TestInterface2::legacyCallerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterface2V8Internal::legacyCallerMethod(info);
 }
@@ -581,6 +593,10 @@ void V8TestInterface2::indexedPropertyDeleterCallback(uint32_t index, const v8::
   TestInterface2V8Internal::indexedPropertyDeleter(index, info);
 }
 
+static const V8DOMConfiguration::AccessorConfiguration V8TestInterface2Accessors[] = {
+    {"size", V8TestInterface2::sizeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
+};
+
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
     {"legacyCaller", V8TestInterface2::legacyCallerMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"item", V8TestInterface2::itemMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
@@ -631,6 +647,7 @@ void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, con
     V8DOMConfiguration::InstallConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
   }
   static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
+  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Accessors, WTF_ARRAY_LENGTH(V8TestInterface2Accessors));
   V8DOMConfiguration::InstallMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
   // Indexed properties

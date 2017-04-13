@@ -4139,6 +4139,7 @@ interface RTCSessionDescription
     setter type
 interface RTCStatsReport
     attribute @@toStringTag
+    getter size
     method @@iterator
     method constructor
     method entries

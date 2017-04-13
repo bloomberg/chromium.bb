@@ -233,6 +233,7 @@ class MockWebRTCStatsReport : public blink::WebRTCStatsReport {
     return std::unique_ptr<blink::WebRTCStats>(
         new MockWebRTCStats(stats_[i_++]));
   }
+  size_t Size() const override { return stats_.size(); }
 
  private:
   std::vector<MockWebRTCStats> stats_;

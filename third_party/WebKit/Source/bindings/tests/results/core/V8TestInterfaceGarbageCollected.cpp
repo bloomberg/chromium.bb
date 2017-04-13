@@ -87,6 +87,14 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
   impl->setAttr1(cppValue);
 }
 
+static void sizeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+
+  V8SetReturnValueUnsigned(info, impl->size());
+}
+
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
 
@@ -305,6 +313,10 @@ void V8TestInterfaceGarbageCollected::attr1AttributeSetterCallback(const v8::Fun
   TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
 }
 
+void V8TestInterfaceGarbageCollected::sizeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceGarbageCollectedV8Internal::sizeAttributeGetter(info);
+}
+
 void V8TestInterfaceGarbageCollected::funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceGarbageCollectedV8Internal::funcMethod(info);
 }
@@ -347,6 +359,7 @@ void V8TestInterfaceGarbageCollected::iteratorMethodCallback(const v8::FunctionC
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceGarbageCollectedAccessors[] = {
     {"attr1", V8TestInterfaceGarbageCollected::attr1AttributeGetterCallback, V8TestInterfaceGarbageCollected::attr1AttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
+    {"size", V8TestInterfaceGarbageCollected::sizeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::DontEnum | v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceGarbageCollectedMethods[] = {

@@ -23,6 +23,7 @@ class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
   std::unique_ptr<blink::WebRTCStats> GetStats(
       blink::WebString id) const override;
   std::unique_ptr<blink::WebRTCStats> Next() override;
+  size_t Size() const override;
 
  private:
   const scoped_refptr<const webrtc::RTCStatsReport> stats_report_;
