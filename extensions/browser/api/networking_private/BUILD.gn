@@ -22,6 +22,7 @@ source_set("networking_private") {
 
   deps = [
     "//extensions/common/api",
+    "//net",
   ]
 
   if (!is_chromeos && is_linux) {
