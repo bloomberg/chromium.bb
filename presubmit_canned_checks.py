@@ -361,7 +361,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   CPP_FILE_EXTS = ('c', 'cc')
   CPP_EXCEPTIONS = ('#define', '#endif', '#if', '#include', '#pragma')
   HTML_FILE_EXTS = ('html',)
-  HTML_EXCEPTIONS = ('<link',)
+  HTML_EXCEPTIONS = ('<g ', '<link ', '<path ',)
   JAVA_FILE_EXTS = ('java',)
   JAVA_EXCEPTIONS = ('import ', 'package ')
   JS_FILE_EXTS = ('js',)
@@ -383,7 +383,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
 
   def no_long_lines(file_extension, line):
     # Check for language specific exceptions.
-    if any(file_extension in exts and line.startswith(exceptions)
+    if any(file_extension in exts and line.lstrip().startswith(exceptions)
            for exts, exceptions in LANGUAGE_EXCEPTIONS):
       return True
 
