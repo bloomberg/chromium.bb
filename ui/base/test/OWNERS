@@ -5,3 +5,6 @@ sky@chromium.org
 avi@chromium.org
 tapted@chromium.org
 thakis@chromium.org
+
+# Clipboard
+per-file test_clipboard*=dcheng@chromium.org
