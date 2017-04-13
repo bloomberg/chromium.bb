@@ -7,6 +7,8 @@
 #include <d3d11_1.h>
 #include <dcomptypes.h>
 
+#include <deque>
+
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -70,6 +72,37 @@ class ScopedReleaseCurrent {
 bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
   return gfx::Rect(a).Contains(gfx::Rect(b));
 }
+
+// This keeps track of whether the previous 30 frames used Overlays or GPU
+// composition to present.
+class PresentationHistory {
+ public:
+  static const int kPresentsToStore = 30;
+
+  PresentationHistory() {}
+
+  void AddSample(DXGI_FRAME_PRESENTATION_MODE mode) {
+    if (mode == DXGI_FRAME_PRESENTATION_MODE_COMPOSED)
+      composed_count_++;
+
+    presents_.push_back(mode);
+    if (presents_.size() > kPresentsToStore) {
+      DXGI_FRAME_PRESENTATION_MODE first_mode = presents_.front();
+      if (first_mode == DXGI_FRAME_PRESENTATION_MODE_COMPOSED)
+        composed_count_--;
+      presents_.pop_front();
+    }
+  }
+
+  bool valid() const { return presents_.size() >= kPresentsToStore; }
+  int composed_count() const { return composed_count_; }
+
+ private:
+  std::deque<DXGI_FRAME_PRESENTATION_MODE> presents_;
+  int composed_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(PresentationHistory);
+};
 
 // Only one DirectComposition surface can be rendered into at a time. Track
 // here which IDCompositionSurface is being rendered into. If another context
@@ -178,7 +211,8 @@ class DCLayerTree::SwapChainPresenter {
   // Returns true if the video processor changed.
   bool InitializeVideoProcessor(const gfx::Size& in_size,
                                 const gfx::Size& out_size);
-  void ReallocateSwapChain();
+  void ReallocateSwapChain(bool yuy2);
+  bool ShouldBeYUY2();
 
   DCLayerTree* surface_;
   PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE create_surface_handle_function_;
@@ -192,6 +226,10 @@ class DCLayerTree::SwapChainPresenter {
   // onscreen.
   float swap_chain_scale_x_ = 0.0f;
   float swap_chain_scale_y_ = 0.0f;
+
+  PresentationHistory presentation_history_;
+  bool failed_to_create_yuy2_swapchain_ = false;
+  int frames_since_color_space_change_ = 0;
 
   // This is the GLImage that was presented in the last frame.
   scoped_refptr<gl::GLImageDXGI> last_gl_image_;
@@ -287,6 +325,25 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
 
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
+bool DCLayerTree::SwapChainPresenter::ShouldBeYUY2() {
+  // Start out as YUY2.
+  if (!presentation_history_.valid())
+    return true;
+  int composition_count = presentation_history_.composed_count();
+
+  // It's more efficient to use a BGRA backbuffer instead of YUY2 if overlays
+  // aren't being used, as otherwise DWM will use the video processor a second
+  // time to convert it to BGRA before displaying it on screen.
+
+  if (is_yuy2_swapchain_) {
+    // Switch to BGRA once 3/4 of presents are composed.
+    return composition_count < (PresentationHistory::kPresentsToStore * 3 / 4);
+  } else {
+    // Switch to YUY2 once 3/4 are using overlays (or unknown).
+    return composition_count < (PresentationHistory::kPresentsToStore / 4);
+  }
+}
+
 void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
   gl::GLImageDXGI* image_dxgi =
@@ -309,12 +366,15 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   InitializeVideoProcessor(ceiled_input_size, swap_chain_size);
 
+  bool yuy2_swapchain = ShouldBeYUY2();
   bool first_present = false;
-  if (!swap_chain_ || swap_chain_size_ != swap_chain_size) {
+  if (!swap_chain_ || swap_chain_size_ != swap_chain_size ||
+      ((yuy2_swapchain != is_yuy2_swapchain_) &&
+       !failed_to_create_yuy2_swapchain_)) {
     first_present = true;
     swap_chain_size_ = swap_chain_size;
     swap_chain_.Reset();
-    ReallocateSwapChain();
+    ReallocateSwapChain(yuy2_swapchain);
   } else if (last_gl_image_ == image_dxgi) {
     // The swap chain is presenting the same image as last swap, which means
     // that the image was never returned to the video decoder and should have
@@ -415,12 +475,15 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   swap_chain_->Present(first_present ? 0 : 1, 0);
 
+  frames_since_color_space_change_++;
+
   base::win::ScopedComPtr<IDXGISwapChainMedia> swap_chain_media;
   if (SUCCEEDED(swap_chain_.QueryInterface(swap_chain_media.Receive()))) {
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
     if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.CompositionMode",
                                   stats.CompositionMode);
+      presentation_history_.AddSample(stats.CompositionMode);
     }
   }
 }
@@ -443,7 +506,7 @@ bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
   return true;
 }
 
-void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
+void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
   DCHECK(!swap_chain_);
 
@@ -475,19 +538,31 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
                                   &handle);
   swap_chain_handle_.Set(handle);
 
-  is_yuy2_swapchain_ = true;
+  if (is_yuy2_swapchain_ != yuy2) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "GPU.DirectComposition.FramesSinceColorSpaceChange",
+        frames_since_color_space_change_);
+  }
+
+  frames_since_color_space_change_ = 0;
+
+  is_yuy2_swapchain_ = false;
   // The composition surface handle isn't actually used, but
   // CreateSwapChainForComposition can't create YUY2 swapchains.
-  HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
-      d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
-      swap_chain_.Receive());
+  HRESULT hr = E_FAIL;
+  if (yuy2) {
+    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+        d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
+        swap_chain_.Receive());
+    is_yuy2_swapchain_ = SUCCEEDED(hr);
+    failed_to_create_yuy2_swapchain_ = !is_yuy2_swapchain_;
+  }
 
-  if (FAILED(hr)) {
-    // This should not be hit in production but is a simple fallback for
-    // testing on systems without YUY2 swapchain support.
-    DLOG(ERROR) << "YUY2 creation failed with " << std::hex << hr
-                << ". Falling back to BGRA";
-    is_yuy2_swapchain_ = false;
+  if (!is_yuy2_swapchain_) {
+    if (yuy2) {
+      DLOG(ERROR) << "YUY2 creation failed with " << std::hex << hr
+                  << ". Falling back to BGRA";
+    }
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
     hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
