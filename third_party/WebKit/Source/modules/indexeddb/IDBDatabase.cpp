@@ -259,17 +259,10 @@ IDBObjectStore* IDBDatabase::createObjectStore(
         IDBDatabase::kNotVersionChangeTransactionErrorMessage);
     return nullptr;
   }
-  if (version_change_transaction_->IsFinished() ||
-      version_change_transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return nullptr;
-  }
   if (!version_change_transaction_->IsActive()) {
     exception_state.ThrowDOMException(
         kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+        version_change_transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
@@ -329,17 +322,10 @@ void IDBDatabase::deleteObjectStore(const String& name,
         IDBDatabase::kNotVersionChangeTransactionErrorMessage);
     return;
   }
-  if (version_change_transaction_->IsFinished() ||
-      version_change_transaction_->IsFinishing()) {
-    exception_state.ThrowDOMException(
-        kTransactionInactiveError,
-        IDBDatabase::kTransactionFinishedErrorMessage);
-    return;
-  }
   if (!version_change_transaction_->IsActive()) {
     exception_state.ThrowDOMException(
         kTransactionInactiveError,
-        IDBDatabase::kTransactionInactiveErrorMessage);
+        version_change_transaction_->InactiveErrorMessage());
     return;
   }
 
