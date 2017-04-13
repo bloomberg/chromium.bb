@@ -127,7 +127,7 @@ public class ExternalNavigationHandlerTest {
         RecordHistogram.setDisabledForTests(true);
         mDelegate.mQueryIntentOverride = null;
         ChromeWebApkHost.initForTesting(false);  // disabled by default
-        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
+        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     @After

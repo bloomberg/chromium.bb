@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.library_loader.LibraryLoader;
 
 import java.util.Map;
 
@@ -35,6 +36,22 @@ public abstract class ChromeFeatureList {
     }
 
     /**
+     * @return Whether the native FeatureList has been initialized. If this method returns false,
+     * none of the methods in this class that require native access should be called (except in
+     * tests if test features have been set).
+     */
+    public static boolean isInitialized() {
+        if (!LibraryLoader.isInitialized()) return false;
+
+        // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
+        // In that case, accessing it will not immediately fail, but instead cause a crash later
+        // when it is initialized. Return whether the native FeatureList has been initialized,
+        // so the return value can be tested, or asserted for a more actionable stack trace
+        // on failure.
+        return nativeIsInitialized();
+    }
+
+    /**
      * Returns whether the specified feature is enabled or not.
      *
      * Note: Features queried through this API must be added to the array
@@ -44,9 +61,14 @@ public abstract class ChromeFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        if (sTestFeatures == null) return nativeIsEnabled(featureName);
-        if (sTestFeatures.containsKey(featureName)) return sTestFeatures.get(featureName);
-        throw new IllegalArgumentException(featureName);
+        if (sTestFeatures != null) {
+            Boolean enabled = sTestFeatures.get(featureName);
+            if (enabled == null) throw new IllegalArgumentException(featureName);
+            return enabled.booleanValue();
+        }
+
+        assert isInitialized();
+        return nativeIsEnabled(featureName);
     }
 
     /**
@@ -61,6 +83,7 @@ public abstract class ChromeFeatureList {
      *   the specified parameter does not exist.
      */
     public static String getFieldTrialParamByFeature(String featureName, String paramName) {
+        assert isInitialized();
         return nativeGetFieldTrialParamByFeature(featureName, paramName);
     }
 
@@ -78,6 +101,7 @@ public abstract class ChromeFeatureList {
      */
     public static int getFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue) {
+        assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
     }
 
@@ -95,6 +119,7 @@ public abstract class ChromeFeatureList {
      */
     public static double getFieldTrialParamByFeatureAsDouble(
             String featureName, String paramName, double defaultValue) {
+        assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsDouble(featureName, paramName, defaultValue);
     }
 
@@ -112,6 +137,7 @@ public abstract class ChromeFeatureList {
      */
     public static boolean getFieldTrialParamByFeatureAsBoolean(
             String featureName, String paramName, boolean defaultValue) {
+        assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsBoolean(featureName, paramName, defaultValue);
     }
 
@@ -163,6 +189,7 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String WEBVR_CARDBOARD_SUPPORT = "WebVRCardboardSupport";
 
+    private static native boolean nativeIsInitialized();
     private static native boolean nativeIsEnabled(String featureName);
     private static native String nativeGetFieldTrialParamByFeature(
             String featureName, String paramName);
