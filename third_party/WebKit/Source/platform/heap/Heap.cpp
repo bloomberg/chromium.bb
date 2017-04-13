@@ -359,6 +359,11 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::weakProcessing");
   double start_time = WTF::CurrentTimeMS();
 
+  // Weak processing may access unmarked objects but are forbidden from
+  // ressurecting them.
+  ThreadState::ObjectResurrectionForbiddenScope object_resurrection_forbidden(
+      ThreadState::Current());
+
   // Call weak callbacks on objects that may now be pointing to dead objects.
   while (PopAndInvokeWeakCallback(visitor)) {
   }

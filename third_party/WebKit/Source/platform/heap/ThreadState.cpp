@@ -110,6 +110,7 @@ ThreadState::ThreadState()
       gc_forbidden_count_(0),
       mixins_being_constructed_count_(0),
       accumulated_sweeping_time_(0),
+      object_resurrection_forbidden_(false),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0),
       gc_mixin_marker_(nullptr),
@@ -1268,6 +1269,9 @@ void ThreadState::InvokePreFinalizers() {
 
   SweepForbiddenScope sweep_forbidden(this);
   ScriptForbiddenIfMainThreadScope script_forbidden;
+  // Pre finalizers may access unmarked objects but are forbidden from
+  // ressurecting them.
+  ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
 
   double start_time = WTF::CurrentTimeMS();
   if (!ordered_pre_finalizers_.IsEmpty()) {

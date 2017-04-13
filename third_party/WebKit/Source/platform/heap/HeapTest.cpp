@@ -1499,6 +1499,117 @@ class PreFinalizationAllocator
   Persistent<IntWrapper>* wrapper_;
 };
 
+class PreFinalizerBackingShrinkForbidden
+    : public GarbageCollectedFinalized<PreFinalizerBackingShrinkForbidden> {
+  USING_PRE_FINALIZER(PreFinalizerBackingShrinkForbidden, Dispose);
+
+ public:
+  PreFinalizerBackingShrinkForbidden() {
+    for (int i = 0; i < 32; ++i) {
+      vector_.push_back(new IntWrapper(i));
+    }
+    EXPECT_LT(31ul, vector_.Capacity());
+
+    for (int i = 0; i < 32; ++i) {
+      map_.insert(i + 1, new IntWrapper(i + 1));
+    }
+    EXPECT_LT(31ul, map_.Capacity());
+  }
+
+  void Dispose() {
+    // Remove elemets so that vector_ will try to shrink.
+    for (int i = 0; i < 32; ++i) {
+      vector_.pop_back();
+    }
+    // Check that vector_ hasn't shrunk.
+    EXPECT_LT(31ul, map_.Capacity());
+
+    // Remove elemets so that map_ will try to shrink.
+    for (int i = 0; i < 32; ++i) {
+      map_.erase(i + 1);
+    }
+    // Check that map_ hasn't shrunk.
+    EXPECT_LT(31ul, map_.Capacity());
+    // Just releasing the backing is allowed.
+    map_.Clear();
+    EXPECT_EQ(0ul, map_.Capacity());
+  }
+
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(vector_);
+    visitor->Trace(map_);
+  }
+
+ private:
+  HeapVector<Member<IntWrapper>> vector_;
+  HeapHashMap<int, Member<IntWrapper>> map_;
+};
+
+TEST(HeapTest, PreFinalizerBackingShrinkForbidden) {
+  new PreFinalizerBackingShrinkForbidden();
+  PreciselyCollectGarbage();
+}
+
+class PreFinalizerVectorBackingExpandForbidden
+    : public GarbageCollectedFinalized<
+          PreFinalizerVectorBackingExpandForbidden> {
+  USING_PRE_FINALIZER(PreFinalizerVectorBackingExpandForbidden, Dispose);
+
+ public:
+  PreFinalizerVectorBackingExpandForbidden() {
+    vector_.push_back(new IntWrapper(1));
+  }
+
+  void Dispose() { EXPECT_DEATH(Test(), ""); }
+
+  void Test() {
+    // vector_'s backing will need to expand.
+    for (int i = 0; i < 32; ++i) {
+      vector_.push_back(nullptr);
+    }
+  }
+
+  DEFINE_INLINE_TRACE() { visitor->Trace(vector_); }
+
+ private:
+  HeapVector<Member<IntWrapper>> vector_;
+};
+
+TEST(HeapDeathTest, PreFinalizerVectorBackingExpandForbidden) {
+  new PreFinalizerVectorBackingExpandForbidden();
+  PreciselyCollectGarbage();
+}
+
+class PreFinalizerHashTableBackingExpandForbidden
+    : public GarbageCollectedFinalized<
+          PreFinalizerHashTableBackingExpandForbidden> {
+  USING_PRE_FINALIZER(PreFinalizerHashTableBackingExpandForbidden, Dispose);
+
+ public:
+  PreFinalizerHashTableBackingExpandForbidden() {
+    map_.insert(123, new IntWrapper(123));
+  }
+
+  void Dispose() { EXPECT_DEATH(Test(), ""); }
+
+  void Test() {
+    // map_'s backing will need to expand.
+    for (int i = 1; i < 32; ++i) {
+      map_.insert(i, nullptr);
+    }
+  }
+
+  DEFINE_INLINE_TRACE() { visitor->Trace(map_); }
+
+ private:
+  HeapHashMap<int, Member<IntWrapper>> map_;
+};
+
+TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
+  new PreFinalizerHashTableBackingExpandForbidden();
+  PreciselyCollectGarbage();
+}
+
 TEST(HeapTest, Transition) {
   {
     RefCountedAndGarbageCollected::destructor_calls_ = 0;

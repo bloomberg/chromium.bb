@@ -158,6 +158,25 @@ class PLATFORM_EXPORT ThreadState {
     ThreadState* state_;
   };
 
+  // Used to denote when access to unmarked objects is allowed but we shouldn't
+  // ressurect it by making new references (e.g. during weak processing and pre
+  // finalizer).
+  class ObjectResurrectionForbiddenScope final {
+    STACK_ALLOCATED();
+
+   public:
+    explicit ObjectResurrectionForbiddenScope(ThreadState* state)
+        : state_(state) {
+      state_->EnterObjectResurrectionForbiddenScope();
+    }
+    ~ObjectResurrectionForbiddenScope() {
+      state_->LeaveObjectResurrectionForbiddenScope();
+    }
+
+   private:
+    ThreadState* state_;
+  };
+
   static void AttachMainThread();
 
   // Associate ThreadState object with the current thread. After this
@@ -261,6 +280,17 @@ class PLATFORM_EXPORT ThreadState {
     mixins_being_constructed_count_--;
   }
   bool SweepForbidden() const { return sweep_forbidden_; }
+  bool IsObjectResurrectionForbidden() const {
+    return object_resurrection_forbidden_;
+  }
+  void EnterObjectResurrectionForbiddenScope() {
+    DCHECK(!object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = true;
+  }
+  void LeaveObjectResurrectionForbiddenScope() {
+    DCHECK(object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = false;
+  }
 
   class MainThreadGCForbiddenScope final {
     STACK_ALLOCATED();
@@ -625,6 +655,7 @@ class PLATFORM_EXPORT ThreadState {
   size_t gc_forbidden_count_;
   size_t mixins_being_constructed_count_;
   double accumulated_sweeping_time_;
+  bool object_resurrection_forbidden_;
 
   BaseArena* arenas_[BlinkGC::kNumberOfArenas];
   int vector_backing_arena_index_;

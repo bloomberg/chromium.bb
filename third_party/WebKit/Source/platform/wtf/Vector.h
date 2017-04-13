@@ -1594,6 +1594,9 @@ void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
     ANNOTATE_CHANGE_CAPACITY(begin(), old_capacity, size_, Capacity());
     return;
   }
+  // Reallocating a backing buffer may resurrect a dead object.
+  CHECK(!Allocator::IsObjectResurrectionForbidden());
+
   T* old_end = end();
   Base::AllocateExpandedBuffer(new_capacity);
   ANNOTATE_NEW_BUFFER(begin(), Capacity(), size_);
@@ -1622,6 +1625,9 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(size_t new_capacity) {
 
   if (new_capacity < size())
     Shrink(new_capacity);
+
+  if (Allocator::IsObjectResurrectionForbidden())
+    return;
 
   T* old_buffer = begin();
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
