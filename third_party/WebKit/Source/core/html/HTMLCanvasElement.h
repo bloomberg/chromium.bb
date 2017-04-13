@@ -157,8 +157,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   AffineTransform BaseTransform() const;
 
-  bool Is3D() const;
-  bool IsAnimated2D() const;
+  bool Is3d() const;
+  bool Is2d() const;
+  bool IsAnimated2d() const;
 
   bool HasImageBuffer() const { return image_buffer_.get(); }
   void DiscardImageBuffer();

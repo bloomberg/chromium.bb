@@ -4982,7 +4982,7 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     GLint xoffset,
     GLint yoffset,
     const IntRect& source_sub_rectangle) {
-  if (!canvas->Is3D()) {
+  if (!canvas->Is3d()) {
     ImageBuffer* buffer = canvas->Buffer();
     if (buffer &&
         !buffer->CopyToPlatformTexture(

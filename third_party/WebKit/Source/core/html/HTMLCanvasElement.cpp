@@ -277,13 +277,12 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 
   probe::didCreateCanvasContext(&GetDocument());
 
-  if (context_->Is3d()) {
+  if (Is3d()) {
     UpdateExternallyAllocatedMemory();
   }
 
   LayoutObject* layout_object = this->GetLayoutObject();
-  if (layout_object && context_->Is2d() &&
-      !context_->CreationAttributes().alpha()) {
+  if (layout_object && Is2d() && !context_->CreationAttributes().alpha()) {
     // In the alpha false case, canvas is initially opaque even though there is
     // no ImageBuffer, so we need to trigger an invalidation.
     DidDraw();
@@ -316,15 +315,15 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
   ClearCopiedImage();
   if (GetLayoutObject())
     GetLayoutObject()->SetMayNeedPaintInvalidation();
-  if (context_ && context_->Is2d() && context_->ShouldAntialias() &&
-      GetPage() && GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
+  if (Is2d() && context_->ShouldAntialias() && GetPage() &&
+      GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
     FloatRect inflated_rect = rect;
     inflated_rect.Inflate(1);
     dirty_rect_.Unite(inflated_rect);
   } else {
     dirty_rect_.Unite(rect);
   }
-  if (context_ && context_->Is2d() && HasImageBuffer())
+  if (Is2d() && HasImageBuffer())
     Buffer()->DidDraw(rect);
 }
 
@@ -363,7 +362,7 @@ void HTMLCanvasElement::RestoreCanvasMatrixClipStack(
 
 void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   DCHECK(!dirty_rect_.IsEmpty());
-  if (context_->Is2d()) {
+  if (Is2d()) {
     FloatRect src_rect(0, 0, size().Width(), size().Height());
     dirty_rect_.Intersect(src_rect);
     LayoutBox* lb = GetLayoutBox();
@@ -429,7 +428,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   if (RuntimeEnabledFeatures::
           enableCanvas2dDynamicRenderingModeSwitchingEnabled() &&
       !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled()) {
-    if (context_->Is2d() && HasImageBuffer() && Buffer()->IsAccelerated() &&
+    if (Is2d() && HasImageBuffer() && Buffer()->IsAccelerated() &&
         num_frames_since_last_rendering_mode_switch_ >=
             ExpensiveCanvasHeuristicParameters::kMinFramesBeforeSwitch &&
         !pending_rendering_mode_switch_) {
@@ -476,7 +475,7 @@ void HTMLCanvasElement::Reset() {
   if (!ok || h < 0)
     h = kDefaultHeight;
 
-  if (context_ && context_->Is2d())
+  if (Is2d())
     context_->Reset();
 
   IntSize old_size = size();
@@ -484,8 +483,8 @@ void HTMLCanvasElement::Reset() {
 
   // If the size of an existing buffer matches, we can just clear it instead of
   // reallocating.  This optimization is only done for 2D canvases for now.
-  if (had_image_buffer && old_size == new_size && context_ &&
-      context_->Is2d() && !Buffer()->IsRecording()) {
+  if (had_image_buffer && old_size == new_size && Is2d() &&
+      !Buffer()->IsRecording()) {
     if (!image_buffer_is_clear_) {
       image_buffer_is_clear_ = true;
       context_->clearRect(0, 0, width(), height());
@@ -495,7 +494,7 @@ void HTMLCanvasElement::Reset() {
 
   SetSurfaceSize(new_size);
 
-  if (context_ && context_->Is3d() && old_size != size())
+  if (Is3d() && old_size != size())
     context_->Reshape(width(), height());
 
   if (LayoutObject* layout_object = this->GetLayoutObject()) {
@@ -567,7 +566,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
           ? kNone_SkFilterQuality
           : kLow_SkFilterQuality;
 
-  if (Is3D()) {
+  if (Is3d()) {
     context_->SetFilterQuality(filter_quality);
   } else if (HasImageBuffer()) {
     image_buffer_->SetFilterQuality(filter_quality);
@@ -606,17 +605,20 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
       context.FillRect(FloatRect(r), Color(0, 0, 0));
   }
 
-  if (Is3D() && PaintsIntoCanvasBuffer())
+  if (Is3d() && PaintsIntoCanvasBuffer())
     context_->MarkLayerComposited();
 }
 
-bool HTMLCanvasElement::Is3D() const {
+bool HTMLCanvasElement::Is3d() const {
   return context_ && context_->Is3d();
 }
 
-bool HTMLCanvasElement::IsAnimated2D() const {
-  return context_ && context_->Is2d() && HasImageBuffer() &&
-         image_buffer_->WasDrawnToAfterSnapshot();
+bool HTMLCanvasElement::Is2d() const {
+  return context_ && context_->Is2d();
+}
+
+bool HTMLCanvasElement::IsAnimated2d() const {
+  return Is2d() && HasImageBuffer() && image_buffer_->WasDrawnToAfterSnapshot();
 }
 
 void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
@@ -624,7 +626,7 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   did_fail_to_create_image_buffer_ = false;
   DiscardImageBuffer();
   ClearCopiedImage();
-  if (context_ && context_->Is2d() && context_->isContextLost()) {
+  if (Is2d() && context_->isContextLost()) {
     context_->DidSetSurfaceSize();
   }
 }
@@ -635,8 +637,7 @@ const AtomicString HTMLCanvasElement::ImageSourceURL() const {
 }
 
 void HTMLCanvasElement::PrepareSurfaceForPaintingIfNeeded() const {
-  DCHECK(context_ &&
-         context_->Is2d());  // This function is called by the 2d context
+  DCHECK(Is2d());  // This function is called by the 2d context
   if (Buffer())
     image_buffer_->PrepareSurfaceForPaintingIfNeeded();
 }
@@ -644,7 +645,7 @@ void HTMLCanvasElement::PrepareSurfaceForPaintingIfNeeded() const {
 ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
                                           SnapshotReason reason) const {
   ImageData* image_data;
-  if (Is3D()) {
+  if (Is3d()) {
     // Get non-premultiplied data because of inaccurate premultiplied alpha
     // conversion of buffer()->toDataURL().
     image_data = context_->PaintRenderingResultsToImageData(source_buffer);
@@ -671,7 +672,7 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
   if ((!context_ || !image_data) && !PlaceholderFrame())
     return image_data;
 
-  DCHECK((context_ && context_->Is2d()) || PlaceholderFrame());
+  DCHECK(Is2d() || PlaceholderFrame());
   sk_sp<SkImage> snapshot;
   if (HasImageBuffer()) {
     snapshot = Buffer()->NewSkImageSnapshot(kPreferNoAcceleration, reason);
@@ -821,7 +822,7 @@ bool HTMLCanvasElement::OriginClean() const {
 }
 
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
-  if (context_ && !context_->Is2d())
+  if (context_ && !Is2d())
     return false;
 
   if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
@@ -917,7 +918,7 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
 
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
-  DCHECK(Is3D());
+  DCHECK(Is3d());
   // If 3d, but the use of the canvas will be for non-accelerated content
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
@@ -999,7 +1000,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
 
 void HTMLCanvasElement::CreateImageBuffer() {
   CreateImageBufferInternal(nullptr);
-  if (did_fail_to_create_image_buffer_ && context_->Is2d() && !size().IsEmpty())
+  if (did_fail_to_create_image_buffer_ && Is2d() && !size().IsEmpty())
     context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
 }
 
@@ -1021,7 +1022,7 @@ void HTMLCanvasElement::CreateImageBufferInternal(
   if (external_surface) {
     if (external_surface->IsValid())
       surface = std::move(external_surface);
-  } else if (Is3D()) {
+  } else if (Is3d()) {
     surface = CreateWebGLImageBufferSurface(opacity_mode);
   } else {
     if (ShouldAccelerate(kNormalAccelerationCriteria)) {
@@ -1043,7 +1044,7 @@ void HTMLCanvasElement::CreateImageBufferInternal(
 
   UpdateExternallyAllocatedMemory();
 
-  if (Is3D()) {
+  if (Is3d()) {
     // Early out for WebGL canvases
     return;
   }
@@ -1061,7 +1062,7 @@ void HTMLCanvasElement::CreateImageBufferInternal(
 }
 
 void HTMLCanvasElement::NotifySurfaceInvalid() {
-  if (context_ && context_->Is2d())
+  if (Is2d())
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
 }
 
@@ -1096,7 +1097,7 @@ void HTMLCanvasElement::UpdateExternallyAllocatedMemory() const {
   // Four bytes per pixel per buffer.
   CheckedNumeric<intptr_t> checked_externally_allocated_memory =
       4 * buffer_count;
-  if (Is3D()) {
+  if (Is3d()) {
     checked_externally_allocated_memory +=
         context_->ExternallyAllocatedBytesPerPixel();
   }
@@ -1216,7 +1217,7 @@ void HTMLCanvasElement::PageVisibilityChanged() {
   context_->SetIsHidden(hidden);
   if (hidden) {
     ClearCopiedImage();
-    if (Is3D()) {
+    if (Is3d()) {
       DiscardImageBuffer();
     }
   }
@@ -1291,7 +1292,7 @@ PassRefPtr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   sk_sp<SkImage> sk_image;
   // TODO(ccameron): Canvas should produce sRGB images.
   // https://crbug.com/672299
-  if (context_->Is3d()) {
+  if (Is3d()) {
     // Because WebGL sources always require making a copy of the back buffer, we
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
     // cached copy of the backing in the canvas's ImageBuffer.
@@ -1453,7 +1454,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
 HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
-  if (context_ && context_->Is2d())
+  if (Is2d())
     return context_->GetControlAndIdIfHitRegionExists(location);
   return HitTestCanvasResult::Create(String(), nullptr);
 }
