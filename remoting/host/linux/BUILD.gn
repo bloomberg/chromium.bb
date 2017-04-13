@@ -92,6 +92,7 @@ target("executable", "remoting_native_messaging_host") {
 
   deps = [
     "//base",
+    "//net",
     "//remoting/base:breakpad",
     "//remoting/host",
     "//remoting/host:remoting_infoplist_strings",

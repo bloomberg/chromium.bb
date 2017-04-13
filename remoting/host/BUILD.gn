@@ -615,6 +615,7 @@ if (enable_remoting_host) {
 
       deps += [
         "//google_apis",
+        "//net",
         "//remoting/host/setup",
       ]
     }
