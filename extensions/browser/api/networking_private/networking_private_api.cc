@@ -656,6 +656,11 @@ NetworkingPrivateStartActivateFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateStartActivateFunction::Run() {
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    return RespondNow(Error(kPrivateOnlyError));
+  }
+
   std::unique_ptr<private_api::StartActivate::Params> params =
       private_api::StartActivate::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -958,6 +963,11 @@ NetworkingPrivateUnlockCellularSimFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateUnlockCellularSimFunction::Run() {
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    return RespondNow(Error(kPrivateOnlyError));
+  }
+
   std::unique_ptr<private_api::UnlockCellularSim::Params> params =
       private_api::UnlockCellularSim::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -992,6 +1002,11 @@ NetworkingPrivateSetCellularSimStateFunction::
 
 ExtensionFunction::ResponseAction
 NetworkingPrivateSetCellularSimStateFunction::Run() {
+  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
+                                  source_url())) {
+    return RespondNow(Error(kPrivateOnlyError));
+  }
+
   std::unique_ptr<private_api::SetCellularSimState::Params> params =
       private_api::SetCellularSimState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);

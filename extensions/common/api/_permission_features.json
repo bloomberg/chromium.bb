@@ -300,7 +300,7 @@
     "extension_types": ["extension", "platform_app"]
   },
   "networking.onc": [{
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "platforms": ["chromeos"],
     "session_types": ["kiosk.autolaunched"]
