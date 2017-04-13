@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
@@ -132,12 +133,16 @@ class FormStructure {
   // indicates whether this method is called as a result of observing a
   // submission event (otherwise, it may be that an upload was triggered after
   // a form was unfocused or a navigation occurred).
-  void LogQualityMetrics(const base::TimeTicks& load_time,
-                         const base::TimeTicks& interaction_time,
-                         const base::TimeTicks& submission_time,
-                         rappor::RapporServiceImpl* rappor_service,
-                         bool did_show_suggestions,
-                         bool observed_submission) const;
+  // TODO(sebsg): We log more than quality metrics. Maybe rename or split
+  // function?
+  void LogQualityMetrics(
+      const base::TimeTicks& load_time,
+      const base::TimeTicks& interaction_time,
+      const base::TimeTicks& submission_time,
+      rappor::RapporServiceImpl* rappor_service,
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      bool did_show_suggestions,
+      bool observed_submission) const;
 
   // Log the quality of the heuristics and server predictions for this form
   // structure, if autocomplete attributes are present on the fields (they are

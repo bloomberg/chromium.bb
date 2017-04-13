@@ -24,9 +24,11 @@ class TestUkmService : public UkmService {
   size_t sources_count() const { return sources_for_testing().size(); }
   const std::map<int32_t, std::unique_ptr<UkmSource>>& GetSources() const;
   const UkmSource* GetSourceForUrl(const char* url) const;
+  const UkmSource* GetSourceForSourceId(int32_t source_id) const;
 
   size_t entries_count() const { return entries_for_testing().size(); }
   const UkmEntry* GetEntry(size_t entry_num) const;
+  const UkmEntry* GetEntryForEntryName(const char* entry_name) const;
 
  private:
   metrics::TestMetricsServiceClient test_metrics_service_client_;

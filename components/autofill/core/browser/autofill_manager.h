@@ -43,8 +43,6 @@
 #define ENABLE_FORM_DEBUG_DUMP
 #endif
 
-class GURL;
-
 namespace gfx {
 class RectF;
 }
@@ -268,6 +266,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   std::vector<std::unique_ptr<FormStructure>>* form_structures() {
     return &form_structures_;
+  }
+
+  AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger() {
+    return form_interactions_ukm_logger_.get();
   }
 
   // Exposed for testing.
@@ -510,6 +512,10 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Handles single-field autocomplete form data.
   std::unique_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
+  // Utility for logging URL keyed metrics.
+  std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>
+      form_interactions_ukm_logger_;
+
   // Utilities for logging form events.
   std::unique_ptr<AutofillMetrics::FormEventLogger> address_form_event_logger_;
   std::unique_ptr<AutofillMetrics::FormEventLogger>
@@ -595,6 +601,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressWillSubmitFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSuggestionsCount);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillFormSubmittedState);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtPageLoad);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSelectedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardFilledFormEvents);

@@ -217,16 +217,24 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : driver_(driver),
       client_(client),
-      payments_client_(
-          new payments::PaymentsClient(driver->GetURLRequestContext(), this)),
+      payments_client_(base::MakeUnique<payments::PaymentsClient>(
+          driver->GetURLRequestContext(),
+          this)),
       app_locale_(app_locale),
       personal_data_(client->GetPersonalDataManager()),
       autocomplete_history_manager_(
-          new AutocompleteHistoryManager(driver, client)),
+          base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
+      form_interactions_ukm_logger_(
+          base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
+              client->GetUkmService())),
       address_form_event_logger_(
-          new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */)),
+          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+              false /* is_for_credit_card */,
+              form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
-          new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */)),
+          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+              true /* is_for_credit_card */,
+              form_interactions_ukm_logger_.get())),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -493,7 +501,7 @@ void AutofillManager::ProcessPendingFormForUpload() {
   if (!upload_form)
     return;
 
-  StartUploadProcess(std::move(upload_form), base::TimeTicks::Now(), false);
+  StartUploadProcess(std::move(upload_form), TimeTicks::Now(), false);
 }
 
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
@@ -511,6 +519,9 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
     return;
 
   UpdatePendingForm(form);
+
+  if (!user_did_type_ || autofill_field->is_autofilled)
+    form_interactions_ukm_logger_->LogTextFieldDidChange(*autofill_field);
 
   if (!user_did_type_) {
     user_did_type_ = true;
@@ -1378,11 +1389,10 @@ void AutofillManager::UploadFormDataAsyncCallback(
     const TimeTicks& interaction_time,
     const TimeTicks& submission_time,
     bool observed_submission) {
-  submitted_form->LogQualityMetrics(load_time, interaction_time,
-                                    submission_time,
-                                    client_->GetRapporServiceImpl(),
-                                    did_show_suggestions_, observed_submission);
-
+  submitted_form->LogQualityMetrics(
+      load_time, interaction_time, submission_time,
+      client_->GetRapporServiceImpl(), form_interactions_ukm_logger_.get(),
+      did_show_suggestions_, observed_submission);
   if (submitted_form->ShouldBeCrowdsourced())
     UploadFormData(*submitted_form, observed_submission);
 }
@@ -1416,10 +1426,12 @@ void AutofillManager::Reset() {
   ProcessPendingFormForUpload();
   DCHECK(!pending_form_data_);
   form_structures_.clear();
-  address_form_event_logger_.reset(
-      new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */));
-  credit_card_form_event_logger_.reset(
-      new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */));
+  form_interactions_ukm_logger_.reset(
+      new AutofillMetrics::FormInteractionsUkmLogger(client_->GetUkmService()));
+  address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
+      false /* is_for_credit_card */, form_interactions_ukm_logger_.get()));
+  credit_card_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
+      true /* is_for_credit_card */, form_interactions_ukm_logger_.get()));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1443,16 +1455,24 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
                                  PersonalDataManager* personal_data)
     : driver_(driver),
       client_(client),
-      payments_client_(
-          new payments::PaymentsClient(driver->GetURLRequestContext(), this)),
+      payments_client_(base::MakeUnique<payments::PaymentsClient>(
+          driver->GetURLRequestContext(),
+          this)),
       app_locale_("en-US"),
       personal_data_(personal_data),
       autocomplete_history_manager_(
-          new AutocompleteHistoryManager(driver, client)),
+          base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
+      form_interactions_ukm_logger_(
+          base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
+              client->GetUkmService())),
       address_form_event_logger_(
-          new AutofillMetrics::FormEventLogger(false /* is_for_credit_card */)),
+          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+              false /* is_for_credit_card */,
+              form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
-          new AutofillMetrics::FormEventLogger(true /* is_for_credit_card */)),
+          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+              true /* is_for_credit_card */,
+              form_interactions_ukm_logger_.get())),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
       did_show_suggestions_(false),
@@ -1483,34 +1503,34 @@ bool AutofillManager::RefreshDataModels() {
 
   // Updating the FormEventLoggers for addresses and credit cards.
   {
-    bool is_server_data_available = false;
-    bool is_local_data_available = false;
+    size_t server_record_type_count = 0;
+    size_t local_record_type_count = 0;
     for (CreditCard* credit_card : credit_cards) {
       if (credit_card->record_type() == CreditCard::LOCAL_CARD)
-        is_local_data_available = true;
+        local_record_type_count++;
       else
-        is_server_data_available = true;
+        server_record_type_count++;
     }
-    credit_card_form_event_logger_->set_is_server_data_available(
-        is_server_data_available);
-    credit_card_form_event_logger_->set_is_local_data_available(
-        is_local_data_available);
+    credit_card_form_event_logger_->set_server_record_type_count(
+        server_record_type_count);
+    credit_card_form_event_logger_->set_local_record_type_count(
+        local_record_type_count);
     credit_card_form_event_logger_->set_is_context_secure(
         client_->IsContextSecure());
   }
   {
-    bool is_server_data_available = false;
-    bool is_local_data_available = false;
+    size_t server_record_type_count = 0;
+    size_t local_record_type_count = 0;
     for (AutofillProfile* profile : profiles) {
       if (profile->record_type() == AutofillProfile::LOCAL_PROFILE)
-        is_local_data_available = true;
+        local_record_type_count++;
       else if (profile->record_type() == AutofillProfile::SERVER_PROFILE)
-        is_server_data_available = true;
+        server_record_type_count++;
     }
-    address_form_event_logger_->set_is_server_data_available(
-        is_server_data_available);
-    address_form_event_logger_->set_is_local_data_available(
-        is_local_data_available);
+    address_form_event_logger_->set_server_record_type_count(
+        server_record_type_count);
+    address_form_event_logger_->set_local_record_type_count(
+        local_record_type_count);
   }
 
   if (profiles.empty() && credit_cards.empty())
@@ -1679,7 +1699,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
 std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     const FormData& form) {
-  std::unique_ptr<FormStructure> submitted_form(new FormStructure(form));
+  std::unique_ptr<FormStructure> submitted_form(
+      base::MakeUnique<FormStructure>(form));
   if (!ShouldUploadForm(*submitted_form))
     return std::unique_ptr<FormStructure>();
 
@@ -1855,7 +1876,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   for (const FormData& form : forms) {
-    const auto parse_form_start_time = base::TimeTicks::Now();
+    const auto parse_form_start_time = TimeTicks::Now();
 
     FormStructure* form_structure = nullptr;
     if (!ParseForm(form, &form_structure))
@@ -1869,7 +1890,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     else
       non_queryable_forms.push_back(form_structure);
 
-    AutofillMetrics::LogParseFormTiming(base::TimeTicks::Now() -
+    AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
                                         parse_form_start_time);
   }
 
@@ -1880,6 +1901,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
+    // Setup the url for metrics that we will collect for this form.
+    form_interactions_ukm_logger_->OnFormsLoaded(forms[0].origin);
+
 #if defined(OS_IOS)
     // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure
     // that KeyboardAccessoryButtonsIOS and UserHappiness UMA metrics will be

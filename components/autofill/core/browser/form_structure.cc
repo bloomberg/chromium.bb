@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
@@ -364,22 +365,24 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections_);
 
+  std::vector<AutofillMetrics::DeveloperEngagementMetric> metrics;
   if (IsAutofillable()) {
-    const auto metric =
+    AutofillMetrics::DeveloperEngagementMetric metric =
         has_author_specified_types_
             ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
             : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
+    metrics.push_back(metric);
     AutofillMetrics::LogDeveloperEngagementMetric(metric);
-    AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
-                                               metric);
   }
 
   if (has_author_specified_upi_vpa_hint_) {
     AutofillMetrics::LogDeveloperEngagementMetric(
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
-    AutofillMetrics::LogDeveloperEngagementUkm(
-        ukm_service, source_url(), AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
+    metrics.push_back(AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
   }
+
+  AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
+                                             metrics);
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
       base::TimeTicks::Now() - determine_heuristic_types_start_time);
@@ -682,12 +685,14 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form,
   form_signature_ = cached_form.form_signature_;
 }
 
-void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
-                                      const base::TimeTicks& interaction_time,
-                                      const base::TimeTicks& submission_time,
-                                      rappor::RapporServiceImpl* rappor_service,
-                                      bool did_show_suggestions,
-                                      bool observed_submission) const {
+void FormStructure::LogQualityMetrics(
+    const base::TimeTicks& load_time,
+    const base::TimeTicks& interaction_time,
+    const base::TimeTicks& submission_time,
+    rappor::RapporServiceImpl* rappor_service,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    bool did_show_suggestions,
+    bool observed_submission) const {
   size_t num_detected_field_types = 0;
   size_t num_server_mismatches = 0;
   size_t num_heuristic_mismatches = 0;
@@ -824,24 +829,20 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
   // We log "submission" and duration metrics if we are here after observing a
   // submission event.
   if (observed_submission) {
+    AutofillMetrics::AutofillFormSubmittedState state;
     if (num_detected_field_types < kRequiredFieldsForPredictionRoutines) {
-      AutofillMetrics::LogAutofillFormSubmittedState(
-          AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
+      state = AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA;
     } else {
       if (did_autofill_all_possible_fields) {
-        AutofillMetrics::LogAutofillFormSubmittedState(
-            AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL);
+        state = AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL;
       } else if (did_autofill_some_possible_fields) {
-        AutofillMetrics::LogAutofillFormSubmittedState(
-            AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME);
+        state = AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME;
       } else if (!did_show_suggestions) {
-        AutofillMetrics::LogAutofillFormSubmittedState(
-            AutofillMetrics::
-                FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS);
+        state = AutofillMetrics::
+            FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS;
       } else {
-        AutofillMetrics::LogAutofillFormSubmittedState(
-            AutofillMetrics::
-                FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS);
+        state =
+            AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS;
       }
 
       // Log some RAPPOR metrics for problematic cases.
@@ -888,6 +889,10 @@ void FormStructure::LogQualityMetrics(const base::TimeTicks& load_time,
         }
       }
     }
+    if (form_interactions_ukm_logger->url() != source_url())
+      form_interactions_ukm_logger->UpdateSourceURL(source_url());
+    AutofillMetrics::LogAutofillFormSubmittedState(
+        state, form_interactions_ukm_logger);
   }
 }
 
