@@ -24,7 +24,7 @@ InterfaceRegistryJsWrapper::~InterfaceRegistryJsWrapper() = default;
 // static
 gin::Handle<InterfaceRegistryJsWrapper> InterfaceRegistryJsWrapper::Create(
     v8::Isolate* isolate,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     service_manager::InterfaceRegistry* interface_registry) {
   return gin::CreateHandle(
       isolate, new InterfaceRegistryJsWrapper(
@@ -52,7 +52,7 @@ mojo::Handle InterfaceRegistryJsWrapper::GetLocalInterfaceForTesting(
 
 InterfaceRegistryJsWrapper::InterfaceRegistryJsWrapper(
     v8::Isolate* isolate,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     base::WeakPtr<service_manager::InterfaceRegistry> interface_registry)
     : isolate_(isolate),
       context_(isolate, context),

@@ -28,7 +28,7 @@ class InterfaceRegistryJsWrapper
  public:
   static gin::Handle<InterfaceRegistryJsWrapper> Create(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       service_manager::InterfaceRegistry* interface_registry);
 
   // gin::Wrappable<InterfaceRegistryJsWrapper> overrides.
@@ -48,7 +48,7 @@ class InterfaceRegistryJsWrapper
 
   InterfaceRegistryJsWrapper(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       base::WeakPtr<service_manager::InterfaceRegistry> interface_registry);
   ~InterfaceRegistryJsWrapper() override;
 

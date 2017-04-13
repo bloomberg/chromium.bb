@@ -48,7 +48,7 @@ namespace extensions {
 
 namespace {
 
-content::RenderFrame* GetRenderFrame(v8::Handle<v8::Value> value) {
+content::RenderFrame* GetRenderFrame(v8::Local<v8::Value> value) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Object>::Cast(value)->CreationContext();
   if (context.IsEmpty())
@@ -368,8 +368,8 @@ void GuestViewInternalCustomBindings::GetViewFromID(
   if (map_entry == view_map.end())
     return;
 
-  auto return_object = v8::Handle<v8::Object>::New(args.GetIsolate(),
-                                                   *map_entry->second);
+  auto return_object =
+      v8::Local<v8::Object>::New(args.GetIsolate(), *map_entry->second);
   args.GetReturnValue().Set(return_object);
 }
 

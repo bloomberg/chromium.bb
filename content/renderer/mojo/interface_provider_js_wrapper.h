@@ -30,11 +30,11 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
   ~InterfaceProviderJsWrapper() override;
   static gin::Handle<InterfaceProviderJsWrapper> Create(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       service_manager::Connector* connector);
   static gin::Handle<InterfaceProviderJsWrapper> Create(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       service_manager::InterfaceProvider* remote_interfaces);
 
   // gin::Wrappable<InterfaceProviderJsWrapper> overrides.
@@ -58,11 +58,11 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
 
   InterfaceProviderJsWrapper(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       base::WeakPtr<service_manager::Connector> connector);
   InterfaceProviderJsWrapper(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces);
 
   void CallJsFactory(const ScopedJsFactory& factory,

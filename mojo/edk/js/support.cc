@@ -25,7 +25,7 @@ namespace {
 WaitingCallback* AsyncWait(const gin::Arguments& args,
                            gin::Handle<HandleWrapper> handle,
                            MojoHandleSignals signals,
-                           v8::Handle<v8::Function> callback) {
+                           v8::Local<v8::Function> callback) {
   return WaitingCallback::Create(
       args.isolate(), callback, handle, signals, true /* one_shot */).get();
 }
@@ -37,7 +37,7 @@ void CancelWait(WaitingCallback* waiting_callback) {
 WaitingCallback* Watch(const gin::Arguments& args,
                        gin::Handle<HandleWrapper> handle,
                        MojoHandleSignals signals,
-                       v8::Handle<v8::Function> callback) {
+                       v8::Local<v8::Function> callback) {
   return WaitingCallback::Create(
       args.isolate(), callback, handle, signals, false /* one_shot */).get();
 }

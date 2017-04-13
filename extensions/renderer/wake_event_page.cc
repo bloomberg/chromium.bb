@@ -115,7 +115,7 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
 
   v8::Isolate* isolate = context->isolate();
   v8::EscapableHandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> v8_context = context->v8_context();
+  v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Context::Scope context_scope(v8_context);
 
   // Cache the imported function as a hidden property on the global object of

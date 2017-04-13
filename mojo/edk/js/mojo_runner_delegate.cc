@@ -34,13 +34,12 @@ std::vector<base::FilePath> GetModuleSearchPaths() {
 
 void StartCallback(base::WeakPtr<gin::Runner> runner,
                    MojoHandle pipe,
-                   v8::Handle<v8::Value> module) {
+                   v8::Local<v8::Value> module) {
   v8::Isolate* isolate = runner->GetContextHolder()->isolate();
-  v8::Handle<v8::Function> start;
+  v8::Local<v8::Function> start;
   CHECK(gin::ConvertFromV8(isolate, module, &start));
 
-  v8::Handle<v8::Value> args[] = {
-      gin::ConvertToV8(isolate, Handle(pipe)) };
+  v8::Local<v8::Value> args[] = {gin::ConvertToV8(isolate, Handle(pipe))};
   runner->Call(start, runner->global(), 1, args);
 }
 

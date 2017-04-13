@@ -29,7 +29,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback> {
   // WaitingCallback is explicitly cancelled.
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate,
-      v8::Handle<v8::Function> callback,
+      v8::Local<v8::Function> callback,
       gin::Handle<HandleWrapper> handle_wrapper,
       MojoHandleSignals signals,
       bool one_shot);
@@ -41,7 +41,7 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback> {
 
  private:
   WaitingCallback(v8::Isolate* isolate,
-                  v8::Handle<v8::Function> callback,
+                  v8::Local<v8::Function> callback,
                   bool one_shot);
   ~WaitingCallback() override;
 

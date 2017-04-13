@@ -81,7 +81,7 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
   MojoHandle handle1 = MOJO_HANDLE_INVALID;
   MojoResult result = MOJO_RESULT_OK;
 
-  v8::Handle<v8::Value> options_value = args.PeekNext();
+  v8::Local<v8::Value> options_value = args.PeekNext();
   if (options_value.IsEmpty() || options_value->IsNull() ||
       options_value->IsUndefined()) {
     result = MojoCreateMessagePipe(NULL, &handle0, &handle1);
@@ -144,7 +144,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
     return dictionary;
   }
 
-  v8::Handle<v8::ArrayBuffer> array_buffer =
+  v8::Local<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(args.isolate(), num_bytes);
   std::vector<mojo::Handle> handles(num_handles);
 
@@ -178,7 +178,7 @@ gin::Dictionary CreateDataPipe(const gin::Arguments& args) {
   MojoHandle consumer_handle = MOJO_HANDLE_INVALID;
   MojoResult result = MOJO_RESULT_OK;
 
-  v8::Handle<v8::Value> options_value = args.PeekNext();
+  v8::Local<v8::Value> options_value = args.PeekNext();
   if (options_value.IsEmpty() || options_value->IsNull() ||
       options_value->IsUndefined()) {
     result = MojoCreateDataPipe(NULL, &producer_handle, &consumer_handle);
@@ -234,7 +234,7 @@ gin::Dictionary ReadData(const gin::Arguments& args,
     return dictionary;
   }
 
-  v8::Handle<v8::ArrayBuffer> array_buffer =
+  v8::Local<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(args.isolate(), num_bytes);
   gin::ArrayBuffer buffer;
   ConvertFromV8(args.isolate(), array_buffer, &buffer);
@@ -257,12 +257,12 @@ gin::Dictionary ReadData(const gin::Arguments& args,
 // and the buffer will contain whatever was read before the error occurred.
 // The drainData data pipe handle argument is closed automatically.
 
-v8::Handle<v8::Value> DoDrainData(gin::Arguments* args,
-                                  gin::Handle<HandleWrapper> handle) {
+v8::Local<v8::Value> DoDrainData(gin::Arguments* args,
+                                 gin::Handle<HandleWrapper> handle) {
   return (new DrainData(args->isolate(), handle->release()))->GetPromise();
 }
 
-bool IsHandle(gin::Arguments* args, v8::Handle<v8::Value> val) {
+bool IsHandle(gin::Arguments* args, v8::Local<v8::Value> val) {
   gin::Handle<mojo::edk::js::HandleWrapper> ignore_handle;
   return gin::Converter<gin::Handle<mojo::edk::js::HandleWrapper>>::FromV8(
       args->isolate(), val, &ignore_handle);
@@ -332,7 +332,7 @@ gin::Dictionary MapBuffer(const gin::Arguments& args,
     return dictionary;
   }
 
-  v8::Handle<v8::ArrayBuffer> array_buffer =
+  v8::Local<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(args.isolate(), data, num_bytes);
 
   dictionary.Set("result", result);
@@ -342,7 +342,7 @@ gin::Dictionary MapBuffer(const gin::Arguments& args,
 }
 
 MojoResult UnmapBuffer(const gin::Arguments& args,
-                       const v8::Handle<v8::ArrayBuffer>& buffer) {
+                       const v8::Local<v8::ArrayBuffer>& buffer) {
   // Buffer must be external, created by MapBuffer
   if (!buffer->IsExternal())
     return MOJO_RESULT_INVALID_ARGUMENT;

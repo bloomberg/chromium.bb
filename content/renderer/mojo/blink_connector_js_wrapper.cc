@@ -24,7 +24,7 @@ BlinkConnectorJsWrapper::~BlinkConnectorJsWrapper() {}
 // static
 gin::Handle<BlinkConnectorJsWrapper> BlinkConnectorJsWrapper::Create(
     v8::Isolate* isolate,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     service_manager::Connector* connector) {
   return gin::CreateHandle(
       isolate,
@@ -73,7 +73,7 @@ void BlinkConnectorJsWrapper::ClearOverridesForTesting() {
 
 BlinkConnectorJsWrapper::BlinkConnectorJsWrapper(
     v8::Isolate* isolate,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     base::WeakPtr<service_manager::Connector> connector)
     : isolate_(isolate),
       context_(isolate, context),
@@ -90,7 +90,7 @@ void BlinkConnectorJsWrapper::CallJsFactory(
     return;
 
   v8::HandleScope handle_scope(isolate_);
-  v8::Handle<v8::Context> context = context_.Get(isolate_);
+  v8::Local<v8::Context> context = context_.Get(isolate_);
   v8::Context::Scope context_scope(context);
   v8::Local<v8::Value> argv[] = {
       gin::ConvertToV8(isolate_, mojo::Handle(pipe.release().value()))};

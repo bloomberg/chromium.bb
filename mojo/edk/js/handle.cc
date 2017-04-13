@@ -47,15 +47,15 @@ void HandleWrapper::NotifyCloseObservers() {
 
 namespace gin {
 
-v8::Handle<v8::Value> Converter<mojo::Handle>::ToV8(v8::Isolate* isolate,
-                                                    const mojo::Handle& val) {
+v8::Local<v8::Value> Converter<mojo::Handle>::ToV8(v8::Isolate* isolate,
+                                                   const mojo::Handle& val) {
   if (!val.is_valid())
     return v8::Null(isolate);
   return mojo::edk::js::HandleWrapper::Create(isolate, val.value()).ToV8();
 }
 
 bool Converter<mojo::Handle>::FromV8(v8::Isolate* isolate,
-                                     v8::Handle<v8::Value> val,
+                                     v8::Local<v8::Value> val,
                                      mojo::Handle* out) {
   if (val->IsNull()) {
     *out = mojo::Handle();
@@ -71,13 +71,14 @@ bool Converter<mojo::Handle>::FromV8(v8::Isolate* isolate,
   return true;
 }
 
-v8::Handle<v8::Value> Converter<mojo::MessagePipeHandle>::ToV8(
-    v8::Isolate* isolate, mojo::MessagePipeHandle val) {
+v8::Local<v8::Value> Converter<mojo::MessagePipeHandle>::ToV8(
+    v8::Isolate* isolate,
+    mojo::MessagePipeHandle val) {
   return Converter<mojo::Handle>::ToV8(isolate, val);
 }
 
 bool Converter<mojo::MessagePipeHandle>::FromV8(v8::Isolate* isolate,
-                                                v8::Handle<v8::Value> val,
+                                                v8::Local<v8::Value> val,
                                                 mojo::MessagePipeHandle* out) {
   return Converter<mojo::Handle>::FromV8(isolate, val, out);
 }

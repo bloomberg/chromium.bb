@@ -31,7 +31,7 @@ class DrainData {
 
   // Returns a Promise that will be settled when no more data can be read.
   // Should be called just once on a newly allocated DrainData object.
-  v8::Handle<v8::Value> GetPromise();
+  v8::Local<v8::Value> GetPromise();
 
  private:
   ~DrainData();

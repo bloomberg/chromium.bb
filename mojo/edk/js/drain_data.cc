@@ -24,15 +24,15 @@ DrainData::DrainData(v8::Isolate* isolate, mojo::Handle handle)
     : isolate_(isolate),
       handle_(DataPipeConsumerHandle(handle.value())),
       handle_watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC) {
-  v8::Handle<v8::Context> context(isolate_->GetCurrentContext());
+  v8::Local<v8::Context> context(isolate_->GetCurrentContext());
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
 
   WaitForData();
 }
 
-v8::Handle<v8::Value> DrainData::GetPromise() {
+v8::Local<v8::Value> DrainData::GetPromise() {
   CHECK(resolver_.IsEmpty());
-  v8::Handle<v8::Promise::Resolver> resolver(
+  v8::Local<v8::Promise::Resolver> resolver(
       v8::Promise::Resolver::New(isolate_));
   resolver_.Reset(isolate_, resolver);
   return resolver->GetPromise();
@@ -86,7 +86,7 @@ void DrainData::DeliverData(MojoResult result) {
 
   // Create a total_bytes length ArrayBuffer return value.
   gin::Runner::Scope scope(runner_.get());
-  v8::Handle<v8::ArrayBuffer> array_buffer =
+  v8::Local<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(isolate_, total_bytes);
   gin::ArrayBuffer buffer;
   ConvertFromV8(isolate_, array_buffer, &buffer);
@@ -108,13 +108,13 @@ void DrainData::DeliverData(MojoResult result) {
   // that was read before either an error occurred or the remote pipe handle
   // was closed. The latter is indicated by MOJO_RESULT_FAILED_PRECONDITION.
 
-  v8::Handle<v8::Promise::Resolver> resolver(
+  v8::Local<v8::Promise::Resolver> resolver(
       v8::Local<v8::Promise::Resolver>::New(isolate_, resolver_));
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(isolate_);
   dictionary.Set("result", result);
   dictionary.Set("buffer", array_buffer);
-  v8::Handle<v8::Value> settled_value(ConvertToV8(isolate_, dictionary));
+  v8::Local<v8::Value> settled_value(ConvertToV8(isolate_, dictionary));
 
   if (result == MOJO_RESULT_FAILED_PRECONDITION)
     resolver->Resolve(settled_value);

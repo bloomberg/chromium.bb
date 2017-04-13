@@ -29,7 +29,7 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
   ~BlinkConnectorJsWrapper() override;
   static gin::Handle<BlinkConnectorJsWrapper> Create(
       v8::Isolate* isolate,
-      v8::Handle<v8::Context> context,
+      v8::Local<v8::Context> context,
       service_manager::Connector* remote_interfaces);
 
   // gin::Wrappable<BlinkConnectorJsWrapper> overrides.
@@ -52,7 +52,7 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
       v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>;
 
   BlinkConnectorJsWrapper(v8::Isolate* isolate,
-                          v8::Handle<v8::Context> context,
+                          v8::Local<v8::Context> context,
                           base::WeakPtr<service_manager::Connector> connector);
 
   void CallJsFactory(const ScopedJsFactory& factory,

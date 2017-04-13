@@ -14,7 +14,7 @@ namespace js {
 
 namespace {
 
-v8::Handle<v8::Private> GetHiddenPropertyName(v8::Isolate* isolate) {
+v8::Local<v8::Private> GetHiddenPropertyName(v8::Isolate* isolate) {
   return v8::Private::ForApi(
       isolate, gin::StringToV8(isolate, "::mojo::js::WaitingCallback"));
 }
@@ -26,7 +26,7 @@ gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
 // static
 gin::Handle<WaitingCallback> WaitingCallback::Create(
     v8::Isolate* isolate,
-    v8::Handle<v8::Function> callback,
+    v8::Local<v8::Function> callback,
     gin::Handle<HandleWrapper> handle_wrapper,
     MojoHandleSignals signals,
     bool one_shot) {
@@ -50,12 +50,12 @@ void WaitingCallback::Cancel() {
 }
 
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
-                                 v8::Handle<v8::Function> callback,
+                                 v8::Local<v8::Function> callback,
                                  bool one_shot)
     : one_shot_(one_shot),
       watcher_(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC),
       weak_factory_(this) {
-  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   runner_ = gin::PerContextData::From(context)->runner()->GetWeakPtr();
   v8::Maybe<bool> result = GetWrapper(isolate).ToLocalChecked()->SetPrivate(
       context, GetHiddenPropertyName(isolate), callback);

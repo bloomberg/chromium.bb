@@ -59,18 +59,19 @@ namespace gin {
 // TODO(mpcomplete): define converters for all Handle subtypes.
 template <>
 struct MOJO_JS_EXPORT Converter<mojo::Handle> {
-  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
-                                    const mojo::Handle& val);
-  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
+  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate,
+                                   const mojo::Handle& val);
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Local<v8::Value> val,
                      mojo::Handle* out);
 };
 
 template <>
 struct MOJO_JS_EXPORT Converter<mojo::MessagePipeHandle> {
-  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
-                                    mojo::MessagePipeHandle val);
+  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate,
+                                   mojo::MessagePipeHandle val);
   static bool FromV8(v8::Isolate* isolate,
-                     v8::Handle<v8::Value> val,
+                     v8::Local<v8::Value> val,
                      mojo::MessagePipeHandle* out);
 };
 
@@ -78,14 +79,14 @@ struct MOJO_JS_EXPORT Converter<mojo::MessagePipeHandle> {
 // converting |null| to a wrapper for an empty mojo::Handle.
 template <>
 struct MOJO_JS_EXPORT Converter<gin::Handle<mojo::edk::js::HandleWrapper>> {
-  static v8::Handle<v8::Value> ToV8(
+  static v8::Local<v8::Value> ToV8(
       v8::Isolate* isolate,
       const gin::Handle<mojo::edk::js::HandleWrapper>& val) {
     return val.ToV8();
   }
 
   static bool FromV8(v8::Isolate* isolate,
-                     v8::Handle<v8::Value> val,
+                     v8::Local<v8::Value> val,
                      gin::Handle<mojo::edk::js::HandleWrapper>* out) {
     if (val->IsNull()) {
       *out = mojo::edk::js::HandleWrapper::Create(isolate, MOJO_HANDLE_INVALID);
