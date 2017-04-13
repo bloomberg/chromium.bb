@@ -418,65 +418,6 @@
       },
       {
         "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=android-chromium"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "id": "build249-m4--device1",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=reference",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "android_devices": "1",
-              "id": "build249-m4--device1",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": true,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
           "blink_perf.events",
           "-v",
           "--upload-results",
@@ -12112,65 +12053,6 @@
             {
               "gpu": "8086:22b1",
               "id": "build149-b1",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": true,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build139-b1",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=reference",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build139-b1",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }
@@ -23898,65 +23780,6 @@
             {
               "gpu": "1002:9874",
               "id": "build213-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": true,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:9874",
-              "id": "build203-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 7200,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "blink_perf.editing",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=reference",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "blink_perf.editing.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:9874",
-              "id": "build203-b4",
               "os": "Windows-10-10586",
               "pool": "Chrome-perf"
             }

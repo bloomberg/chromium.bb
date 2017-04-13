@@ -244,9 +244,6 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
   tag = 'dom'
   subdir = 'DOM'
 
-class BlinkPerfEditing(_BlinkPerfBenchmark):
-  tag = 'editing'
-  subdir = 'Editing'
 
 @benchmark.Owner(emails=['hayato@chromium.org'])
 class BlinkPerfEvents(_BlinkPerfBenchmark):
