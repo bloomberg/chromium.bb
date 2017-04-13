@@ -44,6 +44,8 @@ void VrGLThread::Init() {
 
 void VrGLThread::CleanUp() {
   vr_shell_gl_.reset();
+  scene_manager_.reset();
+  scene_.reset();
 }
 
 }  // namespace vr_shell
