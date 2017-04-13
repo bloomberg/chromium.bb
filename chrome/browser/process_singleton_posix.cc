@@ -218,11 +218,12 @@ ssize_t ReadFromSocket(int fd,
 }
 
 // Set up a sockaddr appropriate for messaging.
-void SetupSockAddr(const std::string& path, struct sockaddr_un* addr) {
+bool SetupSockAddr(const std::string& path, struct sockaddr_un* addr) {
   addr->sun_family = AF_UNIX;
-  CHECK(path.length() < arraysize(addr->sun_path))
-      << "Socket path too long: " << path;
+  if (path.length() >= arraysize(addr->sun_path))
+    return false;
   base::strlcpy(addr->sun_path, path.c_str(), arraysize(addr->sun_path));
+  return true;
 }
 
 // Set up a socket appropriate for messaging.
@@ -240,7 +241,7 @@ int SetupSocketOnly() {
 // Set up a socket and sockaddr appropriate for messaging.
 void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
   *sock = SetupSocketOnly();
-  SetupSockAddr(path, addr);
+  CHECK(SetupSockAddr(path, addr)) << "Socket path too long: " << path;
 }
 
 // Read a symbolic link, return empty string if given path is not a symbol link.
@@ -386,7 +387,12 @@ bool ConnectSocket(ScopedSocket* socket,
     // Now we know the directory was (at that point) created by the profile
     // owner. Try to connect.
     sockaddr_un addr;
-    SetupSockAddr(socket_target.value(), &addr);
+    if (!SetupSockAddr(socket_target.value(), &addr)) {
+      // If a sockaddr couldn't be initialized due to too long of a socket
+      // path, we can be sure there isn't already a Chrome running with this
+      // socket path, since it would have hit the CHECK() on the path length.
+      return false;
+    }
     int ret = HANDLE_EINTR(connect(socket->fd(),
                                    reinterpret_cast<sockaddr*>(&addr),
                                    sizeof(addr)));
@@ -405,7 +411,12 @@ bool ConnectSocket(ScopedSocket* socket,
     // It exists, but is not a symlink (or some other error we detect
     // later). Just connect to it directly; this is an older version of Chrome.
     sockaddr_un addr;
-    SetupSockAddr(socket_path.value(), &addr);
+    if (!SetupSockAddr(socket_path.value(), &addr)) {
+      // If a sockaddr couldn't be initialized due to too long of a socket
+      // path, we can be sure there isn't already a Chrome running with this
+      // socket path, since it would have hit the CHECK() on the path length.
+      return false;
+    }
     int ret = HANDLE_EINTR(connect(socket->fd(),
                                    reinterpret_cast<sockaddr*>(&addr),
                                    sizeof(addr)));
@@ -982,9 +993,14 @@ bool ProcessSingleton::Create() {
         dir_mode == base::FILE_PERMISSION_USER_MASK)
       << "Temp directory mode is not 700: " << std::oct << dir_mode;
 
-  // Setup the socket symlink and the two cookies.
+  // Try to create the socket before creating the symlink, as SetupSocket may
+  // fail on a CHECK if the |socket_target_path| is too long, and this avoids
+  // leaving a dangling symlink.
   base::FilePath socket_target_path =
       socket_dir_.GetPath().Append(chrome::kSingletonSocketFilename);
+  SetupSocket(socket_target_path.value(), &sock, &addr);
+
+  // Setup the socket symlink and the two cookies.
   base::FilePath cookie(GenerateCookie());
   base::FilePath remote_cookie_path =
       socket_dir_.GetPath().Append(chrome::kSingletonCookieFilename);
@@ -1000,8 +1016,6 @@ bool ProcessSingleton::Create() {
       LOG(ERROR) << "Encountered a problem when deleting socket directory.";
     return false;
   }
-
-  SetupSocket(socket_target_path.value(), &sock, &addr);
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
     PLOG(ERROR) << "Failed to bind() " << socket_target_path.value();
