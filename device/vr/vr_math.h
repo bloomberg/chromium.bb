@@ -25,10 +25,6 @@ gfx::Vector3dF DEVICE_VR_EXPORT MatrixVectorRotate(const Mat4f& m,
 void DEVICE_VR_EXPORT MatrixMul(const Mat4f& matrix1,
                                 const Mat4f& matrix2,
                                 Mat4f* out);
-void DEVICE_VR_EXPORT PerspectiveMatrixFromView(const gfx::RectF& fov,
-                                                float z_near,
-                                                float z_far,
-                                                Mat4f* out);
 
 // Provides the direction the head is looking towards as a 3x1 unit vector.
 gfx::Vector3dF DEVICE_VR_EXPORT GetForwardVector(const Mat4f& matrix);

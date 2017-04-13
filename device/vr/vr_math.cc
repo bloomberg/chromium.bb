@@ -99,36 +99,6 @@ void MatrixMul(const Mat4f& matrix1, const Mat4f& matrix2, Mat4f* out) {
   }
 }
 
-void PerspectiveMatrixFromView(const gfx::RectF& fov,
-                               float z_near,
-                               float z_far,
-                               Mat4f* out) {
-  const float x_left = -std::tan(fov.x() * M_PI / 180.0f) * z_near;
-  const float x_right = std::tan(fov.right() * M_PI / 180.0f) * z_near;
-  const float y_bottom = -std::tan(fov.bottom() * M_PI / 180.0f) * z_near;
-  const float y_top = std::tan(fov.y() * M_PI / 180.0f) * z_near;
-
-  DCHECK(x_left < x_right && y_bottom < y_top && z_near < z_far &&
-         z_near > 0.0f && z_far > 0.0f);
-  const float X = (2 * z_near) / (x_right - x_left);
-  const float Y = (2 * z_near) / (y_top - y_bottom);
-  const float A = (x_right + x_left) / (x_right - x_left);
-  const float B = (y_top + y_bottom) / (y_top - y_bottom);
-  const float C = (z_near + z_far) / (z_near - z_far);
-  const float D = (2 * z_near * z_far) / (z_near - z_far);
-
-  for (int i = 0; i < 4; ++i) {
-    (*out)[i].fill(0.0f);
-  }
-  (*out)[0][0] = X;
-  (*out)[0][2] = A;
-  (*out)[1][1] = Y;
-  (*out)[1][2] = B;
-  (*out)[2][2] = C;
-  (*out)[2][3] = D;
-  (*out)[3][2] = -1;
-}
-
 gfx::Vector3dF GetForwardVector(const Mat4f& matrix) {
   // Same as multiplying the inverse of the rotation component of the matrix by
   // (0, 0, -1, 0).

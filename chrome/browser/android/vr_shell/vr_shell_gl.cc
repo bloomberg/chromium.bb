@@ -108,6 +108,40 @@ vr::Quatf GetRotationFromZAxis(gfx::Vector3dF vec) {
   return quat;
 }
 
+gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
+                                     float z_near,
+                                     float z_far) {
+  gvr::Mat4f result;
+  const float x_left = -std::tan(fov.left * M_PI / 180.0f) * z_near;
+  const float x_right = std::tan(fov.right * M_PI / 180.0f) * z_near;
+  const float y_bottom = -std::tan(fov.bottom * M_PI / 180.0f) * z_near;
+  const float y_top = std::tan(fov.top * M_PI / 180.0f) * z_near;
+
+  DCHECK(x_left < x_right && y_bottom < y_top && z_near < z_far &&
+         z_near > 0.0f && z_far > 0.0f);
+  const float X = (2 * z_near) / (x_right - x_left);
+  const float Y = (2 * z_near) / (y_top - y_bottom);
+  const float A = (x_right + x_left) / (x_right - x_left);
+  const float B = (y_top + y_bottom) / (y_top - y_bottom);
+  const float C = (z_near + z_far) / (z_near - z_far);
+  const float D = (2 * z_near * z_far) / (z_near - z_far);
+
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result.m[i][j] = 0.0f;
+    }
+  }
+  result.m[0][0] = X;
+  result.m[0][2] = A;
+  result.m[1][1] = Y;
+  result.m[1][2] = B;
+  result.m[2][2] = C;
+  result.m[2][3] = D;
+  result.m[3][2] = -1;
+
+  return result;
+}
+
 std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
                                                      double timestamp,
                                                      float x,
@@ -150,13 +184,13 @@ void GvrMatToMatf(const gvr::Mat4f& in, vr::Mat4f* out) {
   *out = *reinterpret_cast<vr::Mat4f*>(const_cast<gvr::Mat4f*>(&in));
 }
 
-gvr::Rectf GvrRectFromGfxRect(gfx::RectF rect) {
-  // gvr::Rectf bottom/top are reverse of gfx::RectF bottom/top.
-  return {rect.x(), rect.x() + rect.width(), rect.y(), rect.bottom()};
+gvr::Rectf UVFromGfxRect(gfx::RectF rect) {
+  return {rect.x(), rect.x() + rect.width(), 1.0f - rect.bottom(),
+          1.0f - rect.y()};
 }
 
-gfx::RectF GfxRectFromGvrRect(gvr::Rectf rect) {
-  return gfx::RectF(rect.left, rect.bottom, rect.right - rect.left,
+gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
+  return gfx::RectF(rect.left, 1.0 - rect.top, rect.right - rect.left,
                     rect.top - rect.bottom);
 }
 
@@ -785,9 +819,8 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
         break;
 
       const WebVrBounds& bounds = pending_bounds_.front().second;
-      webvr_left_viewport_->SetSourceUv(GvrRectFromGfxRect(bounds.left_bounds));
-      webvr_right_viewport_->SetSourceUv(
-          GvrRectFromGfxRect(bounds.right_bounds));
+      webvr_left_viewport_->SetSourceUv(UVFromGfxRect(bounds.left_bounds));
+      webvr_right_viewport_->SetSourceUv(UVFromGfxRect(bounds.right_bounds));
       DVLOG(1) << __FUNCTION__ << ": resize from pending_bounds to "
                << bounds.source_size.width() << "x"
                << bounds.source_size.height();
@@ -889,7 +922,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   fps_meter_->AddFrame(current_time);
-  LOG(ERROR) << "fps: " << fps_meter_->GetFPS();
+  DVLOG(1) << "fps: " << fps_meter_->GetFPS();
 #endif
 }
 
@@ -958,17 +991,17 @@ void VrShellGl::DrawUiView(const vr::Mat4f& head_pose,
     GvrMatToMatf(gvr_api_->GetEyeFromHeadMatrix(eye), &eye_matrix);
     vr::MatrixMul(eye_matrix, head_pose, &eye_view_matrix);
 
-    const gfx::RectF& rect =
-        GfxRectFromGvrRect(buffer_viewport_->GetSourceUv());
+    const gfx::RectF& rect = GfxRectFromUV(buffer_viewport_->GetSourceUv());
     const gfx::Rect& pixel_rect = CalculatePixelSpaceRect(render_size, rect);
     glViewport(pixel_rect.x(), pixel_rect.y(), pixel_rect.width(),
                pixel_rect.height());
 
     vr::Mat4f render_matrix;
     vr::Mat4f perspective_matrix;
-    vr::PerspectiveMatrixFromView(
-        GfxRectFromGvrRect(buffer_viewport_->GetSourceFov()), kZNear, kZFar,
-        &perspective_matrix);
+    GvrMatToMatf(PerspectiveMatrixFromView(buffer_viewport_->GetSourceFov(),
+                                           kZNear, kZFar),
+                 &perspective_matrix);
+
     vr::MatrixMul(perspective_matrix, eye_view_matrix, &render_matrix);
 
     DrawElements(render_matrix, elementsInDrawOrder);
@@ -1207,8 +1240,8 @@ void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
                                          const gfx::RectF& right_bounds,
                                          const gfx::Size& source_size) {
   if (frame_index < 0) {
-    webvr_left_viewport_->SetSourceUv(GvrRectFromGfxRect(left_bounds));
-    webvr_right_viewport_->SetSourceUv(GvrRectFromGfxRect(right_bounds));
+    webvr_left_viewport_->SetSourceUv(UVFromGfxRect(left_bounds));
+    webvr_right_viewport_->SetSourceUv(UVFromGfxRect(right_bounds));
     CreateOrResizeWebVRSurface(source_size);
   } else {
     pending_bounds_.emplace(
