@@ -156,13 +156,13 @@ class GitCLTest(unittest.TestCase):
                 'builder_name': 'builder-b',
                 'status': 'COMPLETED',
                 'result': 'SUCCESS',
-                'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/100',
+                'url': 'http://build.chromium.org/p/master/builders/builder-b/builds/100',
             },
             {
                 'builder_name': 'builder-b',
                 'status': 'COMPLETED',
                 'result': 'SUCCESS',
-                'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/90',
+                'url': 'http://build.chromium.org/p/master/builders/builder-b/builds/90',
             },
             {
                 'builder_name': 'builder-a',
@@ -174,12 +174,24 @@ class GitCLTest(unittest.TestCase):
                 'builder_name': 'builder-c',
                 'status': 'COMPLETED',
                 'result': 'SUCCESS',
-                'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/123',
+                'url': 'http://build.chromium.org/p/master/builders/builder-c/builds/123',
             },
         ]
         self.assertEqual(
             git_cl.latest_try_jobs(['builder-a', 'builder-b']),
             [Build('builder-a'), Build('builder-b', 100)])
+
+    def test_latest_try_builds_started_builds(self):
+        git_cl = GitCL(MockHost())
+        git_cl.fetch_try_results = lambda: [
+            {
+                'builder_name': 'builder-a',
+                'status': 'STARTED',
+                'result': None,
+                'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/100',
+            },
+        ]
+        self.assertEqual(git_cl.latest_try_jobs(['builder-a']), [Build('builder-a', 100)])
 
     def test_latest_try_builds_failures(self):
         git_cl = GitCL(MockHost())
@@ -188,9 +200,17 @@ class GitCLTest(unittest.TestCase):
                 'builder_name': 'builder-a',
                 'status': 'COMPLETED',
                 'result': 'FAILURE',
-                'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/100',
+                'failure_reason': 'BUILD_FAILURE',
+                'url': 'http://build.chromium.org/p/master/builders/builder-a/builds/100',
+            },
+            {
+                'builder_name': 'builder-b',
+                'status': 'COMPLETED',
+                'result': 'FAILURE',
+                'failure_reason': 'INFRA_FAILURE',
+                'url': 'http://build.chromium.org/p/master/builders/builder-b/builds/200',
             },
         ]
         self.assertEqual(
             git_cl.latest_try_jobs(['builder-a', 'builder-b']),
-            [Build('builder-a', 100)])
+            [Build('builder-a', 100), Build('builder-b', 200)])

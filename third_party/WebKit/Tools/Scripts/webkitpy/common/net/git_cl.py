@@ -75,14 +75,26 @@ class GitCL(object):
         return None
 
     def latest_try_jobs(self, builder_names=None):
-        """Returns a list of Builds for the latest jobs for the given builders."""
+        """Returns a list of Builds for the latest jobs for the given builders.
+
+        This includes builds that are not yet finished and builds with infra
+        failures, so if a build is in this list, that doesn't guarantee that
+        there are results.
+
+        Args:
+            builder_names: Optional list of builders used to filter results.
+
+        Returns:
+            A list of Build objects for try jobs, with one Build listed
+            per builder. For scheduled builds, there is no build number.
+        """
         try_results = self.fetch_try_results()
         if builder_names:
             try_results = [r for r in try_results if r['builder_name'] in builder_names]
         return filter_latest_builds(self._try_result_to_build(r) for r in try_results)
 
     def fetch_try_results(self):
-        """Requests results f try jobs for the current CL."""
+        """Requests results of try jobs for the current CL."""
         with self._host.filesystem.mkdtemp() as temp_directory:
             results_path = self._host.filesystem.join(temp_directory, 'try-results.json')
             self.run(['try-results', '--json', results_path])
