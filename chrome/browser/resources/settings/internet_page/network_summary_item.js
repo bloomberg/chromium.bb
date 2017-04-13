@@ -159,12 +159,17 @@ Polymer({
    * @private
    */
   onShowDetailsTap_: function(event) {
-    if (this.shouldShowList_())
+    if (!this.deviceIsEnabled_(this.deviceState)) {
+      this.fire(
+          'device-enabled-toggled',
+          {enabled: true, type: this.deviceState.Type});
+    } else if (this.shouldShowList_()) {
       this.fire('show-networks', this.deviceState);
-    else if (this.activeNetworkState.GUID)
+    } else if (this.activeNetworkState.GUID) {
       this.fire('show-detail', this.activeNetworkState);
-    else if (this.networkStateList.length > 0)
+    } else if (this.networkStateList.length > 0) {
       this.fire('show-detail', this.networkStateList[0]);
+    }
     event.stopPropagation();
   },
 
