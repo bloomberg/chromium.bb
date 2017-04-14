@@ -29,6 +29,9 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     : filter_in_progress_(false),
       context_(context),
       layout_object_(layer.GetLayoutObject()) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
+
   if (!layer.PaintsWithFilters())
     return;
 
