@@ -440,11 +440,6 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * @return Whether the event has been consumed.
      */
     protected boolean handleScroll(MotionEvent e1, MotionEvent e2, float distanceY) {
-        // TODO(mdjones): It seems impossible that either of the two MotionEvents passed into this
-        // function would be null provided the InternalGestureDetector checks them. However, it
-        // still seems to be possible...
-        if (e1 == null || e2 == null) return false;
-
         // If the panel is peeking then the swipe recognizer will handle the scroll event.
         if (mPanel.getPanelState() == PanelState.PEEKED) return false;
 
@@ -561,15 +556,11 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            // TODO(mdjones): Investigate how this is ever the case. The API docs do not say this
-            // can happen (https://crbug.com/613069).
-            if (e == null) return false;
             return handleSingleTapUp(e);
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e1 == null || e2 == null) return false;
             return handleScroll(e1, e2, distanceY);
         }
     }

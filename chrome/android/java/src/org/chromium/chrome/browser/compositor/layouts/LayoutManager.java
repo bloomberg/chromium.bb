@@ -86,6 +86,9 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider 
     private final RectF mCachedRect = new RectF();
     private final PointF mCachedPoint = new PointF();
 
+    // Whether the currently active event filter has changed.
+    private boolean mIsNewEventFilter;
+
     /**
      * Creates a {@link LayoutManager} instance.
      * @param host A {@link LayoutManagerHost} instance.
@@ -120,8 +123,12 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider 
         }
 
         PointF offsets = getMotionOffsets(e);
-        mActiveEventFilter =
+
+        EventFilter layoutFilter =
                 mActiveLayout.findInterceptingEventFilter(e, offsets, isKeyboardShowing);
+        mIsNewEventFilter = layoutFilter != mActiveEventFilter;
+        mActiveEventFilter = layoutFilter;
+
         if (mActiveEventFilter != null) mActiveLayout.unstallImmediately();
         return mActiveEventFilter != null;
     }
@@ -135,6 +142,18 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider 
     public boolean onTouchEvent(MotionEvent e) {
         if (mActiveEventFilter == null) return false;
 
+        // Make sure the first event through the filter is an ACTION_DOWN.
+        if (mIsNewEventFilter && e.getActionMasked() != MotionEvent.ACTION_DOWN) {
+            MotionEvent downEvent = MotionEvent.obtain(e);
+            downEvent.setAction(MotionEvent.ACTION_DOWN);
+            if (!onTouchEventInternal(downEvent)) return false;
+        }
+        mIsNewEventFilter = false;
+
+        return onTouchEventInternal(e);
+    }
+
+    private boolean onTouchEventInternal(MotionEvent e) {
         boolean consumed = mActiveEventFilter.onTouchEvent(e);
         PointF offsets = getMotionOffsets(e);
         if (offsets != null) mActiveEventFilter.setCurrentMotionEventOffsets(offsets.x, offsets.y);

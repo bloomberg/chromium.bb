@@ -98,10 +98,6 @@ public class GestureEventFilter extends EventFilter {
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2,
                     float distanceX, float distanceY) {
-                // This should ideally never happen but is used as a workaround for a larger
-                // problem. See https://crbug.com/656603
-                if (e1 == null || e2 == null) return false;
-
                 if (!mSeenFirstScrollEvent) {
                     // Remove the touch slop region from the first scroll event to avoid a
                     // jump.
