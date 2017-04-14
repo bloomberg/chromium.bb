@@ -505,12 +505,6 @@ const CGFloat kAnimationDuration = 0.2;
 
 // (URLDropTarget protocol)
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  // Make ourself the first responder, which will select the text to indicate
-  // that our contents would be replaced by a drop.
-  // TODO(viettrungluu): crbug.com/30809 -- this is a hack since it steals focus
-  // and doesn't return it.
-  [[self window] makeFirstResponder:self];
-
   bool canDropAtLocation =
       [[self cell] canDropAtLocationInWindow:[sender draggingLocation]
                                       ofView:self];
