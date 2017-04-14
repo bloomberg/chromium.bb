@@ -25229,8 +25229,8 @@
     { "name": "simpletax.ca", "include_subdomains": true, "mode": "force-https" },
     { "name": "scotthelme.co.uk", "include_subdomains": true, "mode": "force-https", "expect_staple": true, "expect_staple_report_uri": "https://scotthelme.report-uri.io/r/default/staple/reportOnly", "include_subdomains_for_expect_staple": true },
     { "name": "hstspreload.appspot.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "matteomarescotti.it", "include_subdomains": true, "mode": "force-https" },
-    { "name": "www.cnet.com", "include_subdomains": true, "mode": "force-https", "expect_staple": true, "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly", "include_subdomains_for_expect_staple": true },
+    { "name": "matteomarescotti.it", "include_subdomains": true, "mode": "force-https", "expect_staple": true, "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly", "include_subdomains_for_expect_staple": true },
+    { "name": "www.cnet.com", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL ENTRIES
 
     // To avoid trailing comma changes from showing up in diffs, we place a
