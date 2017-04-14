@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_test_helpers.h"
@@ -49,6 +50,28 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
     return provider_.get();
   }
 
+  // Sleep until the shared memory buffer's seqlock advances the buffer version,
+  // indicating that the gamepad provider has written to it after polling the
+  // gamepad fetchers. The buffer will report an odd value for the version if
+  // the buffer is not in a consistent state, so we also require that the value
+  // is even before continuing.
+  void WaitForData(GamepadHardwareBuffer* buffer) {
+    const base::subtle::Atomic32 initial_version = buffer->seqlock.ReadBegin();
+    base::subtle::Atomic32 current_version;
+    do {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+      current_version = buffer->seqlock.ReadBegin();
+    } while (current_version % 2 || current_version == initial_version);
+  }
+
+  // The provider polls the data on the background thread and then issues
+  // the callback on the client thread. Waiting for it to poll twice ensures
+  // that it was able to issue callbacks for the first poll.
+  void WaitForDataAndCallbacksIssued(GamepadHardwareBuffer* buffer) {
+    WaitForData(buffer);
+    WaitForData(buffer);
+  }
+
   void ReadGamepadHardwareBuffer(GamepadHardwareBuffer* buffer,
                                  WebGamepads* output) {
     memset(output, 0, sizeof(WebGamepads));
@@ -70,8 +93,7 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   DISALLOW_COPY_AND_ASSIGN(GamepadProviderTest);
 };
 
-// Test is flaky. crbug.com/705367
-TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
+TEST_F(GamepadProviderTest, PollingAccess) {
   WebGamepads test_data;
   memset(&test_data, 0, sizeof(WebGamepads));
   test_data.items[0].connected = true;
@@ -89,8 +111,6 @@ TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
 
   base::RunLoop().RunUntilIdle();
 
-  mock_data_fetcher_->WaitForDataRead();
-
   // Renderer-side, pull data out of poll buffer.
   base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
       base::GetCurrentProcessHandle());
@@ -100,6 +120,10 @@ TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
 
   GamepadHardwareBuffer* buffer =
       static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+
+  // Wait until the shared memory buffer has been written at least once.
+  WaitForData(buffer);
+
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
@@ -111,8 +135,7 @@ TEST_F(GamepadProviderTest, DISABLED_PollingAccess) {
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
 }
 
-// Flaky on all platforms: http://crbug.com/692219
-TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
+TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
   WebGamepads test_data;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
@@ -139,8 +162,6 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
 
   base::RunLoop().RunUntilIdle();
 
-  mock_data_fetcher_->WaitForDataRead();
-
   // Renderer-side, pull data out of poll buffer.
   base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
       base::GetCurrentProcessHandle());
@@ -150,6 +171,10 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
 
   GamepadHardwareBuffer* buffer =
       static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+
+  // Wait until the shared memory buffer has been written at least once.
+  WaitForData(buffer);
+
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
@@ -161,7 +186,9 @@ TEST_F(GamepadProviderTest, DISABLED_ConnectDisconnectMultiple) {
   EXPECT_EQ(-0.5f, output.items[1].axes[1]);
 
   mock_data_fetcher_->SetTestData(test_data_onedisconnected);
-  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  WaitForDataAndCallbacksIssued(buffer);
+
   ReadGamepadHardwareBuffer(buffer, &output);
 
   EXPECT_EQ(0u, output.items[0].axes_length);
@@ -192,29 +219,39 @@ TEST_F(GamepadProviderTest, UserGesture) {
   provider->Resume();
 
   provider->RegisterForUserGesture(listener.GetClosure());
-  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Renderer-side, pull data out of poll buffer.
+  base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
+      base::GetCurrentProcessHandle());
+  std::unique_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(handle, true));
+  EXPECT_TRUE(shared_memory->Map(sizeof(GamepadHardwareBuffer)));
+
+  GamepadHardwareBuffer* buffer =
+      static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+
+  // Wait until the shared memory buffer has been written at least once.
+  WaitForData(buffer);
 
   // It should not have issued our callback.
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(listener.has_user_gesture());
 
-  // Set a button down and wait for it to be read twice.
+  // Set a button down.
   mock_data_fetcher_->SetTestData(button_down_data);
-  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  // The user gesture listener callback is not called until after the buffer has
+  // been updated. Wait for the second update to ensure callbacks have fired.
+  WaitForDataAndCallbacksIssued(buffer);
 
   // It should have issued our callback.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(listener.has_user_gesture());
 }
 
-// Flaky on CrOS and Linux: http://crbug.com/640086, https://crbug.com/702712
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_Sanitization DISABLED_Sanitization
-#else
-#define MAYBE_Sanitization Sanitization
-#endif
 // Tests that waiting for a user gesture works properly.
-TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
+TEST_F(GamepadProviderTest, Sanitization) {
   WebGamepads active_data;
   active_data.items[0].connected = true;
   active_data.items[0].timestamp = 0;
@@ -240,8 +277,6 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   base::RunLoop().RunUntilIdle();
 
-  mock_data_fetcher_->WaitForDataRead();
-
   // Renderer-side, pull data out of poll buffer.
   base::SharedMemoryHandle handle = provider->GetSharedMemoryHandleForProcess(
       base::GetCurrentProcessHandle());
@@ -251,6 +286,10 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   GamepadHardwareBuffer* buffer =
       static_cast<GamepadHardwareBuffer*>(shared_memory->memory());
+
+  // Wait until the shared memory buffer has been written at least once.
+  WaitForData(buffer);
+
   WebGamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
@@ -264,7 +303,8 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   // Zero out the inputs
   mock_data_fetcher_->SetTestData(zero_data);
-  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  WaitForDataAndCallbacksIssued(buffer);
 
   // Read updated data from shared memory
   ReadGamepadHardwareBuffer(buffer, &output);
@@ -278,7 +318,8 @@ TEST_F(GamepadProviderTest, MAYBE_Sanitization) {
 
   // Re-set the active inputs
   mock_data_fetcher_->SetTestData(active_data);
-  mock_data_fetcher_->WaitForDataReadAndCallbacksIssued();
+
+  WaitForDataAndCallbacksIssued(buffer);
 
   // Read updated data from shared memory
   ReadGamepadHardwareBuffer(buffer, &output);
