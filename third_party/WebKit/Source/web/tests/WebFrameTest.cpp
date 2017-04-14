@@ -86,6 +86,7 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/Cursor.h"
 #include "platform/DragImage.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -113,6 +114,7 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMockClipboard.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
@@ -4365,6 +4367,61 @@ TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest) {
 
   // Now retrieve the FocusedNode and test it should be null.
   EXPECT_EQ(0, web_view_helper.WebView()->FocusedElement());
+}
+
+class ChangedSelectionCounter : public FrameTestHelpers::TestWebFrameClient {
+ public:
+  ChangedSelectionCounter() : call_count_(0) {}
+  void DidChangeSelection(bool isSelectionEmpty) { ++call_count_; }
+  int Count() const { return call_count_; }
+  void Reset() { call_count_ = 0; }
+
+ private:
+  int call_count_;
+};
+
+TEST_P(ParameterizedWebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
+  ChangedSelectionCounter counter;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  RegisterMockedHttpURLLoad("editable_elements.html");
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "editable_elements.html", true, &counter);
+
+  WebKeyboardEvent tab_down(WebInputEvent::kKeyDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::kTimeStampForTesting);
+  WebKeyboardEvent tab_up(WebInputEvent::kKeyUp, WebInputEvent::kNoModifiers,
+                          WebInputEvent::kTimeStampForTesting);
+  tab_down.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
+  tab_up.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
+  tab_down.windows_key_code = VKEY_TAB;
+  tab_up.windows_key_code = VKEY_TAB;
+
+  // Move to the next text-field: 1 cursor change.
+  counter.Reset();
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_down));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+  EXPECT_EQ(1, counter.Count());
+
+  // Move to another text-field: 1 cursor change.
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_down));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+  EXPECT_EQ(2, counter.Count());
+
+  // Move to a number-field: 1 cursor change.
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_down));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+  EXPECT_EQ(3, counter.Count());
+
+  // Move to an editable element: 1 cursor change.
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_down));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+  EXPECT_EQ(4, counter.Count());
+
+  // Move to a non-editable element: 0 cursor changes.
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_down));
+  web_view->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+  EXPECT_EQ(4, counter.Count());
 }
 
 // Implementation of WebFrameClient that tracks the v8 contexts that are created

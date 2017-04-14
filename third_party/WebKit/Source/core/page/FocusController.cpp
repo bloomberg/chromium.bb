@@ -1065,36 +1065,6 @@ static bool RelinquishesEditingFocus(const Element& element) {
   return element.GetDocument().GetFrame() && RootEditableElement(element);
 }
 
-static void ClearSelectionIfNeeded(LocalFrame* old_focused_frame,
-                                   LocalFrame* new_focused_frame,
-                                   Element* new_focused_element) {
-  if (!old_focused_frame || !new_focused_frame)
-    return;
-
-  if (old_focused_frame->GetDocument() != new_focused_frame->GetDocument())
-    return;
-
-  FrameSelection& selection = old_focused_frame->Selection();
-  const SelectionInDOMTree& selection_in_dom_tree =
-      selection.GetSelectionInDOMTree();
-  if (selection_in_dom_tree.IsNone())
-    return;
-
-  Node* selection_start_node = selection_in_dom_tree.Base().AnchorNode();
-  if (selection_start_node == new_focused_element ||
-      selection_start_node->IsDescendantOf(new_focused_element))
-    return;
-
-  if (!EnclosingTextControl(selection_start_node))
-    return;
-
-  if (selection_start_node->IsInShadowTree() &&
-      selection_start_node->OwnerShadowHost() == new_focused_element)
-    return;
-
-  selection.Clear();
-}
-
 bool FocusController::SetFocusedElement(Element* element,
                                         Frame* new_focused_frame) {
   return SetFocusedElement(
@@ -1131,9 +1101,6 @@ bool FocusController::SetFocusedElement(Element* element,
       new_document->FocusedElement() == element)
     return true;
 
-  if (new_focused_frame && new_focused_frame->IsLocalFrame())
-    ClearSelectionIfNeeded(old_focused_frame, ToLocalFrame(new_focused_frame),
-                           element);
 
   if (old_document && old_document != new_document)
     old_document->ClearFocusedElement();
@@ -1360,6 +1327,11 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
   Element* element = ToElement(focus_candidate.focusable_node);
   DCHECK(element);
 
+  if (!element->IsTextControl() && !HasEditableStyle(*element->ToNode())) {
+    // To fulfill the expectation of spatial-navigation/snav-input.html
+    // we clear selection when spatnav moves focus away from a text-field.
+    FocusedFrame()->Selection().Clear();
+  }
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset, type, nullptr));
   return true;
 }

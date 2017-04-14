@@ -32,6 +32,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/LayoutSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
@@ -242,7 +243,7 @@ class CORE_EXPORT FrameSelection final
       RevealExtentOption = kDoNotRevealExtent);
   void SetSelectionFromNone();
 
-  void UpdateAppearance();
+  void UpdateAppearance(LayoutSelection::PaintHint);
   bool ShouldShowBlockCursor() const;
   void SetShouldShowBlockCursor(bool);
 
@@ -308,6 +309,7 @@ class CORE_EXPORT FrameSelection final
 
   const Member<FrameCaret> frame_caret_;
   bool use_secure_keyboard_entry_when_active_ = false;
+  bool text_control_focused_ = false;
 };
 
 }  // namespace blink

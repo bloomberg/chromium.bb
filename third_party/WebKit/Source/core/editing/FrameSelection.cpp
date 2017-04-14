@@ -250,7 +250,7 @@ void FrameSelection::DidSetSelectionDeprecated(SetSelectionOptions options,
   }
 
   frame_caret_->StopCaretBlinkTimer();
-  UpdateAppearance();
+  UpdateAppearance(LayoutSelection::PaintHint::kPaint);
 
   // Always clear the x position used for vertical arrow navigation.
   // It will be restored by the vertical arrow navigation code if necessary.
@@ -335,7 +335,26 @@ void FrameSelection::DidChangeFocus() {
   // Hits in
   // virtual/gpu/compositedscrolling/scrollbars/scrollbar-miss-mousemove-disabled.html
   DisableCompositingQueryAsserts disabler;
-  UpdateAppearance();
+
+  // No focused element means document root has focus.
+  const Element* const focus = GetDocument().FocusedElement()
+                                   ? GetDocument().FocusedElement()
+                                   : GetDocument().documentElement();
+
+  // Protection against LayoutTests/editing/selection/selection-crash.html
+  if (!focus) {
+    frame_caret_->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
+    text_control_focused_ = false;
+    return;
+  }
+
+  // Hide the selection when focus goes away from a text-field and into
+  // something that is not a text-field. When focus enters another text-field we
+  // do not need to update appearance; the appearance is updated when the new
+  // selection is set.
+  if (text_control_focused_ && !focus->IsTextControl())
+    UpdateAppearance(LayoutSelection::PaintHint::kHide);
+  text_control_focused_ = focus->IsTextControl();
 }
 
 static DispatchEventResult DispatchSelectStart(
@@ -773,13 +792,15 @@ void FrameSelection::CommitAppearanceIfNeeded(LayoutView& layout_view) {
 }
 
 void FrameSelection::DidLayout() {
-  UpdateAppearance();
+  // Upon relayout, a hidden selection must be kept hidden and a visible
+  // selection must be kept visible.
+  UpdateAppearance(LayoutSelection::PaintHint::kKeep);
 }
 
-void FrameSelection::UpdateAppearance() {
+void FrameSelection::UpdateAppearance(LayoutSelection::PaintHint hint) {
   DCHECK(!frame_->ContentLayoutItem().IsNull());
   frame_caret_->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
-  layout_selection_->SetHasPendingSelection();
+  layout_selection_->SetHasPendingSelection(hint);
 }
 
 void FrameSelection::NotifyLayoutObjectOfSelectionChange(
@@ -968,7 +989,7 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
       document_loader->GetInitialScrollState().was_scrolled_by_user = true;
     if (start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
             rect, alignment, alignment))
-      UpdateAppearance();
+      UpdateAppearance(LayoutSelection::PaintHint::kPaint);
   }
 }
 
