@@ -37,7 +37,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                       int supertx_enabled,
 #endif
 #if CONFIG_LV_MAP
-                      int block,
+                      int block, int plane,
 #endif
                       aom_reader *r);
 

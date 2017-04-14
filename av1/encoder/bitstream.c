@@ -1424,7 +1424,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
                        const int supertx_enabled,
 #endif
 #if CONFIG_LV_MAP
-                       int block,
+                       int block, int plane,
 #endif
                        aom_writer *w) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1444,7 +1444,9 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   TX_TYPE tx_type = mbmi->tx_type;
 #else
   // Only y plane's tx_type is transmitted
-  TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block, tx_size);
+  if (plane > 0) return;
+  PLANE_TYPE plane_type = get_plane_type(plane);
+  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
 #endif
 
   if (!FIXED_TX_TYPE) {

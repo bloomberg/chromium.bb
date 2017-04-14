@@ -46,7 +46,7 @@ void av1_set_variance_partition_thresholds(struct AV1_COMP *cpi, int q);
 
 void av1_update_tx_type_count(const struct AV1Common *cm, MACROBLOCKD *xd,
 #if CONFIG_LV_MAP
-                              int block,
+                              int block, int plane,
 #endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,
                               FRAME_COUNTS *counts);
