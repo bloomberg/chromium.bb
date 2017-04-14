@@ -317,13 +317,15 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
     const NGConstraintSpace& constraint_space) {
   NGLogicalSize available_size = constraint_space.PercentageResolutionSize();
   LayoutObject* containing_block = layout_box_->ContainingBlock();
+  NGWritingMode writing_mode =
+      FromPlatformWritingMode(Style().GetWritingMode());
   bool parallel_writing_mode;
   if (!containing_block) {
     parallel_writing_mode = true;
   } else {
     parallel_writing_mode = IsParallelWritingMode(
         FromPlatformWritingMode(containing_block->StyleRef().GetWritingMode()),
-        FromPlatformWritingMode(Style().GetWritingMode()));
+        writing_mode);
   }
   if (parallel_writing_mode) {
     layout_box_->SetOverrideContainingBlockContentLogicalWidth(
@@ -356,15 +358,15 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
   }
   NGLogicalSize box_size(layout_box_->LogicalWidth(),
                          layout_box_->LogicalHeight());
-  // TODO(layout-ng): This does not handle writing modes correctly (for
-  // overflow).
-  NGLogicalSize overflow_size(layout_box_->LayoutOverflowRect().Width(),
-                              layout_box_->LayoutOverflowRect().Height());
+  NGPhysicalSize overflow_physical_size(
+      layout_box_->LayoutOverflowRect().Width(),
+      layout_box_->LayoutOverflowRect().Height());
+  NGLogicalSize overflow_size =
+      overflow_physical_size.ConvertToLogical(writing_mode);
   NGFragmentBuilder builder(NGPhysicalFragment::kFragmentBox, this);
   builder.SetSize(box_size)
       .SetDirection(layout_box_->StyleRef().Direction())
-      .SetWritingMode(
-          FromPlatformWritingMode(layout_box_->StyleRef().GetWritingMode()))
+      .SetWritingMode(writing_mode)
       .SetOverflowSize(overflow_size);
   return builder.ToBoxFragment();
 }
