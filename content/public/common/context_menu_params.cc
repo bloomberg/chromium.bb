@@ -18,7 +18,7 @@ ContextMenuParams::ContextMenuParams()
     : media_type(blink::WebContextMenuData::kMediaTypeNone),
       x(0),
       y(0),
-      has_image_contents(true),
+      has_image_contents(false),
       media_flags(0),
       spellcheck_enabled(false),
       is_editable(false),

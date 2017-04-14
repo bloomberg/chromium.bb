@@ -190,7 +190,7 @@ struct WebContextMenuData {
 
   WebContextMenuData()
       : media_type(kMediaTypeNone),
-        has_image_contents(true),
+        has_image_contents(false),
         media_flags(kMediaNone),
         is_spell_checking_enabled(false),
         is_editable(false),
