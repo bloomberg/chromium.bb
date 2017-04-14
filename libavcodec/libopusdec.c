@@ -61,8 +61,6 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
         av_log(avc, AV_LOG_ERROR, "Invalid number of channels\n");
         return AVERROR(EINVAL);
     }
-    avc->channel_layout = avc->channels > 8 ? 0 :
-                          ff_vorbis_channel_layouts[avc->channels - 1];
 
     if (avc->extradata_size >= OPUS_HEAD_SIZE) {
         opus->pre_skip = AV_RL16(avc->extradata + 10);
@@ -86,14 +84,38 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
         mapping    = mapping_arr;
     }
 
-    if (avc->channels > 2 && avc->channels <= 8) {
-        const uint8_t *vorbis_offset = ff_vorbis_channel_layout_offsets[avc->channels - 1];
-        int ch;
+    if (channel_map == 1) {
+        avc->channel_layout = avc->channels > 8 ? 0 :
+                              ff_vorbis_channel_layouts[avc->channels - 1];
+        if (avc->channels > 2 && avc->channels <= 8) {
+            const uint8_t *vorbis_offset = ff_vorbis_channel_layout_offsets[avc->channels - 1];
+            int ch;
 
-        /* Remap channels from Vorbis order to ffmpeg order */
-        for (ch = 0; ch < avc->channels; ch++)
-            mapping_arr[ch] = mapping[vorbis_offset[ch]];
-        mapping = mapping_arr;
+            /* Remap channels from Vorbis order to ffmpeg order */
+            for (ch = 0; ch < avc->channels; ch++)
+                mapping_arr[ch] = mapping[vorbis_offset[ch]];
+            mapping = mapping_arr;
+        }
+    } else if (channel_map == 2) {
+        int ambisonic_channels;
+        if (avc->channels > 227) {
+            av_log(avc, AV_LOG_ERROR, "Too many channels\n");
+            return AVERROR_INVALIDDATA;
+        }
+
+        ambisonic_channels = ff_sqrt(avc->channels);
+        ambisonic_channels *= ambisonic_channels;
+        if (avc->channels != ambisonic_channels &&
+            avc->channels != ambisonic_channels + 2) {
+            av_log(avc, AV_LOG_ERROR,
+                   "Channel mapping 2 is only specified for channel counts"
+                   " which can be written as n or n + 2 for nonnegative integer n,"
+                   " where n is the number of ambisonic channels.\n");
+            return AVERROR_INVALIDDATA;
+        }
+        avc->channel_layout = 0;
+    } else {
+        avc->channel_layout = 0;
     }
 
     opus->dec = opus_multistream_decoder_create(avc->sample_rate, avc->channels,

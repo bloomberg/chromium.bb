@@ -372,17 +372,20 @@ av_cold int ff_opus_parse_extradata(AVCodecContext *avctx,
             layout = ff_vorbis_channel_layouts[channels - 1];
             channel_reorder = channel_reorder_vorbis;
         } else if (map_type == 2) {
-            int ambisonic_order = ff_sqrt(channels) - 1;
-            if (channels != ((ambisonic_order + 1) * (ambisonic_order + 1)) &&
-                channels != ((ambisonic_order + 1) * (ambisonic_order + 1) + 2)) {
-                av_log(avctx, AV_LOG_ERROR,
-                       "Channel mapping 2 is only specified for channel counts"
-                       " which can be written as (n + 1)^2 or (n + 1)^2 + 2"
-                       " for nonnegative integer n\n");
-                return AVERROR_INVALIDDATA;
-            }
+            int ambisonic_channels;
             if (channels > 227) {
                 av_log(avctx, AV_LOG_ERROR, "Too many channels\n");
+                return AVERROR_INVALIDDATA;
+            }
+
+            ambisonic_channels = ff_sqrt(channels);
+            ambisonic_channels *= ambisonic_channels;
+            if (channels != ambisonic_channels &&
+                channels != ambisonic_channels + 2) {
+                av_log(avctx, AV_LOG_ERROR,
+                       "Channel mapping 2 is only specified for channel counts"
+                       " which can be written as n or n + 2 for nonnegative integer n,"
+                       " where n is the number of ambisonic channels.\n");
                 return AVERROR_INVALIDDATA;
             }
             layout = 0;

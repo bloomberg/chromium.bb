@@ -117,3 +117,8 @@ Current patches:
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
+
+  Changes to libavcodec/libopusdec.c and libavcodec/libopusdec.c
+    https://chromium-review.googlesource.com/c/477130/
+    libopus: +channel mapping 2 support in libopusdec.
+    Enables demuxing of Ambisonics content coded with channel mapping 2.
