@@ -39,6 +39,11 @@ source_set("ios_core") {
 
   if (!is_chrome_branded) {
     sources += [ "host_preferences_persistence_chromium.mm" ]
+  } else {
+    # TODO(nicholss): Until we have a private implementation of this, stub it
+    # with the chromium version. We still want the logic of is_chrome_branded
+    # but to get the release builds building we will just reuse the file.
+    sources += [ "host_preferences_persistence_chromium.mm" ]
   }
 
   public_deps = [
