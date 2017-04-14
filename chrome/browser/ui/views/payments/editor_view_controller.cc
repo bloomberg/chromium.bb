@@ -124,7 +124,7 @@ void EditorViewController::ButtonPressed(views::Button* sender,
   switch (sender->tag()) {
     case static_cast<int>(EditorViewControllerTags::SAVE_BUTTON):
       if (ValidateModelAndSave())
-        dialog()->GoBack();
+        dialog()->GoBackToPaymentSheet();
       break;
     default:
       PaymentRequestSheetController::ButtonPressed(sender, event);

@@ -85,6 +85,7 @@ class PaymentRequestBrowserTestBase
   void OnCreditCardEditorOpened() override;
   void OnShippingAddressEditorOpened() override;
   void OnBackNavigation() override;
+  void OnBackToPaymentSheetNavigation() override;
   void OnContactInfoOpened() override;
   void OnEditorViewUpdated() override;
   void OnErrorMessageShown() override;
@@ -197,6 +198,7 @@ class PaymentRequestBrowserTestBase
     CREDIT_CARD_EDITOR_OPENED,
     SHIPPING_ADDRESS_EDITOR_OPENED,
     BACK_NAVIGATION,
+    BACK_TO_PAYMENT_SHEET_NAVIGATION,
     CONTACT_INFO_OPENED,
     EDITOR_VIEW_UPDATED,
     CAN_MAKE_PAYMENT_CALLED,

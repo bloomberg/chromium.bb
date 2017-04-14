@@ -59,6 +59,22 @@ void ViewStack::Pop() {
       stack_.back().get(), destination);
 }
 
+void ViewStack::PopMany(int n) {
+  DCHECK_LT(static_cast<size_t>(n), size());  // The stack can never be empty.
+
+  size_t pre_size = stack_.size();
+  // Erase N - 1 elements now, the last one will be erased when its animation
+  // completes
+  stack_.erase(stack_.end() - n, stack_.end() - 1);
+  DCHECK_EQ(pre_size - n + 1, stack_.size());
+
+  Pop();
+}
+
+size_t ViewStack::size() const {
+  return stack_.size();
+}
+
 bool ViewStack::CanProcessEventsWithinSubtree() const {
   return !slide_in_animator_->IsAnimating() &&
          !slide_out_animator_->IsAnimating();

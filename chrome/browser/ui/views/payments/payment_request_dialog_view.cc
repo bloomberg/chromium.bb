@@ -152,6 +152,16 @@ void PaymentRequestDialogView::GoBack() {
     observer_for_testing_->OnBackNavigation();
 }
 
+void PaymentRequestDialogView::GoBackToPaymentSheet() {
+  // This assumes that the Payment Sheet is the first view in the stack. Thus if
+  // there is only one view, we are already showing the payment sheet.
+  if (view_stack_->size() > 1)
+    view_stack_->PopMany(view_stack_->size() - 1);
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnBackToPaymentSheetNavigation();
+}
+
 void PaymentRequestDialogView::ShowContactProfileSheet() {
   view_stack_->Push(
       CreateViewAndInstallController(

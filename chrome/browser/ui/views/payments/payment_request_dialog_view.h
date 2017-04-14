@@ -59,6 +59,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
     virtual void OnBackNavigation() = 0;
 
+    virtual void OnBackToPaymentSheetNavigation() = 0;
+
     virtual void OnEditorViewUpdated() = 0;
 
     virtual void OnErrorMessageShown() = 0;
@@ -94,6 +96,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   void Pay();
   void GoBack();
+  void GoBackToPaymentSheet();
   void ShowContactProfileSheet();
   void ShowOrderSummary();
   void ShowShippingProfileSheet();

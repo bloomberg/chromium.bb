@@ -64,6 +64,37 @@ class ViewStackTest : public views::ViewsTestBase {
     EXPECT_EQ(target, view->bounds());
   }
 
+  // Pushes a view on the stack, waits for its animation to be over, then
+  // returns a pointer to the pushed view.
+  views::View* PushViewOnStackAndWait() {
+    std::unique_ptr<TestStackView> view = base::MakeUnique<TestStackView>();
+    views::View* view_ptr = view.get();
+
+    view_stack_->Push(std::move(view), true);
+    EXPECT_TRUE(view_stack_->slide_in_animator_->IsAnimating());
+    view_stack_->slide_in_animator_->SetAnimationDelegate(
+        view_ptr, std::unique_ptr<gfx::AnimationDelegate>(
+                      new gfx::TestAnimationDelegate()));
+
+    base::RunLoop().Run();
+    EXPECT_FALSE(view_stack_->slide_in_animator_->IsAnimating());
+    return view_ptr;
+  }
+
+  // Pops |n| views from the stack, then waits for |top_view_ptr|'s animation to
+  // be over.
+  void PopManyAndWait(int n, views::View* top_view_ptr) {
+    view_stack_->PopMany(n);
+
+    EXPECT_TRUE(view_stack_->slide_out_animator_->IsAnimating());
+    view_stack_->slide_out_animator_->SetAnimationDelegate(
+        top_view_ptr, std::unique_ptr<gfx::AnimationDelegate>(
+                          new gfx::TestAnimationDelegate()));
+
+    base::RunLoop().Run();
+    EXPECT_FALSE(view_stack_->slide_out_animator_->IsAnimating());
+  }
+
   std::unique_ptr<ViewStack> view_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewStackTest);
@@ -172,4 +203,24 @@ TEST_F(ViewStackTest, TestLayoutUpdatesAnimations) {
   EXPECT_FALSE(view_stack_->slide_out_animator_->IsAnimating());
 
   ASSERT_TRUE(observer.view_deleted());
+}
+
+TEST_F(ViewStackTest, TestPopMany) {
+  views::View* top = PushViewOnStackAndWait();
+  EXPECT_EQ(2U, view_stack_->size());
+
+  PopManyAndWait(1, top);
+  EXPECT_EQ(1U, view_stack_->size());
+
+  top = PushViewOnStackAndWait();
+  top = PushViewOnStackAndWait();
+  top = PushViewOnStackAndWait();
+  EXPECT_EQ(4U, view_stack_->size());
+
+  PopManyAndWait(3, top);
+  EXPECT_EQ(1U, view_stack_->size());
+
+  top = PushViewOnStackAndWait();
+  top = PushViewOnStackAndWait();
+  EXPECT_EQ(3U, view_stack_->size());
 }

@@ -136,6 +136,11 @@ void PaymentRequestBrowserTestBase::OnBackNavigation() {
     event_observer_->Observe(DialogEvent::BACK_NAVIGATION);
 }
 
+void PaymentRequestBrowserTestBase::OnBackToPaymentSheetNavigation() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+}
+
 void PaymentRequestBrowserTestBase::OnContactInfoOpened() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::CONTACT_INFO_OPENED);
