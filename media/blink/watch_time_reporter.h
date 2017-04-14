@@ -103,6 +103,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnShown();
   void OnHidden();
 
+  // Returns true if the current size is large enough that watch time will be
+  // recorded for playback.
+  bool IsSizeLargeEnoughToReportWatchTime() const;
+
   // Setup the reporting interval to be immediate to avoid spinning real time
   // within the unit test.
   void set_reporting_interval_for_testing() {

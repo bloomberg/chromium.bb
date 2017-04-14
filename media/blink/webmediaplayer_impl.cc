@@ -1421,13 +1421,13 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   if (overlay_enabled_ && surface_manager_)
     surface_manager_->NaturalSizeChanged(rotated_size);
 
-  gfx::Size old_size = pipeline_metadata_.natural_size;
   pipeline_metadata_.natural_size = rotated_size;
-  if (old_size.IsEmpty()) {
-    // WatchTimeReporter doesn't report metrics for empty videos. Re-create
-    // |watch_time_reporter_| if we didn't originally know the video size.
+
+  // Re-create |watch_time_reporter_| if we didn't originally know the video
+  // size or the previous size was too small for reporting.
+  if (!watch_time_reporter_->IsSizeLargeEnoughToReportWatchTime())
     CreateWatchTimeReporter();
-  }
+
   client_->SizeChanged();
 
   if (observer_)

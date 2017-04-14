@@ -279,39 +279,48 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporter) {
   Initialize(!has_video_, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   constexpr gfx::Size kSizeTooSmall = gfx::Size(100, 100);
   Initialize(!has_video_, true, true, kSizeTooSmall);
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
+  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, false, false, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
+  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, false, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
+  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, false, false, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, false, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
+  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   if (!has_video_)
     EXPECT_WATCH_TIME_FINALIZED();

@@ -162,6 +162,11 @@ void WatchTimeReporter::OnHidden() {
   MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
 }
 
+bool WatchTimeReporter::IsSizeLargeEnoughToReportWatchTime() const {
+  return initial_video_size_.height() >= kMinimumVideoSize.height() &&
+         initial_video_size_.width() >= kMinimumVideoSize.width();
+}
+
 void WatchTimeReporter::OnPowerStateChange(bool on_battery_power) {
   if (!reporting_timer_.IsRunning())
     return;
@@ -184,9 +189,7 @@ bool WatchTimeReporter::ShouldReportWatchTime() {
   // Report listen time or watch time only for tracks that are audio-only or
   // have both an audio and video track of sufficient size.
   return (!has_video_ && has_audio_) ||
-         (has_video_ && has_audio_ &&
-          initial_video_size_.height() >= kMinimumVideoSize.height() &&
-          initial_video_size_.width() >= kMinimumVideoSize.width());
+         (has_video_ && has_audio_ && IsSizeLargeEnoughToReportWatchTime());
 }
 
 void WatchTimeReporter::MaybeStartReportingTimer(
