@@ -204,7 +204,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Called when |current_packet_| is a CHLO packet. Creates a new connection
   // and delivers any buffered packets for that connection id.
-  void ProcessChlo();
+  void ProcessChlo(QuicPacketNumber packet_number);
 
   QuicTimeWaitListManager* time_wait_list_manager() {
     return time_wait_list_manager_.get();
@@ -274,18 +274,20 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       QuicBufferedPacketStore::EnqueuePacketResult result,
       QuicConnectionId connection_id);
 
+  // Removes the session from the session map and write blocked list, and adds
+  // the ConnectionId to the time-wait list.  If |session_closed_statelessly| is
+  // true, any future packets for the ConnectionId will be black-holed.
+  virtual void CleanUpSession(SessionMap::iterator it,
+                              QuicConnection* connection,
+                              bool session_closed_statelessly);
+
+  void StopAcceptingNewConnections();
+
  private:
   friend class test::QuicDispatcherPeer;
   friend class StatelessRejectorProcessDoneCallback;
 
   typedef std::unordered_set<QuicConnectionId> QuicConnectionIdSet;
-
-  // Removes the session from the session map and write blocked list, and adds
-  // the ConnectionId to the time-wait list.  If |session_closed_statelessly| is
-  // true, any future packets for the ConnectionId will be black-holed.
-  void CleanUpSession(SessionMap::iterator it,
-                      QuicConnection* connection,
-                      bool session_closed_statelessly);
 
   bool HandlePacketForTimeWait(const QuicPacketPublicHeader& header);
 
@@ -388,6 +390,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // A backward counter of how many new sessions can be create within current
   // event loop. When reaches 0, it means can't create sessions for now.
   int16_t new_sessions_allowed_per_event_loop_;
+
+  // True if this dispatcher is not draining.
+  bool accept_new_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

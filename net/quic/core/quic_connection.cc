@@ -346,6 +346,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     close_connection_after_five_rtos_ = true;
   }
   if (packet_generator_.latched_flag_no_stop_waiting_frames() &&
+      version() > QUIC_VERSION_37 &&
       config.HasClientSentConnectionOption(kNSTP, perspective_)) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_stop_waiting_frames, 2, 2);
     no_stop_waiting_frames_ = true;

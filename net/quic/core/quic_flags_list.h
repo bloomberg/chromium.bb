@@ -93,7 +93,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_remove_packet_number_from_public_reset,
-    false)
+    true)
 
 // If true, v33 QUIC client uses 1 bit to specify 8-byte connection id in
 // public flag.
@@ -132,13 +132,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_37, true)
 // If true, disables QUIC v34.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_34, true)
 
-// If true, enable quic version 38
-QUIC_FLAG(bool, FLAGS_quic_enable_version_38, false)
-
-// When true, ensures the session's flow control window is always at least 1.5x
-// larger than the largest stream flow control window.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_flow_control_invariant, true)
-
 // If greater than zero, mean RTT variation is multiplied by the specified
 // factor and added to the congestion window limit.
 QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
@@ -149,7 +142,7 @@ QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 // If true, bidi streaming is always enabled in QUIC.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_enable_bidi_streaming,
-          false)
+          true)
 
 // If true, allows the 1RTT and 2RTT connection options to reduce the time
 // in BBR STARTUP to 1 or 2 RTTs with no bandwidth increase from 3.
@@ -172,15 +165,11 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_multipath_bit, false)
 // quickly for the first adjustment as in subsequent ones.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_flow_control_faster_autotune,
-          false)
+          true)
 
 // Only consider using the ack spacing in QUIC BBR if 2 packets are acked at
 // once.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_ack_spacing2, false)
-
-// If true, 8-byte connection ID in public header is read and written in big
-// endian.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_big_endian_connection_id, false)
 
 // If true, QUIC BBR stores a max filtered number of bytes delivered at a rate
 // faster than the sending rate.
@@ -203,3 +192,26 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd, false)
 // Fix a crash that occurs when a client sends multiple CHLOs close together on
 // the same connection.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_fix_quic_callback_crash, true)
+
+// If true, enable version 38 which supports new PADDING frame and respects NSTP
+// connection option.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_38, false)
+
+// If true, enable QUIC v39.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_39, false)
+
+// If true, on client side, 8-byte connection ID in public header is read and
+// written in big endian.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_big_endian_connection_id_client,
+          false)
+
+// If true, on server side, 8-byte connection ID in public header is read and
+// written in big endian.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_big_endian_connection_id_server,
+          false)
+
+// Simplify QUIC\'s adaptive time loss detection to measure the necessary
+// reordering window for every spurious retransmit.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)

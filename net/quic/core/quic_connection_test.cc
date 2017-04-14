@@ -690,7 +690,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         peer_framer_(SupportedVersions(version()),
                      QuicTime::Zero(),
                      Perspective::IS_SERVER),
-        peer_creator_(connection_id_,
+        peer_creator_(GetPeerInMemoryConnectionId(connection_id_),
                       &peer_framer_,
                       &buffer_allocator_,
                       /*delegate=*/nullptr),
@@ -832,7 +832,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                                    QuicFrame frame,
                                    EncryptionLevel level) {
     QuicPacketHeader header;
-    header.public_header.connection_id = connection_id_;
+    header.public_header.connection_id =
+        GetPeerInMemoryConnectionId(connection_id_);
     header.public_header.packet_number_length = packet_number_length_;
     header.public_header.connection_id_length = connection_id_length_;
     header.public_header.multipath_flag = false;
@@ -942,7 +943,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   QuicPacket* ConstructDataPacket(QuicPacketNumber number,
                                   bool has_stop_waiting) {
     QuicPacketHeader header;
-    header.public_header.connection_id = connection_id_;
+    // Set connection_id to peer's in memory representation as this data packet
+    // is created by peer_framer.
+    header.public_header.connection_id =
+        GetPeerInMemoryConnectionId(connection_id_);
     header.public_header.packet_number_length = packet_number_length_;
     header.public_header.connection_id_length = connection_id_length_;
     header.public_header.multipath_flag = false;
@@ -958,7 +962,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   QuicPacket* ConstructClosePacket(QuicPacketNumber number) {
     QuicPacketHeader header;
-    header.public_header.connection_id = connection_id_;
+    // Set connection_id to peer's in memory representation as this connection
+    // close packet is created by peer_framer.
+    header.public_header.connection_id =
+        GetPeerInMemoryConnectionId(connection_id_);
     header.packet_number = number;
 
     QuicConnectionCloseFrame qccf;
@@ -1199,7 +1206,8 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   connection_.SetMaxPacketLength(1000);
 
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.version_flag = true;
   header.packet_number = 1;
 
@@ -1232,7 +1240,8 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSizeWhileWriterLimited) {
   EXPECT_EQ(1000u, connection_.max_packet_length());
 
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.version_flag = true;
   header.packet_number = 1;
 
@@ -4323,7 +4332,9 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
 
 TEST_P(QuicConnectionTest, PublicReset) {
   QuicPublicResetPacket header;
-  header.public_header.connection_id = connection_id_;
+  // Public reset packet in only built by server.
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
   header.rejected_packet_number = 10101;
@@ -4390,7 +4401,8 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.version_flag = true;
   header.packet_number = 12;
 
@@ -4425,7 +4437,8 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.version_flag = true;
   header.packet_number = 12;
 
@@ -4467,7 +4480,8 @@ TEST_P(QuicConnectionTest,
   peer_framer_.set_version_for_tests(QUIC_VERSION_UNSUPPORTED);
 
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.public_header.version_flag = true;
   header.packet_number = 12;
 
@@ -4496,8 +4510,8 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
 
   // Send a version negotiation packet.
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      peer_framer_.BuildVersionNegotiationPacket(connection_id_,
-                                                 AllSupportedVersions()));
+      peer_framer_.BuildVersionNegotiationPacket(
+          GetPeerInMemoryConnectionId(connection_id_), AllSupportedVersions()));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
@@ -4505,7 +4519,8 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // Now force another packet.  The connection should transition into
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.packet_number = 12;
   header.public_header.version_flag = false;
   QuicFrames frames;
@@ -4531,8 +4546,8 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
               OnConnectionClosed(QUIC_INVALID_VERSION_NEGOTIATION_PACKET, _,
                                  ConnectionCloseSource::FROM_SELF));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      framer_.BuildVersionNegotiationPacket(connection_id_,
-                                            AllSupportedVersions()));
+      framer_.BuildVersionNegotiationPacket(
+          GetPeerInMemoryConnectionId(connection_id_), AllSupportedVersions()));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
@@ -4588,7 +4603,8 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
 TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   // Construct a packet with stream frame and connection close frame.
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id_;
+  header.public_header.connection_id =
+      GetPeerInMemoryConnectionId(connection_id_);
   header.packet_number = 1;
   header.public_header.version_flag = false;
 

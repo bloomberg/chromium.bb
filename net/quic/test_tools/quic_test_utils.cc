@@ -18,6 +18,7 @@
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_endian.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -125,6 +126,15 @@ void SimpleRandom::Reseed(const void* additional_entropy, size_t len) {
     // entropy, but good enough for tests.
     seed_ *= real_entropy[len];
   }
+}
+
+QuicConnectionId GetPeerInMemoryConnectionId(QuicConnectionId connection_id) {
+  if (FLAGS_quic_restart_flag_quic_big_endian_connection_id_client ==
+      FLAGS_quic_restart_flag_quic_big_endian_connection_id_server) {
+    // Both endpoints have same endianess.
+    return connection_id;
+  }
+  return net::QuicEndian::NetToHost64(connection_id);
 }
 
 MockFramerVisitor::MockFramerVisitor() {
@@ -263,23 +273,29 @@ void MockQuicConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
 MockQuicConnection::MockQuicConnection(MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(kTestConnectionId,
-                         QuicSocketAddress(TestPeerIPAddress(), kTestPort),
-                         helper,
-                         alarm_factory,
-                         perspective,
-                         AllSupportedVersions()) {}
+    : MockQuicConnection(
+          QuicUtils::IsConnectionIdWireFormatBigEndian(perspective)
+              ? QuicEndian::NetToHost64(kTestConnectionId)
+              : kTestConnectionId,
+          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
+          helper,
+          alarm_factory,
+          perspective,
+          AllSupportedVersions()) {}
 
 MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                                        MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(kTestConnectionId,
-                         address,
-                         helper,
-                         alarm_factory,
-                         perspective,
-                         AllSupportedVersions()) {}
+    : MockQuicConnection(
+          QuicUtils::IsConnectionIdWireFormatBigEndian(perspective)
+              ? QuicEndian::NetToHost64(kTestConnectionId)
+              : kTestConnectionId,
+          address,
+          helper,
+          alarm_factory,
+          perspective,
+          AllSupportedVersions()) {}
 
 MockQuicConnection::MockQuicConnection(QuicConnectionId connection_id,
                                        MockQuicConnectionHelper* helper,
@@ -297,12 +313,15 @@ MockQuicConnection::MockQuicConnection(
     MockAlarmFactory* alarm_factory,
     Perspective perspective,
     const QuicVersionVector& supported_versions)
-    : MockQuicConnection(kTestConnectionId,
-                         QuicSocketAddress(TestPeerIPAddress(), kTestPort),
-                         helper,
-                         alarm_factory,
-                         perspective,
-                         supported_versions) {}
+    : MockQuicConnection(
+          QuicUtils::IsConnectionIdWireFormatBigEndian(perspective)
+              ? QuicEndian::NetToHost64(kTestConnectionId)
+              : kTestConnectionId,
+          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
+          helper,
+          alarm_factory,
+          perspective,
+          supported_versions) {}
 
 MockQuicConnection::MockQuicConnection(
     QuicConnectionId connection_id,

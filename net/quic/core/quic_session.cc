@@ -44,9 +44,7 @@ QuicSession::QuicSession(QuicConnection* connection,
                        config_.GetInitialSessionFlowControlWindowToSend(),
                        perspective() == Perspective::IS_SERVER,
                        nullptr),
-      currently_writing_stream_id_(0),
-      flow_control_invariant_(
-          FLAGS_quic_reloadable_flag_quic_flow_control_invariant) {}
+      currently_writing_stream_id_(0) {}
 
 void QuicSession::Initialize() {
   connection_->set_visitor(this);

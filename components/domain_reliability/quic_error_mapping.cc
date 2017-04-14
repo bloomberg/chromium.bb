@@ -126,8 +126,6 @@ const struct QuicErrorMapping {
     // Disabled QUIC because of too many PUBLIC_RESETs post handshake.
     {net::QUIC_PUBLIC_RESETS_POST_HANDSHAKE,
      "quic.public_resets_post_handshake"},
-    // Disabled QUIC because of too many timeouts with streams open.
-    {net::QUIC_TIMEOUTS_WITH_OPEN_STREAMS, "quic.timeouts_with_open_streams"},
     // Closed because we failed to serialize a packet.
     {net::QUIC_FAILED_TO_SERIALIZE_PACKET, "quic.failed_to_serialize_packet"},
     // QUIC timed out after too many RTOs.
@@ -253,7 +251,7 @@ const struct QuicErrorMapping {
 
 // Must be updated any time a net::QuicErrorCode is deprecated in
 // net/quic/core/quic_packets.h.
-const int kDeprecatedQuicErrorCount = 4;
+const int kDeprecatedQuicErrorCount = 5;
 const int kActiveQuicErrorCount =
     net::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
 

@@ -208,4 +208,12 @@ PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
   return IPV4_TO_IPV4_CHANGE;
 }
 
+// static
+bool QuicUtils::IsConnectionIdWireFormatBigEndian(Perspective perspective) {
+  return (perspective == Perspective::IS_CLIENT &&
+          FLAGS_quic_restart_flag_quic_big_endian_connection_id_client) ||
+         (perspective == Perspective::IS_SERVER &&
+          FLAGS_quic_restart_flag_quic_big_endian_connection_id_server);
+}
+
 }  // namespace net

@@ -70,9 +70,7 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
                        GetReceivedFlowControlWindow(session),
                        GetInitialStreamFlowControlWindowToSend(session),
                        session_->flow_controller()->auto_tune_receive_window(),
-                       session_->flow_control_invariant()
-                           ? session_->flow_controller()
-                           : nullptr),
+                       session_->flow_controller()),
       connection_flow_controller_(session_->flow_controller()),
       stream_contributes_to_connection_flow_control_(true),
       busy_counter_(0) {

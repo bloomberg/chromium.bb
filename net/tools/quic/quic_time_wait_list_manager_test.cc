@@ -159,7 +159,8 @@ class ValidatePublicResetPacketPredicate
                                   std::tr1::get<1>(packet_buffer));
     framer.ProcessPacket(encrypted);
     QuicPublicResetPacket packet = visitor.public_reset_packet();
-    return connection_id_ == packet.public_header.connection_id &&
+    return connection_id_ == GetPeerInMemoryConnectionId(
+                                 packet.public_header.connection_id) &&
            packet.public_header.reset_flag &&
            !packet.public_header.version_flag &&
            packet_number_ == packet.rejected_packet_number &&

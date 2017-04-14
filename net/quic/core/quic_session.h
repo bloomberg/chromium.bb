@@ -248,8 +248,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Returns true if this stream should yield writes to another blocked stream.
   bool ShouldYield(QuicStreamId stream_id);
 
-  bool flow_control_invariant() { return flow_control_invariant_; }
-
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 
@@ -440,9 +438,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // The stream id which was last popped in OnCanWrite, or 0, if not under the
   // call stack of OnCanWrite.
   QuicStreamId currently_writing_stream_id_;
-
-  // Latched value of quic_reloadable_flag_quic_flow_control_invariant.
-  const bool flow_control_invariant_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };

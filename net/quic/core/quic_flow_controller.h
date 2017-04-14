@@ -176,8 +176,7 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   // Used to dynamically enable receive window auto-tuning.
   bool auto_tune_receive_window_;
 
-  // The session's flow controller.  null if this is stream id 0 or
-  // FLAGS_quic_reloadable_flag_quic_flow_control_invariant is false.
+  // The session's flow controller.  null if this is stream id 0.
   // Not owned.
   QuicFlowControllerInterface* session_flow_controller_;
 

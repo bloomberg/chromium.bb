@@ -82,12 +82,12 @@ class BbrSenderTest : public ::testing::Test {
                   "Receiver",
                   "BBR sender",
                   Perspective::IS_SERVER,
-                  /*connection_id=*/42),
+                  /*connection_id=*/GetPeerInMemoryConnectionId(42)),
         competing_receiver_(&simulator_,
                             "Competing receiver",
                             "Competing sender",
                             Perspective::IS_SERVER,
-                            /*connection_id=*/43),
+                            /*connection_id=*/GetPeerInMemoryConnectionId(43)),
         receiver_multiplexer_("Receiver multiplexer",
                               {&receiver_, &competing_receiver_}) {
     rtt_stats_ = bbr_sender_.connection()->sent_packet_manager().GetRttStats();
