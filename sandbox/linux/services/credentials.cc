@@ -150,16 +150,21 @@ int CapabilityToKernelValue(Credentials::Capability cap) {
   return 0;
 }
 
-void SetGidAndUidMaps(gid_t gid, uid_t uid) {
+bool SetGidAndUidMaps(gid_t gid, uid_t uid) {
+  const char kGidMapFile[] = "/proc/self/gid_map";
+  const char kUidMapFile[] = "/proc/self/uid_map";
+  struct stat buf;
+  if (stat(kGidMapFile, &buf) || stat(kGidMapFile, &buf)) {
+    return false;
+  }
   if (NamespaceUtils::KernelSupportsDenySetgroups()) {
     PCHECK(NamespaceUtils::DenySetgroups());
   }
   DCHECK(GetRESIds(NULL, NULL));
-  const char kGidMapFile[] = "/proc/self/gid_map";
-  const char kUidMapFile[] = "/proc/self/uid_map";
   PCHECK(NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid));
   PCHECK(NamespaceUtils::WriteToIdMapFile(kUidMapFile, uid));
   DCHECK(GetRESIds(NULL, NULL));
+  return true;
 }
 
 }  // namespace.
@@ -284,7 +289,8 @@ bool Credentials::CanCreateProcessInNewUserNS() {
   if (pid == 0) {
     // unshare() requires the effective uid and gid to have a mapping in the
     // parent namespace.
-    SetGidAndUidMaps(gid, uid);
+    if (!SetGidAndUidMaps(gid, uid))
+      _exit(1);
 
     // Make sure we drop CAP_SYS_ADMIN.
     CHECK(sandbox::Credentials::DropAllCapabilities());
@@ -292,7 +298,10 @@ bool Credentials::CanCreateProcessInNewUserNS() {
     // Ensure we have unprivileged use of CLONE_NEWUSER.  Debian
     // Jessie explicitly forbids this case.  See:
     // add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by-default.patch
-    _exit(!!sys_unshare(CLONE_NEWUSER));
+    if (sys_unshare(CLONE_NEWUSER))
+      _exit(1);
+
+    _exit(kExitSuccess);
   }
 
   // Always reap the child.
@@ -324,7 +333,7 @@ bool Credentials::MoveToNewUserNS() {
 
   // The current {r,e,s}{u,g}id is now an overflow id (c.f.
   // /proc/sys/kernel/overflowuid). Setup the uid and gid maps.
-  SetGidAndUidMaps(gid, uid);
+  PCHECK(SetGidAndUidMaps(gid, uid));
   return true;
 }
 
