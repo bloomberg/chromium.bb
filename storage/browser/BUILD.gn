@@ -261,6 +261,8 @@ test("storage_unittests") {
     "fileapi/sandbox_prioritized_origin_database_unittest.cc",
     "fileapi/timed_task_helper_unittest.cc",
     "fileapi/transient_file_util_unittest.cc",
+    "quota/quota_database_unittest.cc",
+    "quota/usage_tracker_unittest.cc",
   ]
 
   deps = [
