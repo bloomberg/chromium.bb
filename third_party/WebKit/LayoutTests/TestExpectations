@@ -1899,7 +1899,7 @@ crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-header-forbidden.h
 crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-open-setrequestheader.htm [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/abort-after-stop.htm [ Timeout ]
-crbug.com/626703 external/wpt/XMLHttpRequest/event-readystatechange-loaded.htm [ Timeout ]
+crbug.com/626703 external/wpt/XMLHttpRequest/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 external/wpt/XMLHttpRequest/send-authentication-existing-session-manual.htm [ Skip ]
 crbug.com/626703 external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/inside-worker/shared-script.html [ Timeout ]
