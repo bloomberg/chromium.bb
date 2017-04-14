@@ -1154,7 +1154,6 @@ abstract class OverlayPanelBase {
         mBarHeightPeeking = barHeightPx * mPxToDp;
         mBarHeightMaximized = mBarHeightPeeking;
         mBarHeightExpanded = mBarHeightPeeking;
-        mHeight = mBarHeightPeeking;
     }
 
     /**
