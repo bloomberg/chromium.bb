@@ -257,8 +257,7 @@ gfx::Insets BubbleFrameView::GetInsets() const {
   const int title_height = std::max(icon_height, label_height) + title_padding;
   const int close_height =
       GetWidget()->widget_delegate()->ShouldShowCloseButton()
-          ? close_->height() + LayoutProvider::Get()->GetDistanceMetric(
-                                   DISTANCE_CLOSE_BUTTON_MARGIN)
+          ? close_->height()
           : 0;
   insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
   return insets;
