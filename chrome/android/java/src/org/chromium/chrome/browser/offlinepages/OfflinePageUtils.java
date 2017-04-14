@@ -18,7 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
@@ -196,32 +195,9 @@ public class OfflinePageUtils {
 
     /**
      * Shows the snackbar for the current tab to provide offline specific information if needed.
-     * @param activity The activity owning the tab.
      * @param tab The current tab.
      */
-    public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
-        if (OfflinePageTabObserver.getInstance() == null
-                || !OfflinePageTabObserver.getInstance().isCurrentContext(
-                           activity.getBaseContext())) {
-            SnackbarController snackbarController =
-                    createReloadSnackbarController(activity.getTabModelSelector());
-            OfflinePageTabObserver.init(activity.getBaseContext(),
-                    activity.getTabModelSelector().getModel(false), activity.getSnackbarManager(),
-                    snackbarController);
-        }
-
-        showOfflineSnackbarIfNecessary(tab);
-    }
-
-    /**
-     * Shows the snackbar for the current tab to provide offline specific information if needed.
-     * This method is used by testing for dependency injecting a snackbar controller.
-     * @param context android context
-     * @param snackbarManager The snackbar manager to show and dismiss snackbars.
-     * @param tab The current tab.
-     * @param snackbarController The snackbar controller to control snackbar behavior.
-     */
-    static void showOfflineSnackbarIfNecessary(Tab tab) {
+    public static void showOfflineSnackbarIfNecessary(Tab tab) {
         // Set up the tab observer to watch for the tab being shown (not hidden) and a valid
         // connection. When both conditions are met a snackbar is shown.
         OfflinePageTabObserver.addObserverForTab(tab);
@@ -245,33 +221,6 @@ public class OfflinePageUtils {
         snackbarManager.showSnackbar(snackbar);
     }
 
-    /**
-     * Gets a snackbar controller that we can use to show our snackbar.
-     * @param tabModelSelector used to retrieve a tab by ID
-     */
-    private static SnackbarController createReloadSnackbarController(
-            final TabModelSelector tabModelSelector) {
-        Log.d(TAG, "building snackbar controller");
-
-        return new SnackbarController() {
-            @Override
-            public void onAction(Object actionData) {
-                assert actionData != null;
-                int tabId = (int) actionData;
-                RecordUserAction.record("OfflinePages.ReloadButtonClicked");
-                Tab foundTab = tabModelSelector.getTabById(tabId);
-                if (foundTab == null) return;
-                // Delegates to Tab to reload the page. Tab will send the correct header in order to
-                // load the right page.
-                foundTab.reload();
-            }
-
-            @Override
-            public void onDismissNoAction(Object actionData) {
-                RecordUserAction.record("OfflinePages.ReloadButtonNotClicked");
-            }
-        };
-    }
 
     /**
      * Records UMA data when the Offline Pages Background Load service awakens.

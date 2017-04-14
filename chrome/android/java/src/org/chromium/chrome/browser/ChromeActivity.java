@@ -596,7 +596,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onPageLoadFinished(Tab tab) {
                 postDeferredStartupIfNeeded();
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(ChromeActivity.this, tab);
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(tab);
             }
 
             @Override

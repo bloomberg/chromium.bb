@@ -168,9 +168,10 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                OfflinePageTabObserver.init(getActivity().getBaseContext(),
-                        getActivity().getTabModelSelector().getModel(false),
-                        getActivity().getSnackbarManager(), mockSnackbarController);
+                OfflinePageTabObserver offlineObserver =
+                        new OfflinePageTabObserver(getActivity().getTabModelSelector(),
+                                getActivity().getSnackbarManager(), mockSnackbarController);
+                OfflinePageTabObserver.setObserverForTesting(getActivity(), offlineObserver);
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getActivityTab());
 
                 // Pretend that we went online, this should cause the snackbar to show.

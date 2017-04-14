@@ -122,6 +122,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/mockito/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-annotations/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-resources/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-shadows/shadows-multidex/src/main/java"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
     <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>
