@@ -21,6 +21,7 @@
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
+#include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_collections.h"
@@ -217,7 +218,7 @@ class CC_EXPORT LayerImpl {
     return should_check_backface_visibility_;
   }
 
-  bool ShowDebugBorders() const;
+  bool ShowDebugBorders(DebugBorderType type) const;
 
   // TODO(http://crbug.com/557160): Currently SPv2 creates dummy layers for the
   // sole purpose of representing a render surface. Once that dependency is

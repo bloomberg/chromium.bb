@@ -354,8 +354,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.single_thread_proxy_scheduler = false;
 
   // These flags should be mirrored by UI versions in ui/compositor/.
-  settings.initial_debug_state.show_debug_borders =
-      cmd.HasSwitch(cc::switches::kShowCompositedLayerBorders);
+  if (cmd.HasSwitch(cc::switches::kShowCompositedLayerBorders))
+    settings.initial_debug_state.show_debug_borders.set();
   settings.initial_debug_state.show_layer_animation_bounds_rects =
       cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =

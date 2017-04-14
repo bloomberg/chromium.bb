@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -108,9 +109,33 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
 
-  // These flags should be mirrored by renderer versions in content/renderer/.
-  settings.initial_debug_state.show_debug_borders =
-      command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders);
+  if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
+    std::string layer_borders_string = command_line->GetSwitchValueASCII(
+        cc::switches::kUIShowCompositedLayerBorders);
+    std::vector<base::StringPiece> entries = base::SplitStringPiece(
+        layer_borders_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (entries.empty()) {
+      settings.initial_debug_state.show_debug_borders.set();
+    } else {
+      for (const auto& entry : entries) {
+        const struct {
+          const char* name;
+          cc::DebugBorderType type;
+        } kBorders[] = {{cc::switches::kCompositedRenderPassBorders,
+                         cc::DebugBorderType::RENDERPASS},
+                        {cc::switches::kCompositedSurfaceBorders,
+                         cc::DebugBorderType::SURFACE},
+                        {cc::switches::kCompositedLayerBorders,
+                         cc::DebugBorderType::LAYER}};
+        for (const auto& border : kBorders) {
+          if (border.name == entry) {
+            settings.initial_debug_state.show_debug_borders.set(border.type);
+            break;
+          }
+        }
+      }
+    }
+  }
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.initial_debug_state.show_layer_animation_bounds_rects =

@@ -59,6 +59,9 @@ const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
 const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
+const char kCompositedRenderPassBorders[] = "renderpass";
+const char kCompositedSurfaceBorders[] = "surface";
+const char kCompositedLayerBorders[] = "layer";
 
 // Renders a green border around GL composited texture quads to help
 // debug and study overlay support.

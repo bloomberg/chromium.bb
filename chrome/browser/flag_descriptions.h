@@ -827,6 +827,24 @@ extern const char kUiSlowAnimationsName[];
 // Description for the flag that enables slow UI animations.
 extern const char kUiSlowAnimationsDescription[];
 
+// Name for the flag to show UI composited layer borders.
+extern const char kUiShowCompositedLayerBordersName[];
+
+// Description for the flag to show UI composited layer borders.
+extern const char kUiShowCompositedLayerBordersDescription[];
+
+// Description of the flag option to show renderpass borders.
+extern const char kUiShowCompositedLayerBordersRenderPass[];
+
+// Description of the flag option to show surface borders.
+extern const char kUiShowCompositedLayerBordersSurface[];
+
+// Description of the flag option to show layer borders.
+extern const char kUiShowCompositedLayerBordersLayer[];
+
+// Description of the flag option to show all borders.
+extern const char kUiShowCompositedLayerBordersAll[];
+
 #endif  // defined(USE_ASH)
 
 // Title for the flag for latest (non-experimental) JavaScript fatures

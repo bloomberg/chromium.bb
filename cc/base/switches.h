@@ -49,6 +49,9 @@ CC_BASE_EXPORT extern const char kUIShowScreenSpaceRects[];
 CC_BASE_EXPORT extern const char kEnableLayerLists[];
 CC_BASE_EXPORT extern const char kUIEnableLayerLists[];
 CC_BASE_EXPORT extern const char kShowOverdrawFeedback[];
+CC_BASE_EXPORT extern const char kCompositedRenderPassBorders[];
+CC_BASE_EXPORT extern const char kCompositedSurfaceBorders[];
+CC_BASE_EXPORT extern const char kCompositedLayerBorders[];
 
 // Unit test related.
 CC_BASE_EXPORT extern const char kCCLayerTreeTestNoTimeout[];

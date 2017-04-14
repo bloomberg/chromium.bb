@@ -135,7 +135,7 @@ void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
 }
 
 void SurfaceLayerImpl::AppendRainbowDebugBorder(RenderPass* render_pass) {
-  if (!ShowDebugBorders())
+  if (!ShowDebugBorders(DebugBorderType::SURFACE))
     return;
 
   SharedQuadState* shared_quad_state =

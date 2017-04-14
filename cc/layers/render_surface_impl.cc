@@ -389,7 +389,8 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
       draw_properties_.clip_rect, draw_properties_.is_clipped,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
-  if (layer_tree_impl_->debug_state().show_debug_borders) {
+  if (layer_tree_impl_->debug_state().show_debug_borders.test(
+          DebugBorderType::RENDERPASS)) {
     DebugBorderDrawQuad* debug_border_quad =
         render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
     debug_border_quad->SetNew(shared_quad_state, content_rect(),

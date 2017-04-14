@@ -187,8 +187,8 @@ void LayerImpl::DidDraw(ResourceProvider* resource_provider) {
   current_draw_mode_ = DRAW_MODE_NONE;
 }
 
-bool LayerImpl::ShowDebugBorders() const {
-  return layer_tree_impl()->debug_state().show_debug_borders;
+bool LayerImpl::ShowDebugBorders(DebugBorderType type) const {
+  return layer_tree_impl()->debug_state().show_debug_borders.test(type);
 }
 
 void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
@@ -229,7 +229,7 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
                                       AppendQuadsData* append_quads_data,
                                       SkColor color,
                                       float width) const {
-  if (!ShowDebugBorders())
+  if (!ShowDebugBorders(DebugBorderType::LAYER))
     return;
 
   gfx::Rect quad_rect(bounds);

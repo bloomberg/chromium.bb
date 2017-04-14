@@ -755,6 +755,20 @@ const char kUiSlowAnimationsName[] = "Slow UI animations";
 
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 
+const char kUiShowCompositedLayerBordersName[] =
+    "Show UI composited layer borders";
+
+const char kUiShowCompositedLayerBordersDescription[] =
+    "Show border around composited layers created by UI.";
+
+const char kUiShowCompositedLayerBordersRenderPass[] = "RenderPass";
+
+const char kUiShowCompositedLayerBordersSurface[] = "Surface";
+
+const char kUiShowCompositedLayerBordersLayer[] = "Layer";
+
+const char kUiShowCompositedLayerBordersAll[] = "All";
+
 #endif  // defined(USE_ASH)
 
 const char kJavascriptHarmonyShippingName[] =

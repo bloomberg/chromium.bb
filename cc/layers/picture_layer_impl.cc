@@ -253,7 +253,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   AppendDebugBorderQuad(render_pass, shared_quad_state->quad_layer_bounds,
                         shared_quad_state, append_quads_data);
 
-  if (ShowDebugBorders()) {
+  if (ShowDebugBorders(DebugBorderType::LAYER)) {
     for (PictureLayerTilingSet::CoverageIterator iter(
              tilings_.get(), max_contents_scale,
              shared_quad_state->visible_quad_layer_rect, ideal_contents_scale_);
@@ -383,7 +383,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     if (!has_draw_quad) {
       // Checkerboard.
       SkColor color = SafeOpaqueBackgroundColor();
-      if (ShowDebugBorders()) {
+      if (ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::OOMTileBorderColor();
       }

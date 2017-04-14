@@ -443,6 +443,20 @@ const FeatureEntry::Choice kDataSaverPromptChoices[] = {
      chromeos::switches::kEnableDataSaverPrompt,
      chromeos::switches::kDataSaverPromptDemoMode},
 };
+
+const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
+     cc::switches::kUIShowCompositedLayerBorders,
+     cc::switches::kCompositedRenderPassBorders},
+    {flag_descriptions::kUiShowCompositedLayerBordersSurface,
+     cc::switches::kUIShowCompositedLayerBorders,
+     cc::switches::kCompositedSurfaceBorders},
+    {flag_descriptions::kUiShowCompositedLayerBordersLayer,
+     cc::switches::kUIShowCompositedLayerBorders,
+     cc::switches::kCompositedLayerBorders},
+    {flag_descriptions::kUiShowCompositedLayerBordersAll,
+     cc::switches::kUIShowCompositedLayerBorders, ""}};
 #endif  // OS_CHROMEOS
 
 const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
@@ -1255,6 +1269,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ui-slow-animations", flag_descriptions::kUiSlowAnimationsName,
      flag_descriptions::kUiSlowAnimationsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kUISlowAnimations)},
+    {"ui-show-composited-layer-borders",
+     flag_descriptions::kUiShowCompositedLayerBordersName,
+     flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
     {"disable-cloud-import", flag_descriptions::kCloudImport,
      flag_descriptions::kCloudImportDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableCloudImport)},
