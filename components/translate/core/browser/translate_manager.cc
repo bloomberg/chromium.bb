@@ -514,6 +514,8 @@ std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
     // Get the browser's user interface language.
     language = TranslateDownloadManager::GetLanguageCode(
         TranslateDownloadManager::GetInstance()->application_locale());
+    // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
+    translate::ToTranslateLanguageSynonym(&language);
   }
   if (TranslateDownloadManager::IsSupportedLanguage(language))
     return language;

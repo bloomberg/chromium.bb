@@ -254,6 +254,23 @@ TEST_F(TranslateManagerTest, GetTargetLanguageDefaultsToAppLocale) {
   ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("de"));
   manager_->set_application_locale("de");
   EXPECT_EQ("de", TranslateManager::GetTargetLanguage(&translate_prefs_));
+
+  // Try a those case of non standard code.
+  // 'he', 'fil', 'nb' => 'iw', 'tl', 'no'
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("iw"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("he"));
+  manager_->set_application_locale("he");
+  EXPECT_EQ("iw", TranslateManager::GetTargetLanguage(&translate_prefs_));
+
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("tl"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("fil"));
+  manager_->set_application_locale("fil");
+  EXPECT_EQ("tl", TranslateManager::GetTargetLanguage(&translate_prefs_));
+
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("no"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("nb"));
+  manager_->set_application_locale("nb");
+  EXPECT_EQ("no", TranslateManager::GetTargetLanguage(&translate_prefs_));
 }
 
 // If the application locale's language is not supported, the target language
