@@ -23,12 +23,8 @@ function test()
 {
     var finishAttemptsLeft = 2;
     InspectorTest.addConsoleSniffer(maybeFinish, true);
-    InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, step1);
-
-    function step1()
-    {
-        InspectorTest.evaluateInPage("accessFrame()", maybeFinish);
-    }
+    Common.settingForTest('monitoringXHREnabled').set(true);
+    InspectorTest.evaluateInPage("accessFrame()", maybeFinish);
 
     function maybeFinish()
     {
@@ -36,11 +32,7 @@ function test()
         if (finishAttemptsLeft)
             return;
 
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, finish);
-    }
-
-    function finish()
-    {
+        Common.settingForTest('monitoringXHREnabled').set(false);
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
     }

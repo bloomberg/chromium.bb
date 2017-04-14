@@ -15,22 +15,14 @@ function test()
 
     function step1()
     {
-        function callback()
-        {
-            makeRequest(step2);
-        }
-
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
+        Common.settingForTest('monitoringXHREnabled').set(true);
+        makeRequest(step2);
     }
 
     function step2()
     {
-        function callback()
-        {
-            makeRequest(step3);
-        }
-
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
+        Common.settingForTest('monitoringXHREnabled').set(false);
+        makeRequest(step3);
     }
 
     function step3()

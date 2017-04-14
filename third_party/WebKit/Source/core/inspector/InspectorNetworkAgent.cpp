@@ -91,7 +91,6 @@ static const char kExtraRequestHeaders[] = "extraRequestHeaders";
 static const char kCacheDisabled[] = "cacheDisabled";
 static const char kBypassServiceWorker[] = "bypassServiceWorker";
 static const char kUserAgentOverride[] = "userAgentOverride";
-static const char kMonitoringXHR[] = "monitoringXHR";
 static const char kBlockedURLs[] = "blockedURLs";
 static const char kTotalBufferSize[] = "totalBufferSize";
 static const char kResourceBufferSize[] = "resourceBufferSize";
@@ -976,15 +975,6 @@ void InspectorNetworkAgent::DidFinishXHRInternal(ExecutionContext* context,
       known_request_id_map_.Find(client);
   if (it == known_request_id_map_.end())
     return;
-
-  if (state_->booleanProperty(NetworkAgentState::kMonitoringXHR, false)) {
-    String message =
-        (success ? "XHR finished loading: " : "XHR failed loading: ") + method +
-        " \"" + url + "\".";
-    ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-        kNetworkMessageSource, kInfoMessageLevel, message, url, it->value);
-    inspected_frames_->Root()->Console().AddMessageToStorage(console_message);
-  }
   known_request_id_map_.erase(client);
 }
 
@@ -1006,13 +996,6 @@ void InspectorNetworkAgent::DidFinishFetch(ExecutionContext* context,
       known_request_id_map_.Find(client);
   if (it == known_request_id_map_.end())
     return;
-
-  if (state_->booleanProperty(NetworkAgentState::kMonitoringXHR, false)) {
-    String message = "Fetch complete: " + method + " \"" + url + "\".";
-    ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-        kNetworkMessageSource, kInfoMessageLevel, message, url, it->value);
-    inspected_frames_->Root()->Console().AddMessageToStorage(console_message);
-  }
   known_request_id_map_.erase(client);
 }
 
@@ -1388,11 +1371,6 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
                                  IGNORE_EXCEPTION_FOR_TESTING);
 
   replay_xhrs_.insert(xhr);
-  return Response::OK();
-}
-
-Response InspectorNetworkAgent::setMonitoringXHREnabled(bool enabled) {
-  state_->setBoolean(NetworkAgentState::kMonitoringXHR, enabled);
   return Response::OK();
 }
 

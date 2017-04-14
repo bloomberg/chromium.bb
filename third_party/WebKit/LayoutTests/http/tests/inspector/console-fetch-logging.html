@@ -54,20 +54,14 @@ function test()
 
     function step1()
     {
-        function callback()
-        {
-            InspectorTest.callFunctionInPageAsync("makeRequests").then(step2);
-        }
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
+        Common.settingForTest('monitoringXHREnabled').set(true);
+        InspectorTest.callFunctionInPageAsync("makeRequests").then(step2);
     }
 
     function step2()
     {
-        function callback()
-        {
-            InspectorTest.callFunctionInPageAsync("makeRequests").then(step3);
-        }
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
+        Common.settingForTest('monitoringXHREnabled').set(false);
+        InspectorTest.callFunctionInPageAsync("makeRequests").then(step3);
     }
 
     function step3()

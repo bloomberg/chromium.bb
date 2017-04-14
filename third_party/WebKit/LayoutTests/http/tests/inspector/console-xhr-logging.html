@@ -11,49 +11,23 @@ function requestHelper(method, url)
     makeSimpleXHR(method, url, false);
 }
 
-function makeRequests()
+async function test()
 {
-    // 1. Page that exists.
-    requestHelper("GET", "resources/xhr-exists.html");
-    // 2. Page that doesn't exist.
-    requestHelper("GET", "resources/xhr-does-not-exist.html");
-    // 3. POST to a page.
-    requestHelper("POST", "resources/post-target.cgi");
-    // 4. Cross-origin request
-    requestHelper("GET", "http://localhost:8000/inspector/resources/xhr-exists.html");
-}
+    Common.settingForTest('monitoringXHREnabled').set(true);
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'resources/xhr-exists.html')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'resources/xhr-does-not-exist.html')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('POST', 'resources/post-target.cgi')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'http://localhost:8000/inspector/resources/xhr-exists.html')");
+    Common.settingForTest('monitoringXHREnabled').set(false);
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'resources/xhr-exists.html')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'resources/xhr-does-not-exist.html')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('POST', 'resources/post-target.cgi')");
+    await InspectorTest.evaluateInPagePromise("requestHelper('GET', 'http://localhost:8000/inspector/resources/xhr-exists.html')");
 
-function test()
-{
-    step1();
-
-    function step1()
-    {
-        function callback()
-        {
-            InspectorTest.evaluateInPage("makeRequests()", step2);
-        }
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, callback);
-    }
-
-    function step2()
-    {
-        function callback()
-        {
-            InspectorTest.evaluateInPage("makeRequests()", step3);
-        }
-        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, callback);
-    }
-
-    function step3()
-    {
-        function finish()
-        {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
-        }
-        InspectorTest.deprecatedRunAfterPendingDispatches(finish);
-    }
+    InspectorTest.deprecatedRunAfterPendingDispatches(() => {
+      InspectorTest.dumpConsoleMessages();
+      InspectorTest.completeTest();
+    });
 }
 //# sourceURL=console-xhr-logging.html
 </script>

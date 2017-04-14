@@ -205,7 +205,6 @@ class CORE_EXPORT InspectorNetworkAgent final
   protocol::Response setBlockedURLs(
       std::unique_ptr<protocol::Array<String>> urls) override;
   protocol::Response replayXHR(const String& request_id) override;
-  protocol::Response setMonitoringXHREnabled(bool) override;
   protocol::Response canClearBrowserCache(bool* result) override;
   protocol::Response canClearBrowserCookies(bool* result) override;
   protocol::Response emulateNetworkConditions(
