@@ -35,7 +35,7 @@
 #include "public/platform/WebString.h"
 
 #if INSIDE_BLINK
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #else
 #include "url/origin.h"
 #endif

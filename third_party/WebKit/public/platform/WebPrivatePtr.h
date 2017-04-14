@@ -36,8 +36,8 @@
 
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/TypeTraits.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/TypeTraits.h"
 #endif
 
 namespace WTF {

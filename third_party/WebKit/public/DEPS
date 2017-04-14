@@ -3,6 +3,9 @@ include_rules = [
     "-core",
     "-modules",
     "+platform/heap",
+    "+platform/wtf",
     "+v8",
-    "+wtf",
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf",
 ]

@@ -14,9 +14,9 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 #if INSIDE_BLINK
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
 #endif
 
 namespace blink {

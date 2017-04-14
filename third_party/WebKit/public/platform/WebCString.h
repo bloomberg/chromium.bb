@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 #endif
 #if !INSIDE_BLINK || defined(UNIT_TEST)
 #include <string>

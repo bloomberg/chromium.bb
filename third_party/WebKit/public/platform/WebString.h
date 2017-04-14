@@ -39,7 +39,7 @@
 #include <string>
 
 #if INSIDE_BLINK
-#include "wtf/Forward.h"
+#include "platform/wtf/Forward.h"
 #endif
 
 namespace WTF {

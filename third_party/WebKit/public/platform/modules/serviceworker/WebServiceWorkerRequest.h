@@ -16,8 +16,8 @@
 #include <utility>
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/Forward.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/text/StringHash.h"
 #endif
 
 namespace blink {

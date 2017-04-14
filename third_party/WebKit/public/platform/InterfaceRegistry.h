@@ -11,7 +11,7 @@
 
 #if INSIDE_BLINK
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Functional.h"
 #endif
 
 namespace blink {

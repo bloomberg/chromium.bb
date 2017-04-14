@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 #endif
 
 namespace blink {
