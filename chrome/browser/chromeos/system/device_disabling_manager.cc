@@ -43,7 +43,6 @@ DeviceDisablingManager::DeviceDisablingManager(
       device_disabled_(false),
       weak_factory_(this) {
   CHECK(delegate_);
-  Init();
 }
 
 DeviceDisablingManager::~DeviceDisablingManager() {

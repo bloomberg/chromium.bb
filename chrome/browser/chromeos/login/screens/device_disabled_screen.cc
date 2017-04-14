@@ -21,9 +21,7 @@ DeviceDisabledScreen::DeviceDisabledScreen(
       device_disabling_manager_(
           g_browser_process->platform_part()->device_disabling_manager()),
       showing_(false) {
-  DCHECK(view_);
-  if (view_)
-    view_->SetDelegate(this);
+  view_->SetDelegate(this);
   device_disabling_manager_->AddObserver(this);
 }
 

@@ -66,6 +66,7 @@ void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
       device_disabling_manager_delegate_.get(),
       chromeos::CrosSettings::Get(),
       user_manager::UserManager::Get()));
+  device_disabling_manager_->Init();
 }
 
 void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {

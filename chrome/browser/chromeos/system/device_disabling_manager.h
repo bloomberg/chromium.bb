@@ -85,6 +85,9 @@ class DeviceDisablingManager {
                          user_manager::UserManager* user_manager);
   ~DeviceDisablingManager();
 
+  // Must be called after construction.
+  void Init();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -107,8 +110,6 @@ class DeviceDisablingManager {
   static bool HonorDeviceDisablingDuringNormalOperation();
 
  private:
-  void Init();
-
   // Cache the disabled message and inform observers if it changed.
   void CacheDisabledMessageAndNotify(const std::string& disabled_message);
 
