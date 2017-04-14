@@ -268,7 +268,7 @@ zuc_set_output_junit(bool enable);
 	static void zuctest_##tcase##_##test(void); \
 	\
 	const struct zuc_registration zzz_##tcase##_##test \
-	__attribute__ ((section ("zuc_tsect"))) = \
+	__attribute__ ((used, section ("zuc_tsect"))) = \
 	{ \
 		#tcase, #test, 0,		\
 		zuctest_##tcase##_##test,	\
@@ -298,7 +298,7 @@ zuc_set_output_junit(bool enable);
 	static void zuctest_##tcase##_##test(void *param); \
 	\
 	const struct zuc_registration zzz_##tcase##_##test \
-	__attribute__ ((section ("zuc_tsect"))) = \
+	__attribute__ ((used, section ("zuc_tsect"))) = \
 	{ \
 		#tcase, #test, &tcase,		\
 		0,				\
