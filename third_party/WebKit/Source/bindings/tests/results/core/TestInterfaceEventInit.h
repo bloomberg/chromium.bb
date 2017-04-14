@@ -35,6 +35,7 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+
   String m_stringMember;
 
   friend class V8TestInterfaceEventInit;

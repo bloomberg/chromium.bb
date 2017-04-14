@@ -35,6 +35,7 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
 
  private:
   bool m_hasBooleanMember = false;
+
   bool m_booleanMember;
 
   friend class V8TestPermissiveDictionary;

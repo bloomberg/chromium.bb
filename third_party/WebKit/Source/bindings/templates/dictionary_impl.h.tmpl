@@ -36,10 +36,11 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  {% for member in members %}
-  {% if member.nullable_indicator_name %}
+  {% for member in members if member.nullable_indicator_name %}
   bool {{member.nullable_indicator_name}} = false;
-  {% endif %}
+  {% endfor %}
+
+  {% for member in members %}
   {{member.member_cpp_type}} m_{{member.cpp_name}};
   {% endfor %}
 
