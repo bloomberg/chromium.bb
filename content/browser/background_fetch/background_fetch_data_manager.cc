@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
+#include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/blob_handle.h"
@@ -206,22 +207,22 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     BackgroundFetchSettledFetch settled_fetch;
     settled_fetch.request = request->fetch_request();
 
-    // TODO(peter): Find the appropriate way to generalize CORS security checks.
-    const bool opaque = !registration_id.origin().IsSameOriginWith(
-        url::Origin(request->GetURLChain().back().GetOrigin()));
+    // The |filter| decides which values can be passed on to the Service Worker.
+    BackgroundFetchCrossOriginFilter filter(registration_id.origin(), *request);
 
     settled_fetch.response.url_list = request->GetURLChain();
     settled_fetch.response.response_type =
         blink::kWebServiceWorkerResponseTypeDefault;
 
-    if (!opaque) {
+    // Include the status code, status text and the response's body as a blob
+    // when this is allowed by the CORS protocol.
+    if (filter.CanPopulateBody()) {
       settled_fetch.response.status_code = request->GetResponseCode();
       settled_fetch.response.status_text = request->GetResponseText();
       settled_fetch.response.headers.insert(
           request->GetResponseHeaders().begin(),
           request->GetResponseHeaders().end());
 
-      // Include the response data as a blob backed by the downloaded file.
       if (request->GetFileSize() > 0) {
         DCHECK(!request->GetFilePath().empty());
         std::unique_ptr<BlobHandle> blob_handle =

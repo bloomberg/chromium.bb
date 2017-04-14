@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "content/public/browser/download_item.h"
 #include "net/http/http_response_headers.h"
 
@@ -38,7 +39,7 @@ void BackgroundFetchRequestInfo::PopulateDownloadState(
     std::string name, value;
 
     while (headers->EnumerateHeaderLines(&iter, &name, &value))
-      response_headers_[name] = value;
+      response_headers_[base::ToLowerASCII(name)] = value;
   }
 
   download_state_populated_ = true;

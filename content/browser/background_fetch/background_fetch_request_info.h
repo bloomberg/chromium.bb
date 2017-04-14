@@ -74,6 +74,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
  private:
   friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
+  friend class BackgroundFetchCrossOriginFilterTest;
 
   ~BackgroundFetchRequestInfo();
 
