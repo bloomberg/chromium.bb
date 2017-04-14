@@ -26,6 +26,26 @@ promise_test(function(t) {
   return videoTrack.applyConstraints();
 }, 'MediaStreamTrack.applyConstraints()');
 
+// This test verifies that applyConstraints() rejects the returned Promise if
+// passed a non-supported image-capture constraint (https://crbug.com/711694).
+promise_test(function(t) {
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext("2d");
+  context.fillStyle = "red";
+  context.fillRect(0, 0, 10, 10);
+
+  var stream = canvas.captureStream();
+  var videoTrack = stream.getVideoTracks()[0];
+
+  var expectedException =
+      new DOMException('Unsupported constraint(s)', 'NotSupportedError');
+
+  // Use e.g. |torch| as an example of unsupported constraint.
+  assert_false("torch" in videoTrack.getCapabilities());
+  return promise_rejects(
+      t, expectedException,
+      videoTrack.applyConstraints({advanced : [ {torch : true} ]}));
+}, 'MediaStreamTrack.applyConstraints() with unsupported constraint');
 
 // This test verifies that applyConstraints() rejects the returned Promise if
 // passed a non-supported constraint.

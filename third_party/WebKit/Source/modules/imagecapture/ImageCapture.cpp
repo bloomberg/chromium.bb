@@ -261,6 +261,26 @@ void ImageCapture::SetMediaTrackConstraints(
   // TODO(mcasas): add support more than one single advanced constraint.
   const auto constraints = constraints_vector[0];
 
+  if ((constraints.hasWhiteBalanceMode() &&
+       !capabilities_.hasWhiteBalanceMode()) ||
+      (constraints.hasExposureMode() && !capabilities_.hasExposureMode()) ||
+      (constraints.hasFocusMode() && !capabilities_.hasFocusMode()) ||
+      (constraints.hasExposureCompensation() &&
+       !capabilities_.hasExposureCompensation()) ||
+      (constraints.hasColorTemperature() &&
+       !capabilities_.hasColorTemperature()) ||
+      (constraints.hasIso() && !capabilities_.hasIso()) ||
+      (constraints.hasBrightness() && !capabilities_.hasBrightness()) ||
+      (constraints.hasContrast() && !capabilities_.hasContrast()) ||
+      (constraints.hasSaturation() && !capabilities_.hasSaturation()) ||
+      (constraints.hasSharpness() && !capabilities_.hasSharpness()) ||
+      (constraints.hasZoom() && !capabilities_.hasZoom()) ||
+      (constraints.hasTorch() && !capabilities_.hasTorch())) {
+    resolver->Reject(
+        DOMException::Create(kNotSupportedError, "Unsupported constraint(s)"));
+    return;
+  }
+
   auto settings = media::mojom::blink::PhotoSettings::New();
 
   // TODO(mcasas): support other Mode types beyond simple string i.e. the

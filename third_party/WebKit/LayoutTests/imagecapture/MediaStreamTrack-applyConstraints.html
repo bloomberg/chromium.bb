@@ -41,16 +41,25 @@ async_test(function(t) {
                                     }]};
 
   var theMock = null;
+  var videoTrack = null;
   mockImageCaptureReady
     .then(mock => {
       theMock = mock;
       var stream = canvas.captureStream();
-      var videoTrack = stream.getVideoTracks()[0];
+      videoTrack = stream.getVideoTracks()[0];
 
-      return videoTrack.applyConstraints(constraints);
+      // |videoTrack|'s capabilities gathering, just like the actual capture, is
+      // a process kicked off right after creation, we introduce a small delay
+      // to allow for those to be collected, since they are needed to understand
+      // which constraints are supported in applyConstraints().
+      // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
+      return new Promise(resolve => setTimeout(resolve, 100));
     },
     error => {
       assert_unreached("Error creating MockImageCapture: " + error);
+    })
+    .then(function() {
+      return videoTrack.applyConstraints(constraints);
     })
     .then(function() {
       assert_equals(constraints.advanced[0].whiteBalanceMode,

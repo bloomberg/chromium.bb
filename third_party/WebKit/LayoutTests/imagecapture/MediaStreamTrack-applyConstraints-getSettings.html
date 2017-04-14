@@ -52,6 +52,14 @@ async_test(function(t) {
       var stream = canvas.captureStream();
       videoTrack = stream.getVideoTracks()[0];
 
+      // |videoTrack|'s capabilities gathering, just like the actual capture, is
+      // a process kicked off right after creation, we introduce a small delay
+      // to allow for those to be collected, since they are needed to understand
+      // which constraints are supported in applyConstraints().
+      // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
+      return new Promise(resolve => setTimeout(resolve, 100));
+    })
+    .then(function() {
       return videoTrack.applyConstraints(constraints);
     })
     .then(function() {
