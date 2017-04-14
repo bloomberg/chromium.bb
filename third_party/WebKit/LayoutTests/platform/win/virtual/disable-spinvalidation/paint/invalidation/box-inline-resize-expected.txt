@@ -12,18 +12,18 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [40, 107, 111, 28],
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutBlockFlow H2",
           "rect": [8, 107, 111, 28],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [40, 107, 111, 27],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 107, 111, 27],
+          "rect": [8, 107, 111, 28],
           "reason": "bounds change"
         },
         {

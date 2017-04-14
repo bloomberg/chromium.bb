@@ -12,12 +12,12 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
-          "rect": [139, 359, 151, 181],
+          "object": "LayoutText #text",
+          "rect": [138, 359, 152, 182],
           "reason": "subtree"
         },
         {
-          "object": "LayoutText #text",
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [139, 359, 151, 181],
           "reason": "subtree"
         },
@@ -27,13 +27,13 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutInline (relative positioned) SPAN id='child'",
-          "rect": [300, 300, 80, 162],
+          "object": "LayoutText #text",
+          "rect": [300, 301, 80, 162],
           "reason": "subtree"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [300, 301, 80, 161],
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "rect": [300, 300, 80, 162],
           "reason": "subtree"
         }
       ]

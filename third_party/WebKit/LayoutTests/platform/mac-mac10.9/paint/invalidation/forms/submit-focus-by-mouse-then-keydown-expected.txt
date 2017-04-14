@@ -10,6 +10,11 @@
           "object": "LayoutButton INPUT",
           "rect": [3, 4, 64, 29],
           "reason": "subtree"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [16, 11, 38, 14],
+          "reason": "subtree"
         }
       ]
     }

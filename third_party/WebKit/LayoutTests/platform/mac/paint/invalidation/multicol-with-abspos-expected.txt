@@ -7,8 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTextControl (positioned) INPUT id='input'",
-          "rect": [8, 8, 244, 68],
+          "object": "LayoutText #text",
+          "rect": [0, 579, 80, 22],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 580, 80, 20],
           "reason": "style change"
         }
       ]
@@ -16,24 +21,20 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTextControl (positioned) INPUT id='input'",
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
       "reason": "style change"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
-      "reason": "forced by layout"
-    },
-    {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "style change"
     },
     {
-      "object": "InlineTextBox 'NEW'",
-      "reason": "full"
+      "object": "InlineTextBox 'PASS'",
+      "reason": "style change"
     }
   ]
 }

@@ -8,41 +8,32 @@
       "paintInvalidations": [
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [9, 9, 400, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutInline SPAN id='a'",
-          "rect": [234, 10, 300, 57],
-          "reason": "forced by layout"
+          "rect": [8, 8, 630, 20],
+          "reason": "border box change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [234, 15, 50, 50],
-          "reason": "layoutObject removal"
+          "rect": [328, 8, 240, 21],
+          "reason": "layoutObject insertion"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutText #text",
-      "reason": "layoutObject removal"
-    },
-    {
       "object": "LayoutMultiColumnFlowThread (anonymous)",
-      "reason": "forced by layout"
+      "reason": "border box change"
     },
     {
       "object": "RootInlineBox",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutBR BR",
       "reason": "forced by layout"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
+      "object": "InlineTextBox '\n'",
       "reason": "forced by layout"
     },
     {
@@ -54,19 +45,11 @@
       "reason": "forced by layout"
     },
     {
-      "object": "LayoutInline SPAN id='a'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "forced by layout"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "layoutObject insertion"
     },
     {
-      "object": "InlineTextBox 'XXXXXX'",
+      "object": "InlineTextBox 'PASS'",
       "reason": "layoutObject insertion"
     }
   ]

@@ -1,0 +1,42 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [108, 8, 684, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 7, 200, 102],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutInline (relative positioned) SPAN id='target'",
+          "rect": [8, 8, 200, 100],
+          "reason": "layoutObject removal"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutInline (relative positioned) SPAN id='target'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

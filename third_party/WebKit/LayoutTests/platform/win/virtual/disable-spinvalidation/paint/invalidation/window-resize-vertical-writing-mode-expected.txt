@@ -18,7 +18,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 7, 920, 213],
+          "rect": [9, 7, 921, 213],
           "reason": "forced by layout"
         },
         {
@@ -43,7 +43,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [507, 8, 423, 470],
+          "rect": [506, 8, 424, 470],
           "reason": "forced by layout"
         }
       ]
@@ -159,12 +159,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [210, 7, 920, 213],
+          "rect": [209, 7, 921, 213],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 7, 920, 213],
+          "rect": [9, 7, 921, 213],
           "reason": "bounds change"
         },
         {
@@ -280,7 +280,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [-529, 7, 920, 213],
+          "rect": [-530, 7, 921, 213],
           "reason": "forced by layout"
         },
         {
@@ -300,7 +300,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [38, 7, 353, 554],
           "reason": "forced by layout"
         }
       ]
@@ -374,12 +374,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [439, 7, 352, 554],
+          "rect": [438, 7, 353, 554],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutText #text",
-          "rect": [39, 7, 352, 554],
+          "rect": [38, 7, 353, 554],
           "reason": "forced by layout"
         }
       ]

@@ -1976,6 +1976,24 @@ LayoutRect LayoutText::VisualOverflowRect() const {
   LayoutUnit logical_height =
       LastTextBox()->LogicalBottomVisualOverflow() - logical_top;
 
+  // Inflate visual overflow if we have adjusted ascent/descent causing the
+  // painted glyphs to overflow the layout geometries based on the adjusted
+  // ascent/descent.
+  unsigned inflation_for_ascent = 0;
+  unsigned inflation_for_descent = 0;
+  const auto* font_data =
+      StyleRef(FirstTextBox()->IsFirstLineStyle()).GetFont().PrimaryFont();
+  if (font_data)
+    inflation_for_ascent = font_data->VisualOverflowInflationForAscent();
+  if (LastTextBox()->IsFirstLineStyle() != FirstTextBox()->IsFirstLineStyle()) {
+    font_data =
+        StyleRef(LastTextBox()->IsFirstLineStyle()).GetFont().PrimaryFont();
+  }
+  if (font_data)
+    inflation_for_descent = font_data->VisualOverflowInflationForDescent();
+  logical_top -= LayoutUnit(inflation_for_ascent);
+  logical_height += LayoutUnit(inflation_for_ascent + inflation_for_descent);
+
   LayoutRect rect(logical_left_side, logical_top, logical_width,
                   logical_height);
   if (!Style()->IsHorizontalWritingMode())

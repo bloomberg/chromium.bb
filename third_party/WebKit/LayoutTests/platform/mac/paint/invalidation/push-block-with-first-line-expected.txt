@@ -1,0 +1,60 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='spacer'",
+          "rect": [8, 8, 784, 60],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='test'",
+          "rect": [8, 68, 784, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='test'",
+          "rect": [8, 8, 784, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 67, 140, 22],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 7, 140, 22],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='spacer'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='test'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox 'JOCULAR'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

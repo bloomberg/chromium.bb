@@ -15,6 +15,11 @@
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 114, 184, 13],
           "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [82, 114, 52, 14],
+          "reason": "full"
         }
       ]
     }
