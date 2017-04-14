@@ -177,7 +177,10 @@
     }
 
     pipeThrough({writable, readable}, options) {
-      this.pipeTo(writable, options);
+      const promise = this.pipeTo(writable, options);
+      if (v8.isPromise(promise)) {
+        v8.markPromiseAsHandled(promise);
+      }
       return readable;
     }
 
