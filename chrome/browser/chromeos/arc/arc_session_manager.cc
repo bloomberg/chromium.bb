@@ -372,8 +372,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     ShutdownSession();
-    if (support_host_)
-      support_host_->ShowError(error, true);
+    ShowArcSupportHostError(error, true);
     return;
   }
 
@@ -391,8 +390,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
 
   // We'll delay shutting down the ARC instance in this case to allow people
   // to send feedback.
-  if (support_host_)
-    support_host_->ShowError(error, true /* = show send feedback button */);
+  ShowArcSupportHostError(error, true /* = show send feedback button */);
 }
 
 void ArcSessionManager::SetState(State state) {
@@ -593,7 +591,7 @@ void ArcSessionManager::RequestEnableImpl() {
     // Check Android management in parallel.
     // Note: StartBackgroundAndroidManagementCheck() may call
     // OnBackgroundAndroidManagementChecked() synchronously (or
-    // asynchornously). In the callback, Google Play Store enabled preference
+    // asynchronously). In the callback, Google Play Store enabled preference
     // can be set to false if managed, and it triggers RequestDisable() via
     // ArcPlayStoreEnabledPreferenceHandler.
     // Thus, StartArc() should be called so that disabling should work even
@@ -626,7 +624,7 @@ void ArcSessionManager::RequestDisable() {
 void ArcSessionManager::RequestArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-  // TODO(hidehiko): DCHECK the previous state. This is called for three cases;
+  // TODO(hidehiko): DCHECK the previous state. This is called for four cases;
   // 1) Supporting managed user initial disabled case (Please see also
   //    ArcPlayStoreEnabledPreferenceHandler::Start() for details).
   // 2) Supporting enterprise triggered data removal.
@@ -665,10 +663,8 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     // If the user attempts to re-enable ARC while the ARC instance is still
     // running the user should not be able to continue until the ARC instance
     // has stopped.
-    if (support_host_) {
-      support_host_->ShowError(
-          ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR, false);
-    }
+    ShowArcSupportHostError(
+        ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR, false);
     UpdateOptInCancelUMA(OptInCancelReason::SESSION_BUSY);
     return;
   }
@@ -772,6 +768,9 @@ void ArcSessionManager::StartAndroidManagementCheck() {
     support_host_->ShowArcLoading();
   }
 
+  for (auto& observer : observer_list_)
+    observer.OnArcOptInManagementCheckStarted();
+
   android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
       profile_, context_->token_service(), context_->account_id(),
       false /* retry_on_error */);
@@ -798,17 +797,13 @@ void ArcSessionManager::OnAndroidManagementChecked(
       StartArc();
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
-      if (support_host_) {
-        support_host_->ShowError(
-            ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR, false);
-      }
+      ShowArcSupportHostError(
+          ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR, false);
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
-      if (support_host_) {
-        support_host_->ShowError(
-            ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR, true);
-      }
+      ShowArcSupportHostError(ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR,
+                              true);
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
   }
@@ -1027,6 +1022,15 @@ void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
     const base::Closure& callback) {
   DCHECK(!callback.is_null());
   attempt_user_exit_callback_ = callback;
+}
+
+void ArcSessionManager::ShowArcSupportHostError(
+    ArcSupportHost::Error error,
+    bool should_show_send_feedback) {
+  if (support_host_)
+    support_host_->ShowError(error, should_show_send_feedback);
+  for (auto& observer : observer_list_)
+    observer.OnArcErrorShowRequested(error);
 }
 
 std::ostream& operator<<(std::ostream& os,

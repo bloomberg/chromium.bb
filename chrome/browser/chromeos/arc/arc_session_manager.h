@@ -94,6 +94,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     // is represented by "arc.enabled" preference, is updated.
     virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
 
+    // Called to notify that checking of Android management status started
+    // during the opt-in flow.
+    virtual void OnArcOptInManagementCheckStarted() {}
+
     // Called to notify that ARC has been initialized successfully.
     virtual void OnArcInitialStart() {}
 
@@ -104,6 +108,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     // Called to notify that Android data has been removed. Used in
     // browser_tests
     virtual void OnArcDataRemoved() {}
+
+    // Called to notify that the error is requested by the session manager to be
+    // displayed in the support host. This is called even if Support UI is
+    // disabled. Note that this is not called in cases when the support app
+    // switches to an error page by itself.
+    virtual void OnArcErrorShowRequested(ArcSupportHost::Error error) {}
 
    protected:
     virtual ~Observer() = default;
@@ -304,6 +314,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // TODO(hidehiko): This can be removed after the racy state machine
   // is fixed.
   void MaybeReenableArc();
+
+  // Requests the support host (if it exists) to show the error, and notifies
+  // the observers.
+  void ShowArcSupportHostError(ArcSupportHost::Error error,
+                               bool should_show_send_feedback);
 
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 

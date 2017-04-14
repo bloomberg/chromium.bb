@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/notification/arc_boot_error_notification.h"
+#include "chrome/browser/chromeos/arc/notification/arc_provision_notification_service.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/print/arc_print_service.h"
@@ -132,6 +133,8 @@ void ArcServiceLauncher::Initialize() {
       base::MakeUnique<ArcPrintService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcProcessService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcProvisionNotificationService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcSettingsService>(arc_bridge_service));
   arc_service_manager_->AddService(
