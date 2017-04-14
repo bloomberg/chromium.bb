@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/content_client.h"
 #include "net/dns/host_resolver.h"
@@ -13,6 +14,7 @@
 #include "net/log/net_log_util.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -58,6 +60,10 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 
   builder.EnableHttpCache(cache_params);
   builder.set_file_enabled(true);
+
+  builder.SetProtocolHandler(url::kDataScheme,
+                             base::MakeUnique<net::DataProtocolHandler>());
+
   return builder.Build();
 }
 
