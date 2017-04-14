@@ -85,7 +85,7 @@ class ScopedPersistent {
     handle_.Reset(isolate, handle);
   }
 
-  // Note: This is clear in the std::unique_ptr sense, not the v8::Handle sense.
+  // Note: This is clear in the std::unique_ptr sense, not the v8::Local sense.
   void Clear() { handle_.Reset(); }
 
   bool operator==(const ScopedPersistent<T>& other) {

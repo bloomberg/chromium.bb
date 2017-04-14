@@ -811,12 +811,12 @@ interface XXX {
 You can write custom bindings as V8XXX::namedPropertyQuery(...) and V8XXX::namedPropertyEnumerator(...) in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-v8::Handle<v8::Integer> V8XXX::namedPropertyQuery(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+v8::Local<v8::Integer> V8XXX::namedPropertyQuery(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     ...;
 }
 
-v8::Handle<v8::Array> V8XXX::namedPropertyEnumerator(const v8::AccessorInfo& info)
+v8::Local<v8::Array> V8XXX::namedPropertyEnumerator(const v8::AccessorInfo& info)
 {
     ...;
 }
@@ -841,7 +841,7 @@ If you want to write custom bindings for XXX.call(...), you can use `[Custom=Leg
 You can write custom `V8XXX::callAsFunctionCallback(...)` in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-v8::Handle<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
+v8::Local<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
 {
     ...;
 }
@@ -1411,7 +1411,7 @@ Consider the following example:
 Then you can write custom bindings in Source/bindings/v8/custom/V8XXXConstructorCustom.cpp:
 
 ```c++
-v8::Handle<v8::Value> V8XXX::constructorCallback(const v8::Arguments& args)
+v8::Local<v8::Value> V8XXX::constructorCallback(const v8::Arguments& args)
 {
    ...;
 }
