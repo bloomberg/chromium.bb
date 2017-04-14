@@ -3807,6 +3807,31 @@
         },
         "test": "vr_shell_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=android-chromium",
+          "--device=android"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "override_compile_targets": [
+          "telemetry_unittests_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "6",
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "hard_timeout": 960,
+          "shards": 1
+        }
+      }
     ]
   },
   "Marshmallow Tablet Tester": {
