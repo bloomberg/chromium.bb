@@ -26,7 +26,7 @@ namespace usb = device::usb::blink;
 namespace blink {
 namespace {
 
-const char kNoServiceError[] = "USB service unavailable.";
+const char kNoDeviceSelected[] = "No device selected.";
 
 usb::DeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
   auto mojo_filter = usb::DeviceFilter::New();
@@ -172,16 +172,11 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
   chooser_service_requests_.erase(request_entry);
 
   EnsureDeviceManagerConnection();
-  if (!device_manager_) {
-    resolver->Reject(DOMException::Create(kNotFoundError, kNoServiceError));
-    return;
-  }
 
-  if (device_info) {
+  if (device_manager_ && device_info) {
     resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
   } else {
-    resolver->Reject(
-        DOMException::Create(kNotFoundError, "No device selected."));
+    resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
   }
 }
 
@@ -208,14 +203,14 @@ void USB::OnDeviceManagerConnectionError() {
   device_manager_.reset();
   client_binding_.Close();
   for (ScriptPromiseResolver* resolver : device_manager_requests_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kNoServiceError));
+    resolver->Resolve(HeapVector<Member<USBDevice>>(0));
   device_manager_requests_.Clear();
 }
 
 void USB::OnChooserServiceConnectionError() {
   chooser_service_.reset();
   for (ScriptPromiseResolver* resolver : chooser_service_requests_)
-    resolver->Reject(DOMException::Create(kNotFoundError, kNoServiceError));
+    resolver->Reject(DOMException::Create(kNotFoundError, kNoDeviceSelected));
   chooser_service_requests_.Clear();
 }
 
