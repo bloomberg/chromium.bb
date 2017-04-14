@@ -1001,6 +1001,11 @@ def PrintChangeLog(min_chromium_rev, max_chromium_rev):
   print ('  ' + CHANGELOG_URL % (GetGitHashFromSVNRevision(min_chromium_rev),
          GetGitHashFromSVNRevision(max_chromium_rev)))
 
+def error_internal_option(option, opt, value, parser):
+   raise optparse.OptionValueError(
+         'The -o and -r options are only\navailable in the internal version of '
+         'this script. Google\nemployees should visit http://go/bisect-builds '
+         'for\nconfiguration instructions.')
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -1086,6 +1091,8 @@ def main():
                     default=False,
                     help='Test the first and last revisions in the range ' +
                          'before proceeding with the bisect.')
+  parser.add_option("-r", action="callback", callback=error_internal_option)
+  parser.add_option("-o", action="callback", callback=error_internal_option)
 
   (opts, args) = parser.parse_args()
 
