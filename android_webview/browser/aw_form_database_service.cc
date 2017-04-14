@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,7 +89,10 @@ bool AwFormDatabaseService::HasFormData() {
                  base::Unretained(this),
                  &completion,
                  &result));
-  completion.Wait();
+  {
+    base::ThreadRestrictions::ScopedAllowWait wait;
+    completion.Wait();
+  }
   return result;
 }
 

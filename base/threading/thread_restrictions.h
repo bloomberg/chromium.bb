@@ -14,6 +14,7 @@ class HistogramSynchronizer;
 class NativeBackendKWallet;
 
 namespace android_webview {
+class AwFormDatabaseService;
 class CookieManager;
 }
 
@@ -180,6 +181,7 @@ class BASE_EXPORT ThreadRestrictions {
  private:
   // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
   // BEGIN ALLOWED USAGE.
+  friend class android_webview::AwFormDatabaseService;
   friend class android_webview::CookieManager;
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserSurfaceViewManager;
