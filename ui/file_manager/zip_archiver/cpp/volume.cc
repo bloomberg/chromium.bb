@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "request.h"
-#include "volume_archive_libarchive.h"
+#include "volume_archive_minizip.h"
 #include "volume_reader_javascript_stream.h"
 
 namespace {

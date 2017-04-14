@@ -8,7 +8,7 @@
 #include <ctime>
 #include <sstream>
 
-#include "compressor_archive_libarchive.h"
+#include "compressor_archive_minizip.h"
 #include "compressor_io_javascript_stream.h"
 #include "request.h"
 
