@@ -234,11 +234,6 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
                             '_GetNewSlaveCIDBStatusInfo',
                             return_value=cidb_status)
 
-  def _MockGetAllSlaveCIDBStatusInfo(self, cidb_status=None):
-    return self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                            'GetAllSlaveCIDBStatusInfo',
-                            return_value=cidb_status)
-
   def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveBuildbucketInfo')
@@ -389,24 +384,6 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertEqual(slave_status._GetCompletedBuilds(),
                      set(['passed', 'failed', 'aborted', 'skipped',
                           'forgiven']))
-
-  def testGetUncompletedBuilds(self):
-    """Tests _GetUncompletedBuilds"""
-    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
-    self._Mock_GetSlaveStatusesFromBuildbucket(
-        BuildbucketInfos.GetFullBuildbucketInfoDict())
-
-    slave_status = self._GetSlaveStatus(
-        builders_array=self._GetFullBuildConfigs())
-
-    completed_builds = {'completed_success', 'completed_failure',
-                        'completed_canceled'}
-    self.assertEqual(slave_status._GetUncompletedBuilds(completed_builds),
-                     {'scheduled', 'started'})
-
-    completed_builds = {'completed_success', 'completed_failure'}
-    self.assertEqual(slave_status._GetUncompletedBuilds(completed_builds),
-                     {'scheduled', 'started', 'completed_canceled'})
 
   def testGetRetriableBuildsReturnsNone(self):
     """GetRetriableBuilds returns no build to retry."""
@@ -1011,23 +988,19 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
 
   def testShouldWaitWithTriageRelevantChangesShouldWaitFalse(self):
     """Test ShouldWait with TriageRelevantChanges.ShouldWait is False."""
-    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
-    self._MockGetAllSlaveCIDBStatusInfo(CIDBStatusInfos.GetFullCIDBStatusInfo())
-    self._Mock_GetSlaveStatusesFromBuildbucket(
-        BuildbucketInfos.GetFullBuildbucketInfoDict())
-
     relevant_changes.TriageRelevantChanges.__init__ = mock.Mock(
         return_value=None)
     self.PatchObject(relevant_changes.TriageRelevantChanges,
                      'ShouldWait', return_value=False)
     self.PatchObject(build_status.SlaveStatus,
-                     '_Completed', return_value=False)
+                     '_Completed',
+                     return_value=False)
     self.PatchObject(build_status.SlaveStatus,
-                     '_ShouldFailForBuilderStartTimeout', return_value=False)
-    self.PatchObject(build_status.SlaveStatus, '_RetryBuilds')
+                     '_ShouldFailForBuilderStartTimeout',
+                     return_value=False)
     pool = validation_pool_unittest.MakePool(applied=[])
     slave_status = self._GetSlaveStatus(
-        builders_array=self._GetFullBuildConfigs(),
+        builders_array=['slave1', 'slave2'],
         config=self.master_cq_config,
         version='9289.0.0-rc2',
         pool=pool)
@@ -1035,15 +1008,6 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
     self.assertFalse(slave_status.ShouldWait())
     self.assertTrue(slave_status.metadata.GetValueWithDefault(
         constants.SELF_DESTRUCTED_BUILD, False))
-
-    build_messages = self.db.GetBuildMessages(self.master_build_id)
-    self.assertEqual(len(build_messages), 3)
-    for m in build_messages:
-      self.assertEqual(m['message_type'],
-                       constants.MESSAGE_TYPE_IGNORED_REASON)
-      self.assertEqual(m['message_subtype'],
-                       constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
-      self.assertTrue(m['message_value'] in (1, 3, 4))
 
   def testShouldWaitWithTriageRelevantChangesShouldWaitTrue(self):
     """Test ShouldWait with TriageRelevantChanges.ShouldWait is True."""

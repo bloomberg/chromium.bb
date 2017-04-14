@@ -30,7 +30,6 @@ class FakeCIDBConnection(object):
     self.failureTable = {}
     self.fake_time = None
     self.fake_keyvals = fake_keyvals or {}
-    self.buildMessageTable = {}
 
   def _TrimStatus(self, status):
     """Trims a build row to keys that should be returned by GetBuildStatus"""
@@ -180,41 +179,6 @@ class FakeCIDBConnection(object):
               'extra_info': extra_info}
     self.failureTable[failure_id] = values
     return failure_id
-
-  def InsertBuildMessage(self, build_id, message_type=None,
-                         message_subtype=None, message_value=None, board=None):
-    """Insert a build message.
-
-    Args:
-      build_id: primary key of build recording this message.
-      message_type: Optional str name of message type.
-      message_subtype: Optional str name of message subtype.
-      message_value: Optional value of message.
-      board: Optional str name of the board.
-
-    Returns:
-      The build message id (string).
-    """
-    build_message_id = len(self.buildMessageTable)
-    values = {'build_id': build_id,
-              'message_type': message_type,
-              'message_subtype': message_subtype,
-              'message_value': message_value,
-              'board': board}
-    self.buildMessageTable[build_message_id] = values
-    return build_message_id
-
-  def GetBuildMessages(self, build_id):
-    """Get the build messages of the given build id.
-
-    Args:
-      build_id: build id (string) of the build to get messages.
-
-    Returns:
-      A list of build messages (in the format of dict).
-    """
-    return [v for v in  self.buildMessageTable.values()
-            if v['build_id'] == build_id]
 
   def StartBuildStage(self, build_stage_id):
     if build_stage_id > len(self.buildStageTable):

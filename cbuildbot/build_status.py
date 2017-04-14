@@ -305,18 +305,6 @@ class SlaveStatus(object):
     """
     return len(self.completed_builds) == len(self.builders_array)
 
-
-  def _GetUncompletedBuilds(self, completed_builds):
-    """Get uncompleted builds.
-
-    Args:
-      completed_builds: a set of config names (strings) of completed builds.
-
-    Returns:
-      A set of config names (strings) of uncompleted builds.
-    """
-    return set(self.builders_array) - completed_builds
-
   def _ShouldFailForBuilderStartTimeout(self, current_time):
     """Decides if we should fail if a build hasn't started within 5 mins.
 
@@ -444,17 +432,6 @@ class SlaveStatus(object):
         fields = {'build_config': self.config.name}
         metrics.Counter(constants.MON_CQ_SELF_DESTRUCTION_COUNT).increment(
             fields=fields)
-
-        # For every uncompleted build, the master build will insert an
-        # ignored_reason message into the buildMessageTable.
-        uncompleted_builds = self._GetUncompletedBuilds(self.completed_builds)
-        for build in uncompleted_builds:
-          if build in self.all_cidb_status_dict:
-            self.db.InsertBuildMessage(
-                self.master_build_id,
-                message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
-                message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-                message_value=self.all_cidb_status_dict[build].build_id)
 
         return False
 
