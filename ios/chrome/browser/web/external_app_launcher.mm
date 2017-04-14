@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/web/external_app_launcher.h"
 
+#include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -47,13 +48,30 @@ void RecordExternalApplicationOpened(bool opened) {
   UMA_HISTOGRAM_BOOLEAN("Tab.ExternalApplicationOpened", opened);
 }
 
+// Returns whether gURL has the scheme of a URL that initiates a call.
+BOOL UrlHasPhoneCallScheme(const GURL& gURL) {
+  return gURL.SchemeIs("tel") || gURL.SchemeIs("facetime") ||
+         gURL.SchemeIs("facetime-audio");
+}
+
+// Returns a string to be used as the label for the prompt's action button.
+NSString* PromptActionString(NSString* scheme) {
+  if ([scheme isEqualToString:@"facetime"])
+    return l10n_util::GetNSString(IDS_IOS_FACETIME_BUTTON);
+  else if ([scheme isEqualToString:@"tel"] ||
+           [scheme isEqualToString:@"facetime-audio"])
+    return l10n_util::GetNSString(IDS_IOS_PHONE_CALL_BUTTON);
+  NOTREACHED();
+  return @"";
+}
+
 }  // namespace
 
 @interface ExternalAppLauncher ()
 // Returns the Phone/FaceTime call argument from |URL|.
 + (NSString*)formatCallArgument:(NSURL*)URL;
-// Ask user for confirmation before dialing FaceTime destination.
-- (void)openFaceTimePromptForURL:(NSURL*)telURL;
+// Ask user for confirmation before dialing Phone or FaceTime destinations.
+- (void)openPromptForURL:(NSURL*)URL;
 // Ask user for confirmation before moving to external app.
 - (void)openExternalAppWithPromptForURL:(NSURL*)URL;
 // Presents a configured alert controller on the root view controller.
@@ -96,10 +114,9 @@ void RecordExternalApplicationOpened(bool opened) {
       }];
 }
 
-- (void)openFaceTimePromptForURL:(NSURL*)URL {
-  NSString* openTitle = l10n_util::GetNSString(IDS_IOS_FACETIME_BUTTON);
+- (void)openPromptForURL:(NSURL*)URL {
   [self presentAlertControllerWithMessage:[[self class] formatCallArgument:URL]
-                                openTitle:openTitle
+                                openTitle:PromptActionString(URL.scheme)
                               openHandler:^(UIAlertAction* action) {
                                 OpenUrlWithCompletionHandler(URL, nil);
                               }
@@ -136,24 +153,18 @@ void RecordExternalApplicationOpened(bool opened) {
     return NO;
   NSURL* URL = net::NSURLWithGURL(gURL);
 
-  if (gURL.SchemeIs("facetime") || gURL.SchemeIs("facetime-audio")) {
+  // iOS 10.3.2 introduced new prompts when facetime: and facetime-audio:
+  // URL schemes are opened. It is no longer necessary for Chrome to present
+  // another prompt before the system-provided prompt.
+  if (!base::ios::IsRunningOnOrLater(10, 3, 2) && UrlHasPhoneCallScheme(gURL)) {
     // Showing an alert view immediately has a side-effect where focus is
     // taken from the UIWebView so quickly that mouseup events are lost and
     // buttons get 'stuck' in the on position. The solution is to defer
     // showing the view.
-    [self performSelector:@selector(openFaceTimePromptForURL:)
+    [self performSelector:@selector(openPromptForURL:)
                withObject:URL
                afterDelay:0.0];
     return YES;
-  }
-
-  // Use telprompt instead of tel because telprompt returns user back to
-  // Chrome after phone call is completed/aborted.
-  if (gURL.SchemeIs("tel")) {
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr("telprompt");
-    URL = net::NSURLWithGURL(gURL.ReplaceComponents(replacements));
-    DCHECK([[URL scheme] isEqualToString:@"telprompt"]);
   }
 
   // Don't open external application if chrome is not active.
