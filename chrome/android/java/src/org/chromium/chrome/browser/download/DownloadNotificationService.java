@@ -31,6 +31,7 @@ import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -147,18 +148,12 @@ public class DownloadNotificationService extends Service {
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
 
     /**
-     * {@code true} when this service should be put into the foreground before processing an
-     * {@link Intent}.
-     */
-    private boolean mShouldMakeForeground;
-
-    /**
      * @return Whether or not this service should be made a foreground service if there are active
      * downloads.
      */
     @VisibleForTesting
     static boolean useForegroundService() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+        return BuildInfo.isAtLeastO();
     }
 
     /**
@@ -448,7 +443,6 @@ public class DownloadNotificationService extends Service {
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mNextNotificationId = mSharedPrefs.getInt(
                 KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
-        mShouldMakeForeground = true;
     }
 
     @Override
@@ -460,10 +454,11 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-        if (mShouldMakeForeground) {
-            mShouldMakeForeground = false;
-            startForegroundInternal();
-        }
+        // Start a foreground service every time we process a valid intent.  This makes sure we
+        // honor the promise that we'll be in the foreground when we start, even if we immediately
+        // drop ourselves back.
+        if (useForegroundService() && intent != null) startForegroundInternal();
+
         if (intent == null) {
             // Intent is only null during a process restart because of returning START_STICKY.  In
             // this case cancel the off the record notifications and put the normal notifications
