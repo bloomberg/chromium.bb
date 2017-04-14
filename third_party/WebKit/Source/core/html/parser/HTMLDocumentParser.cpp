@@ -895,6 +895,10 @@ void HTMLDocumentParser::Append(const String& input_source) {
   const SegmentedString source(input_source);
 
   if (GetDocument()->IsPrefetchOnly()) {
+    // Do not prefetch if there is an appcache.
+    if (GetDocument()->Loader()->GetResponse().AppCacheID() != 0)
+      return;
+
     if (!preload_scanner_)
       preload_scanner_ = CreatePreloadScanner();
 

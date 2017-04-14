@@ -745,6 +745,18 @@ base::string16 PrerenderInProcessBrowserTest::MatchTaskManagerPrerender(
                                     base::ASCIIToUTF16(page_title));
 }
 
+GURL PrerenderInProcessBrowserTest::GetURLWithReplacement(
+    const std::string& url_file,
+    const std::string& replacement_variable,
+    const std::string& replacement_text) {
+  base::StringPairs replacement_pair;
+  replacement_pair.push_back(make_pair(replacement_variable, replacement_text));
+  std::string replacement_path;
+  net::test_server::GetFilePathWithReplacements(url_file, replacement_pair,
+                                                &replacement_path);
+  return src_server()->GetURL(MakeAbsolute(replacement_path));
+}
+
 std::vector<std::unique_ptr<TestPrerender>>
 PrerenderInProcessBrowserTest::NavigateWithPrerenders(
     const GURL& loader_url,
