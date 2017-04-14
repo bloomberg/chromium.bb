@@ -198,8 +198,7 @@ class GitTestWithMock(unittest.TestCase):
     def _assert_timestamp_of_revision(self, canned_git_output, expected):
         git = self.make_git()
         git.find_checkout_root = lambda path: ''
-        # Modifying protected method. pylint: disable=protected-access
-        git._run_git = lambda args: canned_git_output
+        git.run = lambda args: canned_git_output
         self.assertEqual(git.timestamp_of_revision('some-path', '12345'), expected)
 
     def test_timestamp_of_revision_utc(self):
@@ -222,8 +221,7 @@ class GitTestWithMock(unittest.TestCase):
             'M  d/modified-staged.txt',
             'A  d/added-staged.txt',
         ]
-        # pylint: disable=protected-access
-        git._run_git = lambda args: '\x00'.join(status_lines) + '\x00'
+        git.run = lambda args: '\x00'.join(status_lines) + '\x00'
         self.assertEqual(
             git.unstaged_changes(),
             {

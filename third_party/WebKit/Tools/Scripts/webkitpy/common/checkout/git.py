@@ -66,57 +66,61 @@ class Git(object):
         self.checkout_root = self.find_checkout_root(self.cwd)
 
     def _init_executable_name(self):
-        # FIXME: This is a hack and should be removed.
+        """Sets the executable name on Windows.
+
+        The Win port uses the depot_tools package, which contains a number
+        of development tools, including Python and git. Instead of using a
+        real git executable, depot_tools indirects via a batch file, called
+        "git.bat". This batch file is used because it allows depot_tools to
+        auto-update the real git executable, which is contained in a
+        subdirectory.
+
+        FIXME: This is a hack and should be resolved in a different way if
+        possible.
+        """
         try:
             self._executive.run_command(['git', 'help'])
         except OSError:
             try:
                 self._executive.run_command(['git.bat', 'help'])
-                # The Win port uses the depot_tools package, which contains a number
-                # of development tools, including Python and git. Instead of using a
-                # real git executable, depot_tools indirects via a batch file, called
-                # "git.bat". This batch file allows depot_tools to auto-update the real
-                # git executable, which is contained in a subdirectory.
                 _log.debug('Engaging git.bat Windows hack.')
                 self.executable_name = 'git.bat'
             except OSError:
                 _log.debug('Failed to engage git.bat Windows hack.')
 
-    def _run_git(self,
-                 command_args,
-                 cwd=None,
-                 input=None,  # pylint: disable=redefined-builtin
-                 timeout_seconds=None,
-                 decode_output=True,
-                 return_exit_code=False):
+    def run(self, command_args, cwd=None, stdin=None, decode_output=True, return_exit_code=False):
+        """Invokes git with the given args."""
         full_command_args = [self.executable_name] + command_args
         cwd = cwd or self.checkout_root
         return self._executive.run_command(
             full_command_args,
             cwd=cwd,
-            input=input,
-            timeout_seconds=timeout_seconds,
+            input=stdin,
             return_exit_code=return_exit_code,
             decode_output=decode_output)
 
-    # SCM always returns repository relative path, but sometimes we need
-    # absolute paths to pass to rm, etc.
     def absolute_path(self, repository_relative_path):
+        """Converts repository-relative paths to absolute paths."""
         return self._filesystem.join(self.checkout_root, repository_relative_path)
 
     @classmethod
     def in_working_directory(cls, path, executive=None):
         try:
             executive = executive or Executive()
-            return executive.run_command([cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
-                                         cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
+            return executive.run_command(
+                [cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
+                cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
         except OSError:
-            # The Windows bots seem to through a WindowsError when git isn't installed.
+            # The Windows bots seem to throw a WindowsError when git isn't installed.
+            # TODO(qyearsley): This might be because the git executable name
+            # isn't initialized yet; maybe this would be fixed by using the
+            # _init_executable_name hack above.
+            _log.warn('Got OSError when running Git.in_working_directory.')
             return False
 
     def find_checkout_root(self, path):
         # "git rev-parse --show-cdup" would be another way to get to the root
-        checkout_root = self._run_git(['rev-parse', '--show-toplevel'], cwd=(path or './')).strip()
+        checkout_root = self.run(['rev-parse', '--show-toplevel'], cwd=(path or './')).strip()
         if not self._filesystem.isabs(checkout_root):  # Sometimes git returns relative paths
             checkout_root = self._filesystem.join(path, checkout_root)
         return checkout_root
@@ -132,10 +136,7 @@ class Git(object):
             [cls.executable_name, 'config', '--get-all', key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
 
     def _discard_local_commits(self):
-        self._run_git(['reset', '--hard', self._remote_branch_ref()])
-
-    def _local_commits(self, ref='HEAD'):
-        return self._run_git(['log', '--pretty=oneline', ref + '...' + self._remote_branch_ref()]).splitlines()
+        self.run(['reset', '--hard', self._remote_branch_ref()])
 
     def _rebase_in_progress(self):
         return self._filesystem.exists(self.absolute_path(self._filesystem.join('.git', 'rebase-apply')))
@@ -145,14 +146,14 @@ class Git(object):
         command = ['diff', 'HEAD', '--no-renames', '--name-only']
         if pathspec:
             command.extend(['--', pathspec])
-        return self._run_git(command) != ''
+        return self.run(command) != ''
 
     def _discard_working_directory_changes(self):
-        # Could run git clean here too, but that wouldn't match subversion
-        self._run_git(['reset', 'HEAD', '--hard'])
-        # Aborting rebase even though this does not match subversion
+        # TODO(qyearsley): Could run git clean here too; this wasn't done
+        # before in order to match svn, but this is no longer a concern.
+        self.run(['reset', 'HEAD', '--hard'])
         if self._rebase_in_progress():
-            self._run_git(['rebase', '--abort'])
+            self.run(['rebase', '--abort'])
 
     def unstaged_changes(self):
         """Lists files with unstaged changes, including untracked files.
@@ -163,7 +164,7 @@ class Git(object):
         """
         # `git status -z` is a version of `git status -s`, that's recommended
         # for machine parsing. Lines are terminated with NUL rather than LF.
-        change_lines = self._run_git(['status', '-z', '--untracked-files=all']).rstrip('\x00')
+        change_lines = self.run(['status', '-z', '--untracked-files=all']).rstrip('\x00')
         if not change_lines:
             return {}  # No changes.
         unstaged_changes = {}
@@ -176,16 +177,16 @@ class Git(object):
         return unstaged_changes
 
     def add_list(self, paths, return_exit_code=False):
-        return self._run_git(['add'] + paths, return_exit_code=return_exit_code)
+        return self.run(['add'] + paths, return_exit_code=return_exit_code)
 
     def delete_list(self, paths):
-        return self._run_git(['rm', '-f'] + paths)
+        return self.run(['rm', '-f'] + paths)
 
     def move(self, origin, destination):
-        return self._run_git(['mv', '-f', origin, destination])
+        return self.run(['mv', '-f', origin, destination])
 
     def exists(self, path):
-        return_code = self._run_git(['show', 'HEAD:%s' % path], return_exit_code=True, decode_output=False)
+        return_code = self.run(['show', 'HEAD:%s' % path], return_exit_code=True, decode_output=False)
         return return_code != self.ERROR_FILE_IS_MISSING
 
     def _branch_from_ref(self, ref):
@@ -193,7 +194,7 @@ class Git(object):
 
     def current_branch(self):
         """Returns the name of the current branch, or empty string if HEAD is detached."""
-        ref = self._run_git(['rev-parse', '--symbolic-full-name', 'HEAD']).strip()
+        ref = self.run(['rev-parse', '--symbolic-full-name', 'HEAD']).strip()
         if ref == 'HEAD':
             # HEAD is detached; return an empty string.
             return ''
@@ -204,7 +205,7 @@ class Git(object):
         branch_name = self.current_branch()
         if not branch_name:
             # HEAD is detached; use commit SHA instead.
-            return self._run_git(['rev-parse', 'HEAD']).strip()
+            return self.run(['rev-parse', 'HEAD']).strip()
         return branch_name
 
     def _upstream_branch(self):
@@ -244,7 +245,7 @@ class Git(object):
     def _run_status_and_extract_filenames(self, status_command, status_regexp):
         filenames = []
         # We run with cwd=self.checkout_root so that returned-paths are root-relative.
-        for line in self._run_git(status_command, cwd=self.checkout_root).splitlines():
+        for line in self.run(status_command, cwd=self.checkout_root).splitlines():
             match = re.search(status_regexp, line)
             if not match:
                 continue
@@ -263,6 +264,7 @@ class Git(object):
 
     @staticmethod
     def supports_local_commits():
+        # TODO(qyearsley): Remove this.
         return True
 
     def display_name(self):
@@ -271,7 +273,7 @@ class Git(object):
     def most_recent_log_matching(self, grep_str, path):
         # We use '--grep=' + foo rather than '--grep', foo because
         # git 1.7.0.4 (and earlier) didn't support the separate arg.
-        return self._run_git(['log', '-1', '--grep=' + grep_str, '--date=iso', self.find_checkout_root(path)])
+        return self.run(['log', '-1', '--grep=' + grep_str, '--date=iso', self.find_checkout_root(path)])
 
     def _commit_position_from_git_log(self, git_log):
         match = re.search(r"^\s*Cr-Commit-Position:.*@\{#(?P<commit_position>\d+)\}", git_log, re.MULTILINE)
@@ -305,6 +307,7 @@ class Git(object):
 
     def create_patch(self, git_commit=None, changed_files=None):
         """Returns a byte array (str()) representing the patch file.
+
         Patch files are effectively binary since they may contain
         files of multiple different encodings.
         """
@@ -325,7 +328,7 @@ class Git(object):
         command += [self._merge_base(git_commit), '--']
         if changed_files:
             command += changed_files
-        return self._run_git(command, decode_output=False, cwd=self.checkout_root)
+        return self.run(command, decode_output=False, cwd=self.checkout_root)
 
     def _patch_order(self):
         # Put code changes at the top of the patch and layout tests
@@ -342,24 +345,24 @@ class Git(object):
         return self._commit_position_from_git_log(git_log)
 
     def checkout_branch(self, name):
-        self._run_git(['checkout', '-q', name])
+        self.run(['checkout', '-q', name])
 
     def create_clean_branch(self, name):
-        self._run_git(['checkout', '-q', '-b', name, self._remote_branch_ref()])
+        self.run(['checkout', '-q', '-b', name, self._remote_branch_ref()])
 
     def blame(self, path):
-        return self._run_git(['blame', '--show-email', path])
+        return self.run(['blame', '--show-email', path])
 
     # Git-specific methods:
     def _branch_ref_exists(self, branch_ref):
-        return self._run_git(['show-ref', '--quiet', '--verify', branch_ref], return_exit_code=True) == 0
+        return self.run(['show-ref', '--quiet', '--verify', branch_ref], return_exit_code=True) == 0
 
     def delete_branch(self, branch_name):
         if self._branch_ref_exists('refs/heads/' + branch_name):
-            self._run_git(['branch', '-D', branch_name])
+            self.run(['branch', '-D', branch_name])
 
     def _remote_merge_base(self):
-        return self._run_git(['merge-base', self._remote_branch_ref(), 'HEAD']).strip()
+        return self.run(['merge-base', self._remote_branch_ref(), 'HEAD']).strip()
 
     def _remote_branch_ref(self):
         # Use references so that we can avoid collisions, e.g. we don't want to operate on refs/heads/trunk if it exists.
@@ -370,45 +373,33 @@ class Git(object):
 
     def commit_locally_with_message(self, message):
         command = ['commit', '--all', '-F', '-']
-        self._run_git(command, input=message)
-
-    def pull(self, timeout_seconds=None):
-        self._run_git(['pull'], timeout_seconds=timeout_seconds)
+        self.run(command, stdin=message)
 
     def latest_git_commit(self):
-        return self._run_git(['log', '-1', '--format=%H']).strip()
+        return self.run(['log', '-1', '--format=%H']).strip()
 
     def git_commits_since(self, commit):
-        return self._run_git(['log', commit + '..master', '--format=%H', '--reverse']).split()
+        return self.run(['log', commit + '..master', '--format=%H', '--reverse']).split()
 
     def git_commit_detail(self, commit, format=None):  # pylint: disable=redefined-builtin
         args = ['log', '-1', commit]
         if format:
             args.append('--format=' + format)
-        return self._run_git(args)
+        return self.run(args)
 
     def affected_files(self, commit):
-        output = self._run_git(['log', '-1', '--format=', '--name-only', commit])
+        output = self.run(['log', '-1', '--format=', '--name-only', commit])
         return output.strip().split('\n')
 
     def _branch_tracking_remote_master(self):
-        origin_info = self._run_git(['remote', 'show', 'origin', '-n'])
+        origin_info = self.run(['remote', 'show', 'origin', '-n'])
         match = re.search(r"^\s*(?P<branch_name>\S+)\s+merges with remote master$", origin_info, re.MULTILINE)
         if not match:
             raise ScriptError(message='Unable to find local branch tracking origin/master.')
         branch = str(match.group('branch_name'))
-        return self._branch_from_ref(self._run_git(['rev-parse', '--symbolic-full-name', branch]).strip())
-
-    def is_cleanly_tracking_remote_master(self):
-        if self.has_working_directory_changes():
-            return False
-        if self.current_branch() != self._branch_tracking_remote_master():
-            return False
-        if len(self._local_commits(self._branch_tracking_remote_master())) > 0:
-            return False
-        return True
+        return self._branch_from_ref(self.run(['rev-parse', '--symbolic-full-name', branch]).strip())
 
     def ensure_cleanly_tracking_remote_master(self):
         self._discard_working_directory_changes()
-        self._run_git(['checkout', '-q', self._branch_tracking_remote_master()])
+        self.run(['checkout', '-q', self._branch_tracking_remote_master()])
         self._discard_local_commits()
