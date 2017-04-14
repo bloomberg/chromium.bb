@@ -47,18 +47,6 @@
 
 #pragma mark - Properties
 
-- (void)setBrowser:(Browser*)browser {
-  [super setBrowser:browser];
-
-  for (int i = 0; i < 7; i++) {
-    web::WebState::CreateParams webStateCreateParams(browser->browser_state());
-    std::unique_ptr<web::WebState> webState =
-        web::WebState::Create(webStateCreateParams);
-    self.webStateList.InsertWebState(0, std::move(webState));
-  }
-  self.webStateList.ActivateWebStateAt(0);
-}
-
 - (WebStateList&)webStateList {
   return self.browser->web_state_list();
 }

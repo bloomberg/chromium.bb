@@ -100,7 +100,7 @@
   }
 }
 
-// PLACEHOLDER: This navigates the page since the omnibox is not yet hooked up.
+// PLACEHOLDER: This navigates an empty webstate to the NTP.
 - (void)navigateToDefaultPage:(web::WebState*)webState {
   if (!webState->GetNavigationManager()->GetItemCount()) {
     web::NavigationManager::WebLoadParams params((GURL(kChromeUINewTabURL)));

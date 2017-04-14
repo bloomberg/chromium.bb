@@ -5,10 +5,14 @@
 #import "ios/clean/chrome/app/steps/root_coordinator+application_step.h"
 
 #import "base/supports_user_data.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/app/application_state.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser_list.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -43,6 +47,18 @@ const char kRootCoordinatorContainerKey[] = "root_coordinator";
 - (void)runInState:(ApplicationState*)state {
   self.browser =
       BrowserList::FromBrowserState(state.browserState)->CreateNewBrowser();
+
+  // PLACEHOLDER: Create some open, empty web states.
+  WebStateList& webStateList = self.browser->web_state_list();
+  for (int i = 0; i < 7; i++) {
+    web::WebState::CreateParams webStateCreateParams(
+        self.browser->browser_state());
+    std::unique_ptr<web::WebState> webState =
+        web::WebState::Create(webStateCreateParams);
+    webStateList.InsertWebState(0, std::move(webState));
+  }
+  webStateList.ActivateWebStateAt(0);
+
   [self start];
 
   state.window.rootViewController = self.viewController;
