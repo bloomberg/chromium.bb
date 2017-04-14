@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,14 +20,14 @@ import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A class for keeping track of common data associated with showing photos in
  * the photo picker, for example the RecyclerView and the bitmap caches.
  */
-public class PickerCategoryView extends RelativeLayout implements OnMenuItemClickListener {
+public class PickerCategoryView extends RelativeLayout
+        implements FileEnumWorkerTask.FilesEnumeratedCallback, OnMenuItemClickListener {
     // The dialog that owns us.
     private PhotoPickerDialog mDialog;
 
@@ -69,18 +68,11 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
     // The size of the bitmaps (equal length for width and height).
     private int mImageSize;
 
+    // A worker task for asynchronously enumerating files off the main thread.
+    private FileEnumWorkerTask mWorkerTask;
+
     public PickerCategoryView(Context context) {
         super(context);
-        postConstruction(context);
-    }
-
-    public PickerCategoryView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        postConstruction(context);
-    }
-
-    public PickerCategoryView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
         postConstruction(context);
     }
 
@@ -120,6 +112,16 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
     }
 
     /**
+     * Cancels any outstanding requests.
+     */
+    public void onDialogDismissed() {
+        if (mWorkerTask != null) {
+            mWorkerTask.cancel(true);
+            mWorkerTask = null;
+        }
+    }
+
+    /**
      * Initializes the PickerCategoryView object.
      * @param dialog The dialog showing us.
      * @param listener The listener who should be notified of actions.
@@ -132,6 +134,16 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
         mDialog = dialog;
         mMultiSelectionAllowed = multiSelectionAllowed;
         mListener = listener;
+    }
+
+    // FileEnumWorkerTask.FilesEnumeratedCallback:
+
+    @Override
+    public void filesEnumeratedCallback(List<PickerBitmap> files) {
+        mPickerBitmaps = files;
+        if (files != null && files.size() > 0) {
+            mPickerAdapter.notifyDataSetChanged();
+        }
     }
 
     // OnMenuItemClickListener:
@@ -203,15 +215,12 @@ public class PickerCategoryView extends RelativeLayout implements OnMenuItemClic
      * Prepares bitmaps for loading.
      */
     private void prepareBitmaps() {
-        // TODO(finnur): Use worker thread to fetch bitmaps instead of hard-coding.
-        mPickerBitmaps = new ArrayList<>();
-        mPickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.GALLERY));
-        mPickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
-        mPickerBitmaps.add(new PickerBitmap("foo/bar1.jpg", 1, PickerBitmap.PICTURE));
-        mPickerBitmaps.add(new PickerBitmap("foo/bar2.jpg", 2, PickerBitmap.PICTURE));
-        mPickerBitmaps.add(new PickerBitmap("foo/bar3.jpg", 3, PickerBitmap.PICTURE));
-        mPickerBitmaps.add(new PickerBitmap("foo/bar4.jpg", 4, PickerBitmap.PICTURE));
-        mPickerAdapter.notifyDataSetChanged();
+        if (mWorkerTask != null) {
+            mWorkerTask.cancel(true);
+        }
+
+        mWorkerTask = new FileEnumWorkerTask(this, new MimeTypeFileFilter("image/*"));
+        mWorkerTask.execute();
     }
 
     /**

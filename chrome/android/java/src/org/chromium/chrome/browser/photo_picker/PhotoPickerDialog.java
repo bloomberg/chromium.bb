@@ -46,4 +46,10 @@ public class PhotoPickerDialog extends AlertDialog {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        mCategoryView.onDialogDismissed();
+    }
 }
