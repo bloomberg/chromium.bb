@@ -41,7 +41,7 @@ struct test {
 	static void name(void);						\
 									\
 	const struct test test##name					\
-		 __attribute__ ((section ("test_section"))) = {		\
+		 __attribute__ ((used, section ("test_section"))) = {	\
 		#name, name, 0						\
 	};								\
 									\
@@ -51,7 +51,7 @@ struct test {
 	static void name(void);						\
 									\
 	const struct test test##name					\
-		 __attribute__ ((section ("test_section"))) = {		\
+		 __attribute__ ((used, section ("test_section"))) = {	\
 		#name, name, 1						\
 	};								\
 									\
