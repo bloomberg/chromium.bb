@@ -92,15 +92,17 @@ void CheckerImageTracker::DidFinishImageDecode(
 
   DCHECK_NE(result, ImageController::ImageDecodeResult::DECODE_NOT_REQUIRED);
   DCHECK_NE(pending_image_decodes_.count(image_id), 0u);
+  DCHECK_NE(image_async_decode_state_.count(image_id), 0u);
+
   pending_image_decodes_.erase(image_id);
 
-  images_decoded_once_.insert(image_id);
+  image_async_decode_state_[image_id] = DecodePolicy::SYNC_DECODED_ONCE;
   images_pending_invalidation_.insert(image_id);
   client_->NeedsInvalidationForCheckerImagedTiles();
 }
 
 bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
-                                             WhichTree tree) const {
+                                             WhichTree tree) {
   TRACE_EVENT1("cc", "CheckerImageTracker::ShouldCheckerImage", "image_id",
                image->uniqueID());
 
@@ -115,12 +117,6 @@ bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
     return true;
   }
 
-  // If a decode request is pending for this image, continue checkering it.
-  if (pending_image_decodes_.find(image->uniqueID()) !=
-      pending_image_decodes_.end()) {
-    return true;
-  }
-
   // If the image is pending invalidation, continue checkering it. All tiles
   // for these images will be invalidated on the next pending tree.
   if (images_pending_invalidation_.find(image->uniqueID()) !=
@@ -128,13 +124,17 @@ bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
     return true;
   }
 
-  // If the image has been decoded once before, don't checker it again.
-  if (images_decoded_once_.find(image->uniqueID()) !=
-      images_decoded_once_.end()) {
-    return false;
+  ImageId image_id = image->uniqueID();
+  auto insert_result = image_async_decode_state_.insert(
+      std::pair<ImageId, DecodePolicy>(image_id, DecodePolicy::ASYNC));
+  auto it = insert_result.first;
+  if (insert_result.second) {
+    it->second = SafeSizeOfImage(image.get()) >= kMinImageSizeToCheckerBytes
+                     ? DecodePolicy::ASYNC
+                     : DecodePolicy::SYNC_PERMANENT;
   }
 
-  return SafeSizeOfImage(image.get()) >= kMinImageSizeToCheckerBytes;
+  return it->second == DecodePolicy::ASYNC;
 }
 
 void CheckerImageTracker::ScheduleImageDecodeIfNecessary(
@@ -143,10 +143,17 @@ void CheckerImageTracker::ScheduleImageDecodeIfNecessary(
                "CheckerImageTracker::ScheduleImageDecodeIfNecessary");
   ImageId image_id = image->uniqueID();
 
-  // If the image has already been decoded, or a decode request is pending, we
-  // don't need to schedule another decode.
-  if (images_decoded_once_.count(image_id) != 0 ||
-      pending_image_decodes_.count(image_id) != 0) {
+  // Once an image has been decoded, they can still be present in the decode
+  // queue (duplicate entries), or while an image is still being skipped on the
+  // active tree. Check if the image is still ASYNC to see if a decode is
+  // needed.
+  auto it = image_async_decode_state_.find(image_id);
+  DCHECK(it != image_async_decode_state_.end());
+  if (it->second != DecodePolicy::ASYNC)
+    return;
+
+  // If a decode request is pending, we don't need to schedule another decode.
+  if (pending_image_decodes_.count(image_id) != 0) {
     return;
   }
 

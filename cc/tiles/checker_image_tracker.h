@@ -54,14 +54,25 @@ class CC_EXPORT CheckerImageTracker {
   void DidActivateSyncTree();
 
  private:
+  enum class DecodePolicy {
+    // The image can be decoded asynchronously from raster. When set, the image
+    // is always skipped during rasterization of content that includes this
+    // image until it has been decoded using the decode service.
+    ASYNC,
+    // The image has been decoded asynchronously once and should now be
+    // synchronously rasterized with the content.
+    SYNC_DECODED_ONCE,
+    // The image has been permanently vetoed from being decoded async.
+    SYNC_PERMANENT,
+  };
+
   void DidFinishImageDecode(ImageId image_id,
                             ImageController::ImageDecodeRequestId request_id,
                             ImageController::ImageDecodeResult result);
 
   // Returns true if the decode for |image| will be deferred to the image decode
   // service and it should be be skipped during raster.
-  bool ShouldCheckerImage(const sk_sp<const SkImage>& image,
-                          WhichTree tree) const;
+  bool ShouldCheckerImage(const sk_sp<const SkImage>& image, WhichTree tree);
 
   void ScheduleImageDecodeIfNecessary(const sk_sp<const SkImage>& image);
 
@@ -82,12 +93,11 @@ class CC_EXPORT CheckerImageTracker {
   // do a PrepareTiles? See crbug.com/689184.
   ImageIdFlatSet pending_image_decodes_;
 
-  // A set of images which have been decoded at least once from the
-  // ImageDecodeService and should not be checkered again.
+  // A map of ImageId to its DecodePolicy.
   // TODO(khushalsagar): Limit the size of this set.
   // TODO(khushalsagar): Plumb navigation changes here to reset this. See
   // crbug.com/693228.
-  std::unordered_set<ImageId> images_decoded_once_;
+  std::unordered_map<ImageId, DecodePolicy> image_async_decode_state_;
 
   // A map of image id to image decode request id for images to be unlocked.
   std::unordered_map<ImageId, ImageController::ImageDecodeRequestId>
