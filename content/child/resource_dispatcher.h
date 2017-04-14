@@ -205,7 +205,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(int request_id, int64_t position, int64_t size);
   void OnReceivedResponse(int request_id, const ResourceResponseHead&);
-  void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
+  void OnReceivedCachedMetadata(int request_id,
+                                const std::vector<uint8_t>& data);
   void OnReceivedRedirect(int request_id,
                           const net::RedirectInfo& redirect_info,
                           const ResourceResponseHead& response_head);

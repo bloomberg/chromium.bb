@@ -214,9 +214,9 @@ void AsyncResourceHandler::OnResponseStarted(
   sent_received_response_msg_ = true;
 
   if (request()->response_info().metadata.get()) {
-    std::vector<char> copy(request()->response_info().metadata->data(),
-                           request()->response_info().metadata->data() +
-                               request()->response_info().metadata->size());
+    std::vector<uint8_t> copy(request()->response_info().metadata->data(),
+                              request()->response_info().metadata->data() +
+                                  request()->response_info().metadata->size());
     filter->Send(new ResourceMsg_ReceivedCachedMetadata(GetRequestID(), copy));
   }
 

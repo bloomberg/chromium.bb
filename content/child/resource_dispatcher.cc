@@ -189,13 +189,16 @@ void ResourceDispatcher::OnReceivedResponse(
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
-      int request_id, const std::vector<char>& data) {
+    int request_id,
+    const std::vector<uint8_t>& data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
-  if (data.size())
-    request_info->peer->OnReceivedCachedMetadata(&data.front(), data.size());
+  if (data.size()) {
+    request_info->peer->OnReceivedCachedMetadata(
+        reinterpret_cast<const char*>(&data.front()), data.size());
+  }
 }
 
 void ResourceDispatcher::OnSetDataBuffer(int request_id,

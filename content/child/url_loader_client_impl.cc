@@ -146,13 +146,10 @@ void URLLoaderClientImpl::OnDataDownloaded(int64_t data_len,
 
 void URLLoaderClientImpl::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
-  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data.data());
-  std::vector<char> data_to_pass(data_ptr, data_ptr + data.size());
   if (NeedsStoringMessage()) {
-    StoreAndDispatch(
-        ResourceMsg_ReceivedCachedMetadata(request_id_, data_to_pass));
+    StoreAndDispatch(ResourceMsg_ReceivedCachedMetadata(request_id_, data));
   } else {
-    resource_dispatcher_->OnReceivedCachedMetadata(request_id_, data_to_pass);
+    resource_dispatcher_->OnReceivedCachedMetadata(request_id_, data);
   }
 }
 

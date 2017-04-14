@@ -279,7 +279,7 @@ IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedResponse,
 // Sent when cached metadata from a resource request is ready.
 IPC_MESSAGE_CONTROL2(ResourceMsg_ReceivedCachedMetadata,
                      int /* request_id */,
-                     std::vector<char> /* data */)
+                     std::vector<uint8_t> /* data */)
 
 // Sent as upload progress is being made.
 IPC_MESSAGE_CONTROL3(ResourceMsg_UploadProgress,
