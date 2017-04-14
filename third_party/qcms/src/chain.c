@@ -29,6 +29,12 @@
 #include "transform_util.h"
 #include "matrix.h"
 
+#ifdef USE_LIBFUZZER
+#define ASSERT(x)
+#else
+#define ASSERT(x) assert(x)
+#endif
+
 static struct matrix build_lut_matrix(struct lutType *lut)
 {
 	struct matrix result;
@@ -831,7 +837,7 @@ static struct qcms_modular_transform* qcms_modular_transform_create_output(qcms_
 			goto fail;
 		}
 	} else {
-		assert(0 && "Unsupported output profile workflow.");
+		ASSERT(0 && "Unsupported output profile workflow.");
 		return NULL;
 	}
 
@@ -906,7 +912,7 @@ static struct qcms_modular_transform* qcms_modular_transform_create(qcms_profile
 			goto fail;
 		append_transform(rgb_to_pcs, &next_transform);
 	} else {
-		assert(0 && "input color space not supported");
+		ASSERT(0 && "input color space not supported");
 		goto fail;
 	}
 
@@ -949,7 +955,7 @@ static struct qcms_modular_transform* qcms_modular_transform_create(qcms_profile
 			goto fail;
 		append_transform(pcs_to_rgb, &next_transform);
 	} else {
-		assert(0 && "output color space not supported");
+		ASSERT(0 && "output color space not supported");
 		goto fail;
 	}
 	// Not Completed

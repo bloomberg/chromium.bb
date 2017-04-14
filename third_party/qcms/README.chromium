@@ -165,6 +165,8 @@ The following changes have been made since qcms was imported:
    - https://bugs.chromium.org/p/chromium/issues/detail?id=708145
  - Fix overflow when reading parametric gamma curves
    - https://bugs.chromium.org/p/chromium/issues/detail?id=708143
+ - Disable some asserts when running in libfuzzer
+   - https://bugs.chromium.org/p/chromium/issues/detail?id=711418
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

@@ -32,6 +32,12 @@
 #define INFINITY HUGE_VAL
 #endif
 
+#ifdef USE_LIBFUZZER
+#define ASSERT(x)
+#else
+#define ASSERT(x) assert(x)
+#endif
+
 #define PARAMETRIC_CURVE_TYPE 0x70617261 //'para'
 
 /* value must be a value between 0 and 1 */
@@ -182,7 +188,7 @@ void compute_curve_gamma_table_type_parametric(float gamma_table[256], float par
                 f = parameter[6];
                 interval = parameter[4];
         } else {
-                assert(0 && "invalid parametric function type.");
+                ASSERT(0 && "invalid parametric function type.");
                 a = 1;
                 b = 0;
                 c = 0;

@@ -1271,7 +1271,6 @@ qcms_CIE_xyY white_point_from_temp(int temp_K)
 			white_point.Y = -1.0;
 
 			assert(0 && "invalid temp");
-
 			return white_point;
 		}
 	}

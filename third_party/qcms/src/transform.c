@@ -31,6 +31,12 @@
 #include "matrix.h"
 #include "transform_util.h"
 
+#ifdef USE_LIBFUZZER
+#define ASSERT(x)
+#else
+#define ASSERT(x) assert(x)
+#endif
+
 /* for MSVC, GCC, Intel, and Sun compilers */
 #if defined(_M_IX86) || defined(__i386__) || defined(__i386) || defined(_M_AMD64) || defined(__x86_64__) || defined(__x86_64)
 #define X86
@@ -1296,7 +1302,7 @@ qcms_transform* qcms_transform_create(
 	}
 
 	if (out_type != QCMS_DATA_RGB_8 && out_type != QCMS_DATA_RGBA_8) {
-		assert(0 && "output type");
+		ASSERT(0 && "output type");
 		qcms_transform_release(transform);
 		return NULL;
 	}
@@ -1315,7 +1321,7 @@ qcms_transform* qcms_transform_create(
 		// precaching should be avoided.
 		qcms_transform *result = qcms_transform_precacheLUT_float(transform, in, out, 33, in_type);
 		if (!result) {
-			assert(0 && "precacheLUT failed");
+			ASSERT(0 && "precacheLUT failed");
 			qcms_transform_release(transform);
 			return NULL;
 		}
@@ -1353,7 +1359,7 @@ qcms_transform* qcms_transform_create(
 		struct matrix in_matrix, out_matrix, result;
 
 		if (in_type != QCMS_DATA_RGB_8 && in_type != QCMS_DATA_RGBA_8) {
-			assert(0 && "input type");
+			ASSERT(0 && "input type");
 			qcms_transform_release(transform);
 			return NULL;
 		}
@@ -1428,7 +1434,7 @@ qcms_transform* qcms_transform_create(
 
 	} else if (in->color_space == GRAY_SIGNATURE) {
 		if (in_type != QCMS_DATA_GRAY_8 && in_type != QCMS_DATA_GRAYA_8) {
-			assert(0 && "input type");
+			ASSERT(0 && "input type");
 			qcms_transform_release(transform);
 			return NULL;
 		}
@@ -1454,7 +1460,7 @@ qcms_transform* qcms_transform_create(
 			}
 		}
 	} else {
-		assert(0 && "unexpected colorspace");
+		ASSERT(0 && "unexpected colorspace");
 		qcms_transform_release(transform);
 		return NULL;
 	}
@@ -1567,7 +1573,7 @@ size_t qcms_transform_get_input_trc_rgba(qcms_transform *t, qcms_profile *in, qc
 			break;
 		default:
 			/* should not be reached */
-			assert(0);
+			ASSERT(0);
 	}
 
 	return size;
@@ -1634,7 +1640,7 @@ size_t qcms_transform_get_output_trc_rgba(qcms_transform *t, qcms_profile *out, 
 			break;
 		default:
 			/* should not be reached */
-			assert(0);
+			ASSERT(0);
 	}
 
 	return size;
