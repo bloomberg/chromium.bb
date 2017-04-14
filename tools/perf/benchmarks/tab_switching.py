@@ -9,10 +9,11 @@ import page_sets
 from telemetry import benchmark
 
 
-#@benchmark.Enabled('has tabs')
-@benchmark.Disabled('mac-reference')  # http://crbug.com/612774
+@benchmark.Owner(emails=['vovoy@chromium.org'],
+                 component='OS>Performance')
+@benchmark.Enabled('has tabs')
+@benchmark.Disabled('mac')  # http://crbug.com/612774
 @benchmark.Disabled('android')  # http://crbug.com/460084
-@benchmark.Disabled('all') # http://crbug.com/710524
 class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
@@ -24,7 +25,8 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   test = tab_switching.TabSwitching
 
   def CreateStorySet(self, options):
-    return page_sets.Typical25PageSet(run_no_page_interactions=True)
+    return page_sets.SystemHealthStorySet(platform='desktop',
+                                          case='multitab:misc')
 
   @classmethod
   def Name(cls):
