@@ -347,6 +347,13 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
      switches::kForceGpuRasterization, ""},
 };
 
+const FeatureEntry::Choice kColorCorrectRenderingChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flags_ui::kGenericExperimentChoiceEnabled,
+     cc::switches::kEnableColorCorrectRendering, ""},
+    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
+};
+
 const FeatureEntry::Choice kEnableWebGL2Choices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled, switches::kEnableES3APIs, ""},
@@ -2687,6 +2694,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCopylessPasteDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kCopylessPaste)},
 #endif
+
+    {"enable-color-correct-rendering",
+     flag_descriptions::kColorCorrectRenderingName,
+     flag_descriptions::kColorCorrectRenderingDescription, kOsAll,
+     MULTI_VALUE_TYPE(kColorCorrectRenderingChoices)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

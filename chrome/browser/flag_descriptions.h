@@ -361,6 +361,12 @@ extern const char kInertVisualViewportName[];
 // Description of the flag to enable the inert visual viewport experiment.
 extern const char kInertVisualViewportDescription[];
 
+// Name of the 'Color correct rendering' lab.
+extern const char kColorCorrectRenderingName[];
+
+// Description of the 'Color correct rendering' lab.
+extern const char kColorCorrectRenderingDescription[];
+
 // Name of the 'Enable experimental canvas features' lab.
 extern const char kExperimentalCanvasFeaturesName[];
 

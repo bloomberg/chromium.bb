@@ -351,6 +351,11 @@ const char kInertVisualViewportDescription[] =
     "Experiment to have all APIs reflect the layout viewport. This will "
     "make window.scroll properties relative to the layout viewport.";
 
+const char kColorCorrectRenderingName[] = "Color correct rendering";
+
+const char kColorCorrectRenderingDescription[] =
+    "Enables color correct rendering of web content.";
+
 const char kExperimentalCanvasFeaturesName[] = "Experimental canvas features";
 
 const char kExperimentalCanvasFeaturesDescription[] =
