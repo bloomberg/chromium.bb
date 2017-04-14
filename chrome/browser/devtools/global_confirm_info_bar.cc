@@ -76,8 +76,15 @@ base::string16 GlobalConfirmInfoBar::DelegateProxy::GetButtonLabel(
 
 bool GlobalConfirmInfoBar::DelegateProxy::Accept() {
   base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  if (info_bar)
+  // Remove the current InfoBar (the one whose Accept button is being clicked)
+  // from the control of GlobalConfirmInfoBar. This InfoBar will be closed by
+  // caller of this method, and we don't need GlobalConfirmInfoBar to close it.
+  // Furthermore, letting GlobalConfirmInfoBar close the current InfoBar can
+  // cause memory corruption when InfoBar animation is disabled.
+  if (info_bar) {
+    info_bar->OnInfoBarRemoved(info_bar_, false);
     info_bar->delegate_->Accept();
+  }
   // Could be destroyed after this point.
   if (info_bar)
       info_bar->Close();
@@ -86,8 +93,11 @@ bool GlobalConfirmInfoBar::DelegateProxy::Accept() {
 
 bool GlobalConfirmInfoBar::DelegateProxy::Cancel() {
   base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  if (info_bar)
+  // See comments in GlobalConfirmInfoBar::DelegateProxy::Accept().
+  if (info_bar) {
+    info_bar->OnInfoBarRemoved(info_bar_, false);
     info_bar->delegate_->Cancel();
+  }
   // Could be destroyed after this point.
   if (info_bar)
       info_bar->Close();
@@ -117,8 +127,11 @@ bool GlobalConfirmInfoBar::DelegateProxy::EqualsDelegate(
 
 void GlobalConfirmInfoBar::DelegateProxy::InfoBarDismissed() {
   base::WeakPtr<GlobalConfirmInfoBar> info_bar = global_info_bar_;
-  if (info_bar)
+  // See comments in GlobalConfirmInfoBar::DelegateProxy::Accept().
+  if (info_bar) {
+    info_bar->OnInfoBarRemoved(info_bar_, false);
     info_bar->delegate_->InfoBarDismissed();
+  }
   // Could be destroyed after this point.
   if (info_bar)
       info_bar->Close();

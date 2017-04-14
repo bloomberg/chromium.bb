@@ -29,6 +29,10 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
       std::unique_ptr<ConfirmInfoBarDelegate> delegate);
   void Close();
 
+  // infobars::InfoBarManager::Observer:
+  void OnInfoBarRemoved(infobars::InfoBar* info_bar, bool animate) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
+
  private:
   explicit GlobalConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate);
@@ -43,10 +47,6 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
   void TabChangedAt(content::WebContents* web_contents,
                     int index,
                     TabChangeType change_type) override;
-
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarRemoved(infobars::InfoBar* info_bar, bool animate) override;
-  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
   // Adds the info bar to the tab if it is missing.
   void MaybeAddInfoBar(content::WebContents* web_contents);
