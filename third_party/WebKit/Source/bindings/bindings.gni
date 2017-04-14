@@ -214,8 +214,6 @@ bindings_core_v8_files =
                     "core/v8/WorkerOrWorkletScriptController.cpp",
                     "core/v8/WorkerOrWorkletScriptController.h",
                     "core/v8/WorkerV8Settings.h",
-                    "core/v8/WrapperCreationSecurityCheck.cpp",
-                    "core/v8/WrapperCreationSecurityCheck.h",
                     "core/v8/WrapperTypeInfo.cpp",
                     "core/v8/WrapperTypeInfo.h",
                     "core/v8/serialization/V8ScriptValueDeserializer.cpp",

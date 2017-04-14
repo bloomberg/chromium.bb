@@ -31,10 +31,10 @@
 #ifndef V8DOMWrapper_h
 #define V8DOMWrapper_h
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/WrapperCreationSecurityCheck.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -127,12 +127,11 @@ class V8WrapperInstantiationScope {
  public:
   V8WrapperInstantiationScope(v8::Local<v8::Object> creation_context,
                               v8::Isolate* isolate,
-                              const WrapperTypeInfo* type)
+                              bool with_security_check)
       : did_enter_context_(false),
         context_(isolate->GetCurrentContext()),
         try_catch_(isolate),
-        type_(type),
-        access_check_failed_(false) {
+        convert_exceptions_(false) {
     // creationContext should not be empty. Because if we have an
     // empty creationContext, we will end up creating
     // a new object in the context currently entered. This is wrong.
@@ -144,16 +143,12 @@ class V8WrapperInstantiationScope {
     // context is different from the context that we are about to enter.
     if (context_for_wrapper == context_)
       return;
-
-    context_ = context_for_wrapper;
-
-    if (!WrapperCreationSecurityCheck::VerifyContextAccess(context_, type_)) {
-      DCHECK(try_catch_.HasCaught());
-      try_catch_.ReThrow();
-      access_check_failed_ = true;
-      return;
+    if (with_security_check) {
+      SecurityCheck(isolate, context_for_wrapper);
+    } else {
+      convert_exceptions_ = true;
     }
-
+    context_ = v8::Local<v8::Context>::New(isolate, context_for_wrapper);
     did_enter_context_ = true;
     context_->Enter();
   }
@@ -164,30 +159,26 @@ class V8WrapperInstantiationScope {
       return;
     }
     context_->Exit();
-
-    if (!try_catch_.HasCaught())
-      return;
-
-    // Any exception caught here is a cross context exception and it may not be
-    // safe to directly rethrow the exception in the current context (without
-    // converting it). rethrowCrossContextException converts the exception in
-    // such a scenario.
-    v8::Local<v8::Value> caught_exception = try_catch_.Exception();
-    try_catch_.Reset();
-    WrapperCreationSecurityCheck::RethrowCrossContextException(
-        context_, type_, caught_exception);
-    try_catch_.ReThrow();
+    // Rethrow any cross-context exceptions as security error.
+    if (try_catch_.HasCaught()) {
+      if (convert_exceptions_) {
+        try_catch_.Reset();
+        ConvertException();
+      }
+      try_catch_.ReThrow();
+    }
   }
 
   v8::Local<v8::Context> GetContext() const { return context_; }
-  bool AccessCheckFailed() const { return access_check_failed_; }
 
  private:
+  void SecurityCheck(v8::Isolate*, v8::Local<v8::Context> context_for_wrapper);
+  void ConvertException();
+
   bool did_enter_context_;
   v8::Local<v8::Context> context_;
   v8::TryCatch try_catch_;
-  const WrapperTypeInfo* type_;
-  bool access_check_failed_;
+  bool convert_exceptions_;
 };
 
 }  // namespace blink
