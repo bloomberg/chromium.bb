@@ -21,18 +21,16 @@ class FilePath;
 
 namespace printing {
 
-class Metafile;
-
 // Lightweight raw-bitmap management. The image, once initialized, is immutable.
 // The main purpose is testing image contents.
 class PRINTING_EXPORT Image {
  public:
   // Creates the image from the metafile.  Deduces bounds based on bounds in
   // metafile.  If loading fails size().IsEmpty() will be true.
-  explicit Image(const Metafile& metafile);
+  Image(const void* metafile_src_buffer, size_t metafile_src_buffer_size);
 
-  // Copy constructor.
-  explicit Image(const Image& image);
+  Image(const Image& image);
+  Image(Image&& image);
 
   ~Image();
 
@@ -46,33 +44,9 @@ class PRINTING_EXPORT Image {
   // Save image as PNG.
   bool SaveToPng(const base::FilePath& filepath) const;
 
-  // Returns % of pixels different
-  double PercentageDifferent(const Image& rhs) const;
-
-  // Returns the 0x0RGB or 0xARGB value of the pixel at the given location.
-  uint32_t Color(uint32_t color) const {
-    if (ignore_alpha_)
-      return color & 0xFFFFFF;  // Strip out A.
-    else
-      return color;
-  }
-
-  uint32_t pixel_at(int x, int y) const {
-    DCHECK(x >= 0 && x < size_.width());
-    DCHECK(y >= 0 && y < size_.height());
-    const uint32_t* data = reinterpret_cast<const uint32_t*>(&*data_.begin());
-    const uint32_t* data_row = data + y * row_length_ / sizeof(uint32_t);
-    return Color(data_row[x]);
-  }
-
  private:
-  // Construct from metafile.  This is kept internal since it's ambiguous what
-  // kind of data is used (png, bmp, metafile etc).
-  Image(const void* data, size_t size);
-
-  bool LoadPng(const std::string& compressed);
-
-  bool LoadMetafile(const Metafile& metafile);
+  bool LoadMetafile(const void* metafile_src_buffer,
+                    size_t metafile_src_buffer_size);
 
   // Pixel dimensions of the image.
   gfx::Size size_;

@@ -14,10 +14,6 @@
 #include "printing/native_drawing_context.h"
 #include "printing/printing_export.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 namespace base {
 class File;
 }
@@ -102,19 +98,6 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   virtual unsigned int GetPageCount() const = 0;
 
   virtual skia::NativeDrawingContext context() const = 0;
-
-#if defined(OS_WIN)
-  // "Plays" the EMF buffer in a HDC. It is the same effect as calling the
-  // original GDI function that were called when recording the EMF. |rect| is in
-  // "logical units" and is optional. If |rect| is NULL, the natural EMF bounds
-  // are used.
-  // Note: Windows has been known to have stack buffer overflow in its GDI
-  // functions, whether used directly or indirectly through precompiled EMF
-  // data. We have to accept the risk here. Since it is used only for printing,
-  // it requires user intervention.
-  virtual bool Playback(skia::NativeDrawingContext hdc,
-                        const RECT* rect) const = 0;
-#endif  // OS_WIN
 
   // MetfilePlayer
   bool GetDataAsVector(std::vector<char>* buffer) const override;

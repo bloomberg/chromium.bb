@@ -18,18 +18,13 @@
 
 namespace printing {
 
-Image::Image(const Metafile& metafile)
-    : row_length_(0),
-      ignore_alpha_(true) {
-  LoadMetafile(metafile);
+Image::Image(const void* metafile_src_buffer, size_t metafile_src_buffer_size)
+    : row_length_(0), ignore_alpha_(true) {
+  LoadMetafile(metafile_src_buffer, metafile_src_buffer_size);
 }
 
-Image::Image(const Image& image)
-    : size_(image.size_),
-      row_length_(image.row_length_),
-      data_(image.data_),
-      ignore_alpha_(image.ignore_alpha_) {
-}
+Image::Image(const Image&) = default;
+Image::Image(Image&&) = default;
 
 Image::~Image() {}
 
@@ -60,73 +55,4 @@ bool Image::SaveToPng(const base::FilePath& filepath) const {
   }
   return success;
 }
-
-double Image::PercentageDifferent(const Image& rhs) const {
-  if (size_.width() == 0 || size_.height() == 0 ||
-    rhs.size_.width() == 0 || rhs.size_.height() == 0)
-    return 100.;
-
-  int width = std::min(size_.width(), rhs.size_.width());
-  int height = std::min(size_.height(), rhs.size_.height());
-  // Compute pixels different in the overlap
-  int pixels_different = 0;
-  for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x) {
-      uint32_t lhs_pixel = pixel_at(x, y);
-      uint32_t rhs_pixel = rhs.pixel_at(x, y);
-      if (lhs_pixel != rhs_pixel)
-        ++pixels_different;
-    }
-
-    // Look for extra right lhs pixels. They should be white.
-    for (int x = width; x < size_.width(); ++x) {
-      uint32_t lhs_pixel = pixel_at(x, y);
-      if (lhs_pixel != Color(SK_ColorWHITE))
-        ++pixels_different;
-    }
-
-    // Look for extra right rhs pixels. They should be white.
-    for (int x = width; x < rhs.size_.width(); ++x) {
-      uint32_t rhs_pixel = rhs.pixel_at(x, y);
-      if (rhs_pixel != Color(SK_ColorWHITE))
-        ++pixels_different;
-    }
-  }
-
-  // Look for extra bottom lhs pixels. They should be white.
-  for (int y = height; y < size_.height(); ++y) {
-    for (int x = 0; x < size_.width(); ++x) {
-      uint32_t lhs_pixel = pixel_at(x, y);
-      if (lhs_pixel != Color(SK_ColorWHITE))
-        ++pixels_different;
-    }
-  }
-
-  // Look for extra bottom rhs pixels. They should be white.
-  for (int y = height; y < rhs.size_.height(); ++y) {
-    for (int x = 0; x < rhs.size_.width(); ++x) {
-      uint32_t rhs_pixel = rhs.pixel_at(x, y);
-      if (rhs_pixel != Color(SK_ColorWHITE))
-        ++pixels_different;
-    }
-  }
-
-  // Like the WebKit ImageDiff tool, we define percentage different in terms
-  // of the size of the 'actual' bitmap.
-  double total_pixels = static_cast<double>(size_.width()) *
-      static_cast<double>(height);
-  return static_cast<double>(pixels_different) / total_pixels * 100.;
-}
-
-bool Image::LoadPng(const std::string& compressed) {
-  int w;
-  int h;
-  bool success = gfx::PNGCodec::Decode(
-      reinterpret_cast<const unsigned char*>(compressed.c_str()),
-      compressed.size(), gfx::PNGCodec::FORMAT_BGRA, &data_, &w, &h);
-  size_.SetSize(w, h);
-  row_length_ = size_.width() * sizeof(uint32_t);
-  return success;
-}
-
 }  // namespace printing

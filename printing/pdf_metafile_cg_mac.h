@@ -69,6 +69,14 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
     bool center_vertically = false;
     bool autorotate = false;
   };
+  // Renders the given page from this metafile into |rect| in the given context.
+  // Pages use a 1-based index. The rendering uses the arguments in
+  // |params| to determine scaling, translation, and rotation.
+  bool OnRenderPage(unsigned int page_number,
+                    CGContextRef context,
+                    const CGRect rect,
+                    const RenderPageParams& params);
+
   // Renders the given page from |src_buffer| into |rect| in the given context.
   // Pages use a 1-based index. The rendering uses the arguments in
   // |params| to determine scaling, translation, and rotation.

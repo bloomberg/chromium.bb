@@ -6,7 +6,7 @@
 
 namespace printing {
 
-bool Image::LoadMetafile(const Metafile& metafile) {
+bool Image::LoadMetafile(const void*, size_t) {
   return false;
 }
 

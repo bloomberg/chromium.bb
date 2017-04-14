@@ -31,7 +31,7 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
  public:
   MockPrinterPage(const void* source_data,
                   uint32_t source_size,
-                  const printing::Image& image);
+                  printing::Image image);
 
   int width() const { return image_.size().width(); }
   int height() const { return image_.size().height(); }

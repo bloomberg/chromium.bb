@@ -37,7 +37,6 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
@@ -429,6 +428,12 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
                             printing::PrinterSemanticCapsAndDefaults()));
 }
 
+bool ServiceUtilityProcessHost::Client::OnRenderPDFPagesToMetafilePageDone(
+    const std::vector<char>&,
+    float) {
+  return false;
+}
+
 bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,
                                                           base::File file) {
   file.Seek(base::File::FROM_BEGIN, 0);
@@ -442,11 +447,9 @@ bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,
     OnRenderPDFPagesToMetafileDone(false);
     return false;
   }
-  printing::Emf emf;
-  if (!emf.InitFromData(data.data(), data.size())) {
+  if (!OnRenderPDFPagesToMetafilePageDone(data, scale_factor)) {
     OnRenderPDFPagesToMetafileDone(false);
     return false;
   }
-  OnRenderPDFPagesToMetafilePageDone(scale_factor, emf);
   return true;
 }

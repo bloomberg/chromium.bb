@@ -174,7 +174,15 @@ bool PdfMetafileCg::RenderPage(const std::vector<char>& src_buffer,
     LOG(ERROR) << "Unable to initialize PDF document from data";
     return false;
   }
-  CGPDFDocumentRef pdf_doc = metafile.GetPDFDocument();
+  return metafile.OnRenderPage(page_number, context, rect, params);
+}
+
+bool PdfMetafileCg::OnRenderPage(
+    unsigned int page_number,
+    CGContextRef context,
+    const CGRect rect,
+    const PdfMetafileCg::RenderPageParams& params) {
+  CGPDFDocumentRef pdf_doc = GetPDFDocument();
   if (!pdf_doc) {
     LOG(ERROR) << "Unable to create PDF document from data";
     return false;

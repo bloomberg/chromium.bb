@@ -27,7 +27,6 @@ class ChildProcessHost;
 }
 
 namespace printing {
-class MetafilePlayer;
 struct PdfRenderSettings;
 struct PrinterCapsAndDefaults;
 struct PrinterSemanticCapsAndDefaults;
@@ -48,9 +47,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
     // Called when the child process died before a reply was receieved.
     virtual void OnChildDied() {}
 
-    virtual void OnRenderPDFPagesToMetafilePageDone(
-        float scale_factor,
-        const printing::MetafilePlayer& emf) {}
+    virtual bool OnRenderPDFPagesToMetafilePageDone(
+        const std::vector<char>& emf_data,
+        float scale_factor);
 
     // Called when at all pages in the PDF has been rendered.
     virtual void OnRenderPDFPagesToMetafileDone(bool success) {}

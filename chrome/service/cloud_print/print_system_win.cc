@@ -339,13 +339,17 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
     // ServiceUtilityProcessHost::Client implementation.
-    void OnRenderPDFPagesToMetafilePageDone(
-        float scale_factor,
-        const printing::MetafilePlayer& emf) override {
+    bool OnRenderPDFPagesToMetafilePageDone(const std::vector<char>& emf_data,
+                                            float scale_factor) override {
+      printing::Emf emf;
+      if (!emf.InitFromData(emf_data.data(), emf_data.size())) {
+        return false;
+      }
       PreparePageDCForPrinting(printer_dc_.Get(), scale_factor);
       ::StartPage(printer_dc_.Get());
       emf.SafePlayback(printer_dc_.Get());
       ::EndPage(printer_dc_.Get());
+      return true;
     }
 
     // ServiceUtilityProcessHost::Client implementation.

@@ -11,7 +11,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "printing/metafile.h"
+#include "printing/emf_win.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/gfx/gdi_util.h"  // EMF support
 #include "ui/gfx/geometry/rect.h"
@@ -53,8 +53,13 @@ class DisableFontSmoothing {
 
 namespace printing {
 
-bool Image::LoadMetafile(const Metafile& metafile) {
-    gfx::Rect rect(metafile.GetPageBounds(1));
+bool Image::LoadMetafile(const void* metafile_src_buffer,
+                         size_t metafile_src_buffer_size) {
+  Emf metafile;
+  if (!metafile.InitFromData(metafile_src_buffer, metafile_src_buffer_size)) {
+    return false;
+  }
+  gfx::Rect rect(metafile.GetPageBounds(1));
   DisableFontSmoothing disable_in_this_scope;
 
   // Create a temporary HDC and bitmap to retrieve the rendered data.

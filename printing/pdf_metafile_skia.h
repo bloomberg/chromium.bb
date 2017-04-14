@@ -54,8 +54,6 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   skia::NativeDrawingContext context() const override;
 
 #if defined(OS_WIN)
-  bool Playback(skia::NativeDrawingContext hdc,
-                const RECT* rect) const override;
   bool SafePlayback(skia::NativeDrawingContext hdc) const override;
 #endif
 

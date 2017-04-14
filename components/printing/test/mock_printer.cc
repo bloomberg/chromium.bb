@@ -51,8 +51,8 @@ void UpdatePageSizeAndScaling(const gfx::Size& page_size,
 
 MockPrinterPage::MockPrinterPage(const void* source_data,
                                  uint32_t source_size,
-                                 const printing::Image& image)
-    : source_size_(source_size), image_(image) {
+                                 printing::Image image)
+    : source_size_(source_size), image_(std::move(image)) {
   // Create copies of the source data
   source_data_.reset(new uint8_t[source_size]);
   if (source_data_.get())
@@ -209,16 +209,9 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
   EXPECT_GT(params.data_size, 0U);
   base::SharedMemory metafile_data(params.metafile_data_handle, true);
   metafile_data.Map(params.data_size);
-#if defined(OS_MACOSX)
-  printing::PdfMetafileCg metafile;
-#else
-  printing::PdfMetafileSkia metafile(printing::PDF_SKIA_DOCUMENT_TYPE);
-#endif
-  metafile.InitFromData(metafile_data.memory(), params.data_size);
-  printing::Image image(metafile);
-  MockPrinterPage* page_data =
-      new MockPrinterPage(metafile_data.memory(), params.data_size, image);
-  scoped_refptr<MockPrinterPage> page(page_data);
+  printing::Image image(metafile_data.memory(), params.data_size);
+  scoped_refptr<MockPrinterPage> page(new MockPrinterPage(
+      metafile_data.memory(), params.data_size, std::move(image)));
   pages_.push_back(page);
 #endif
 
