@@ -208,6 +208,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       io_callback_(base::Bind(&Job::OnIOComplete, base::Unretained(this))),
       connection_(new ClientSocketHandle),
       session_(session),
+      state_(STATE_NONE),
       next_state_(STATE_NONE),
       pac_request_(NULL),
       destination_(destination),
@@ -381,6 +382,20 @@ const SSLConfig& HttpStreamFactoryImpl::Job::proxy_ssl_config() const {
 
 const ProxyInfo& HttpStreamFactoryImpl::Job::proxy_info() const {
   return proxy_info_;
+}
+
+void HttpStreamFactoryImpl::Job::LogHistograms() const {
+  if (job_type_ == MAIN) {
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpStreamFactoryJob.Main.NextState",
+                              next_state_, STATE_MAX);
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpStreamFactoryJob.Main.State", state_,
+                              STATE_MAX);
+  } else if (job_type_ == ALTERNATIVE) {
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpStreamFactoryJob.Alt.NextState",
+                              next_state_, STATE_MAX);
+    UMA_HISTOGRAM_ENUMERATION("Net.HttpStreamFactoryJob.Alt.State", state_,
+                              STATE_MAX);
+  }
 }
 
 void HttpStreamFactoryImpl::Job::GetSSLInfo() {
@@ -659,6 +674,8 @@ int HttpStreamFactoryImpl::Job::DoLoop(int result) {
   int rv = result;
   do {
     State state = next_state_;
+    // Added to investigate crbug.com/711721.
+    state_ = state;
     next_state_ = STATE_NONE;
     switch (state) {
       case STATE_START:

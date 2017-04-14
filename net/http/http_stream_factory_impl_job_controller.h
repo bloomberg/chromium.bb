@@ -178,6 +178,10 @@ class HttpStreamFactoryImpl::JobController
   // Returns true if |this| has a pending alternative job that is not completed.
   bool HasPendingAltJob() const;
 
+  // TODO(xunjieli): Added to investigate crbug.com/711721. Remove when no
+  // longer needed.
+  void LogHistograms() const;
+
   // Returns the estimated memory usage in bytes.
   size_t EstimateMemoryUsage() const;
 
