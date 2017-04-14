@@ -120,7 +120,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   }
   virtual void OnSuccess(std::unique_ptr<WebIDBDatabase>,
                          const IDBDatabaseMetadata&) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   // ScriptWrappable
