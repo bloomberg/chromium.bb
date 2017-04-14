@@ -412,6 +412,7 @@ class WPTExpectationsUpdater(object):
                 'rebaseline-cl',
                 '--verbose',
                 '--no-trigger-jobs',
+                '--fill-missing',
             ] + tests_to_rebaseline)
         return tests_results
 
