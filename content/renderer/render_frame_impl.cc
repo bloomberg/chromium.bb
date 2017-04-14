@@ -2880,6 +2880,11 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
       base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
           media::kBackgroundVideoTrackOptimization, "max_keyframe_distance_ms",
           base::TimeDelta::FromSeconds(10).InMilliseconds()));
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse =
+      base::TimeDelta::FromMilliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          media::kBackgroundVideoTrackOptimization,
+          "max_keyframe_distance_media_source_ms",
+          base::TimeDelta::FromSeconds(10).InMilliseconds()));
 
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
@@ -2894,6 +2899,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
                  base::Unretained(blink::MainThreadIsolate())),
       initial_cdm, media_surface_manager_, media_observer,
       max_keyframe_distance_to_disable_background_video,
+      max_keyframe_distance_to_disable_background_video_mse,
       GetWebkitPreferences().enable_instant_source_buffer_gc,
       GetContentClient()->renderer()->AllowMediaSuspend(),
       embedded_media_experience_enabled);

@@ -681,8 +681,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::WeakPtr<MediaObserver> observer_;
 
   // The maximum video keyframe distance that allows triggering background
-  // playback optimizations.
+  // playback optimizations (non-MSE).
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
+
+  // The maximum video keyframe distance that allows triggering background
+  // playback optimizations (MSE).
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse_;
 
   // When MSE memory pressure based garbage collection is enabled, the
   // |enable_instant_source_buffer_gc| controls whether the GC is done

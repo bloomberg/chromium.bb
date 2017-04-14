@@ -28,6 +28,7 @@
 #include "media/renderers/default_renderer_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -43,6 +44,12 @@ using ::testing::Return;
 using ::testing::_;
 
 namespace media {
+
+// Specify different values for testing.
+const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
+    base::TimeDelta::FromSeconds(5);
+const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideoMSE =
+    base::TimeDelta::FromSeconds(10);
 
 int64_t OnAdjustAllocatedMemory(int64_t delta) {
   return 0;
@@ -215,7 +222,9 @@ class WebMediaPlayerImplTest : public testing::Test {
             media_thread_.task_runner(), message_loop_.task_runner(),
             message_loop_.task_runner(), WebMediaPlayerParams::Context3DCB(),
             base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr, nullptr,
-            base::TimeDelta::FromSeconds(10), false, allow_suspend, false));
+            kMaxKeyframeDistanceToDisableBackgroundVideo,
+            kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false,
+            allow_suspend, false));
   }
 
   ~WebMediaPlayerImplTest() override {
@@ -329,6 +338,10 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void SetSuspendState(bool is_suspended) {
     wmpi_->SetSuspendState(is_suspended);
+  }
+
+  void SetLoadType(blink::WebMediaPlayer::LoadType load_type) {
+    wmpi_->load_type_ = load_type;
   }
 
   // "Renderer" thread.
@@ -796,7 +809,7 @@ TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, int, int, bool>> {
+          std::tuple<bool, bool, int, int, bool, bool>> {
  public:
   // Indices of the tuple parameters.
   static const int kIsMediaSuspendEnabled = 0;
@@ -804,6 +817,7 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   static const int kDurationSec = 2;
   static const int kAverageKeyframeDistanceSec = 3;
   static const int kIsResumeBackgroundVideoEnabled = 4;
+  static const int kIsMediaSource = 5;
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
@@ -831,6 +845,9 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     feature_list_.InitFromCommandLine(enabled_features, disabled_features);
 
     InitializeWebMediaPlayerImpl(true);
+    bool is_media_source = std::get<kIsMediaSource>(GetParam());
+    SetLoadType(is_media_source ? blink::WebMediaPlayer::kLoadTypeMediaSource
+                                : blink::WebMediaPlayer::kLoadTypeURL);
     SetVideoKeyframeDistanceAverage(
         base::TimeDelta::FromSeconds(GetAverageKeyframeDistanceSec()));
     SetDuration(base::TimeDelta::FromSeconds(GetDurationSec()));
@@ -863,6 +880,14 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
   int GetAverageKeyframeDistanceSec() const {
     return std::get<kAverageKeyframeDistanceSec>(GetParam());
+  }
+
+  int GetMaxKeyframeDistanceSec() const {
+    base::TimeDelta max_keyframe_distance =
+        std::get<kIsMediaSource>(GetParam())
+            ? kMaxKeyframeDistanceToDisableBackgroundVideoMSE
+            : kMaxKeyframeDistanceToDisableBackgroundVideo;
+    return max_keyframe_distance.InSeconds();
   }
 
   bool IsAndroid() {
@@ -907,8 +932,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   // There's no optimization criteria for video only on Android.
   bool matches_requirements =
       IsAndroid() ||
-      ((GetDurationSec() < GetAverageKeyframeDistanceSec()) ||
-       (GetAverageKeyframeDistanceSec() < 10));
+      ((GetDurationSec() < GetMaxKeyframeDistanceSec()) ||
+       (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec()));
   EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
 
   // Video is always paused when suspension is on and only if matches the
@@ -923,8 +948,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
 
   // Optimization requirements are the same for all platforms.
   bool matches_requirements =
-      (GetDurationSec() < GetAverageKeyframeDistanceSec()) ||
-      (GetAverageKeyframeDistanceSec() < 10);
+      (GetDurationSec() < GetMaxKeyframeDistanceSec()) ||
+      (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec());
 
   EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
   EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
@@ -942,6 +967,7 @@ INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
                                            ::testing::Bool(),
                                            ::testing::Values(5, 300),
                                            ::testing::Values(5, 100),
+                                           ::testing::Bool(),
                                            ::testing::Bool()));
 
 }  // namespace media

@@ -60,6 +60,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       SurfaceManager* surface_manager,
       base::WeakPtr<MediaObserver> media_observer,
       base::TimeDelta max_keyframe_distance_to_disable_background_video,
+      base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
       bool enable_instant_source_buffer_gc,
       bool allow_suspend,
       bool embedded_media_experience_enabled);
@@ -110,6 +111,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return max_keyframe_distance_to_disable_background_video_;
   }
 
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse()
+      const {
+    return max_keyframe_distance_to_disable_background_video_mse_;
+  }
+
   bool enable_instant_source_buffer_gc() const {
     return enable_instant_source_buffer_gc_;
   }
@@ -134,6 +140,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   SurfaceManager* surface_manager_;
   base::WeakPtr<MediaObserver> media_observer_;
   base::TimeDelta max_keyframe_distance_to_disable_background_video_;
+  base::TimeDelta max_keyframe_distance_to_disable_background_video_mse_;
   bool enable_instant_source_buffer_gc_;
   const bool allow_suspend_;
   const bool embedded_media_experience_enabled_;

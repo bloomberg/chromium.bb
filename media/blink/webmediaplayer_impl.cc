@@ -237,6 +237,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       observer_(params.media_observer()),
       max_keyframe_distance_to_disable_background_video_(
           params.max_keyframe_distance_to_disable_background_video()),
+      max_keyframe_distance_to_disable_background_video_mse_(
+          params.max_keyframe_distance_to_disable_background_video_mse()),
       enable_instant_source_buffer_gc_(
           params.enable_instant_source_buffer_gc()),
       embedded_media_experience_enabled_(
@@ -2233,13 +2235,16 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 
   // Videos shorter than the maximum allowed keyframe distance can be optimized.
   base::TimeDelta duration = GetPipelineMediaDuration();
-  if (duration < max_keyframe_distance_to_disable_background_video_)
+  base::TimeDelta max_keyframe_distance =
+      (load_type_ == kLoadTypeMediaSource)
+          ? max_keyframe_distance_to_disable_background_video_mse_
+          : max_keyframe_distance_to_disable_background_video_;
+  if (duration < max_keyframe_distance)
     return true;
 
   // Otherwise, only optimize videos with shorter average keyframe distance.
   PipelineStatistics stats = GetPipelineStatistics();
-  return stats.video_keyframe_distance_average <
-         max_keyframe_distance_to_disable_background_video_;
+  return stats.video_keyframe_distance_average < max_keyframe_distance;
 }
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
