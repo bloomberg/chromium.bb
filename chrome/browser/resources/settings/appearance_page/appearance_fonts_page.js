@@ -39,13 +39,7 @@
 
     properties: {
       /** @private */
-      advancedExtensionInstalled_: Boolean,
-
-      /** @private */
       advancedExtensionSublabel_: String,
-
-      /** @private */
-      advancedExtensionUrl_: String,
 
       /** @private {!DropdownMenuOptionList} */
       fontOptions_: Object,
@@ -85,12 +79,18 @@
       },
     },
 
+    /** @private {?settings.FontsBrowserProxy} */
+    browserProxy_: null,
+
+    /** @private {boolean} */
+    advancedExtensionInstalled_: false,
+
+    /** @private {?string} */
+    advancedExtensionUrl_: null,
+
     observers: [
       'fontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
     ],
-
-    /** @private {?settings.FontsBrowserProxy} */
-    browserProxy_: null,
 
     /** @override */
     created: function() {

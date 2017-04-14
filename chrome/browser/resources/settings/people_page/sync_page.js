@@ -72,15 +72,6 @@ Polymer({
     },
 
     /**
-     * Caches the individually selected synced data types. This is used to
-     * be able to restore the selections after checking and unchecking Sync All.
-     * @private
-     */
-    cachedSyncPrefs_: {
-      type: Object,
-    },
-
-    /**
      * Whether the "create passphrase" inputs should be shown. These inputs
      * give the user the opportunity to use a custom passphrase instead of
      * authenticating with their Google credentials.
@@ -117,25 +108,29 @@ Polymer({
       type: String,
       value: '',
     },
+  },
 
-    /** @private {!settings.SyncBrowserProxy} */
-    browserProxy_: {
-      type: Object,
-      value: function() {
-        return settings.SyncBrowserProxyImpl.getInstance();
-      },
-    },
+  /** @private {?settings.SyncBrowserProxy} */
+  browserProxy_: null,
 
-    /**
-     * The unload callback is needed because the sign-in flow needs to know
-     * if the user has closed the tab with the sync settings. This property is
-     * non-null if the user is currently navigated on the sync settings route.
-     * @private {Function}
-     */
-    unloadCallback_: {
-      type: Object,
-      value: null,
-    },
+  /**
+   * The unload callback is needed because the sign-in flow needs to know
+   * if the user has closed the tab with the sync settings. This property is
+   * non-null if the user is currently navigated on the sync settings route.
+   * @private {?Function}
+   */
+  unloadCallback_: null,
+
+  /**
+   * Caches the individually selected synced data types. This is used to
+   * be able to restore the selections after checking and unchecking Sync All.
+   * @private {?Object}
+   */
+  cachedSyncPrefs_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
   },
 
   /** @override */

@@ -46,19 +46,17 @@ Polymer({
     syncStatus: Object,
 
     /**
-     * @private {!settings.ManageProfileBrowserProxy}
-     */
-    browserProxy_: {
-      type: Object,
-      value: function() {
-        return settings.ManageProfileBrowserProxyImpl.getInstance();
-      },
-    },
-
-    /**
      * True if the profile shortcuts feature is enabled.
      */
     isProfileShortcutSettingVisible_: Boolean,
+  },
+
+  /** @private {?settings.ManageProfileBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.ManageProfileBrowserProxyImpl.getInstance();
   },
 
   /** @override */

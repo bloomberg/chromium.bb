@@ -88,41 +88,34 @@ Polymer({
       value: function() { return []; },
     },
 
-    /**
-     * The fallback image to be selected when the user discards the Old image.
-     * This may be null if the user started with the Old image.
-     * @private {?ChangePictureImageElement}
-     */
-    fallbackImage_: Object,
-
-    /**
-     * Type of the last selected icon. This is used to jump back to the camera
-     * after the user discards a newly taken photo.
-     * @private {string}
-     */
-    lastSelectedImageType_: {
-      type: String,
-      value: '',
-    },
-
     /** @private */
     selectionTypesEnum_: {
       type: Object,
       value: ChangePictureSelectionTypes,
       readOnly: true,
     },
-
-    /** @private {!settings.ChangePictureBrowserProxy} */
-    browserProxy_: {
-      type: Object,
-      value: function() {
-        return settings.ChangePictureBrowserProxyImpl.getInstance();
-      },
-    },
   },
+
+  /** @private {?settings.ChangePictureBrowserProxy} */
+  browserProxy_: null,
+
+  /**
+   * The fallback image to be selected when the user discards the Old image.
+   * This may be null if the user started with the Old image.
+   * @private {?ChangePictureImageElement}
+   */
+  fallbackImage_: null,
+
+  /**
+   * Type of the last selected icon. This is used to jump back to the camera
+   * after the user discards a newly taken photo.
+   * @private {string}
+   */
+  lastSelectedImageType_: '',
 
   /** @override */
   attached: function() {
+    this.browserProxy_ = settings.ChangePictureBrowserProxyImpl.getInstance();
     this.addWebUIListener('default-images-changed',
                           this.receiveDefaultImages_.bind(this));
     this.addWebUIListener('selected-image-changed',

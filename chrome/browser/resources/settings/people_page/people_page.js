@@ -73,14 +73,6 @@ Polymer({
     },
 // </if>
 
-    /** @private {!settings.SyncBrowserProxy} */
-    syncBrowserProxy_: {
-      type: Object,
-      value: function() {
-        return settings.SyncBrowserProxyImpl.getInstance();
-      },
-    },
-
     /** @private */
     showDisconnectDialog_: Boolean,
 
@@ -126,6 +118,9 @@ Polymer({
     },
   },
 
+  /** @private {?settings.SyncBrowserProxy} */
+  syncBrowserProxy_: null,
+
   /** @override */
   attached: function() {
     var profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
@@ -141,6 +136,7 @@ Polymer({
     this.addWebUIListener('profile-stats-count-ready',
                           this.handleProfileStatsCount_.bind(this));
 
+    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener('sync-status-changed',
