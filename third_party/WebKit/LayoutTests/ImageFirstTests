@@ -73,3 +73,8 @@ external/wpt/html/rendering/non-replaced-elements/phrasing-content-0/font-elemen
 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0
 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0
 external/wpt/html/rendering/non-replaced-elements/lists
+virtual/layout_ng/css2.1/20110323
+virtual/layout_ng/fast/block/basic
+virtual/layout_ng/fast/block/margin-collapse
+virtual/layout_ng/fast/block/float
+virtual/layout_ng/external/wpt/css/CSS2/linebox
