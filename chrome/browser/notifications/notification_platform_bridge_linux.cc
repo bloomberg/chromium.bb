@@ -6,15 +6,19 @@
 
 #include <algorithm>
 
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/native_notification_display_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -26,6 +30,27 @@ void AddActionToNotification(GVariantBuilder* actions_builder,
                              const char* button_label) {
   g_variant_builder_add(actions_builder, "s", action_id);
   g_variant_builder_add(actions_builder, "s", button_label);
+}
+
+int NotificationPriorityToFdoUrgency(int priority) {
+  enum FdoUrgency {
+    LOW = 0,
+    NORMAL = 1,
+    CRITICAL = 2,
+  };
+  switch (priority) {
+    case message_center::MIN_PRIORITY:
+    case message_center::LOW_PRIORITY:
+      return LOW;
+    case message_center::HIGH_PRIORITY:
+    case message_center::MAX_PRIORITY:
+      return CRITICAL;
+    default:
+      NOTREACHED();
+      // fallthrough
+    case message_center::DEFAULT_PRIORITY:
+      return NORMAL;
+  }
 }
 
 // Callback used by GLib when the "Notify" message completes for the
@@ -65,6 +90,36 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
                                      notification_id, action_index, reply);
 }
 
+// Writes |data| to a new temporary file and returns its path.
+// Returns base::FilePath() on failure.
+base::FilePath WriteDataToTmpFile(
+    const scoped_refptr<base::RefCountedMemory>& data) {
+  int data_len = data->size();
+  if (data_len == 0)
+    return base::FilePath();
+  base::FilePath file_path;
+  if (!base::CreateTemporaryFile(&file_path))
+    return base::FilePath();
+  if (base::WriteFile(file_path, data->front_as<char>(), data_len) !=
+      data_len) {
+    base::DeleteFile(file_path, false);
+    return base::FilePath();
+  }
+  return file_path;
+}
+
+void DeleteNotificationResourceFile(const base::FilePath& file_path) {
+  if (file_path.empty())
+    return;
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits()
+          .MayBlock()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
+      base::Bind(base::IgnoreResult(base::DeleteFile), file_path, false));
+}
+
 }  // namespace
 
 // static
@@ -90,11 +145,19 @@ struct NotificationPlatformBridgeLinux::NotificationData {
         notification_id(notification_id),
         profile_id(profile_id),
         is_incognito(is_incognito),
-        origin_url(origin_url) {}
+        origin_url(origin_url),
+        weak_factory(this) {}
 
   ~NotificationData() {
     if (cancellable)
       g_cancellable_cancel(cancellable);
+    ResetResourceFiles();
+  }
+
+  void ResetResourceFiles() {
+    for (const base::FilePath& file : resource_files)
+      DeleteNotificationResourceFile(file);
+    resource_files.clear();
   }
 
   // The ID used by the notification server.  Will be 0 until the
@@ -102,7 +165,7 @@ struct NotificationPlatformBridgeLinux::NotificationData {
   uint32_t dbus_id = 0;
 
   // Same parameters used by NotificationPlatformBridge::Display().
-  const NotificationCommon::Type notification_type;
+  NotificationCommon::Type notification_type;
   const std::string notification_id;
   const std::string profile_id;
   const bool is_incognito;
@@ -112,6 +175,11 @@ struct NotificationPlatformBridgeLinux::NotificationData {
   // NativeNotificationDisplayService.
   const GURL origin_url;
 
+  // Temporary resource files associated with the notification that
+  // should be cleaned up when the notification is closed or on
+  // shutdown.
+  std::vector<base::FilePath> resource_files;
+
   // Used to cancel the initial "Notify" message so we don't call
   // NotificationPlatformBridgeLinux::NotifyCompleteInternal() with a
   // destroyed Notification.
@@ -120,17 +188,30 @@ struct NotificationPlatformBridgeLinux::NotificationData {
   // If not null, the data to update the notification with once
   // |dbus_id| becomes available.
   std::unique_ptr<Notification> update_data;
+  NotificationCommon::Type update_notification_type =
+      NotificationCommon::TYPE_MAX;
 
   // If true, indicates the notification should be closed once
   // |dbus_id| becomes available.
   bool should_close = false;
+
+  base::WeakPtrFactory<NotificationData> weak_factory;
+};
+
+struct NotificationPlatformBridgeLinux::ResourceFiles {
+  explicit ResourceFiles(const base::FilePath& icon_file)
+      : icon_file(icon_file) {}
+  ~ResourceFiles() { DeleteNotificationResourceFile(icon_file); }
+  base::FilePath icon_file;
 };
 
 NotificationPlatformBridgeLinux::NotificationPlatformBridgeLinux(
     GDBusProxy* notification_proxy)
-    : notification_proxy_(notification_proxy) {
+    : notification_proxy_(notification_proxy), weak_factory_(this) {
   proxy_signal_handler_ = g_signal_connect(
       notification_proxy_, "g-signal", G_CALLBACK(GSignalReceiverThunk), this);
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 NotificationPlatformBridgeLinux::~NotificationPlatformBridgeLinux() {
@@ -148,11 +229,11 @@ void NotificationPlatformBridgeLinux::Display(
       FindNotificationData(notification_id, profile_id, is_incognito);
   if (data) {
     // Update an existing notification.
-    DCHECK_EQ(data->notification_type, notification_type);
     if (data->dbus_id) {
-      NotifyNow(data->dbus_id, notification_type, notification, nullptr,
-                nullptr, nullptr);
+      data->notification_type = notification_type;
+      Notify(notification, data, nullptr, nullptr);
     } else {
+      data->update_notification_type = notification_type;
       data->update_data = base::MakeUnique<Notification>(notification);
     }
   } else {
@@ -161,8 +242,7 @@ void NotificationPlatformBridgeLinux::Display(
                                 is_incognito, notification.origin_url());
     data->cancellable.reset(g_cancellable_new());
     notifications_.emplace(data, base::WrapUnique(data));
-    NotifyNow(0, notification_type, notification, data->cancellable,
-              NotifyCompleteReceiver, data);
+    Notify(notification, data, NotifyCompleteReceiver, data);
   }
 }
 
@@ -210,20 +290,62 @@ void NotificationPlatformBridgeLinux::NotifyCompleteInternal(gpointer user_data,
     CloseNow(data->dbus_id);
     notifications_.erase(data);
   } else if (data->update_data) {
-    NotifyNow(data->dbus_id, data->notification_type, *data->update_data,
-              nullptr, nullptr, nullptr);
+    data->notification_type = data->update_notification_type;
+    Notify(*data->update_data, data, nullptr, nullptr);
     data->update_data.reset();
   }
 }
 
+void NotificationPlatformBridgeLinux::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  // The browser process is about to exit.  Clean up all notification
+  // resource files.
+  notifications_.clear();
+}
+
+void NotificationPlatformBridgeLinux::Notify(const Notification& notification,
+                                             NotificationData* data,
+                                             GAsyncReadyCallback callback,
+                                             gpointer user_data) {
+  const scoped_refptr<base::RefCountedMemory> icon_data =
+      notification.icon().As1xPNGBytes();
+  if (!icon_data->size()) {
+    NotifyNow(notification, data->weak_factory.GetWeakPtr(), callback,
+              user_data, base::MakeUnique<ResourceFiles>(base::FilePath()));
+  } else {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        base::TaskTraits()
+            .MayBlock()
+            .WithPriority(base::TaskPriority::USER_BLOCKING)
+            .WithShutdownBehavior(base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN),
+        base::Bind(
+            [](scoped_refptr<base::RefCountedMemory> icon) {
+              return base::MakeUnique<ResourceFiles>(WriteDataToTmpFile(icon));
+            },
+            icon_data),
+        base::Bind(&NotificationPlatformBridgeLinux::NotifyNow,
+                   weak_factory_.GetWeakPtr(), notification,
+                   data->weak_factory.GetWeakPtr(), callback, user_data));
+  }
+}
+
 void NotificationPlatformBridgeLinux::NotifyNow(
-    uint32_t dbus_id,
-    NotificationCommon::Type notification_type,
     const Notification& notification,
-    GCancellable* cancellable,
+    base::WeakPtr<NotificationData> data,
     GAsyncReadyCallback callback,
-    gpointer user_data) {
-  // TODO(thomasanderson): Add a complete implementation.
+    gpointer user_data,
+    std::unique_ptr<ResourceFiles> resource_files) {
+  if (!data)
+    return;
+
+  if (data->dbus_id)
+    DCHECK(!data->cancellable);
+
+  data->ResetResourceFiles();
 
   GVariantBuilder actions_builder;
   // Even-indexed elements in this array are action IDs passed back to
@@ -237,14 +359,28 @@ void NotificationPlatformBridgeLinux::NotifyNow(
   // Always add a settings button.
   AddActionToNotification(&actions_builder, "settings", "Settings");
 
+  GVariantBuilder hints_builder;
+  g_variant_builder_init(&hints_builder, G_VARIANT_TYPE("a{sv}"));
+  g_variant_builder_add(&hints_builder, "{sv}", "urgency",
+                        g_variant_new_byte(NotificationPriorityToFdoUrgency(
+                            notification.priority())));
+
+  if (!resource_files->icon_file.empty()) {
+    g_variant_builder_add(
+        &hints_builder, "{sv}", "image-path",
+        g_variant_new_string(resource_files->icon_file.value().c_str()));
+    data->resource_files.push_back(resource_files->icon_file);
+    resource_files->icon_file.clear();
+  }
+
   const std::string title = base::UTF16ToUTF8(notification.title());
   const std::string message = base::UTF16ToUTF8(notification.message());
 
   GVariant* parameters =
-      g_variant_new("(susssasa{sv}i)", "", dbus_id, "", title.c_str(),
-                    message.c_str(), &actions_builder, nullptr, -1);
+      g_variant_new("(susssasa{sv}i)", "", data->dbus_id, "", title.c_str(),
+                    message.c_str(), &actions_builder, &hints_builder, -1);
   g_dbus_proxy_call(notification_proxy_, "Notify", parameters,
-                    G_DBUS_CALL_FLAGS_NONE, -1, cancellable, callback,
+                    G_DBUS_CALL_FLAGS_NONE, -1, data->cancellable, callback,
                     user_data);
 }
 
