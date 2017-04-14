@@ -75,7 +75,12 @@ class CORE_EXPORT SerializedScriptValue
   // Version 9: Added Map and Set support.
   // [versions skipped]
   // Version 16: Separate versioning between V8 and Blink.
-  static const uint32_t kWireFormatVersion = 16;
+  // Version 17: Remove unnecessary byte swapping.
+  //
+  // The following versions cannot be used, in order to be able to
+  // deserialize version 0 SSVs. The class implementation has details.
+  // DO NOT USE: 35, 64, 68, 73, 78, 82, 83, 85, 91, 98, 102, 108, 123.
+  static constexpr uint32_t kWireFormatVersion = 17;
 
   struct SerializeOptions {
     STACK_ALLOCATED();

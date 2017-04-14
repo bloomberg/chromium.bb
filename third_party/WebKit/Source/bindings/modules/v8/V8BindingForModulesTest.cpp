@@ -132,15 +132,10 @@ void CheckKeyPathNumberValue(v8::Isolate* isolate,
 
 // SerializedScriptValue header format offsets are inferred from the Blink and
 // V8 serialization code. The code below DCHECKs that
-constexpr static size_t kSSVHeaderBlinkVersionOffset = 0;
-constexpr static size_t kSSVHeaderBlinkVersionTagOffset = 1;
-constexpr static size_t kSSVHeaderV8VersionOffset = 2;
-constexpr static size_t kSSVHeaderV8VersionTagOffset = 3;
-
-// 13 is v8::internal::kLatestVersion in v8/src/value-serializer.cc at the
-// time when this test was written. Unlike Blink, V8 does not currently export
-// its serialization version, so this number might get stale.
-constexpr static unsigned char kV8LatestKnownVersion = 13;
+constexpr static size_t kSSVHeaderBlinkVersionTagOffset = 0;
+constexpr static size_t kSSVHeaderBlinkVersionOffset = 1;
+constexpr static size_t kSSVHeaderV8VersionTagOffset = 2;
+constexpr static size_t kSSVHeaderV8VersionOffset = 3;
 
 // Follows the same steps as the IndexedDB value serialization code.
 void SerializeV8Value(v8::Local<v8::Value> value,
@@ -162,16 +157,16 @@ void SerializeV8Value(v8::Local<v8::Value> value,
   // 0xFF.
   const unsigned char* wire_data =
       reinterpret_cast<unsigned char*>(wire_bytes->Data());
+  ASSERT_EQ(static_cast<unsigned char>(kVersionTag),
+            wire_data[kSSVHeaderBlinkVersionTagOffset]);
   ASSERT_EQ(
       static_cast<unsigned char>(SerializedScriptValue::kWireFormatVersion),
       wire_data[kSSVHeaderBlinkVersionOffset]);
-  ASSERT_EQ(static_cast<unsigned char>(kVersionTag),
-            wire_data[kSSVHeaderBlinkVersionTagOffset]);
 
-  ASSERT_GE(static_cast<unsigned char>(kV8LatestKnownVersion),
-            wire_data[kSSVHeaderV8VersionOffset]);
   ASSERT_EQ(static_cast<unsigned char>(kVersionTag),
             wire_data[kSSVHeaderV8VersionTagOffset]);
+  ASSERT_EQ(v8::ValueSerializer::GetCurrentDataFormatVersion(),
+            wire_data[kSSVHeaderV8VersionOffset]);
 }
 
 PassRefPtr<IDBValue> CreateIDBValue(v8::Isolate* isolate,

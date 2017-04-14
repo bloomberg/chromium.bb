@@ -35,6 +35,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/Transferables.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -54,6 +55,7 @@
 #include "platform/wtf/ByteOrder.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/dtoa/utils.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringHash.h"
 
@@ -89,22 +91,124 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
   return AdoptRef(new SerializedScriptValue(data));
 }
 
+// Versions 16 and below (prior to April 2017) used ntohs() to byte-swap SSV
+// data when converting it to the wire format. This was a historical accient.
+//
+// As IndexedDB stores SSVs to disk indefinitely, we still need to keep around
+// the code needed to deserialize the old format.
+inline static bool IsByteSwappedWiredData(const char* data, size_t length) {
+  // TODO(pwnall): Return false early if we're on big-endian hardware. Chromium
+  // doesn't currently support big-endian hardware, and there's no header
+  // exposing endianness to Blink yet. ARCH_CPU_LITTLE_ENDIAN seems promising,
+  // but Blink is not currently allowed to include files from build/.
+
+  // The first SSV version without byte-swapping has two envelopes (Blink, V8),
+  // each of which is at least 2 bytes long.
+  if (length < 4)
+    return true;
+
+  // This code handles the following cases:
+  //
+  // v0 (byte-swapped)    - [d,    t,    ...], t = tag byte, d = first data byte
+  // v1-16 (byte-swapped) - [v,    0xFF, ...], v = version (1 <= v <= 16)
+  // v17+                 - [0xFF, v,    ...], v = first byte of version varint
+
+  if (static_cast<uint8_t>(data[0]) == kVersionTag) {
+    // The only case where byte-swapped data can have 0xFF in byte zero is
+    // version 0. This can only happen if byte one is a tag (supported in
+    // version 0) that takes in extra data, and the first byte of extra data is
+    // 0xFF. There are 13 such tags, listed below. These tags cannot be used as
+    // version numbers in the Blink-side SSV envelope.
+    //
+    //  35 - 0x23 - # - ImageDataTag
+    //  64 - 0x40 - @ - SparseArrayTag
+    //  68 - 0x44 - D - DateTag
+    //  73 - 0x49 - I - Int32Tag
+    //  78 - 0x4E - N - NumberTag
+    //  82 - 0x52 - R - RegExpTag
+    //  83 - 0x53 - S - StringTag
+    //  85 - 0x55 - U - Uint32Tag
+    //  91 - 0x5B - [ - ArrayTag
+    //  98 - 0x62 - b - BlobTag
+    // 102 - 0x66 - f - FileTag
+    // 108 - 0x6C - l - FileListTag
+    // 123 - 0x7B - { - ObjectTag
+    //
+    // Why we care about version 0:
+    //
+    // IndexedDB stores values using the SSV format. Currently, IndexedDB does
+    // not do any sort of migration, so a value written with a SSV version will
+    // be stored with that version until it is removed via an update or delete.
+    //
+    // IndexedDB was shipped in Chrome 11, which was released on April 27, 2011.
+    // SSV version 1 was added in WebKit r91698, which was shipped in Chrome 14,
+    // which was released on September 16, 2011.
+    static_assert(
+        SerializedScriptValue::kWireFormatVersion != 35 &&
+            SerializedScriptValue::kWireFormatVersion != 64 &&
+            SerializedScriptValue::kWireFormatVersion != 68 &&
+            SerializedScriptValue::kWireFormatVersion != 73 &&
+            SerializedScriptValue::kWireFormatVersion != 78 &&
+            SerializedScriptValue::kWireFormatVersion != 82 &&
+            SerializedScriptValue::kWireFormatVersion != 83 &&
+            SerializedScriptValue::kWireFormatVersion != 85 &&
+            SerializedScriptValue::kWireFormatVersion != 91 &&
+            SerializedScriptValue::kWireFormatVersion != 98 &&
+            SerializedScriptValue::kWireFormatVersion != 102 &&
+            SerializedScriptValue::kWireFormatVersion != 108 &&
+            SerializedScriptValue::kWireFormatVersion != 123,
+        "Using a burned version will prevent us from reading SSV version 0");
+
+    // Fast path until the Blink-side SSV envelope reaches version 35.
+    if (SerializedScriptValue::kWireFormatVersion < 35) {
+      if (static_cast<uint8_t>(data[1]) < 35)
+        return false;
+
+      // TODO(pwnall): Add UMA metric here.
+      return true;
+    }
+
+    // Slower path that would kick in after version 35, assuming we don't remove
+    // support for SSV version 0 by then.
+    static constexpr uint8_t version0Tags[] = {35, 64, 68, 73,  78,  82, 83,
+                                               85, 91, 98, 102, 108, 123};
+    return std::find(std::begin(version0Tags), std::end(version0Tags),
+                     data[1]) != std::end(version0Tags);
+  }
+
+  if (static_cast<uint8_t>(data[1]) == kVersionTag) {
+    // The last SSV format that used byte-swapping was version 16. The version
+    // number is stored (before byte-swapping) after a serialization tag, which
+    // is 0xFF.
+    return static_cast<uint8_t>(data[0]) != kVersionTag;
+  }
+
+  // If kVersionTag isn't in any of the first two bytes, this is SSV version 0,
+  // which was byte-swapped.
+  return true;
+}
+
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
     const char* data,
     size_t length) {
   if (!data)
     return Create();
 
-  // Decode wire data from big endian to host byte order.
   DCHECK(!(length % sizeof(UChar)));
-  size_t string_length = length / sizeof(UChar);
-  StringBuffer<UChar> buffer(string_length);
   const UChar* src = reinterpret_cast<const UChar*>(data);
-  UChar* dst = buffer.Characters();
-  for (size_t i = 0; i < string_length; i++)
-    dst[i] = ntohs(src[i]);
+  size_t string_length = length / sizeof(UChar);
 
-  return AdoptRef(new SerializedScriptValue(String::Adopt(buffer)));
+  if (IsByteSwappedWiredData(data, length)) {
+    // Decode wire data from big endian to host byte order.
+    StringBuffer<UChar> buffer(string_length);
+    UChar* dst = buffer.Characters();
+    for (size_t i = 0; i < string_length; ++i)
+      dst[i] = ntohs(src[i]);
+
+    return AdoptRef(new SerializedScriptValue(String::Adopt(buffer)));
+  }
+
+  return AdoptRef(new SerializedScriptValue(String(src, string_length)));
 }
 
 SerializedScriptValue::SerializedScriptValue()
@@ -134,8 +238,9 @@ SerializedScriptValue::~SerializedScriptValue() {
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::NullValue() {
-  // UChar rather than uint8_t here to get host endian behavior.
-  static const UChar kNullData[] = {0xff09, 0x3000};
+  // The format here may fall a bit out of date, because we support
+  // deserializing SSVs written by old browser versions.
+  static const uint8_t kNullData[] = {0xFF, 17, 0xFF, 13, '0', 0x00};
   return Create(reinterpret_cast<const char*>(kNullData), sizeof(kNullData));
 }
 
@@ -152,22 +257,17 @@ String SerializedScriptValue::ToWireString() const {
   return wire_string;
 }
 
-// Convert serialized string to big endian wire data.
 void SerializedScriptValue::ToWireBytes(Vector<char>& result) const {
   DCHECK(result.IsEmpty());
 
-  size_t wire_size_bytes = (data_buffer_size_ + 1) & ~1;
-  result.Resize(wire_size_bytes);
+  size_t result_size = (data_buffer_size_ + 1) & ~1;
+  result.Resize(result_size);
+  memcpy(result.Data(), data_buffer_.get(), data_buffer_size_);
 
-  const UChar* src = reinterpret_cast<UChar*>(data_buffer_.get());
-  UChar* dst = reinterpret_cast<UChar*>(result.Data());
-  for (size_t i = 0; i < data_buffer_size_ / 2; i++)
-    dst[i] = htons(src[i]);
-
-  // This is equivalent to swapping the byte order of the two bytes (x, 0),
-  // depending on endianness.
-  if (data_buffer_size_ % 2)
-    dst[wire_size_bytes / 2 - 1] = data_buffer_[data_buffer_size_ - 1] << 8;
+  if (result_size > data_buffer_size_) {
+    DCHECK_EQ(result_size, data_buffer_size_ + 1);
+    result[data_buffer_size_] = 0;
+  }
 }
 
 static void AccumulateArrayBuffersForAllWorlds(

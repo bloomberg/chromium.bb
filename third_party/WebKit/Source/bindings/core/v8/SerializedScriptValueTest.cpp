@@ -9,11 +9,114 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8File.h"
+#include "bindings/core/v8/V8ImageData.h"
 #include "core/fileapi/File.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
+  V8TestingScope scope;
+
+  v8::Local<v8::Value> v8OriginalTrue = v8::True(scope.GetIsolate());
+  RefPtr<SerializedScriptValue> sourceSerializedScriptValue =
+      SerializedScriptValue::Serialize(
+          scope.GetIsolate(), v8OriginalTrue,
+          SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
+
+  Vector<char> wireData;
+  sourceSerializedScriptValue->ToWireBytes(wireData);
+
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(wireData.Data(), wireData.size());
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(scope.GetIsolate());
+  EXPECT_TRUE(deserialized->IsTrue());
+}
+
+TEST(SerializedScriptValueTest, WireFormatVersion17NoByteSwapping) {
+  V8TestingScope scope;
+
+  const uint8_t data[] = {0xFF, 0x11, 0xFF, 0x0D, 0x54, 0x00};
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
+                                    sizeof(data));
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(scope.GetIsolate());
+  EXPECT_TRUE(deserialized->IsTrue());
+}
+
+TEST(SerializedScriptValueTest, WireFormatVersion16ByteSwapping) {
+  V8TestingScope scope;
+
+  // Using UChar instead of uint8_t to get ntohs() byte swapping.
+  const UChar data[] = {0xFF10, 0xFF0D, 0x5400};
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
+                                    sizeof(data));
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(scope.GetIsolate());
+  EXPECT_TRUE(deserialized->IsTrue());
+}
+
+TEST(SerializedScriptValueTest, WireFormatVersion13ByteSwapping) {
+  V8TestingScope scope;
+
+  // Using UChar instead of uint8_t to get ntohs() byte swapping.
+  const UChar data[] = {0xFF0D, 0x5400};
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
+                                    sizeof(data));
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(scope.GetIsolate());
+  EXPECT_TRUE(deserialized->IsTrue());
+}
+
+TEST(SerializedScriptValueTest, WireFormatVersion0ByteSwapping) {
+  V8TestingScope scope;
+
+  // Using UChar instead of uint8_t to get ntohs() byte swapping.
+  const UChar data[] = {0x5400};
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data),
+                                    sizeof(data));
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(scope.GetIsolate());
+  EXPECT_TRUE(deserialized->IsTrue());
+}
+
+TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
+  V8TestingScope scope;
+  v8::Isolate* isolate = scope.GetIsolate();
+
+  // Using UChar instead of uint8_t to get ntohs() byte swapping.
+  //
+  // This builds the smallest possible ImageData whose first data byte is 0xFF,
+  // as follows.
+  //
+  // width = 127, encoded as 0xFF 0x00 (degenerate varint)
+  // height = 1, encoded as 0x01 (varint)
+  // pixelLength = 508 (127 * 1 * 4), encoded as 0xFC 0x03 (varint)
+  // pixel data = 508 bytes, all zero
+  Vector<UChar> data;
+  data.push_back(0x23FF);
+  data.push_back(0x001);
+  data.push_back(0xFC03);
+  data.Resize(257);  // (508 pixel data + 6 header bytes) / 2
+
+  RefPtr<SerializedScriptValue> serializedScriptValue =
+      SerializedScriptValue::Create(reinterpret_cast<const char*>(data.Data()),
+                                    data.size() * sizeof(UChar));
+  v8::Local<v8::Value> deserialized =
+      serializedScriptValue->Deserialize(isolate);
+  ASSERT_TRUE(deserialized->IsObject());
+  v8::Local<v8::Object> deserializedObject = deserialized.As<v8::Object>();
+  ASSERT_TRUE(V8ImageData::hasInstance(deserializedObject, isolate));
+  ImageData* imageData = V8ImageData::toImpl(deserializedObject);
+  EXPECT_EQ(imageData->width(), 127);
+  EXPECT_EQ(imageData->height(), 1);
+}
 
 TEST(SerializedScriptValueTest, UserSelectedFile) {
   V8TestingScope scope;
