@@ -47,11 +47,12 @@ class PreviewsPageLoadMetricsObserverTest
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(4);
-    timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing.first_contentful_paint =
+        base::TimeDelta::FromSeconds(4);
+    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
 
@@ -68,16 +69,16 @@ class PreviewsPageLoadMetricsObserverTest
   void ValidateHistograms() {
     ValidateHistogramsFor(
         internal::kHistogramOfflinePreviewsDOMContentLoadedEventFired,
-        timing_.dom_content_loaded_event_start);
+        timing_.document_timing.dom_content_loaded_event_start);
     ValidateHistogramsFor(internal::kHistogramOfflinePreviewsFirstLayout,
-                          timing_.first_layout);
+                          timing_.document_timing.first_layout);
     ValidateHistogramsFor(internal::kHistogramOfflinePreviewsLoadEventFired,
-                          timing_.load_event_start);
+                          timing_.document_timing.load_event_start);
     ValidateHistogramsFor(
         internal::kHistogramOfflinePreviewsFirstContentfulPaint,
-        timing_.first_contentful_paint);
+        timing_.paint_timing.first_contentful_paint);
     ValidateHistogramsFor(internal::kHistogramOfflinePreviewsParseStart,
-                          timing_.parse_start);
+                          timing_.parse_timing.parse_start);
   }
 
   void ValidateHistogramsFor(const std::string& histogram_,

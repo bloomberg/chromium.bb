@@ -138,109 +138,130 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
 
   // Verify proper ordering between the various timings.
 
-  if (!EventsInOrder(timing.response_start, timing.parse_start)) {
+  if (!EventsInOrder(timing.response_start, timing.parse_timing.parse_start)) {
+    // We sometimes get a zero response_start with a non-zero parse start. See
+    // crbug.com/590212.
     NOTREACHED() << "Invalid response_start " << timing.response_start
-                 << " for parse_start " << timing.parse_start;
+                 << " for parse_start " << timing.parse_timing.parse_start;
     return false;
   }
 
-  if (!EventsInOrder(timing.parse_start, timing.parse_stop)) {
-    NOTREACHED() << "Invalid parse_start " << timing.parse_start
-                 << " for parse_stop " << timing.parse_stop;
+  if (!EventsInOrder(timing.parse_timing.parse_start,
+                     timing.parse_timing.parse_stop)) {
+    NOTREACHED() << "Invalid parse_start " << timing.parse_timing.parse_start
+                 << " for parse_stop " << timing.parse_timing.parse_stop;
     return false;
   }
 
-  if (timing.parse_stop) {
+  if (timing.parse_timing.parse_stop) {
     const base::TimeDelta parse_duration =
-        timing.parse_stop.value() - timing.parse_start.value();
-    if (timing.parse_blocked_on_script_load_duration > parse_duration) {
+        timing.parse_timing.parse_stop.value() -
+        timing.parse_timing.parse_start.value();
+    if (timing.parse_timing.parse_blocked_on_script_load_duration >
+        parse_duration) {
       NOTREACHED() << "Invalid parse_blocked_on_script_load_duration "
-                   << timing.parse_blocked_on_script_load_duration
+                   << timing.parse_timing.parse_blocked_on_script_load_duration
                    << " for parse duration " << parse_duration;
       return false;
     }
-    if (timing.parse_blocked_on_script_execution_duration > parse_duration) {
-      NOTREACHED() << "Invalid parse_blocked_on_script_execution_duration "
-                   << timing.parse_blocked_on_script_execution_duration
-                   << " for parse duration " << parse_duration;
+    if (timing.parse_timing.parse_blocked_on_script_execution_duration >
+        parse_duration) {
+      NOTREACHED()
+          << "Invalid parse_blocked_on_script_execution_duration "
+          << timing.parse_timing.parse_blocked_on_script_execution_duration
+          << " for parse duration " << parse_duration;
       return false;
     }
   }
 
-  if (timing.parse_blocked_on_script_load_from_document_write_duration >
-      timing.parse_blocked_on_script_load_duration) {
+  if (timing.parse_timing
+          .parse_blocked_on_script_load_from_document_write_duration >
+      timing.parse_timing.parse_blocked_on_script_load_duration) {
     NOTREACHED()
         << "Invalid parse_blocked_on_script_load_from_document_write_duration "
-        << timing.parse_blocked_on_script_load_from_document_write_duration
+        << timing.parse_timing
+               .parse_blocked_on_script_load_from_document_write_duration
         << " for parse_blocked_on_script_load_duration "
-        << timing.parse_blocked_on_script_load_duration;
+        << timing.parse_timing.parse_blocked_on_script_load_duration;
     return false;
   }
 
-  if (timing.parse_blocked_on_script_execution_from_document_write_duration >
-      timing.parse_blocked_on_script_execution_duration) {
+  if (timing.parse_timing
+          .parse_blocked_on_script_execution_from_document_write_duration >
+      timing.parse_timing.parse_blocked_on_script_execution_duration) {
     NOTREACHED()
         << "Invalid "
            "parse_blocked_on_script_execution_from_document_write_duration "
-        << timing.parse_blocked_on_script_execution_from_document_write_duration
+        << timing.parse_timing
+               .parse_blocked_on_script_execution_from_document_write_duration
         << " for parse_blocked_on_script_execution_duration "
-        << timing.parse_blocked_on_script_execution_duration;
+        << timing.parse_timing.parse_blocked_on_script_execution_duration;
     return false;
   }
 
-  if (!EventsInOrder(timing.parse_stop,
-                     timing.dom_content_loaded_event_start)) {
-    NOTREACHED() << "Invalid parse_stop " << timing.parse_stop
+  if (!EventsInOrder(timing.parse_timing.parse_stop,
+                     timing.document_timing.dom_content_loaded_event_start)) {
+    NOTREACHED() << "Invalid parse_stop " << timing.parse_timing.parse_stop
                  << " for dom_content_loaded_event_start "
-                 << timing.dom_content_loaded_event_start;
+                 << timing.document_timing.dom_content_loaded_event_start;
     return false;
   }
 
-  if (!EventsInOrder(timing.dom_content_loaded_event_start,
-                     timing.load_event_start)) {
+  if (!EventsInOrder(timing.document_timing.dom_content_loaded_event_start,
+                     timing.document_timing.load_event_start)) {
     NOTREACHED() << "Invalid dom_content_loaded_event_start "
-                 << timing.dom_content_loaded_event_start
-                 << " for load_event_start " << timing.load_event_start;
+                 << timing.document_timing.dom_content_loaded_event_start
+                 << " for load_event_start "
+                 << timing.document_timing.load_event_start;
     return false;
   }
 
-  if (!EventsInOrder(timing.parse_start, timing.first_layout)) {
-    NOTREACHED() << "Invalid parse_start " << timing.parse_start
-                 << " for first_layout " << timing.first_layout;
+  if (!EventsInOrder(timing.parse_timing.parse_start,
+                     timing.document_timing.first_layout)) {
+    NOTREACHED() << "Invalid parse_start " << timing.parse_timing.parse_start
+                 << " for first_layout " << timing.document_timing.first_layout;
     return false;
   }
 
-  if (!EventsInOrder(timing.first_layout, timing.first_paint)) {
+  if (!EventsInOrder(timing.document_timing.first_layout,
+                     timing.paint_timing.first_paint)) {
     // This can happen when we process an XHTML document that doesn't contain
     // well formed XML. See crbug.com/627607.
-    DLOG(ERROR) << "Invalid first_layout " << timing.first_layout
-                << " for first_paint " << timing.first_paint;
+    DLOG(ERROR) << "Invalid first_layout "
+                << timing.document_timing.first_layout << " for first_paint "
+                << timing.paint_timing.first_paint;
     return false;
   }
 
-  if (!EventsInOrder(timing.first_paint, timing.first_text_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.first_paint
-                 << " for first_text_paint " << timing.first_text_paint;
+  if (!EventsInOrder(timing.paint_timing.first_paint,
+                     timing.paint_timing.first_text_paint)) {
+    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
+                 << " for first_text_paint "
+                 << timing.paint_timing.first_text_paint;
     return false;
   }
 
-  if (!EventsInOrder(timing.first_paint, timing.first_image_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.first_paint
-                 << " for first_image_paint " << timing.first_image_paint;
+  if (!EventsInOrder(timing.paint_timing.first_paint,
+                     timing.paint_timing.first_image_paint)) {
+    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
+                 << " for first_image_paint "
+                 << timing.paint_timing.first_image_paint;
     return false;
   }
 
-  if (!EventsInOrder(timing.first_paint, timing.first_contentful_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+  if (!EventsInOrder(timing.paint_timing.first_paint,
+                     timing.paint_timing.first_contentful_paint)) {
+    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
                  << " for first_contentful_paint "
-                 << timing.first_contentful_paint;
+                 << timing.paint_timing.first_contentful_paint;
     return false;
   }
 
-  if (!EventsInOrder(timing.first_paint, timing.first_meaningful_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.first_paint
+  if (!EventsInOrder(timing.paint_timing.first_paint,
+                     timing.paint_timing.first_meaningful_paint)) {
+    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
                  << " for first_meaningful_paint "
-                 << timing.first_meaningful_paint;
+                 << timing.paint_timing.first_meaningful_paint;
     return false;
   }
 
@@ -262,26 +283,35 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnLoadingBehaviorObserved(extra_info);
   if (last_timing != new_timing)
     observer->OnTimingUpdate(new_timing, extra_info);
-  if (new_timing.dom_content_loaded_event_start &&
-      !last_timing.dom_content_loaded_event_start)
+  if (new_timing.document_timing.dom_content_loaded_event_start &&
+      !last_timing.document_timing.dom_content_loaded_event_start)
     observer->OnDomContentLoadedEventStart(new_timing, extra_info);
-  if (new_timing.load_event_start && !last_timing.load_event_start)
+  if (new_timing.document_timing.load_event_start &&
+      !last_timing.document_timing.load_event_start)
     observer->OnLoadEventStart(new_timing, extra_info);
-  if (new_timing.first_layout && !last_timing.first_layout)
+  if (new_timing.document_timing.first_layout &&
+      !last_timing.document_timing.first_layout)
     observer->OnFirstLayout(new_timing, extra_info);
-  if (new_timing.first_paint && !last_timing.first_paint)
+  if (new_timing.paint_timing.first_paint &&
+      !last_timing.paint_timing.first_paint)
     observer->OnFirstPaint(new_timing, extra_info);
-  if (new_timing.first_text_paint && !last_timing.first_text_paint)
+  if (new_timing.paint_timing.first_text_paint &&
+      !last_timing.paint_timing.first_text_paint)
     observer->OnFirstTextPaint(new_timing, extra_info);
-  if (new_timing.first_image_paint && !last_timing.first_image_paint)
+  if (new_timing.paint_timing.first_image_paint &&
+      !last_timing.paint_timing.first_image_paint)
     observer->OnFirstImagePaint(new_timing, extra_info);
-  if (new_timing.first_contentful_paint && !last_timing.first_contentful_paint)
+  if (new_timing.paint_timing.first_contentful_paint &&
+      !last_timing.paint_timing.first_contentful_paint)
     observer->OnFirstContentfulPaint(new_timing, extra_info);
-  if (new_timing.first_meaningful_paint && !last_timing.first_meaningful_paint)
+  if (new_timing.paint_timing.first_meaningful_paint &&
+      !last_timing.paint_timing.first_meaningful_paint)
     observer->OnFirstMeaningfulPaint(new_timing, extra_info);
-  if (new_timing.parse_start && !last_timing.parse_start)
+  if (new_timing.parse_timing.parse_start &&
+      !last_timing.parse_timing.parse_start)
     observer->OnParseStart(new_timing, extra_info);
-  if (new_timing.parse_stop && !last_timing.parse_stop)
+  if (new_timing.parse_timing.parse_stop &&
+      !last_timing.parse_timing.parse_stop)
     observer->OnParseStop(new_timing, extra_info);
 }
 
@@ -507,9 +537,9 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
 
 void PageLoadTracker::NotifyClientRedirectTo(
     const PageLoadTracker& destination) {
-  if (timing_.first_paint) {
+  if (timing_.paint_timing.first_paint) {
     base::TimeTicks first_paint_time =
-        navigation_start() + timing_.first_paint.value();
+        navigation_start() + timing_.paint_timing.first_paint.value();
     base::TimeDelta first_paint_to_navigation;
     if (destination.navigation_start() > first_paint_time)
       first_paint_to_navigation =

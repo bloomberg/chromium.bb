@@ -32,11 +32,12 @@ class MediaPageLoadMetricsObserverTest
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(4);
-    timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing.first_contentful_paint =
+        base::TimeDelta::FromSeconds(4);
+    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
 
     network_bytes_ = 0;

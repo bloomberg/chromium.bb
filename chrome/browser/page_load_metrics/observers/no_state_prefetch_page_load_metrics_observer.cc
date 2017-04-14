@@ -46,10 +46,10 @@ NoStatePrefetchPageLoadMetricsObserver::OnCommit(
 void NoStatePrefetchPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  DCHECK(timing.first_contentful_paint.has_value());
+  DCHECK(timing.paint_timing.first_contentful_paint.has_value());
   prerender_manager_->RecordNoStateFirstContentfulPaint(
       extra_info.start_url, is_no_store_, was_hidden_,
-      *timing.first_contentful_paint);
+      *timing.paint_timing.first_contentful_paint);
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

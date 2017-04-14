@@ -139,7 +139,7 @@ TEST_F(DelayNavigationPageLoadMetricsObserverTest, CommitWithPaint) {
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing.first_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 

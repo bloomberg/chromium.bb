@@ -178,11 +178,13 @@ TEST_F(UkmPageLoadMetricsObserverTest, Basic) {
   // the FirstMeaningfulPaint test below.
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.parse_start = base::TimeDelta::FromMilliseconds(100);
-  timing.dom_content_loaded_event_start =
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(100);
+  timing.document_timing.dom_content_loaded_event_start =
       base::TimeDelta::FromMilliseconds(200);
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(300);
-  timing.load_event_start = base::TimeDelta::FromMilliseconds(500);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(300);
+  timing.document_timing.load_event_start =
+      base::TimeDelta::FromMilliseconds(500);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -258,7 +260,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
 TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_meaningful_paint = base::TimeDelta::FromMilliseconds(600);
+  timing.paint_timing.first_meaningful_paint =
+      base::TimeDelta::FromMilliseconds(600);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -286,7 +289,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   page_load_metrics::PageLoadTiming timing1;
   timing1.navigation_start = base::Time::FromDoubleT(1);
-  timing1.first_contentful_paint = base::TimeDelta::FromMilliseconds(200);
+  timing1.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(200);
   PopulateRequiredTimingFields(&timing1);
 
   // Second navigation reports no timing metrics.

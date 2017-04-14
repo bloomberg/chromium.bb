@@ -47,7 +47,7 @@ TEST_F(PageTimingMetricsSenderTest, Basic) {
 
   PageLoadTiming timing;
   timing.navigation_start = nav_start;
-  timing.first_layout = first_layout;
+  timing.document_timing.first_layout = first_layout;
 
   metrics_sender_->Send(timing);
 
@@ -73,14 +73,14 @@ TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleIPCs) {
 
   PageLoadTiming timing;
   timing.navigation_start = nav_start;
-  timing.first_layout = first_layout;
+  timing.document_timing.first_layout = first_layout;
 
   metrics_sender_->Send(timing);
   ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
 
   // Send an updated PageLoadTiming before the timer has fired. When the timer
   // fires, the updated PageLoadTiming should be sent.
-  timing.load_event_start = load_event;
+  timing.document_timing.load_event_start = load_event;
   metrics_sender_->Send(timing);
 
   // Firing the timer should trigger sending of the OnTimingUpdated IPC with
@@ -97,7 +97,7 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
 
   PageLoadTiming timing;
   timing.navigation_start = nav_start;
-  timing.first_layout = first_layout;
+  timing.document_timing.first_layout = first_layout;
 
   metrics_sender_->Send(timing);
   ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
@@ -108,7 +108,7 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
 
   // Send an updated PageLoadTiming after the timer for the first send request
   // has fired, and verify that a second IPC is sent.
-  timing.load_event_start = load_event;
+  timing.document_timing.load_event_start = load_event;
   metrics_sender_->Send(timing);
   ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
   fake_ipc_sender_.ExpectPageLoadTiming(timing);
@@ -119,7 +119,7 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
 TEST_F(PageTimingMetricsSenderTest, SendIPCOnDestructor) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
-  timing.first_layout = base::TimeDelta::FromMilliseconds(10);
+  timing.document_timing.first_layout = base::TimeDelta::FromMilliseconds(10);
 
   // This test wants to verify behavior in the PageTimingMetricsSender
   // destructor. The EXPECT_CALL will be satisfied when the |metrics_sender_|

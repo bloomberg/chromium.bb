@@ -67,7 +67,7 @@ void PrerenderPageLoadMetricsObserver::OnFirstContentfulPaint(
   DCHECK(!start_ticks_.is_null());
   prerender_manager_->RecordPrerenderFirstContentfulPaint(
       extra_info.start_url, web_contents_, is_no_store_, was_hidden_,
-      start_ticks_ + *timing.first_contentful_paint);
+      start_ticks_ + *timing.paint_timing.first_contentful_paint);
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

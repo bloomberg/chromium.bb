@@ -233,10 +233,12 @@ void LogForegroundDurations(const page_load_metrics::PageLoadTiming& timing,
   if (info.did_commit) {
     PAGE_LOAD_LONG_HISTOGRAM(internal::kHistogramFromGWSForegroundDuration,
                              foreground_duration.value());
-    if (timing.first_paint && timing.first_paint < foreground_duration) {
+    if (timing.paint_timing.first_paint &&
+        timing.paint_timing.first_paint < foreground_duration) {
       PAGE_LOAD_LONG_HISTOGRAM(
           internal::kHistogramFromGWSForegroundDurationAfterPaint,
-          foreground_duration.value() - timing.first_paint.value());
+          foreground_duration.value() -
+              timing.paint_timing.first_paint.value());
     }
   } else {
     PAGE_LOAD_LONG_HISTOGRAM(
@@ -579,7 +581,8 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
   if (timing.IsEmpty())
     return;
 
-  if (!timing.first_paint || timing.first_paint >= abort_info.time_to_abort) {
+  if (!timing.paint_timing.first_paint ||
+      timing.paint_timing.first_paint >= abort_info.time_to_abort) {
     LogCommittedAbortsBeforePaint(abort_info.reason, abort_info.time_to_abort);
   } else if (WasAbortedBeforeInteraction(abort_info,
                                          first_user_interaction_after_paint_)) {
@@ -658,29 +661,31 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
 void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.dom_content_loaded_event_start,
-                                          extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSDomContentLoaded,
-                        timing.dom_content_loaded_event_start.value());
+  if (ShouldLogForegroundEventAfterCommit(
+          timing.document_timing.dom_content_loaded_event_start, extra_info)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramFromGWSDomContentLoaded,
+        timing.document_timing.dom_content_loaded_event_start.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.load_event_start,
-                                          extra_info)) {
+  if (ShouldLogForegroundEventAfterCommit(
+          timing.document_timing.load_event_start, extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLoad,
-                        timing.load_event_start.value());
+                        timing.document_timing.load_event_start.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnFirstPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.first_paint, extra_info)) {
+  if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_paint,
+                                          extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstPaint,
-                        timing.first_paint.value());
+                        timing.paint_timing.first_paint.value());
   }
   first_paint_triggered_ = true;
 }
@@ -688,56 +693,60 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaint(
 void FromGWSPageLoadMetricsLogger::OnFirstTextPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.first_text_paint,
+  if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_text_paint,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
-                        timing.first_text_paint.value());
+                        timing.paint_timing.first_text_paint.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnFirstImagePaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.first_image_paint,
+  if (ShouldLogForegroundEventAfterCommit(timing.paint_timing.first_image_paint,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstImagePaint,
-                        timing.first_image_paint.value());
+                        timing.paint_timing.first_image_paint.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.first_contentful_paint,
-                                          extra_info)) {
+  if (ShouldLogForegroundEventAfterCommit(
+          timing.paint_timing.first_contentful_paint, extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstContentfulPaint,
-                        timing.first_contentful_paint.value());
+                        timing.paint_timing.first_contentful_paint.value());
 
     // If we have a foreground paint, we should have a foreground parse start,
     // since paints can't happen until after parsing starts.
-    DCHECK(WasStartedInForegroundOptionalEventInForeground(timing.parse_start,
-                                                           extra_info));
+    DCHECK(WasStartedInForegroundOptionalEventInForeground(
+        timing.parse_timing.parse_start, extra_info));
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
-        timing.first_contentful_paint.value() - timing.parse_start.value());
+        timing.paint_timing.first_contentful_paint.value() -
+            timing.parse_timing.parse_start.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnParseStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.parse_start, extra_info)) {
+  if (ShouldLogForegroundEventAfterCommit(timing.parse_timing.parse_start,
+                                          extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseStart,
-                        timing.parse_start.value());
+                        timing.parse_timing.parse_start.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.parse_stop, extra_info)) {
+  if (ShouldLogForegroundEventAfterCommit(timing.parse_timing.parse_stop,
+                                          extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseDuration,
-                        timing.parse_stop.value() - timing.parse_start.value());
+                        timing.parse_timing.parse_stop.value() -
+                            timing.parse_timing.parse_start.value());
   }
 }
 

@@ -22,11 +22,12 @@ class AMPPageLoadMetricsObserverTest
     // Reset to the default testing state. Does not reset histogram state.
     timing_.navigation_start = base::Time::FromDoubleT(1);
     timing_.response_start = base::TimeDelta::FromSeconds(2);
-    timing_.parse_start = base::TimeDelta::FromSeconds(3);
-    timing_.first_contentful_paint = base::TimeDelta::FromSeconds(4);
-    timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
-    timing_.load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.parse_timing.parse_start = base::TimeDelta::FromSeconds(3);
+    timing_.paint_timing.first_contentful_paint =
+        base::TimeDelta::FromSeconds(4);
+    timing_.paint_timing.first_image_paint = base::TimeDelta::FromSeconds(5);
+    timing_.paint_timing.first_text_paint = base::TimeDelta::FromSeconds(6);
+    timing_.document_timing.load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
 
@@ -43,21 +44,22 @@ class AMPPageLoadMetricsObserverTest
     ValidateHistogramsFor(
         "PageLoad.Clients.AMPCache2.DocumentTiming."
         "NavigationToDOMContentLoadedEventFired",
-        timing_.dom_content_loaded_event_start, expect_histograms);
+        timing_.document_timing.dom_content_loaded_event_start,
+        expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMPCache2.DocumentTiming.NavigationToFirstLayout",
-        timing_.first_layout, expect_histograms);
+        timing_.document_timing.first_layout, expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMPCache2.DocumentTiming."
         "NavigationToLoadEventFired",
-        timing_.load_event_start, expect_histograms);
+        timing_.document_timing.load_event_start, expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMPCache2.PaintTiming."
         "NavigationToFirstContentfulPaint",
-        timing_.first_contentful_paint, expect_histograms);
+        timing_.paint_timing.first_contentful_paint, expect_histograms);
     ValidateHistogramsFor(
         "PageLoad.Clients.AMPCache2.ParseTiming.NavigationToParseStart",
-        timing_.parse_start, expect_histograms);
+        timing_.parse_timing.parse_start, expect_histograms);
   }
 
   void ValidateHistogramsFor(const std::string& histogram_,

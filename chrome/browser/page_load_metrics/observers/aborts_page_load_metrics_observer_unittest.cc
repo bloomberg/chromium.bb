@@ -246,7 +246,7 @@ TEST_F(AbortsPageLoadMetricsObserverTest,
 TEST_F(AbortsPageLoadMetricsObserverTest, NoAbortNewNavigationAfterPaint) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_paint = base::TimeDelta::FromMicroseconds(1);
+  timing.paint_timing.first_paint = base::TimeDelta::FromMicroseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingUpdate(timing);

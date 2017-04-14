@@ -64,56 +64,56 @@ void PreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.dom_content_loaded_event_start, info)) {
+          timing.document_timing.dom_content_loaded_event_start, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramOfflinePreviewsDOMContentLoadedEventFired,
-      timing.dom_content_loaded_event_start.value());
+      timing.document_timing.dom_content_loaded_event_start.value());
 }
 
 void PreviewsPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
-                                                       info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing.load_event_start, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsLoadEventFired,
-                      timing.load_event_start.value());
+                      timing.document_timing.load_event_start.value());
 }
 
 void PreviewsPageLoadMetricsObserver::OnFirstLayout(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(timing.first_layout,
-                                                       info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing.first_layout, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsFirstLayout,
-                      timing.first_layout.value());
+                      timing.document_timing.first_layout.value());
 }
 
 void PreviewsPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.first_contentful_paint, info)) {
+          timing.paint_timing.first_contentful_paint, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsFirstContentfulPaint,
-                      timing.first_contentful_paint.value());
+                      timing.paint_timing.first_contentful_paint.value());
 }
 
 void PreviewsPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(timing.parse_start,
-                                                       info)) {
+  if (!WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing.parse_start, info)) {
     return;
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsParseStart,
-                      timing.parse_start.value());
+                      timing.parse_timing.parse_start.value());
 }
 
 bool PreviewsPageLoadMetricsObserver::IsOfflinePreview(

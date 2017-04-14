@@ -19,13 +19,16 @@ class ProtocolPageLoadMetricsObserverTest
 
   void InitializeTestPageLoadTiming(page_load_metrics::PageLoadTiming* timing) {
     timing->navigation_start = base::Time::FromDoubleT(1);
-    timing->parse_start = base::TimeDelta::FromMilliseconds(100);
-    timing->first_paint = base::TimeDelta::FromMilliseconds(200);
-    timing->first_contentful_paint = base::TimeDelta::FromMilliseconds(300);
-    timing->first_meaningful_paint = base::TimeDelta::FromMilliseconds(400);
-    timing->dom_content_loaded_event_start =
+    timing->parse_timing.parse_start = base::TimeDelta::FromMilliseconds(100);
+    timing->paint_timing.first_paint = base::TimeDelta::FromMilliseconds(200);
+    timing->paint_timing.first_contentful_paint =
+        base::TimeDelta::FromMilliseconds(300);
+    timing->paint_timing.first_meaningful_paint =
+        base::TimeDelta::FromMilliseconds(400);
+    timing->document_timing.dom_content_loaded_event_start =
         base::TimeDelta::FromMilliseconds(600);
-    timing->load_event_start = base::TimeDelta::FromMilliseconds(1000);
+    timing->document_timing.load_event_start =
+        base::TimeDelta::FromMilliseconds(1000);
     PopulateRequiredTimingFields(timing);
   }
 

@@ -3306,7 +3306,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingSimple) {
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3347,7 +3348,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingReuse) {
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2361);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2361);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3387,7 +3389,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2361);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2361);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3430,7 +3433,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2362);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2362);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3479,7 +3483,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
   // The FCP time should end up on the edge of the bucket.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3509,7 +3514,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintHidden) {
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2654);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2654);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));
@@ -3554,7 +3560,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);  // Non-null time.
-  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(2362);
+  timing.paint_timing.first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(2362);
   page_load_metrics::PageLoadMetricsObserverTestHarness::
       PopulateRequiredTimingFields(&timing);
   observer.OnFirstContentfulPaint(timing, GenericPageLoadExtraInfo(dest_url()));

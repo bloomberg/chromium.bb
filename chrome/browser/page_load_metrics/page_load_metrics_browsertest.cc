@@ -111,9 +111,10 @@ class TimingUpdatedObserver : public content::BrowserMessageFilter {
       return true;
     }
 
-    if ((!(matching_fields_ & FIRST_PAINT) || timing.first_paint) &&
+    if ((!(matching_fields_ & FIRST_PAINT) ||
+         timing.paint_timing.first_paint) &&
         (!(matching_fields_ & FIRST_CONTENTFUL_PAINT) ||
-         timing.first_contentful_paint) &&
+         timing.paint_timing.first_contentful_paint) &&
         (!(matching_fields_ & STYLE_UPDATE_BEFORE_FCP) ||
          timing.style_sheet_timing.update_style_duration_before_fcp)) {
       // Ensure that any other handlers of this message, for example the real

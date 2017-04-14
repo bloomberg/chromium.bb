@@ -44,7 +44,8 @@ void CssScanningMetricsObserver::OnFirstContentfulPaint(
   PAGE_LOAD_HISTOGRAM(
       "PageLoad.Clients.CssScanner.PaintTiming."
       "ParseStartToFirstContentfulPaint",
-      timing.first_contentful_paint.value() - timing.parse_start.value());
+      timing.paint_timing.first_contentful_paint.value() -
+          timing.parse_timing.parse_start.value());
 }
 
 void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
@@ -56,5 +57,6 @@ void CssScanningMetricsObserver::OnFirstMeaningfulPaint(
   PAGE_LOAD_HISTOGRAM(
       "PageLoad.Clients.CssScanner.Experimental.PaintTiming."
       "ParseStartToFirstMeaningfulPaint",
-      timing.first_meaningful_paint.value() - timing.parse_start.value());
+      timing.paint_timing.first_meaningful_paint.value() -
+          timing.parse_timing.parse_start.value());
 }

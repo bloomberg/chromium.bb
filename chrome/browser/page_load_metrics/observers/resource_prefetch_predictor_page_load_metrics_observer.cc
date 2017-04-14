@@ -67,7 +67,7 @@ void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
-      timing.first_contentful_paint.value());
+      timing.paint_timing.first_contentful_paint.value());
 }
 
 void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstMeaningfulPaint(
@@ -75,5 +75,5 @@ void ResourcePrefetchPredictorPageLoadMetricsObserver::OnFirstMeaningfulPaint(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
-      timing.first_meaningful_paint.value());
+      timing.paint_timing.first_meaningful_paint.value());
 }

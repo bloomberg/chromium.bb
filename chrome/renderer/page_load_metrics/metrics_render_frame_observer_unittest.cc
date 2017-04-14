@@ -102,7 +102,7 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.first_layout = first_layout;
+  timing.document_timing.first_layout = first_layout;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -125,8 +125,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.first_layout = first_layout;
-  timing.dom_content_loaded_event_start = dom_event;
+  timing.document_timing.first_layout = first_layout;
+  timing.document_timing.dom_content_loaded_event_start = dom_event;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -137,7 +137,7 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   // part of the test.
   observer.VerifyExpectedTimings();
 
-  timing.load_event_start = load_event;
+  timing.document_timing.load_event_start = load_event;
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -171,9 +171,9 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer->Fire();
 
-  timing.first_layout = first_layout;
-  timing.dom_content_loaded_event_start = dom_event;
-  timing.load_event_start = load_event;
+  timing.document_timing.first_layout = first_layout;
+  timing.document_timing.dom_content_loaded_event_start = dom_event;
+  timing.document_timing.load_event_start = load_event;
   observer.ExpectPageLoadTiming(timing);
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
@@ -197,9 +197,9 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.DidCommitProvisionalLoad(true, false);
   mock_timer2->Fire();
 
-  timing_2.first_layout = first_layout_2;
-  timing_2.dom_content_loaded_event_start = dom_event_2;
-  timing_2.load_event_start = load_event_2;
+  timing_2.document_timing.first_layout = first_layout_2;
+  timing_2.document_timing.dom_content_loaded_event_start = dom_event_2;
+  timing_2.document_timing.load_event_start = load_event_2;
   observer.ExpectPageLoadTiming(timing_2);
 
   observer.DidChangePerformanceTiming();

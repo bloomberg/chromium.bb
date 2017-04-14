@@ -36,8 +36,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossiblePreload) {
   base::TimeDelta contentful_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = contentful_paint;
-  timing.parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing.first_contentful_paint = contentful_paint;
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
@@ -65,7 +65,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossiblePreload) {
   base::TimeDelta contentful_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = contentful_paint;
+  timing.paint_timing.first_contentful_paint = contentful_paint;
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
@@ -79,8 +79,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
   base::TimeDelta contentful_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = contentful_paint;
-  timing.parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing.first_contentful_paint = contentful_paint;
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
@@ -110,8 +110,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   base::TimeDelta contentful_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = contentful_paint;
-  timing.parse_start = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing.first_contentful_paint = contentful_paint;
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
@@ -145,7 +145,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, NoPossibleBlock) {
   base::TimeDelta contentful_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_contentful_paint = contentful_paint;
+  timing.paint_timing.first_contentful_paint = contentful_paint;
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::PageLoadMetadata metadata;
