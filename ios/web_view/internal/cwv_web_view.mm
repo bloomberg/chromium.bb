@@ -33,6 +33,11 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+namespace {
+// A key used in NSCoder to store the session storage object.
+NSString* const kSessionStorageKey = @"sessionStorage";
+}
+
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
   CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
@@ -65,41 +70,9 @@
   self = [super initWithFrame:frame];
   if (self) {
     _configuration = [configuration copy];
-
-    web::WebState::CreateParams webStateCreateParams(
-        configuration.browserState);
-    _webState = web::WebState::Create(webStateCreateParams);
-    _webState->SetWebUsageEnabled(true);
-
-    _webStateObserver =
-        base::MakeUnique<web::WebStateObserverBridge>(_webState.get(), self);
-    _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
-    _webState->SetDelegate(_webStateDelegate.get());
-
-    _webStatePolicyDecider =
-        base::MakeUnique<ios_web_view::WebViewWebStatePolicyDecider>(
-            _webState.get(), self);
-
-    _javaScriptDialogPresenter =
-        base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(
-            self, nullptr);
-
-    // Initialize Translate.
-    ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
+    [self resetWebStateWithSessionStorage:nil];
   }
   return self;
-}
-
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  [super willMoveToSuperview:newSuperview];
-  UIView* subview = _webState->GetView();
-  if (subview.superview == self) {
-    return;
-  }
-  subview.frame = self.frame;
-  subview.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  [self addSubview:subview];
 }
 
 - (BOOL)canGoBack {
@@ -267,6 +240,75 @@
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   return _javaScriptDialogPresenter.get();
+}
+
+#pragma mark - Preserving and Restoring State
+
+- (void)encodeRestorableStateWithCoder:(NSCoder*)coder {
+  [super encodeRestorableStateWithCoder:coder];
+  [coder encodeObject:_webState->BuildSessionStorage()
+               forKey:kSessionStorageKey];
+}
+
+- (void)decodeRestorableStateWithCoder:(NSCoder*)coder {
+  [super decodeRestorableStateWithCoder:coder];
+  CRWSessionStorage* sessionStorage =
+      [coder decodeObjectForKey:kSessionStorageKey];
+  [self resetWebStateWithSessionStorage:sessionStorage];
+}
+
+#pragma mark - Private methods
+
+// Creates a WebState instance and assigns it to |_webState|.
+// It replaces the old |_webState| if any.
+// The WebState is restored from |sessionStorage| if provided.
+- (void)resetWebStateWithSessionStorage:
+    (nullable CRWSessionStorage*)sessionStorage {
+  if (_webState && _webState->GetView().superview == self) {
+    // The web view provided by the old |_webState| has been added as a subview.
+    // It must be removed and replaced with a new |_webState|'s web view, which
+    // is added later.
+    [_webState->GetView() removeFromSuperview];
+  }
+
+  web::WebState::CreateParams webStateCreateParams(_configuration.browserState);
+  if (sessionStorage) {
+    _webState = web::WebState::CreateWithStorageSession(webStateCreateParams,
+                                                        sessionStorage);
+  } else {
+    _webState = web::WebState::Create(webStateCreateParams);
+  }
+  _webState->SetWebUsageEnabled(true);
+
+  _webStateObserver =
+      base::MakeUnique<web::WebStateObserverBridge>(_webState.get(), self);
+  _webStateDelegate = base::MakeUnique<web::WebStateDelegateBridge>(self);
+  _webState->SetDelegate(_webStateDelegate.get());
+
+  _webStatePolicyDecider =
+      base::MakeUnique<ios_web_view::WebViewWebStatePolicyDecider>(
+          _webState.get(), self);
+
+  _javaScriptDialogPresenter =
+      base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
+                                                                       nullptr);
+
+  // Initialize Translate.
+  ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
+
+  [self addInternalWebViewAsSubview];
+}
+
+// Adds the web view provided by |_webState| as a subview unless it has already.
+- (void)addInternalWebViewAsSubview {
+  UIView* subview = _webState->GetView();
+  if (subview.superview == self) {
+    return;
+  }
+  subview.frame = self.bounds;
+  subview.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self addSubview:subview];
 }
 
 @end

@@ -17,17 +17,27 @@
 @synthesize window = _window;
 
 - (BOOL)application:(UIApplication*)application
-    didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
+    willFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
+  // Note that initialization of the window and the root view controller must be
+  // done here, not in -application:didFinishLaunchingWithOptions: when state
+  // restoration is supported.
+
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   self.window.backgroundColor = [UIColor whiteColor];
 
   [CWV configureWithUserAgentProductName:@"Dummy/1.0"];
 
-  [self.window makeKeyAndVisible];
-
   ShellViewController* controller = [[ShellViewController alloc] init];
+  // Gives a restoration identifier so that state restoration works.
+  controller.restorationIdentifier = @"rootViewController";
   self.window.rootViewController = controller;
 
+  return YES;
+}
+
+- (BOOL)application:(UIApplication*)application
+    didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
+  [self.window makeKeyAndVisible];
   return YES;
 }
 
@@ -44,6 +54,17 @@
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
+}
+
+- (BOOL)application:(UIApplication*)application
+    shouldSaveApplicationState:(NSCoder*)coder {
+  return YES;
+}
+
+- (BOOL)application:(UIApplication*)application
+    shouldRestoreApplicationState:(NSCoder*)coder {
+  // TODO(crbug.com/710329): Make this value configurable in the settings.
+  return YES;
 }
 
 @end
