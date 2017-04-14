@@ -60,7 +60,7 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
       has_completion_message = true;
       break;
     }
-    Dispatch(messages[index]);
+    resource_dispatcher_->DispatchMessage(messages[index]);
     if (!weak_this)
       return;
     if (is_deferred_) {
@@ -103,7 +103,8 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
     DCHECK_GT(messages.size(), 0u);
     DCHECK_EQ(messages.back().type(),
               static_cast<uint32_t>(ResourceMsg_RequestComplete::ID));
-    Dispatch(messages.back());
+
+    resource_dispatcher_->DispatchMessage(messages.back());
   }
 }
 
@@ -112,7 +113,10 @@ void URLLoaderClientImpl::OnReceiveResponse(
     mojom::DownloadedTempFilePtr downloaded_file) {
   has_received_response_ = true;
   downloaded_file_ = std::move(downloaded_file);
-  Dispatch(ResourceMsg_ReceivedResponse(request_id_, response_head));
+  if (NeedsStoringMessage())
+    StoreAndDispatch(ResourceMsg_ReceivedResponse(request_id_, response_head));
+  else
+    resource_dispatcher_->OnReceivedResponse(request_id_, response_head);
 }
 
 void URLLoaderClientImpl::OnReceiveRedirect(
@@ -120,20 +124,36 @@ void URLLoaderClientImpl::OnReceiveRedirect(
     const ResourceResponseHead& response_head) {
   DCHECK(!has_received_response_);
   DCHECK(!body_consumer_);
-  Dispatch(
-      ResourceMsg_ReceivedRedirect(request_id_, redirect_info, response_head));
+  if (NeedsStoringMessage()) {
+    StoreAndDispatch(ResourceMsg_ReceivedRedirect(request_id_, redirect_info,
+                                                  response_head));
+  } else {
+    resource_dispatcher_->OnReceivedRedirect(request_id_, redirect_info,
+                                             response_head);
+  }
 }
 
 void URLLoaderClientImpl::OnDataDownloaded(int64_t data_len,
                                            int64_t encoded_data_len) {
-  Dispatch(ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
+  if (NeedsStoringMessage()) {
+    StoreAndDispatch(
+        ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
+  } else {
+    resource_dispatcher_->OnDownloadedData(request_id_, data_len,
+                                           encoded_data_len);
+  }
 }
 
 void URLLoaderClientImpl::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
-  const char* data_ptr = reinterpret_cast<const char*>(data.data());
-  Dispatch(ResourceMsg_ReceivedCachedMetadata(
-      request_id_, std::vector<char>(data_ptr, data_ptr + data.size())));
+  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data.data());
+  std::vector<char> data_to_pass(data_ptr, data_ptr + data.size());
+  if (NeedsStoringMessage()) {
+    StoreAndDispatch(
+        ResourceMsg_ReceivedCachedMetadata(request_id_, data_to_pass));
+  } else {
+    resource_dispatcher_->OnReceivedCachedMetadata(request_id_, data_to_pass);
+  }
 }
 
 void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
@@ -158,28 +178,42 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
 void URLLoaderClientImpl::OnComplete(
     const ResourceRequestCompletionStatus& status) {
   if (!body_consumer_) {
-    Dispatch(ResourceMsg_RequestComplete(request_id_, status));
+    if (NeedsStoringMessage()) {
+      StoreAndDispatch(ResourceMsg_RequestComplete(request_id_, status));
+    } else {
+      resource_dispatcher_->OnRequestComplete(request_id_, status);
+    }
     return;
   }
   body_consumer_->OnComplete(status);
 }
 
-void URLLoaderClientImpl::Dispatch(const IPC::Message& message) {
+bool URLLoaderClientImpl::NeedsStoringMessage() const {
+  return is_deferred_ || deferred_messages_.size() > 0;
+}
+
+void URLLoaderClientImpl::StoreAndDispatch(const IPC::Message& message) {
+  DCHECK(NeedsStoringMessage());
   if (is_deferred_) {
     deferred_messages_.push_back(message);
   } else if (deferred_messages_.size() > 0) {
     deferred_messages_.push_back(message);
     FlushDeferredMessages();
   } else {
-    resource_dispatcher_->DispatchMessage(message);
+    NOTREACHED();
   }
 }
 
 void URLLoaderClientImpl::OnUploadProgress(int64_t current_position,
                                            int64_t total_size,
                                            const base::Closure& ack_callback) {
-  Dispatch(
-      ResourceMsg_UploadProgress(request_id_, current_position, total_size));
+  if (NeedsStoringMessage()) {
+    StoreAndDispatch(
+        ResourceMsg_UploadProgress(request_id_, current_position, total_size));
+  } else {
+    resource_dispatcher_->OnUploadProgress(request_id_, current_position,
+                                           total_size);
+  }
   ack_callback.Run();
 }
 

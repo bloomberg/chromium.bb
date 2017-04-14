@@ -166,8 +166,7 @@ void URLResponseBodyConsumer::NotifyCompletionIfAppropriate() {
   // Cancel this instance in order not to notify twice.
   Cancel();
 
-  resource_dispatcher_->DispatchMessage(
-      ResourceMsg_RequestComplete(request_id_, completion_status_));
+  resource_dispatcher_->OnRequestComplete(request_id_, completion_status_);
   // |this| may be deleted.
 }
 

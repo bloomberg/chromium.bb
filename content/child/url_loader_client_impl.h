@@ -65,7 +65,8 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
 
  private:
-  void Dispatch(const IPC::Message& message);
+  bool NeedsStoringMessage() const;
+  void StoreAndDispatch(const IPC::Message& message);
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
