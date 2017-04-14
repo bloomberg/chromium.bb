@@ -216,8 +216,7 @@ def _ExtractEnumsFromXmlTree(tree):
       value_dict['summary'] = _JoinChildNodes(int_tag)
       enum_dict['values'][int_value] = value_dict
 
-    enum_items = sorted(enum_dict['values'].iteritems(), key=lambda i: i[0])
-    enum_int_values = list(i[0] for i in enum_items)
+    enum_int_values = sorted(enum_dict['values'].keys())
 
     last_int_value = None
     for int_tag in enum.getElementsByTagName('int'):
@@ -230,9 +229,10 @@ def _ExtractEnumsFromXmlTree(tree):
         if left_item_index == 0:
           logging.warning('Insert value %d at the beginning', int_value)
         else:
-          left_int_value, left_value_dict = enum_items[left_item_index - 1]
+          left_int_value = enum_int_values[left_item_index - 1]
+          left_label = enum_dict['values'][left_int_value]['label']
           logging.warning('Insert value %d after %d ("%s")',
-                          int_value, left_int_value, left_value_dict['label'])
+                          int_value, left_int_value, left_label)
       else:
         last_int_value = int_value
 
