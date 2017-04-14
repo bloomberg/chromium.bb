@@ -71,6 +71,16 @@ std::string DirectoryFetchInfo::ToString() const {
 
 ChangeList::ChangeList() {}
 
+ChangeList::ChangeList(const google_apis::TeamDriveList& team_drive_list) {
+  const std::vector<std::unique_ptr<google_apis::TeamDriveResource>>& items =
+      team_drive_list.items();
+  entries_.resize(items.size());
+  parent_resource_ids_.resize(items.size(), "");
+  for (size_t i = 0; i < items.size(); ++i) {
+    ConvertTeamDriveResourceToResourceEntry(*items[i], &entries_[i]);
+  }
+}
+
 ChangeList::ChangeList(const google_apis::ChangeList& change_list)
     : next_url_(change_list.next_link()),
       largest_changestamp_(change_list.largest_change_id()) {

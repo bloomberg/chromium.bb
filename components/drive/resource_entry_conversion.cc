@@ -27,11 +27,16 @@ bool ConvertChangeResourceToResourceEntry(
   ResourceEntry converted;
   std::string parent_resource_id;
   if (input.type() == google_apis::ChangeResource::TEAM_DRIVE) {
-    converted.mutable_file_info()->set_is_directory(true);
-    converted.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
-    if (input.team_drive())
+    if (input.team_drive()) {
       ConvertTeamDriveResourceToResourceEntry(*input.team_drive(), &converted);
-    converted.set_resource_id(input.team_drive_id());
+    } else {
+      // resource_id is same as the Team Drive ID.
+      // Both team_drive_id() and team_drive().id() holds the same ID, but the
+      // latter doesn't exist for deleted items.
+      converted.set_resource_id(input.team_drive_id());
+      converted.mutable_file_info()->set_is_directory(true);
+      converted.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+    }
   } else {
     if (input.file() && !ConvertFileResourceToResourceEntry(
                             *input.file(), &converted, &parent_resource_id))
@@ -138,8 +143,11 @@ void ConvertTeamDriveResourceToResourceEntry(
     const google_apis::TeamDriveResource& input,
     ResourceEntry* out_entry) {
   DCHECK(out_entry);
+  out_entry->mutable_file_info()->set_is_directory(true);
   out_entry->set_title(input.name());
   out_entry->set_base_name(input.name());
+  out_entry->set_resource_id(input.id());
+  out_entry->set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
 }
 
 void ConvertResourceEntryToFileInfo(const ResourceEntry& entry,

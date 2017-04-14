@@ -26,6 +26,7 @@ namespace google_apis {
 class AboutResource;
 class ChangeList;
 class FileList;
+class TeamDriveList;
 }  // namespace google_apis
 
 namespace drive {
@@ -77,6 +78,7 @@ class ChangeList {
   ChangeList();  // For tests.
   explicit ChangeList(const google_apis::ChangeList& change_list);
   explicit ChangeList(const google_apis::FileList& file_list);
+  explicit ChangeList(const google_apis::TeamDriveList& team_drive_list);
   ~ChangeList();
 
   const std::vector<ResourceEntry>& entries() const { return entries_; }

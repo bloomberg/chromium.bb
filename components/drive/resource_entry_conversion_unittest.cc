@@ -419,9 +419,25 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(team_drive_resource->name(), entry.base_name());
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
             entry.modification_date());
+  EXPECT_TRUE(entry.file_info().is_directory());
   EXPECT_EQ(util::kDriveTeamDrivesDirLocalId, entry.parent_local_id());
   EXPECT_EQ("", parent_resource_id);
   EXPECT_FALSE(entry.deleted());
+}
+
+TEST(ResourceEntryConversionTest, ConvertTeamDriveResourceToResourceEntry) {
+  google_apis::TeamDriveResource team_drive_resource;
+  team_drive_resource.set_name("ABC Team Drive");
+  team_drive_resource.set_id("team_drive_id");
+
+  ResourceEntry entry;
+  ConvertTeamDriveResourceToResourceEntry(team_drive_resource, &entry);
+
+  EXPECT_EQ(team_drive_resource.id(), entry.resource_id());
+  EXPECT_EQ(team_drive_resource.name(), entry.title());
+  EXPECT_EQ(team_drive_resource.name(), entry.base_name());
+  EXPECT_TRUE(entry.file_info().is_directory());
+  EXPECT_EQ(util::kDriveTeamDrivesDirLocalId, entry.parent_local_id());
 }
 
 TEST(ResourceEntryConversionTest,
@@ -441,6 +457,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(change_resource.team_drive_id(), entry.resource_id());
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
             entry.modification_date());
+  EXPECT_TRUE(entry.file_info().is_directory());
   EXPECT_EQ(util::kDriveTeamDrivesDirLocalId, entry.parent_local_id());
   EXPECT_EQ("", parent_resource_id);
   EXPECT_TRUE(entry.deleted());
