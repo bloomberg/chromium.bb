@@ -90,11 +90,6 @@ DISPLAY_MANAGER_EXPORT DisplayIdList CreateDisplayIdList(const Displays& list);
 DISPLAY_MANAGER_EXPORT std::string DisplayIdListToString(
     const DisplayIdList& list);
 
-// Returns true if one of following conditions is met.
-// 1) id1 is internal.
-// 2) output index of id1 < output index of id2 and id2 isn't internal.
-DISPLAY_MANAGER_EXPORT bool CompareDisplayIds(int64_t id1, int64_t id2);
-
 }  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_DISPLAY_MANAGER_UTILITIES_H_

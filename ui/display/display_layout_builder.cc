@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ui/display/display.h"
+
 namespace display {
 
 DisplayLayoutBuilder::DisplayLayoutBuilder(const DisplayLayout& layout)
@@ -66,7 +68,7 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetSecondaryPlacement(
 std::unique_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
   std::sort(layout_->placement_list.begin(), layout_->placement_list.end(),
             [](const DisplayPlacement& a, const DisplayPlacement& b) {
-              return a.display_id < b.display_id;
+              return CompareDisplayIds(a.display_id, b.display_id);
             });
   return std::move(layout_);
 }

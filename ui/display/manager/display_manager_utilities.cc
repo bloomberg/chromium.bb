@@ -287,15 +287,4 @@ std::string DisplayIdListToString(const DisplayIdList& list) {
   return s.str();
 }
 
-bool CompareDisplayIds(int64_t id1, int64_t id2) {
-  DCHECK_NE(id1, id2);
-  // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
-  // in edid_parser.cc.
-  int index_1 = id1 & 0xFF;
-  int index_2 = id2 & 0xFF;
-  DCHECK_NE(index_1, index_2) << id1 << " and " << id2;
-  return Display::IsInternalDisplayId(id1) ||
-         (index_1 < index_2 && !Display::IsInternalDisplayId(id2));
-}
-
 }  // namespace display

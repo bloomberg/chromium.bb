@@ -20,6 +20,11 @@ namespace mojom {
 class DisplayDataView;
 }
 
+// Returns true if one of following conditions is met.
+// 1) id1 is internal.
+// 2) output index of id1 < output index of id2 and id2 isn't internal.
+DISPLAY_EXPORT bool CompareDisplayIds(int64_t id1, int64_t id2);
+
 // This class typically, but does not always, correspond to a physical display
 // connected to the system. A fake Display may exist on a headless system, or a
 // Display may correspond to a remote, virtual display.

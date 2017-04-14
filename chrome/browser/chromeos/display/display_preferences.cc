@@ -303,6 +303,7 @@ void LoadDisplayRotationState() {
 
 void StoreDisplayLayoutPref(const display::DisplayIdList& list,
                             const display::DisplayLayout& display_layout) {
+  DCHECK(display::DisplayLayout::Validate(list, display_layout));
   std::string name = display::DisplayIdListToString(list);
 
   PrefService* local_state = g_browser_process->local_state();
@@ -328,6 +329,15 @@ void StoreCurrentDisplayLayoutPrefs() {
   display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
   const display::DisplayLayout& display_layout =
       display_manager->layout_store()->GetRegisteredDisplayLayout(list);
+
+  if (!display::DisplayLayout::Validate(list, display_layout)) {
+    // We should never apply an invalid layout, if we do, it persists and the
+    // user has no way of fixing it except by deleting the local state.
+    LOG(ERROR) << "Attempting to store an invalid display layout in the local"
+               << " state. Skipping.";
+    return;
+  }
+
   StoreDisplayLayoutPref(list, display_layout);
 }
 
