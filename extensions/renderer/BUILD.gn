@@ -245,6 +245,7 @@ source_set("renderer") {
     "//components/guest_view/renderer",
     "//content:resources",
     "//extensions:extensions_resources",
+    "//extensions/common",
     "//extensions/common/api",
     "//gin",
     "//mojo/edk/js",

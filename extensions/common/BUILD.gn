@@ -271,6 +271,7 @@ if (enable_extensions) {
     public_deps = [
       ":common_constants",
       ":mojo",
+      "//content/public/common",
       "//ipc",
       "//skia",
     ]
@@ -284,7 +285,6 @@ if (enable_extensions) {
       "//chrome:resources",
       "//components/crx_file",
       "//components/url_matcher",
-      "//content/public/common",
       "//crypto",
       "//device/bluetooth",
       "//device/usb",
