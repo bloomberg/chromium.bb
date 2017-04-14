@@ -83,7 +83,7 @@ Local Modifications: Removed all files except for those listed in wpt/WPTWhiteLi
 Name: wpt-tools - Tools for Web Platform Tests
 Short Name: wpt-tools
 URL: https://github.com/w3c/wpt-tools
-Version: https://codereview.chromium.org/2671203004 (Also check wpt/WPTHeads)
+Version: 08a039c29ebe850edfd38aa650b9e5477e200bd2 (Also check wpt/WPTHeads)
 License: W3C 3-clause BSD License (http://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/tools/LICENSE
 Security Critical: no

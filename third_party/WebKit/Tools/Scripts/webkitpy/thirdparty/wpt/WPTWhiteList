@@ -3,6 +3,7 @@
 ./config.default.json
 ./CONTRIBUTING.md
 ./LICENSE.md
+./lint
 ./manifest
 ./serve
 ./serve.py
@@ -55,6 +56,9 @@
 ./tools/html5lib/LICENSE
 ./tools/html5lib/README.rst
 ./tools/LICENSE
+./tools/lint/__init__.py
+./tools/lint/fnmatch.py
+./tools/lint/lint.py
 ./tools/localpaths.py
 ./tools/manifest/__init__.py
 ./tools/manifest/catalog/xhtml.dtd
