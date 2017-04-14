@@ -7,6 +7,8 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
@@ -17,11 +19,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,6 +36,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/display/display_switches.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "components/spellcheck/common/spellcheck_messages.h"
+#endif
 
 class ChromeSitePerProcessTest : public InProcessBrowserTest {
  public:
@@ -508,3 +516,117 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(popup_handle_is_valid);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+// Class to sniff incoming IPCs for spell check messages.
+class TestSpellCheckMessageFilter : public content::BrowserMessageFilter {
+ public:
+  explicit TestSpellCheckMessageFilter(content::RenderProcessHost* process_host)
+      : content::BrowserMessageFilter(SpellCheckMsgStart),
+        process_host_(process_host),
+        text_received_(false),
+        message_loop_runner_(base::MakeShared<content::MessageLoopRunner>()) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(TestSpellCheckMessageFilter, message)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService, HandleMessage)
+#else
+      IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestTextCheck, HandleMessage)
+#endif
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  base::string16 last_text() const { return last_text_; }
+
+  void Wait() {
+    if (!text_received_)
+      message_loop_runner_->Run();
+  }
+
+  content::RenderProcessHost* process() const { return process_host_; }
+
+ private:
+  ~TestSpellCheckMessageFilter() override {}
+
+  void HandleMessage(int, int, const base::string16& text) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&TestSpellCheckMessageFilter::HandleMessageOnUI, this,
+                   text));
+  }
+
+  void HandleMessageOnUI(const base::string16& text) {
+    last_text_ = text;
+    if (!text_received_) {
+      text_received_ = true;
+      message_loop_runner_->Quit();
+    }
+  }
+
+  content::RenderProcessHost* process_host_;
+  bool text_received_;
+  base::string16 last_text_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSpellCheckMessageFilter);
+};
+
+class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
+ public:
+  TestBrowserClientForSpellCheck() {}
+  ~TestBrowserClientForSpellCheck() override {}
+
+  // ContentBrowserClient overrides.
+  void RenderProcessWillLaunch(
+      content::RenderProcessHost* process_host) override {
+    filters_.push_back(new TestSpellCheckMessageFilter(process_host));
+    process_host->AddFilter(filters_.back().get());
+    ChromeContentBrowserClient::RenderProcessWillLaunch(process_host);
+  }
+
+  // Retrieves the registered filter for the given RenderProcessHost. It will
+  // return nullptr if the RenderProcessHost was initialized while a different
+  // instance of ContentBrowserClient was in action.
+  scoped_refptr<TestSpellCheckMessageFilter>
+  GetSpellCheckMessageFilterForProcess(
+      content::RenderProcessHost* process_host) const {
+    for (auto filter : filters_) {
+      if (filter->process() == process_host)
+        return filter;
+    }
+    return nullptr;
+  }
+
+ private:
+  std::vector<scoped_refptr<TestSpellCheckMessageFilter>> filters_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserClientForSpellCheck);
+};
+
+// Tests that spelling in out-of-process subframes is checked.
+// See crbug.com/638361 for details.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
+  TestBrowserClientForSpellCheck browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/page_with_contenteditable_in_cross_site_subframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* subframe =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  scoped_refptr<TestSpellCheckMessageFilter> filter =
+      browser_client.GetSpellCheckMessageFilterForProcess(
+          subframe->GetProcess());
+  filter->Wait();
+
+  EXPECT_EQ(base::ASCIIToUTF16("zz."), filter->last_text());
+
+  content::SetBrowserClientForTesting(old_browser_client);
+}
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
