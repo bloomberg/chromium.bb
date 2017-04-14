@@ -639,6 +639,8 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
   MemoryUsage memory_usage(resource_pool_->memory_usage_bytes(),
                            resource_pool_->resource_count());
 
+  gfx::ColorSpace raster_color_space = client_->GetRasterColorSpace();
+
   std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
       client_->BuildRasterQueue(global_state_.tree_priority,
                                 RasterTilePriorityQueue::Type::ALL));
@@ -727,6 +729,13 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
         had_enough_memory_to_schedule_tiles_needed_now = false;
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
+    }
+
+    // If we were able to assign memory to this tile, create a raster task if
+    // necessary.
+    if (!tile->raster_task_) {
+      tile->raster_task_ =
+          CreateRasterTask(prioritized_tile, raster_color_space);
     }
 
     memory_usage += memory_required_by_tile_to_be_scheduled;
@@ -823,11 +832,7 @@ void TileManager::ScheduleTasks(
 
     DCHECK(tile->draw_info().requires_resource());
     DCHECK(!tile->draw_info().resource());
-
-    if (!tile->raster_task_) {
-      tile->raster_task_ =
-          CreateRasterTask(prioritized_tile, raster_color_space);
-    }
+    DCHECK(tile->HasRasterTask());
 
     TileTask* task = tile->raster_task_.get();
 
@@ -938,6 +943,9 @@ void TileManager::ScheduleTasks(
 scoped_refptr<TileTask> TileManager::CreateRasterTask(
     const PrioritizedTile& prioritized_tile,
     const gfx::ColorSpace& color_space) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "TileManager::CreateRasterTask");
+
   Tile* tile = prioritized_tile.tile();
 
   // Get the resource.
