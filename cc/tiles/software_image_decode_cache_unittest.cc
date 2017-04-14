@@ -694,7 +694,15 @@ TEST(SoftwareImageDecodeCacheTest, GetTaskForImageDifferentImage) {
   cache.UnrefImage(second_draw_image);
 }
 
-TEST(SoftwareImageDecodeCacheTest, GetTaskForImageDifferentColorSpace) {
+// crbug.com/709341
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetTaskForImageDifferentColorSpace \
+  DISABLED_GetTaskForImageDifferentColorSpace
+#else
+#define MAYBE_GetTaskForImageDifferentColorSpace \
+  GetTaskForImageDifferentColorSpace
+#endif
+TEST(SoftwareImageDecodeCacheTest, MAYBE_GetTaskForImageDifferentColorSpace) {
   TestSoftwareImageDecodeCache cache;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
