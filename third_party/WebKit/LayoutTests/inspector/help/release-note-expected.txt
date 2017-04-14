@@ -4,7 +4,7 @@ Last release note version seen:
 0
 
 Dumping release note text:
-Highlights from March 2017 update
+Highlights from Chrome 100 update
 Improved Performance and Memory panels
 Edit cookies directly from the Application panel
 LEARN MORECLOSE
