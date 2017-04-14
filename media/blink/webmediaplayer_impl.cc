@@ -1096,6 +1096,8 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   // If the CDM is set from the constructor there is no promise
   // (|set_cdm_result_|) to fulfill.
   if (success) {
+    media_log_->SetBooleanProperty("has_cdm", true);
+
     // This will release the previously attached CDM (if any).
     cdm_ = std::move(pending_cdm_);
     if (set_cdm_result_) {
