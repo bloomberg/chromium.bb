@@ -2228,6 +2228,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz',
       'gale',
       'gonzo',
+      'guado',
       'kip',
       'lakitu-gpu',
       'lasilla-ground',

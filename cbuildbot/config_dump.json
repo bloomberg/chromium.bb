@@ -10334,6 +10334,7 @@
     },
     "guado-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "guado"
         ],
@@ -14812,6 +14813,7 @@
             "gale-paladin",
             "glados-paladin",
             "gonzo-paladin",
+            "guado-paladin",
             "guado_moblab-paladin",
             "kevin-paladin",
             "kip-paladin",
