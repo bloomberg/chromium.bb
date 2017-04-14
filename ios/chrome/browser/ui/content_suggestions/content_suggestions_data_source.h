@@ -40,6 +40,14 @@ typedef void (^MoreSuggestionsFetched)(NSArray<ContentSuggestion*>* _Nonnull);
                               (void (^_Nonnull)(FaviconAttributes* _Nonnull))
                                   completion;
 
+// Fetches favicon image associated with this |suggestion| in history. If it is
+// not present in the history, tries to download it. Calls the completion block
+// if an image has been found.
+// This can only be used for public URL.
+- (void)
+fetchFaviconImageForSuggestion:(nonnull ContentSuggestionIdentifier*)suggestion
+                    completion:(void (^_Nonnull)(UIImage* _Nonnull))completion;
+
 // Fetches additional content. All the |knownSuggestions| must come from the
 // same |sectionInfo|. If the fetch was completed, the given |callback| is
 // called with the new content.

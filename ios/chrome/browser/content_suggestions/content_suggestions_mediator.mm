@@ -234,6 +234,27 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                                              completion:completion];
 }
 
+- (void)fetchFaviconImageForSuggestion:(ContentSuggestionIdentifier*)suggestion
+                            completion:(void (^)(UIImage*))completion {
+  if (!completion)
+    return;
+
+  void (^imageCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
+    if (!image.IsEmpty()) {
+      completion([image.ToUIImage() copy]);
+    }
+  };
+
+  ntp_snippets::ContentSuggestion::ID identifier =
+      ntp_snippets::ContentSuggestion::ID(
+          [[self categoryWrapperForSectionInfo:suggestion.sectionInfo]
+              category],
+          suggestion.IDInSection);
+  self.contentService->FetchSuggestionFavicon(
+      identifier, /* minimum_size_in_pixel = */ 1, kDefaultFaviconSize,
+      base::BindBlockArc(imageCallback));
+}
+
 #pragma mark - ContentSuggestionsServiceObserver
 
 - (void)contentSuggestionsService:

@@ -476,6 +476,18 @@ SectionIdentifier SectionIdentifierForInfo(
                      weakItem.attributes = attributes;
                    }];
 
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  [self.dataSource
+      fetchFaviconImageForSuggestion:articleItem.suggestionIdentifier
+                          completion:^void(UIImage* favicon) {
+                            if (!weakItem || !weakSelf)
+                              return;
+
+                            weakItem.attributes =
+                                [FaviconAttributes attributesWithImage:favicon];
+                            [weakSelf reconfigure:weakItem];
+                          }];
+
   return articleItem;
 }
 
