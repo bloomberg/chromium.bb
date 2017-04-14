@@ -13,6 +13,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -64,6 +65,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
@@ -87,6 +89,9 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
@@ -184,6 +189,43 @@ using content::RenderWidgetHostView;
 using content::WebContents;
 
 namespace {
+
+// This class shows or hides the top arrow of the infobar in accordance with the
+// visibility of the omnibox popup. It hides the top arrow when the omnibox
+// popup is shown, and vice versa.
+class OmniboxPopupModelObserverBridge final : public OmniboxPopupModelObserver {
+ public:
+  explicit OmniboxPopupModelObserverBridge(BrowserWindowController* controller)
+      : controller_(controller),
+        omnibox_popup_model_([controller_ locationBarBridge]
+                                 ->GetOmniboxView()
+                                 ->model()
+                                 ->popup_model()),
+        omnibox_popup_model_observer_(this) {
+    DCHECK(omnibox_popup_model_);
+    omnibox_popup_model_observer_.Add(omnibox_popup_model_);
+  }
+
+  void OnOmniboxPopupShownOrHidden() override {
+    int max_top_arrow_height = 0;
+    if (!omnibox_popup_model_->IsOpen()) {
+      base::scoped_nsobject<BrowserWindowLayout> layout(
+          [[BrowserWindowLayout alloc] init]);
+      [controller_ updateLayoutParameters:layout];
+      max_top_arrow_height = [layout computeLayout].infoBarMaxTopArrowHeight;
+    }
+    [[controller_ infoBarContainerController]
+        setMaxTopArrowHeight:max_top_arrow_height];
+  }
+
+ private:
+  BrowserWindowController* controller_;
+  OmniboxPopupModel* omnibox_popup_model_;
+  ScopedObserver<OmniboxPopupModel, OmniboxPopupModelObserver>
+      omnibox_popup_model_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModelObserverBridge);
+};
 
 void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   // Make the window handle browser window commands.
@@ -388,6 +430,9 @@ bool IsTabDetachingInFullscreenEnabled() {
             [self window],
             extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
             windowShim_.get()));
+
+    omniboxPopupModelObserverBridge_.reset(
+        new OmniboxPopupModelObserverBridge(self));
 
     blockLayoutSubviews_ = NO;
 
