@@ -16,9 +16,17 @@ namespace blink {
 // A ModuleScriptFetchRequest is a "parameter object" for
 // Modulator::fetch{,New}SingleModule to avoid the methods having too many
 // arguments.
-// In terms of spec, a ModuleScriptFetchRequest carries most of the arguments
+// In terms of spec, a ModuleScriptFetchRequest carries the arguments
 // for "fetch a single module script" algorithm:
 // https://html.spec.whatwg.org/#fetch-a-single-module-script
+// and "internal module script graph fetching procedure":
+// https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
+// EXCEPT for:
+// - an ancestor list ("internal module script graph fetching procedure" only)
+// - a top-level module fetch flag
+// - a module map settings object
+// - a fetch client settings object
+// - a destination
 class ModuleScriptFetchRequest final {
   STACK_ALLOCATED();
 
