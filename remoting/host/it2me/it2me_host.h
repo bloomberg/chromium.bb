@@ -93,11 +93,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
     SetState(state, error_message);
   }
 
-  // Updates the current policies based on |policies|.  Runs |done_callback| on
-  // the calling thread once the policies have been updated.
-  void SetPolicyForTesting(std::unique_ptr<base::DictionaryValue> policies,
-                           const base::Closure& done_callback);
-
   // Returns the callback used for validating the connection.  Do not run the
   // returned callback after this object has been destroyed.
   protocol::ValidatingAuthenticator::ValidationCallback

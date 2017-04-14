@@ -294,15 +294,6 @@ void It2MeHost::OnClientDisconnected(const std::string& jid) {
   DisconnectOnNetworkThread();
 }
 
-void It2MeHost::SetPolicyForTesting(
-    std::unique_ptr<base::DictionaryValue> policies,
-    const base::Closure& done_callback) {
-  host_context_->network_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&It2MeHost::OnPolicyUpdate, this, base::Passed(&policies)),
-      done_callback);
-}
-
 ValidationCallback It2MeHost::GetValidationCallbackForTesting() {
   return base::Bind(&It2MeHost::ValidateConnectionDetails,
                     base::Unretained(this));
