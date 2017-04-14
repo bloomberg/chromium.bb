@@ -271,8 +271,7 @@ void SpdySessionPool::RemoveUnavailableSession(
   DCHECK(!IsSessionAvailable(unavailable_session));
 
   unavailable_session->net_log().AddEvent(
-      NetLogEventType::HTTP2_SESSION_POOL_REMOVE_SESSION,
-      unavailable_session->net_log().source().ToEventParametersCallback());
+      NetLogEventType::HTTP2_SESSION_POOL_REMOVE_SESSION);
 
   SessionSet::iterator it = sessions_.find(unavailable_session.get());
   CHECK(it != sessions_.end());
