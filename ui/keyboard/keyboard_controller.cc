@@ -411,8 +411,9 @@ void KeyboardController::OnShowImeIfNeeded() {
 }
 
 void KeyboardController::ShowKeyboardInternal(int64_t display_id) {
-  if (!container_.get())
-    return;
+  // The container window should have been created already when
+  // |Shell::CreateKeyboard| is called.
+  DCHECK(container_.get());
 
   if (container_->children().empty()) {
     keyboard::MarkKeyboardLoadStarted();
