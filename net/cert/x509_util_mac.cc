@@ -111,6 +111,8 @@ CreateSecCertificateArrayForX509Certificate(X509Certificate* cert) {
     base::ScopedCFTypeRef<SecCertificateRef> sec_cert(
         CreateSecCertificateFromBytes(CRYPTO_BUFFER_data(intermediate),
                                       CRYPTO_BUFFER_len(intermediate)));
+    if (!sec_cert)
+      return base::ScopedCFTypeRef<CFMutableArrayRef>();
     CFArrayAppendValue(cert_list, sec_cert);
   }
 #else
