@@ -38,13 +38,9 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/TimeRanges.h"
-#include "core/html/media/HTMLMediaElementControlsList.h"
-#include "core/html/media/HTMLMediaSource.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/track/TextTrackList.h"
@@ -52,7 +48,6 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/api/LayoutSliderItem.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
@@ -99,135 +94,7 @@ bool IsUserInteractionEventForSlider(Event* event,
          type == EventTypeNames::pointermove;
 }
 
-Element* ElementFromCenter(Element& element) {
-  ClientRect* client_rect = element.getBoundingClientRect();
-  int center_x =
-      static_cast<int>((client_rect->left() + client_rect->right()) / 2);
-  int center_y =
-      static_cast<int>((client_rect->top() + client_rect->bottom()) / 2);
-
-  return element.GetDocument().ElementFromPoint(center_x, center_y);
-}
-
 }  // anonymous namespace
-
-// ----------------------------
-MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
-    MediaControls& media_controls)
-    : MediaControlInputElement(media_controls, kMediaDownloadButton) {}
-
-MediaControlDownloadButtonElement* MediaControlDownloadButtonElement::Create(
-    MediaControls& media_controls) {
-  MediaControlDownloadButtonElement* button =
-      new MediaControlDownloadButtonElement(media_controls);
-  button->EnsureUserAgentShadowRoot();
-  button->setType(InputTypeNames::button);
-  button->SetShadowPseudoId(
-      AtomicString("-internal-media-controls-download-button"));
-  button->SetIsWanted(false);
-  return button;
-}
-
-WebLocalizedString::Name
-MediaControlDownloadButtonElement::GetOverflowStringName() {
-  return WebLocalizedString::kOverflowMenuDownload;
-}
-
-bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
-  const KURL& url = MediaElement().currentSrc();
-
-  // Check page settings to see if download is disabled.
-  if (GetDocument().GetPage() &&
-      GetDocument().GetPage()->GetSettings().GetHideDownloadUI())
-    return false;
-
-  // URLs that lead to nowhere are ignored.
-  if (url.IsNull() || url.IsEmpty())
-    return false;
-
-  // If we have no source, we can't download.
-  if (MediaElement().getNetworkState() == HTMLMediaElement::kNetworkEmpty ||
-      MediaElement().getNetworkState() == HTMLMediaElement::kNetworkNoSource) {
-    return false;
-  }
-
-  // Local files and blobs (including MSE) should not have a download button.
-  if (url.IsLocalFile() || url.ProtocolIs("blob"))
-    return false;
-
-  // MediaStream can't be downloaded.
-  if (HTMLMediaElement::IsMediaStreamURL(url.GetString()))
-    return false;
-
-  // MediaSource can't be downloaded.
-  if (HTMLMediaSource::Lookup(url))
-    return false;
-
-  // HLS stream shouldn't have a download button.
-  if (HTMLMediaElement::IsHLSURL(url))
-    return false;
-
-  // Infinite streams don't have a clear end at which to finish the download
-  // (would require adding UI to prompt for the duration to download).
-  if (MediaElement().duration() == std::numeric_limits<double>::infinity())
-    return false;
-
-  // The attribute disables the download button.
-  if (MediaElement().ControlsListInternal()->ShouldHideDownload()) {
-    UseCounter::Count(MediaElement().GetDocument(),
-                      UseCounter::kHTMLMediaElementControlsListNoDownload);
-    return false;
-  }
-
-  return true;
-}
-
-void MediaControlDownloadButtonElement::SetIsWanted(bool wanted) {
-  MediaControlElement::SetIsWanted(wanted);
-
-  if (!IsWanted())
-    return;
-
-  DCHECK(IsWanted());
-  if (!show_use_counted_) {
-    show_use_counted_ = true;
-    RecordMetrics(DownloadActionMetrics::kShown);
-  }
-}
-
-void MediaControlDownloadButtonElement::DefaultEventHandler(Event* event) {
-  const KURL& url = MediaElement().currentSrc();
-  if (event->type() == EventTypeNames::click &&
-      !(url.IsNull() || url.IsEmpty())) {
-    Platform::Current()->RecordAction(
-        UserMetricsAction("Media.Controls.Download"));
-    if (!click_use_counted_) {
-      click_use_counted_ = true;
-      RecordMetrics(DownloadActionMetrics::kClicked);
-    }
-    if (!anchor_) {
-      HTMLAnchorElement* anchor = HTMLAnchorElement::Create(GetDocument());
-      anchor->setAttribute(HTMLNames::downloadAttr, "");
-      anchor_ = anchor;
-    }
-    anchor_->SetURL(url);
-    anchor_->DispatchSimulatedClick(event);
-  }
-  MediaControlInputElement::DefaultEventHandler(event);
-}
-
-DEFINE_TRACE(MediaControlDownloadButtonElement) {
-  visitor->Trace(anchor_);
-  MediaControlInputElement::Trace(visitor);
-}
-
-void MediaControlDownloadButtonElement::RecordMetrics(
-    DownloadActionMetrics metric) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, download_action_histogram,
-                      ("Media.Controls.Download",
-                       static_cast<int>(DownloadActionMetrics::kCount)));
-  download_action_histogram.Count(static_cast<int>(metric));
-}
 
 // ----------------------------
 
@@ -419,106 +286,6 @@ void MediaControlVolumeSliderElement::SetVolume(double volume) {
 
 bool MediaControlVolumeSliderElement::KeepEventInNode(Event* event) {
   return IsUserInteractionEventForSlider(event, GetLayoutObject());
-}
-
-// ----------------------------
-
-MediaControlCastButtonElement::MediaControlCastButtonElement(
-    MediaControls& media_controls,
-    bool is_overlay_button)
-    : MediaControlInputElement(media_controls, kMediaCastOnButton),
-      is_overlay_button_(is_overlay_button) {
-  if (is_overlay_button_)
-    RecordMetrics(CastOverlayMetrics::kCreated);
-  SetIsPlayingRemotely(false);
-}
-
-MediaControlCastButtonElement* MediaControlCastButtonElement::Create(
-    MediaControls& media_controls,
-    bool is_overlay_button) {
-  MediaControlCastButtonElement* button =
-      new MediaControlCastButtonElement(media_controls, is_overlay_button);
-  button->EnsureUserAgentShadowRoot();
-  button->SetShadowPseudoId(is_overlay_button
-                                ? "-internal-media-controls-overlay-cast-button"
-                                : "-internal-media-controls-cast-button");
-  button->setType(InputTypeNames::button);
-  return button;
-}
-
-void MediaControlCastButtonElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click) {
-    if (is_overlay_button_)
-      Platform::Current()->RecordAction(
-          UserMetricsAction("Media.Controls.CastOverlay"));
-    else
-      Platform::Current()->RecordAction(
-          UserMetricsAction("Media.Controls.Cast"));
-
-    if (is_overlay_button_ && !click_use_counted_) {
-      click_use_counted_ = true;
-      RecordMetrics(CastOverlayMetrics::kClicked);
-    }
-    if (MediaElement().IsPlayingRemotely()) {
-      MediaElement().RequestRemotePlaybackControl();
-    } else {
-      MediaElement().RequestRemotePlayback();
-    }
-  }
-  MediaControlInputElement::DefaultEventHandler(event);
-}
-
-void MediaControlCastButtonElement::SetIsPlayingRemotely(
-    bool is_playing_remotely) {
-  if (is_playing_remotely) {
-    if (is_overlay_button_) {
-      SetDisplayType(kMediaOverlayCastOnButton);
-    } else {
-      SetDisplayType(kMediaCastOnButton);
-    }
-  } else {
-    if (is_overlay_button_) {
-      SetDisplayType(kMediaOverlayCastOffButton);
-    } else {
-      SetDisplayType(kMediaCastOffButton);
-    }
-  }
-  UpdateOverflowString();
-}
-
-WebLocalizedString::Name
-MediaControlCastButtonElement::GetOverflowStringName() {
-  if (MediaElement().IsPlayingRemotely())
-    return WebLocalizedString::kOverflowMenuStopCast;
-  return WebLocalizedString::kOverflowMenuCast;
-}
-
-void MediaControlCastButtonElement::TryShowOverlay() {
-  DCHECK(is_overlay_button_);
-
-  SetIsWanted(true);
-  if (ElementFromCenter(*this) != &MediaElement()) {
-    SetIsWanted(false);
-    return;
-  }
-
-  DCHECK(IsWanted());
-  if (!show_use_counted_) {
-    show_use_counted_ = true;
-    RecordMetrics(CastOverlayMetrics::kShown);
-  }
-}
-
-bool MediaControlCastButtonElement::KeepEventInNode(Event* event) {
-  return IsUserInteractionEvent(event);
-}
-
-void MediaControlCastButtonElement::RecordMetrics(CastOverlayMetrics metric) {
-  DCHECK(is_overlay_button_);
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, overlay_histogram,
-      ("Cast.Sender.Overlay", static_cast<int>(CastOverlayMetrics::kCount)));
-  overlay_histogram.Count(static_cast<int>(metric));
 }
 
 }  // namespace blink

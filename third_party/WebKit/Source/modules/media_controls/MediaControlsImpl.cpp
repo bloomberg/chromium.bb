@@ -46,7 +46,9 @@
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
+#include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
+#include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 #include "modules/media_controls/elements/MediaControlFullscreenButtonElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
@@ -314,10 +316,8 @@ void MediaControlsImpl::InitializeControls() {
     overlay_enclosure_->AppendChild(overlay_play_button_);
   }
 
-  MediaControlCastButtonElement* overlay_cast_button =
-      MediaControlCastButtonElement::Create(*this, true);
-  overlay_cast_button_ = overlay_cast_button;
-  overlay_enclosure_->AppendChild(overlay_cast_button);
+  overlay_cast_button_ = new MediaControlCastButtonElement(*this, true);
+  overlay_enclosure_->AppendChild(overlay_cast_button_);
 
   AppendChild(overlay_enclosure_);
 
@@ -355,15 +355,11 @@ void MediaControlsImpl::InitializeControls() {
   fullscreen_button_ = new MediaControlFullscreenButtonElement(*this);
   panel_->AppendChild(fullscreen_button_);
 
-  MediaControlDownloadButtonElement* download_button =
-      MediaControlDownloadButtonElement::Create(*this);
-  download_button_ = download_button;
-  panel_->AppendChild(download_button);
+  download_button_ = new MediaControlDownloadButtonElement(*this);
+  panel_->AppendChild(download_button_);
 
-  MediaControlCastButtonElement* cast_button =
-      MediaControlCastButtonElement::Create(*this, false);
-  cast_button_ = cast_button;
-  panel_->AppendChild(cast_button);
+  cast_button_ = new MediaControlCastButtonElement(*this, false);
+  panel_->AppendChild(cast_button_);
 
   toggle_closed_captions_button_ =
       new MediaControlToggleClosedCaptionsButtonElement(*this);
@@ -391,11 +387,11 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
       *this, new MediaControlFullscreenButtonElement(*this)));
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
-      *this, MediaControlDownloadButtonElement::Create(*this)));
+      *this, new MediaControlDownloadButtonElement(*this)));
   overflow_list_->AppendChild(mute_button_->CreateOverflowElement(
       *this, new MediaControlMuteButtonElement(*this)));
   overflow_list_->AppendChild(cast_button_->CreateOverflowElement(
-      *this, MediaControlCastButtonElement::Create(*this, false)));
+      *this, new MediaControlCastButtonElement(*this, false)));
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           *this, new MediaControlToggleClosedCaptionsButtonElement(*this)));

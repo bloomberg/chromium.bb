@@ -32,51 +32,8 @@
 
 #include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/html/shadow/MediaControlTimelineMetrics.h"
-#include "public/platform/WebLocalizedString.h"
 
 namespace blink {
-
-// Represents a button that allows users to download media if the file is
-// downloadable.
-class CORE_EXPORT MediaControlDownloadButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlDownloadButtonElement* Create(MediaControls&);
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
-  // Returns true if the download button should be shown. We should
-  // show the button for only non-MSE, non-EME, and non-MediaStream content.
-  bool ShouldDisplayDownloadButton();
-
-  void SetIsWanted(bool) override;
-
-  DECLARE_VIRTUAL_TRACE();
-
- private:
-  explicit MediaControlDownloadButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-
-  // Points to an anchor element that contains the URL of the media file.
-  Member<HTMLAnchorElement> anchor_;
-
-  // This is used for UMA histogram (Media.Controls.Download). New values should
-  // be appended only and must be added before |Count|.
-  enum class DownloadActionMetrics {
-    kShown = 0,
-    kClicked,
-    kCount  // Keep last.
-  };
-  void RecordMetrics(DownloadActionMetrics);
-
-  // UMA related boolean. They are used to prevent counting something twice
-  // for the same media element.
-  bool click_use_counted_ = false;
-  bool show_use_counted_ = false;
-};
 
 class CORE_EXPORT MediaControlTimelineElement final
     : public MediaControlInputElement {
@@ -103,51 +60,6 @@ class CORE_EXPORT MediaControlTimelineElement final
   int TimelineWidth();
 
   MediaControlTimelineMetrics metrics_;
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlCastButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlCastButtonElement* Create(MediaControls&,
-                                               bool is_overlay_button);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-
-  void SetIsPlayingRemotely(bool);
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
-  // This will show a cast button if it is not covered by another element.
-  // This MUST be called for cast button elements that are overlay elements.
-  void TryShowOverlay();
-
- private:
-  explicit MediaControlCastButtonElement(MediaControls&,
-                                         bool is_overlay_button);
-
-  void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
-
-  bool is_overlay_button_;
-
-  // This is used for UMA histogram (Cast.Sender.Overlay). New values should
-  // be appended only and must be added before |Count|.
-  enum class CastOverlayMetrics {
-    kCreated = 0,
-    kShown,
-    kClicked,
-    kCount  // Keep last.
-  };
-  void RecordMetrics(CastOverlayMetrics);
-
-  // UMA related boolean. They are used to prevent counting something twice
-  // for the same media element.
-  bool click_use_counted_ = false;
-  bool show_use_counted_ = false;
 };
 
 // ----------------------------
