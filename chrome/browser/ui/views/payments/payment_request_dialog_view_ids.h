@@ -30,6 +30,13 @@ enum class DialogViewID : int {
   BACK_BUTTON,
   CVC_PROMPT_CONFIRM_BUTTON,
 
+  // The following are buttons that are displayed inline in the Payment Sheet
+  // sections when no option is selected or available.
+  PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON,
+  PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON,
+  PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON,
+  PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON,
+
   // The following are Label objects.
   ORDER_SUMMARY_TOTAL_AMOUNT_LABEL,
   ORDER_SUMMARY_LINE_ITEM_1,

@@ -277,6 +277,9 @@
           Recently Closed
         </message>
       </if>
+      <message name="IDS_CHOOSE" desc="Label for a button to choose something, like a shipping address for a payment request. [CHAR-LIMIT=20]" formatter_data="android_java">
+        Choose
+      </message>
 
       <!-- Accessibility labels for generic items -->
       <message name="IDS_ACCNAME_BACK" desc="The accessible name for the back button.">

@@ -60,8 +60,9 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
                          DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
-  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
-                         DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON)));
   EXPECT_EQ(nullptr,
             dialog_view()->GetViewByID(static_cast<int>(
                 DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION)));
@@ -142,6 +143,28 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // If shipping and contact info are requested, show all the rows.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        AllRowsPresent) {
+  InvokePaymentRequestUI();
+
+  EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SUMMARY_SECTION)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON)));
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON)));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       AllClickableRowsPresent) {
+  AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
+  AddAutofillProfile(autofill::test::GetFullProfile());
   InvokePaymentRequestUI();
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(

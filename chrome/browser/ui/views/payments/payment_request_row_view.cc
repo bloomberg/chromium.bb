@@ -11,9 +11,10 @@
 
 namespace payments {
 
-PaymentRequestRowView::PaymentRequestRowView(
-    views::ButtonListener* listener)
-  : views::CustomButton(listener) {
+PaymentRequestRowView::PaymentRequestRowView(views::ButtonListener* listener,
+                                             bool clickable)
+    : views::CustomButton(listener), clickable_(clickable) {
+  SetEnabled(clickable_);
   SetBorder(payments::CreatePaymentRequestRowBorder());
 }
 
@@ -21,8 +22,8 @@ PaymentRequestRowView::~PaymentRequestRowView() {}
 
 // views::CustomButton:
 void PaymentRequestRowView::StateChanged(ButtonState old_state) {
-  if (state() == views::Button::STATE_HOVERED ||
-      state() == views::Button::STATE_PRESSED) {
+  if (clickable_ && (state() == views::Button::STATE_HOVERED ||
+                     state() == views::Button::STATE_PRESSED)) {
     set_background(views::Background::CreateSolidBackground(SK_ColorLTGRAY));
   } else {
     set_background(nullptr);

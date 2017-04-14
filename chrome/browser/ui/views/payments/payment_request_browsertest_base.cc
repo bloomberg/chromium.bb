@@ -208,18 +208,44 @@ void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {
 void PaymentRequestBrowserTestBase::OpenPaymentMethodScreen() {
   ResetEventObserver(DialogEvent::PAYMENT_METHOD_OPENED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION);
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
+
+  ClickOnDialogViewAndWait(view);
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingAddressSectionScreen() {
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_SECTION_OPENED);
 
-  ClickOnDialogViewAndWait(
-      DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION);
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
+
+  ClickOnDialogViewAndWait(view);
 }
 
 void PaymentRequestBrowserTestBase::OpenShippingOptionSectionScreen() {
   ResetEventObserver(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
+
+  views::View* view = delegate_->dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION));
+  if (!view) {
+    view = delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION_BUTTON));
+  }
+
+  EXPECT_TRUE(view);
 
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION);
 }

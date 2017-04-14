@@ -14,13 +14,17 @@ namespace payments {
 // darkens on hover and displays a horizontal ruler on its lower bound.
 class PaymentRequestRowView : public views::CustomButton {
  public:
-  explicit PaymentRequestRowView(views::ButtonListener* listener);
+  // Creates a row view. If |clickable| is true, the row will be shaded on hover
+  // and handle click events.
+  PaymentRequestRowView(views::ButtonListener* listener, bool clickable);
   ~PaymentRequestRowView() override;
 
   // views::CustomButton:
   void StateChanged(ButtonState old_state) override;
 
  private:
+  bool clickable_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestRowView);
 };
 
