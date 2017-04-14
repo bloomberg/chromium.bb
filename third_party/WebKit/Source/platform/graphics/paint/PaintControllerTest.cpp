@@ -2276,7 +2276,7 @@ class PaintControllerUnderInvalidationTest
 };
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawing) {
-  EXPECT_DEATH(TestChangeDrawing(), "under-invalidation: display item changed");
+  EXPECT_DEATH(TestChangeDrawing(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawing) {
@@ -2297,29 +2297,22 @@ TEST_F(PaintControllerUnderInvalidationTest, NoopPairsInSubsequence) {
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeDrawingInSubsequence) {
-  EXPECT_DEATH(TestChangeDrawingInSubsequence(),
-               "\"\\(In cached subsequence of first\\)\" under-invalidation: "
-               "display item changed");
+  EXPECT_DEATH(TestChangeDrawingInSubsequence(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, MoreDrawingInSubsequence) {
-  EXPECT_DEATH(TestMoreDrawingInSubsequence(),
-               "Check failed: false. Can't find cached display item");
+  EXPECT_DEATH(TestMoreDrawingInSubsequence(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawingInSubsequence) {
   // We allow invalidated display item clients as long as they would produce the
   // same display items. The cases of changed display items are tested by other
   // test cases.
-  EXPECT_DEATH(TestLessDrawingInSubsequence(),
-               "\"\\(In cached subsequence of first\\)\" under-invalidation: "
-               "new subsequence wrong length");
+  EXPECT_DEATH(TestLessDrawingInSubsequence(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence) {
-  EXPECT_DEATH(TestChangeNonCacheableInSubsequence(),
-               "\"\\(In cached subsequence of container\\)\" "
-               "under-invalidation: display item changed");
+  EXPECT_DEATH(TestChangeNonCacheableInSubsequence(), "");
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
