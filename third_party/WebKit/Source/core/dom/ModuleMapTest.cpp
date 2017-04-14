@@ -132,8 +132,8 @@ void ModuleMapTestModulator::FetchNewSingleModule(
 void ModuleMapTestModulator::ResolveFetches() {
   for (const auto& test_request : test_requests_) {
     ModuleScript* module_script = ModuleScript::Create(
-        ScriptModule(), test_request->url, test_request->nonce, kParserInserted,
-        WebURLRequest::kFetchCredentialsModeOmit);
+        this, ScriptModule(), test_request->url, test_request->nonce,
+        kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
     TaskRunner()->PostTask(
         BLINK_FROM_HERE,
         WTF::Bind(&ModuleScriptLoaderClient::NotifyNewSingleModuleFinished,

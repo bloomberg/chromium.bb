@@ -55,26 +55,28 @@ ModuleScript* ScriptModuleResolverImplTestModulator::GetFetchedModuleScript(
   return module_script_.Get();
 }
 
-ModuleScript* CreateReferrerModuleScript(V8TestingScope& scope) {
+ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
+                                         V8TestingScope& scope) {
   ScriptModule referrer_record = ScriptModule::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;",
       "referrer.js", kSharableCrossOrigin);
   KURL referrer_url(kParsedURLString, "https://example.com/referrer.js");
-  ModuleScript* referrer_module_script =
-      ModuleScript::Create(referrer_record, referrer_url, "", kParserInserted,
-                           WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScript* referrer_module_script = ModuleScript::Create(
+      modulator, referrer_record, referrer_url, "", kParserInserted,
+      WebURLRequest::kFetchCredentialsModeOmit);
   // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
   // https://codereview.chromium.org/2782403002/ landed.
   return referrer_module_script;
 }
 
-ModuleScript* CreateTargetModuleScript(V8TestingScope& scope) {
+ModuleScript* CreateTargetModuleScript(Modulator* modulator,
+                                       V8TestingScope& scope) {
   ScriptModule record =
       ScriptModule::Compile(scope.GetIsolate(), "export const pi = 3.14;",
                             "target.js", kSharableCrossOrigin);
   KURL url(kParsedURLString, "https://example.com/target.js");
   ModuleScript* module_script =
-      ModuleScript::Create(record, url, "", kParserInserted,
+      ModuleScript::Create(modulator, record, url, "", kParserInserted,
                            WebURLRequest::kFetchCredentialsModeOmit);
   // TODO(kouhei): moduleScript->setInstantiateSuccess(); once
   // https://codereview.chromium.org/2782403002/ landed.
@@ -107,10 +109,12 @@ TEST_F(ScriptModuleResolverImplTest, registerResolveSuccess) {
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
 
-  ModuleScript* referrer_module_script = CreateReferrerModuleScript(scope);
+  ModuleScript* referrer_module_script =
+      CreateReferrerModuleScript(modulator_, scope);
   resolver->RegisterModuleScript(referrer_module_script);
 
-  ModuleScript* target_module_script = CreateTargetModuleScript(scope);
+  ModuleScript* target_module_script =
+      CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
 
   ScriptModule resolved =
@@ -128,10 +132,12 @@ TEST_F(ScriptModuleResolverImplTest, resolveInvalidModuleSpecifier) {
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
 
-  ModuleScript* referrer_module_script = CreateReferrerModuleScript(scope);
+  ModuleScript* referrer_module_script =
+      CreateReferrerModuleScript(modulator_, scope);
   resolver->RegisterModuleScript(referrer_module_script);
 
-  ModuleScript* target_module_script = CreateTargetModuleScript(scope);
+  ModuleScript* target_module_script =
+      CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
 
   ScriptModule resolved = resolver->Resolve(
@@ -147,10 +153,12 @@ TEST_F(ScriptModuleResolverImplTest, resolveLoadFailedModule) {
       ScriptModuleResolverImpl::Create(Modulator());
   V8TestingScope scope;
 
-  ModuleScript* referrer_module_script = CreateReferrerModuleScript(scope);
+  ModuleScript* referrer_module_script =
+      CreateReferrerModuleScript(modulator_, scope);
   resolver->RegisterModuleScript(referrer_module_script);
 
-  ModuleScript* target_module_script = CreateTargetModuleScript(scope);
+  ModuleScript* target_module_script =
+      CreateTargetModuleScript(modulator_, scope);
   // Set Modulator::getFetchedModuleScript to return nullptr, which represents
   // that the target module failed to load.
   Modulator()->SetModuleScript(nullptr);

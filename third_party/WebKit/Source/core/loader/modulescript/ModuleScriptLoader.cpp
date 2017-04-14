@@ -244,7 +244,7 @@ ModuleScript* ModuleScriptLoader::CreateModuleScript(
   // Step 10. Set script's parser state to the parser state.
   // Step 11. Set script's credentials mode to the credentials mode provided.
   // Step 12. Return script.
-  return ModuleScript::Create(result, url, nonce, parser_state,
+  return ModuleScript::Create(modulator, result, url, nonce, parser_state,
                               credentials_mode);
 }
 

@@ -21,6 +21,7 @@ void ModuleScript::SetInstantiationSuccess() {
 }
 
 DEFINE_TRACE(ModuleScript) {
+  visitor->Trace(settings_object_);
   Script::Trace(visitor);
 }
 DEFINE_TRACE_WRAPPERS(ModuleScript) {

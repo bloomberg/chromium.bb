@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
+#include "core/dom/Modulator.h"
 #include "core/dom/Script.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -30,13 +31,14 @@ enum class ModuleInstantiationState {
 class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  public:
   static ModuleScript* Create(
+      Modulator* settings_object,
       ScriptModule record,
       const KURL& base_url,
       const String& nonce,
       ParserDisposition parser_state,
       WebURLRequest::FetchCredentialsMode credentials_mode) {
-    return new ModuleScript(record, base_url, nonce, parser_state,
-                            credentials_mode);
+    return new ModuleScript(settings_object, record, base_url, nonce,
+                            parser_state, credentials_mode);
   }
   ~ModuleScript() override = default;
 
@@ -61,12 +63,14 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  ModuleScript(ScriptModule record,
+  ModuleScript(Modulator* settings_object,
+               ScriptModule record,
                const KURL& base_url,
                const String& nonce,
                ParserDisposition parser_state,
                WebURLRequest::FetchCredentialsMode credentials_mode)
-      : record_(record),
+      : settings_object_(settings_object),
+        record_(record),
         base_url_(base_url),
         instantiation_error_(this),
         nonce_(nonce),
@@ -80,10 +84,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
 
-  // Note: A "module script"'s "setttings object" is ommitted, as we currently
-  // always have access to the corresponding Modulator when operating on a
-  // ModuleScript instance.
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
+  Member<Modulator> settings_object_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-module-record
   ScriptModule record_;
