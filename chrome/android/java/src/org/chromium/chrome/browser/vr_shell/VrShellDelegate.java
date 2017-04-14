@@ -140,8 +140,15 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             ChromeActivity activity = mTargetActivity.get();
             if (activity == null) return;
             getInstance(activity).mDonSucceeded = true;
-            ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
-                    .moveTaskToFront(activity.getTaskId(), 0);
+            if (sInstance.mPaused) {
+                ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
+                        .moveTaskToFront(activity.getTaskId(), 0);
+            } else {
+                // If a WebVR app calls requestPresent in response to the displayactivate event
+                // after the DON flow completes, the DON flow is skipped, meaning our app won't be
+                // paused when daydream fires our BroadcastReceiver, so onResume won't be called.
+                sInstance.handleDonFlowSuccess();
+            }
         }
 
         /**
@@ -610,16 +617,20 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
 
         if (mDonSucceeded) {
-            mDonSucceeded = false;
-            // If we fail to enter VR when we should have entered VR, return to the home screen.
-            if (!enterVrAfterDon()) {
-                maybeSetPresentResult(false);
-                mVrDaydreamApi.launchVrHomescreen();
-            }
+            handleDonFlowSuccess();
         } else if (mRestoreOrientation != null) {
             // This means the user backed out of the DON flow, and we won't be entering VR.
             maybeSetPresentResult(false);
             restoreWindowMode();
+        }
+    }
+
+    private void handleDonFlowSuccess() {
+        mDonSucceeded = false;
+        // If we fail to enter VR when we should have entered VR, return to the home screen.
+        if (!enterVrAfterDon()) {
+            maybeSetPresentResult(false);
+            mVrDaydreamApi.launchVrHomescreen();
         }
     }
 
