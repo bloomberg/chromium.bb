@@ -28,17 +28,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private Delegate mDelegate;
 
     public SearchActivityLocationBarLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        super(context, attrs, R.layout.location_bar_base);
         setUrlBarFocusable(true);
-
-        // TODO(dfalcantara): Get rid of any possibility of inflating the G in a layout.
-        View gContainer = findViewById(R.id.google_g_container);
-        if (gContainer != null) gContainer.setVisibility(View.GONE);
-
-        // TODO(dfalcantara): Find the correct way to do this.
-        int spacingLarge =
-                getResources().getDimensionPixelSize(R.dimen.contextual_search_peek_promo_padding);
-        setPadding(spacingLarge, 0, spacingLarge, 0);
     }
 
     /** Set the {@link Delegate}. */
@@ -86,6 +77,13 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         } else {
             focusTextBox();
         }
+    }
+
+    @Override
+    protected void updateButtonVisibility() {
+        super.updateButtonVisibility();
+        updateMicButtonVisibility(1.0f);
+        findViewById(R.id.url_action_container).setVisibility(View.VISIBLE);
     }
 
     private void focusTextBox() {

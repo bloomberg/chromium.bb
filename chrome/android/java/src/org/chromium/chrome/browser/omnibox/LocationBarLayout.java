@@ -648,9 +648,13 @@ public class LocationBarLayout extends FrameLayout
     }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
+        this(context, attrs, R.layout.location_bar);
+    }
+
+    public LocationBarLayout(Context context, AttributeSet attrs, int layoutId) {
         super(context, attrs);
 
-        LayoutInflater.from(context).inflate(R.layout.location_bar, this, true);
+        LayoutInflater.from(context).inflate(layoutId, this, true);
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
 
@@ -2334,6 +2338,7 @@ public class LocationBarLayout extends FrameLayout
      * Call to update the visibility of the buttons inside the location bar.
      */
     protected void updateButtonVisibility() {
+        updateDeleteButtonVisibility();
     }
 
     /**

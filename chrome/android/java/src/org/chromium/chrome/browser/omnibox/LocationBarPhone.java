@@ -225,7 +225,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
     @Override
     protected void updateButtonVisibility() {
-        updateDeleteButtonVisibility();
+        super.updateButtonVisibility();
         updateMicButtonVisibility(mUrlFocusChangePercent);
         updateGoogleG();
     }

@@ -265,7 +265,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
     @Override
     public void updateButtonVisibility() {
-        updateDeleteButtonVisibility();
+        super.updateButtonVisibility();
 
         boolean showBookmarkButton =
                 mShouldShowButtonsWhenUnfocused && shouldShowPageActionButtons();
