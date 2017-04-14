@@ -227,17 +227,20 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif
     v = (val * dqv) >> dq_shift;
 #endif
+
+    if (v) {
+      v = aom_read_bit(r, ACCT_STR) ? -v : v;
+
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 #if CONFIG_HIGHBITDEPTH
-    if (v)
-      dqcoeff[scan[c]] =
-          highbd_check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
+      check_range(v, xd->bd);
 #else
-    if (v) dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v);
+      check_range(v, 8);
 #endif  // CONFIG_HIGHBITDEPTH
-#else
-    if (v) dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
+
+      dqcoeff[scan[c]] = v;
+    }
 
     ++c;
     more_data &= (c < max_eob);
@@ -373,7 +376,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     dqcoeff[scan[c]] =
         highbd_check_range((aom_read_bit(r, ACCT_STR) ? -v : v), xd->bd);
 #else
-    dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v);
+    dqcoeff[scan[c]] = check_range(aom_read_bit(r, ACCT_STR) ? -v : v, 8);
 #endif  // CONFIG_HIGHBITDEPTH
 #else
     dqcoeff[scan[c]] = aom_read_bit(r, ACCT_STR) ? -v : v;

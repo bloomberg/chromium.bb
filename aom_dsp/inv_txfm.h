@@ -22,7 +22,12 @@
 extern "C" {
 #endif
 
-static INLINE tran_high_t check_range(tran_high_t input) {
+static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
+  tran_high_t rv = ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
+  return rv;
+}
+
+static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
   // For valid AV1 input streams, intermediate stage coefficients should always
   // stay within the range of a signed 16 bit integer. Coefficients can go out
@@ -30,20 +35,6 @@ static INLINE tran_high_t check_range(tran_high_t input) {
   // this range for every intermediate coefficient can burdensome for a decoder,
   // therefore the following assertion is only enabled when configured with
   // --enable-coefficient-range-checking.
-  assert(INT16_MIN <= input);
-  assert(input <= INT16_MAX);
-#endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
-  return input;
-}
-
-static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
-  tran_high_t rv = ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
-  return rv;
-}
-
-#if CONFIG_HIGHBITDEPTH
-static INLINE tran_high_t highbd_check_range(tran_high_t input, int bd) {
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
   // For valid highbitdepth AV1 streams, intermediate stage coefficients will
   // stay within the ranges:
   // - 8 bit: signed 16 bit integer
@@ -58,8 +49,6 @@ static INLINE tran_high_t highbd_check_range(tran_high_t input, int bd) {
   (void)bd;
   return input;
 }
-
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_EMULATE_HARDWARE
 // When CONFIG_EMULATE_HARDWARE is 1 the transform performs a
@@ -79,17 +68,17 @@ static INLINE tran_high_t highbd_check_range(tran_high_t input, int bd) {
 // bd of 12 uses trans_low with 20bits, need to remove 12bits
 // bd of x uses trans_low with 8+x bits, need to remove 24-x bits
 
-#define WRAPLOW(x) ((((int32_t)check_range(x)) << 16) >> 16)
+#define WRAPLOW(x) ((((int32_t)check_range(x, 8)) << 16) >> 16)
 #if CONFIG_HIGHBITDEPTH
 #define HIGHBD_WRAPLOW(x, bd) \
-  ((((int32_t)highbd_check_range((x), bd)) << (24 - bd)) >> (24 - bd))
+  ((((int32_t)check_range((x), bd)) << (24 - bd)) >> (24 - bd))
 #endif  // CONFIG_HIGHBITDEPTH
 
 #else  // CONFIG_EMULATE_HARDWARE
 
-#define WRAPLOW(x) ((int32_t)check_range(x))
+#define WRAPLOW(x) ((int32_t)check_range(x, 8))
 #if CONFIG_HIGHBITDEPTH
-#define HIGHBD_WRAPLOW(x, bd) ((int32_t)highbd_check_range((x), bd))
+#define HIGHBD_WRAPLOW(x, bd) ((int32_t)check_range((x), bd))
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_EMULATE_HARDWARE
 
