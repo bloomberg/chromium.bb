@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/system_notifier.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -24,6 +25,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -31,11 +34,15 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+using message_center::Notification;
+
 namespace ash {
 namespace {
 
 // Padding used to position the caption in the caps lock default view row.
 const int kCaptionRightPadding = 6;
+
+const char kCapsLockNotificationId[] = "capslock";
 
 bool CapsLockIsEnabled() {
   chromeos::input_method::InputMethodManager* ime =
@@ -44,7 +51,28 @@ bool CapsLockIsEnabled() {
              ? ime->GetImeKeyboard()->CapsLockIsEnabled()
              : false;
 }
+
+std::unique_ptr<Notification> CreateNotification() {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  const int string_id =
+      Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
+          ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
+          : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
+  std::unique_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
+      base::string16(), bundle.GetLocalizedString(string_id),
+      gfx::Image(
+          gfx::CreateVectorIcon(kSystemMenuCapsLockIcon,
+                                TrayPopupItemStyle::GetIconColor(
+                                    TrayPopupItemStyle::ColorStyle::ACTIVE))),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierCapsLock),
+      message_center::RichNotificationData(), nullptr));
+  return notification;
 }
+
+}  // namespace
 
 class CapsLockDefaultView : public ActionableView {
  public:
@@ -139,7 +167,6 @@ class CapsLockDefaultView : public ActionableView {
 TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayCapsLockIcon, UMA_CAPS_LOCK),
       default_(nullptr),
-      detailed_(nullptr),
       caps_lock_enabled_(CapsLockIsEnabled()),
       message_shown_(false) {
   chromeos::input_method::InputMethodManager* ime =
@@ -168,15 +195,19 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   if (default_) {
     default_->Update(caps_lock_enabled_);
   } else {
+    message_center::MessageCenter* message_center =
+        message_center::MessageCenter::Get();
     if (caps_lock_enabled_) {
       if (!message_shown_) {
         ShellPort::Get()->RecordUserMetricsAction(
             UMA_STATUS_AREA_CAPS_LOCK_POPUP);
-        ShowDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+
+        message_center->AddNotification(CreateNotification());
         message_shown_ = true;
       }
-    } else if (detailed_) {
-      detailed_->GetWidget()->Close();
+    } else if (message_center->FindVisibleNotificationById(
+                   kCapsLockNotificationId)) {
+      message_center->RemoveNotification(kCapsLockNotificationId, false);
     }
   }
 }
@@ -194,40 +225,8 @@ views::View* TrayCapsLock::CreateDefaultView(LoginStatus status) {
   return default_;
 }
 
-views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
-  DCHECK(!detailed_);
-  detailed_ = new views::View;
-
-  detailed_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal, 10,
-      kTrayPopupPaddingBetweenItems));
-
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  views::ImageView* image = new views::ImageView;
-  image->SetImage(
-      CreateVectorIcon(kSystemMenuCapsLockIcon, kMenuIconSize, kMenuIconColor));
-  detailed_->AddChildView(image);
-
-  const int string_id =
-      Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
-          ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
-          : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
-  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
-  label->SetText(bundle.GetLocalizedString(string_id));
-  label->SetMultiLine(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  detailed_->AddChildView(label);
-  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAPS_LOCK_DETAILED);
-
-  return detailed_;
-}
-
 void TrayCapsLock::DestroyDefaultView() {
   default_ = nullptr;
-}
-
-void TrayCapsLock::DestroyDetailedView() {
-  detailed_ = nullptr;
 }
 
 }  // namespace ash

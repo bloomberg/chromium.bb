@@ -17,6 +17,7 @@ namespace system_notifier {
 ASH_EXPORT extern const char kNotifierAccessibility[];
 ASH_EXPORT extern const char kNotifierBattery[];
 ASH_EXPORT extern const char kNotifierBluetooth[];
+ASH_EXPORT extern const char kNotifierCapsLock[];
 ASH_EXPORT extern const char kNotifierDeprecatedAccelerator[];
 ASH_EXPORT extern const char kNotifierDisk[];
 ASH_EXPORT extern const char kNotifierDisplay[];
