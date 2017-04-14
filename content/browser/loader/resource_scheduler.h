@@ -97,11 +97,16 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Returns true if at least one client is currently loading.
   bool HasLoadingClients() const;
 
-  // Update the priority for |request|. Modifies request->priority(), and may
+  // Updates the priority for |request|. Modifies request->priority(), and may
   // start the request loading if it wasn't already started.
+  // If the scheduler does not know about the request, |new_priority| is set but
+  // |intra_priority_value| is ignored.
   void ReprioritizeRequest(net::URLRequest* request,
                            net::RequestPriority new_priority,
                            int intra_priority_value);
+  // Same as above, but keeps the existing intra priority value.
+  void ReprioritizeRequest(net::URLRequest* request,
+                           net::RequestPriority new_priority);
 
  private:
   // Returns the maximum number of delayable requests to all be in-flight at

@@ -498,6 +498,12 @@ void ResourceDispatcherHostImpl::RegisterInterceptor(
   http_header_interceptor_map_[http_header] = interceptor_info;
 }
 
+void ResourceDispatcherHostImpl::ReprioritizeRequest(
+    net::URLRequest* request,
+    net::RequestPriority priority) {
+  scheduler_->ReprioritizeRequest(request, priority);
+}
+
 void ResourceDispatcherHostImpl::Shutdown() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   io_thread_task_runner_->PostTask(

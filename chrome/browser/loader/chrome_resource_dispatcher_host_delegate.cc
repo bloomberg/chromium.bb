@@ -443,27 +443,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     safe_browsing_->OnResourceRequest(request);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-
-// The lowering of request priority causes issues with scheduling, since
-// content::ResourceScheduler uses it to delay and throttle requests. This is
-// disabled only on Android, as the prerenders are not likely to compete with
-// page loads there.
-// See https://crbug.com/652746 for details.
-// TODO(lizeb,droger): Fix the issue on all platforms.
-#if !defined(OS_ANDROID)
-  bool is_prerendering =
-      info->GetVisibilityState() == blink::kWebPageVisibilityStatePrerender;
-  if (is_prerendering) {
-    // Requests with the IGNORE_LIMITS flag set (i.e., sync XHRs)
-    // should remain at MAXIMUM_PRIORITY.
-    if (request->load_flags() & net::LOAD_IGNORE_LIMITS) {
-      DCHECK_EQ(request->priority(), net::MAXIMUM_PRIORITY);
-    } else {
-      request->SetPriority(net::IDLE);
-    }
-  }
-#endif  // OS_ANDROID
-
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(
       resource_context);
 

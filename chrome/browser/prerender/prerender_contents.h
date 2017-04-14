@@ -235,6 +235,12 @@ class PrerenderContents : public content::NotificationObserver,
   void AddResourceThrottle(
       const base::WeakPtr<PrerenderResourceThrottle>& throttle);
 
+  // Called when a PrerenderResourceThrottle changes a resource priority to
+  // net::IDLE. The resources are reset back to their original priorities when
+  // the prerender contents is swapped in.
+  void AddIdleResource(
+      const base::WeakPtr<PrerenderResourceThrottle>& throttle);
+
   // Increments the number of bytes fetched over the network for this prerender.
   void AddNetworkBytes(int64_t bytes);
 
@@ -372,6 +378,8 @@ class PrerenderContents : public content::NotificationObserver,
   // Resources that are throttled, pending a prerender use. Can only access a
   // throttle on the IO thread.
   std::vector<base::WeakPtr<PrerenderResourceThrottle> > resource_throttles_;
+  // Resources for which the priority was lowered to net::IDLE.
+  std::vector<base::WeakPtr<PrerenderResourceThrottle>> idle_resources_;
 
   // A running tally of the number of bytes this prerender has caused to be
   // transferred over the network for resources.  Updated with AddNetworkBytes.

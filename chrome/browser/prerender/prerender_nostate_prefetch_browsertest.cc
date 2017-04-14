@@ -352,10 +352,8 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   base::FilePath first_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII(kPrefetchPage));
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&test_utils::CreateHangingFirstRequestInterceptorOnIO,
-                 first_url, first_path, base::Closure()));
+  test_utils::CreateHangingFirstRequestInterceptor(
+      first_url, first_path, base::Callback<void(net::URLRequest*)>());
 
   // Start the first prefetch directly instead of via PrefetchFromFile for the
   // first prefetch to avoid the wait on prerender stop.

@@ -143,7 +143,7 @@ using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
 using prerender::test_utils::RequestCounter;
 using prerender::test_utils::CreateCountingInterceptorOnIO;
-using prerender::test_utils::CreateHangingFirstRequestInterceptorOnIO;
+using prerender::test_utils::CreateHangingFirstRequestInterceptor;
 using prerender::test_utils::CreateMockInterceptorOnIO;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
@@ -165,6 +165,8 @@ using task_manager::browsertest_util::WaitForTaskManagerRows;
 namespace prerender {
 
 namespace {
+
+const char kPrefetchJpeg[] = "/prerender/image.jpeg";
 
 class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
  public:
@@ -537,6 +539,17 @@ page_load_metrics::PageLoadExtraInfo GenericPageLoadExtraInfo(
     const GURL& dest_url) {
   return page_load_metrics::PageLoadExtraInfo::CreateForTesting(
       dest_url, false /* started_in_foreground */);
+}
+
+// Helper function, to allow passing a UI closure to
+// CreateHangingFirstRequestInterceptor() instead of a IO callback.
+base::Callback<void(net::URLRequest*)> GetIOCallbackFromUIClosure(
+    base::Closure ui_closure) {
+  auto lambda = [](base::Closure closure, net::URLRequest*) {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     closure);
+  };
+  return base::Bind(lambda, ui_closure);
 }
 
 }  // namespace
@@ -1302,10 +1315,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderNoCommitNoSwap) {
   base::FilePath file(GetTestPath("prerender_page.html"));
 
   base::RunLoop prerender_start_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl, file,
-                 prerender_start_loop.QuitClosure()));
+  CreateHangingFirstRequestInterceptor(
+      kNoCommitUrl, file,
+      GetIOCallbackFromUIClosure(prerender_start_loop.QuitClosure()));
   DisableJavascriptCalls();
   PrerenderTestURL(kNoCommitUrl,
                    FINAL_STATUS_NAVIGATION_UNCOMMITTED,
@@ -1330,10 +1342,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderNoCommitNoSwap2) {
   base::FilePath file(GetTestPath("prerender_page.html"));
 
   base::RunLoop prerender_start_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, kNoCommitUrl, file,
-                 prerender_start_loop.QuitClosure()));
+  CreateHangingFirstRequestInterceptor(
+      kNoCommitUrl, file,
+      GetIOCallbackFromUIClosure(prerender_start_loop.QuitClosure()));
   DisableJavascriptCalls();
   PrerenderTestURL(CreateClientRedirect(kNoCommitUrl.spec()),
                    FINAL_STATUS_APP_TERMINATING, 1);
@@ -2109,7 +2120,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImagePng) {
 // Checks that prerendering a JPG works correctly.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderImageJpeg) {
   DisableJavascriptCalls();
-  PrerenderTestURL("/prerender/image.jpeg", FINAL_STATUS_USED, 1);
+  PrerenderTestURL(kPrefetchJpeg, FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
@@ -2181,7 +2192,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLErrorSubresource) {
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("/prerender/image.jpeg");
+  GURL https_url = https_server.GetURL(kPrefetchJpeg);
   base::StringPairs replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
@@ -2293,7 +2304,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
-  GURL https_url = https_server.GetURL("/prerender/image.jpeg");
+  GURL https_url = https_server.GetURL(kPrefetchJpeg);
   base::StringPairs replacement_text;
   replacement_text.push_back(
       std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
@@ -2367,7 +2378,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Ensures that we do not prerender pages which have a malware subresource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
-  GURL image_url = embedded_test_server()->GetURL("/prerender/image.jpeg");
+  GURL image_url = embedded_test_server()->GetURL(kPrefetchJpeg);
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
       image_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
   base::StringPairs replacement_text;
@@ -2491,11 +2502,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHangingUnload) {
   const GURL hang_url("http://unload-url.test");
   base::FilePath empty_file = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO,
-                 hang_url, empty_file,
-                 base::Closure()));
+  CreateHangingFirstRequestInterceptor(
+      hang_url, empty_file, base::Callback<void(net::URLRequest*)>());
 
   set_loader_path("/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
@@ -3291,6 +3299,122 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   EXPECT_EQ(0, done_counter.count());
 }
 
+// Checks that the requests from a prerender are IDLE priority before the swap
+// (except on Android), but normal priority after the swap.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriority) {
+  GURL before_swap_url = embedded_test_server()->GetURL(kPrefetchJpeg);
+  GURL after_swap_url = embedded_test_server()->GetURL("/prerender/image.png");
+  GURL main_page_url =
+      GetURLWithReplacement("/prerender/prerender_with_image.html",
+                            "REPLACE_WITH_IMAGE_URL", kPrefetchJpeg);
+
+  // Setup request interceptors for subresources.
+  auto get_priority_lambda = [](net::RequestPriority* out_priority,
+                                net::URLRequest* request) {
+    *out_priority = request->priority();
+  };
+  RequestCounter before_swap_counter;
+  net::RequestPriority before_swap_priority = net::THROTTLED;
+  InterceptRequestAndCount(
+      before_swap_url, &before_swap_counter,
+      base::Bind(get_priority_lambda, base::Unretained(&before_swap_priority)));
+  RequestCounter after_swap_counter;
+  net::RequestPriority after_swap_priority = net::THROTTLED;
+  InterceptRequestAndCount(
+      after_swap_url, &after_swap_counter,
+      base::Bind(get_priority_lambda, base::Unretained(&after_swap_priority)));
+
+  // Start the prerender.
+  PrerenderTestURL(main_page_url, FINAL_STATUS_USED, 1);
+
+  // Check priority before swap.
+  before_swap_counter.WaitForCount(1);
+#if defined(OS_ANDROID)
+  EXPECT_GT(before_swap_priority, net::IDLE);
+#else
+  EXPECT_EQ(net::IDLE, before_swap_priority);
+#endif
+
+  // Swap.
+  NavigateToDestURL();
+
+  // Check priority after swap.
+  GetActiveWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16(
+          "var img=new Image(); img.src='/prerender/image.png'"));
+  after_swap_counter.WaitForCount(1);
+  EXPECT_NE(net::IDLE, after_swap_priority);
+}
+
+// Checks that a request started before the swap gets its original priority back
+// after the swap.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriorityOverlappingSwap) {
+  GURL image_url = embedded_test_server()->GetURL(kPrefetchJpeg);
+  GURL main_page_url =
+      GetURLWithReplacement("/prerender/prerender_with_image.html",
+                            "REPLACE_WITH_IMAGE_URL", kPrefetchJpeg);
+
+  // Setup request interceptors for subresources.
+  net::URLRequest* url_request = nullptr;
+  net::RequestPriority priority = net::THROTTLED;
+  base::RunLoop wait_loop;
+  auto io_lambda = [](net::URLRequest** out_request,
+                      net::RequestPriority* out_priority, base::Closure closure,
+                      net::URLRequest* request) {
+    if (out_request)
+      *out_request = request;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            [](net::RequestPriority priority,
+               net::RequestPriority* out_priority, base::Closure closure) {
+              *out_priority = priority;
+              closure.Run();
+            },
+            request->priority(), base::Unretained(out_priority), closure));
+  };
+
+  CreateHangingFirstRequestInterceptor(
+      image_url, base::FilePath(),
+      base::Bind(io_lambda, base::Unretained(&url_request),
+                 base::Unretained(&priority), wait_loop.QuitClosure()));
+
+  // The prerender will hang on the image resource, can't run the usual checks.
+  DisableLoadEventCheck();
+  DisableJavascriptCalls();
+  // Start the prerender.
+  PrerenderTestURL(main_page_url, FINAL_STATUS_USED, 0);
+
+// Check priority before swap.
+#if defined(OS_ANDROID)
+  if (priority <= net::IDLE)
+    wait_loop.Run();
+  EXPECT_GT(priority, net::IDLE);
+#else
+  if (priority != net::IDLE)
+    wait_loop.Run();
+  EXPECT_EQ(net::IDLE, priority);
+#endif
+
+  // Swap. Cannot use NavigateToDestURL, because it waits for the load to
+  // complete, but the resource is still hung.
+  current_browser()->OpenURL(content::OpenURLParams(
+      dest_url(), Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
+
+  // Check priority after swap. The test may timeout in case of failure.
+  priority = net::THROTTLED;
+  do {
+    base::RunLoop loop;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(io_lambda, nullptr, base::Unretained(&priority),
+                   loop.QuitClosure(), base::Unretained(url_request)));
+    loop.Run();
+  } while (priority <= net::IDLE);
+  EXPECT_GT(priority, net::IDLE);
+}
+
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingSimple) {
   GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
   base::SimpleTestTickClock* clock = OverridePrerenderManagerTimeTicks();
@@ -3324,10 +3448,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingReuse) {
 
   GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
   base::RunLoop hanging_request_waiter;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&CreateHangingFirstRequestInterceptorOnIO,
-                                     url, GetTestPath("prerender_page.html"),
-                                     hanging_request_waiter.QuitClosure()));
+  CreateHangingFirstRequestInterceptor(
+      url, GetTestPath("prerender_page.html"),
+      GetIOCallbackFromUIClosure(hanging_request_waiter.QuitClosure()));
   // As this load will be canceled, it is not waited for, and hence no
   // javascript is executed.
   DisableJavascriptCalls();
@@ -3414,10 +3537,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::FilePath(FILE_PATH_LITERAL("prerender/prerender_page.html")));
 
   base::RunLoop prerender_start_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, url, url_file,
-                 prerender_start_loop.QuitClosure()));
+  CreateHangingFirstRequestInterceptor(
+      url, url_file,
+      GetIOCallbackFromUIClosure(prerender_start_loop.QuitClosure()));
   // As this load is uncommitted, it is not waited for, and hence no
   // javascript is executed.
   DisableJavascriptCalls();
@@ -3537,10 +3659,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       base::FilePath(FILE_PATH_LITERAL("prerender/prerender_page.html")));
 
   base::RunLoop prerender_start_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateHangingFirstRequestInterceptorOnIO, url, url_file,
-                 prerender_start_loop.QuitClosure()));
+  CreateHangingFirstRequestInterceptor(
+      url, url_file,
+      GetIOCallbackFromUIClosure(prerender_start_loop.QuitClosure()));
   // As this load is uncommitted, it is not waited for, and hence no
   // javascript is executed.
   DisableJavascriptCalls();
