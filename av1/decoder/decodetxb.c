@@ -12,6 +12,7 @@
 #include "av1/common/scan.h"
 #include "av1/common/idct.h"
 #include "av1/common/txb_common.h"
+#include "av1/decoder/decodemv.h"
 #include "av1/decoder/decodetxb.h"
 #include "av1/decoder/dsubexp.h"
 
@@ -50,10 +51,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   aom_prob *nz_map = cm->fc->nz_map[tx_size][plane_type];
   aom_prob *eob_flag = cm->fc->eob_flag[tx_size][plane_type];
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
-  const SCAN_ORDER *const scan_order =
-      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
-  const int16_t *scan = scan_order->scan;
   const int seg_eob = tx_size_2d[tx_size];
   int c = 0;
   int update_eob = -1;
@@ -79,7 +76,11 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     return 0;
   }
 
-  // av1_decode_tx_type(cm, xd, mbmi, r, plane, block);
+  av1_read_tx_type(cm, xd, block, r);
+  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const SCAN_ORDER *const scan_order =
+      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const int16_t *scan = scan_order->scan;
 
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
