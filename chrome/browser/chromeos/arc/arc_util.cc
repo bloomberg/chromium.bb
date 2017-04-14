@@ -7,9 +7,11 @@
 #include <linux/magic.h>
 #include <sys/statfs.h>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
@@ -19,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 
@@ -31,6 +34,39 @@ constexpr char kAndroidMSdkVersion[] = "23";
 
 // Let IsAllowedForProfile() return "false" for any profile.
 bool g_disallow_for_testing = false;
+
+// Returns whether ARC can run on the filesystem mounted at |path|.
+// This function should run only on threads where IO operations are allowed.
+bool IsArcCompatibleFilesystem(const base::FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // If it can be verified it is not on ecryptfs, then it is ok.
+  struct statfs statfs_buf;
+  if (statfs(path.value().c_str(), &statfs_buf) < 0)
+    return false;
+  return statfs_buf.f_type != ECRYPTFS_SUPER_MAGIC;
+}
+
+// Stores the result of IsArcCompatibleFilesystem posted back from the blocking
+// task runner.
+void StoreCompatibilityCheckResult(const AccountId& account_id,
+                                   const base::Closure& callback,
+                                   bool is_compatible) {
+  if (is_compatible) {
+    user_manager::known_user::SetIntegerPref(
+        account_id, prefs::kArcCompatibleFilesystemChosen,
+        arc::kFileSystemCompatible);
+  }
+  callback.Run();
+}
+
+FileSystemCompatibilityState GetFileSystemCompatibilityPref(
+    const AccountId& account_id) {
+  int pref_value = kFileSystemIncompatible;
+  user_manager::known_user::GetIntegerPref(
+      account_id, prefs::kArcCompatibleFilesystemChosen, &pref_value);
+  return static_cast<FileSystemCompatibilityState>(pref_value);
+}
 
 }  // namespace
 
@@ -121,10 +157,19 @@ bool IsArcAllowedInAppListForProfile(const Profile* profile) {
 }
 
 bool IsArcCompatibleFileSystemUsedForProfile(const Profile* profile) {
-  // chromeos::UserSessionManager::PrepareProfile does the actual file system
-  // check and stores the result to prefs, so that it survives crash-restart.
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
+  // Returns false for profiles not associated with users (like sign-in profile)
+  if (!user)
+    return false;
+
+  // chromeos::UserSessionManager does the actual file system check and stores
+  // the result to prefs, so that it survives crash-restart.
+  FileSystemCompatibilityState filesystem_compatibility =
+      GetFileSystemCompatibilityPref(user->GetAccountId());
   const bool is_filesystem_compatible =
-      profile->GetPrefs()->GetBoolean(prefs::kArcCompatibleFilesystemChosen);
+      filesystem_compatibility != kFileSystemIncompatible;
   std::string arc_sdk_version;
   const bool is_M = base::SysInfo::GetLsbReleaseValue(kLsbReleaseArcVersionKey,
                                                       &arc_sdk_version) &&
@@ -189,14 +234,34 @@ bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {
              prefs::kArcLocationServiceEnabled);
 }
 
-bool IsArcCompatibleFilesystem(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+void UpdateArcFileSystemCompatibilityPrefIfNeeded(
+    const AccountId& account_id,
+    const base::FilePath& profile_path,
+    const base::Closure& callback) {
+  DCHECK(!callback.is_null());
 
-  // If it can be verified it is not on ecryptfs, then it is ok.
-  struct statfs statfs_buf;
-  if (statfs(path.value().c_str(), &statfs_buf) < 0)
-    return false;
-  return statfs_buf.f_type != ECRYPTFS_SUPER_MAGIC;
+  // If ARC is not available, skip the check.
+  if (!IsArcAvailable()) {
+    callback.Run();
+    return;
+  }
+
+  // If the compatibility has been already confirmed, skip the check.
+  if (GetFileSystemCompatibilityPref(account_id) != kFileSystemIncompatible) {
+    callback.Run();
+    return;
+  }
+
+  // Otherwise, check the underlying filesystem.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithShutdownBehavior(
+              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+          .WithPriority(base::TaskPriority::USER_BLOCKING)
+          .MayBlock(),
+      base::Bind(&IsArcCompatibleFilesystem, profile_path),
+      base::Bind(&StoreCompatibilityCheckResult, account_id, callback));
 }
 
 }  // namespace arc

@@ -5,12 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_
 
+#include <stdint.h>
+
+#include "base/callback_forward.h"
+
 // Most utility should be put in components/arc/arc_util.{h,cc}, rather than
 // here. However, some utility implementation requires other modules defined in
 // chrome/, so this file contains such utilities.
 // Note that it is not allowed to have dependency from components/ to chrome/
 // by DEPS.
 
+class AccountId;
 class Profile;
 
 namespace base {
@@ -18,6 +23,22 @@ class FilePath;
 }
 
 namespace arc {
+
+// Values to be stored in the local state preference to keep track of the
+// filesystem encryption migration status.
+enum FileSystemCompatibilityState : int32_t {
+  // No migiration has happend, user keeps using the old file system.
+  kFileSystemIncompatible = 0,
+  // Migration has happend. New filesystem is in use.
+  kFileSystemCompatible = 1,
+  // Migration has happend, and a notification about the fact was already shown.
+  // TODO(kinaba): This value isn't yet used until crbug.com/711095 is done.
+  kFileSystemCompatibleAndNotified = 2,
+
+  // Existing code assumes that kFileSystemIncompatible is the only state
+  // representing incompatibility and other values are all variants of
+  // "compatible" state. Be careful in the case adding a new enum value.
+};
 
 // Returns true if ARC is allowed to run for the given profile.
 // Otherwise, returns false, e.g. if the Profile is not for the primary user,
@@ -78,9 +99,13 @@ void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
 // ArcBackupRestoreEnabled and ArcLocationServiceEnabled) are managed.
 bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile);
 
-// Returns whether ARC can run on the filesystem mounted at |path|.
-// This function should run only on threads where IO operations are allowed.
-bool IsArcCompatibleFilesystem(const base::FilePath& path);
+// Checks and updates the preference value whether the underlying filesystem
+// for the profile is compatible with ARC, when necessary. After it's done (or
+// skipped), |callback| is run either synchronously or asynchronously.
+void UpdateArcFileSystemCompatibilityPrefIfNeeded(
+    const AccountId& account_id,
+    const base::FilePath& profile_path,
+    const base::Closure& callback);
 
 }  // namespace arc
 

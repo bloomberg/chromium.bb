@@ -12,6 +12,7 @@
 #include "base/sys_info.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -21,8 +22,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -85,6 +88,23 @@ class ScopedLogIn {
   DISALLOW_COPY_AND_ASSIGN(ScopedLogIn);
 };
 
+class FakeUserManagerWithLocalState : public chromeos::FakeChromeUserManager {
+ public:
+  FakeUserManagerWithLocalState()
+      : test_local_state_(base::MakeUnique<TestingPrefServiceSimple>()) {
+    RegisterPrefs(test_local_state_->registry());
+  }
+
+  PrefService* GetLocalState() const override {
+    return test_local_state_.get();
+  }
+
+ private:
+  std::unique_ptr<TestingPrefServiceSimple> test_local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeUserManagerWithLocalState);
+};
+
 }  // namespace
 
 class ChromeArcUtilTest : public testing::Test {
@@ -98,7 +118,7 @@ class ChromeArcUtilTest : public testing::Test {
 
     user_manager_enabler_ =
         base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
+            new FakeUserManagerWithLocalState());
     chromeos::WallpaperManager::Initialize();
     profile_ = base::MakeUnique<TestingProfile>();
     profile_->set_profile_name(kTestProfileName);
@@ -278,12 +298,11 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   // TODO(kinaba): Come up with some way to test the conditions below
   // causes differences in the return values of IsArcAllowedForProfile()
   // and IsArcAllowedInAppListForProfile().
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmailGaiaId(
-                        profile()->GetProfileUserName(), kTestGaiaId));
+  const AccountId id(AccountId::FromUserEmailGaiaId(
+      profile()->GetProfileUserName(), kTestGaiaId));
+  ScopedLogIn login(GetFakeUserManager(), id);
 
   // Unconfirmed + Old ARC
-  profile()->GetPrefs()->ClearPref(prefs::kArcCompatibleFilesystemChosen);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
@@ -294,8 +313,8 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
 
   // Old FS + Old ARC
-  profile()->GetPrefs()->SetBoolean(prefs::kArcCompatibleFilesystemChosen,
-                                    false);
+  user_manager::known_user::SetIntegerPref(
+      id, prefs::kArcCompatibleFilesystemChosen, kFileSystemIncompatible);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
@@ -306,13 +325,26 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   EXPECT_FALSE(IsArcCompatibleFileSystemUsedForProfile(profile()));
 
   // New FS + Old ARC
-  profile()->GetPrefs()->SetBoolean(prefs::kArcCompatibleFilesystemChosen,
-                                    true);
+  user_manager::known_user::SetIntegerPref(
+      id, prefs::kArcCompatibleFilesystemChosen, kFileSystemCompatible);
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
 
   // New FS + New ARC
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // New FS (User notified) + Old ARC
+  user_manager::known_user::SetIntegerPref(
+      id, prefs::kArcCompatibleFilesystemChosen,
+      kFileSystemCompatibleAndNotified);
+  base::SysInfo::SetChromeOSVersionInfoForTest(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
+  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));
+
+  // New FS (User notified) + New ARC
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForProfile(profile()));

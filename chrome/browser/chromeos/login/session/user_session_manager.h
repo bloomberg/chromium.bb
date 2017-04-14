@@ -289,12 +289,10 @@ class UserSessionManager
 
   void StartCrosSession();
   void PrepareProfile();
-  void PrepareProfileAfterFilesystemCheck(bool arc_compatible_filesystem);
 
   // Callback for asynchronous profile creation.
   void OnProfileCreated(const UserContext& user_context,
                         bool is_incognito_profile,
-                        bool arc_compatible_filesystem,
                         Profile* profile,
                         Profile::CreateStatus status);
 
@@ -303,8 +301,7 @@ class UserSessionManager
   // early profile initialization that needs to happen before
   // ProfileManager::DoFinalInit() gets called is done here.
   void InitProfilePreferences(Profile* profile,
-                              const UserContext& user_context,
-                              bool arc_compatible_filesystem);
+                              const UserContext& user_context);
 
   // Callback for Profile::CREATE_STATUS_INITIALIZED profile state.
   // Profile is created, extensions and promo resources are initialized.
