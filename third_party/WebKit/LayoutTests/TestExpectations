@@ -125,6 +125,19 @@ crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout 
 
 # ====== Paint team owned tests to here ======
 
+# ====== Layout team owned tests from here ======
+
+#### external/wpt/css/CSS2/floats
+#### Passed: 37
+#### Skipped: 5
+crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Skip ]
+crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Skip ]
+crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Skip ]
+crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Skip ]
+crbug.com/711704 external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Skip ]
+
+# ====== Layout team owned tests to here ======
+
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
