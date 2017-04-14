@@ -34,12 +34,6 @@ enum NotificationType {
   // DEPRECATED: Use ExtensionSystem::Get(browser_context)->ready().Post().
   NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
 
-  // Sent when a new extension is loaded. The details are an Extension, and
-  // the source is a BrowserContext*.
-  //
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-
   // An error occured while attempting to load an extension. The details are a
   // string with details about why the load failed.
   NOTIFICATION_EXTENSION_LOAD_ERROR,

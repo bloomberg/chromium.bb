@@ -82,11 +82,6 @@ const Extension* ShellExtensionSystem::LoadApp(const base::FilePath& app_dir) {
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
       ->OnExtensionLoaded(*extension);
 
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-      content::Source<BrowserContext>(browser_context_),
-      content::Details<const Extension>(extension.get()));
-
   return extension.get();
 }
 
