@@ -340,7 +340,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             '/MOCK_Try_Win/5000/layout-test-results/results.html\n',
             'INFO: Retry job by running: git cl try -b MOCK Try Win\n',
             'INFO: For fast/dom/prototype-taco.html:\n',
-            'INFO: Using Build(builder_name=\'MOCK Try Mac\', build_number=4000) to supply results for test-win-win7.\n',
+            'INFO: Using Build(builder_name=\'MOCK Try Linux\', build_number=6000) to supply results for test-win-win7.\n',
             'INFO: Rebaselining fast/dom/prototype-taco.html\n'
         ])
 
@@ -369,4 +369,45 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertLog([
             'INFO: For fast/dom/prototype-taco.html:\n',
             'INFO: Using Build(builder_name=\'MOCK Try Linux\', build_number=100) to supply results for test-mac-mac10.11.\n',
+        ])
+
+    def test_fill_in_missing_results_prefers_build_with_same_os_type(self):
+        self.tool.builders = BuilderList({
+            'MOCK Foo12': {
+                'port_name': 'foo-foo12',
+                'specifiers': ['Foo12', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Foo45': {
+                'port_name': 'foo-foo45',
+                'specifiers': ['Foo45', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Bar3': {
+                'port_name': 'bar-bar3',
+                'specifiers': ['Bar3', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Bar4': {
+                'port_name': 'bar-bar4',
+                'specifiers': ['Bar4', 'Release'],
+                'is_try_builder': True,
+            },
+        })
+        test_baseline_set = TestBaselineSet(self.tool)
+        test_baseline_set.add('fast/dom/prototype-taco.html', Build('MOCK Foo12', 100))
+        test_baseline_set.add('fast/dom/prototype-taco.html', Build('MOCK Bar4', 200))
+        self.command.fill_in_missing_results(test_baseline_set)
+        self.assertEqual(
+            test_baseline_set.build_port_pairs('fast/dom/prototype-taco.html'),
+            [
+                (Build(builder_name='MOCK Foo12', build_number=100), 'foo-foo12'),
+                (Build(builder_name='MOCK Bar4', build_number=200), 'bar-bar4'),
+                (Build(builder_name='MOCK Foo12', build_number=100), 'foo-foo45'),
+                (Build(builder_name='MOCK Bar4', build_number=200), 'bar-bar3'),
+            ])
+        self.assertLog([
+            'INFO: For fast/dom/prototype-taco.html:\n',
+            'INFO: Using Build(builder_name=\'MOCK Foo12\', build_number=100) to supply results for foo-foo45.\n',
+            'INFO: Using Build(builder_name=\'MOCK Bar4\', build_number=200) to supply results for bar-bar3.\n',
         ])

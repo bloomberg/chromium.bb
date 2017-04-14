@@ -250,13 +250,26 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 test_baseline_set.add(test_prefix, build, port)
         return test_baseline_set
 
-    def _choose_fill_in_build(self, _, build_port_pairs):
+    def _choose_fill_in_build(self, target_port, build_port_pairs):
         """Returns a Build to use to supply results for the given port.
 
         Ideally, this should return a build for a similar port so that the
         results from the selected build may also be correct for the target port.
         """
-        # TODO(qyearsley): Decide what build to use for a given port
-        # in a more sophisticated way, such that a build with a
-        # "similar" port will be used when available.
-        return build_port_pairs[0][0]
+        # A full port name should normally always be of the form <os>-<version>;
+        # for example "win-win7", or "linux-trusty". For the test port used in
+        # unit tests, though, the full port name may be "test-<os>-<version>".
+        def os_name(port):
+            if '-' not in port:
+                return port
+            return port[:port.rfind('-')]
+
+        # If any Build exists with the same OS, use the first one.
+        target_os = os_name(target_port)
+        same_os_builds = sorted(b for b, p in build_port_pairs if os_name(p) == target_os)
+        if same_os_builds:
+            return same_os_builds[0]
+
+        # Otherwise, perhaps any build will do, for example if the results are
+        # the same on all platforms. In this case, just return the first build.
+        return sorted(build_port_pairs)[0][0]
