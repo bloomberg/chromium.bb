@@ -34,6 +34,13 @@ class SingleModuleClient : public GarbageCollectedMixin {
   virtual void NotifyModuleLoadFinished(ModuleScript*) = 0;
 };
 
+// A ModuleTreeClient is notified when a module script and its whole descendent
+// tree load is complete.
+class ModuleTreeClient : public GarbageCollectedMixin {
+ public:
+  virtual void NotifyModuleTreeLoadFinished(ModuleScript*) = 0;
+};
+
 // spec: "top-level module fetch flag"
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-is-top-level
 enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
