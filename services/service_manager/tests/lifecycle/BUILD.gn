@@ -132,6 +132,7 @@ executable("lifecycle_unittest_exe") {
   deps = [
     ":app_client",
     "//base",
+    "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/cpp/standalone_service:main",
