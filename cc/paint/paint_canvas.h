@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_image.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -120,11 +121,11 @@ class CC_PAINT_EXPORT PaintCanvas {
                              SkScalar ry,
                              const PaintFlags& flags) = 0;
   virtual void drawPath(const SkPath& path, const PaintFlags& flags) = 0;
-  virtual void drawImage(sk_sp<const SkImage> image,
+  virtual void drawImage(const PaintImage& image,
                          SkScalar left,
                          SkScalar top,
                          const PaintFlags* flags) = 0;
-  void drawImage(sk_sp<const SkImage> image, SkScalar left, SkScalar top) {
+  void drawImage(const PaintImage& image, SkScalar left, SkScalar top) {
     drawImage(image, left, top, nullptr);
   }
 
@@ -133,7 +134,7 @@ class CC_PAINT_EXPORT PaintCanvas {
     kFast_SrcRectConstraint = SkCanvas::kFast_SrcRectConstraint,
   };
 
-  virtual void drawImageRect(sk_sp<const SkImage> image,
+  virtual void drawImageRect(const PaintImage& image,
                              const SkRect& src,
                              const SkRect& dst,
                              const PaintFlags* flags,

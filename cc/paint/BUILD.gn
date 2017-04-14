@@ -33,6 +33,8 @@ cc_component("paint") {
     "paint_canvas.h",
     "paint_export.h",
     "paint_flags.h",
+    "paint_image.cc",
+    "paint_image.h",
     "paint_record.h",
     "paint_recorder.cc",
     "paint_recorder.h",

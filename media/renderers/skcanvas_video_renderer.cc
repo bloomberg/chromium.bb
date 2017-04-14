@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_image.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -428,12 +429,15 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   // sw image into the SkPicture. The long term solution is for Skia to provide
   // a SkPicture filter that makes a picture safe for multiple CPU raster
   // threads. (skbug.com/4321).
-  if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
-    sk_sp<SkImage> swImage = last_image_->makeNonTextureImage();
-    canvas->drawImage(swImage, 0, 0, &video_flags);
-  } else {
-    canvas->drawImage(last_image_, 0, 0, &video_flags);
-  }
+  sk_sp<const SkImage> image;
+  if (canvas->imageInfo().colorType() == kUnknown_SkColorType)
+    image = last_image_->makeNonTextureImage();
+  else
+    image = last_image_;
+  canvas->drawImage(
+      cc::PaintImage(std::move(image), cc::PaintImage::AnimationType::VIDEO,
+                     cc::PaintImage::CompletionState::DONE),
+      0, 0, &video_flags);
 
   if (need_transform)
     canvas->restore();

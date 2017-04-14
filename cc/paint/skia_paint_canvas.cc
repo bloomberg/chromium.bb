@@ -201,19 +201,19 @@ void SkiaPaintCanvas::drawPath(const SkPath& path, const PaintFlags& flags) {
   canvas_->drawPath(path, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawImage(sk_sp<const SkImage> image,
+void SkiaPaintCanvas::drawImage(const PaintImage& image,
                                 SkScalar left,
                                 SkScalar top,
                                 const PaintFlags* flags) {
-  canvas_->drawImage(image.get(), left, top, ToSkPaint(flags));
+  canvas_->drawImage(image.sk_image().get(), left, top, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawImageRect(sk_sp<const SkImage> image,
+void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
                                     const SkRect& src,
                                     const SkRect& dst,
                                     const PaintFlags* flags,
                                     SrcRectConstraint constraint) {
-  canvas_->drawImageRect(image.get(), src, dst, ToSkPaint(flags),
+  canvas_->drawImageRect(image.sk_image().get(), src, dst, ToSkPaint(flags),
                          static_cast<SkCanvas::SrcRectConstraint>(constraint));
 }
 

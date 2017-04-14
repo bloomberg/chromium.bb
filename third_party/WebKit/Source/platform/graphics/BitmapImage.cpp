@@ -35,6 +35,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -300,10 +301,16 @@ void BitmapImage::Draw(
 
   uint32_t unique_id = image->uniqueID();
   bool is_lazy_generated = image->isLazyGenerated();
+  auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
+                                        : PaintImage::AnimationType::STATIC;
+  auto completion_state = CurrentFrameIsComplete()
+                              ? PaintImage::CompletionState::DONE
+                              : PaintImage::CompletionState::PARTIALLY_DONE;
 
-  canvas->drawImageRect(std::move(image), adjusted_src_rect, adjusted_dst_rect,
-                        &flags,
-                        WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
+  canvas->drawImageRect(
+      PaintImage(std::move(image), animation_type, completion_state),
+      adjusted_src_rect, adjusted_dst_rect, &flags,
+      WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 
   if (is_lazy_generated)
     PlatformInstrumentation::DidDrawLazyPixelRef(unique_id);

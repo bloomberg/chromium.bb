@@ -8,6 +8,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/UnacceleratedStaticBitmapImage.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -35,8 +36,15 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
   if (dst_rect.IsEmpty() || adjusted_src_rect.IsEmpty())
     return;  // Nothing to draw.
 
-  canvas->drawImageRect(std::move(image), adjusted_src_rect, dst_rect, &flags,
-                        WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
+  auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
+                                        : PaintImage::AnimationType::STATIC;
+  auto completion_state = CurrentFrameIsComplete()
+                              ? PaintImage::CompletionState::DONE
+                              : PaintImage::CompletionState::PARTIALLY_DONE;
+  canvas->drawImageRect(
+      PaintImage(std::move(image), animation_type, completion_state),
+      adjusted_src_rect, dst_rect, &flags,
+      WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 }
 
 }  // namespace blink

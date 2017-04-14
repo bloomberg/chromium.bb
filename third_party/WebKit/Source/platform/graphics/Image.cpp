@@ -35,6 +35,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/graphics/paint/PaintRecorder.h"
 #include "platform/graphics/paint/PaintShader.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
@@ -229,7 +230,9 @@ sk_sp<PaintShader> CreatePatternShader(sk_sp<const SkImage> image,
                                        const PaintFlags& paint,
                                        const FloatSize& spacing,
                                        SkShader::TileMode tmx,
-                                       SkShader::TileMode tmy) {
+                                       SkShader::TileMode tmy,
+                                       bool animated,
+                                       bool complete) {
   if (spacing.IsZero())
     return MakePaintShaderImage(image, tmx, tmy, &shader_matrix);
 
@@ -240,7 +243,14 @@ sk_sp<PaintShader> CreatePatternShader(sk_sp<const SkImage> image,
 
   PaintRecorder recorder;
   PaintCanvas* canvas = recorder.beginRecording(tile_rect);
-  canvas->drawImage(image, 0, 0, &paint);
+  auto animation_type = animated ? PaintImage::AnimationType::ANIMATED
+                                 : PaintImage::AnimationType::STATIC;
+  auto completion_state = complete
+                              ? PaintImage::CompletionState::DONE
+                              : PaintImage::CompletionState::PARTIALLY_DONE;
+  canvas->drawImage(
+      PaintImage(std::move(image), animation_type, completion_state), 0, 0,
+      &paint);
 
   return MakePaintShaderRecord(recorder.finishRecordingAsPicture(), tmx, tmy,
                                &shader_matrix, nullptr);
@@ -315,7 +325,7 @@ void Image::DrawPattern(GraphicsContext& context,
       CreatePatternShader(std::move(image), local_matrix, flags,
                           FloatSize(repeat_spacing.Width() / scale.Width(),
                                     repeat_spacing.Height() / scale.Height()),
-                          tmx, tmy));
+                          tmx, tmy, MaybeAnimated(), CurrentFrameIsComplete()));
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.

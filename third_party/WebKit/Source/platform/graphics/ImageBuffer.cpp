@@ -46,6 +46,7 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/graphics/paint/PaintImage.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/JPEGImageEncoder.h"
@@ -584,7 +585,11 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
     // will fail at playback time.
     image = image->makeNonTextureImage();
   }
-  surface->Canvas()->drawImage(std::move(image), 0, 0);
+  // TODO(vmpstr): Figure out actual values for this.
+  auto animation_type = PaintImage::AnimationType::UNKNOWN;
+  auto completion_state = PaintImage::CompletionState::UNKNOWN;
+  surface->Canvas()->drawImage(
+      PaintImage(std::move(image), animation_type, completion_state), 0, 0);
 
   surface->SetImageBuffer(this);
   if (client_)

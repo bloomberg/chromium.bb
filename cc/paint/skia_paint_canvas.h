@@ -97,11 +97,11 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                      SkScalar ry,
                      const PaintFlags& flags) override;
   void drawPath(const SkPath& path, const PaintFlags& flags) override;
-  void drawImage(sk_sp<const SkImage> image,
+  void drawImage(const PaintImage& image,
                  SkScalar left,
                  SkScalar top,
                  const PaintFlags* flags) override;
-  void drawImageRect(sk_sp<const SkImage> image,
+  void drawImageRect(const PaintImage& image,
                      const SkRect& src,
                      const SkRect& dst,
                      const PaintFlags* flags,

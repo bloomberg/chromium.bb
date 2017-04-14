@@ -71,7 +71,9 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     }
     PaintCanvas* canvas =
         recorder.beginRecording(it->image->width(), it->image->height());
-    canvas->drawImage(it->image, it->point.x(), it->point.y(), &it->flags);
+    canvas->drawImage(PaintImage(it->image, PaintImage::AnimationType::STATIC,
+                                 PaintImage::CompletionState::DONE),
+                      it->point.x(), it->point.y(), &it->flags);
     display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
         PaintableRegion(), recorder.finishRecordingAsPicture());
     if (!it->transform.IsIdentity()) {
