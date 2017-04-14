@@ -13866,6 +13866,15 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
+<action name="Precache.Fetch.Begin" not_user_triggered="true">
+  <owner>twifkak@chromium.org</owner>
+  <owner>jamartin@chromium.org</owner>
+  <description>
+    A precache fetch was initiated, having met all the necessary preconditions.
+    This occurs when precache is in either Enabled or Control mode.
+  </description>
+</action>
+
 <action name="Precache.Fetch.IntentReceived" not_user_triggered="true">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

@@ -14,6 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -283,6 +285,8 @@ void PrecacheManager::OnGetUnfinishedWorkDone(
     unfinished_work->set_start_time(base::Time::Now().ToInternalValue());
   unfinished_work_ = std::move(unfinished_work);
   bool needs_top_hosts = unfinished_work_->top_host_size() == 0;
+
+  base::RecordAction(base::UserMetricsAction("Precache.Fetch.Begin"));
 
   if (IsInExperimentGroup()) {
     BrowserThread::PostTask(
