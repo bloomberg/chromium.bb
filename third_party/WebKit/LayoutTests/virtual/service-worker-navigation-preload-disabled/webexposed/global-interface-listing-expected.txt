@@ -6550,13 +6550,6 @@ interface StaticRange
     getter startContainer
     getter startOffset
     method constructor
-    method setEnd
-    method setStart
-    method toRange
-    setter endContainer
-    setter endOffset
-    setter startContainer
-    setter startOffset
 interface StereoPannerNode : AudioNode
     attribute @@toStringTag
     getter pan

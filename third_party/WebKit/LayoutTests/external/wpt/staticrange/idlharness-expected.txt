@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS StaticRange interface: existence and properties of interface object 
+PASS StaticRange interface object length 
+PASS StaticRange interface object name 
+FAIL StaticRange interface: existence and properties of interface prototype object assert_equals: class string of StaticRange.prototype expected "[object StaticRangePrototype]" but got "[object StaticRange]"
+PASS StaticRange interface: existence and properties of interface prototype object's "constructor" property 
+PASS StaticRange interface: attribute startContainer 
+PASS StaticRange interface: attribute startOffset 
+PASS StaticRange interface: attribute endContainer 
+PASS StaticRange interface: attribute endOffset 
+PASS StaticRange interface: attribute collapsed 
+Harness: the test ran to completion.
+

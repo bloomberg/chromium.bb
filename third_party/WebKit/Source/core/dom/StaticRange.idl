@@ -5,19 +5,11 @@
 // https://garykac.github.io/staticrange/#interface-staticrange
 
 [
-    Constructor,
-    ConstructorCallWith=Document,
-    Exposed=Window,
     RuntimeEnabled=InputEvent,
 ] interface StaticRange {
-    attribute Node startContainer;
-    attribute unsigned long startOffset;
-    attribute Node endContainer;
-    attribute unsigned long endOffset;
+    readonly attribute Node startContainer;
+    readonly attribute unsigned long startOffset;
+    readonly attribute Node endContainer;
+    readonly attribute unsigned long endOffset;
     readonly attribute boolean collapsed;
-
-    void setStart(Node node, unsigned long offset);
-    void setEnd(Node node, unsigned long offset);
-
-    [NewObject, RaisesException] Range toRange();
 };
