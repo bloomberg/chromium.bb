@@ -205,6 +205,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                          blink::WebDragOperation operation) override;
   void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
+  void SetCursor(const CursorInfo& cursor_info) override;
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();

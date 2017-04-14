@@ -14,7 +14,7 @@ namespace content {
 
 bool GetWebCursorInfo(const WebCursor& cursor,
                       WebCursorInfo* web_cursor_info) {
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor.GetCursorInfo(&cursor_info);
 
   web_cursor_info->type = cursor_info.type;
@@ -26,7 +26,7 @@ bool GetWebCursorInfo(const WebCursor& cursor,
 
 void InitializeCursorFromWebCursorInfo(WebCursor* cursor,
                                        const WebCursorInfo& web_cursor_info) {
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor_info.type = web_cursor_info.type;
   cursor_info.image_scale_factor = web_cursor_info.image_scale_factor;
   cursor_info.hotspot = web_cursor_info.hot_spot;

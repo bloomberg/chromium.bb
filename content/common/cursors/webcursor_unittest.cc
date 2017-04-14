@@ -161,7 +161,7 @@ TEST(WebCursorTest, ClampHotspot) {
   EXPECT_TRUE(custom_cursor.Deserialize(&iter));
 
   // Convert to WebCursorInfo, make sure the hotspot got clamped.
-  WebCursor::CursorInfo info;
+  CursorInfo info;
   custom_cursor.GetCursorInfo(&info);
   EXPECT_EQ(gfx::Point(1, 1), info.hotspot);
 
@@ -224,7 +224,7 @@ TEST(WebCursorTest, AlphaConversion) {
   bitmap.allocN32Pixels(1,1);
   SkAutoLockPixels bitmap_lock(bitmap);
   *bitmap.getAddr32(0, 0) = testColor;
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor_info.type = WebCursorInfo::kTypeCustom;
   cursor_info.custom_image = bitmap;
   cursor_info.image_scale_factor = 1;
@@ -270,7 +270,7 @@ TEST(WebCursorTest, CursorScaleFactor) {
   display::Display display;
   display.set_device_scale_factor(80.2f);
 
-  WebCursor::CursorInfo info;
+  CursorInfo info;
   info.image_scale_factor = 2.0f;
 
   WebCursor cursor;
@@ -281,7 +281,7 @@ TEST(WebCursorTest, CursorScaleFactor) {
 }
 
 TEST(WebCursorTest, UnscaledImageCopy) {
-  WebCursor::CursorInfo info;
+  CursorInfo info;
   info.type = WebCursorInfo::kTypeCustom;
   info.hotspot = gfx::Point(0, 1);
 
@@ -325,7 +325,7 @@ void ScaleCursor(float scale_factor, int hotspot_x, int hotspot_y) {
   display::Display display;
   display.set_device_scale_factor(scale_factor);
 
-  WebCursor::CursorInfo info;
+  CursorInfo info;
   info.type = WebCursorInfo::kTypeCustom;
   info.hotspot = gfx::Point(hotspot_x, hotspot_y);
 

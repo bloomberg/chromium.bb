@@ -1460,6 +1460,12 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
   }
 }
 
+void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
+  WebCursor cursor;
+  cursor.InitFromCursorInfo(cursor_info);
+  SetCursor(cursor);
+}
+
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   if (delegate_)
     delegate_->ScreenInfoChanged();

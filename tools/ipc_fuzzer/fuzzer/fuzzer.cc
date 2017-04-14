@@ -809,7 +809,7 @@ struct FuzzTraits<content::SyntheticGesturePacket> {
 template <>
 struct FuzzTraits<content::WebCursor> {
   static bool Fuzz(content::WebCursor* p, Fuzzer* fuzzer) {
-    content::WebCursor::CursorInfo info;
+    content::CursorInfo info;
     p->GetCursorInfo(&info);
 
     // |type| enum is not validated on de-serialization, so pick random value.

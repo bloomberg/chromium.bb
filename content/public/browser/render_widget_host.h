@@ -27,6 +27,7 @@ class WebMouseWheelEvent;
 
 namespace content {
 
+struct CursorInfo;
 class RenderProcessHost;
 class RenderWidgetHostIterator;
 class RenderWidgetHostView;
@@ -263,6 +264,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Filters drop data before it is passed to RenderWidgetHost.
   virtual void FilterDropData(DropData* drop_data) {}
+
+  // Sets cursor to a specified one when it is over this widget.
+  virtual void SetCursor(const CursorInfo& cursor_info) {}
 };
 
 }  // namespace content

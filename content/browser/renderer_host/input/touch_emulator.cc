@@ -133,7 +133,7 @@ bool TouchEmulator::InitCursors(float device_scale_factor, bool force) {
       use_2x ? IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X :
           IDR_DEVTOOLS_PINCH_CURSOR_ICON);
 
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypePointer;
   pointer_cursor_.InitFromCursorInfo(cursor_info);
   return true;
@@ -143,7 +143,7 @@ gfx::SizeF TouchEmulator::InitCursorFromResource(
     WebCursor* cursor, float scale, int resource_id) {
   gfx::Image& cursor_image =
       content::GetContentClient()->GetNativeImageNamed(resource_id);
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypeCustom;
   cursor_info.image_scale_factor = scale;
   cursor_info.custom_image = cursor_image.AsBitmap();

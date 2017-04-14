@@ -239,7 +239,7 @@ class TouchEmulatorTest : public testing::Test,
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
 
   float GetCursorScaleFactor() {
-    WebCursor::CursorInfo info;
+    CursorInfo info;
     cursor_.GetCursorInfo(&info);
     return info.image_scale_factor;
   }

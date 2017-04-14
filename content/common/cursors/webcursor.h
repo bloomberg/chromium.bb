@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "content/public/common/cursor_info.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -44,21 +44,6 @@ namespace content {
 // WebCursor.
 class CONTENT_EXPORT WebCursor {
  public:
-  struct CursorInfo {
-    explicit CursorInfo(blink::WebCursorInfo::Type cursor_type)
-        : type(cursor_type),
-          image_scale_factor(1) {
-    }
-
-    CursorInfo()
-        : type(blink::WebCursorInfo::kTypePointer), image_scale_factor(1) {}
-
-    blink::WebCursorInfo::Type type;
-    gfx::Point hotspot;
-    float image_scale_factor;
-    SkBitmap custom_image;
-  };
-
   WebCursor();
   ~WebCursor();
 

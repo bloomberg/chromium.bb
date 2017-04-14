@@ -63,7 +63,7 @@ void ColorPicker::SetEnabled(bool enabled) {
     ResetFrame();
 
     WebCursor pointer_cursor;
-    WebCursor::CursorInfo cursor_info;
+    CursorInfo cursor_info;
     cursor_info.type = blink::WebCursorInfo::kTypePointer;
     pointer_cursor.InitFromCursorInfo(cursor_info);
     host_->SetCursor(pointer_cursor);
@@ -249,7 +249,7 @@ void ColorPicker::UpdateCursor() {
   canvas.drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
   WebCursor cursor;
-  WebCursor::CursorInfo cursor_info;
+  CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypeCustom;
   cursor_info.image_scale_factor = device_scale_factor;
   cursor_info.custom_image = result;
