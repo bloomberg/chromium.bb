@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -35,7 +36,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -43,10 +43,6 @@
 // Helpers --------------------------------------------------------------------
 
 namespace {
-
-const int kEdgeItemPadding = views::kRelatedControlHorizontalSpacing;
-const int kIconToLabelSpacing = views::kRelatedControlHorizontalSpacing;
-const int kBeforeCloseButtonSpacing = views::kUnrelatedControlHorizontalSpacing;
 
 bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
   return label_1->GetPreferredSize().width() >
@@ -130,12 +126,19 @@ void InfoBarView::Layout() {
   // |child_container_| should be the only child.
   DCHECK_EQ(1, child_count());
 
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+
+  const int related_control_distance = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const int unrelated_control_distance =
+      layout_provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+
   // Even though other views are technically grandchildren, we'll lay them out
   // here on behalf of |child_container_|.
-  int start_x = kEdgeItemPadding;
+  int start_x = related_control_distance;
   if (icon_ != NULL) {
     icon_->SetPosition(gfx::Point(start_x, OffsetY(icon_)));
-    start_x = icon_->bounds().right() + kIconToLabelSpacing;
+    start_x = icon_->bounds().right() + related_control_distance;
   }
 
   int content_minimum_width = ContentMinimumWidth();
@@ -143,8 +146,8 @@ void InfoBarView::Layout() {
   close_button_->SetPosition(gfx::Point(
       std::max(
           start_x + content_minimum_width +
-              ((content_minimum_width > 0) ? kBeforeCloseButtonSpacing : 0),
-          width() - kEdgeItemPadding - close_button_->width()),
+              ((content_minimum_width > 0) ? unrelated_control_distance : 0),
+          width() - related_control_distance - close_button_->width()),
       OffsetY(close_button_)));
 
   // For accessibility reasons, the close button should come last.
@@ -204,12 +207,14 @@ int InfoBarView::StartX() const {
   // Ensure we don't return a value greater than EndX(), so children can safely
   // set something's width to "EndX() - StartX()" without risking that being
   // negative.
-  return std::min(EndX(), (icon_ != NULL) ?
-      (icon_->bounds().right() + kIconToLabelSpacing) : kEdgeItemPadding);
+  const int padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  return std::min((icon_ ? icon_->bounds().right() : 0) + padding, EndX());
 }
 
 int InfoBarView::EndX() const {
-  return close_button_->x() - kBeforeCloseButtonSpacing;
+  return close_button_->x() - ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                  DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
@@ -280,10 +285,18 @@ void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::Size InfoBarView::GetPreferredSize() const {
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+
+  const int related_control_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const int unrelated_control_spacing =
+      layout_provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+
   return gfx::Size(
-      kEdgeItemPadding + (icon_ ? (icon_->width() + kIconToLabelSpacing) : 0) +
-          ContentMinimumWidth() + kBeforeCloseButtonSpacing +
-          close_button_->width() + kEdgeItemPadding,
+      related_control_spacing +
+          (icon_ ? (icon_->width() + related_control_spacing) : 0) +
+          ContentMinimumWidth() + unrelated_control_spacing +
+          close_button_->width() + related_control_spacing,
       total_height());
 }
 

@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/window_open_disposition.h"
@@ -18,14 +19,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/layout/layout_constants.h"
-
-namespace {
-
-constexpr int kButtonButtonSpacing = views::kRelatedButtonHSpacing;
-constexpr int kEndOfLabelSpacing = views::kItemLabelSpacing;
-
-}  // namespace
 
 // InfoBarService -------------------------------------------------------------
 
@@ -62,13 +55,18 @@ void ConfirmInfoBar::Layout() {
   labels.push_back(link_);
   AssignWidths(&labels, std::max(0, EndX() - x - NonLabelWidth()));
 
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+
   label_->SetPosition(gfx::Point(x, OffsetY(label_)));
   if (!label_->text().empty())
-    x = label_->bounds().right() + kEndOfLabelSpacing;
+    x = label_->bounds().right() +
+        layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   if (ok_button_) {
     ok_button_->SetPosition(gfx::Point(x, OffsetY(ok_button_)));
-    x = ok_button_->bounds().right() + kButtonButtonSpacing;
+    x = ok_button_->bounds().right() +
+        layout_provider->GetDistanceMetric(
+            views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   }
 
   if (cancel_button_)
@@ -153,10 +151,18 @@ ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
 }
 
 int ConfirmInfoBar::NonLabelWidth() const {
-  int width = (label_->text().empty() || (!ok_button_ && !cancel_button_)) ?
-      0 : kEndOfLabelSpacing;
+  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
+
+  const int label_spacing =
+      layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+  const int button_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
+
+  int width = (label_->text().empty() || (!ok_button_ && !cancel_button_))
+                  ? 0
+                  : label_spacing;
   if (ok_button_)
-    width += ok_button_->width() + (cancel_button_ ? kButtonButtonSpacing : 0);
+    width += ok_button_->width() + (cancel_button_ ? button_spacing : 0);
   width += cancel_button_ ? cancel_button_->width() : 0;
-  return width + ((link_->text().empty() || !width) ? 0 : kEndOfLabelSpacing);
+  return width + ((link_->text().empty() || !width) ? 0 : label_spacing);
 }
