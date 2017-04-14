@@ -27,9 +27,7 @@
 namespace content {
 
 void NavigationResourceHandler::GetSSLStatusForRequest(
-    const GURL& url,
     const net::SSLInfo& ssl_info,
-    int child_id,
     SSLStatus* ssl_status) {
   DCHECK(ssl_info.cert);
   *ssl_status = SSLStatus(ssl_info);
@@ -126,10 +124,8 @@ void NavigationResourceHandler::OnResponseStarted(
   }
 
   SSLStatus ssl_status;
-  if (request()->ssl_info().cert.get()) {
-    GetSSLStatusForRequest(request()->url(), request()->ssl_info(),
-                           info->GetChildID(), &ssl_status);
-  }
+  if (request()->ssl_info().cert.get())
+    GetSSLStatusForRequest(request()->ssl_info(), &ssl_status);
 
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
                                ssl_status, std::move(cloned_data),

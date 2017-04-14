@@ -661,9 +661,9 @@ int ResourceDispatcher::StartAsync(
     mojom::URLLoaderAssociatedPtr url_loader;
     mojom::URLLoaderClientPtr client_ptr;
     client->Bind(&client_ptr);
-    url_loader_factory->CreateLoaderAndStart(MakeRequest(&url_loader),
-                                             routing_id, request_id, *request,
-                                             std::move(client_ptr));
+    url_loader_factory->CreateLoaderAndStart(
+        MakeRequest(&url_loader), routing_id, request_id,
+        mojom::kURLLoadOptionNone, *request, std::move(client_ptr));
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {
@@ -767,7 +767,7 @@ void ResourceDispatcher::ContinueForNavigation(
   // the request. ResourceResponseHead can be empty here because we
   // pull the StreamOverride's one in
   // WebURLLoaderImpl::Context::OnReceivedResponse.
-  client_ptr->OnReceiveResponse(ResourceResponseHead(),
+  client_ptr->OnReceiveResponse(ResourceResponseHead(), base::nullopt,
                                 mojom::DownloadedTempFilePtr());
   // Start streaming now.
   client_ptr->OnStartLoadingResponseBody(std::move(consumer_handle));

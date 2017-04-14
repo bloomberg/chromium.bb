@@ -311,8 +311,8 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
 
   SSLStatus ssl_status;
   if (request_->ssl_info().cert.get()) {
-    NavigationResourceHandler::GetSSLStatusForRequest(
-        request_->url(), request_->ssl_info(), info->GetChildID(), &ssl_status);
+    NavigationResourceHandler::GetSSLStatusForRequest(request_->ssl_info(),
+                                                      &ssl_status);
   }
 
   BrowserThread::PostTask(

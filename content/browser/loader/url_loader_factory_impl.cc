@@ -51,8 +51,10 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     mojom::URLLoaderAssociatedRequest request,
     int32_t routing_id,
     int32_t request_id,
+    uint32_t options,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client) {
+  DCHECK_EQ(options, mojom::kURLLoadOptionNone);
   CreateLoaderAndStart(requester_info_.get(), std::move(request), routing_id,
                        request_id, url_request, std::move(client));
 }

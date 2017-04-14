@@ -26,6 +26,7 @@
 #include "content/browser/loader/test_url_loader_client.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/url_loader.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/appcache_service.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
@@ -292,6 +293,7 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
   void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest request,
                             int32_t routing_id,
                             int32_t request_id,
+                            uint32_t options,
                             const ResourceRequest& url_request,
                             mojom::URLLoaderClientPtr client_ptr) override {
     loader_request_ = std::move(request);
@@ -354,7 +356,8 @@ class MojoAsyncResourceHandlerTestBase {
                                 mojo::MakeRequest(&url_loader_factory_));
 
     url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId, request,
+        mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId,
+        mojom::kURLLoadOptionNone, request,
         url_loader_client_.CreateInterfacePtr());
 
     url_loader_factory_.FlushForTesting();

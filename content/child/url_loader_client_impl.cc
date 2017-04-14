@@ -110,6 +110,7 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
 
 void URLLoaderClientImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
+    const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   has_received_response_ = true;
   downloaded_file_ = std::move(downloaded_file);

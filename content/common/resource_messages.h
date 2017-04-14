@@ -22,10 +22,12 @@
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
@@ -45,6 +47,28 @@ namespace IPC {
 template <>
 struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<net::SSLInfo> {
+  typedef net::SSLInfo param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<net::HashValue> {
+  typedef net::HashValue param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -120,6 +144,19 @@ struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
 IPC_ENUM_TRAITS_MAX_VALUE( \
     net::HttpResponseInfo::ConnectionInfo, \
     net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
+
+IPC_ENUM_TRAITS_MAX_VALUE(net::TokenBindingParam, net::TB_PARAM_ECDSAP256)
+IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
+                          net::SSLInfo::HANDSHAKE_FULL)
+IPC_ENUM_TRAITS_MAX_VALUE(net::ct::EVPolicyCompliance,
+                          net::ct::EVPolicyCompliance::EV_POLICY_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    net::ct::CertPolicyCompliance,
+    net::ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY)
+IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
+                          net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)
+IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,
+                          net::OCSPRevocationStatus::UNKNOWN)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRequestMode,
                           content::FETCH_REQUEST_MODE_LAST)

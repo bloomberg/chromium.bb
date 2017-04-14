@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/loader/navigation_resource_handler.h"
+#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -52,7 +54,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   url_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr_), 0 /* routing_id? */,
-      0 /* request_id? */, *new_request,
+      0 /* request_id? */, mojom::kURLLoadOptionSendSSLInfo, *new_request,
       std::move(url_loader_client_ptr_to_pass));
 }
 
@@ -66,10 +68,13 @@ void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
 
 void NavigationURLLoaderNetworkService::OnReceiveResponse(
     const ResourceResponseHead& head,
+    const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnReponseStarted() does. Or maybe in
   // OnStartLoadingResponseBody().
+  if (ssl_info && ssl_info->cert)
+    NavigationResourceHandler::GetSSLStatusForRequest(*ssl_info, &ssl_status_);
   response_ = base::MakeShared<ResourceResponse>();
   response_->head = head;
 }
@@ -104,7 +109,7 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
   // Temporarily, we pass both a stream (null) and the data pipe to the
   // delegate until PlzNavigate has shipped and we can be comfortable fully
   // switching to the data pipe.
-  delegate_->OnResponseStarted(response_, nullptr, std::move(body), SSLStatus(),
+  delegate_->OnResponseStarted(response_, nullptr, std::move(body), ssl_status_,
                                std::unique_ptr<NavigationData>(),
                                GlobalRequestID() /* request_id? */,
                                false /* is_download? */, false /* is_stream */);

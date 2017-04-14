@@ -7,6 +7,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/network/net_adapters.h"
 #include "content/network/network_context.h"
 #include "content/public/common/referrer.h"
@@ -155,9 +156,11 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 URLLoaderImpl::URLLoaderImpl(
     NetworkContext* context,
     mojom::URLLoaderAssociatedRequest url_loader_request,
+    int32_t options,
     const ResourceRequest& request,
     mojom::URLLoaderClientPtr url_loader_client)
     : context_(context),
+      options_(options),
       connected_(true),
       binding_(this, std::move(url_loader_request)),
       url_loader_client_(std::move(url_loader_client)),
@@ -246,8 +249,11 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
   PopulateResourceResponse(url_request_.get(), response.get());
   response->head.encoded_data_length = url_request_->raw_header_size();
 
+  base::Optional<net::SSLInfo> ssl_info;
+  if (options_ & mojom::kURLLoadOptionSendSSLInfo)
+    ssl_info = url_request_->ssl_info();
   mojom::DownloadedTempFilePtr downloaded_file_ptr;
-  url_loader_client_->OnReceiveResponse(response->head,
+  url_loader_client_->OnReceiveResponse(response->head, ssl_info,
                                         std::move(downloaded_file_ptr));
 
   net::IOBufferWithSize* metadata = url_request->response_info().metadata.get();

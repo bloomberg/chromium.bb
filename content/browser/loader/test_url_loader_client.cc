@@ -15,12 +15,14 @@ TestURLLoaderClient::~TestURLLoaderClient() {}
 
 void TestURLLoaderClient::OnReceiveResponse(
     const ResourceResponseHead& response_head,
+    const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
   has_received_response_ = true;
   response_head_ = response_head;
+  ssl_info_ = ssl_info;
   if (quit_closure_for_on_receive_response_)
     quit_closure_for_on_receive_response_.Run();
 }

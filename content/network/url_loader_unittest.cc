@@ -69,18 +69,24 @@ class URLLoaderImplTest : public testing::Test {
     ASSERT_TRUE(test_server_.Start());
   }
 
-  void LoadAndCompareFile(const std::string& path) {
-    TestURLLoaderClient client;
+  void Load(const GURL& url,
+            TestURLLoaderClient* client,
+            uint32_t options = 0) {
     mojom::URLLoaderAssociatedPtr loader;
 
     ResourceRequest request =
-        CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                              test_server()->GetURL(std::string("/") + path));
+        CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
     URLLoaderImpl loader_impl(context(), mojo::MakeIsolatedRequest(&loader),
-                              request, client.CreateInterfacePtr());
+                              options, request, client->CreateInterfacePtr());
 
-    client.RunUntilComplete();
+    client->RunUntilComplete();
+  }
+
+  void LoadAndCompareFile(const std::string& path) {
+    TestURLLoaderClient client;
+    GURL url = test_server()->GetURL(std::string("/") + path);
+    Load(url, &client);
 
     base::FilePath file;
     PathService::Get(content::DIR_TEST_DATA, &file);
@@ -108,6 +114,34 @@ class URLLoaderImplTest : public testing::Test {
 
 TEST_F(URLLoaderImplTest, Basic) {
   LoadAndCompareFile("simple_page.html");
+}
+
+TEST_F(URLLoaderImplTest, BasicSSL) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  TestURLLoaderClient client;
+  GURL url = https_server.GetURL("/simple_page.html");
+  Load(url, &client, mojom::kURLLoadOptionSendSSLInfo);
+  ASSERT_TRUE(!!client.ssl_info());
+  ASSERT_TRUE(!!client.ssl_info()->cert);
+
+  ASSERT_TRUE(
+      https_server.GetCertificate()->Equals(client.ssl_info()->cert.get()));
+}
+
+TEST_F(URLLoaderImplTest, SSLSentOnlyWhenRequested) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  TestURLLoaderClient client;
+  GURL url = https_server.GetURL("/simple_page.html");
+  Load(url, &client, 0);
+  ASSERT_FALSE(!!client.ssl_info());
 }
 
 }  // namespace content

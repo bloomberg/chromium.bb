@@ -25,9 +25,7 @@ struct SSLStatus;
 // PlzNavigate: The leaf ResourceHandler used with NavigationURLLoaderImplCore.
 class NavigationResourceHandler : public ResourceHandler {
  public:
-  static void GetSSLStatusForRequest(const GURL& url,
-                                     const net::SSLInfo& ssl_info,
-                                     int child_id,
+  static void GetSSLStatusForRequest(const net::SSLInfo& ssl_info,
                                      SSLStatus* ssl_status);
 
   NavigationResourceHandler(

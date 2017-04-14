@@ -85,6 +85,7 @@ specific_include_rules = {
     "+content/common/resource_request.h",
     "+content/common/resource_request_completion_status.h",
     "+content/common/url_loader.mojom.h",
+    "+content/common/url_loader_factory.mojom.h",
     "+content/public/browser/appcache_service.h",
     "+content/public/browser/navigation_data.h",
     "+content/public/browser/resource_context.h",

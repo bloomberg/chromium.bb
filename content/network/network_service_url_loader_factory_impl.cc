@@ -21,9 +21,10 @@ void NetworkServiceURLLoaderFactoryImpl::CreateLoaderAndStart(
     mojom::URLLoaderAssociatedRequest request,
     int32_t routing_id,
     int32_t request_id,
+    uint32_t options,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client) {
-  new URLLoaderImpl(context_, std::move(request), url_request,
+  new URLLoaderImpl(context_, std::move(request), options, url_request,
                     std::move(client));
 }
 

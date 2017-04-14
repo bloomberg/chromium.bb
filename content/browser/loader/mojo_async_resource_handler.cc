@@ -195,7 +195,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
                                      response->head.download_file_path);
   }
 
-  url_loader_client_->OnReceiveResponse(response->head,
+  url_loader_client_->OnReceiveResponse(response->head, base::nullopt,
                                         std::move(downloaded_file_ptr));
 
   net::IOBufferWithSize* metadata = GetResponseMetadata(request());

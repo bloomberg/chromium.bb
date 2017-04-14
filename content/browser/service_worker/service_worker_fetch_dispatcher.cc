@@ -161,8 +161,9 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
   void OnReceiveResponse(
       const ResourceResponseHead& head,
+      const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
-    client_->OnReceiveResponse(head, std::move(downloaded_file));
+    client_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
     DCHECK(on_response_);
     std::move(on_response_).Run();
     AddDevToolsCallback(
@@ -597,8 +598,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr),
-      original_info->GetRouteID(), request_id, request,
-      std::move(url_loader_client_ptr_to_pass));
+      original_info->GetRouteID(), request_id, mojom::kURLLoadOptionNone,
+      request, std::move(url_loader_client_ptr_to_pass));
 
   std::unique_ptr<DelegatingURLLoader> url_loader(
       base::MakeUnique<DelegatingURLLoader>(

@@ -9,6 +9,7 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
+#include "content/public/browser/ssl_status.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -42,6 +43,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
 
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const ResourceResponseHead& head,
+                         const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override;
@@ -67,6 +69,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
   mojo::Binding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
   scoped_refptr<ResourceResponse> response_;
+  SSLStatus ssl_status_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationURLLoaderNetworkService);
 };

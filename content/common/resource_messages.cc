@@ -46,6 +46,136 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
   l->append("<HttpResponseHeaders>");
 }
 
+namespace {
+void GetCertSize(base::PickleSizer* s, net::X509Certificate* cert) {
+  base::Pickle temp;
+  cert->Persist(&temp);
+  s->AddBytes(temp.payload_size());
+}
+
+void WriteCert(base::Pickle* m, net::X509Certificate* cert) {
+  cert->Persist(m);
+}
+
+bool ReadCert(base::PickleIterator* iter,
+              scoped_refptr<net::X509Certificate>* cert) {
+  *cert = net::X509Certificate::CreateFromPickle(
+      iter, net::X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);
+  return !!cert->get();
+}
+
+}  // namespace
+
+void ParamTraits<net::SSLInfo>::GetSize(base::PickleSizer* s,
+                                        const param_type& p) {
+  GetParamSize(s, p.is_valid());
+  if (!p.is_valid())
+    return;
+  GetCertSize(s, p.cert.get());
+  GetCertSize(s, p.unverified_cert.get());
+  GetParamSize(s, p.cert_status);
+  GetParamSize(s, p.security_bits);
+  GetParamSize(s, p.key_exchange_group);
+  GetParamSize(s, p.connection_status);
+  GetParamSize(s, p.is_issued_by_known_root);
+  GetParamSize(s, p.pkp_bypassed);
+  GetParamSize(s, p.client_cert_sent);
+  GetParamSize(s, p.channel_id_sent);
+  GetParamSize(s, p.token_binding_negotiated);
+  GetParamSize(s, p.token_binding_key_param);
+  GetParamSize(s, p.handshake_type);
+  GetParamSize(s, p.public_key_hashes);
+  GetParamSize(s, p.pinning_failure_log);
+  GetParamSize(s, p.signed_certificate_timestamps);
+  GetParamSize(s, p.ct_compliance_details_available);
+  GetParamSize(s, p.ct_ev_policy_compliance);
+  GetParamSize(s, p.ct_cert_policy_compliance);
+  GetParamSize(s, p.ocsp_result.response_status);
+  GetParamSize(s, p.ocsp_result.revocation_status);
+}
+
+void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.is_valid());
+  if (!p.is_valid())
+    return;
+  WriteCert(m, p.cert.get());
+  WriteCert(m, p.unverified_cert.get());
+  WriteParam(m, p.cert_status);
+  WriteParam(m, p.security_bits);
+  WriteParam(m, p.key_exchange_group);
+  WriteParam(m, p.connection_status);
+  WriteParam(m, p.is_issued_by_known_root);
+  WriteParam(m, p.pkp_bypassed);
+  WriteParam(m, p.client_cert_sent);
+  WriteParam(m, p.channel_id_sent);
+  WriteParam(m, p.token_binding_negotiated);
+  WriteParam(m, p.token_binding_key_param);
+  WriteParam(m, p.handshake_type);
+  WriteParam(m, p.public_key_hashes);
+  WriteParam(m, p.pinning_failure_log);
+  WriteParam(m, p.signed_certificate_timestamps);
+  WriteParam(m, p.ct_compliance_details_available);
+  WriteParam(m, p.ct_ev_policy_compliance);
+  WriteParam(m, p.ct_cert_policy_compliance);
+  WriteParam(m, p.ocsp_result.response_status);
+  WriteParam(m, p.ocsp_result.revocation_status);
+}
+
+bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
+                                     base::PickleIterator* iter,
+                                     param_type* r) {
+  bool is_valid = false;
+  if (!ReadParam(m, iter, &is_valid))
+    return false;
+  if (!is_valid)
+    return true;
+  return ReadCert(iter, &r->cert) &&
+         ReadCert(iter, &r->unverified_cert) &&
+         ReadParam(m, iter, &r->cert_status) &&
+         ReadParam(m, iter, &r->security_bits) &&
+         ReadParam(m, iter, &r->key_exchange_group) &&
+         ReadParam(m, iter, &r->connection_status) &&
+         ReadParam(m, iter, &r->is_issued_by_known_root) &&
+         ReadParam(m, iter, &r->pkp_bypassed) &&
+         ReadParam(m, iter, &r->client_cert_sent) &&
+         ReadParam(m, iter, &r->channel_id_sent) &&
+         ReadParam(m, iter, &r->token_binding_negotiated) &&
+         ReadParam(m, iter, &r->token_binding_key_param) &&
+         ReadParam(m, iter, &r->handshake_type) &&
+         ReadParam(m, iter, &r->public_key_hashes) &&
+         ReadParam(m, iter, &r->pinning_failure_log) &&
+         ReadParam(m, iter, &r->signed_certificate_timestamps) &&
+         ReadParam(m, iter, &r->ct_compliance_details_available) &&
+         ReadParam(m, iter, &r->ct_ev_policy_compliance) &&
+         ReadParam(m, iter, &r->ct_cert_policy_compliance) &&
+         ReadParam(m, iter, &r->ocsp_result.response_status) &&
+         ReadParam(m, iter, &r->ocsp_result.revocation_status);
+}
+
+void ParamTraits<net::SSLInfo>::Log(const param_type& p, std::string* l) {
+  l->append("<SSLInfo>");
+}
+
+void ParamTraits<net::HashValue>::GetSize(base::PickleSizer* s,
+                                          const param_type& p) {
+  GetParamSize(s, p.ToString());
+}
+
+void ParamTraits<net::HashValue>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.ToString());
+}
+
+bool ParamTraits<net::HashValue>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* r) {
+  std::string str;
+  return ReadParam(m, iter, &str) && r->FromString(str);
+}
+
+void ParamTraits<net::HashValue>::Log(const param_type& p, std::string* l) {
+  l->append("<HashValue>");
+}
+
 void ParamTraits<storage::DataElement>::GetSize(base::PickleSizer* s,
                                                 const param_type& p) {
   GetParamSize(s, static_cast<int>(p.type()));

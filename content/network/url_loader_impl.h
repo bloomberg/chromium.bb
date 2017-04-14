@@ -26,6 +26,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
  public:
   URLLoaderImpl(NetworkContext* context,
                 mojom::URLLoaderAssociatedRequest url_loader_request,
+                int32_t options,
                 const ResourceRequest& request,
                 mojom::URLLoaderClientPtr url_loader_client);
   ~URLLoaderImpl() override;
@@ -56,6 +57,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void DeleteIfNeeded();
 
   NetworkContext* context_;
+  int32_t options_;
   bool connected_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::AssociatedBinding<mojom::URLLoader> binding_;

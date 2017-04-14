@@ -13,10 +13,15 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "content/common/resource_messages.h"
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/ct_policy_status.h"
+#include "net/ssl/ssl_info.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,4 +154,104 @@ TEST(IPCMessageTest, HostPortPair) {
   EXPECT_TRUE(IPC::ParamTraits<net::HostPortPair>::Read(&msg, &iter, &output));
   EXPECT_EQ(input.host(), output.host());
   EXPECT_EQ(input.port(), output.port());
+}
+
+// Tests net::SSLInfo serialization
+TEST(IPCMessageTest, SSLInfo) {
+  // Build a SSLInfo. Avoid false for booleans as that's the default value.
+  net::SSLInfo in;
+  in.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  in.unverified_cert = net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                               "ok_cert_by_intermediate.pem");
+  in.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  in.security_bits = 0x100;
+  in.key_exchange_group = 1024;
+  in.connection_status = 0x300039;  // TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+  in.is_issued_by_known_root = true;
+  in.pkp_bypassed = true;
+  in.client_cert_sent = true;
+  in.channel_id_sent = true;
+  in.token_binding_negotiated = true;
+  in.token_binding_key_param = net::TB_PARAM_ECDSAP256;
+  in.handshake_type = net::SSLInfo::HANDSHAKE_FULL;
+  const net::SHA256HashValue kCertPublicKeyHashValue = {{0x01, 0x02}};
+  in.public_key_hashes.push_back(net::HashValue(kCertPublicKeyHashValue));
+  in.pinning_failure_log = "foo";
+
+  scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
+      new net::ct::SignedCertificateTimestamp());
+  sct->version = net::ct::SignedCertificateTimestamp::V1;
+  sct->log_id = "unknown_log_id";
+  sct->extensions = "extensions";
+  sct->timestamp = base::Time::Now();
+  sct->signature.hash_algorithm = net::ct::DigitallySigned::HASH_ALGO_MD5;
+  sct->signature.signature_algorithm = net::ct::DigitallySigned::SIG_ALGO_RSA;
+  sct->signature.signature_data = "signature";
+  sct->origin = net::ct::SignedCertificateTimestamp::SCT_EMBEDDED;
+  in.signed_certificate_timestamps.push_back(
+      net::SignedCertificateTimestampAndStatus(
+          sct, net::ct::SCT_STATUS_LOG_UNKNOWN));
+
+  in.ct_compliance_details_available = true;
+  in.ct_ev_policy_compliance =
+      net::ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST;
+  in.ct_cert_policy_compliance =
+      net::ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
+  in.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  in.ocsp_result.revocation_status = net::OCSPRevocationStatus::REVOKED;
+
+  // Now serialize and deserialize.
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<net::SSLInfo>::Write(&msg, in);
+
+  net::SSLInfo out;
+  base::PickleIterator iter(msg);
+  EXPECT_TRUE(IPC::ParamTraits<net::SSLInfo>::Read(&msg, &iter, &out));
+
+  // Now verify they're equal.
+  ASSERT_TRUE(in.cert->Equals(out.cert.get()));
+  ASSERT_TRUE(in.unverified_cert->Equals(out.unverified_cert.get()));
+  ASSERT_EQ(in.security_bits, out.security_bits);
+  ASSERT_EQ(in.key_exchange_group, out.key_exchange_group);
+  ASSERT_EQ(in.connection_status, out.connection_status);
+  ASSERT_EQ(in.is_issued_by_known_root, out.is_issued_by_known_root);
+  ASSERT_EQ(in.pkp_bypassed, out.pkp_bypassed);
+  ASSERT_EQ(in.client_cert_sent, out.client_cert_sent);
+  ASSERT_EQ(in.channel_id_sent, out.channel_id_sent);
+  ASSERT_EQ(in.token_binding_negotiated, out.token_binding_negotiated);
+  ASSERT_EQ(in.token_binding_key_param, out.token_binding_key_param);
+  ASSERT_EQ(in.handshake_type, out.handshake_type);
+  ASSERT_EQ(in.public_key_hashes, out.public_key_hashes);
+  ASSERT_EQ(in.pinning_failure_log, out.pinning_failure_log);
+
+  ASSERT_EQ(in.signed_certificate_timestamps.size(),
+            out.signed_certificate_timestamps.size());
+  ASSERT_EQ(in.signed_certificate_timestamps[0].status,
+            out.signed_certificate_timestamps[0].status);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->version,
+            out.signed_certificate_timestamps[0].sct->version);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->log_id,
+            out.signed_certificate_timestamps[0].sct->log_id);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->timestamp,
+            out.signed_certificate_timestamps[0].sct->timestamp);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->extensions,
+            out.signed_certificate_timestamps[0].sct->extensions);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->signature.hash_algorithm,
+            out.signed_certificate_timestamps[0].sct->signature.hash_algorithm);
+  ASSERT_EQ(
+      in.signed_certificate_timestamps[0].sct->signature.signature_algorithm,
+      out.signed_certificate_timestamps[0].sct->signature.signature_algorithm);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->signature.signature_data,
+            out.signed_certificate_timestamps[0].sct->signature.signature_data);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->origin,
+            out.signed_certificate_timestamps[0].sct->origin);
+  ASSERT_EQ(in.signed_certificate_timestamps[0].sct->log_description,
+            out.signed_certificate_timestamps[0].sct->log_description);
+
+  ASSERT_EQ(in.ct_compliance_details_available,
+            out.ct_compliance_details_available);
+  ASSERT_EQ(in.ct_ev_policy_compliance, out.ct_ev_policy_compliance);
+  ASSERT_EQ(in.ct_cert_policy_compliance, out.ct_cert_policy_compliance);
+  ASSERT_EQ(in.ocsp_result, out.ocsp_result);
 }

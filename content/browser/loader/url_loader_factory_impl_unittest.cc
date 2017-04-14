@@ -32,6 +32,7 @@
 #include "content/common/resource_request.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/url_loader.mojom.h"
+#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_paths.h"
@@ -165,7 +166,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
-                                 kRequestId, request,
+                                 kRequestId, mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   ASSERT_FALSE(client.has_received_response());
@@ -240,7 +241,8 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   request.resource_type = RESOURCE_TYPE_XHR;
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
-  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
+  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1,
+                                 mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   client.RunUntilComplete();
@@ -268,7 +270,8 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   request.resource_type = RESOURCE_TYPE_XHR;
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
-  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
+  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1,
+                                 mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   client.RunUntilComplete();
@@ -294,7 +297,8 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   ASSERT_FALSE(request.url.is_valid());
-  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
+  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1,
+                                 mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   client.RunUntilComplete();
@@ -319,7 +323,8 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   request.resource_type = RESOURCE_TYPE_XHR;
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
-  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1, request,
+  factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), 2, 1,
+                                 mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   client.RunUntilComplete();
@@ -349,7 +354,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   request.download_to_file = true;
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
-                                 kRequestId, request,
+                                 kRequestId, 0, request,
                                  client.CreateInterfacePtr());
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.has_data_downloaded());
@@ -416,7 +421,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   request.download_to_file = true;
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
-                                 kRequestId, request,
+                                 kRequestId, 0, request,
                                  client.CreateInterfacePtr());
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.has_data_downloaded());
@@ -479,7 +484,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   request.request_initiator = url::Origin();
   request.report_raw_headers = true;
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
-                                 kRequestId, request,
+                                 kRequestId, mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   client.RunUntilComplete();
@@ -539,7 +544,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(mojo::MakeRequest(&loader), kRoutingId,
-                                 kRequestId, request,
+                                 kRequestId, mojom::kURLLoadOptionNone, request,
                                  client.CreateInterfacePtr());
 
   base::RunLoop().RunUntilIdle();

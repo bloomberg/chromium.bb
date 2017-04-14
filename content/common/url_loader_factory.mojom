@@ -9,6 +9,10 @@ import "url_loader.mojom";
 [Native]
 struct URLSyncLoadResult;
 
+const uint32 kURLLoadOptionNone = 0;
+// Sends the net::SSLInfo struct in OnReceiveResponse.
+const uint32 kURLLoadOptionSendSSLInfo = 1;
+
 interface URLLoaderFactory {
   // Creats a URLLoader and starts loading with the given |request|. |client|'s
   // method will be called when certain events related to that loading
@@ -17,6 +21,7 @@ interface URLLoaderFactory {
   CreateLoaderAndStart(associated URLLoader& loader,
                        int32 routing_id,
                        int32 request_id,
+                       uint32 options,
                        URLRequest request,
                        URLLoaderClient client);
 
