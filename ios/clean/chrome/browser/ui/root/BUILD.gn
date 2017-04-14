@@ -27,6 +27,7 @@ source_set("root_ui") {
   deps = [
     "//base",
     "//ios/clean/chrome/browser/ui/animators",
+    "//ios/clean/chrome/browser/ui/presenters",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

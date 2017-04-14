@@ -10,8 +10,9 @@
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
-@protocol ToolsMenuCommands;
 @protocol NavigationCommands;
+@protocol TabGridCommands;
+@protocol ToolsMenuCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
 // controls and/or labels.
@@ -22,7 +23,9 @@
     : UIViewController<ZoomTransitionDelegate, ToolbarConsumer>
 
 // The dispatcher for this view controller
-@property(nonatomic, weak) id<ToolsMenuCommands, NavigationCommands> dispatcher;
+@property(nonatomic, weak)
+    id<NavigationCommands, TabGridCommands, ToolsMenuCommands>
+        dispatcher;
 
 @property(nonatomic, strong) UIViewController* locationBarViewController;
 

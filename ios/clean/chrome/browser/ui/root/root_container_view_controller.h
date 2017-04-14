@@ -8,10 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/presenters/menu_presentation_delegate.h"
 
 // View controller that wholly contains a content view controller.
 @interface RootContainerViewController
-    : UIViewController<ZoomTransitionDelegate>
+    : UIViewController<MenuPresentationDelegate, ZoomTransitionDelegate>
 
 // View controller showing the main content.
 @property(nonatomic, strong) UIViewController* contentViewController;

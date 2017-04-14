@@ -5,9 +5,9 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
-#import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
@@ -128,7 +128,7 @@ CGFloat kHorizontalMargin = 8.0f;
   self.tabSwitchGridButton.visibilityMask =
       ToolbarComponentVisibilityCompactWidth |
       ToolbarComponentVisibilityRegularWidth;
-  [self.tabSwitchGridButton addTarget:nil
+  [self.tabSwitchGridButton addTarget:self
                                action:@selector(showTabGrid:)
                      forControlEvents:UIControlEventTouchUpInside];
   self.tabSwitchGridButton.hiddenInCurrentState = YES;
@@ -281,6 +281,10 @@ CGFloat kHorizontalMargin = 8.0f;
 
 - (void)reload:(id)sender {
   [self.dispatcher reloadPage];
+}
+
+- (void)showTabGrid:(id)sender {
+  [self.dispatcher showTabGrid];
 }
 
 #pragma mark - TabStripEvents

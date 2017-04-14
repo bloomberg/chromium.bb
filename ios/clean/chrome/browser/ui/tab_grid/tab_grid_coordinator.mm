@@ -196,6 +196,8 @@
 }
 
 - (void)registerForTabGridCommands {
+  [self.browser->dispatcher() startDispatchingToTarget:self
+                                           forSelector:@selector(showTabGrid)];
   [self.browser->dispatcher()
       startDispatchingToTarget:self
                    forSelector:@selector(showTabGridTabAtIndex:)];
