@@ -20,7 +20,6 @@ _PAGE_TAGS_LIST = [
     'audio_video',
     'audio_only',
     'video_only',
-    'looping_audio',
     # Other filter tags:
     'is_50fps',
     'is_4k',
@@ -35,14 +34,6 @@ class ToughVideoCasesPage(page_module.Page):
         assert t in _PAGE_TAGS_LIST
     super(ToughVideoCasesPage, self).__init__(
         url=url, page_set=page_set, tags=tags)
-
-  def LoopMixedAudio(self, action_runner):
-    action_runner.PlayMedia(selector='#background_audio',
-                            playing_event_timeout_in_seconds=60)
-    action_runner.LoopMedia(loop_count=50, selector='#mixed_audio')
-
-  def LoopSingleAudio(self, action_runner):
-    action_runner.LoopMedia(loop_count=50, selector='#single_audio')
 
   def PlayAction(self, action_runner):
     # Play the media until it has finished or it times out.
@@ -449,36 +440,6 @@ class Page27(ToughVideoCasesPage):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
-class Page28(ToughVideoCasesPage):
-
-  # This page tests looping a single audio track.
-  def __init__(self, page_set):
-    super(Page28, self).__init__(
-      url='file://tough_video_cases/audio_playback.html?id=single_audio',
-      page_set=page_set,
-      tags=['pcm', 'looping_audio'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.LoopSingleAudio(action_runner)
-
-
-class Page29(ToughVideoCasesPage):
-
-  # This page tests looping an audio track and playing another in the
-  # background.
-  def __init__(self, page_set):
-    super(Page29, self).__init__(
-      url='file://tough_video_cases/audio_playback.html?id=mixed_audio',
-      page_set=page_set,
-      tags=['pcm', 'looping_audio'])
-
-    self.skip_basic_metrics = True
-
-  def RunPageInteractions(self, action_runner):
-    self.LoopMixedAudio(action_runner)
-
 class Page30(ToughVideoCasesPage):
 
   def __init__(self, page_set):
@@ -631,7 +592,8 @@ class Page40(ToughVideoCasesPage):
 
 class ToughVideoCasesPageSet(story.StorySet):
   """
-  Description: Video Stack Perf benchmark that report time_to_play.
+  Description: Video Stack Perf pages that report time_to_play and many other
+  media-specific and generic metrics.
   """
   def __init__(self):
     super(ToughVideoCasesPageSet, self).__init__(
@@ -671,8 +633,7 @@ class ToughVideoCasesPageSet(story.StorySet):
 
 class ToughVideoCasesExtraPageSet(story.StorySet):
   """
-  Description: Video Stack Perf benchmarks that report seek time and audio
-  avg_loop_time.
+  Description: Video Stack Perf pages that only report seek time.
   """
   def __init__(self):
     super(ToughVideoCasesExtraPageSet, self).__init__(
@@ -687,8 +648,6 @@ class ToughVideoCasesExtraPageSet(story.StorySet):
     self.AddStory(Page25(self))
     self.AddStory(Page26(self))
     self.AddStory(Page27(self))
-    self.AddStory(Page28(self))
-    self.AddStory(Page29(self))
     self.AddStory(Page31(self))
     self.AddStory(Page33(self))
     self.AddStory(Page35(self))
