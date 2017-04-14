@@ -27,6 +27,8 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
 int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
+    case DISTANCE_CONTROL_LIST_VERTICAL:
+      return kHarmonyLayoutUnit * 3 / 4;
     case views::DISTANCE_CLOSE_BUTTON_MARGIN: {
       constexpr int kVisibleMargin = kHarmonyLayoutUnit / 2;
       // The visible margin is based on the unpadded size, so to get the actual

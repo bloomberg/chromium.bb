@@ -42,7 +42,6 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
   void WindowClosing() override;
 
   // Overriden from views::DialogDelegateView:
-  views::View* CreateExtraView() override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
