@@ -861,20 +861,46 @@ const FeatureEntry::FeatureVariation kUseNewDoodleApiVariations[] = {
      arraysize(kUseNewDoodleApiTest8), nullptr}};
 #endif  // OS_ANDROID
 
-const FeatureEntry::FeatureParam kMemoryAblation1MiB[] = {
-    {kMemoryAblationFeatureSizeParam, "1048576"}};
-const FeatureEntry::FeatureParam kMemoryAblation5MiB[] = {
-    {kMemoryAblationFeatureSizeParam, "5242880"}};
-const FeatureEntry::FeatureParam kMemoryAblation10MiB[] = {
-    {kMemoryAblationFeatureSizeParam, "10485760"}};
-const FeatureEntry::FeatureParam kMemoryAblation50MiB[] = {
-    {kMemoryAblationFeatureSizeParam, "52428800"}};
+const FeatureEntry::FeatureParam kMemoryAblation5MiB_512[] = {
+    {kMemoryAblationFeatureSizeParam, "5242880"},
+    {kMemoryAblationFeatureMaxRAMParam, "512"}};
+const FeatureEntry::FeatureParam kMemoryAblation10MiB_512_1024[] = {
+    {kMemoryAblationFeatureSizeParam, "10485760"},
+    {kMemoryAblationFeatureMinRAMParam, "512"},
+    {kMemoryAblationFeatureMaxRAMParam, "1024"}};
+const FeatureEntry::FeatureParam kMemoryAblation20MiB_1024_2048[] = {
+    {kMemoryAblationFeatureSizeParam, "20971520"},
+    {kMemoryAblationFeatureMinRAMParam, "1024"},
+    {kMemoryAblationFeatureMaxRAMParam, "2048"}};
+const FeatureEntry::FeatureParam kMemoryAblation30MiB[] = {
+    {kMemoryAblationFeatureSizeParam, "31457280"}};
+const FeatureEntry::FeatureParam kMemoryAblation40MiB_512_4096[] = {
+    {kMemoryAblationFeatureSizeParam, "41943040"},
+    {kMemoryAblationFeatureMinRAMParam, "512"},
+    {kMemoryAblationFeatureMaxRAMParam, "4096"}};
+const FeatureEntry::FeatureParam kMemoryAblation50MiB_2048_4096[] = {
+    {kMemoryAblationFeatureSizeParam, "52428800"},
+    {kMemoryAblationFeatureMinRAMParam, "2048"},
+    {kMemoryAblationFeatureMaxRAMParam, "4096"}};
+const FeatureEntry::FeatureParam kMemoryAblation100MiB_4096[] = {
+    {kMemoryAblationFeatureSizeParam, "104857600"},
+    {kMemoryAblationFeatureMinRAMParam, "4096"}};
 
 const FeatureEntry::FeatureVariation kMemoryAblationFeatureVariations[] = {
-    {"1 MiB", kMemoryAblation1MiB, arraysize(kMemoryAblation1MiB), nullptr},
-    {"5 MiB", kMemoryAblation5MiB, arraysize(kMemoryAblation5MiB), nullptr},
-    {"10 MiB", kMemoryAblation10MiB, arraysize(kMemoryAblation10MiB), nullptr},
-    {"50 MiB", kMemoryAblation50MiB, arraysize(kMemoryAblation50MiB), nullptr}};
+    {"5 MiB (RAM <= 512)", kMemoryAblation5MiB_512,
+     arraysize(kMemoryAblation5MiB_512), nullptr},
+    {"10 MiB (512 <= RAM <= 1024)", kMemoryAblation10MiB_512_1024,
+     arraysize(kMemoryAblation10MiB_512_1024), nullptr},
+    {"20 MiB (1024 <= RAM <= 2048)", kMemoryAblation20MiB_1024_2048,
+     arraysize(kMemoryAblation20MiB_1024_2048), nullptr},
+    {"30 MiB (any RAM)", kMemoryAblation30MiB, arraysize(kMemoryAblation30MiB),
+     nullptr},
+    {"40 MiB (512 <= RAM <= 4096)", kMemoryAblation40MiB_512_4096,
+     arraysize(kMemoryAblation40MiB_512_4096), nullptr},
+    {"50 MiB (2048 <= RAM <= 4096)", kMemoryAblation50MiB_2048_4096,
+     arraysize(kMemoryAblation50MiB_2048_4096), nullptr},
+    {"100 MiB (RAM >= 4096)", kMemoryAblation100MiB_4096,
+     arraysize(kMemoryAblation100MiB_4096), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {

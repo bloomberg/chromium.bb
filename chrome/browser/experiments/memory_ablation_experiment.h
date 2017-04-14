@@ -16,6 +16,8 @@ class SequencedTaskRunner;
 
 extern const base::Feature kMemoryAblationFeature;
 extern const char kMemoryAblationFeatureSizeParam[];
+extern const char kMemoryAblationFeatureMinRAMParam[];
+extern const char kMemoryAblationFeatureMaxRAMParam[];
 
 /* When enabled, this experiment allocates a chunk of memory to study
  * correlation between memory usage and performance metrics.

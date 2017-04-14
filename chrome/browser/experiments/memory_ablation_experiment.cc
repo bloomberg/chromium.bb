@@ -4,17 +4,22 @@
 
 #include "chrome/browser/experiments/memory_ablation_experiment.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_metrics.h"
 #include "base/sequenced_task_runner.h"
+#include "base/sys_info.h"
 
 const base::Feature kMemoryAblationFeature{"MemoryAblation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kMemoryAblationFeatureSizeParam[] = "Size";
+const char kMemoryAblationFeatureMinRAMParam[] = "MinRAM";
+const char kMemoryAblationFeatureMaxRAMParam[] = "MaxRAM";
 
 constexpr size_t kMemoryAblationDelaySeconds = 5;
 
@@ -29,6 +34,17 @@ MemoryAblationExperiment* MemoryAblationExperiment::GetInstance() {
 
 void MemoryAblationExperiment::MaybeStart(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  int min_ram_mib = base::GetFieldTrialParamByFeatureAsInt(
+      kMemoryAblationFeature, kMemoryAblationFeatureMinRAMParam,
+      0 /* default value */);
+  int max_ram_mib = base::GetFieldTrialParamByFeatureAsInt(
+      kMemoryAblationFeature, kMemoryAblationFeatureMaxRAMParam,
+      std::numeric_limits<int>::max() /* default value */);
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() > max_ram_mib ||
+      base::SysInfo::AmountOfPhysicalMemoryMB() <= min_ram_mib) {
+    return;
+  }
+
   int size = base::GetFieldTrialParamByFeatureAsInt(
       kMemoryAblationFeature, kMemoryAblationFeatureSizeParam,
       0 /* default value */);
