@@ -5540,9 +5540,13 @@ class MemberSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !OS(MACOSX)
 TEST(HeapDeathTest, MemberSameThreadCheck) {
   EXPECT_DEATH(MemberSameThreadCheckTester().Test(), "");
 }
+#endif
 #endif
 
 class PersistentSameThreadCheckTester {
@@ -5579,9 +5583,13 @@ class PersistentSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !OS(MACOSX)
 TEST(HeapDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
 }
+#endif
 #endif
 
 class MarkingSameThreadCheckTester {
@@ -5629,11 +5637,15 @@ class MarkingSameThreadCheckTester {
 };
 
 #if DCHECK_IS_ON()
+// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// crbug.com/709069
+#if !OS(MACOSX)
 TEST(HeapDeathTest, MarkingSameThreadCheck) {
   // This will crash during marking, at the DCHECK in Visitor::markHeader() or
   // earlier.
   EXPECT_DEATH(MarkingSameThreadCheckTester().Test(), "");
 }
+#endif
 #endif
 
 static bool AllocateAndReturnBool() {
