@@ -46,8 +46,9 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
   NGLogicalOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(*space, floating_object->origin_offset);
 
-  NGLayoutOpportunityIterator opportunity_iter(
-      space, floating_object->available_size, adjusted_origin_point);
+  NGLayoutOpportunityIterator opportunity_iter(space->Exclusions().get(),
+                                               floating_object->available_size,
+                                               adjusted_origin_point);
   NGLayoutOpportunity opportunity;
   NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
 
