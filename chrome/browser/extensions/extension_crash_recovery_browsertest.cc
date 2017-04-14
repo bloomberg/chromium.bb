@@ -29,7 +29,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
+#include "extensions/test/background_page_watcher.cc"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 
@@ -143,8 +145,11 @@ class MAYBE_ExtensionCrashRecoveryTest : public ExtensionCrashRecoveryTestBase {
     for (size_t i = 0; i < index; ++i)
       ++it;
     std::string id = (*it)->id();
+    extensions::TestExtensionRegistryObserver observer(GetExtensionRegistry());
     message_center->ClickOnNotification(id);
-    WaitForExtensionLoad();
+    auto* extension = observer.WaitForExtensionLoaded();
+    extensions::BackgroundPageWatcher(GetProcessManager(), extension)
+        .WaitForOpen();
   }
 
   void CancelNotification(size_t index) override {

@@ -241,16 +241,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     return observer_->WaitForExtensionInstallError();
   }
 
-  // Waits until an extension is loaded and all view have loaded.
-  void WaitForExtensionAndViewLoad() {
-    return observer_->WaitForExtensionAndViewLoad();
-  }
-
-  // Waits until an extension is loaded.
-  void WaitForExtensionLoad() {
-    return observer_->WaitForExtensionLoad();
-  }
-
   // Waits for an extension load error. Returns true if the error really
   // happened.
   bool WaitForExtensionLoadError() {

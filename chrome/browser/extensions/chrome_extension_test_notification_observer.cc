@@ -115,11 +115,6 @@ bool ChromeExtensionTestNotificationObserver::WaitForExtensionNotIdle(
   return true;
 }
 
-void ChromeExtensionTestNotificationObserver::WaitForExtensionAndViewLoad() {
-  WaitForExtensionLoad();
-  WaitForExtensionViewsToLoad();
-}
-
 void ChromeExtensionTestNotificationObserver::OnPageActionsUpdated(
     content::WebContents* web_contents) {
   MaybeQuit();

@@ -74,7 +74,11 @@ ExtensionTestNotificationObserver::ExtensionTestNotificationObserver(
     : context_(context),
       extension_installs_observed_(0),
       extension_load_errors_observed_(0),
-      crx_installers_done_observed_(0) {}
+      crx_installers_done_observed_(0),
+      registry_observer_(this) {
+  if (context_)
+    registry_observer_.Add(ExtensionRegistry::Get(context_));
+}
 
 ExtensionTestNotificationObserver::~ExtensionTestNotificationObserver() {}
 
@@ -98,10 +102,6 @@ bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
       content::NotificationService::AllSources())
       .Wait();
   return extension_installs_observed_ == before;
-}
-
-void ExtensionTestNotificationObserver::WaitForExtensionLoad() {
-  WaitForNotification(NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionLoadError() {
@@ -151,12 +151,6 @@ void ExtensionTestNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      last_loaded_extension_id_ =
-          content::Details<const Extension>(details).ptr()->id();
-      VLOG(1) << "Got EXTENSION_LOADED notification.";
-      break;
-
     case NOTIFICATION_CRX_INSTALLER_DONE:
       VLOG(1) << "Got CRX_INSTALLER_DONE notification.";
       {
@@ -179,6 +173,18 @@ void ExtensionTestNotificationObserver::Observe(
       NOTREACHED();
       break;
   }
+}
+
+void ExtensionTestNotificationObserver::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  last_loaded_extension_id_ = extension->id();
+  VLOG(1) << "Got EXTENSION_LOADED notification.";
+}
+
+void ExtensionTestNotificationObserver::OnShutdown(
+    ExtensionRegistry* registry) {
+  registry_observer_.RemoveAll();
 }
 
 void ExtensionTestNotificationObserver::WaitForCondition(

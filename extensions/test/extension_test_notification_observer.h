@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/process_manager_observer.h"
 
 namespace content {
@@ -23,10 +24,12 @@ class WindowedNotificationObserver;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 class ProcessManager;
 
 // Test helper class for observing extension-related events.
-class ExtensionTestNotificationObserver : public content::NotificationObserver {
+class ExtensionTestNotificationObserver : public content::NotificationObserver,
+                                          ExtensionRegistryObserver {
  public:
   explicit ExtensionTestNotificationObserver(content::BrowserContext* context);
   ~ExtensionTestNotificationObserver() override;
@@ -34,9 +37,6 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
   // Wait for an extension install error to be raised. Returns true if an
   // error was raised.
   bool WaitForExtensionInstallError();
-
-  // Waits until an extension is loaded.
-  void WaitForExtensionLoad();
 
   // Waits for an extension load error. Returns true if the error really
   // happened.
@@ -67,10 +67,15 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
     last_loaded_extension_id_ = last_loaded_extension_id;
   }
 
-  // content::NotificationObserver
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
 
  protected:
   class NotificationSet : public content::NotificationObserver,
@@ -135,6 +140,10 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
 
   // The closure to quit the currently-running message loop.
   base::Closure quit_closure_;
+
+  // Listens to extension loaded notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestNotificationObserver);
 };
