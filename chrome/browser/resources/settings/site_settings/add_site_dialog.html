@@ -23,7 +23,7 @@
             placeholder="$i18n{addSiteExceptionPlaceholder}"
             value="{{site_}}" on-input="validate_"
             error-message="$i18n{notValidWebAddress}" autofocus></paper-input>
-        <paper-checkbox id="incognito" hidden$="[[!isIncognitoActive_]]">
+        <paper-checkbox id="incognito" hidden$="[[!showIncognitoSessionOnly_]]">
           $i18n{incognitoSiteOnly}
         </paper-checkbox>
       </div>

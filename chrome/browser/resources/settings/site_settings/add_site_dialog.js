@@ -26,7 +26,7 @@ Polymer({
     contentSetting: String,
 
     /** @private */
-    isIncognitoActive_: Boolean,
+    showIncognitoSessionOnly_: Boolean,
 
     /**
      * The site to add an exception for.
@@ -48,7 +48,8 @@ Polymer({
    */
   open: function(type) {
     this.addWebUIListener('onIncognitoStatusChanged', function(isActive) {
-      this.isIncognitoActive_ = isActive;
+      this.showIncognitoSessionOnly_ = isActive &&
+          this.contentSetting != settings.PermissionValues.SESSION_ONLY;
     }.bind(this));
     this.browserProxy.updateIncognitoStatus();
     this.$.dialog.showModal();

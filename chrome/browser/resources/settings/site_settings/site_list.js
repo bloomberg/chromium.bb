@@ -109,7 +109,7 @@ Polymer({
   },
 
   /**
-   * The element to return focus to, when the currntly active dialog is closed.
+   * The element to return focus to, when the currently active dialog is closed.
    * @private {?HTMLElement}
    */
   activeDialogAnchor_: null,
@@ -136,7 +136,7 @@ Polymer({
 
   /**
    * Called for each site list when incognito is enabled or disabled. Only
-   * called on change (opening N incogito windows only fires one message).
+   * called on change (opening N incognito windows only fires one message).
    * Another message is sent when the *last* incognito window closes.
    * @private
    */
