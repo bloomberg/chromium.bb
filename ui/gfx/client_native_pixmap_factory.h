@@ -25,6 +25,7 @@ class GFX_EXPORT ClientNativePixmapFactory {
  public:
   static ClientNativePixmapFactory* GetInstance();
   static void SetInstance(ClientNativePixmapFactory* instance);
+  static void ResetInstance();
 
   virtual ~ClientNativePixmapFactory();
 

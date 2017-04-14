@@ -18,6 +18,11 @@ ClientNativePixmapFactory* ClientNativePixmapFactory::GetInstance() {
 }
 
 // static
+void ClientNativePixmapFactory::ResetInstance() {
+  g_instance = nullptr;
+}
+
+// static
 void ClientNativePixmapFactory::SetInstance(
     ClientNativePixmapFactory* instance) {
   DCHECK(!g_instance);

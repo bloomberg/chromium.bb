@@ -145,10 +145,6 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
-#endif
-
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
@@ -769,12 +765,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
                  "BrowserMainLoop::Subsystem:BootstrapSandbox");
     CHECK(BootstrapSandboxManager::GetInstance());
   }
-#endif
-
-#if defined(USE_OZONE)
-  client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
-  gfx::ClientNativePixmapFactory::SetInstance(
-      client_native_pixmap_factory_.get());
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kMemoryMetrics)) {

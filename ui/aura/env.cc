@@ -21,6 +21,7 @@
 #include "ui/events/platform/platform_event_source.h"
 
 #if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -40,6 +41,10 @@ base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
 Env::~Env() {
   if (is_os_exchange_data_provider_factory_)
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
+
+#if defined(USE_OZONE)
+  gfx::ClientNativePixmapFactory::ResetInstance();
+#endif
 
   for (EnvObserver& observer : observers_)
     observer.OnWillDestroyEnv();
@@ -138,6 +143,9 @@ Env::Env(Mode mode)
       is_touch_down_(false),
       get_last_mouse_location_from_mus_(mode_ == Mode::MUS),
       input_state_lookup_(InputStateLookup::Create()),
+#if defined(USE_OZONE)
+      native_pixmap_factory_(ui::CreateClientNativePixmapFactoryOzone()),
+#endif
       context_factory_(nullptr),
       context_factory_private_(nullptr) {
   DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
@@ -147,6 +155,10 @@ Env::Env(Mode mode)
 void Env::Init() {
   if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
+#if defined(USE_OZONE)
+    // Required by all Aura-using clients of services/ui
+    gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
+#endif
     return;
   }
 
@@ -155,6 +167,7 @@ void Env::Init() {
   // platform before creating the default event source. If running inside mus
   // let the mus process initialize ozone instead.
   ui::OzonePlatform::InitializeForUI();
+  gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
 #endif
   if (!ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();

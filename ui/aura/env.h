@@ -16,6 +16,14 @@
 #include "ui/events/event_target.h"
 #include "ui/gfx/geometry/point.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
+
+namespace gfx {
+class ClientNativePixmapFactory;
+}
+#endif
+
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -155,6 +163,12 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
+
+#if defined(USE_OZONE)
+  // Factory for pixmaps that can use be transported from the client to the GPU
+  // process using a low-level ozone-provided platform specific mechanism.
+  std::unique_ptr<gfx::ClientNativePixmapFactory> native_pixmap_factory_;
+#endif
 
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;
