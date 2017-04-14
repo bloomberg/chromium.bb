@@ -66,11 +66,11 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnDestruct() override;
 
   // Zeros out |idle_cleanup_interval_|, sets |idle_timeout_| to |idle_timeout|,
-  // and |is_low_end_device_| to |is_low_end_device|. A zero cleanup interval
+  // and |is_jelly_bean_| to |is_jelly_bean|. A zero cleanup interval
   // will cause the idle timer to run with each run of the message loop.
   void SetIdleCleanupParamsForTesting(base::TimeDelta idle_timeout,
                                       base::TickClock* tick_clock,
-                                      bool is_low_end_device);
+                                      bool is_jelly_bean);
   bool IsIdleCleanupTimerRunningForTesting() const;
 
   // Note: Does not call OnFrameHidden()/OnFrameShown().
@@ -145,7 +145,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
 
   // Determined at construction time based on system information; determines
   // when the idle cleanup timer should be fired more aggressively.
-  bool is_low_end_device_;
+  bool is_jelly_bean_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

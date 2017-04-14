@@ -1037,15 +1037,13 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetPreferHiddenVolumeControls(true);
   settings->SetSpellCheckEnabledByDefault(prefs.spellcheck_enabled_by_default);
 
-  // Force preload=none and disable autoplay on older or low end Android
+  // Force preload=none and disable autoplay on older Android
   // platforms because their media pipelines are not stable enough to handle
   // concurrent elements. See http://crbug.com/612909, http://crbug.com/622826.
-  const bool is_low_end_device =
+  const bool is_jelly_bean =
       base::android::BuildInfo::GetInstance()->sdk_int() <=
-          base::android::SDK_VERSION_JELLY_BEAN_MR2 ||
-      base::SysInfo::IsLowEndDevice();
-  // TODO(mlamouri): rename this setting "isLowEndDevice".
-  settings->SetForcePreloadNoneForMediaElements(is_low_end_device);
+      base::android::SDK_VERSION_JELLY_BEAN_MR2;
+  settings->SetForcePreloadNoneForMediaElements(is_jelly_bean);
 
   WebRuntimeFeatures::EnableVideoFullscreenOrientationLock(
       prefs.video_fullscreen_orientation_lock_enabled);

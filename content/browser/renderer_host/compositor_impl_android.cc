@@ -169,7 +169,7 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
 
   if (has_transparent_background) {
     attributes.alpha_size = 8;
-  } else if (base::SysInfo::IsLowEndDevice()) {
+  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
     // In this case we prefer to use RGB565 format instead of RGBA8888 if
     // possible.
     // TODO(danakj): GpuCommandBufferStub constructor checks for alpha == 0 in

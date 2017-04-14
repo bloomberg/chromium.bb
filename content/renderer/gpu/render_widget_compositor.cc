@@ -418,7 +418,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
     // RGBA_4444 textures are only enabled by default for low end devices
     // and are disabled for Android WebView as it doesn't support the format.
-    if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures))
+    if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures) &&
+        base::SysInfo::AmountOfPhysicalMemoryMB() <= 512)
       settings.renderer_settings.preferred_tile_format = cc::RGBA_4444;
   } else {
     // On other devices we have increased memory excessively to avoid
@@ -550,21 +551,20 @@ cc::ManagedMemoryPolicy RenderWidgetCompositor::GetGpuMemoryPolicy(
   if (actual.bytes_limit_when_visible == 0) {
     // NOTE: Non-low-end devices use only 50% of these limits,
     // except during 'emergencies' where 100% can be used.
-    if (!base::SysInfo::IsLowEndDevice()) {
-      if (physical_memory_mb >= 1536)
-        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >192MB
-      else if (physical_memory_mb >= 1152)
-        actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >144MB
-      else if (physical_memory_mb >= 768)
-        actual.bytes_limit_when_visible = physical_memory_mb / 10;  // >76MB
-      else
-        actual.bytes_limit_when_visible = physical_memory_mb / 12;  // <64MB
-    } else {
-      // Low-end devices have 512MB or less memory by definition
-      // so we hard code the limit rather than relying on the heuristics
-      // above. Low-end devices use 4444 textures so we can use a lower limit.
+    if (physical_memory_mb >= 1536)
+      actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >192MB
+    else if (physical_memory_mb >= 1152)
+      actual.bytes_limit_when_visible = physical_memory_mb / 8;  // >144MB
+    else if (physical_memory_mb >= 768)
+      actual.bytes_limit_when_visible = physical_memory_mb / 10;  // >76MB
+    else if (physical_memory_mb >= 513)
+      actual.bytes_limit_when_visible = physical_memory_mb / 12;  // <64MB
+    else
+      // Devices with this little RAM have very little headroom so we hardcode
+      // the limit rather than relying on the heuristics above.  (They also use
+      // 4444 textures so we can use a lower limit.)
       actual.bytes_limit_when_visible = 8;
-    }
+
     actual.bytes_limit_when_visible =
         actual.bytes_limit_when_visible * 1024 * 1024;
     // Clamp the observed value to a specific range on Android.

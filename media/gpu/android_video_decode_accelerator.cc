@@ -114,8 +114,7 @@ bool ShouldDeferSurfaceCreation(AVDACodecAllocator* codec_allocator,
                                 VideoCodec codec) {
   return surface_id == SurfaceManager::kNoSurfaceID && codec == kCodecH264 &&
          codec_allocator->IsAnyRegisteredAVDA() &&
-         (base::android::BuildInfo::GetInstance()->sdk_int() <= 18 ||
-          base::SysInfo::IsLowEndDevice());
+         base::android::BuildInfo::GetInstance()->sdk_int() <= 18;
 }
 
 }  // namespace
