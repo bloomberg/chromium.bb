@@ -1333,6 +1333,9 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
       ToLayoutBox(owning_layer_.GetLayoutObject()).PixelSnappedBorderBoxRect();
   overflow_controls_host_layer_->SetSize(FloatSize(border_box.Size()));
   overflow_controls_host_layer_->SetMasksToBounds(true);
+  overflow_controls_host_layer_->SetBackfaceVisibility(
+      owning_layer_.GetLayoutObject().Style()->BackfaceVisibility() ==
+      kBackfaceVisibilityVisible);
 }
 
 void CompositedLayerMapping::UpdateChildContainmentLayerGeometry(
