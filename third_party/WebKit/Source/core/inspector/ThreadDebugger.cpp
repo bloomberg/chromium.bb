@@ -4,6 +4,7 @@
 
 #include "core/inspector/ThreadDebugger.h"
 
+#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
@@ -23,9 +24,8 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

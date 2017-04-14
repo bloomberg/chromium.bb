@@ -30,7 +30,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/ApplicationCache.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

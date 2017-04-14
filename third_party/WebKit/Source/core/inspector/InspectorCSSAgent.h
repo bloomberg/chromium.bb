@@ -34,13 +34,13 @@
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/inspector/protocol/CSS.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

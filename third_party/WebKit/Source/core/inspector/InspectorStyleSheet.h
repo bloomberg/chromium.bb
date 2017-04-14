@@ -26,16 +26,16 @@
 #ifndef InspectorStyleSheet_h
 #define InspectorStyleSheet_h
 
+#include <memory>
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/inspector/protocol/CSS.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

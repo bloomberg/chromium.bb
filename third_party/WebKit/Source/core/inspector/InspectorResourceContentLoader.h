@@ -7,11 +7,11 @@
 
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/Resource.h"
-#include "wtf/Functional.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

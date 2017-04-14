@@ -6,13 +6,13 @@
 #define InspectorTaskRunner_h
 
 #include "core/CoreExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "v8/include/v8.h"
-#include "wtf/Allocator.h"
-#include "wtf/Deque.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

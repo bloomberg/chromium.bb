@@ -39,7 +39,7 @@
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/protocol/Protocol.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

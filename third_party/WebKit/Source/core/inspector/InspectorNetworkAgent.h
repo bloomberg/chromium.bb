@@ -37,7 +37,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/protocol/Network.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

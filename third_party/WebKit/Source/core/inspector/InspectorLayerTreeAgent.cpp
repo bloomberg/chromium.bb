@@ -52,10 +52,10 @@
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 

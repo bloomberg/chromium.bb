@@ -65,9 +65,9 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 

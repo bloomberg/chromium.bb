@@ -30,6 +30,7 @@
 #ifndef InspectorDOMAgent_h
 #define InspectorDOMAgent_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -37,13 +38,12 @@
 #include "core/inspector/protocol/DOM.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/FloatQuad.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
-#include <v8-inspector.h>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 

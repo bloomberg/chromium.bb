@@ -5,7 +5,7 @@
 #include "core/inspector/ConsoleMessage.h"
 
 #include "bindings/core/v8/SourceLocation.h"
-#include "wtf/CurrentTime.h"
+#include "platform/wtf/CurrentTime.h"
 
 namespace blink {
 

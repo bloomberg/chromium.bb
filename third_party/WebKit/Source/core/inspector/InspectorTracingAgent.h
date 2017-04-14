@@ -11,7 +11,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Tracing.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

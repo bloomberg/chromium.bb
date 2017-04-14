@@ -39,9 +39,9 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebTouchEvent.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Time.h"
 
 namespace {
 

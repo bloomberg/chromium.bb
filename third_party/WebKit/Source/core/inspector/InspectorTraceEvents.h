@@ -13,8 +13,8 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
 
 namespace v8 {
 class Function;

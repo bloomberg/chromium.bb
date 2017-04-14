@@ -65,11 +65,11 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/TextEncoding.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/Base64.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 

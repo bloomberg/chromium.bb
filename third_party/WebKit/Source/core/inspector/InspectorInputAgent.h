@@ -34,8 +34,8 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Input.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 class InspectedFrames;

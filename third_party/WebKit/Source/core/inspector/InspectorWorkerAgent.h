@@ -35,8 +35,8 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Target.h"
 #include "core/workers/WorkerInspectorProxy.h"
-#include "wtf/Forward.h"
-#include "wtf/HashMap.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashMap.h"
 
 namespace blink {
 class InspectedFrames;

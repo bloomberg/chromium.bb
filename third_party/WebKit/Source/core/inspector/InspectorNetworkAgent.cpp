@@ -71,13 +71,13 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/Base64.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/Base64.h"
 
 namespace blink {
 

@@ -25,6 +25,7 @@
 
 #include "core/inspector/InspectorStyleSheet.h"
 
+#include <algorithm>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/CSSPropertyNames.h"
@@ -52,10 +53,9 @@
 #include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
-#include <algorithm>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
+#include "platform/wtf/text/TextPosition.h"
 
 using blink::protocol::Array;
 

@@ -10,9 +10,8 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Animation.h"
-#include "wtf/text/WTFString.h"
-
-#include <v8-inspector.h>
+#include "platform/wtf/text/WTFString.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 

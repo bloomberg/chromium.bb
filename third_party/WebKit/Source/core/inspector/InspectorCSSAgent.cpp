@@ -86,9 +86,9 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/text/TextRun.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringConcatenate.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringConcatenate.h"
 
 namespace blink {
 

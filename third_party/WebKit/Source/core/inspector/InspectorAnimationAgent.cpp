@@ -29,7 +29,7 @@
 #include "core/inspector/V8InspectorString.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/text/Base64.h"
+#include "platform/wtf/text/Base64.h"
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";

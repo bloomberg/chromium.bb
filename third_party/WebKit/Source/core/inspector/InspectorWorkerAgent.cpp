@@ -33,8 +33,8 @@
 #include "core/dom/Document.h"
 #include "core/inspector/InspectedFrames.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

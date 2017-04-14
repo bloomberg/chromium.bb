@@ -35,10 +35,9 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Page.h"
 #include "core/page/ChromeClient.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
-
-#include <v8-inspector.h>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/WTFString.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 

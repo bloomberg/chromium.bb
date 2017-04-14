@@ -77,10 +77,10 @@
 #include "core/page/Page.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

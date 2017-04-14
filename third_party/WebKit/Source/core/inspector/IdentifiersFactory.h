@@ -27,8 +27,8 @@
 #define IdentifiersFactory_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

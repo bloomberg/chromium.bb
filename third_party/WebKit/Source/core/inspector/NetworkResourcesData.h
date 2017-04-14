@@ -34,11 +34,11 @@
 #include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Deque.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

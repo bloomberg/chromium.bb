@@ -1,0 +1,4 @@
+include_rules = [
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf/",
+]
