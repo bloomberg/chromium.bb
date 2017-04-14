@@ -41,7 +41,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
     return known_to_be_opaque_;
   }
 
-  void AnalyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+  int NumberOfSlowPaths() const override;
 
  private:
 #ifndef NDEBUG
