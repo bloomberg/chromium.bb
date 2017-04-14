@@ -36,7 +36,7 @@ void VerifyWKWebViewCreationPreConditions(
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
-                          BOOL use_desktop_user_agent,
+                          UserAgentType user_agent_type,
                           id<CRWContextMenuDelegate> context_menu_delegate) {
   VerifyWKWebViewCreationPreConditions(browser_state, configuration);
 
@@ -44,9 +44,6 @@ WKWebView* BuildWKWebView(CGRect frame,
   WKWebView* web_view =
       [[WKWebView alloc] initWithFrame:frame configuration:configuration];
 
-  // Set the user agent.
-  UserAgentType user_agent_type =
-      use_desktop_user_agent ? UserAgentType::DESKTOP : UserAgentType::MOBILE;
   web_view.customUserAgent = base::SysUTF8ToNSString(
       web::GetWebClient()->GetUserAgent(user_agent_type));
 
@@ -77,17 +74,16 @@ WKWebView* BuildWKWebView(CGRect frame,
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state,
-                          BOOL use_desktop_user_agent) {
-  return BuildWKWebView(frame, configuration, browser_state,
-                        use_desktop_user_agent, nil);
+                          UserAgentType user_agent_type) {
+  return BuildWKWebView(frame, configuration, browser_state, user_agent_type,
+                        nil);
 }
 
 WKWebView* BuildWKWebView(CGRect frame,
                           WKWebViewConfiguration* configuration,
                           BrowserState* browser_state) {
-  BOOL use_desktop_user_agent = NO;
   return BuildWKWebView(frame, configuration, browser_state,
-                        use_desktop_user_agent);
+                        UserAgentType::MOBILE);
 }
 
 }  // namespace web
