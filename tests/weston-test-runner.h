@@ -46,34 +46,34 @@ struct weston_test {
 	int must_fail;
 } __attribute__ ((aligned (32)));
 
-#define TEST_BEGIN(name, arg)					\
+#define TEST_BEGIN(name, arg)						\
 	static void name(arg)
 
-#define TEST_COMMON(func, name, ret, data, size, n_elem)	\
-	static void func(void *);				\
-								\
-	const struct weston_test test##name			\
-		__attribute__ ((section ("test_section"))) =	\
-	{							\
-		#name, func, data, size, n_elem, ret		\
+#define TEST_COMMON(func, name, ret, data, size, n_elem)		\
+	static void func(void *);					\
+									\
+	const struct weston_test test##name				\
+		__attribute__ ((section ("test_section"))) =		\
+	{								\
+		#name, func, data, size, n_elem, ret			\
 	};
 
-#define NO_ARG_TEST(name, ret)					\
-	TEST_COMMON(wrap##name, name, ret, NULL, 0, 1)		\
-	static void name(void);					\
-	static void wrap##name(void *data)			\
-	{							\
-		(void) data;					\
-		name();						\
-	}							\
-								\
+#define NO_ARG_TEST(name, ret)						\
+	TEST_COMMON(wrap##name, name, ret, NULL, 0, 1)			\
+	static void name(void);						\
+	static void wrap##name(void *data)				\
+	{								\
+		(void) data;						\
+		name();							\
+	}								\
+									\
 	TEST_BEGIN(name, void)
 
-#define ARG_TEST(name, ret, test_data)				\
-	TEST_COMMON(name, name, ret, test_data,			\
-		    sizeof(test_data[0]),			\
-		    ARRAY_LENGTH(test_data))			\
-	TEST_BEGIN(name, void *data)				\
+#define ARG_TEST(name, ret, test_data)					\
+	TEST_COMMON(name, name, ret, test_data,				\
+		    sizeof(test_data[0]),				\
+		    ARRAY_LENGTH(test_data))				\
+	TEST_BEGIN(name, void *data)					\
 
 #define TEST(name) NO_ARG_TEST(name, 0)
 #define FAIL_TEST(name) NO_ARG_TEST(name, 1)
