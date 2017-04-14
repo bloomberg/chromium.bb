@@ -184,7 +184,7 @@ class JSONTestRunSymbolizer(object):
     test_run['original_output_snippet_base64'] = \
         test_run['output_snippet_base64']
 
-    test_run['output_snippet'] = symbolized_snippet
+    test_run['output_snippet'] = symbolized_snippet.decode('utf-8', 'replace')
     test_run['output_snippet_base64'] = \
         base64.b64encode(symbolized_snippet)
     test_run['snippet_processed_by'] = 'asan_symbolize.py'
