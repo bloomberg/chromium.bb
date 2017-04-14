@@ -67,8 +67,9 @@ bool ParseValue(const base::Value* value, AccountId* out_value) {
   if (AccountId::Deserialize(serialized, out_value))
     return true;
 
-  LOG(ERROR) << "Failed to deserialize '" << serialized << "'";
   *out_value = AccountId::FromUserEmail(serialized);
+  LOG(ERROR) << "Failed to deserialize, parse as email, valid="
+             << out_value->is_valid();
   return true;
 }
 
