@@ -920,6 +920,8 @@ BrowserAccessibilityWin
 
   ui::AXPlatformNodeWin* GetPlatformNodeWin() const;
 
+  static bool IsInTreeGrid(const BrowserAccessibility* item);
+
   struct WinAttributes {
     WinAttributes();
     ~WinAttributes();

@@ -5467,9 +5467,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia_role = ROLE_SYSTEM_PANE;
       }
       break;
-    case ui::AX_ROLE_ROW:
-      ia_role = ROLE_SYSTEM_ROW;
+    case ui::AX_ROLE_ROW: {
+      // Role changes depending on whether row is inside a treegrid
+      // https://www.w3.org/TR/core-aam-1.1/#role-map-row
+      ia_role = IsInTreeGrid(this) ? ROLE_SYSTEM_OUTLINEITEM : ROLE_SYSTEM_ROW;
       break;
+    }
     case ui::AX_ROLE_ROW_HEADER:
       ia_role = ROLE_SYSTEM_ROWHEADER;
       break;
@@ -5643,6 +5646,23 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   win_attributes_->role_name = role_name;
   win_attributes_->ia2_role = ia2_role;
   win_attributes_->ia2_state = ia2_state;
+}
+
+bool BrowserAccessibilityWin::IsInTreeGrid(const BrowserAccessibility* item) {
+  BrowserAccessibility* container = item->PlatformGetParent();
+  if (container && container->GetRole() == ui::AX_ROLE_GROUP) {
+    // If parent was a rowgroup, we need to look at the grandparent
+    container = container->PlatformGetParent();
+  }
+
+  if (!container) {
+    return false;
+  }
+
+  const ui::AXRole role = container->GetRole();
+  return role == ui::AX_ROLE_TREE_GRID ||
+         (role == ui::AX_ROLE_TABLE &&
+          container->GetString16Attribute(ui::AX_ATTR_ROLE) == L"treegrid");
 }
 
 BrowserAccessibilityWin* ToBrowserAccessibilityWin(BrowserAccessibility* obj) {
