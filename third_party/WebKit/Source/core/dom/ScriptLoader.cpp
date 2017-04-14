@@ -26,9 +26,9 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/dom/ClassicPendingScript.h"
 #include "core/dom/ClassicScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserTiming.h"
@@ -48,6 +48,7 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -592,7 +593,7 @@ bool ScriptLoader::FetchScript(const String& source_url,
 
 PendingScript* ScriptLoader::CreatePendingScript() {
   CHECK(resource_);
-  return ClassicPendingScript::Create(element_, resource_);
+  return PendingScript::Create(element_, resource_);
 }
 
 bool ScriptLoader::ExecuteScript(const Script* script) {
@@ -698,14 +699,13 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
 void ScriptLoader::Execute() {
   DCHECK(!will_be_parser_executed_);
   DCHECK(async_exec_type_ != ScriptRunner::kNone);
-  DCHECK(pending_script_->IsExternal());
+  DCHECK(pending_script_->GetResource());
   bool error_occurred = false;
   Script* script = pending_script_->GetSource(KURL(), error_occurred);
-  const bool wasCanceled = pending_script_->WasCanceled();
   DetachPendingScript();
   if (error_occurred) {
     DispatchErrorEvent();
-  } else if (!wasCanceled) {
+  } else if (!resource_->WasCanceled()) {
     if (ExecuteScript(script))
       DispatchLoadEvent();
     else
@@ -717,6 +717,7 @@ void ScriptLoader::Execute() {
 void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK(!will_be_parser_executed_);
   DCHECK_EQ(pending_script_, pending_script);
+  DCHECK_EQ(pending_script->GetResource(), resource_);
 
   // We do not need this script in the memory cache. The primary goals of
   // sending this fetch request are to let the third party server know
@@ -724,8 +725,7 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   // cache for subsequent uses.
   if (document_write_intervention_ ==
       DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    DCHECK_EQ(pending_script_->GetScriptType(), ScriptType::kClassic);
-    pending_script_->RemoveFromMemoryCache();
+    GetMemoryCache()->Remove(pending_script_->GetResource());
     pending_script_->StopWatchingForLoad();
     return;
   }

@@ -7,9 +7,9 @@
 #include <memory>
 #include "bindings/core/v8/ScriptStreamerThread.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/ClassicPendingScript.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/PendingScript.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -325,7 +325,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
 
-void ScriptStreamer::StartStreaming(ClassicPendingScript* script,
+void ScriptStreamer::StartStreaming(PendingScript* script,
                                     Type script_type,
                                     Settings* settings,
                                     ScriptState* script_state,
@@ -515,7 +515,7 @@ void ScriptStreamer::NotifyFinished(Resource* resource) {
 }
 
 ScriptStreamer::ScriptStreamer(
-    ClassicPendingScript* script,
+    PendingScript* script,
     Type script_type,
     ScriptState* script_state,
     v8::ScriptCompiler::CompileOptions compile_options,
@@ -579,7 +579,7 @@ void ScriptStreamer::NotifyFinishedToClient() {
 }
 
 bool ScriptStreamer::StartStreamingInternal(
-    ClassicPendingScript* script,
+    PendingScript* script,
     Type script_type,
     Settings* settings,
     ScriptState* script_state,
@@ -598,7 +598,7 @@ bool ScriptStreamer::StartStreamingInternal(
   if (resource->IsCacheValidator()) {
     RecordNotStreamingReasonHistogram(script_type, kReload);
     // This happens e.g., during reloads. We're actually not going to load
-    // the current Resource of the ClassicPendingScript but switch to another
+    // the current Resource of the PendingScript but switch to another
     // Resource -> don't stream.
     return false;
   }
@@ -613,8 +613,8 @@ bool ScriptStreamer::StartStreamingInternal(
   if (settings->GetV8CacheOptions() == kV8CacheOptionsParse)
     compile_option = v8::ScriptCompiler::kProduceParserCache;
 
-  // The Resource might go out of scope if the script is no longer needed.
-  // This makes ClassicPendingScript notify the ScriptStreamer when it is
+  // The Resource might go out of scope if the script is no longer
+  // needed. This makes PendingScript notify the ScriptStreamer when it is
   // destroyed.
   script->SetStreamer(ScriptStreamer::Create(script, script_type, script_state,
                                              compile_option,
