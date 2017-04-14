@@ -25,7 +25,6 @@ source_set("renderer") {
     "spelling_engine.h",
   ]
 
-  # TODO(xiaochengh): Negate these checks so that each file is listed only once.
   if (!use_browser_spellchecker) {
     sources -= [
       "platform_spelling_engine.cc",
