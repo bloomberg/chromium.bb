@@ -94,6 +94,10 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     return;
   }
 
+  if (visitor_) {
+    visitor_->OnRstStreamReceived(frame);
+  }
+
   QuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
   if (!stream) {
     HandleRstOnValidNonexistentStream(frame);

@@ -332,6 +332,13 @@ net::QuicVersion GetQuicVersion(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "quic_version"));
 }
 
+bool ShouldEnableServerPushCancelation(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "enable_server_push_cancellation"),
+      "true");
+}
+
 void ConfigureQuicParams(base::StringPiece quic_trial_group,
                          const VariationParameters& quic_trial_params,
                          bool is_quic_force_disabled,
@@ -343,6 +350,10 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       is_quic_force_enabled);
   params->mark_quic_broken_when_network_blackholes =
       ShouldMarkQuicBrokenWhenNetworkBlackholes(quic_trial_params);
+
+  params->enable_server_push_cancellation =
+      ShouldEnableServerPushCancelation(quic_trial_params);
+
   params->retry_without_alt_svc_on_quic_errors =
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
   params->enable_quic_alternative_service_with_different_host =

@@ -146,6 +146,7 @@ class SpdySessionTest : public PlatformTest {
     g_time_delta = base::TimeDelta();
     g_time_now = base::TimeTicks::Now();
     session_deps_.net_log = log_.bound().net_log();
+    session_deps_.enable_server_push_cancellation = true;
   }
 
   void CreateNetworkSession() {

@@ -524,6 +524,8 @@ void QuicDispatcher::OnWriteBlocked(
   write_blocked_list_.insert(std::make_pair(blocked_writer, true));
 }
 
+void QuicDispatcher::OnRstStreamReceived(const QuicRstStreamFrame& frame) {}
+
 void QuicDispatcher::OnConnectionAddedToTimeWaitList(
     QuicConnectionId connection_id) {
   QUIC_DLOG(INFO) << "Connection " << connection_id

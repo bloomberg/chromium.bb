@@ -344,6 +344,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       enable_quic(false),
+      enable_server_push_cancellation(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service_with_different_host(false),
@@ -405,6 +406,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
   params.enable_quic = session_deps->enable_quic;
+  params.enable_server_push_cancellation =
+      session_deps->enable_server_push_cancellation;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
   params.http2_settings = session_deps->http2_settings;

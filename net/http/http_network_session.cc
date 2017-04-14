@@ -105,6 +105,7 @@ HttpNetworkSession::Params::Params()
     : client_socket_factory(nullptr),
       host_resolver(nullptr),
       cert_verifier(nullptr),
+      enable_server_push_cancellation(false),
       channel_id_service(nullptr),
       transport_security_state(nullptr),
       cert_transparency_verifier(nullptr),
@@ -396,7 +397,9 @@ bool HttpNetworkSession::IsProtocolEnabled(NextProto protocol) const {
 
 void HttpNetworkSession::SetServerPushDelegate(
     std::unique_ptr<ServerPushDelegate> push_delegate) {
-  DCHECK(!push_delegate_ && push_delegate);
+  DCHECK(push_delegate);
+  if (!params_.enable_server_push_cancellation || push_delegate_)
+    return;
 
   push_delegate_ = std::move(push_delegate);
   spdy_session_pool_.set_server_push_delegate(push_delegate_.get());

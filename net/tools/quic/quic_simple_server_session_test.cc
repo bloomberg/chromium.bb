@@ -236,6 +236,7 @@ TEST_P(QuicSimpleServerSessionTest, CloseStreamDueToReset) {
   // Receive a reset (and send a RST in response).
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
                           0);
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_,
               SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
@@ -253,6 +254,7 @@ TEST_P(QuicSimpleServerSessionTest, NeverOpenStreamDueToReset) {
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM,
                           0);
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_,
               SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
@@ -279,6 +281,7 @@ TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
 
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_ERROR_PROCESSING_STREAM, 0);
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_,
               SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst);
@@ -570,6 +573,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // Reset the last stream in the queue. It should be marked cancelled.
   QuicStreamId stream_got_reset = num_resources * 2;
   QuicRstStreamFrame rst(stream_got_reset, QUIC_STREAM_CANCELLED, 0);
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_,
               SendRstStream(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst);
@@ -614,6 +618,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
 
   EXPECT_CALL(*connection_, SendBlocked(stream_to_open));
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   QuicRstStreamFrame rst(stream_got_reset, QUIC_STREAM_CANCELLED, 0);
   visitor_->OnRstStream(rst);
 }

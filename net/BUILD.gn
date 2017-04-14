@@ -2200,6 +2200,10 @@ bundle_data("test_support_bundle_data") {
   visibility = [ ":test_support" ]
   testonly = true
   sources = [
+    "data/quic_http_response_cache_data_with_push/test.example.com/favicon.ico",
+    "data/quic_http_response_cache_data_with_push/test.example.com/index.html",
+    "data/quic_http_response_cache_data_with_push/test.example.com/index2.html",
+    "data/quic_http_response_cache_data_with_push/test.example.com/kitten-1.jpg",
     "data/ssl/certificates/1024-rsa-ee-by-1024-rsa-intermediate.pem",
     "data/ssl/certificates/1024-rsa-ee-by-2048-rsa-intermediate.pem",
     "data/ssl/certificates/1024-rsa-ee-by-768-rsa-intermediate.pem",

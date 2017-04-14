@@ -208,6 +208,7 @@ struct SpdySessionDependencies {
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;
   bool enable_quic;
+  bool enable_server_push_cancellation;
   size_t session_max_recv_window_size;
   SettingsMap http2_settings;
   SpdySession::TimeFunc time_func;
