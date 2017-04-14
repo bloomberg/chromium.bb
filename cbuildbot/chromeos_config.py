@@ -2182,6 +2182,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'falco',
       'glados',
+      'guado',
       'guado_moblab',
       'kevin',
       'lakitu',
