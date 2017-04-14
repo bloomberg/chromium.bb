@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS MessageChannel's ports as MessagePort objects 
+FAIL Old-style array objects assert_throws: Old-style WebIDL arrays must throw a type error function "() => { postMessage('', '*', channel) }" did not throw
+Harness: the test ran to completion.
+

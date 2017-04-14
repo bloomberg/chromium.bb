@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 195 tests; 154 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 195 tests; 155 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Document interface: attribute styleSheets 
 FAIL Document must be primary interface of document assert_equals: document's prototype is not Document.prototype expected object "[object Document]" but got object "[object HTMLDocument]"
 FAIL Stringification of document assert_equals: class string of document expected "[object Document]" but got "[object HTMLDocument]"
@@ -55,7 +55,7 @@ PASS CSSStyleSheet interface: style_element.sheet must inherit property "deleteR
 PASS CSSStyleSheet interface: calling deleteRule(unsigned long) on style_element.sheet with too few arguments must throw TypeError 
 PASS StyleSheet interface: style_element.sheet must inherit property "type" with the proper type (0) 
 PASS StyleSheet interface: style_element.sheet must inherit property "href" with the proper type (1) 
-FAIL StyleSheet interface: style_element.sheet must inherit property "ownerNode" with the proper type (2) Unrecognized type [object Object],[object Object]
+PASS StyleSheet interface: style_element.sheet must inherit property "ownerNode" with the proper type (2) 
 PASS StyleSheet interface: style_element.sheet must inherit property "parentStyleSheet" with the proper type (3) 
 PASS StyleSheet interface: style_element.sheet must inherit property "title" with the proper type (4) 
 PASS StyleSheet interface: style_element.sheet must inherit property "media" with the proper type (5) 

@@ -1,0 +1,52 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = error2
+PASS Aborting a WritableStream before it starts should cause the writer's unsettled ready promise to reject 
+PASS Aborting a WritableStream should cause the writer's fulfilled ready promise to reset to a rejected one 
+PASS abort() on a released writer rejects 
+PASS Aborting a WritableStream immediately prevents future writes 
+PASS Aborting a WritableStream prevents further writes after any that are in progress 
+PASS Fulfillment value of ws.abort() call must be undefined even if the underlying sink returns a non-undefined value 
+PASS WritableStream if sink's abort throws, the promise returned by writer.abort() rejects 
+PASS WritableStream if sink's abort throws, the promise returned by ws.abort() rejects 
+PASS WritableStream if sink's abort throws, for an abort performed during a write, the promise returned by ws.abort() rejects 
+PASS Aborting a WritableStream passes through the given reason 
+PASS Aborting a WritableStream puts it in an errored state, with a TypeError as the stored error 
+PASS Aborting a WritableStream causes any outstanding write() promises to be rejected with a TypeError 
+PASS Closing but then immediately aborting a WritableStream causes the stream to error 
+PASS Closing a WritableStream and aborting it while it closes causes the stream to ignore the abort attempt 
+PASS Aborting a WritableStream after it is closed is a no-op 
+PASS WritableStream should NOT call underlying sink's close if no abort is supplied (historical) 
+PASS returning a thenable from abort() should work 
+PASS .closed should not resolve before fulfilled write() 
+FAIL .closed should not resolve before rejected write(); write() error should not overwrite abort() error promise_test: Unhandled rejection with value: object "error1: error1"
+PASS writes should be satisfied in order when aborting 
+FAIL writes should be satisfied in order after rejected write when aborting promise_test: Unhandled rejection with value: object "error1: error1"
+FAIL close() should reject with TypeError when abort() is first error promise_test: Unhandled rejection with value: object "error1: error1"
+PASS underlying abort() should not be called until underlying write() completes 
+PASS underlying abort() should not be called if underlying close() has started 
+PASS if underlying close() has started and then rejects, the abort() and close() promises should reject with the underlying close rejection reason 
+PASS an abort() that happens during a write() should trigger the underlying abort() even with a close() queued 
+PASS if a writer is created for a stream with a pending abort, its ready should be rejected with a TypeError 
+PASS writer close() promise should resolve before abort() promise 
+PASS writer.ready should reject on controller error without waiting for underlying write 
+FAIL writer.abort() while there is an in-flight write, and then finish the write with rejection promise_test: Unhandled rejection with value: object "error2: error2"
+FAIL writer.abort(), controller.error() while there is an in-flight write, and then finish the write assert_throws: writePromise3 must reject with an error indicating abort function "function () { throw e }" threw object "error2: error2" ("error2") expected object "TypeError" ("TypeError")
+FAIL writer.abort(), controller.error() while there is an in-flight close, and then finish the close promise_test: Unhandled rejection with value: object "error2: error2"
+FAIL controller.error(), writer.abort() while there is an in-flight write, and then finish the write assert_array_equals: writePromise and writer.closed must not be fulfilled/rejected yet even after writer.abort() lengths differ, expected 0 got 1
+FAIL controller.error(), writer.abort() while there is an in-flight close, and then finish the close promise_test: Unhandled rejection with value: object "error2: error2"
+PASS releaseLock() while aborting should reject the original closed promise 
+FAIL releaseLock() during delayed async abort() should reject the writer.closed promise assert_equals: closed promise should not have changed expected object "[object Promise]" but got object "[object Promise]"
+PASS sink abort() should not be called until sink start() is done 
+FAIL if start attempts to error the controller after abort() has been called, then it should lose promise_test: Unhandled rejection with value: object "error1: error1"
+FAIL stream abort() promise should still resolve if sink start() rejects promise_test: Unhandled rejection with value: object "error1: error1"
+PASS writer abort() during sink start() should replace the writer.ready promise synchronously 
+FAIL promises returned from other writer methods should be rejected when writer abort() happens during sink start() assert_array_equals: promises should resolve in the standard order property 1, expected "write1" but got "close"
+FAIL abort() should succeed despite rejection from write promise_test: Unhandled rejection with value: object "error1: error1"
+FAIL abort() should be rejected with the rejection returned from close() assert_throws: abort() should reject with error2 function "function () { throw e }" threw object "error1: error1" ("error1") expected object "error2: error2" ("error2")
+FAIL a rejecting sink.write() should not prevent sink.abort() from being called promise_test: Unhandled rejection with value: object "error1: error1"
+FAIL when start errors after stream abort(), underlying sink abort() should be called anyway promise_test: Unhandled rejection with value: object "error1: error1"
+PASS when calling abort() twice on the same stream, the second call should reject 
+PASS sink abort() should not be called if stream was erroring due to controller.error() before abort() was called 
+PASS sink abort() should not be called if stream was erroring due to bad strategy before abort() was called 
+Harness: the test ran to completion.
+

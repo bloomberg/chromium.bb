@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+PASS fulfillment value of ws.close() call must be undefined even if the underlying sink returns a non-undefined value 
+FAIL when sink calls error asynchronously while sink close is in-flight, the stream should not become errored promise_test: Unhandled rejection with value: object "error1: error1"
+FAIL when sink calls error synchronously while closing, the stream should not become errored promise_test: Unhandled rejection with value: object "Error: error me"
+PASS when the sink throws during close, and the close is requested while a write is still in-flight, the stream should become errored during the close 
+PASS releaseLock on a stream with a pending write in which the stream has been errored 
+PASS releaseLock on a stream with a pending close in which controller.error() was called 
+PASS when close is called on a WritableStream in writable state, ready should return a fulfilled promise 
+PASS when close is called on a WritableStream in waiting state, ready promise should be fulfilled 
+PASS when close is called on a WritableStream in waiting state, ready should be fulfilled immediately even if close takes a long time 
+PASS returning a thenable from close() should work 
+PASS releaseLock() should not change the result of sync close() 
+PASS releaseLock() should not change the result of async close() 
+PASS close() should set state to CLOSED even if writer has detached 
+PASS the promise returned by async abort during close should resolve 
+PASS promises must fulfill/reject in the expected order on closure 
+FAIL promises must fulfill/reject in the expected order on aborted closure assert_array_equals: promises must fulfill/reject in the expected order property 1, expected "abortPromise" but got "closed"
+FAIL promises must fulfill/reject in the expected order on aborted and errored closure assert_throws: writer.closed must reject with a TypeError indicating the stream was aborted function "function () { throw e }" threw object "error1: error1" ("error1") expected object "TypeError" ("TypeError")
+FAIL close() should not reject until no sink methods are in flight assert_false: expected false got true
+Harness: the test ran to completion.
+

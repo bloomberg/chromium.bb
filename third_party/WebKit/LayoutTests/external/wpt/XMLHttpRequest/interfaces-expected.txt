@@ -1,0 +1,174 @@
+This is a testharness.js-based test.
+Found 170 tests; 165 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface object 
+PASS XMLHttpRequestEventTarget interface object length 
+PASS XMLHttpRequestEventTarget interface object name 
+FAIL XMLHttpRequestEventTarget interface: existence and properties of interface prototype object assert_equals: class string of XMLHttpRequestEventTarget.prototype expected "[object XMLHttpRequestEventTargetPrototype]" but got "[object XMLHttpRequestEventTarget]"
+PASS XMLHttpRequestEventTarget interface: existence and properties of interface prototype object's "constructor" property 
+PASS XMLHttpRequestEventTarget interface: attribute onloadstart 
+PASS XMLHttpRequestEventTarget interface: attribute onprogress 
+PASS XMLHttpRequestEventTarget interface: attribute onabort 
+PASS XMLHttpRequestEventTarget interface: attribute onerror 
+PASS XMLHttpRequestEventTarget interface: attribute onload 
+PASS XMLHttpRequestEventTarget interface: attribute ontimeout 
+PASS XMLHttpRequestEventTarget interface: attribute onloadend 
+PASS XMLHttpRequestUpload interface: existence and properties of interface object 
+PASS XMLHttpRequestUpload interface object length 
+PASS XMLHttpRequestUpload interface object name 
+FAIL XMLHttpRequestUpload interface: existence and properties of interface prototype object assert_equals: class string of XMLHttpRequestUpload.prototype expected "[object XMLHttpRequestUploadPrototype]" but got "[object XMLHttpRequestUpload]"
+PASS XMLHttpRequestUpload interface: existence and properties of interface prototype object's "constructor" property 
+PASS XMLHttpRequestUpload must be primary interface of (new XMLHttpRequest()).upload 
+PASS Stringification of (new XMLHttpRequest()).upload 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onloadstart" with the proper type (0) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onprogress" with the proper type (1) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onabort" with the proper type (2) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onerror" with the proper type (3) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onload" with the proper type (4) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "ontimeout" with the proper type (5) 
+PASS XMLHttpRequestEventTarget interface: (new XMLHttpRequest()).upload must inherit property "onloadend" with the proper type (6) 
+PASS EventTarget interface: (new XMLHttpRequest()).upload must inherit property "addEventListener" with the proper type (0) 
+PASS EventTarget interface: calling addEventListener(DOMString,EventListener,boolean) on (new XMLHttpRequest()).upload with too few arguments must throw TypeError 
+PASS EventTarget interface: (new XMLHttpRequest()).upload must inherit property "removeEventListener" with the proper type (1) 
+PASS EventTarget interface: calling removeEventListener(DOMString,EventListener,boolean) on (new XMLHttpRequest()).upload with too few arguments must throw TypeError 
+PASS EventTarget interface: (new XMLHttpRequest()).upload must inherit property "dispatchEvent" with the proper type (2) 
+PASS EventTarget interface: calling dispatchEvent(Event) on (new XMLHttpRequest()).upload with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: existence and properties of interface object 
+PASS XMLHttpRequest interface object length 
+PASS XMLHttpRequest interface object name 
+FAIL XMLHttpRequest interface: existence and properties of interface prototype object assert_equals: class string of XMLHttpRequest.prototype expected "[object XMLHttpRequestPrototype]" but got "[object XMLHttpRequest]"
+PASS XMLHttpRequest interface: existence and properties of interface prototype object's "constructor" property 
+PASS XMLHttpRequest interface: attribute onreadystatechange 
+PASS XMLHttpRequest interface: constant UNSENT on interface object 
+PASS XMLHttpRequest interface: constant UNSENT on interface prototype object 
+PASS XMLHttpRequest interface: constant OPENED on interface object 
+PASS XMLHttpRequest interface: constant OPENED on interface prototype object 
+PASS XMLHttpRequest interface: constant HEADERS_RECEIVED on interface object 
+PASS XMLHttpRequest interface: constant HEADERS_RECEIVED on interface prototype object 
+PASS XMLHttpRequest interface: constant LOADING on interface object 
+PASS XMLHttpRequest interface: constant LOADING on interface prototype object 
+PASS XMLHttpRequest interface: constant DONE on interface object 
+PASS XMLHttpRequest interface: constant DONE on interface prototype object 
+PASS XMLHttpRequest interface: attribute readyState 
+PASS XMLHttpRequest interface: operation open(ByteString,USVString) 
+PASS XMLHttpRequest interface: operation open(ByteString,USVString,boolean,USVString,USVString) 
+PASS XMLHttpRequest interface: operation setRequestHeader(ByteString,ByteString) 
+PASS XMLHttpRequest interface: attribute timeout 
+PASS XMLHttpRequest interface: attribute withCredentials 
+PASS XMLHttpRequest interface: attribute upload 
+PASS XMLHttpRequest interface: operation send([object Object],[object Object]) 
+PASS XMLHttpRequest interface: operation abort() 
+PASS XMLHttpRequest interface: attribute responseURL 
+PASS XMLHttpRequest interface: attribute status 
+PASS XMLHttpRequest interface: attribute statusText 
+PASS XMLHttpRequest interface: operation getResponseHeader(ByteString) 
+PASS XMLHttpRequest interface: operation getAllResponseHeaders() 
+PASS XMLHttpRequest interface: operation overrideMimeType(DOMString) 
+PASS XMLHttpRequest interface: attribute responseType 
+PASS XMLHttpRequest interface: attribute response 
+PASS XMLHttpRequest interface: attribute responseText 
+PASS XMLHttpRequest interface: attribute responseXML 
+PASS XMLHttpRequest must be primary interface of new XMLHttpRequest() 
+PASS Stringification of new XMLHttpRequest() 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "onreadystatechange" with the proper type (0) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "UNSENT" with the proper type (1) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "OPENED" with the proper type (2) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "HEADERS_RECEIVED" with the proper type (3) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "LOADING" with the proper type (4) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "DONE" with the proper type (5) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "readyState" with the proper type (6) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "open" with the proper type (7) 
+PASS XMLHttpRequest interface: calling open(ByteString,USVString) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "open" with the proper type (8) 
+PASS XMLHttpRequest interface: calling open(ByteString,USVString,boolean,USVString,USVString) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "setRequestHeader" with the proper type (9) 
+PASS XMLHttpRequest interface: calling setRequestHeader(ByteString,ByteString) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "timeout" with the proper type (10) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "withCredentials" with the proper type (11) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "upload" with the proper type (12) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "send" with the proper type (13) 
+PASS XMLHttpRequest interface: calling send([object Object],[object Object]) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "abort" with the proper type (14) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "responseURL" with the proper type (15) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "status" with the proper type (16) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "statusText" with the proper type (17) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "getResponseHeader" with the proper type (18) 
+PASS XMLHttpRequest interface: calling getResponseHeader(ByteString) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "getAllResponseHeaders" with the proper type (19) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "overrideMimeType" with the proper type (20) 
+PASS XMLHttpRequest interface: calling overrideMimeType(DOMString) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "responseType" with the proper type (21) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "response" with the proper type (22) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "responseText" with the proper type (23) 
+PASS XMLHttpRequest interface: new XMLHttpRequest() must inherit property "responseXML" with the proper type (24) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onloadstart" with the proper type (0) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onprogress" with the proper type (1) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onabort" with the proper type (2) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onerror" with the proper type (3) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onload" with the proper type (4) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "ontimeout" with the proper type (5) 
+PASS XMLHttpRequestEventTarget interface: new XMLHttpRequest() must inherit property "onloadend" with the proper type (6) 
+PASS EventTarget interface: new XMLHttpRequest() must inherit property "addEventListener" with the proper type (0) 
+PASS EventTarget interface: calling addEventListener(DOMString,EventListener,boolean) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS EventTarget interface: new XMLHttpRequest() must inherit property "removeEventListener" with the proper type (1) 
+PASS EventTarget interface: calling removeEventListener(DOMString,EventListener,boolean) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS EventTarget interface: new XMLHttpRequest() must inherit property "dispatchEvent" with the proper type (2) 
+PASS EventTarget interface: calling dispatchEvent(Event) on new XMLHttpRequest() with too few arguments must throw TypeError 
+PASS FormData interface: existence and properties of interface object 
+PASS FormData interface object length 
+PASS FormData interface object name 
+FAIL FormData interface: existence and properties of interface prototype object assert_equals: class string of FormData.prototype expected "[object FormDataPrototype]" but got "[object FormData]"
+PASS FormData interface: existence and properties of interface prototype object's "constructor" property 
+PASS FormData interface: operation append(USVString,Blob,USVString) 
+PASS FormData interface: operation append(USVString,USVString) 
+PASS FormData interface: operation delete(USVString) 
+PASS FormData interface: operation get(USVString) 
+PASS FormData interface: operation getAll(USVString) 
+PASS FormData interface: operation has(USVString) 
+PASS FormData interface: operation set(USVString,Blob,USVString) 
+PASS FormData interface: operation set(USVString,USVString) 
+PASS FormData must be primary interface of new FormData() 
+PASS Stringification of new FormData() 
+PASS FormData interface: new FormData() must inherit property "append" with the proper type (0) 
+PASS FormData interface: calling append(USVString,Blob,USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "append" with the proper type (1) 
+PASS FormData interface: calling append(USVString,USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "delete" with the proper type (2) 
+PASS FormData interface: calling delete(USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "get" with the proper type (3) 
+PASS FormData interface: calling get(USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "getAll" with the proper type (4) 
+PASS FormData interface: calling getAll(USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "has" with the proper type (5) 
+PASS FormData interface: calling has(USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "set" with the proper type (6) 
+PASS FormData interface: calling set(USVString,Blob,USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData interface: new FormData() must inherit property "set" with the proper type (7) 
+PASS FormData interface: calling set(USVString,USVString) on new FormData() with too few arguments must throw TypeError 
+PASS FormData must be primary interface of new FormData(form) 
+PASS Stringification of new FormData(form) 
+PASS FormData interface: new FormData(form) must inherit property "append" with the proper type (0) 
+PASS FormData interface: calling append(USVString,Blob,USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "append" with the proper type (1) 
+PASS FormData interface: calling append(USVString,USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "delete" with the proper type (2) 
+PASS FormData interface: calling delete(USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "get" with the proper type (3) 
+PASS FormData interface: calling get(USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "getAll" with the proper type (4) 
+PASS FormData interface: calling getAll(USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "has" with the proper type (5) 
+PASS FormData interface: calling has(USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "set" with the proper type (6) 
+PASS FormData interface: calling set(USVString,Blob,USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS FormData interface: new FormData(form) must inherit property "set" with the proper type (7) 
+PASS FormData interface: calling set(USVString,USVString) on new FormData(form) with too few arguments must throw TypeError 
+PASS ProgressEvent interface: existence and properties of interface object 
+PASS ProgressEvent interface object length 
+PASS ProgressEvent interface object name 
+FAIL ProgressEvent interface: existence and properties of interface prototype object assert_equals: class string of ProgressEvent.prototype expected "[object ProgressEventPrototype]" but got "[object ProgressEvent]"
+PASS ProgressEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS ProgressEvent interface: attribute lengthComputable 
+PASS ProgressEvent interface: attribute loaded 
+PASS ProgressEvent interface: attribute total 
+Harness: the test ran to completion.
+
