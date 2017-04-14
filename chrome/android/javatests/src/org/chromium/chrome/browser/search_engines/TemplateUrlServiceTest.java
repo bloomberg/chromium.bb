@@ -109,13 +109,6 @@ public class TemplateUrlServiceTest {
     @RetryOnFailure
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // see crbug.com/581268
     public void testLoadUrlService() {
-        Assert.assertFalse(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return TemplateUrlService.getInstance().isLoaded();
-            }
-        }));
-
         waitForTemplateUrlServiceToLoad();
 
         Assert.assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
@@ -124,6 +117,29 @@ public class TemplateUrlServiceTest {
                 return TemplateUrlService.getInstance().isLoaded();
             }
         }));
+
+        // Add another load listener and ensure that is notified without needing to call load()
+        // again.
+        final AtomicBoolean observerNotified = new AtomicBoolean(false);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                TemplateUrlService service = TemplateUrlService.getInstance();
+                service.registerLoadListener(new LoadListener() {
+                    @Override
+                    public void onTemplateUrlServiceLoaded() {
+                        observerNotified.set(true);
+                    }
+                });
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Observer wasn't notified of TemplateUrlService load.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return observerNotified.get();
+                    }
+                });
     }
 
     @Test
