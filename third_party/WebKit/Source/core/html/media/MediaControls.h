@@ -12,9 +12,9 @@
 namespace blink {
 
 class Document;
+class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
-class MediaControlPanelElement;
 class ShadowRoot;
 
 // MediaControls is an interface to abstract the HTMLMediaElement controls. The
@@ -72,7 +72,7 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // TODO: the following are required by other parts of the media controls
   // implementation and could be removed when the full implementation has moved
   // to modules.
-  virtual MediaControlPanelElement* PanelElement() = 0;
+  virtual HTMLDivElement* PanelElement() = 0;
   virtual Document& OwnerDocument() = 0;
   virtual void BeginScrubbing() = 0;
   virtual void EndScrubbing() = 0;

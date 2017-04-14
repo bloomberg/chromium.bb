@@ -40,9 +40,12 @@ class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
 class MediaControlCurrentTimeDisplayElement;
 class MediaControlMuteButtonElement;
+class MediaControlOverflowMenuListElement;
 class MediaControlOverlayEnclosureElement;
+class MediaControlPanelElement;
 class MediaControlPanelEnclosureElement;
 class MediaControlRemainingTimeDisplayElement;
+class MediaControlTextTrackListElement;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by
@@ -91,7 +94,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   LayoutObject* ContainerLayoutObject() override;
   // Return the internal elements, which is used by registering clicking
   // EventHandlers from MediaControlsWindowEventListener.
-  MediaControlPanelElement* PanelElement() override { return panel_; }
+  HTMLDivElement* PanelElement() override;
   void BeginScrubbing() override;
   void EndScrubbing() override;
   void UpdateCurrentTimeDisplay() override;

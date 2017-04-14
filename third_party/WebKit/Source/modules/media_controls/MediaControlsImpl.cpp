@@ -48,9 +48,12 @@
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
+#include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
 #include "modules/media_controls/elements/MediaControlOverlayEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlPanelElement.h"
 #include "modules/media_controls/elements/MediaControlPanelEnclosureElement.h"
 #include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
+#include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -319,74 +322,69 @@ void MediaControlsImpl::InitializeControls() {
   // controls correctly.
   enclosure_ = new MediaControlPanelEnclosureElement(*this);
 
-  MediaControlPanelElement* panel = MediaControlPanelElement::Create(*this);
+  panel_ = new MediaControlPanelElement(*this);
 
   MediaControlPlayButtonElement* play_button =
       MediaControlPlayButtonElement::Create(*this);
   play_button_ = play_button;
-  panel->AppendChild(play_button);
+  panel_->AppendChild(play_button);
 
   current_time_display_ = new MediaControlCurrentTimeDisplayElement(*this);
   current_time_display_->SetIsWanted(true);
-  panel->AppendChild(current_time_display_);
+  panel_->AppendChild(current_time_display_);
 
   duration_display_ = new MediaControlRemainingTimeDisplayElement(*this);
-  panel->AppendChild(duration_display_);
+  panel_->AppendChild(duration_display_);
 
   MediaControlTimelineElement* timeline =
       MediaControlTimelineElement::Create(*this);
   timeline_ = timeline;
-  panel->AppendChild(timeline);
+  panel_->AppendChild(timeline);
 
   mute_button_ = new MediaControlMuteButtonElement(*this);
-  panel->AppendChild(mute_button_);
+  panel_->AppendChild(mute_button_);
 
   MediaControlVolumeSliderElement* slider =
       MediaControlVolumeSliderElement::Create(*this);
   volume_slider_ = slider;
-  panel->AppendChild(slider);
+  panel_->AppendChild(slider);
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
   MediaControlFullscreenButtonElement* fullscreen_button =
       MediaControlFullscreenButtonElement::Create(*this);
   fullscreen_button_ = fullscreen_button;
-  panel->AppendChild(fullscreen_button);
+  panel_->AppendChild(fullscreen_button);
 
   MediaControlDownloadButtonElement* download_button =
       MediaControlDownloadButtonElement::Create(*this);
   download_button_ = download_button;
-  panel->AppendChild(download_button);
+  panel_->AppendChild(download_button);
 
   MediaControlCastButtonElement* cast_button =
       MediaControlCastButtonElement::Create(*this, false);
   cast_button_ = cast_button;
-  panel->AppendChild(cast_button);
+  panel_->AppendChild(cast_button);
 
   MediaControlToggleClosedCaptionsButtonElement* toggle_closed_captions_button =
       MediaControlToggleClosedCaptionsButtonElement::Create(*this);
   toggle_closed_captions_button_ = toggle_closed_captions_button;
-  panel->AppendChild(toggle_closed_captions_button);
+  panel_->AppendChild(toggle_closed_captions_button);
 
-  panel_ = panel;
-  enclosure_->AppendChild(panel);
+  enclosure_->AppendChild(panel_);
 
   AppendChild(enclosure_);
 
-  MediaControlTextTrackListElement* text_track_list =
-      MediaControlTextTrackListElement::Create(*this);
-  text_track_list_ = text_track_list;
-  AppendChild(text_track_list);
+  text_track_list_ = new MediaControlTextTrackListElement(*this);
+  AppendChild(text_track_list_);
 
   MediaControlOverflowMenuButtonElement* overflow_menu =
       MediaControlOverflowMenuButtonElement::Create(*this);
   overflow_menu_ = overflow_menu;
-  panel->AppendChild(overflow_menu);
+  panel_->AppendChild(overflow_menu);
 
-  MediaControlOverflowMenuListElement* overflow_list =
-      MediaControlOverflowMenuListElement::Create(*this);
-  overflow_list_ = overflow_list;
-  AppendChild(overflow_list);
+  overflow_list_ = new MediaControlOverflowMenuListElement(*this);
+  AppendChild(overflow_list_);
 
   // The order in which we append elements to the overflow list is significant
   // because it determines how the elements show up in the overflow menu
@@ -573,6 +571,10 @@ void MediaControlsImpl::UpdatePlayState() {
   if (overlay_play_button_)
     overlay_play_button_->UpdateDisplayType();
   play_button_->UpdateDisplayType();
+}
+
+HTMLDivElement* MediaControlsImpl::PanelElement() {
+  return panel_;
 }
 
 void MediaControlsImpl::BeginScrubbing() {

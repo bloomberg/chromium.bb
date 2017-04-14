@@ -8,6 +8,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/media_controls/elements/MediaControlPanelElement.h"
 
 namespace blink {
 

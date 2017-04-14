@@ -181,7 +181,9 @@ bool MediaControlsPainter::PaintMediaOverlayPlayButton(
   if (!HasSource(media_element) || !media_element->paused())
     return false;
 
-  MediaControlPanelElement* panel_element = nullptr;
+  // TODO(mlamouri): it might be possible to use the PanelLayoutObject() call
+  // instead.
+  HTMLDivElement* panel_element = nullptr;
   if (media_element->GetMediaControls())
     panel_element = media_element->GetMediaControls()->PanelElement();
 

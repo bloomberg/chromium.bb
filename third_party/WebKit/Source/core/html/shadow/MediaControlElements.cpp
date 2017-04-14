@@ -41,8 +41,6 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLLabelElement.h"
-#include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/media/HTMLMediaElementControlsList.h"
@@ -55,10 +53,8 @@
 #include "core/layout/api/LayoutSliderItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 #include "public/platform/UserMetricsAction.h"
 #include "public/platform/WebScreenInfo.h"
@@ -68,20 +64,6 @@ namespace blink {
 using namespace HTMLNames;
 
 namespace {
-
-// This is the duration from mediaControls.css
-const double kFadeOutDuration = 0.3;
-
-const QualifiedName& TrackIndexAttrName() {
-  // Save the track index in an attribute to avoid holding a pointer to the text
-  // track.
-  DEFINE_STATIC_LOCAL(QualifiedName, track_index_attr,
-                      (g_null_atom, "data-track-index", g_null_atom));
-  return track_index_attr;
-}
-
-// When specified as trackIndex, disable text tracks.
-const int kTrackIndexOffValue = -1;
 
 bool IsUserInteractionEvent(Event* event) {
   const AtomicString& type = event->type();
@@ -127,119 +109,7 @@ Element* ElementFromCenter(Element& element) {
   return element.GetDocument().ElementFromPoint(center_x, center_y);
 }
 
-bool HasDuplicateLabel(TextTrack* current_track) {
-  DCHECK(current_track);
-  TextTrackList* track_list = current_track->TrackList();
-  // The runtime of this method is quadratic but since there are usually very
-  // few text tracks it won't affect the performance much.
-  String current_track_label = current_track->label();
-  for (unsigned i = 0; i < track_list->length(); i++) {
-    TextTrack* track = track_list->AnonymousIndexedGetter(i);
-    if (current_track != track && current_track_label == track->label())
-      return true;
-  }
-  return false;
-}
-
 }  // anonymous namespace
-
-MediaControlPanelElement::MediaControlPanelElement(
-    MediaControls& media_controls)
-    : MediaControlDivElement(media_controls, kMediaControlsPanel),
-      is_displayed_(false),
-      opaque_(true),
-      transition_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                              &media_controls.OwnerDocument()),
-                        this,
-                        &MediaControlPanelElement::TransitionTimerFired) {}
-
-MediaControlPanelElement* MediaControlPanelElement::Create(
-    MediaControls& media_controls) {
-  MediaControlPanelElement* panel =
-      new MediaControlPanelElement(media_controls);
-  panel->SetShadowPseudoId(AtomicString("-webkit-media-controls-panel"));
-  return panel;
-}
-
-void MediaControlPanelElement::DefaultEventHandler(Event* event) {
-  // Suppress the media element activation behavior (toggle play/pause) when
-  // any part of the control panel is clicked.
-  if (event->type() == EventTypeNames::click) {
-    event->SetDefaultHandled();
-    return;
-  }
-  HTMLDivElement::DefaultEventHandler(event);
-}
-
-void MediaControlPanelElement::StartTimer() {
-  StopTimer();
-
-  // The timer is required to set the property display:'none' on the panel,
-  // such that captions are correctly displayed at the bottom of the video
-  // at the end of the fadeout transition.
-  // FIXME: Racing a transition with a setTimeout like this is wrong.
-  transition_timer_.StartOneShot(kFadeOutDuration, BLINK_FROM_HERE);
-}
-
-void MediaControlPanelElement::StopTimer() {
-  transition_timer_.Stop();
-}
-
-void MediaControlPanelElement::TransitionTimerFired(TimerBase*) {
-  if (!opaque_)
-    SetIsWanted(false);
-
-  StopTimer();
-}
-
-void MediaControlPanelElement::DidBecomeVisible() {
-  DCHECK(is_displayed_ && opaque_);
-  MediaElement().MediaControlsDidBecomeVisible();
-}
-
-bool MediaControlPanelElement::IsOpaque() const {
-  return opaque_;
-}
-
-void MediaControlPanelElement::MakeOpaque() {
-  if (opaque_)
-    return;
-
-  SetInlineStyleProperty(CSSPropertyOpacity, 1.0,
-                         CSSPrimitiveValue::UnitType::kNumber);
-  opaque_ = true;
-
-  if (is_displayed_) {
-    SetIsWanted(true);
-    DidBecomeVisible();
-  }
-}
-
-void MediaControlPanelElement::MakeTransparent() {
-  if (!opaque_)
-    return;
-
-  SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
-                         CSSPrimitiveValue::UnitType::kNumber);
-
-  opaque_ = false;
-  StartTimer();
-}
-
-void MediaControlPanelElement::SetIsDisplayed(bool is_displayed) {
-  if (is_displayed_ == is_displayed)
-    return;
-
-  is_displayed_ = is_displayed;
-  if (is_displayed_ && opaque_)
-    DidBecomeVisible();
-}
-
-bool MediaControlPanelElement::KeepEventInNode(Event* event) {
-  return IsUserInteractionEvent(event);
-}
-
-// ----------------------------
 
 MediaControlPlayButtonElement::MediaControlPlayButtonElement(
     MediaControls& media_controls)
@@ -381,136 +251,6 @@ MediaControlToggleClosedCaptionsButtonElement::GetOverflowStringName() {
 
 // ----------------------------
 
-MediaControlTextTrackListElement::MediaControlTextTrackListElement(
-    MediaControls& media_controls)
-    : MediaControlDivElement(media_controls, kMediaTextTrackList) {}
-
-MediaControlTextTrackListElement* MediaControlTextTrackListElement::Create(
-    MediaControls& media_controls) {
-  MediaControlTextTrackListElement* element =
-      new MediaControlTextTrackListElement(media_controls);
-  element->SetShadowPseudoId(
-      AtomicString("-internal-media-controls-text-track-list"));
-  element->SetIsWanted(false);
-  return element;
-}
-
-void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::change) {
-    // Identify which input element was selected and set track to showing
-    Node* target = event->target()->ToNode();
-    if (!target || !target->IsElementNode())
-      return;
-
-    GetMediaControls().DisableShowingTextTracks();
-    int track_index =
-        ToElement(target)->GetIntegralAttribute(TrackIndexAttrName());
-    if (track_index != kTrackIndexOffValue) {
-      DCHECK_GE(track_index, 0);
-      GetMediaControls().ShowTextTrackAtIndex(track_index);
-      MediaElement().DisableAutomaticTextTrackSelection();
-    }
-
-    event->SetDefaultHandled();
-  }
-  MediaControlDivElement::DefaultEventHandler(event);
-}
-
-void MediaControlTextTrackListElement::SetVisible(bool visible) {
-  if (visible) {
-    SetIsWanted(true);
-    RefreshTextTrackListMenu();
-  } else {
-    SetIsWanted(false);
-  }
-}
-
-String MediaControlTextTrackListElement::GetTextTrackLabel(TextTrack* track) {
-  if (!track) {
-    return MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksOff);
-  }
-
-  String track_label = track->label();
-
-  if (track_label.IsEmpty())
-    track_label = track->language();
-
-  if (track_label.IsEmpty()) {
-    track_label = String(MediaElement().GetLocale().QueryString(
-        WebLocalizedString::kTextTracksNoLabel,
-        String::Number(track->TrackIndex() + 1)));
-  }
-
-  return track_label;
-}
-
-// TextTrack parameter when passed in as a nullptr, creates the "Off" list item
-// in the track list.
-Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
-    TextTrack* track) {
-  int track_index = track ? track->TrackIndex() : kTrackIndexOffValue;
-  HTMLLabelElement* track_item = HTMLLabelElement::Create(GetDocument());
-  track_item->SetShadowPseudoId(
-      AtomicString("-internal-media-controls-text-track-list-item"));
-  HTMLInputElement* track_item_input =
-      HTMLInputElement::Create(GetDocument(), false);
-  track_item_input->SetShadowPseudoId(
-      AtomicString("-internal-media-controls-text-track-list-item-input"));
-  track_item_input->setType(InputTypeNames::checkbox);
-  track_item_input->SetIntegralAttribute(TrackIndexAttrName(), track_index);
-  if (!MediaElement().TextTracksVisible()) {
-    if (!track)
-      track_item_input->setChecked(true);
-  } else {
-    // If there are multiple text tracks set to showing, they must all have
-    // checkmarks displayed.
-    if (track && track->mode() == TextTrack::ShowingKeyword())
-      track_item_input->setChecked(true);
-  }
-
-  track_item->AppendChild(track_item_input);
-  String track_label = GetTextTrackLabel(track);
-  track_item->AppendChild(Text::Create(GetDocument(), track_label));
-  // Add a track kind marker icon if there are multiple tracks with the same
-  // label or if the track has no label.
-  if (track && (track->label().IsEmpty() || HasDuplicateLabel(track))) {
-    HTMLSpanElement* track_kind_marker = HTMLSpanElement::Create(GetDocument());
-    if (track->kind() == track->CaptionsKeyword()) {
-      track_kind_marker->SetShadowPseudoId(AtomicString(
-          "-internal-media-controls-text-track-list-kind-captions"));
-    } else {
-      DCHECK_EQ(track->kind(), track->SubtitlesKeyword());
-      track_kind_marker->SetShadowPseudoId(AtomicString(
-          "-internal-media-controls-text-track-list-kind-subtitles"));
-    }
-    track_item->AppendChild(track_kind_marker);
-  }
-  return track_item;
-}
-
-void MediaControlTextTrackListElement::RefreshTextTrackListMenu() {
-  if (!MediaElement().HasClosedCaptions() ||
-      !MediaElement().TextTracksAreReady())
-    return;
-
-  EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
-  RemoveChildren(kOmitSubtreeModifiedEvent);
-
-  // Construct a menu for subtitles and captions.  Pass in a nullptr to
-  // createTextTrackListItem to create the "Off" track item.
-  AppendChild(CreateTextTrackListItem(nullptr));
-
-  TextTrackList* track_list = MediaElement().textTracks();
-  for (unsigned i = 0; i < track_list->length(); i++) {
-    TextTrack* track = track_list->AnonymousIndexedGetter(i);
-    if (!track->CanBeRendered())
-      continue;
-    AppendChild(CreateTextTrackListItem(track));
-  }
-}
-
-// ----------------------------
 MediaControlOverflowMenuButtonElement::MediaControlOverflowMenuButtonElement(
     MediaControls& media_controls)
     : MediaControlInputElement(media_controls, kMediaOverflowButton) {}
@@ -541,28 +281,6 @@ void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event* event) {
   }
 
   MediaControlInputElement::DefaultEventHandler(event);
-}
-
-// ----------------------------
-MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(
-    MediaControls& media_controls)
-    : MediaControlDivElement(media_controls, kMediaOverflowList) {}
-
-MediaControlOverflowMenuListElement*
-MediaControlOverflowMenuListElement::Create(MediaControls& media_controls) {
-  MediaControlOverflowMenuListElement* element =
-      new MediaControlOverflowMenuListElement(media_controls);
-  element->SetIsWanted(false);
-  element->SetShadowPseudoId(
-      AtomicString("-internal-media-controls-overflow-menu-list"));
-  return element;
-}
-
-void MediaControlOverflowMenuListElement::DefaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::click)
-    event->SetDefaultHandled();
-
-  MediaControlDivElement::DefaultEventHandler(event);
 }
 
 // ----------------------------

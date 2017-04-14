@@ -36,38 +36,6 @@
 
 namespace blink {
 
-class TextTrack;
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlPanelElement final
-    : public MediaControlDivElement {
- public:
-  static MediaControlPanelElement* Create(MediaControls&);
-
-  void SetIsDisplayed(bool);
-
-  bool IsOpaque() const;
-  void MakeOpaque();
-  void MakeTransparent();
-
- private:
-  explicit MediaControlPanelElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
-
-  void StartTimer();
-  void StopTimer();
-  void TransitionTimerFired(TimerBase*);
-  void DidBecomeVisible();
-
-  bool is_displayed_;
-  bool opaque_;
-
-  TaskRunnerTimer<MediaControlPanelElement> transition_timer_;
-};
-
 // ----------------------------
 
 class CORE_EXPORT MediaControlPlayButtonElement final
@@ -127,31 +95,6 @@ class CORE_EXPORT MediaControlToggleClosedCaptionsButtonElement final
 
 // ----------------------------
 
-class CORE_EXPORT MediaControlTextTrackListElement final
-    : public MediaControlDivElement {
- public:
-  static MediaControlTextTrackListElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-
-  void SetVisible(bool);
-
- private:
-  explicit MediaControlTextTrackListElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-
-  void RefreshTextTrackListMenu();
-
-  // Returns the label for the track when a valid track is passed in and "Off"
-  // when the parameter is null.
-  String GetTextTrackLabel(TextTrack*);
-  // Creates the track element in the list when a valid track is passed in and
-  // the "Off" item when the parameter is null.
-  Element* CreateTextTrackListItem(TextTrack*);
-};
-
-// ----------------------------
 // Represents the overflow menu which is displayed when the width of the media
 // player is small enough that at least two buttons are no longer visible.
 class CORE_EXPORT MediaControlOverflowMenuButtonElement final
@@ -165,19 +108,6 @@ class CORE_EXPORT MediaControlOverflowMenuButtonElement final
 
  private:
   explicit MediaControlOverflowMenuButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-};
-
-// ----------------------------
-// Holds a list of elements within the overflow menu.
-class CORE_EXPORT MediaControlOverflowMenuListElement final
-    : public MediaControlDivElement {
- public:
-  static MediaControlOverflowMenuListElement* Create(MediaControls&);
-
- private:
-  explicit MediaControlOverflowMenuListElement(MediaControls&);
 
   void DefaultEventHandler(Event*) override;
 };
