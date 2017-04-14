@@ -54,6 +54,7 @@ class EnumDefinition(object):
     self._Validate()
     self._AssignEntryIndices()
     self._StripPrefix()
+    self._NormalizeNames()
 
   def _Validate(self):
     assert self.class_name
@@ -92,10 +93,10 @@ class EnumDefinition(object):
 
     def StripEntries(entries):
       ret = collections.OrderedDict()
-      for (k, v) in entries.iteritems():
+      for k, v in entries.iteritems():
         stripped_key = k.replace(prefix_to_strip, '', 1)
         if isinstance(v, basestring):
-          stripped_value = v.replace(prefix_to_strip, '', 1)
+          stripped_value = v.replace(prefix_to_strip, '')
         else:
           stripped_value = v
         ret[stripped_key] = stripped_value
@@ -104,6 +105,44 @@ class EnumDefinition(object):
 
     self.entries = StripEntries(self.entries)
     self.comments = StripEntries(self.comments)
+
+  def _NormalizeNames(self):
+    self.entries = _TransformKeys(self.entries, _KCamelToShouty)
+    self.comments = _TransformKeys(self.comments, _KCamelToShouty)
+
+
+def _TransformKeys(d, func):
+  """Normalize keys in |d| and update references to old keys in |d| values."""
+  normal_keys = {k: func(k) for k in d}
+  ret = collections.OrderedDict()
+  for k, v in d.iteritems():
+    # Need to transform values as well when the entry value was explicitly set
+    # (since it could contain references to other enum entry values).
+    if isinstance(v, basestring):
+      for normal_key in normal_keys:
+        v = v.replace(normal_key, normal_keys[normal_key])
+    ret[normal_keys[k]] = v
+  return ret
+
+
+def _KCamelToShouty(s):
+  """Convert |s| from kCamelCase or CamelCase to SHOUTY_CASE.
+
+  kFooBar -> FOO_BAR
+  FooBar -> FOO_BAR
+  FooBAR9 -> FOO_BAR9
+  FooBARBaz -> FOO_BAR_BAZ
+  """
+  if not re.match(r'^k?([A-Z][^A-Z]+|[A-Z0-9]+)+$', s):
+    return s
+  # Strip the leading k.
+  s = re.sub(r'^k', '', s)
+  # Add _ between title words and anything else.
+  s = re.sub(r'([^_])([A-Z][^A-Z_0-9]+)', r'\1_\2', s)
+  # Add _ between lower -> upper transitions.
+  s = re.sub(r'([^A-Z_0-9])([A-Z])', r'\1_\2', s)
+  return s.upper()
+
 
 class DirectiveSet(object):
   class_name_override_key = 'CLASS_NAME_OVERRIDE'

@@ -228,7 +228,7 @@ class MediaCodecUtil {
             if (videoCapabilities.getBitrateRange().contains(bitrate)) {
                 // Assume all platforms before N only support VP9 profile 0.
                 profileLevels.addCodecProfileLevel(
-                        VideoCodec.kCodecVP9, VideoCodecProfile.VP9PROFILE_PROFILE0, level);
+                        VideoCodec.CODEC_VP9, VideoCodecProfile.VP9PROFILE_PROFILE0, level);
             }
         }
     }

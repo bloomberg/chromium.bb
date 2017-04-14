@@ -30,7 +30,7 @@ public class KeySystemTest extends AwTestBase {
     private static class EmeAllowingAwContentsClient extends TestAwContentsClient {
         @Override
         public void onPermissionRequest(AwPermissionRequest awPermissionRequest) {
-            if (awPermissionRequest.getResources() == Resource.ProtectedMediaId) {
+            if (awPermissionRequest.getResources() == Resource.PROTECTED_MEDIA_ID) {
                 awPermissionRequest.grant();
             } else {
                 awPermissionRequest.deny();

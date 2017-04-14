@@ -1252,13 +1252,13 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             long result = 0;
             for (String resource : resources) {
                 if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
-                    result |= Resource.VideoCapture;
+                    result |= Resource.VIDEO_CAPTURE;
                 } else if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
-                    result |= Resource.AudioCapture;
+                    result |= Resource.AUDIO_CAPTURE;
                 } else if (resource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
-                    result |= Resource.ProtectedMediaId;
+                    result |= Resource.PROTECTED_MEDIA_ID;
                 } else if (resource.equals(AwPermissionRequest.RESOURCE_MIDI_SYSEX)) {
-                    result |= Resource.MIDISysex;
+                    result |= Resource.MIDI_SYSEX;
                 }
             }
             return result;
@@ -1266,16 +1266,16 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
         private static String[] toPermissionResources(long resources) {
             ArrayList<String> result = new ArrayList<String>();
-            if ((resources & Resource.VideoCapture) != 0) {
+            if ((resources & Resource.VIDEO_CAPTURE) != 0) {
                 result.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE);
             }
-            if ((resources & Resource.AudioCapture) != 0) {
+            if ((resources & Resource.AUDIO_CAPTURE) != 0) {
                 result.add(PermissionRequest.RESOURCE_AUDIO_CAPTURE);
             }
-            if ((resources & Resource.ProtectedMediaId) != 0) {
+            if ((resources & Resource.PROTECTED_MEDIA_ID) != 0) {
                 result.add(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID);
             }
-            if ((resources & Resource.MIDISysex) != 0) {
+            if ((resources & Resource.MIDI_SYSEX) != 0) {
                 result.add(AwPermissionRequest.RESOURCE_MIDI_SYSEX);
             }
             String[] resource_array = new String[result.size()];

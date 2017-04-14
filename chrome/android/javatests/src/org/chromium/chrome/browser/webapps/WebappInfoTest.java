@@ -33,7 +33,7 @@ public class WebappInfoTest {
         String url = "about:blank";
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.kStandalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         Assert.assertNotNull(info);
@@ -49,7 +49,7 @@ public class WebappInfoTest {
         String url = "http://google.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.kStandalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         Assert.assertNotNull(info);
@@ -144,10 +144,10 @@ public class WebappInfoTest {
         String url = "http://money.cnn.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.kFullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.FULLSCREEN, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        Assert.assertEquals(WebDisplayMode.kFullscreen, info.displayMode());
+        Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
     }
@@ -164,7 +164,7 @@ public class WebappInfoTest {
         long backgroundColor = 0xFF0000FFL;
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.kStandalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 themeColor, backgroundColor, false);
         Assert.assertEquals(themeColor, info.themeColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
@@ -180,7 +180,7 @@ public class WebappInfoTest {
         String url = "http://money.cnn.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
-                WebDisplayMode.kStandalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
@@ -231,9 +231,9 @@ public class WebappInfoTest {
     @Feature({"Webapps"})
     public void testIntentDisplayMode() {
         Intent intent = createIntentWithUrlAndId();
-        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.kMinimalUi);
+        intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(WebDisplayMode.kMinimalUi, info.displayMode());
+        Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
     }
 
     @Test

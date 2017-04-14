@@ -203,7 +203,7 @@ public class WebappDataStorage {
                 mPreferences.getString(KEY_SCOPE, null), mPreferences.getString(KEY_NAME, null),
                 mPreferences.getString(KEY_SHORT_NAME, null),
                 ShortcutHelper.decodeBitmapFromString(mPreferences.getString(KEY_ICON, null)),
-                version, mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.kStandalone),
+                version, mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.STANDALONE),
                 mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
                 mPreferences.getLong(
                         KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
@@ -258,7 +258,7 @@ public class WebappDataStorage {
             // "Standalone" was the original assumed default for all web apps.
             editor.putInt(KEY_DISPLAY_MODE,
                     IntentUtils.safeGetIntExtra(shortcutIntent, ShortcutHelper.EXTRA_DISPLAY_MODE,
-                            WebDisplayMode.kStandalone));
+                            WebDisplayMode.STANDALONE));
             editor.putInt(KEY_ORIENTATION, IntentUtils.safeGetIntExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_ORIENTATION,
                         ScreenOrientationValues.DEFAULT));
