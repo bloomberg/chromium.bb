@@ -580,8 +580,8 @@ def generate_cplusplus_isolate_script_test(dimension):
   ]
 
 
-def generate_telemetry_tests(
-  tester_config, benchmarks, benchmark_sharding_map, use_whitelist):
+def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map,
+                             use_whitelist, benchmark_ref_build_blacklist):
   isolated_scripts = []
   # First determine the browser that you need based on the tester
   browser_name = ''
@@ -624,13 +624,15 @@ def generate_telemetry_tests(
       swarming_dimensions, benchmark.Name(), browser_name)
     isolated_scripts.append(test)
     # Now create another executable for this benchmark on the reference browser
-    reference_test = generate_telemetry_test(
-      swarming_dimensions, benchmark.Name(),'reference')
-    isolated_scripts.append(reference_test)
-    if current_shard == (num_shards - 1):
-      current_shard = 0
-    else:
-      current_shard += 1
+    # if it is not blacklisted from running on the reference browser.
+    if benchmark.Name() not in benchmark_ref_build_blacklist:
+      reference_test = generate_telemetry_test(
+        swarming_dimensions, benchmark.Name(),'reference')
+      isolated_scripts.append(reference_test)
+      if current_shard == (num_shards - 1):
+        current_shard = 0
+      else:
+        current_shard += 1
 
   return isolated_scripts
 
@@ -667,6 +669,12 @@ LEGACY_DEVICE_AFFIINITY_ALGORITHM = [
   'Win Zenbook Perf',
   'Win 10 High-DPI Perf',
 ]
+
+# List of benchmarks that are to never be run with reference builds.
+BENCHMARK_REF_BUILD_BLACKLIST = [
+  'power.idle_platform',
+]
+
 
 def current_benchmarks(use_whitelist):
   benchmarks_dir = os.path.join(src_dir(), 'tools', 'perf', 'benchmarks')
@@ -768,7 +776,8 @@ def generate_all_tests(waterfall):
       if name in LEGACY_DEVICE_AFFIINITY_ALGORITHM:
         sharding_map = None
       isolated_scripts = generate_telemetry_tests(
-          config, benchmark_list, sharding_map, use_whitelist)
+          config, benchmark_list, sharding_map, use_whitelist,
+          BENCHMARK_REF_BUILD_BLACKLIST)
       # Generate swarmed non-telemetry tests if present
       if config['swarming_dimensions'][0].get('perf_tests', False):
         isolated_scripts += generate_cplusplus_isolate_script_test(

@@ -162,7 +162,7 @@ system_health.memory_desktop,perezju@chromium.org,
 system_health.memory_mobile,perezju@chromium.org,
 system_health.webview_startup,"perezju@chromium.org, torne@chromium.org",
 system_health.webview_startup_multiprocess,,
-tab_switching.typical_25,,
+tab_switching.typical_25,vovoy@chromium.org,OS>Performance
 text_selection.character,mfomitchev@chromium.org,
 text_selection.direction,mfomitchev@chromium.org,
 thread_times.key_hit_test_cases,,
