@@ -28,15 +28,7 @@ namespace {
 
 class TestDialog : public DialogDelegateView {
  public:
-  TestDialog()
-      : input_(new views::Textfield()),
-        canceled_(false),
-        accepted_(false),
-        closed_(false),
-        closeable_(false),
-        should_handle_escape_(false) {
-    AddChildView(input_);
-  }
+  TestDialog() : input_(new views::Textfield()) { AddChildView(input_); }
   ~TestDialog() override {}
 
   void Init() {
@@ -51,6 +43,7 @@ class TestDialog : public DialogDelegateView {
   bool ShouldShowWindowTitle() const override {
     return !title_.empty();
   }
+  bool ShouldShowCloseButton() const override { return show_close_button_; }
 
   // DialogDelegateView overrides:
   bool Cancel() override {
@@ -66,7 +59,6 @@ class TestDialog : public DialogDelegateView {
     return closeable_;
   }
 
-  // DialogDelegateView overrides:
   gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     return should_handle_escape_;
@@ -92,6 +84,9 @@ class TestDialog : public DialogDelegateView {
   }
 
   void set_title(const base::string16& title) { title_ = title; }
+  void set_show_close_button(bool show_close) {
+    show_close_button_ = show_close;
+  }
   void set_should_handle_escape(bool should_handle_escape) {
     should_handle_escape_ = should_handle_escape;
   }
@@ -100,13 +95,14 @@ class TestDialog : public DialogDelegateView {
 
  private:
   views::Textfield* input_;
-  bool canceled_;
-  bool accepted_;
-  bool closed_;
+  bool canceled_ = false;
+  bool accepted_ = false;
+  bool closed_ = false;
   // Prevent the dialog from closing, for repeated ok and cancel button clicks.
   bool closeable_;
   base::string16 title_;
-  bool should_handle_escape_;
+  bool show_close_button_ = true;
+  bool should_handle_escape_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialog);
 };
@@ -118,14 +114,25 @@ class DialogTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    dialog_ = new TestDialog();
-    dialog_->Init();
-    DialogDelegate::CreateDialogWidget(dialog_, GetContext(), nullptr)->Show();
+    InitializeDialog();
+    ShowDialog();
   }
 
   void TearDown() override {
     dialog_->TearDown();
     ViewsTestBase::TearDown();
+  }
+
+  void InitializeDialog() {
+    if (dialog_)
+      dialog_->TearDown();
+
+    dialog_ = new TestDialog();
+    dialog_->Init();
+  }
+
+  void ShowDialog() {
+    DialogDelegate::CreateDialogWidget(dialog_, GetContext(), nullptr)->Show();
   }
 
   void SimulateKeyEvent(const ui::KeyEvent& event) {
@@ -208,12 +215,38 @@ TEST_F(DialogTest, HitTest_HiddenTitle) {
     const int point;
     const int hit;
   } cases[] = {
-    { border,      HTSYSMENU },
-    { border + 10, HTSYSMENU },
-    { border + 20, HTCLIENT  },
-    { border + 50, HTCLIENT  },
-    { border + 60, HTCLIENT  },
-    { 1000,        HTNOWHERE },
+      {border, HTSYSMENU},
+      {border + 10, HTSYSMENU},
+      {border + 20, HTNOWHERE},
+      {border + 50, HTCLIENT /* Space is reserved for the close button. */},
+      {border + 60, HTCLIENT},
+      {1000, HTNOWHERE},
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    gfx::Point point(cases[i].point, cases[i].point);
+    EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
+        << " case " << i << " with border: " << border << ", at point "
+        << cases[i].point;
+  }
+}
+
+TEST_F(DialogTest, HitTest_HiddenTitleNoCloseButton) {
+  InitializeDialog();
+  dialog()->set_show_close_button(false);
+  ShowDialog();
+
+  const NonClientView* view = dialog()->GetWidget()->non_client_view();
+  BubbleFrameView* frame = static_cast<BubbleFrameView*>(view->frame_view());
+  const int border = frame->bubble_border()->GetBorderThickness();
+
+  struct {
+    const int point;
+    const int hit;
+  } cases[] = {
+      {border, HTSYSMENU},     {border + 10, HTSYSMENU},
+      {border + 20, HTCLIENT}, {border + 50, HTCLIENT},
+      {border + 60, HTCLIENT}, {1000, HTNOWHERE},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
