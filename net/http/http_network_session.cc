@@ -164,7 +164,7 @@ HttpNetworkSession::Params::Params()
       enable_token_binding(false),
       http_09_on_non_default_ports_enabled(false),
       restrict_to_one_preconnect_for_proxies(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_35);
+  quic_supported_versions.push_back(QUIC_VERSION_37);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
