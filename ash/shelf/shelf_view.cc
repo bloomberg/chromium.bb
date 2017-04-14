@@ -438,12 +438,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
   if (!ShouldEventActivateButton(sender, event))
     return;
 
-  // If this is the overflow shelf, |main_shelf_| will not be null. When an item
-  // is pressed on the overflow shelf, we want to hide the overflow bubble,
-  // which is associated with the main shelf. Button presses on the main shelf
-  // cause the overflow bubble to close itself via PointerWatcher functionality.
-  if (main_shelf_ && main_shelf_->IsShowingOverflowBubble())
-    main_shelf_->ToggleOverflowBubble();
+  // Close the overflow bubble if an item on either shelf is clicked. Press
+  // events elsewhere will close the overflow shelf via OverflowBubble's
+  // PointerWatcher functionality.
+  ShelfView* shelf_view = main_shelf_ ? main_shelf_ : this;
+  if (shelf_view->IsShowingOverflowBubble())
+    shelf_view->ToggleOverflowBubble();
 
   // Record the index for the last pressed shelf item.
   last_pressed_index_ = view_model_->GetIndexOfView(sender);

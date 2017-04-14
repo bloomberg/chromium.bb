@@ -169,6 +169,10 @@ class ASH_EXPORT ShelfView : public views::View,
     return view_model_.get();
   }
 
+  // Return the main shelf. This will return nullptr if this is not called on
+  // the overflow shelf.
+  ShelfView* main_shelf() { return main_shelf_; }
+
  private:
   friend class ash::test::ShelfViewTestAPI;
 

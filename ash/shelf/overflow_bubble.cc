@@ -66,12 +66,22 @@ void OverflowBubble::Hide() {
 
 void OverflowBubble::ProcessPressedEvent(
     const gfx::Point& event_location_in_screen) {
-  if (IsShowing() && !shelf_view_->IsShowingMenu() &&
-      !bubble_->GetBoundsInScreen().Contains(event_location_in_screen) &&
-      !overflow_button_->GetBoundsInScreen().Contains(
+  if (!IsShowing() || shelf_view_->IsShowingMenu() ||
+      bubble_->GetBoundsInScreen().Contains(event_location_in_screen) ||
+      overflow_button_->GetBoundsInScreen().Contains(
           event_location_in_screen)) {
-    Hide();
+    return;
   }
+
+  // Do not hide the shelf if one of the buttons on the main shelf was pressed,
+  // since the user might want to drag an item onto the overflow bubble.
+  // The button itself will close the overflow bubble on the release event.
+  if (shelf_view_->main_shelf()->GetVisibleItemsBoundsInScreen().Contains(
+          event_location_in_screen)) {
+    return;
+  }
+
+  Hide();
 }
 
 void OverflowBubble::OnPointerEventObserved(

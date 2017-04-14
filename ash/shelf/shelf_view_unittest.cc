@@ -1852,11 +1852,12 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   // Add one app (which is on the main shelf) and then add buttons until
   // overflow. Add two more apps (which are on the overflow shelf).
   ShelfID first_app_id = AddAppShortcut();
+  ShelfID second_app_id = AddAppShortcut();
   AddButtonsUntilOverflow();
   ShelfID overflow_app_id1 = AddAppShortcut();
   ShelfID overflow_app_id2 = AddAppShortcut();
 
-  // Verify that by clicking anywhere outside the shelf and overflow bubble, the
+  // Verify that by pressing anywhere outside the shelf and overflow bubble, the
   // overflow bubble will close if it were open.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
@@ -1867,8 +1868,9 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   ASSERT_FALSE(
       test_api_->overflow_bubble()->shelf_view()->GetBoundsInScreen().Contains(
           generator.current_location()));
-  generator.ClickLeftButton();
+  generator.PressLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  generator.ReleaseLeftButton();
 
   // Verify that by clicking a app which is on the main shelf while the overflow
   // bubble is opened, the overflow bubble will close.
@@ -1890,18 +1892,27 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   generator.ClickLeftButton();
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
+  // Verify that dragging apps on the main shelf does not close the overflow
+  // bubble.
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+  test_api_->ShowOverflowBubble();
+  generator.set_current_location(GetButtonCenter(first_app_id));
+  generator.DragMouseTo(GetButtonCenter(second_app_id));
+  EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
+  test_api_->HideOverflowBubble();
+
   // Verify dragging apps on the overflow shelf does not close the overflow
   // bubble.
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
   test_api_->ShowOverflowBubble();
-  ShelfViewTestAPI test_api_for_overflow1(
+  ShelfViewTestAPI test_api_for_overflow2(
       test_api_->overflow_bubble()->shelf_view());
+  button_on_overflow_shelf =
+      test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id1));
   ShelfButton* button_on_overflow_shelf1 =
-      test_api_for_overflow1.GetButton(model_->ItemIndexByID(overflow_app_id1));
-  ShelfButton* button_on_overflow_shelf2 =
-      test_api_for_overflow1.GetButton(model_->ItemIndexByID(overflow_app_id2));
-  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf1));
-  generator.DragMouseTo(GetButtonCenter(button_on_overflow_shelf2));
+      test_api_for_overflow2.GetButton(model_->ItemIndexByID(overflow_app_id2));
+  generator.set_current_location(GetButtonCenter(button_on_overflow_shelf));
+  generator.DragMouseTo(GetButtonCenter(button_on_overflow_shelf1));
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
