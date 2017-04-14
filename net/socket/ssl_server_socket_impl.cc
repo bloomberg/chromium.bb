@@ -14,7 +14,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/client_cert_verifier.h"
-#include "net/cert/x509_util.h"
 #include "net/cert/x509_util_openssl.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
@@ -625,8 +624,6 @@ SSLServerContextImpl::SSLServerContextImpl(
   uint8_t session_ctx_id = 0;
   SSL_CTX_set_session_id_context(ssl_ctx_.get(), &session_ctx_id,
                                  sizeof(session_ctx_id));
-  // Deduplicate all certificates minted from the SSL_CTX in memory.
-  SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
 
   int verify_mode = 0;
   switch (ssl_server_config_.client_cert_type) {
@@ -646,26 +643,26 @@ SSLServerContextImpl::SSLServerContextImpl(
 
   // Set certificate and private key.
   DCHECK(cert_->os_cert_handle());
-  DCHECK(key_->key());
-#if BUILDFLAG(USE_BYTE_CERTS)
-  // On success, SSL_CTX_set_chain_and_key acquires a reference to
-  // |cert_->os_cert_handle()| and |key_->key()|.
-  CRYPTO_BUFFER* cert_buffers[] = {cert_->os_cert_handle()};
-  CHECK(SSL_CTX_set_chain_and_key(ssl_ctx_.get(), cert_buffers,
-                                  arraysize(cert_buffers), key_->key(),
-                                  nullptr /* privkey_method */));
-#elif defined(USE_OPENSSL_CERTS)
+#if defined(USE_OPENSSL_CERTS)
   CHECK(SSL_CTX_use_certificate(ssl_ctx_.get(), cert_->os_cert_handle()));
-  CHECK(SSL_CTX_use_PrivateKey(ssl_ctx_.get(), key_->key()));
 #else
+  // Convert OSCertHandle to X509 structure.
   std::string der_string;
   CHECK(X509Certificate::GetDEREncoded(cert_->os_cert_handle(), &der_string));
-  CHECK(SSL_CTX_use_certificate_ASN1(
-      ssl_ctx_.get(), der_string.length(),
-      reinterpret_cast<const unsigned char*>(der_string.data())));
-  // On success, SSL_CTX_use_PrivateKey acquires a reference to |key_->key()|.
+
+  const unsigned char* der_string_array =
+      reinterpret_cast<const unsigned char*>(der_string.data());
+
+  bssl::UniquePtr<X509> x509(
+      d2i_X509(NULL, &der_string_array, der_string.length()));
+  CHECK(x509);
+
+  // On success, SSL_CTX_use_certificate acquires a reference to |x509|.
+  CHECK(SSL_CTX_use_certificate(ssl_ctx_.get(), x509.get()));
+#endif  // USE_OPENSSL_CERTS
+
+  DCHECK(key_->key());
   CHECK(SSL_CTX_use_PrivateKey(ssl_ctx_.get(), key_->key()));
-#endif  // USE_OPENSSL_CERTS && !USE_BYTE_CERTS
 
   DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_min);
   DCHECK_LT(SSL3_VERSION, ssl_server_config_.version_max);

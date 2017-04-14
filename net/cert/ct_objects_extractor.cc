@@ -41,9 +41,7 @@ bool StringEqualToCBS(const std::string& value1, const CBS* value2) {
 
 bssl::UniquePtr<X509> OSCertHandleToOpenSSL(
     X509Certificate::OSCertHandle os_handle) {
-#if BUILDFLAG(USE_BYTE_CERTS)
-  return bssl::UniquePtr<X509>(X509_parse_from_buffer(os_handle));
-#elif defined(USE_OPENSSL_CERTS)
+#if defined(USE_OPENSSL_CERTS)
   return bssl::UniquePtr<X509>(X509Certificate::DupOSCertHandle(os_handle));
 #else
   std::string der_encoded;
