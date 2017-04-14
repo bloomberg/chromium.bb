@@ -25,6 +25,7 @@ source_set("surfaces") {
     "//ui/display/types",
     "//ui/gfx",
     "//ui/gfx/geometry/mojo",
+    "//ui/latency",
   ]
 
   public_deps = [

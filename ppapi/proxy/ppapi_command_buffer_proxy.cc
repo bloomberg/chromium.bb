@@ -228,6 +228,9 @@ int32_t PpapiCommandBufferProxy::GetExtraCommandBufferData() const {
   return 0;
 }
 
+void PpapiCommandBufferProxy::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {}
+
 void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
                                           const base::Closure& callback) {
   NOTREACHED();

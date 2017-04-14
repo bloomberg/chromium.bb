@@ -6083,6 +6083,11 @@ void GLES2Implementation::SetErrorMessageCallback(
   error_message_callback_ = callback;
 }
 
+void GLES2Implementation::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  gpu_control_->AddLatencyInfo(latency_info);
+}
+
 void GLES2Implementation::SetLostContextCallback(
     const base::Closure& callback) {
   lost_context_callback_ = callback;

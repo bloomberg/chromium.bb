@@ -318,13 +318,6 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
   }
 }
 
-void CommandBufferProxyImpl::AddLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  CheckLock();
-  for (size_t i = 0; i < latency_info.size(); i++)
-    latency_info_.push_back(latency_info[i]);
-}
-
 void CommandBufferProxyImpl::SetSwapBuffersCompletionCallback(
     const SwapBuffersCompletionCallback& callback) {
   CheckLock();
@@ -685,6 +678,13 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
     channel_->FlushPendingStream(release_stream_id);
 
   return true;
+}
+
+void CommandBufferProxyImpl::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  CheckLock();
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 }
 
 void CommandBufferProxyImpl::SignalQuery(uint32_t query,

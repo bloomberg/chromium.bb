@@ -200,6 +200,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       const base::Callback<void(const char*, int32_t)>& callback) override;
+  void AddLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
 
   // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
   // intercept it.

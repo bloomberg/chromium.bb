@@ -19,6 +19,17 @@ source_set("latency") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "latency_info_test_support.cc",
+  ]
+
+  public_deps = [
+    ":latency",
+  ]
+}
+
 test("latency_unittests") {
   sources = [
     "latency_info_unittest.cc",

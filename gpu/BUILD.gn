@@ -361,6 +361,7 @@ test("gpu_unittests") {
     "//ui/gl",
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
+    "//ui/latency:test_support",
   ]
 
   if (is_android) {

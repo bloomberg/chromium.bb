@@ -78,6 +78,8 @@ class Context : public base::RefCountedThreadSafe<Context>,
                        const base::Closure& callback) override;
   void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
+  void AddLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
 
   // Called by ThreadState to set the needed global variables when this context
   // is current.

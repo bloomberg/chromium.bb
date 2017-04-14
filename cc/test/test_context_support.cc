@@ -92,4 +92,7 @@ uint64_t TestContextSupport::ShareGroupTracingGUID() const {
 void TestContextSupport::SetErrorMessageCallback(
     const base::Callback<void(const char*, int32_t)>& callback) {}
 
+void TestContextSupport::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {}
+
 }  // namespace cc

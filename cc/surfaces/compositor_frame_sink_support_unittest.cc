@@ -798,12 +798,20 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   ui::LatencyInfo aggregated_latency_info = info_list[0];
   aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  // Two components are the original ones, and the third one is
+  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
+  // submit.
+  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
   EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(
+      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
 
 // Checks whether the latency info are moved to the new surface from the old
@@ -866,12 +874,20 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   ui::LatencyInfo aggregated_latency_info = info_list[0];
   aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  // Two components are the original ones, and the third one is
+  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
+  // submit.
+  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
   EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(
+      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
 
 // Checks whether the latency info are moved to the new surface from the old
@@ -937,12 +953,20 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   ui::LatencyInfo aggregated_latency_info = info_list[0];
   aggregated_latency_info.AddNewLatencyFrom(info_list[1]);
-  EXPECT_EQ(2u, aggregated_latency_info.latency_components().size());
+
+  // Two components are the original ones, and the third one is
+  // DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, logged on compositor frame
+  // submit.
+  EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
   ui::LatencyInfo::LatencyComponent comp1;
   EXPECT_TRUE(
       aggregated_latency_info.FindLatency(latency_type1, latency_id1, &comp1));
   EXPECT_EQ(latency_sequence_number1, comp1.sequence_number);
+  EXPECT_TRUE(
+      aggregated_latency_info.FindLatency(latency_type2, latency_id2, nullptr));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(
+      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
 }
 
 TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {

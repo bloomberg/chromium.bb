@@ -8,4 +8,5 @@ include_rules = [
   "+mojo/converters",
   "+mojo/public",
   "+ui/display/types",
+  "+ui/latency",
 ]

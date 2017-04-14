@@ -263,6 +263,12 @@ class LatencyInfo {
 #endif
 };
 
+// This is declared here for use in gtest-based unit tests, but is defined in
+// //ui/latency:test_support target.
+// Without this the default PrintTo template in gtest tries to pass LatencyInfo
+// by value, which leads to an alignment compile error on Windows.
+void PrintTo(const LatencyInfo& latency, ::std::ostream* os);
+
 }  // namespace ui
 
 #endif  // UI_LATENCY_LATENCY_INFO_H_

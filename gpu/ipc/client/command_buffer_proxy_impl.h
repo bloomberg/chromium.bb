@@ -127,6 +127,8 @@ class GPU_EXPORT CommandBufferProxyImpl
                        const base::Closure& callback) override;
   void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
+  void AddLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
 
   void TakeFrontBuffer(const gpu::Mailbox& mailbox);
   void ReturnFrontBuffer(const gpu::Mailbox& mailbox,
@@ -140,7 +142,6 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
 
-  void AddLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   using SwapBuffersCompletionCallback = base::Callback<void(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,

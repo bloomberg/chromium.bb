@@ -47,6 +47,14 @@ void SurfaceFactory::SubmitCompositorFrame(
     const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
   DCHECK(local_surface_id.is_valid());
+
+  for (ui::LatencyInfo& latency : frame.metadata.latency_info) {
+    if (latency.latency_components().size() > 0) {
+      latency.AddLatencyNumber(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
+                               0, 0);
+    }
+  }
+
   std::unique_ptr<Surface> surface;
   bool create_new_surface =
       (!current_surface_ ||

@@ -81,6 +81,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                           public ImageTransportSurfaceDelegate {
  public:
   class Service;
+  typedef base::Callback<void(const std::vector<ui::LatencyInfo>&)>
+      LatencyInfoCallback;
+
   explicit InProcessCommandBuffer(const scoped_refptr<Service>& service);
   ~InProcessCommandBuffer() override;
 
@@ -131,6 +134,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                        const base::Closure& callback) override;
   void WaitSyncTokenHint(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
+  void AddLatencyInfo(
+      const std::vector<ui::LatencyInfo>& latency_info) override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -232,7 +237,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
   void Destroy();
   bool DestroyOnGpuThread();
-  void FlushOnGpuThread(int32_t put_offset);
+  void FlushOnGpuThread(int32_t put_offset,
+                        std::vector<ui::LatencyInfo>* latency_info);
   void UpdateLastStateOnGpuThread();
   void ScheduleDelayedWorkOnGpuThread();
   bool MakeCurrent();
@@ -284,6 +290,11 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_;
   ImageFactory* image_factory_;
+
+  LatencyInfoCallback latency_info_callback_;
+
+  // Should only be accessed on the client thread.
+  std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info_;
 
   // Members accessed on the client thread:
   GpuControlClient* gpu_control_client_;

@@ -79,6 +79,10 @@ void DisplayOutputSurface::Reshape(const gfx::Size& size,
 
 void DisplayOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
+
+  if (frame.latency_info.size() > 0)
+    context_provider_->ContextSupport()->AddLatencyInfo(frame.latency_info);
+
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
@@ -123,9 +127,13 @@ void DisplayOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
 }
 
 void DisplayOutputSurface::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
+    const std::vector<LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+  for (const auto& latency : latency_info) {
+    if (latency.latency_components().size() > 0)
+      latency_tracker_.OnGpuSwapBuffersCompleted(latency);
+  }
   DidReceiveSwapBuffersAck(result);
 }
 

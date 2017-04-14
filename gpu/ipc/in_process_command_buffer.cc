@@ -184,6 +184,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
           g_next_command_buffer_id.GetNext() + 1)),
       delayed_work_pending_(false),
       image_factory_(nullptr),
+      latency_info_(base::MakeUnique<std::vector<ui::LatencyInfo>>()),
       gpu_control_client_(nullptr),
 #if DCHECK_IS_ON()
       context_lost_(false),
@@ -531,6 +532,8 @@ void InProcessCommandBuffer::ProcessTasksOnGpuThread() {
     task->callback.Run();
     if (!executor_->scheduled() && !service_->BlockThreadOnWaitSyncToken()) {
       sync_point_order_data_->PauseProcessingOrderNumber(task->order_number);
+      // Don't pop the task if it was preempted - it may have been preempted, so
+      // we need to execute it again later.
       return;
     }
     sync_point_order_data_->FinishProcessingOrderNumber(task->order_number);
@@ -553,10 +556,25 @@ void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
     last_state_ = state;
 }
 
-void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
+void InProcessCommandBuffer::FlushOnGpuThread(
+    int32_t put_offset,
+    std::vector<ui::LatencyInfo>* latency_info) {
   CheckSequencedThread();
   ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
+
+  // Need to run the latency callback before Flush().
+  if (ui::LatencyInfo::Verify(*latency_info,
+                              "InProcessCommandBuffer::FlushOnGpuThread") &&
+      !latency_info_callback_.is_null()) {
+    if (!latency_info->empty()) {
+      latency_info_callback_.Run(*latency_info);
+      // FlushOnGpuThread task might be preempted and re-executed (see
+      // ProcessTasksOnGpuThread), so clear the |latency_info| to prevent
+      // executing |latency_info_callback_| multiple times with the same data.
+      latency_info->clear();
+    }
+  }
 
   command_buffer_->Flush(put_offset);
   // Update state before signaling the flush event.
@@ -603,7 +621,9 @@ void InProcessCommandBuffer::Flush(int32_t put_offset) {
 
   last_put_offset_ = put_offset;
   base::Closure task = base::Bind(&InProcessCommandBuffer::FlushOnGpuThread,
-                                  gpu_thread_weak_ptr_, put_offset);
+                                  gpu_thread_weak_ptr_, put_offset,
+                                  base::Owned(latency_info_.release()));
+  latency_info_.reset(new std::vector<ui::LatencyInfo>);
   QueueTask(false, task);
 
   flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
@@ -991,6 +1011,12 @@ bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
   return sync_token.namespace_id() == GetNamespaceID();
 }
 
+void InProcessCommandBuffer::AddLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  latency_info_->insert(latency_info_->end(), latency_info.begin(),
+                        latency_info.end());
+}
+
 #if defined(OS_WIN)
 void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,
@@ -1017,7 +1043,7 @@ const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
 
 void InProcessCommandBuffer::SetLatencyInfoCallback(
     const LatencyInfoCallback& callback) {
-  // TODO(fsamuel): Implement this.
+  latency_info_callback_ = callback;
 }
 
 void InProcessCommandBuffer::UpdateVSyncParameters(base::TimeTicks timebase,
