@@ -764,7 +764,7 @@ bool FrameSelection::IsFocusedAndActive() const {
          frame_->GetPage()->GetFocusController().IsActive();
 }
 
-bool FrameSelection::IsAppearanceDirty() const {
+bool FrameSelection::NeedsLayoutSelectionUpdate() const {
   return layout_selection_->HasPendingSelection();
 }
 

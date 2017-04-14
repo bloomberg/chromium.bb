@@ -149,7 +149,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
                                     const LayoutPoint&) const override;
 
   void ClearSelection();
-  bool HasPendingSelection() const;
   void CommitPendingSelection();
   void SelectionStartEnd(int& start_pos, int& end_pos);
 

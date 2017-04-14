@@ -29,8 +29,6 @@ class LayoutViewItem : public LayoutBlockItem {
 
   PaintLayerCompositor* Compositor() { return ToView()->Compositor(); }
 
-  bool HasPendingSelection() const { return ToView()->HasPendingSelection(); }
-
   IntRect DocumentRect() const { return ToView()->DocumentRect(); }
 
   LayoutRect ViewRect() const { return ToView()->ViewRect(); }

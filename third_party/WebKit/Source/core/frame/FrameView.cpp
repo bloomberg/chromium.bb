@@ -3134,7 +3134,7 @@ void FrameView::UpdateLifecyclePhasesInternal(
                                              composited_element_ids);
       }
 
-      DCHECK(!view.HasPendingSelection());
+      DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());
       DCHECK((frame_->GetDocument()->Printing() &&
               Lifecycle().GetState() == DocumentLifecycle::kPrePaintClean) ||
              Lifecycle().GetState() == DocumentLifecycle::kPaintClean);

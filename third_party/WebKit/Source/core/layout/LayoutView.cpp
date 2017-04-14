@@ -613,10 +613,6 @@ void LayoutView::ClearSelection() {
   frame_view_->GetFrame().Selection().ClearLayoutSelection();
 }
 
-bool LayoutView::HasPendingSelection() const {
-  return frame_view_->GetFrame().Selection().IsAppearanceDirty();
-}
-
 void LayoutView::CommitPendingSelection() {
   TRACE_EVENT0("blink", "LayoutView::commitPendingSelection");
   frame_view_->GetFrame().Selection().CommitAppearanceIfNeeded(*this);

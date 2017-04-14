@@ -183,7 +183,7 @@ class CORE_EXPORT FrameSelection final
   void DocumentAttached(Document*);
 
   void DidLayout();
-  bool IsAppearanceDirty() const;
+  bool NeedsLayoutSelectionUpdate() const;
   void CommitAppearanceIfNeeded(LayoutView&);
   void SetCaretVisible(bool caret_is_visible);
   void ScheduleVisualUpdate() const;
