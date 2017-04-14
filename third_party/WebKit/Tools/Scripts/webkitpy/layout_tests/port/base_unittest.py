@@ -372,6 +372,10 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port.reference_files('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
                          [('==', port.layout_tests_dir() +
                            '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
+        self.assertEqual(port.reference_files('virtual/layout_ng/' +
+                                              'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
+                         [('==', port.layout_tests_dir() +
+                           '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
 
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())

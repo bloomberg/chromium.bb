@@ -664,6 +664,9 @@ class Port(object):
             return reftest_list
 
         # Try to extract information from MANIFEST.json.
+        match = re.match(r'virtual/[^/]+/', test_name)
+        if match:
+            test_name = test_name[match.end(0):]
         match = re.match(r'external/wpt/(.*)', test_name)
         if not match:
             return []

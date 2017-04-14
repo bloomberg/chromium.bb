@@ -454,7 +454,7 @@
   },
   {
     "prefix": "layout_ng",
-    "base": "external/wpt/css/css21/linebox",
+    "base": "external/wpt/css/CSS2/linebox",
     "args": ["--enable-blink-features=LayoutNG"]
   },
   {
