@@ -295,9 +295,8 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
 }
 
 Node::~Node() {
-  // With Oilpan, the rare data finalizer also asserts for
-  // this condition (we cannot directly access it here.)
-  CHECK(HasRareData() || !GetLayoutObject());
+  if (!HasRareData() && !data_.node_layout_data_->IsSharedEmptyData())
+    delete data_.node_layout_data_;
   InstanceCounters::DecrementNodeCounter();
 }
 
@@ -311,9 +310,9 @@ NodeRareData& Node::EnsureRareData() {
     return *RareData();
 
   if (IsElementNode())
-    data_.rare_data_ = ElementRareData::Create(data_.layout_object_);
+    data_.rare_data_ = ElementRareData::Create(data_.node_layout_data_);
   else
-    data_.rare_data_ = NodeRareData::Create(data_.layout_object_);
+    data_.rare_data_ = NodeRareData::Create(data_.node_layout_data_);
 
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);
@@ -587,6 +586,30 @@ LayoutBox* Node::GetLayoutBox() const {
   LayoutObject* layout_object = this->GetLayoutObject();
   return layout_object && layout_object->IsBox() ? ToLayoutBox(layout_object)
                                                  : nullptr;
+}
+
+void Node::SetLayoutObject(LayoutObject* layout_object) {
+  NodeLayoutData* node_layout_data = HasRareData()
+                                         ? data_.rare_data_->GetNodeLayoutData()
+                                         : data_.node_layout_data_;
+
+  // Already pointing to a non empty NodeLayoutData so just set the pointer to
+  // the new LayoutObject.
+  if (!node_layout_data->IsSharedEmptyData()) {
+    node_layout_data->SetLayoutObject(layout_object);
+    return;
+  }
+
+  if (!layout_object)
+    return;
+
+  // Swap the NodeLayoutData to point to a new NodeLayoutData instead of the
+  // static SharedEmptyData instance.
+  node_layout_data = new NodeLayoutData(layout_object);
+  if (HasRareData())
+    data_.rare_data_->SetNodeLayoutData(node_layout_data);
+  else
+    data_.node_layout_data_ = node_layout_data;
 }
 
 LayoutBoxModelObject* Node::GetLayoutBoxModelObject() const {

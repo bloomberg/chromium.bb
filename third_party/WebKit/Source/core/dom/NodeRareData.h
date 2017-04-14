@@ -98,8 +98,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   WTF_MAKE_NONCOPYABLE(NodeRareData);
 
  public:
-  static NodeRareData* Create(LayoutObject* layout_object) {
-    return new NodeRareData(layout_object);
+  static NodeRareData* Create(NodeLayoutData* node_layout_data) {
+    return new NodeRareData(node_layout_data);
   }
 
   void ClearNodeLists() { node_lists_.Clear(); }
@@ -163,12 +163,14 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  protected:
-  explicit NodeRareData(LayoutObject* layout_object)
-      : NodeRareDataBase(layout_object),
+  explicit NodeRareData(NodeLayoutData* node_layout_data)
+      : NodeRareDataBase(node_layout_data),
         connected_frame_count_(0),
         element_flags_(0),
         restyle_flags_(0),
-        is_element_rare_data_(false) {}
+        is_element_rare_data_(false) {
+    CHECK_NE(node_layout_data, nullptr);
+  }
 
  private:
   Member<NodeListsNodeData> node_lists_;

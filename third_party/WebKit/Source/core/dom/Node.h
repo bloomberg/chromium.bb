@@ -57,6 +57,7 @@ class EventDispatchHandlingState;
 class NodeList;
 class NodeListsNodeData;
 class NodeOrString;
+class NodeLayoutData;
 class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
@@ -98,21 +99,45 @@ enum class SlotChangeType {
   kChained,
 };
 
-class NodeRareDataBase {
+class NodeLayoutData {
  public:
+  explicit NodeLayoutData(LayoutObject* layout_object)
+      : layout_object_(layout_object) {}
+  ~NodeLayoutData() { CHECK(!layout_object_); }
+
   LayoutObject* GetLayoutObject() const { return layout_object_; }
   void SetLayoutObject(LayoutObject* layout_object) {
+    DCHECK_NE(&SharedEmptyData(), this);
     layout_object_ = layout_object;
+  }
+  static NodeLayoutData& SharedEmptyData() {
+    DEFINE_STATIC_LOCAL(NodeLayoutData, shared_empty_data, (nullptr));
+    return shared_empty_data;
+  }
+  bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
+
+ private:
+  LayoutObject* layout_object_;
+};
+
+class NodeRareDataBase {
+ public:
+  NodeLayoutData* GetNodeLayoutData() const { return node_layout_data_; }
+  void SetNodeLayoutData(NodeLayoutData* node_layout_data) {
+    DCHECK(node_layout_data);
+    node_layout_data_ = node_layout_data;
   }
 
  protected:
-  NodeRareDataBase(LayoutObject* layout_object)
-      : layout_object_(layout_object) {}
+  NodeRareDataBase(NodeLayoutData* node_layout_data)
+      : node_layout_data_(node_layout_data) {}
+  ~NodeRareDataBase() {
+    if (node_layout_data_ && !node_layout_data_->IsSharedEmptyData())
+      delete node_layout_data_;
+  }
 
  protected:
-  // LayoutObjects are fully owned by their DOM node. See LayoutObject's
-  // LIFETIME documentation section.
-  LayoutObject* layout_object_;
+  NodeLayoutData* node_layout_data_;
 };
 
 class Node;
@@ -569,16 +594,11 @@ class CORE_EXPORT Node : public EventTarget {
   // Note that if a Node has a layoutObject, it's parentNode is guaranteed to
   // have one as well.
   LayoutObject* GetLayoutObject() const {
-    return HasRareData() ? data_.rare_data_->GetLayoutObject()
-                         : data_.layout_object_;
+    return HasRareData()
+               ? data_.rare_data_->GetNodeLayoutData()->GetLayoutObject()
+               : data_.node_layout_data_->GetLayoutObject();
   }
-  void SetLayoutObject(LayoutObject* layout_object) {
-    if (HasRareData())
-      data_.rare_data_->SetLayoutObject(layout_object);
-    else
-      data_.layout_object_ = layout_object;
-  }
-
+  void SetLayoutObject(LayoutObject*);
   // Use these two methods with caution.
   LayoutBox* GetLayoutBox() const;
   LayoutBoxModelObject* GetLayoutBoxModelObject() const;
@@ -931,10 +951,10 @@ class CORE_EXPORT Node : public EventTarget {
   Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
   union DataUnion {
-    DataUnion() : layout_object_(nullptr) {}
+    DataUnion() : node_layout_data_(&NodeLayoutData::SharedEmptyData()) {}
     // LayoutObjects are fully owned by their DOM node. See LayoutObject's
     // LIFETIME documentation section.
-    LayoutObject* layout_object_;
+    NodeLayoutData* node_layout_data_;
     NodeRareDataBase* rare_data_;
   } data_;
 };

@@ -44,15 +44,14 @@
 
 namespace blink {
 
-class LayoutObject;
 class CompositorProxiedPropertySet;
 class ResizeObservation;
 class ResizeObserver;
 
 class ElementRareData : public NodeRareData {
  public:
-  static ElementRareData* Create(LayoutObject* layout_object) {
-    return new ElementRareData(layout_object);
+  static ElementRareData* Create(NodeLayoutData* node_layout_data) {
+    return new ElementRareData(node_layout_data);
   }
 
   ~ElementRareData();
@@ -226,17 +225,16 @@ class ElementRareData : public NodeRareData {
 
   Member<AccessibleNode> accessible_node_;
 
-  explicit ElementRareData(LayoutObject*);
+  explicit ElementRareData(NodeLayoutData*);
 };
-
 DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ElementRareData);
 
 inline LayoutSize DefaultMinimumSizeForResizing() {
   return LayoutSize(LayoutUnit::Max(), LayoutUnit::Max());
 }
 
-inline ElementRareData::ElementRareData(LayoutObject* layout_object)
-    : NodeRareData(layout_object),
+inline ElementRareData::ElementRareData(NodeLayoutData* node_layout_data)
+    : NodeRareData(node_layout_data),
       minimum_size_for_resizing_(DefaultMinimumSizeForResizing()),
       class_list_(nullptr) {
   is_element_rare_data_ = true;
