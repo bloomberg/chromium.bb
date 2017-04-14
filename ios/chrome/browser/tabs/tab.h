@@ -106,6 +106,12 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Do not add new calls to this method.
 @property(nonatomic, readonly) const GURL& url;
 
+// Returns the URL of the last committed NavigationItem for this Tab.
+@property(nonatomic, readonly) const GURL& lastCommittedURL;
+
+// Returns the URL of the visible NavigationItem for this Tab.
+@property(nonatomic, readonly) const GURL& visibleURL;
+
 // The Passkit Dialog provider used to show the UI to download a passkit object.
 @property(nonatomic, assign) id<PassKitDialogProvider> passKitDialogProvider;
 
