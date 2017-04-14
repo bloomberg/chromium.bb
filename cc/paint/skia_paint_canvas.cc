@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/paint/skia_paint_canvas.h"
+#include "cc/paint/paint_canvas.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
@@ -58,7 +58,7 @@ int SkiaPaintCanvas::saveLayer(const SkRect* bounds, const PaintFlags* flags) {
   return canvas_->saveLayer(bounds, ToSkPaint(flags));
 }
 
-int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
+int SkiaPaintCanvas::saveLayerAlpha(const SkRect* bounds, U8CPU alpha) {
   return canvas_->saveLayerAlpha(bounds, alpha);
 }
 
