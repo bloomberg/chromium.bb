@@ -36,83 +36,6 @@
 
 namespace blink {
 
-// ----------------------------
-
-class CORE_EXPORT MediaControlPlayButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlPlayButtonElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-  void UpdateDisplayType() override;
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
- private:
-  explicit MediaControlPlayButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlOverlayPlayButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlOverlayPlayButtonElement* Create(MediaControls&);
-
-  void UpdateDisplayType() override;
-
- private:
-  explicit MediaControlOverlayPlayButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-  bool KeepEventInNode(Event*) override;
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlToggleClosedCaptionsButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlToggleClosedCaptionsButtonElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-
-  void UpdateDisplayType() override;
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
- private:
-  explicit MediaControlToggleClosedCaptionsButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-};
-
-// ----------------------------
-
-// Represents the overflow menu which is displayed when the width of the media
-// player is small enough that at least two buttons are no longer visible.
-class CORE_EXPORT MediaControlOverflowMenuButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlOverflowMenuButtonElement* Create(MediaControls&);
-
-  // The overflow button should respond to mouse clicks since we want a click
-  // to open up the menu.
-  bool WillRespondToMouseClickEvents() override { return true; }
-
- private:
-  explicit MediaControlOverflowMenuButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
-};
-
-// ----------------------------
 // Represents a button that allows users to download media if the file is
 // downloadable.
 class CORE_EXPORT MediaControlDownloadButtonElement final
@@ -180,27 +103,6 @@ class CORE_EXPORT MediaControlTimelineElement final
   int TimelineWidth();
 
   MediaControlTimelineMetrics metrics_;
-};
-
-// ----------------------------
-
-class CORE_EXPORT MediaControlFullscreenButtonElement final
-    : public MediaControlInputElement {
- public:
-  static MediaControlFullscreenButtonElement* Create(MediaControls&);
-
-  bool WillRespondToMouseClickEvents() override { return true; }
-
-  void SetIsFullscreen(bool);
-
-  WebLocalizedString::Name GetOverflowStringName() override;
-
-  bool HasOverflowButton() override { return true; }
-
- private:
-  explicit MediaControlFullscreenButtonElement(MediaControls&);
-
-  void DefaultEventHandler(Event*) override;
 };
 
 // ----------------------------

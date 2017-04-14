@@ -77,12 +77,6 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   virtual void BeginScrubbing() = 0;
   virtual void EndScrubbing() = 0;
   virtual void UpdateCurrentTimeDisplay() = 0;
-  virtual void ToggleTextTrackList() = 0;
-  virtual void ShowTextTrackAtIndex(unsigned) = 0;
-  virtual void DisableShowingTextTracks() = 0;
-  virtual void EnterFullscreen() = 0;
-  virtual void ExitFullscreen() = 0;
-  virtual void ToggleOverflowMenu() = 0;
   virtual bool OverflowMenuVisible() = 0;
   virtual void OnMediaControlsEnabledChange() = 0;
 

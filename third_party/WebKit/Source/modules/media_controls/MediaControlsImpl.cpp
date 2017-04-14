@@ -47,13 +47,18 @@
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
+#include "modules/media_controls/elements/MediaControlFullscreenButtonElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
+#include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
 #include "modules/media_controls/elements/MediaControlOverlayEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPanelElement.h"
 #include "modules/media_controls/elements/MediaControlPanelEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
+#include "modules/media_controls/elements/MediaControlToggleClosedCaptionsButtonElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
@@ -305,10 +310,8 @@ void MediaControlsImpl::InitializeControls() {
   overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
 
   if (RuntimeEnabledFeatures::mediaControlsOverlayPlayButtonEnabled()) {
-    MediaControlOverlayPlayButtonElement* overlay_play_button =
-        MediaControlOverlayPlayButtonElement::Create(*this);
-    overlay_play_button_ = overlay_play_button;
-    overlay_enclosure_->AppendChild(overlay_play_button);
+    overlay_play_button_ = new MediaControlOverlayPlayButtonElement(*this);
+    overlay_enclosure_->AppendChild(overlay_play_button_);
   }
 
   MediaControlCastButtonElement* overlay_cast_button =
@@ -324,10 +327,8 @@ void MediaControlsImpl::InitializeControls() {
 
   panel_ = new MediaControlPanelElement(*this);
 
-  MediaControlPlayButtonElement* play_button =
-      MediaControlPlayButtonElement::Create(*this);
-  play_button_ = play_button;
-  panel_->AppendChild(play_button);
+  play_button_ = new MediaControlPlayButtonElement(*this);
+  panel_->AppendChild(play_button_);
 
   current_time_display_ = new MediaControlCurrentTimeDisplayElement(*this);
   current_time_display_->SetIsWanted(true);
@@ -351,10 +352,8 @@ void MediaControlsImpl::InitializeControls() {
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
-  MediaControlFullscreenButtonElement* fullscreen_button =
-      MediaControlFullscreenButtonElement::Create(*this);
-  fullscreen_button_ = fullscreen_button;
-  panel_->AppendChild(fullscreen_button);
+  fullscreen_button_ = new MediaControlFullscreenButtonElement(*this);
+  panel_->AppendChild(fullscreen_button_);
 
   MediaControlDownloadButtonElement* download_button =
       MediaControlDownloadButtonElement::Create(*this);
@@ -366,10 +365,9 @@ void MediaControlsImpl::InitializeControls() {
   cast_button_ = cast_button;
   panel_->AppendChild(cast_button);
 
-  MediaControlToggleClosedCaptionsButtonElement* toggle_closed_captions_button =
-      MediaControlToggleClosedCaptionsButtonElement::Create(*this);
-  toggle_closed_captions_button_ = toggle_closed_captions_button;
-  panel_->AppendChild(toggle_closed_captions_button);
+  toggle_closed_captions_button_ =
+      new MediaControlToggleClosedCaptionsButtonElement(*this);
+  panel_->AppendChild(toggle_closed_captions_button_);
 
   enclosure_->AppendChild(panel_);
 
@@ -378,10 +376,8 @@ void MediaControlsImpl::InitializeControls() {
   text_track_list_ = new MediaControlTextTrackListElement(*this);
   AppendChild(text_track_list_);
 
-  MediaControlOverflowMenuButtonElement* overflow_menu =
-      MediaControlOverflowMenuButtonElement::Create(*this);
-  overflow_menu_ = overflow_menu;
-  panel_->AppendChild(overflow_menu);
+  overflow_menu_ = new MediaControlOverflowMenuButtonElement(*this);
+  panel_->AppendChild(overflow_menu_);
 
   overflow_list_ = new MediaControlOverflowMenuListElement(*this);
   AppendChild(overflow_list_);
@@ -391,9 +387,9 @@ void MediaControlsImpl::InitializeControls() {
   // relative to each other.  The first item appended appears at the top of the
   // overflow menu.
   overflow_list_->AppendChild(play_button_->CreateOverflowElement(
-      *this, MediaControlPlayButtonElement::Create(*this)));
+      *this, new MediaControlPlayButtonElement(*this)));
   overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
-      *this, MediaControlFullscreenButtonElement::Create(*this)));
+      *this, new MediaControlFullscreenButtonElement(*this)));
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
       *this, MediaControlDownloadButtonElement::Create(*this)));
   overflow_list_->AppendChild(mute_button_->CreateOverflowElement(
@@ -402,7 +398,7 @@ void MediaControlsImpl::InitializeControls() {
       *this, MediaControlCastButtonElement::Create(*this, false)));
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
-          *this, MediaControlToggleClosedCaptionsButtonElement::Create(*this)));
+          *this, new MediaControlToggleClosedCaptionsButtonElement(*this)));
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(

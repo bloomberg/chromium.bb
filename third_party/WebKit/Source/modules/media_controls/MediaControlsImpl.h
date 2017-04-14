@@ -39,13 +39,18 @@ class MediaControlsMediaEventListener;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
 class MediaControlCurrentTimeDisplayElement;
+class MediaControlFullscreenButtonElement;
 class MediaControlMuteButtonElement;
+class MediaControlOverflowMenuButtonElement;
 class MediaControlOverflowMenuListElement;
 class MediaControlOverlayEnclosureElement;
+class MediaControlOverlayPlayButtonElement;
 class MediaControlPanelElement;
 class MediaControlPanelEnclosureElement;
+class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
 class MediaControlTextTrackListElement;
+class MediaControlToggleClosedCaptionsButtonElement;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by
@@ -98,13 +103,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void BeginScrubbing() override;
   void EndScrubbing() override;
   void UpdateCurrentTimeDisplay() override;
-  void ToggleTextTrackList() override;
-  void ShowTextTrackAtIndex(unsigned) override;
-  void DisableShowingTextTracks() override;
-  // Called by the fullscreen buttons to toggle fulllscreen on/off.
-  void EnterFullscreen() override;
-  void ExitFullscreen() override;
-  void ToggleOverflowMenu() override;
   bool OverflowMenuVisible() override;
   // TODO(mlamouri): this method is needed in order to notify the controls that
   // the `MediaControlsEnabled` setting has changed.
@@ -113,6 +111,18 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     RefreshCastButtonVisibilityWithoutUpdate();
   }
   Document& OwnerDocument() { return GetDocument(); }
+
+  // Called by the fullscreen buttons to toggle fulllscreen on/off.
+  void EnterFullscreen();
+  void ExitFullscreen();
+
+  // Text track related methods exposed to components handling closed captions.
+  void ToggleTextTrackList();
+  void ShowTextTrackAtIndex(unsigned);
+  void DisableShowingTextTracks();
+
+  // Toggle the overflow menu visibility.
+  void ToggleOverflowMenu();
 
   void ShowOverlayCastButtonIfNeeded();
 
