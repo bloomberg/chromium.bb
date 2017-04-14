@@ -150,10 +150,12 @@ def DetectVisualStudioPath():
     # the registry. For details see:
     # https://blogs.msdn.microsoft.com/heaths/2016/09/15/changes-to-visual-studio-15-setup/
     # For now we use a hardcoded default with an environment variable override.
-    path = r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional'
-    path = os.environ.get('vs2017_install', path)
-    if os.path.exists(path):
-      return path
+    for path in (
+        os.environ.get('vs2017_install'),
+        r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional',
+        r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community'):
+      if path and os.path.exists(path):
+        return path
   else:
     keys = [r'HKLM\Software\Microsoft\VisualStudio\%s' % version,
             r'HKLM\Software\Wow6432Node\Microsoft\VisualStudio\%s' % version]
