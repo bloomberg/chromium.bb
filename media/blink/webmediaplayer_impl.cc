@@ -130,6 +130,10 @@ bool IsBackgroundVideoTrackOptimizationEnabled() {
   return base::FeatureList::IsEnabled(kBackgroundVideoTrackOptimization);
 }
 
+bool IsBackgroundVideoPauseOptimizationEnabled() {
+  return base::FeatureList::IsEnabled(kBackgroundVideoPauseOptimization);
+}
+
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::kNetworkStateFormatError ||
                 state == blink::WebMediaPlayer::kNetworkStateNetworkError ||
@@ -2201,7 +2205,7 @@ bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
 
   // Otherwise only pause if the optimization is on and it's a video-only
   // optimization candidate.
-  return IsBackgroundVideoTrackOptimizationEnabled() && !HasAudio() &&
+  return IsBackgroundVideoPauseOptimizationEnabled() && !HasAudio() &&
          IsBackgroundOptimizationCandidate();
 }
 

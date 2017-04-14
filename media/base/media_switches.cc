@@ -173,6 +173,10 @@ const base::Feature kResumeBackgroundVideo {
 const base::Feature kBackgroundVideoTrackOptimization{
     "BackgroundVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Let video without audio be paused when it is playing in the background.
+const base::Feature kBackgroundVideoPauseOptimization{
+    "BackgroundVideoPauseOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.

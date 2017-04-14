@@ -95,6 +95,7 @@ MEDIA_EXPORT extern const base::Feature kVideoColorManagement;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;
+MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 
 #if defined(OS_ANDROID)
