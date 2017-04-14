@@ -164,9 +164,12 @@
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
-#include "components/spellcheck/renderer/spellcheck_panel.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
-#endif
+
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#include "components/spellcheck/renderer/spellcheck_panel.h"
+#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
@@ -596,8 +599,11 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (SpellCheckProvider* provider =
           SpellCheckProvider::Get(render_view->GetMainRenderFrame()))
     provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
+
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
   new SpellCheckPanel(render_view);
-#endif
+#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
   new prerender::PrerendererClient(render_view);
 
   new ChromeRenderViewObserver(render_view, web_cache_impl_.get());

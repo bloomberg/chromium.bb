@@ -11,9 +11,10 @@
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
-// TODO(xiaochengh): Only Mac has spelling panel. Remove the #if checks in this
-// class, which seem unnecessary, and make sure that this class is compiled and
-// used only on Mac.
+#if !BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#error "This file shouldn't be compiled without spellcheck panel."
+#endif
+
 class SpellCheckPanel
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<SpellCheckPanel>,
@@ -35,10 +36,8 @@ class SpellCheckPanel
   void UpdateSpellingUIWithMisspelledWord(
       const blink::WebString& word) override;
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnAdvanceToNextMisspelling();
   void OnToggleSpellPanel(bool is_currently_visible);
-#endif
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

@@ -22,10 +22,8 @@ SpellCheckPanel::SpellCheckPanel(content::RenderView* render_view)
 SpellCheckPanel::~SpellCheckPanel() = default;
 
 void SpellCheckPanel::ShowSpellingUI(bool show) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);
   Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
-#endif
 }
 
 bool SpellCheckPanel::IsShowingSpellingUI() {
@@ -34,17 +32,11 @@ bool SpellCheckPanel::IsShowingSpellingUI() {
 
 void SpellCheckPanel::UpdateSpellingUIWithMisspelledWord(
     const WebString& word) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(
       routing_id(), word.Utf16()));
-#endif
 }
 
 bool SpellCheckPanel::OnMessageReceived(const IPC::Message& message) {
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  return false;
-#endif
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckPanel, message)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
@@ -53,10 +45,8 @@ bool SpellCheckPanel::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-#endif
 }
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheckPanel::OnAdvanceToNextMisspelling() {
   if (!render_view()->GetWebView())
     return;
@@ -73,7 +63,6 @@ void SpellCheckPanel::OnToggleSpellPanel(bool is_currently_visible) {
   render_view()->GetWebView()->FocusedFrame()->ExecuteCommand(
       WebString::FromUTF8("ToggleSpellPanel"));
 }
-#endif
 
 void SpellCheckPanel::OnDestruct() {
   delete this;
