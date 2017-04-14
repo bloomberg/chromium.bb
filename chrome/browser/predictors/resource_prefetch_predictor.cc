@@ -1637,8 +1637,18 @@ void ResourcePrefetchPredictor::OnManifestFetched(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  if (!config_.is_manifests_enabled ||
-      host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
+  if (!config_.is_manifests_enabled)
+    return;
+
+  // The manifest host has "www." prefix stripped, the manifest host could
+  // correspond to two different hosts in the prefetch database.
+  UpdatePrefetchDataByManifest(host, PREFETCH_KEY_TYPE_HOST,
+                               host_table_cache_.get(), manifest);
+  UpdatePrefetchDataByManifest("www." + host, PREFETCH_KEY_TYPE_HOST,
+                               host_table_cache_.get(), manifest);
+
+  // The manifest is too large to store.
+  if (host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
       static_cast<uint32_t>(manifest.ByteSize()) > kMaxManifestByteSize) {
     return;
   }
@@ -1659,6 +1669,48 @@ void ResourcePrefetchPredictor::OnManifestFetched(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::UpdateManifestData, tables_,
                  host, cache_entry->second));
+}
+
+void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
+    const std::string& key,
+    PrefetchKeyType key_type,
+    PrefetchDataMap* data_map,
+    const precache::PrecacheManifest& manifest) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZED, initialization_state_);
+
+  auto resource_entry = data_map->find(key);
+  if (resource_entry == data_map->end())
+    return;
+
+  PrefetchData& data = resource_entry->second;
+  std::map<std::string, int> manifest_index;
+  for (int i = 0; i < manifest.resource_size(); ++i)
+    manifest_index.insert({manifest.resource(i).url(), i});
+
+  bool was_updated = false;
+  base::Optional<std::vector<bool>> unused_bitset =
+      precache::GetResourceBitset(manifest, internal::kUnusedRemovedExperiment);
+  if (unused_bitset.has_value()) {
+    // Remove unused resources from |data|.
+    auto new_end = std::remove_if(
+        data.mutable_resources()->begin(), data.mutable_resources()->end(),
+        [&](const ResourceData& x) {
+          auto it = manifest_index.find(x.resource_url());
+          if (it == manifest_index.end())
+            return false;
+          return !unused_bitset.value()[it->second];
+        });
+    was_updated = new_end != data.mutable_resources()->end();
+    data.mutable_resources()->erase(new_end, data.mutable_resources()->end());
+  }
+
+  if (was_updated) {
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&ResourcePrefetchPredictorTables::UpdateResourceData,
+                   tables_, data, key_type));
+  }
 }
 
 void ResourcePrefetchPredictor::ConnectToHistoryService() {

@@ -76,6 +76,25 @@ void InitializeOriginStat(OriginStat* origin_stat,
   origin_stat->set_accessed_network(accessed_network);
 }
 
+void InitializeExperiment(precache::PrecacheManifest* manifest,
+                          uint32_t experiment_id,
+                          const std::vector<bool>& bitset) {
+  std::string binary_bitset;
+  for (size_t i = 0; i < (bitset.size() + 7) / 8; ++i) {
+    char c = 0;
+    for (size_t j = 0; j < 8; ++j) {
+      if (i * 8 + j < bitset.size() && bitset[i * 8 + j])
+        c |= (1 << j);
+    }
+    binary_bitset.push_back(c);
+  }
+
+  precache::PrecacheResourceSelection prs;
+  prs.set_bitset(binary_bitset);
+  (*manifest->mutable_experiments()
+        ->mutable_resources_by_experiment_group())[experiment_id] = prs;
+}
+
 PrefetchData CreatePrefetchData(const std::string& primary_key,
                                 uint64_t last_visit_time) {
   PrefetchData data;

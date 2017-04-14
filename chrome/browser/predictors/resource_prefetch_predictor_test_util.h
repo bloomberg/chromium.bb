@@ -43,6 +43,10 @@ void InitializeOriginStat(OriginStat* origin_stat,
                           bool always_access_network,
                           bool accessed_network);
 
+void InitializeExperiment(precache::PrecacheManifest* manifest,
+                          uint32_t experiment_id,
+                          const std::vector<bool>& bitset);
+
 PrefetchData CreatePrefetchData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 RedirectData CreateRedirectData(const std::string& primary_key,

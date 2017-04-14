@@ -62,6 +62,8 @@ constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
     "ResourcePrefetchPredictor.PrefetchMissesSizeKB";
 constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
     "ResourcePrefetchPredictor.RedirectStatus";
+
+const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
 }  // namespace internal
 
 class TestObserver;
@@ -276,6 +278,8 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, ManifestHostInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            ManifestHostNotInDBAndDBFull);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           ManifestUnusedRemoved);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRedirect);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -434,6 +438,13 @@ class ResourcePrefetchPredictor
                      const std::set<GURL>& favicon_urls) override;
   void OnHistoryServiceLoaded(
       history::HistoryService* history_service) override;
+
+  // Updates list of resources in the |data_map| for the |key| according to the
+  // |manifest|.
+  void UpdatePrefetchDataByManifest(const std::string& key,
+                                    PrefetchKeyType key_type,
+                                    PrefetchDataMap* data_map,
+                                    const precache::PrecacheManifest& manifest);
 
   // Used to connect to HistoryService or register for service loaded
   // notificatioan.

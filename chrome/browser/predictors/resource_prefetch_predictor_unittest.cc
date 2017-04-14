@@ -1181,6 +1181,33 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestUnknownFieldsRemoved) {
   predictor_->OnManifestFetched("google.com", manifest_with_unknown_fields);
 }
 
+TEST_F(ResourcePrefetchPredictorTest, ManifestUnusedRemoved) {
+  const std::string& script_url = "http://cdn.google.com/script.js";
+  const std::string& style_url = "http://cdn.google.com/style.css";
+  PrefetchData google = CreatePrefetchData("www.google.com");
+  InitializeResourceData(google.add_resources(), script_url,
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(google.add_resources(), style_url,
+                         content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
+                         net::MEDIUM, false, false);
+  predictor_->host_table_cache_->insert({google.primary_key(), google});
+
+  precache::PrecacheManifest manifest = CreateManifestData(1);
+  InitializePrecacheResource(manifest.add_resource(), script_url, 0.9);
+  InitializePrecacheResource(manifest.add_resource(), style_url, 0.75);
+  InitializeExperiment(&manifest, internal::kUnusedRemovedExperiment,
+                       {true, false});
+
+  // style_url should be removed.
+  google.mutable_resources()->RemoveLast();
+  EXPECT_CALL(*mock_tables_.get(),
+              UpdateResourceData(google, PREFETCH_KEY_TYPE_HOST));
+  EXPECT_CALL(*mock_tables_.get(), UpdateManifestData("google.com", manifest));
+
+  predictor_->OnManifestFetched("google.com", manifest);
+}
+
 TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
   // Add some dummy entries to cache.
   predictor_->url_table_cache_->insert(
