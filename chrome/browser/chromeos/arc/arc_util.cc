@@ -205,9 +205,13 @@ bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile) {
   return profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled);
 }
 
-void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
+bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   DCHECK(IsArcAllowedForProfile(profile));
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
+    if (enabled && !IsArcPlayStoreEnabledForProfile(profile)) {
+      LOG(WARNING) << "Attempt to enable disabled by policy ARC.";
+      return false;
+    }
     VLOG(1) << "Google-Play-Store-enabled pref is managed. Request to "
             << (enabled ? "enable" : "disable") << " Play Store is not stored";
     // Need update ARC session manager manually for managed case in order to
@@ -217,14 +221,15 @@ void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
     ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
     // |arc_session_manager| can be nullptr in unit_tests.
     if (!arc_session_manager)
-      return;
+      return false;
     if (enabled)
       arc_session_manager->RequestEnable();
     else
       arc_session_manager->RequestDisable();
-    return;
+    return true;
   }
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);
+  return true;
 }
 
 bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {

@@ -172,6 +172,28 @@ class AutotestPrivateGetVisibleNotificationsFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetPlayStoreStateFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPlayStoreState",
+                             AUTOTESTPRIVATE_GETPLAYSTORESTATE)
+
+ private:
+  ~AutotestPrivateGetPlayStoreStateFunction() override {}
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSetPlayStoreEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPlayStoreEnabled",
+                             AUTOTESTPRIVATE_SETPLAYSTOREENABLED)
+
+ private:
+  ~AutotestPrivateSetPlayStoreEnabledFunction() override {}
+  ResponseAction Run() override;
+};
+
 // Don't kill the browser when we're in a browser test.
 void SetAutotestPrivateTest();
 

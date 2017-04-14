@@ -92,8 +92,9 @@ bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile);
 // the given |profile|.
 // TODO(hidehiko): De-couple the concept to enable ARC system and opt-in
 // to use Google Play Store. Note that there is a plan to use ARC without
-// Google Play Store, then ARC can run without opt-in.
-void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
+// Google Play Store, then ARC can run without opt-in. Returns false in case
+// enabled state of the Play Store cannot be changed.
+bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled);
 
 // Returns whether all ARC related OptIn preferences (i.e.
 // ArcBackupRestoreEnabled and ArcLocationServiceEnabled) are managed.
