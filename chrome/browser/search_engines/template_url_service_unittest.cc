@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -1943,4 +1944,23 @@ TEST_F(TemplateURLServiceTest, LastModifiedTimeUpdate) {
   const Time reloaded_last_modified = reloaded_url->last_modified();
   EXPECT_NE(original_last_modified, reloaded_last_modified);
   EXPECT_EQ(update_last_modified, reloaded_last_modified);
+}
+
+// Tests checks that Search.DefaultSearchChangeOrigin histogram is correctly
+// emitted when TemplateURLService is not yet loaded.
+TEST_F(TemplateURLServiceTest, ChangeDefaultEngineBeforeLoad) {
+  TemplateURL* search_engine1 = model()->Add(
+      base::MakeUnique<TemplateURL>(*GenerateDummyTemplateURLData("keyword1")));
+  DCHECK(search_engine1);
+  TemplateURL* search_engine2 = model()->Add(
+      base::MakeUnique<TemplateURL>(*GenerateDummyTemplateURLData("keyword2")));
+  DCHECK(search_engine2);
+
+  base::HistogramTester histogram_tester;
+  model()->SetUserSelectedDefaultSearchProvider(search_engine1);
+  histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 1);
+  model()->SetUserSelectedDefaultSearchProvider(search_engine1);
+  histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 1);
+  model()->SetUserSelectedDefaultSearchProvider(search_engine2);
+  histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 2);
 }

@@ -1921,7 +1921,7 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     // mainly so we can hold ownership until we get to the point where the list
     // of keywords from Web Data is the owner of everything including the
     // default.
-    bool changed = TemplateURL::MatchesData(
+    bool changed = !TemplateURL::MatchesData(
         initial_default_search_provider_.get(), data, search_terms_data());
     TemplateURL::Type initial_engine_type =
         (source == DefaultSearchManager::FROM_EXTENSION)
