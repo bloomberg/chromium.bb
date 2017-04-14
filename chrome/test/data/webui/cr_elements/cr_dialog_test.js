@@ -145,6 +145,29 @@ suite('cr-dialog', function() {
     expectEquals(button, document.activeElement);
   });
 
+  // Ensuring that intersectionObserver does not fire any callbacks before the
+  // dialog has been opened.
+  test('body scrollable border not added before modal shown', function(done) {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog" show-scroll-borders>
+        <div class="title">title</div>
+        <div class="body">body</div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+    assertFalse(dialog.open);
+    var bodyContainer = dialog.$$('.body-container');
+    assertTrue(!!bodyContainer);
+
+    // Waiting for 1ms because IntersectionObserver fires one message loop after
+    // dialog.attached.
+    setTimeout(function() {
+      assertFalse(bodyContainer.classList.contains('top-scrollable'));
+      assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
+      done();
+    }, 1);
+  });
+
   test('dialog body scrollable border when appropriate', function(done) {
     document.body.innerHTML = `
       <dialog is="cr-dialog" show-scroll-borders>

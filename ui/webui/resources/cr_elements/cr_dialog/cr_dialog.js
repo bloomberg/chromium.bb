@@ -48,6 +48,9 @@ Polymer({
   /** @private {?IntersectionObserver} */
   intersectionObserver_: null,
 
+  /** @private {?MutationObserver} */
+  mutationObserver_: null,
+
   /** @override */
   ready: function() {
     // If the active history entry changes (i.e. user clicks back button),
@@ -63,39 +66,68 @@ Polymer({
 
   /** @override */
   attached: function() {
-    if (this.showScrollBorders) {
-      var bodyContainer = this.$$('.body-container');
+    if (!this.showScrollBorders)
+      return;
 
-      var bottomMarker = this.$.bodyBottomMarker;
-      var topMarker = this.$.bodyTopMarker;
+    this.mutationObserver_ = new MutationObserver(function() {
+      if (this.open) {
+        this.addIntersectionObserver_();
+      } else {
+        this.removeIntersectionObserver_();
+      }
+    }.bind(this));
 
-      var callback = function(entries) {
-        assert(entries.length <= 2);
-        for (var i = 0; i < entries.length; i++) {
-          var target = entries[i].target;
-          assert(target == bottomMarker || target == topMarker);
-
-          var classToToggle =
-              target == bottomMarker ? 'bottom-scrollable' : 'top-scrollable';
-
-          bodyContainer.classList.toggle(
-              classToToggle, entries[i].intersectionRatio == 0);
-        }
-      };
-
-      this.intersectionObserver_ = new IntersectionObserver(
-          callback,
-          /** @type {IntersectionObserverInit} */ ({
-            root: bodyContainer,
-            threshold: 0,
-          }));
-      this.intersectionObserver_.observe(bottomMarker);
-      this.intersectionObserver_.observe(topMarker);
-    }
+    this.mutationObserver_.observe(this, {
+      attributes: true,
+      attributeFilter: ['open'],
+    });
   },
 
   /** @override */
   detached: function() {
+    this.removeIntersectionObserver_();
+    if (this.mutationObserver_) {
+      this.mutationObserver_.disconnect();
+      this.mutationObserver_ = null;
+    }
+  },
+
+  /** @private */
+  addIntersectionObserver_: function() {
+    if (this.intersectionObserver_)
+      return;
+
+    var bodyContainer = this.$$('.body-container');
+
+    var bottomMarker = this.$.bodyBottomMarker;
+    var topMarker = this.$.bodyTopMarker;
+
+    var callback = function(entries) {
+      assert(entries.length <= 2);
+      for (var i = 0; i < entries.length; i++) {
+        var target = entries[i].target;
+        assert(target == bottomMarker || target == topMarker);
+
+        var classToToggle =
+            target == bottomMarker ? 'bottom-scrollable' : 'top-scrollable';
+
+        bodyContainer.classList.toggle(
+            classToToggle, entries[i].intersectionRatio == 0);
+      }
+    };
+
+    this.intersectionObserver_ = new IntersectionObserver(
+        callback,
+        /** @type {IntersectionObserverInit} */ ({
+          root: bodyContainer,
+          threshold: 0,
+        }));
+    this.intersectionObserver_.observe(bottomMarker);
+    this.intersectionObserver_.observe(topMarker);
+  },
+
+  /** @private */
+  removeIntersectionObserver_: function() {
     if (this.intersectionObserver_) {
       this.intersectionObserver_.disconnect();
       this.intersectionObserver_ = null;
