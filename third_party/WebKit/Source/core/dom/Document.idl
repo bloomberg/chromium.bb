@@ -180,7 +180,7 @@ interface Document : Node {
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, (DOMString or Dictionary)? options);
 
     // Page Visibility
-    // https://www.w3.org/TR/page-visibility/#sec-document-interface
+    // https://w3c.github.io/page-visibility/#extensions-to-the-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
 

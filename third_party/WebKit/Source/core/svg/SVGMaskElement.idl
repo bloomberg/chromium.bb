@@ -36,5 +36,5 @@ interface SVGMaskElement : SVGElement {
 
 // SVGMaskElement implements SVGUnitTypes;
 
-// TODO(foolip): The following is not part of any spec:
+// TODO(foolip): The following is not part of any spec. https://crbug.com/701893
 SVGMaskElement implements SVGTests;

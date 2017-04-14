@@ -27,14 +27,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBRequestReadyState
+// https://w3c.github.io/IndexedDB/#enumdef-idbrequestreadystate
 
 enum IDBRequestReadyState {
     "pending",
     "done"
 };
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBRequest
+// https://w3c.github.io/IndexedDB/#idbrequest
 
 [
     ActiveScriptWrappable,

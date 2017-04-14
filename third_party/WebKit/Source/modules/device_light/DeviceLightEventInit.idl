@@ -4,6 +4,8 @@
 
 // https://www.w3.org/TR/2015/WD-ambient-light-20150903/#devicelightevent-interface
 
+// TODO(foolip): Remove DeviceLightEvent. https://crbug.com/711577
+
 dictionary DeviceLightEventInit : EventInit {
     unrestricted double value;
 };

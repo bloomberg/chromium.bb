@@ -25,8 +25,9 @@
 
 // http://www.w3.org/TR/2011/WD-DOM-Level-3-Events-20110531/#webidl-events-TextEvent
 
-// TODO(foolip): Remove the textinput event and the TextEvent interface. They
-// were removed from the spec in 2012:
+// TODO(foolip): Remove the textinput event and the TextEvent interface.
+// https://crbug.com/701480
+// They were removed from the spec in 2012:
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=12958
 // https://github.com/w3c/uievents/commit/1a2aa02b474fd4feaf43fdced06e6fd7214196a4
 

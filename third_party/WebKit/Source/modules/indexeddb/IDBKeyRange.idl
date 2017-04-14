@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBKeyRange
+// https://w3c.github.io/IndexedDB/#idbkeyrange
 
 [
     Exposed=(Window,Worker),

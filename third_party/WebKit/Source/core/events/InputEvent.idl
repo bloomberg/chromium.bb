@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// UI Events
+// https://w3c.github.io/uievents/#idl-inputevent
+
 [
     Constructor(DOMString type, optional InputEventInit eventInitDict),
     RuntimeEnabled=InputEvent,
 ] interface InputEvent : UIEvent {
-    // UI Events
-    // https://w3c.github.io/uievents/#idl-inputevent
     readonly attribute DOMString? data;
     readonly attribute boolean isComposing;
 

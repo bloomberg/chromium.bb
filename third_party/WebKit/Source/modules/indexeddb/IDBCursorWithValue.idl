@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/IndexedDB/#idl-def-IDBCursorWithValue
+// https://w3c.github.io/IndexedDB/#idbcursorwithvalue
 
 [
     Exposed=(Window,Worker)

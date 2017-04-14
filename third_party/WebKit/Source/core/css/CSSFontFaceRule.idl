@@ -23,8 +23,9 @@
 // https://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSFontFaceRule
 // https://dev.w3.org/csswg/css-fonts/#om-fontface
 //
-// The interface from DOM Level 2 Style is implemented here.
-// TODO(foolip): Implement the interface from CSS Fonts.
+// TODO(foolip): Make CSSFontFaceRule match new spec and/or change spec to match
+// what's implemented. https://crbug.com/709013
+// https://github.com/w3c/csswg-drafts/issues/825
 
 interface CSSFontFaceRule : CSSRule {
     [Measure] readonly attribute CSSStyleDeclaration style;

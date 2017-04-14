@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://www.w3.org/TR/media-source/#idl-def-SourceBuffer
+// https://w3c.github.io/media-source/#idl-def-sourcebuffer
 
 enum AppendMode {
     "segments",

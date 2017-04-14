@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://www.w3.org/TR/2016/CR-orientation-event-20160818/#devicemotion
+// https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
 
 [Constructor(DOMString type, optional DeviceMotionEventInit eventInitDict)]
 interface DeviceMotionEvent : Event {

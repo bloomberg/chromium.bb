@@ -37,8 +37,8 @@ interface SVGGraphicsElement : SVGElement {
     [ImplementedAs=getCTMFromJavascript] SVGMatrix getCTM();
     [ImplementedAs=getScreenCTMFromJavascript] SVGMatrix getScreenCTM();
 
-    // The following two properties existed on SVGLocatable in SVG
-    // 1.1, but was removed in SVG2.
+    // TODO(foolip): The following two properties existed on SVGLocatable in SVG
+    // 1.1, but were removed in SVG2. https://crbug.com/695981
     // https://www.w3.org/TR/SVG11/types.html#InterfaceSVGLocatable
     [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
     [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;

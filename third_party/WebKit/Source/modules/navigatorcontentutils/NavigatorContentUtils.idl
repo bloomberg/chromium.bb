@@ -18,7 +18,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-// https://www.w3.org/TR/html5/webappapis.html#navigatorcontentutils
+// https://html.spec.whatwg.org/multipage/webappapis.html#custom-handlers
+
 partial interface Navigator {
     [RuntimeEnabled=NavigatorContentUtils, RaisesException] void registerProtocolHandler(DOMString scheme, DOMString url, DOMString title);
     [RuntimeEnabled=CustomSchemeHandler, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);

@@ -23,6 +23,7 @@
 // http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGPoint
 
 // TODO(foolip): SVGPoint is gone from SVG 2, replaced by DOMPoint.
+// https://crbug.com/709001
 [
     DependentLifetime,
     ImplementedAs=SVGPointTearOff,

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// UI Events
+// https://w3c.github.io/uievents/#idl-inputeventinit
+
 dictionary InputEventInit : UIEventInit {
-    // UI Events
-    // https://w3c.github.io/uievents/#idl-inputeventinit
     DOMString? data;
     boolean isComposing = false;
 
