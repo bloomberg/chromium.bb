@@ -1558,7 +1558,15 @@ void ShellSurface::UpdateShadow() {
   if (!widget_ || !surface_)
     return;
   aura::Window* window = widget_->GetNativeWindow();
-  if (!shadow_enabled_) {
+
+  bool underlay_capture_events =
+      WMHelper::GetInstance()->IsSpokenFeedbackEnabled() && widget_->IsActive();
+  bool black_background_enabled =
+      ((widget_->IsFullscreen() || widget_->IsMaximized()) ||
+       underlay_capture_events) &&
+      ash::wm::GetWindowState(window)->allow_set_bounds_direct() &&
+      window->layer()->GetTargetTransform().IsIdentity();
+  if (!shadow_enabled_ && !black_background_enabled) {
     wm::SetShadowElevation(window, wm::ShadowElevation::NONE);
     if (shadow_underlay_)
       shadow_underlay_->Hide();
@@ -1626,10 +1634,6 @@ void ShellSurface::UpdateShadow() {
       }
     }
 
-    bool underlay_capture_events =
-        WMHelper::GetInstance()->IsSpokenFeedbackEnabled() &&
-        widget_->IsActive();
-
     float shadow_underlay_opacity = shadow_background_opacity_;
 
     // Put the black background layer behind the window if
@@ -1639,10 +1643,7 @@ void ShellSurface::UpdateShadow() {
     //    thus the background can be visible).
     // 3) the window has no transform (the transformed background may
     //    not cover the entire background, e.g. overview mode).
-    if ((widget_->IsFullscreen() || widget_->IsMaximized() ||
-         underlay_capture_events) &&
-        ash::wm::GetWindowState(window)->allow_set_bounds_direct() &&
-        window->layer()->GetTargetTransform().IsIdentity()) {
+    if (black_background_enabled) {
       if (shadow_underlay_in_surface_) {
         shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
       } else {
@@ -1657,6 +1658,8 @@ void ShellSurface::UpdateShadow() {
     if (!shadow_underlay_in_surface_)
       shadow_underlay_bounds = shadow_bounds;
 
+    shadow_underlay_->SetBounds(shadow_underlay_bounds);
+
     // Constrain the underlay bounds to the client area in case shell surface
     // frame is enabled.
     if (frame_enabled_) {
@@ -1664,15 +1667,12 @@ void ShellSurface::UpdateShadow() {
           widget_->non_client_view()->frame_view()->GetBoundsForClientView());
     }
 
-    shadow_underlay_->SetBounds(shadow_underlay_bounds);
-
     // TODO(oshima): Setting to the same value should be no-op.
     // crbug.com/642223.
     if (shadow_underlay_opacity !=
         shadow_underlay_->layer()->GetTargetOpacity()) {
       shadow_underlay_->layer()->SetOpacity(shadow_underlay_opacity);
     }
-
     shadow_underlay_->Show();
 
     wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
