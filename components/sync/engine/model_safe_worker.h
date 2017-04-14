@@ -9,12 +9,10 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_helpers.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/atomic_flag.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
 
@@ -24,7 +22,7 @@ class DictionaryValue;
 
 namespace syncer {
 
-using WorkCallback = base::OnceCallback<enum SyncerError(void)>;
+using WorkCallback = base::Callback<enum SyncerError(void)>;
 
 enum ModelSafeGroup {
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.
@@ -56,13 +54,16 @@ std::string ModelSafeGroupToString(ModelSafeGroup group);
 // a thread and does actual work on that thread.
 class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
  public:
-  // If not stopped, calls ScheduleWork() to schedule |work| and waits until it
-  // is done or abandoned. Otherwise, returns CANNOT_DO_WORK.
-  SyncerError DoWorkAndWaitUntilDone(WorkCallback work);
+  // If not stopped, call DoWorkAndWaitUntilDoneImpl() to do work. Otherwise
+  // return CANNOT_DO_WORK.
+  SyncerError DoWorkAndWaitUntilDone(const WorkCallback& work);
 
   // Soft stop worker by setting stopped_ flag. Called when sync is disabled
   // or browser is shutting down. Called on UI loop.
   virtual void RequestStop();
+
+  // Return true if the worker was stopped. Thread safe.
+  bool IsStopped();
 
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
@@ -73,31 +74,16 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   ModelSafeWorker();
   virtual ~ModelSafeWorker();
 
+  // Any time the Syncer performs model modifications (e.g employing a
+  // WriteTransaction), it should be done by this method to ensure it is done
+  // from a model-safe thread.
+  virtual SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) = 0;
+
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
 
-  // Schedules |work| on the appropriate thread.
-  virtual void ScheduleWork(base::OnceClosure work) = 0;
-
-  void DoWork(WorkCallback work,
-              base::ScopedClosureRunner scoped_closure_runner,
-              SyncerError* error,
-              bool* did_run);
-
-  // Synchronizes access to all members.
-  base::Lock lock_;
-
-  // Signaled when DoWorkAndWaitUntilDone() can return, either because the work
-  // is done, the work has been abandoned or RequestStop() was called while no
-  // work was running. Reset at the beginning of DoWorkAndWaitUntilDone().
-  base::WaitableEvent work_done_or_abandoned_;
-
-  // Whether a WorkCallback is currently running.
-  bool is_work_running_ = false;
-
-  // Whether the worker was stopped. No WorkCallback can start running when this
-  // is true.
-  bool stopped_ = false;
+  // Whether the worker should do more work. Set when sync is disabled.
+  base::AtomicFlag stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(ModelSafeWorker);
 };

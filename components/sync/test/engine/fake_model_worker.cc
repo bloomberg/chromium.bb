@@ -4,7 +4,7 @@
 
 #include "components/sync/test/engine/fake_model_worker.h"
 
-#include <utility>
+#include "base/callback.h"
 
 namespace syncer {
 
@@ -18,10 +18,11 @@ FakeModelWorker::~FakeModelWorker() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void FakeModelWorker::ScheduleWork(base::OnceClosure work) {
+SyncerError FakeModelWorker::DoWorkAndWaitUntilDoneImpl(
+    const WorkCallback& work) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Simply do the work on the current thread.
-  std::move(work).Run();
+  return work.Run();
 }
 
 ModelSafeGroup FakeModelWorker::GetModelSafeGroup() {

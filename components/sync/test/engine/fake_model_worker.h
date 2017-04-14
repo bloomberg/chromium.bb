@@ -22,10 +22,11 @@ class FakeModelWorker : public ModelSafeWorker {
   ModelSafeGroup GetModelSafeGroup() override;
   bool IsOnModelThread() override;
 
+ protected:
+  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
+
  private:
   ~FakeModelWorker() override;
-
-  void ScheduleWork(base::OnceClosure work) override;
 
   const ModelSafeGroup group_;
   base::ThreadChecker thread_checker_;

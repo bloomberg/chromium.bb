@@ -6,19 +6,30 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync/base/scoped_event_signal.h"
 
 namespace browser_sync {
 
 class WorkerTask : public history::HistoryDBTask {
  public:
-  WorkerTask(base::OnceClosure work) : work_(std::move(work)) {}
+  WorkerTask(const syncer::WorkCallback& work,
+             syncer::ScopedEventSignal scoped_event_signal,
+             syncer::SyncerError* error)
+      : work_(work),
+        scoped_event_signal_(std::move(scoped_event_signal)),
+        error_(error) {}
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
-    std::move(work_).Run();
+    // Signal the completion event at the end of this scope.
+    auto scoped_event_signal = std::move(scoped_event_signal_);
+
+    // Run the task.
+    *error_ = work_.Run();
+
     return true;
   }
 
@@ -26,12 +37,34 @@ class WorkerTask : public history::HistoryDBTask {
   // any code asynchronously on the main thread after completion.
   void DoneRunOnMainThread() override {}
 
- private:
-  // A OnceClosure is deleted right after it runs. This is important to unblock
-  // DoWorkAndWaitUntilDone() right after the task runs.
-  base::OnceClosure work_;
+ protected:
+  ~WorkerTask() override {
+    // The event in |scoped_event_signal_| is signaled at the end of this
+    // scope if this is destroyed before RunOnDBThread runs.
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerTask);
+  syncer::WorkCallback work_;
+  syncer::ScopedEventSignal scoped_event_signal_;
+  syncer::SyncerError* error_;
+};
+
+class AddDBThreadObserverTask : public history::HistoryDBTask {
+ public:
+  explicit AddDBThreadObserverTask(base::Closure register_callback)
+     : register_callback_(register_callback) {}
+
+  bool RunOnDBThread(history::HistoryBackend* backend,
+                     history::HistoryDatabase* db) override {
+    register_callback_.Run();
+    return true;
+  }
+
+  void DoneRunOnMainThread() override {}
+
+ private:
+  ~AddDBThreadObserverTask() override {}
+
+  base::Closure register_callback_;
 };
 
 namespace {
@@ -40,11 +73,18 @@ namespace {
 // thread.
 void PostWorkerTask(
     const base::WeakPtr<history::HistoryService>& history_service,
-    base::OnceClosure work,
-    base::CancelableTaskTracker* cancelable_tracker) {
+    const syncer::WorkCallback& work,
+    syncer::ScopedEventSignal scoped_event_signal,
+    base::CancelableTaskTracker* cancelable_tracker,
+    syncer::SyncerError* error) {
   if (history_service.get()) {
-    history_service->ScheduleDBTask(
-        base::MakeUnique<WorkerTask>(std::move(work)), cancelable_tracker);
+    std::unique_ptr<history::HistoryDBTask> task(
+        new WorkerTask(work, std::move(scoped_event_signal), error));
+    history_service->ScheduleDBTask(std::move(task), cancelable_tracker);
+  } else {
+    *error = syncer::CANNOT_DO_WORK;
+    // The event in |scoped_event_signal| is signaled at the end of this
+    // scope.
   }
 }
 
@@ -57,6 +97,27 @@ HistoryModelWorker::HistoryModelWorker(
   CHECK(history_service.get());
   DCHECK(ui_thread_->BelongsToCurrentThread());
   cancelable_tracker_.reset(new base::CancelableTaskTracker);
+}
+
+syncer::SyncerError HistoryModelWorker::DoWorkAndWaitUntilDoneImpl(
+    const syncer::WorkCallback& work) {
+  syncer::SyncerError error = syncer::UNSET;
+
+  // Signaled after the task runs or when it is abandoned.
+  base::WaitableEvent work_done_or_abandoned(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+  if (ui_thread_->PostTask(FROM_HERE,
+                           base::Bind(&PostWorkerTask, history_service_, work,
+                                      base::Passed(syncer::ScopedEventSignal(
+                                          &work_done_or_abandoned)),
+                                      cancelable_tracker_.get(), &error))) {
+    work_done_or_abandoned.Wait();
+  } else {
+    error = syncer::CANNOT_DO_WORK;
+  }
+  return error;
 }
 
 syncer::ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
@@ -75,12 +136,6 @@ HistoryModelWorker::~HistoryModelWorker() {
   // used from a single thread but the current object may not be destroyed from
   // the UI thread, so delete it from the UI thread.
   ui_thread_->DeleteSoon(FROM_HERE, cancelable_tracker_.release());
-}
-
-void HistoryModelWorker::ScheduleWork(base::OnceClosure work) {
-  ui_thread_->PostTask(FROM_HERE, base::Bind(&PostWorkerTask, history_service_,
-                                             base::Passed(std::move(work)),
-                                             cancelable_tracker_.get()));
 }
 
 }  // namespace browser_sync

@@ -4,7 +4,7 @@
 
 #include "components/sync/engine/passive_model_worker.h"
 
-#include <utility>
+#include "base/callback.h"
 
 namespace syncer {
 
@@ -12,8 +12,10 @@ PassiveModelWorker::PassiveModelWorker() = default;
 
 PassiveModelWorker::~PassiveModelWorker() {}
 
-void PassiveModelWorker::ScheduleWork(base::OnceClosure work) {
-  std::move(work).Run();
+SyncerError PassiveModelWorker::DoWorkAndWaitUntilDoneImpl(
+    const WorkCallback& work) {
+  // Simply do the work on the current thread.
+  return work.Run();
 }
 
 ModelSafeGroup PassiveModelWorker::GetModelSafeGroup() {
