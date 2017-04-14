@@ -160,6 +160,16 @@ public class CookieManagerTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
+    public void testSetSecureCookieForHttpUrl() throws Throwable {
+        String url = "http://www.example.com";
+        String secureUrl = "https://www.example.com";
+        String cookie = "name=test";
+        mCookieManager.setCookie(url, cookie + ";secure");
+        assertEquals(cookie, mCookieManager.getCookie(secureUrl));
+    }
+
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
     public void testHasCookie() throws Throwable {
         assertFalse(mCookieManager.hasCookies());
         mCookieManager.setCookie("http://www.example.com", "name=test");

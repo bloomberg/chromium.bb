@@ -388,12 +388,20 @@ void CookieManager::SetCookieHelper(
   options.set_include_httponly();
 
   // Log message for catching strict secure cookies related bugs.
-  if (!host.has_scheme() || host.SchemeIs(url::kHttpScheme)) {
+  // TODO(sgurun) temporary. Add UMA stats to monitor, and remove afterwards.
+  if (host.is_valid() &&
+      (!host.has_scheme() || host.SchemeIs(url::kHttpScheme))) {
     net::ParsedCookie parsed_cookie(value);
     if (parsed_cookie.IsValid() && parsed_cookie.IsSecure()) {
       LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
                       "secure cookie for "
                    << host.spec();
+      GURL::Replacements replace_host;
+      replace_host.SetSchemeStr("https");
+      GURL new_host = host.ReplaceComponents(replace_host);
+      GetCookieStore()->SetCookieWithOptionsAsync(new_host, value, options,
+                                                  callback);
+      return;
     }
   }
 
