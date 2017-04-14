@@ -265,6 +265,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
         for slave_name in config.slave_configs:
           self.assertIn(slave_name, self.site_config)
           self.assertTrue(self.site_config[slave_name].active_waterfall)
+          self.assertNotEqual(self.site_config[slave_name].active_waterfall,
+                              constants.WATERFALL_TRYBOT)
       else:
         self.assertIsNone(config.slave_configs)
 
@@ -515,39 +517,42 @@ class CBuildBotTest(ChromeosConfigTestBase):
                          config.build_type)
         found_types.add(config.build_type)
 
-  def testActivePfqsHavePaladins(self):
+  def _getSlaveConfigsForMaster(self, master_config_name):
+    """Helper to fetch the configs for all slaves of a given master."""
+    master_config = self.site_config[master_config_name]
+
+    # Get a list of all active Paladins.
+    return [self.site_config[n] for n in master_config.slave_configs]
+
+  def testPfqsHavePaladins(self):
     """Make sure that every active PFQ has an associated Paladin.
 
     This checks that every configured active PFQ on the external or internal
     main waterfall has an associated active Paladin config.
     """
-    # Get a list of all active Paladins.
-    active_paladin_boards = set()
-    for config in self.site_config.itervalues():
-      if config.active_waterfall and config_lib.IsCQType(config.build_type):
-        active_paladin_boards.update(config.boards)
+    # Get a list of all active Paladins boards.
+    paladin_boards = set()
+    for slave_config in self._getSlaveConfigsForMaster('master-paladin'):
+      paladin_boards.update(slave_config.boards)
 
-    # Scan for active PFQs.
-    check_waterfalls = set((constants.WATERFALL_INTERNAL,
-                            constants.WATERFALL_EXTERNAL))
-    failures = set()
-    for config in self.site_config.itervalues():
-      if not (config.active_waterfall in check_waterfalls and
-              config.build_type == constants.CHROME_PFQ_TYPE):
-        continue
+    for pfq_master in ('master-chromium-pfq', 'master-android-pfq'):
+      pfq_configs = self._getSlaveConfigsForMaster(pfq_master)
 
-      for board in config.boards:
-        if board not in active_paladin_boards:
+      failures = set()
+      for config in pfq_configs:
+        self.assertEqual(len(config.boards), 1)
+        if config.boards[0] not in paladin_boards:
           failures.add(config.name)
 
-    # TODO(dgarrett): Once crbug.com/679022 is resolved, remove this exception.
-    failures.remove('veyron_jerry-chromium-pfq')
+      # TODO(dgarrett): Remove after  crbug.com/679022
+      failures.discard('veyron_jerry-chromium-pfq')
 
-    self.assertSetEqual(
-        failures,
-        set(),
-        "Some active PFQ configs don't have active Paladins: %s" % (
-            ', '.join(sorted(failures)),))
+      # TODO(dgarrett): Remove after crbug.com/711546
+      failures.discard('glados-cheets-android-pfq')
+
+      if failures:
+        self.fail("Some active PFQ configs don't have active Paladins: %s" % (
+            ', '.join(sorted(failures))))
 
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""
