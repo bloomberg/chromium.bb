@@ -73,9 +73,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   if (!views::ViewsDelegate::GetInstance())
     views_delegate_ = base::MakeUnique<ChromeViewsDelegate>();
 
-  if (!views::LayoutProvider::Get())
-    layout_provider_ = ChromeLayoutProvider::CreateLayoutProvider();
-
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
 #if defined(USE_AURA)
@@ -90,6 +87,14 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
   if (!display::Screen::GetScreen())
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());
 #endif
+
+  // TODO(pkasting): Try to move ViewsDelegate creation here as well;
+  // see https://crbug.com/691894#c1
+  // The layout_provider_ must be intialized here instead of in
+  // ToolkitInitialized() because it relies on
+  // ui::MaterialDesignController::Intialize() having already been called.
+  if (!views::LayoutProvider::Get())
+    layout_provider_ = ChromeLayoutProvider::CreateLayoutProvider();
 }
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
