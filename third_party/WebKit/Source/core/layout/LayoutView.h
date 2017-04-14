@@ -150,7 +150,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   void ClearSelection();
   void CommitPendingSelection();
-  void SelectionStartEnd(int& start_pos, int& end_pos);
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const override;

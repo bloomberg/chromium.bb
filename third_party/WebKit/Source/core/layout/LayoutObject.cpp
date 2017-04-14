@@ -1453,8 +1453,8 @@ Color LayoutObject::SelectionEmphasisMarkColor(
   return SelectionColor(CSSPropertyWebkitTextEmphasisColor, global_paint_flags);
 }
 
-void LayoutObject::SelectionStartEnd(int& spos, int& epos) const {
-  View()->SelectionStartEnd(spos, epos);
+void LayoutObject::SelectionStartEnd(int& start_pos, int& end_pos) const {
+  GetFrame()->Selection().LayoutSelectionStartEnd(start_pos, end_pos);
 }
 
 // Called when an object that was floating or positioned becomes a normal flow

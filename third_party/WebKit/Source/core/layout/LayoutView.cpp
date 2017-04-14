@@ -618,11 +618,6 @@ void LayoutView::CommitPendingSelection() {
   frame_view_->GetFrame().Selection().CommitAppearanceIfNeeded(*this);
 }
 
-void LayoutView::SelectionStartEnd(int& start_pos, int& end_pos) {
-  frame_view_->GetFrame().Selection().LayoutSelectionStartEnd(start_pos,
-                                                              end_pos);
-}
-
 bool LayoutView::ShouldUsePrintingLayout() const {
   if (!GetDocument().Printing() || !frame_view_)
     return false;
