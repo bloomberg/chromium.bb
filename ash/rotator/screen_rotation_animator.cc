@@ -10,6 +10,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/shell.h"
@@ -51,14 +52,6 @@ const int kRotationDurationInMs = 250;
 // The rotation factors.
 const int kCounterClockWiseRotationFactor = 1;
 const int kClockWiseRotationFactor = -1;
-
-// Aborts the active animations of the layer, and recurses upon its child
-// layers.
-void AbortAnimations(ui::Layer* layer) {
-  for (ui::Layer* child_layer : layer->children())
-    AbortAnimations(child_layer);
-  layer->GetAnimator()->AbortAllAnimations();
-}
 
 display::Display::Rotation GetCurrentScreenRotation(int64_t display_id) {
   return Shell::Get()
@@ -317,31 +310,25 @@ void ScreenRotationAnimator::AnimateRotation(
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
                                       rotated_screen_bounds.height() / 2);
 
-  // We must animate each non-cloned child layer individually because the cloned
-  // layer was added as a child to |root_window|'s layer so that it will be
-  // rendered.
-  // TODO(bruthig): Add a NOT_DRAWN layer in between the root_window's layer and
-  // its current children so that we only need to initiate two
-  // LayerAnimationSequences. One for the new layers and one for the old layer.
-  for (ui::Layer* child_layer : root_window->layer()->children()) {
-    // Skip the cloned layer because it has a different animation.
-    if (child_layer == old_root_layer)
-      continue;
+  ui::Layer* screen_rotation_container_layer =
+      root_window->GetChildById(kShellWindowId_ScreenRotationContainer)
+          ->layer();
+  std::unique_ptr<ScreenRotationAnimation> current_layer_screen_rotation =
+      base::MakeUnique<ScreenRotationAnimation>(
+          screen_rotation_container_layer, kRotationDegrees * rotation_factor,
+          0 /* end_degrees */, screen_rotation_container_layer->opacity(),
+          screen_rotation_container_layer->opacity() /* target_opacity */,
+          pivot, duration, tween_type);
 
-    std::unique_ptr<ScreenRotationAnimation> screen_rotation =
-        base::MakeUnique<ScreenRotationAnimation>(
-            child_layer, kRotationDegrees * rotation_factor,
-            0 /* end_degrees */, child_layer->opacity(),
-            1.0f /* target_opacity */, pivot, duration, tween_type);
-
-    ui::LayerAnimator* animator = child_layer->GetAnimator();
-    animator->set_preemption_strategy(
-        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
-        base::MakeUnique<ui::LayerAnimationSequence>(
-            std::move(screen_rotation));
-    animator->StartAnimation(animation_sequence.release());
-  }
+  ui::LayerAnimator* current_layer_animator =
+      screen_rotation_container_layer->GetAnimator();
+  current_layer_animator->set_preemption_strategy(
+      ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  std::unique_ptr<ui::LayerAnimationSequence> current_layer_animation_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>(
+          std::move(current_layer_screen_rotation));
+  current_layer_animator->StartAnimation(
+      current_layer_animation_sequence.release());
 
   // The old layer will also be transformed into the new orientation. We will
   // translate it so that the old layer's center point aligns with the new
@@ -353,7 +340,7 @@ void ScreenRotationAnimator::AnimateRotation(
       (rotated_screen_bounds.height() - original_screen_bounds.height()) / 2);
   old_root_layer->SetTransform(translate_transform);
 
-  std::unique_ptr<ScreenRotationAnimation> screen_rotation =
+  std::unique_ptr<ScreenRotationAnimation> old_layer_screen_rotation =
       base::MakeUnique<ScreenRotationAnimation>(
           old_root_layer, old_layer_initial_rotation_degrees * rotation_factor,
           (old_layer_initial_rotation_degrees - kRotationDegrees) *
@@ -361,20 +348,25 @@ void ScreenRotationAnimator::AnimateRotation(
           old_root_layer->opacity(), 0.0f /* target_opacity */, pivot, duration,
           tween_type);
 
-  ui::LayerAnimator* animator = old_root_layer->GetAnimator();
-  animator->set_preemption_strategy(
+  ui::LayerAnimator* old_layer_animator = old_root_layer->GetAnimator();
+  old_layer_animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>(std::move(screen_rotation));
+  std::unique_ptr<ui::LayerAnimationSequence> old_layer_animation_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>(
+          std::move(old_layer_screen_rotation));
   // Add an observer so that the cloned layers can be cleaned up with the
   // animation completes/aborts.
-  animation_sequence->AddObserver(old_layer_cleanup_observer.release());
+  old_layer_animation_sequence->AddObserver(
+      old_layer_cleanup_observer.release());
   // In unit test, we can use ash::test::ScreenRotationAnimatorTestApi to
   // control the animation.
   if (disable_animation_timers_for_test_)
-    animator->set_disable_timer_for_test(true);
-  animation_sequence->SetAnimationMetricsReporter(metrics_reporter_.get());
-  animator->StartAnimation(animation_sequence.release());
+    old_layer_animator->set_disable_timer_for_test(true);
+  old_layer_animation_sequence->SetAnimationMetricsReporter(
+      metrics_reporter_.get());
+  old_layer_animator->StartAnimation(old_layer_animation_sequence.release());
+
+  rotation_request.reset();
 }
 
 void ScreenRotationAnimator::Rotate(display::Display::Rotation new_rotation,
@@ -434,15 +426,13 @@ void ScreenRotationAnimator::set_disable_animation_timers_for_test(
 }
 
 void ScreenRotationAnimator::StopAnimating() {
-  aura::Window* root_window = GetRootWindow(display_id_);
-  for (ui::Layer* child_layer : root_window->layer()->children()) {
-    if (child_layer == old_layer_tree_owner_->root())
-      continue;
-
-    child_layer->GetAnimator()->StopAnimating();
-  }
-
-  old_layer_tree_owner_->root()->GetAnimator()->StopAnimating();
+  GetRootWindow(display_id_)
+      ->GetChildById(kShellWindowId_ScreenRotationContainer)
+      ->layer()
+      ->GetAnimator()
+      ->StopAnimating();
+  if (old_layer_tree_owner_)
+    old_layer_tree_owner_->root()->GetAnimator()->StopAnimating();
 }
 
 }  // namespace ash

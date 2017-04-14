@@ -867,37 +867,46 @@ void RootWindowController::InitLayoutManagers() {
 
 void RootWindowController::CreateContainers() {
   WmWindow* root = GetWindow();
+  // For screen rotation animation: add a NOT_DRAWN layer in between the
+  // root_window's layer and its current children so that we only need to
+  // initiate two LayerAnimationSequences. One for the new layers and one for
+  // the old layers.
+  WmWindow* screen_rotation_container = CreateContainer(
+      kShellWindowId_ScreenRotationContainer, "ScreenRotationContainer", root);
+
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
-  // on those containers. These are direct children of the root window; all of
-  // the other containers are their children.
+  // on those containers. These are direct children of the
+  // screen_rotation_container window; all of the other containers are their
+  // children.
 
   // The wallpaper container is not part of the lock animation, so it is not
   // included in those animate groups. When the screen is locked, the wallpaper
   // is moved to the lock screen wallpaper container (and moved back on unlock).
   // Ensure that there's an opaque layer occluding the non-lock-screen layers.
-  WmWindow* wallpaper_container = CreateContainer(
-      kShellWindowId_WallpaperContainer, "WallpaperContainer", root);
+  WmWindow* wallpaper_container =
+      CreateContainer(kShellWindowId_WallpaperContainer, "WallpaperContainer",
+                      screen_rotation_container);
   wallpaper_container->SetChildWindowVisibilityChangesAnimated();
 
-  WmWindow* non_lock_screen_containers =
-      CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
-                      "NonLockScreenContainersContainer", root);
+  WmWindow* non_lock_screen_containers = CreateContainer(
+      kShellWindowId_NonLockScreenContainersContainer,
+      "NonLockScreenContainersContainer", screen_rotation_container);
   // Clip all windows inside this container, as half pixel of the window's
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->SetMasksToBounds(true);
 
-  WmWindow* lock_wallpaper_containers =
-      CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
-                      "LockScreenWallpaperContainer", root);
+  WmWindow* lock_wallpaper_containers = CreateContainer(
+      kShellWindowId_LockScreenWallpaperContainer,
+      "LockScreenWallpaperContainer", screen_rotation_container);
   lock_wallpaper_containers->SetChildWindowVisibilityChangesAnimated();
 
-  WmWindow* lock_screen_containers =
-      CreateContainer(kShellWindowId_LockScreenContainersContainer,
-                      "LockScreenContainersContainer", root);
-  WmWindow* lock_screen_related_containers =
-      CreateContainer(kShellWindowId_LockScreenRelatedContainersContainer,
-                      "LockScreenRelatedContainersContainer", root);
+  WmWindow* lock_screen_containers = CreateContainer(
+      kShellWindowId_LockScreenContainersContainer,
+      "LockScreenContainersContainer", screen_rotation_container);
+  WmWindow* lock_screen_related_containers = CreateContainer(
+      kShellWindowId_LockScreenRelatedContainersContainer,
+      "LockScreenRelatedContainersContainer", screen_rotation_container);
 
   CreateContainer(kShellWindowId_UnparentedControlContainer,
                   "UnparentedControlContainer", non_lock_screen_containers);
@@ -1024,13 +1033,14 @@ void RootWindowController::CreateContainers() {
   overlay_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
-  WmWindow* mouse_cursor_container = CreateContainer(
-      kShellWindowId_MouseCursorContainer, "MouseCursorContainer", root);
+  WmWindow* mouse_cursor_container =
+      CreateContainer(kShellWindowId_MouseCursorContainer,
+                      "MouseCursorContainer", screen_rotation_container);
   mouse_cursor_container->SetBoundsInScreenBehaviorForChildren(
       WmWindow::BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
-                  "PowerButtonAnimationContainer", root);
+                  "PowerButtonAnimationContainer", screen_rotation_container);
 }
 
 void RootWindowController::CreateSystemWallpaper(
