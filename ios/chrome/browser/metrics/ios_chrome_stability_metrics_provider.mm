@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 
+#import "ios/web/public/web_state/web_state.h"
+
 IOSChromeStabilityMetricsProvider::IOSChromeStabilityMetricsProvider(
     PrefService* local_state)
     : helper_(local_state), recording_enabled_(false) {}
@@ -46,4 +48,13 @@ void IOSChromeStabilityMetricsProvider::WebStateDidStartLoading(
     return;
 
   helper_.LogLoadStarted();
+}
+
+void IOSChromeStabilityMetricsProvider::RenderProcessGone(
+    web::WebState* web_state) {
+  if (!recording_enabled_)
+    return;
+  LogRendererCrash();
+  // TODO(crbug.com/685649): web_state->GetLastCommittedURL() is likely the URL
+  // that caused a renderer crash and can be logged here.
 }

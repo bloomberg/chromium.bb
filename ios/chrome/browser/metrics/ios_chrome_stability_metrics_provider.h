@@ -29,6 +29,7 @@ class IOSChromeStabilityMetricsProvider : public metrics::MetricsProvider,
 
   // web::GlobalWebStateObserver:
   void WebStateDidStartLoading(web::WebState* web_state) override;
+  void RenderProcessGone(web::WebState* web_state) override;
 
   // Records a renderer process crash.
   void LogRendererCrash();

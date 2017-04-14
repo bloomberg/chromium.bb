@@ -1805,11 +1805,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
   BOOL applicationIsNotActive = IsApplicationStateNotActive(state);
   if (browserState_ && !browserState_->IsOffTheRecord()) {
-    // Report the crash.
-    GetApplicationContext()
-        ->GetMetricsServicesManager()
-        ->OnRendererProcessCrash();
-
     // Log the tab state for the termination.
     RendererTerminationTabState tab_state =
         visible_ ? RendererTerminationTabState::FOREGROUND_TAB_FOREGROUND_APP
