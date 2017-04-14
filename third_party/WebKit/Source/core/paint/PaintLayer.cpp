@@ -2748,6 +2748,24 @@ bool PaintLayer::PaintsWithTransform(
           GetCompositingState() != kPaintsIntoOwnBacking);
 }
 
+bool PaintLayer::SupportsSubsequenceCaching() const {
+  // SVG paints atomically.
+  if (GetLayoutObject().IsSVGRoot())
+    return true;
+
+  // Create subsequence for only stacking contexts whose painting are atomic.
+  if (!StackingNode()->IsStackingContext())
+    return false;
+
+  // The layer doesn't have children. Subsequence caching is not worth it,
+  // because normally the actual painting will be cheap.
+  // SVG is also painted atomically.
+  if (!PaintLayerStackingNodeIterator(*StackingNode(), kAllChildren).Next())
+    return false;
+
+  return true;
+}
+
 ScrollingCoordinator* PaintLayer::GetScrollingCoordinator() {
   Page* page = GetLayoutObject().GetFrame()->GetPage();
   return (!page) ? nullptr : page->GetScrollingCoordinator();

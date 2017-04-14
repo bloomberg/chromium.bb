@@ -286,6 +286,49 @@ TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   EXPECT_TRUE(parent->HasVisibleDescendant());
 }
 
+TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
+  SetBodyInnerHTML(
+      "<div id='parent' style='position:relative'>"
+      "  <div id='child1' style='position: relative'>"
+      "    <div id='grandchild1' style='position: relative'>"
+      "      <div style='position: relative'></div>"
+      "    </div>"
+      "  </div>"
+      "  <div id='child2' style='isolation: isolate'>"
+      "    <div style='position: relative'></div>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child1 = GetPaintLayerByElementId("child1");
+  PaintLayer* child2 = GetPaintLayerByElementId("child2");
+  PaintLayer* grandchild1 = GetPaintLayerByElementId("grandchild1");
+
+  EXPECT_FALSE(parent->SupportsSubsequenceCaching());
+  EXPECT_FALSE(child1->SupportsSubsequenceCaching());
+  EXPECT_TRUE(child2->SupportsSubsequenceCaching());
+  EXPECT_FALSE(grandchild1->SupportsSubsequenceCaching());
+
+  GetDocument()
+      .GetElementById("grandchild1")
+      ->setAttribute(HTMLNames::styleAttr, "isolation: isolate");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(parent->SupportsSubsequenceCaching());
+  EXPECT_FALSE(child1->SupportsSubsequenceCaching());
+  EXPECT_TRUE(child2->SupportsSubsequenceCaching());
+  EXPECT_TRUE(grandchild1->SupportsSubsequenceCaching());
+}
+
+TEST_P(PaintLayerTest, SubsequenceCachingSVGRoot) {
+  SetBodyInnerHTML(
+      "<div id='parent' style='position: relative'>"
+      "  <svg id='svgroot' style='position: relative'></svg>"
+      "</div>");
+
+  PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
+  EXPECT_TRUE(svgroot->SupportsSubsequenceCaching());
+}
+
 TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
   SetBodyInnerHTML(
       "<div id='parent' style='position:relative'>"

@@ -584,6 +584,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool PaintsWithTransform(GlobalPaintFlags) const;
 
+  bool SupportsSubsequenceCaching() const;
+
   // Returns true if background phase is painted opaque in the given rect.
   // The query rect is given in local coordinates.
   bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const;
@@ -927,6 +929,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void SetPreviousPaintingClipRects(ClipRects& clip_rects) {
     previous_painting_clip_rects_ = &clip_rects;
+  }
+  void ClearPreviousPaintingClipRects() {
+    previous_painting_clip_rects_.Clear();
   }
 
   LayoutRect PreviousPaintDirtyRect() const {

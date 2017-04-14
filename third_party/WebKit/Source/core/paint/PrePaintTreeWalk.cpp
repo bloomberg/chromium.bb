@@ -154,6 +154,14 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
     context.ancestor_transformed_or_root_paint_layer = &paint_layer;
   }
 
+  // This code below checks whether any clips have changed that might:
+  // (a) invalidate optimizations made for a PaintLayer that supports
+  //     subsequence caching, or
+  // (b) impact clipping of descendant visual rects.
+  if (!paint_layer.SupportsSubsequenceCaching() &&
+      !paint_layer.GetLayoutObject().HasClipRelatedProperty())
+    return;
+
   const auto& ancestor =
       context.ancestor_transformed_or_root_paint_layer->GetLayoutObject();
   PropertyTreeState ancestor_state = *ancestor.LocalBorderBoxProperties();

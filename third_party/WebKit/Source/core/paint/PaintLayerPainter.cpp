@@ -167,6 +167,9 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   if (context.Printing())
     return false;
 
+  if (!paint_layer.SupportsSubsequenceCaching())
+    return false;
+
   // Don't create subsequence for a composited layer because if it can be
   // cached, we can skip the whole painting in GraphicsLayer::paint() with
   // CachedDisplayItemList.  This also avoids conflict of
@@ -183,20 +186,6 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   if (paint_flags &
       (kPaintLayerPaintingRootBackgroundOnly |
        kPaintLayerPaintingOverlayScrollbars | kPaintLayerUncachedClipRects))
-    return false;
-
-  // Create subsequence for only stacking contexts whose painting are atomic.
-  // SVG is also painted atomically.
-  if (!paint_layer.StackingNode()->IsStackingContext() &&
-      !paint_layer.GetLayoutObject().IsSVGRoot())
-    return false;
-
-  // The layer doesn't have children. Subsequence caching is not worth because
-  // normally the actual painting will be cheap.
-  // SVG is also painted atomically.
-  if (!PaintLayerStackingNodeIterator(*paint_layer.StackingNode(), kAllChildren)
-           .Next() &&
-      !paint_layer.GetLayoutObject().IsSVGRoot())
     return false;
 
   // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
@@ -346,6 +335,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
                                                             paint_layer_))
       return result;
+    DCHECK(paint_layer_.SupportsSubsequenceCaching());
     subsequence_recorder.emplace(context, paint_layer_);
   } else {
     should_clear_empty_paint_phase_flags = true;
