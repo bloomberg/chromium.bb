@@ -573,7 +573,7 @@ static INLINE int wrap_index(int i) {
 static void update_a_sep_sym(double **Mc, double **Hc, double *a, double *b) {
   int i, j;
   double S[WIENER_WIN];
-  double A[WIENER_WIN], B[WIENER_WIN2];
+  double A[WIENER_HALFWIN1], B[WIENER_HALFWIN1 * WIENER_HALFWIN1];
   int w, w2;
   memset(A, 0, sizeof(A));
   memset(B, 0, sizeof(B));
@@ -619,7 +619,7 @@ static void update_a_sep_sym(double **Mc, double **Hc, double *a, double *b) {
 static void update_b_sep_sym(double **Mc, double **Hc, double *a, double *b) {
   int i, j;
   double S[WIENER_WIN];
-  double A[WIENER_WIN], B[WIENER_WIN2];
+  double A[WIENER_HALFWIN1], B[WIENER_HALFWIN1 * WIENER_HALFWIN1];
   int w, w2;
   memset(A, 0, sizeof(A));
   memset(B, 0, sizeof(B));
