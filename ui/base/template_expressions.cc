@@ -31,6 +31,9 @@ std::string BackslashEscape(const std::string& in_string) {
       case '"':
         out.append("\\\"");
         break;
+      case ',':
+        out.append("\\,");
+        break;
       default:
         out += c;
     }
