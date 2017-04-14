@@ -142,6 +142,9 @@ class StreamMixerAlsa {
 
     // Sets whether or not this stream should be muted.
     virtual void SetMuted(bool muted) = 0;
+
+    // Returns the volume multiplier of the stream.
+    virtual float EffectiveVolume() = 0;
   };
 
   enum State {

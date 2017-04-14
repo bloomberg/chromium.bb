@@ -20,19 +20,11 @@ namespace {
 const base::FilePath::CharType kPostProcessingPipelineFilePath[] =
     FILE_PATH_LITERAL("/etc/cast_audio.json");
 
-const char kCommunicationPipelineKey[] = "communication";
-const char kAlarmPipelineKey[] = "alarm";
-const char kTtsPipelineKey[] = "tts";
 const char kMediaPipelineKey[] = "media";
+const char kTtsPipelineKey[] = "tts";
 
 // TODO(bshaya): Use AudioContentType instead.
 std::string GetPipelineKey(const std::string& device_id) {
-  if (device_id == ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
-    return kCommunicationPipelineKey;
-  }
-  if (device_id == kAlarmAudioDeviceId) {
-    return kAlarmPipelineKey;
-  }
   if (device_id == kTtsAudioDeviceId) {
     return kTtsPipelineKey;
   }

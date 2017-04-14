@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/alsa/filter_group.h"
 
+#include <algorithm>
+
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
@@ -52,6 +54,7 @@ bool FilterGroup::MixAndFilter(int chunk_size) {
   ResizeBuffersIfNecessary(chunk_size);
 
   mixed_->ZeroFramesPartial(0, chunk_size);
+  float volume = 0.0f;
   for (StreamMixerAlsa::InputQueue* input : active_inputs_) {
     input->GetResampledData(temp_.get(), chunk_size);
     for (int c = 0; c < num_channels_; ++c) {
@@ -59,9 +62,10 @@ bool FilterGroup::MixAndFilter(int chunk_size) {
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,
                                    channels_[c]);
     }
+    volume = std::max(volume, input->EffectiveVolume());
   }
 
-  post_processing_pipeline_->ProcessFrames(channels_, chunk_size, volume_,
+  post_processing_pipeline_->ProcessFrames(channels_, chunk_size, volume,
                                            active_inputs_.empty());
   mixed_->ToInterleaved(chunk_size, BytesPerOutputFormatSample(),
                         interleaved_.data());

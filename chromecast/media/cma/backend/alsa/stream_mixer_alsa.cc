@@ -219,29 +219,22 @@ StreamMixerAlsa::StreamMixerAlsa()
   PostProcessingPipelineParser pipeline_parser;
   pipeline_parser.Initialize();
 
-  // Create filter groups.
-  // TODO(bshaya): Switch to filter groups based on AudioContentType.
-  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      std::unordered_set<std::string>(
-          {::media::AudioDeviceDescription::kCommunicationsDeviceId}),
-      AudioContentType::kMedia, kNumOutputChannels,
-      pipeline_parser.GetPipelineByDeviceId(
-          ::media::AudioDeviceDescription::kCommunicationsDeviceId)));
-  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      std::unordered_set<std::string>({kAlarmAudioDeviceId}),
-      AudioContentType::kAlarm, kNumOutputChannels,
-      pipeline_parser.GetPipelineByDeviceId(kAlarmAudioDeviceId)));
-  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      std::unordered_set<std::string>({kTtsAudioDeviceId}),
-      AudioContentType::kCommunication, kNumOutputChannels,
-      pipeline_parser.GetPipelineByDeviceId(kTtsAudioDeviceId)));
+  // Media filter group:
   filter_groups_.push_back(base::MakeUnique<FilterGroup>(
       std::unordered_set<std::string>(
           {::media::AudioDeviceDescription::kDefaultDeviceId,
-           kLocalAudioDeviceId, ""}),
+           kLocalAudioDeviceId, "", kAlarmAudioDeviceId}),
       AudioContentType::kMedia, kNumOutputChannels,
       pipeline_parser.GetPipelineByDeviceId(
           ::media::AudioDeviceDescription::kDefaultDeviceId)));
+
+  // Voice filter group:
+  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
+      std::unordered_set<std::string>(
+          {kTtsAudioDeviceId,
+           ::media::AudioDeviceDescription::kCommunicationsDeviceId}),
+      AudioContentType::kCommunication, kNumOutputChannels,
+      pipeline_parser.GetPipelineByDeviceId(kTtsAudioDeviceId)));
 
   // TODO(bshaya): Add support for final mix AudioPostProcessor.
   DefineAlsaParameters();
@@ -954,12 +947,6 @@ void StreamMixerAlsa::SetVolume(AudioContentType type, float level) {
       }
     }
   }
-
-  for (auto&& filter : filter_groups_) {
-    if (filter->content_type() == type) {
-      filter->set_volume(effective_volume);
-    }
-  }
 }
 
 void StreamMixerAlsa::SetMuted(AudioContentType type, bool muted) {
@@ -990,12 +977,6 @@ void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
     // Volume limits don't apply to effects streams.
     if (input->primary() && input->content_type() == type) {
       input->SetContentTypeVolume(effective_volume, fade_ms);
-    }
-  }
-
-  for (auto&& filter : filter_groups_) {
-    if (filter->content_type() == type) {
-      filter->set_volume(effective_volume);
     }
   }
 }

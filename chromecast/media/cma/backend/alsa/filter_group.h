@@ -46,8 +46,6 @@ class FilterGroup {
 
   AudioContentType content_type() const { return content_type_; }
 
-  void set_volume(float volume) { volume_ = volume; }
-
   // Sets the sample rate of the post-processors.
   void Initialize(int output_samples_per_second);
 
@@ -84,8 +82,6 @@ class FilterGroup {
   std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
-
-  float volume_ = 0.0f;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and
