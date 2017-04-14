@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillAndPaymentsPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -480,6 +481,7 @@ public class PaymentRequestImpl
                 mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
                 mMerchantSupportsAutofillPaymentInstruments,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mOriginForDisplay,
+                SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType));
 
         final FaviconHelper faviconHelper = new FaviconHelper();
