@@ -8,6 +8,9 @@
 
 namespace ui {
 
+// Tip: ui_base_unittests --gtest_filter='TemplateExpressionsTest.*' to run
+// these tests.
+
 TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPieces) {
   TemplateReplacements substitutions;
   substitutions["test"] = "word";
@@ -72,14 +75,14 @@ TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerQuoting) {
 
 TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerMixed) {
   static TemplateReplacements substitutions;
-  substitutions["punctuationSample"] = "a\"b'c<d>e&f";
+  substitutions["punctuationSample"] = "a\"b'c<d>e&f,g";
   substitutions["htmlSample"] = "<div>hello</div>";
-  EXPECT_EQ("a\\\"b\\'c<d>e&f",
+  EXPECT_EQ("a\\\"b\\'c<d>e&f\\,g",
             ReplaceTemplateExpressions("$i18nPolymer{punctuationSample}",
                                        substitutions));
   EXPECT_EQ("<div>hello</div>", ReplaceTemplateExpressions(
                                     "$i18nPolymer{htmlSample}", substitutions));
-  EXPECT_EQ("multiple: <div>hello</div>, a\\\"b\\'c<d>e&f.",
+  EXPECT_EQ("multiple: <div>hello</div>, a\\\"b\\'c<d>e&f\\,g.",
             ReplaceTemplateExpressions("multiple: $i18nPolymer{htmlSample}, "
                                        "$i18nPolymer{punctuationSample}.",
                                        substitutions));
