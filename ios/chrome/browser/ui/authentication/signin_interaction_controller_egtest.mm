@@ -312,8 +312,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
 
   // Check that the settings home screen is shown.
-  WaitForMatcher(grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
-                            grey_sufficientlyVisible(), nil));
+  WaitForMatcher(grey_accessibilityID(kSettingsSignInCellId));
 
   // Close Settings.
   TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
@@ -358,8 +357,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   TapButtonWithLabelId(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
 
   // Check that the settings home screen is shown.
-  WaitForMatcher(grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
-                            grey_sufficientlyVisible(), nil));
+  WaitForMatcher(grey_accessibilityID(kSettingsSignInCellId));
 
   // Close Settings.
   TapButtonWithLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
@@ -502,8 +500,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
   // Start sign-in with |identity1|.
-  WaitForMatcher(grey_allOf(grey_accessibilityID(kSettingsSignInCellId),
-                            grey_sufficientlyVisible(), nil));
+  WaitForMatcher(grey_accessibilityID(kSettingsSignInCellId));
   TapViewWithAccessibilityId(kSettingsSignInCellId);
   TapButtonWithAccessibilityLabel(identity1.userEmail);
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);

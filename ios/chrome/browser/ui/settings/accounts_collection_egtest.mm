@@ -126,10 +126,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       ->ForgetIdentity(identity, nil);
 
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSettingsSignInCellId),
-                                   grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+      selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
   // Close Settings.
@@ -166,10 +164,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
       ->ForgetIdentity(identity, nil);
 
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSettingsSignInCellId),
-                                   grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+      selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
   // Close Settings.
@@ -272,10 +268,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSettingsSignInCellId),
-                                   grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+      selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   AssertAuthenticatedIdentityInActiveProfile(nil);
 
   // Close Settings.

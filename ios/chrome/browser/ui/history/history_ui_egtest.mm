@@ -153,9 +153,7 @@ void MockSignIn() {
       performAction:grey_tap()];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSettingsSignInCellId),
-                                   grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
