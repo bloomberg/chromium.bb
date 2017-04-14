@@ -244,6 +244,16 @@ public class BottomSheet
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (!canMoveSheet()) {
+                // Currently it's possible to enter the tab switcher after an onScroll() event has
+                // began. If that happens, reset the sheet offset and return false to end the scroll
+                // event.
+                // TODO(twellington): Remove this after it is no longer possible to close the NTP
+                // while moving the BottomSheet.
+                setSheetState(SHEET_STATE_PEEK, false);
+                return false;
+            }
+
             // Only start scrolling if the scroll is up or down. If the user is already scrolling,
             // continue moving the sheet.
             float slope = Math.abs(distanceX) > 0f ? Math.abs(distanceY) / Math.abs(distanceX) : 0f;
