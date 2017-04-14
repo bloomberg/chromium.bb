@@ -194,10 +194,7 @@ class BASE_EXPORT Value {
     double double_value_;
     ManualConstructor<std::string> string_value_;
     ManualConstructor<std::vector<char>> binary_value_;
-    // For current gcc and clang sizeof(DictStorage) = 48, which would result
-    // in sizeof(Value) = 56 if DictStorage was stack allocated. Allocating it
-    // on the heap results in sizeof(Value) = 40 for all of gcc, clang and MSVC.
-    ManualConstructor<std::unique_ptr<DictStorage>> dict_ptr_;
+    ManualConstructor<DictStorage> dict_;
     ManualConstructor<ListStorage> list_;
   };
 
@@ -223,10 +220,10 @@ class BASE_EXPORT DictionaryValue : public Value {
   bool HasKey(StringPiece key) const;
 
   // Returns the number of Values in this dictionary.
-  size_t size() const { return (*dict_ptr_)->size(); }
+  size_t size() const { return dict_->size(); }
 
   // Returns whether the dictionary is empty.
-  bool empty() const { return (*dict_ptr_)->empty(); }
+  bool empty() const { return dict_->empty(); }
 
   // Clears any current contents of this dictionary.
   void Clear();
@@ -355,7 +352,7 @@ class BASE_EXPORT DictionaryValue : public Value {
     Iterator(const Iterator& other);
     ~Iterator();
 
-    bool IsAtEnd() const { return it_ == (*target_.dict_ptr_)->end(); }
+    bool IsAtEnd() const { return it_ == target_.dict_->end(); }
     void Advance() { ++it_; }
 
     const std::string& key() const { return it_->first; }

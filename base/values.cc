@@ -113,7 +113,7 @@ Value::Value(Type type) : type_(type) {
       binary_value_.Init();
       return;
     case Type::DICTIONARY:
-      dict_ptr_.Init(MakeUnique<DictStorage>());
+      dict_.Init();
       return;
     case Type::LIST:
       list_.Init();
@@ -167,7 +167,7 @@ Value::Value(std::vector<char>&& in_blob) noexcept : type_(Type::BINARY) {
 }
 
 Value::Value(DictStorage&& in_dict) noexcept : type_(Type::DICTIONARY) {
-  dict_ptr_.Init(MakeUnique<DictStorage>(std::move(in_dict)));
+  dict_.Init(std::move(in_dict));
 }
 
 Value& Value::operator=(const Value& that) {
@@ -365,10 +365,10 @@ bool operator==(const Value& lhs, const Value& rhs) {
     // TODO(crbug.com/646113): Clean this up when DictionaryValue and ListValue
     // are completely inlined.
     case Value::Type::DICTIONARY:
-      if ((*lhs.dict_ptr_)->size() != (*rhs.dict_ptr_)->size())
+      if (lhs.dict_->size() != rhs.dict_->size())
         return false;
-      return std::equal(std::begin(**lhs.dict_ptr_), std::end(**lhs.dict_ptr_),
-                        std::begin(**rhs.dict_ptr_),
+      return std::equal(std::begin(*lhs.dict_), std::end(*lhs.dict_),
+                        std::begin(*rhs.dict_),
                         [](const Value::DictStorage::value_type& u,
                            const Value::DictStorage::value_type& v) {
                           return std::tie(u.first, *u.second) ==
@@ -407,8 +407,8 @@ bool operator<(const Value& lhs, const Value& rhs) {
     // are completely inlined.
     case Value::Type::DICTIONARY:
       return std::lexicographical_compare(
-          std::begin(**lhs.dict_ptr_), std::end(**lhs.dict_ptr_),
-          std::begin(**rhs.dict_ptr_), std::end(**rhs.dict_ptr_),
+          std::begin(*lhs.dict_), std::end(*lhs.dict_), std::begin(*rhs.dict_),
+          std::end(*rhs.dict_),
           [](const Value::DictStorage::value_type& u,
              const Value::DictStorage::value_type& v) {
             return std::tie(u.first, *u.second) < std::tie(v.first, *v.second);
@@ -490,11 +490,10 @@ void Value::InternalCopyConstructFrom(const Value& that) {
     // TODO(crbug.com/646113): Clean this up when DictStorage can be copied
     // directly.
     case Type::DICTIONARY:
-      dict_ptr_.Init(MakeUnique<DictStorage>());
-      for (const auto& it : **that.dict_ptr_) {
-        (*dict_ptr_)
-            ->emplace_hint((*dict_ptr_)->end(), it.first,
-                           MakeUnique<Value>(*it.second));
+      dict_.Init();
+      for (const auto& it : *that.dict_) {
+        dict_->emplace_hint(dict_->end(), it.first,
+                            MakeUnique<Value>(*it.second));
       }
       return;
     case Type::LIST:
@@ -521,7 +520,7 @@ void Value::InternalMoveConstructFrom(Value&& that) {
       binary_value_.InitFromMove(std::move(that.binary_value_));
       return;
     case Type::DICTIONARY:
-      dict_ptr_.InitFromMove(std::move(that.dict_ptr_));
+      dict_.InitFromMove(std::move(that.dict_));
       return;
     case Type::LIST:
       list_.InitFromMove(std::move(that.list_));
@@ -554,7 +553,7 @@ void Value::InternalCopyAssignFromSameType(const Value& that) {
     // directly.
     case Type::DICTIONARY: {
       Value copy = that;
-      *dict_ptr_ = std::move(*copy.dict_ptr_);
+      dict_ = std::move(copy.dict_);
       return;
     }
     case Type::LIST:
@@ -579,7 +578,7 @@ void Value::InternalCleanup() {
       binary_value_.Destroy();
       return;
     case Type::DICTIONARY:
-      dict_ptr_.Destroy();
+      dict_.Destroy();
       return;
     case Type::LIST:
       list_.Destroy();
@@ -604,13 +603,13 @@ DictionaryValue::DictionaryValue() : Value(Type::DICTIONARY) {}
 
 bool DictionaryValue::HasKey(StringPiece key) const {
   DCHECK(IsStringUTF8(key));
-  auto current_entry = (*dict_ptr_)->find(key.as_string());
-  DCHECK((current_entry == (*dict_ptr_)->end()) || current_entry->second);
-  return current_entry != (*dict_ptr_)->end();
+  auto current_entry = dict_->find(key.as_string());
+  DCHECK((current_entry == dict_->end()) || current_entry->second);
+  return current_entry != dict_->end();
 }
 
 void DictionaryValue::Clear() {
-  (*dict_ptr_)->clear();
+  dict_->clear();
 }
 
 void DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
@@ -665,7 +664,7 @@ void DictionaryValue::SetString(StringPiece path, const string16& in_value) {
 
 void DictionaryValue::SetWithoutPathExpansion(StringPiece key,
                                               std::unique_ptr<Value> in_value) {
-  (**dict_ptr_)[key.as_string()] = std::move(in_value);
+  (*dict_)[key.as_string()] = std::move(in_value);
 }
 
 void DictionaryValue::SetWithoutPathExpansion(StringPiece key,
@@ -841,8 +840,8 @@ bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
 bool DictionaryValue::GetWithoutPathExpansion(StringPiece key,
                                               const Value** out_value) const {
   DCHECK(IsStringUTF8(key));
-  auto entry_iterator = (*dict_ptr_)->find(key.as_string());
-  if (entry_iterator == (*dict_ptr_)->end())
+  auto entry_iterator = dict_->find(key.as_string());
+  if (entry_iterator == dict_->end())
     return false;
 
   if (out_value)
@@ -970,13 +969,13 @@ bool DictionaryValue::RemoveWithoutPathExpansion(
     StringPiece key,
     std::unique_ptr<Value>* out_value) {
   DCHECK(IsStringUTF8(key));
-  auto entry_iterator = (*dict_ptr_)->find(key.as_string());
-  if (entry_iterator == (*dict_ptr_)->end())
+  auto entry_iterator = dict_->find(key.as_string());
+  if (entry_iterator == dict_->end())
     return false;
 
   if (out_value)
     *out_value = std::move(entry_iterator->second);
-  (*dict_ptr_)->erase(entry_iterator);
+  dict_->erase(entry_iterator);
   return true;
 }
 
@@ -1029,11 +1028,11 @@ void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
 
 void DictionaryValue::Swap(DictionaryValue* other) {
   CHECK(other->is_dict());
-  dict_ptr_->swap(*(other->dict_ptr_));
+  dict_->swap(*other->dict_);
 }
 
 DictionaryValue::Iterator::Iterator(const DictionaryValue& target)
-    : target_(target), it_((*target.dict_ptr_)->begin()) {}
+    : target_(target), it_(target.dict_->begin()) {}
 
 DictionaryValue::Iterator::Iterator(const Iterator& other) = default;
 
