@@ -24,6 +24,7 @@
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/mac/ThemeMac.h"
 #include "platform_canvas.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace blink {
 

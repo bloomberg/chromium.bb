@@ -12,6 +12,9 @@ PaintImage::PaintImage(sk_sp<const SkImage> sk_image,
     : sk_image_(std::move(sk_image)),
       animation_type_(animation_type),
       completion_state_(completion_state) {}
+
+PaintImage::PaintImage(const PaintImage& image) = default;
+
 PaintImage::~PaintImage() = default;
 
 }  // namespace cc
