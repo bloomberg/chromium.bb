@@ -221,8 +221,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
 
     if (header.type == Http2FrameType::DATA) {
       // For some reason SpdyFramer still rejects invalid DATA frame flags.
-      uint8_t valid_flags =
-          Http2FrameFlag::FLAG_PADDED | Http2FrameFlag::FLAG_END_STREAM;
+      uint8_t valid_flags = Http2FrameFlag::PADDED | Http2FrameFlag::END_STREAM;
       if (header.HasAnyFlags(~valid_flags)) {
         SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_DATA_FRAME_FLAGS);
         return false;
