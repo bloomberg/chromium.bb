@@ -57,7 +57,7 @@ TEST_F(EditingCommandTest, CreateCommandFromStringCaseFolding) {
         dummy_editor.CreateCommand(String(entry.name).DeprecatedLower());
     EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
-    command = dummy_editor.CreateCommand(String(entry.name).DeprecatedUpper());
+    command = dummy_editor.CreateCommand(String(entry.name).UpperASCII());
     EXPECT_EQ(static_cast<int>(entry.type), command.IdForHistogram())
         << entry.name;
   }

@@ -1054,7 +1054,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
   String command = name;
 
   // Make sure the first letter is upper case.
-  command.Replace(0, 1, command.Substring(0, 1).DeprecatedUpper());
+  command.Replace(0, 1, command.Substring(0, 1).UpperASCII());
 
   // Remove the trailing ':' if existing.
   if (command[command.length() - 1] == UChar(':'))

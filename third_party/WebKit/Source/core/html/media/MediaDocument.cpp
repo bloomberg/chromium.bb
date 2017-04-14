@@ -212,7 +212,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
         GetDocument()
             ->GetCachedLocale(GetDocument()->ContentLanguage())
             .QueryString(WebLocalizedString::kDownloadButtonLabel)
-            .DeprecatedUpper());
+            .UpperUnicode(GetDocument()->ContentLanguage()));
     // Using CSS style according to Android material design.
     anchor->setAttribute(
         styleAttr,

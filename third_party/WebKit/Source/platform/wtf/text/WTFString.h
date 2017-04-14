@@ -284,16 +284,18 @@ class WTF_EXPORT String {
   String Left(unsigned len) const { return Substring(0, len); }
   String Right(unsigned len) const { return Substring(length() - len, len); }
 
-  // Returns a lowercase/uppercase version of the string. These functions might
-  // convert non-ASCII characters to ASCII characters. For example,
-  // DeprecatedLower() for U+212A is 'k', DeprecatedUpper() for U+017F is 'S'.
-  // These functions are rarely used to implement web platform features. See
+  // Returns a lowercase version of the string. This function might convert
+  // non-ASCII characters to ASCII characters. For example, DeprecatedLower()
+  // for U+212A is 'k'.
+  // This function is rarely used to implement web platform features. See
   // crbug.com/627682.
-  // These functions are deprecated. We should use UpperASCII(), or introduce
-  // UpperUnicode(), and should introduce LowerASCII() or LowerUnicode().
+  // This function is deprecated. We should use LowerASCII() or introduce
+  // LowerUnicode().
   String DeprecatedLower() const;
-  String DeprecatedUpper() const;
 
+  // |locale_identifier| is case-insensitive, and accepts either of "aa_aa" or
+  // "aa-aa". Empty/null |locale_identifier| indicates locale-independent
+  // Unicode case conversion.
   String LowerUnicode(const AtomicString& locale_identifier) const;
   String UpperUnicode(const AtomicString& locale_identifier) const;
 

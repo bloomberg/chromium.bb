@@ -276,12 +276,6 @@ String String::DeprecatedLower() const {
   return impl_->LowerUnicode();
 }
 
-String String::DeprecatedUpper() const {
-  if (!impl_)
-    return String();
-  return impl_->UpperUnicode();
-}
-
 String String::LowerUnicode(const AtomicString& locale_identifier) const {
   if (!impl_)
     return String();

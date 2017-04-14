@@ -140,7 +140,7 @@ bool VerifyAlgorithmNameMappings(const AlgorithmNameMapping* begin,
     String str(it->algorithm_name, it->algorithm_name_length);
     if (!str.ContainsOnlyASCII())
       return false;
-    if (str.DeprecatedUpper() != str)
+    if (str.UpperASCII() != str)
       return false;
   }
 

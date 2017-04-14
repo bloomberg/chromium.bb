@@ -239,7 +239,7 @@ static TextStream& operator<<(TextStream& ts, LineJoin style) {
 }
 
 static TextStream& operator<<(TextStream& ts, const SVGSpreadMethodType& type) {
-  ts << SVGEnumerationToString<SVGSpreadMethodType>(type).DeprecatedUpper();
+  ts << SVGEnumerationToString<SVGSpreadMethodType>(type).UpperASCII();
   return ts;
 }
 

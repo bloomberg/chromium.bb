@@ -443,14 +443,6 @@ TEST(StringTest, DeprecatedLower) {
       String::FromUTF8("LIN\xE2\x84\xAA").DeprecatedLower().Utf8().Data());
 }
 
-TEST(StringTest, DeprecatedUpper) {
-  EXPECT_STREQ("CROSS", String("cross").DeprecatedUpper().Utf8().Data());
-  // U+017F -> S
-  EXPECT_STREQ(
-      "CROSS",
-      String::FromUTF8("cro\xC5\xBFs").DeprecatedUpper().Utf8().Data());
-}
-
 TEST(StringTest, Ensure16Bit) {
   String string8("8bit");
   EXPECT_TRUE(string8.Is8Bit());
