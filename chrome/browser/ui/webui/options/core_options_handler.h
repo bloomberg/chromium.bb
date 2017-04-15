@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CORE_OPTIONS_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -45,7 +46,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
  protected:
   // Fetches a pref value of given |pref_name|.
   // Note that caller owns the returned Value.
-  virtual base::Value* FetchPref(const std::string& pref_name);
+  virtual std::unique_ptr<base::Value> FetchPref(const std::string& pref_name);
 
   // Observes a pref of given |pref_name|.
   virtual void ObservePref(const std::string& pref_name);
@@ -88,7 +89,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // Creates dictionary value for the pref described by |pref_name|.
   // If |controlling_pref| is not empty, it describes the pref that manages
   // |pref| via policy or extension.
-  virtual base::Value* CreateValueForPref(
+  virtual std::unique_ptr<base::Value> CreateValueForPref(
       const std::string& pref_name,
       const std::string& controlling_pref_name);
 

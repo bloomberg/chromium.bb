@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -56,12 +58,13 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 
   base::DictionaryValue* Get() override {
     base::DictionaryValue* all_apps_dict = DictionaryPrefUpdate::Get();
-    base::DictionaryValue* this_app_dict = NULL;
-    if (!all_apps_dict->GetDictionary(window_name_, &this_app_dict)) {
-      this_app_dict = new base::DictionaryValue;
-      all_apps_dict->Set(window_name_, this_app_dict);
+    base::DictionaryValue* this_app_dict_weak = NULL;
+    if (!all_apps_dict->GetDictionary(window_name_, &this_app_dict_weak)) {
+      auto this_app_dict = base::MakeUnique<base::DictionaryValue>();
+      this_app_dict_weak = this_app_dict.get();
+      all_apps_dict->Set(window_name_, std::move(this_app_dict));
     }
-    return this_app_dict;
+    return this_app_dict_weak;
   }
 
  private:

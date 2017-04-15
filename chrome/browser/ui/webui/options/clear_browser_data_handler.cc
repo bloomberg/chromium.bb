@@ -199,7 +199,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
           IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE,
           base::ASCIIToUTF16(kMyActivityUrlInDialog)));
 
-  base::ListValue* time_list = new base::ListValue;
+  auto time_list = base::MakeUnique<base::ListValue>();
   for (int i = 0; i < 5; i++) {
     base::string16 label_string;
     switch (i) {
@@ -224,7 +224,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
     option->AppendString(label_string);
     time_list->Append(std::move(option));
   }
-  localized_strings->Set("clearBrowserDataTimeList", time_list);
+  localized_strings->Set("clearBrowserDataTimeList", std::move(time_list));
   localized_strings->SetBoolean("showDeleteBrowsingHistoryCheckboxes",
                                 !Profile::FromWebUI(web_ui())->IsSupervised());
 }

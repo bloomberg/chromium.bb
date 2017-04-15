@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/i18n/time_formatting.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -255,14 +256,14 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyOrigin, service_worker_info.origin.spec());
       dict->SetString(kKeySize,
                       ui::FormatBytes(service_worker_info.total_size_bytes));
-      base::ListValue* scopes = new base::ListValue;
+      auto scopes = base::MakeUnique<base::ListValue>();
       for (std::vector<GURL>::const_iterator it =
                service_worker_info.scopes.begin();
            it != service_worker_info.scopes.end();
            ++it) {
         scopes->AppendString(it->spec());
       }
-      dict->Set(kKeyScopes, scopes);
+      dict->Set(kKeyScopes, std::move(scopes));
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE: {
@@ -305,7 +306,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
   const extensions::ExtensionSet* protecting_apps =
       node.GetModel()->ExtensionsProtectingNode(node);
   if (protecting_apps && !protecting_apps->is_empty()) {
-    base::ListValue* app_infos = new base::ListValue;
+    auto app_infos = base::MakeUnique<base::ListValue>();
     for (extensions::ExtensionSet::const_iterator it = protecting_apps->begin();
          it != protecting_apps->end(); ++it) {
       std::unique_ptr<base::DictionaryValue> app_info(
@@ -314,7 +315,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       app_info->SetString(kKeyName, (*it)->name());
       app_infos->Append(std::move(app_info));
     }
-    dict->Set(kKeyAppsProtectingThis, app_infos);
+    dict->Set(kKeyAppsProtectingThis, std::move(app_infos));
   }
 #endif
 

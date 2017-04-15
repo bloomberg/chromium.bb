@@ -320,7 +320,7 @@ void NaClDomHandler::PopulatePageInformation(base::DictionaryValue* naclInfo) {
   // Display information relevant to NaCl (non-portable.
   AddNaClInfo(list.get());
   // naclInfo will take ownership of list, and clean it up on destruction.
-  naclInfo->Set("naclInfo", list.release());
+  naclInfo->Set("naclInfo", std::move(list));
 }
 
 void NaClDomHandler::DidCheckPathAndVersion(const std::string* version,

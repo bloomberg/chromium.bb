@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -87,41 +89,39 @@ void TranslateInternalsHandler::Observe(
   }
 
   base::DictionaryValue dict;
-  dict.Set("time",
-           new base::Value(language_detection_details->time.ToJsTime()));
-  dict.Set("url", new base::Value(language_detection_details->url.spec()));
-  dict.Set("content_language",
-           new base::Value(language_detection_details->content_language));
-  dict.Set("cld_language",
-           new base::Value(language_detection_details->cld_language));
-  dict.Set("is_cld_reliable",
-           new base::Value(language_detection_details->is_cld_reliable));
-  dict.Set("has_notranslate",
-           new base::Value(language_detection_details->has_notranslate));
-  dict.Set("html_root_language",
-           new base::Value(language_detection_details->html_root_language));
-  dict.Set("adopted_language",
-           new base::Value(language_detection_details->adopted_language));
-  dict.Set("content", new base::Value(language_detection_details->contents));
+  dict.SetDouble("time", language_detection_details->time.ToJsTime());
+  dict.SetString("url", language_detection_details->url.spec());
+  dict.SetString("content_language",
+                 language_detection_details->content_language);
+  dict.SetString("cld_language", language_detection_details->cld_language);
+  dict.SetBoolean("is_cld_reliable",
+                  language_detection_details->is_cld_reliable);
+  dict.SetBoolean("has_notranslate",
+                  language_detection_details->has_notranslate);
+  dict.SetString("html_root_language",
+                 language_detection_details->html_root_language);
+  dict.SetString("adopted_language",
+                 language_detection_details->adopted_language);
+  dict.SetString("content", language_detection_details->contents);
   SendMessageToJs("languageDetectionInfoAdded", dict);
 }
 
 void TranslateInternalsHandler::OnTranslateError(
     const translate::TranslateErrorDetails& details) {
   base::DictionaryValue dict;
-  dict.Set("time", new base::Value(details.time.ToJsTime()));
-  dict.Set("url", new base::Value(details.url.spec()));
-  dict.Set("error", new base::Value(details.error));
+  dict.SetDouble("time", details.time.ToJsTime());
+  dict.SetString("url", details.url.spec());
+  dict.SetInteger("error", details.error);
   SendMessageToJs("translateErrorDetailsAdded", dict);
 }
 
 void TranslateInternalsHandler::OnTranslateEvent(
     const translate::TranslateEventDetails& details) {
   base::DictionaryValue dict;
-  dict.Set("time", new base::Value(details.time.ToJsTime()));
-  dict.Set("filename", new base::Value(details.filename));
-  dict.Set("line", new base::Value(details.line));
-  dict.Set("message", new base::Value(details.message));
+  dict.SetDouble("time", details.time.ToJsTime());
+  dict.SetString("filename", details.filename);
+  dict.SetInteger("line", details.line);
+  dict.SetString("message", details.message);
   SendMessageToJs("translateEventDetailsAdded", dict);
 }
 
@@ -210,7 +210,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   for (const char* key : keys) {
     const PrefService::Preference* pref = prefs->FindPreference(key);
     if (pref)
-      dict.Set(key, pref->GetValue()->DeepCopy());
+      dict.Set(key, base::MakeUnique<base::Value>(*pref->GetValue()));
   }
 
   SendMessageToJs("prefsUpdated", dict);
@@ -224,8 +224,8 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   base::Time last_updated =
       translate::TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
 
-  base::ListValue* languages_list = new base::ListValue();
-  base::ListValue* alpha_languages_list = new base::ListValue();
+  auto languages_list = base::MakeUnique<base::ListValue>();
+  auto alpha_languages_list = base::MakeUnique<base::ListValue>();
   for (std::vector<std::string>::iterator it = languages.begin();
        it != languages.end(); ++it) {
     const std::string& lang = *it;
@@ -234,9 +234,9 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
       alpha_languages_list->AppendString(lang);
   }
 
-  dict.Set("languages", languages_list);
-  dict.Set("alpha_languages", alpha_languages_list);
-  dict.Set("last_updated", new base::Value(last_updated.ToJsTime()));
+  dict.Set("languages", std::move(languages_list));
+  dict.Set("alpha_languages", std::move(alpha_languages_list));
+  dict.SetDouble("last_updated", last_updated.ToJsTime());
   SendMessageToJs("supportedLanguagesUpdated", dict);
 }
 
@@ -249,8 +249,8 @@ void TranslateInternalsHandler::SendCountryToJs(bool was_updated) {
 
   base::DictionaryValue dict;
   if (!country.empty()) {
-    dict.Set("country", new base::Value(country));
-    dict.Set("update", new base::Value(was_updated));
+    dict.SetString("country", country);
+    dict.SetBoolean("update", was_updated);
   }
   SendMessageToJs("countryUpdated", dict);
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -262,7 +264,7 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
                            !extensions::ExtensionSystem::Get(profile)
                                 ->management_policy()
                                 ->MustRemainEnabled(extension, nullptr));
-      dict->Set("extension", ext_info.release());
+      dict->Set("extension", std::move(ext_info));
     }
   }
   return dict;

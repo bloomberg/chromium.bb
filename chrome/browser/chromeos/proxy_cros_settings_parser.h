@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 namespace base {
@@ -55,7 +56,7 @@ void SetProxyPrefValue(const std::string& network_guid,
 bool GetProxyPrefValue(const std::string& network_guid,
                        const std::string& path,
                        UIProxyConfigService* config_service,
-                       base::Value** out_value);
+                       std::unique_ptr<base::Value>* out_value);
 
 }  // namespace proxy_cros_settings_parser
 

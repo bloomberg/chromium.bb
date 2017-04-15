@@ -239,7 +239,7 @@ void SupervisedUserCreationScreenHandler::Show() {
         user_dict.get());
     users_list->Append(std::move(user_dict));
   }
-  data->Set("managers", users_list.release());
+  data->Set("managers", std::move(users_list));
   ShowScreenWithData(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW,
                      data.get());
 

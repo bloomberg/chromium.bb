@@ -138,16 +138,15 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
   std::vector<std::unique_ptr<Printer>> printers =
       PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
 
-  base::ListValue* printers_list = new base::ListValue;
+  auto printers_list = base::MakeUnique<base::ListValue>();
   for (const std::unique_ptr<Printer>& printer : printers) {
     std::unique_ptr<base::DictionaryValue> printer_info =
         GetPrinterInfo(*printer.get());
     printers_list->Append(std::move(printer_info));
   }
 
-  std::unique_ptr<base::DictionaryValue> response =
-      base::MakeUnique<base::DictionaryValue>();
-  response->Set("printerList", printers_list);
+  auto response = base::MakeUnique<base::DictionaryValue>();
+  response->Set("printerList", std::move(printers_list));
   ResolveJavascriptCallback(base::Value(callback_id), *response);
 }
 

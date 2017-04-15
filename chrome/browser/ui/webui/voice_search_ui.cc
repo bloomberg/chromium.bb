@@ -164,7 +164,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(info);
     base::DictionaryValue voiceSearchInfo;
-    voiceSearchInfo.Set("voiceSearchInfo", info.release());
+    voiceSearchInfo.Set("voiceSearchInfo", std::move(info));
     web_ui()->CallJavascriptFunctionUnsafe("returnVoiceSearchInfo",
                                            voiceSearchInfo);
   }

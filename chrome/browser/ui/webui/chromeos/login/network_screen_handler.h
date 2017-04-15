@@ -17,6 +17,10 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/gfx/geometry/point.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 
 class CoreOobeView;
@@ -48,7 +52,7 @@ class NetworkScreenHandler : public NetworkView, public BaseScreenHandler {
   void Initialize() override;
 
   // Returns available timezones. Caller gets the ownership.
-  static base::ListValue* GetTimezoneList();
+  static std::unique_ptr<base::ListValue> GetTimezoneList();
 
   CoreOobeView* core_oobe_view_ = nullptr;
   NetworkScreen* screen_ = nullptr;

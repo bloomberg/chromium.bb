@@ -118,7 +118,7 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
 
   base::DictionaryValue values;
-  values.Set("timezoneList", chromeos::system::GetTimezoneList().release());
+  values.Set("timezoneList", chromeos::system::GetTimezoneList());
 
   // If we are not logged in, we need to show the time zone dropdown.
   // Otherwise, we can leave |currentTimezoneId| blank.

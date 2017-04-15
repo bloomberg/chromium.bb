@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -12,6 +13,10 @@
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+
+namespace base {
+class ListValue;
+}
 
 namespace chromeos {
 namespace options {
@@ -39,13 +44,14 @@ class CrosLanguageOptionsHandler
   //
   // Note that true in languageCodeSet does not mean anything. We just use
   // the dictionary as a set.
-  static base::ListValue* GetInputMethodList();
+  static std::unique_ptr<base::ListValue> GetInputMethodList();
 
   // Converts input method descriptors to the list of input methods.
   // The return value will look like:
   // [{'id': '_ext_ime_nejguenhnsnjnwychcnsdsdjketest',
   //   'displayName': 'Sample IME'},  ...]
-  static base::ListValue* ConvertInputMethodDescriptorsToIMEList(
+  static std::unique_ptr<base::ListValue>
+  ConvertInputMethodDescriptorsToIMEList(
       const input_method::InputMethodDescriptors& descriptors);
 
  private:

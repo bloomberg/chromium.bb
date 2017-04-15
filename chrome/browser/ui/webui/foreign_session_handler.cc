@@ -121,7 +121,7 @@ std::unique_ptr<base::DictionaryValue> SessionWindowToValue(
     return nullptr;
   std::unique_ptr<base::DictionaryValue> dictionary(
       BuildWindowData(window.timestamp, window.window_id.id()));
-  dictionary->Set("tabs", tab_values.release());
+  dictionary->Set("tabs", std::move(tab_values));
   return dictionary;
 }
 
@@ -323,12 +323,12 @@ void ForeignSessionHandler::HandleGetForeignSessions(
         if (tab_values->GetSize() != 0) {
           std::unique_ptr<base::DictionaryValue> window_data(
               BuildWindowData(modification_time, 1));
-          window_data->Set("tabs", tab_values.release());
+          window_data->Set("tabs", std::move(tab_values));
           window_list->Append(std::move(window_data));
         }
       }
 
-      session_data->Set("windows", window_list.release());
+      session_data->Set("windows", std::move(window_list));
       session_list.Append(std::move(session_data));
     }
   }
