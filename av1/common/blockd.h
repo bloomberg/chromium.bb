@@ -494,6 +494,7 @@ typedef struct RefBuffer {
   struct scale_factors sf;
 } RefBuffer;
 
+typedef int16_t EobThresholdMD[TX_SIZES_ALL][TX_TYPES];
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
   uint8_t bmode_blocks_wl;
@@ -578,6 +579,9 @@ typedef struct macroblockd {
   int prev_qindex;
   int delta_qindex;
   int current_qindex;
+#endif
+#if CONFIG_ADAPT_SCAN
+  const EobThresholdMD *eob_threshold_md;
 #endif
 } MACROBLOCKD;
 

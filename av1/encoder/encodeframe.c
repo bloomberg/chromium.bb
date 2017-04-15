@@ -5093,6 +5093,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
 
+#if CONFIG_ADAPT_SCAN
+  av1_deliver_eob_threshold(cm, xd);
+#endif
+
   x->min_partition_size = AOMMIN(x->min_partition_size, cm->sb_size);
   x->max_partition_size = AOMMIN(x->max_partition_size, cm->sb_size);
 #if CONFIG_REF_MV

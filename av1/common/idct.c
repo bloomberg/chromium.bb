@@ -2781,6 +2781,20 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
+static void init_inv_txfm_param(const MACROBLOCKD *xd, TX_SIZE tx_size,
+                                TX_TYPE tx_type, int eob, INV_TXFM_PARAM *inv) {
+  inv->tx_type = tx_type;
+  inv->tx_size = tx_size;
+  inv->eob = eob;
+  inv->lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+#if CONFIG_HIGHBITDEPTH
+  inv->bd = xd->bd;
+#endif
+#if CONFIG_ADAPT_SCAN
+  inv->eob_threshold = &xd->eob_threshold_md[tx_size][tx_type][0];
+#endif
+}
+
 void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
                                  const TX_TYPE tx_type, const TX_SIZE tx_size,
                                  uint8_t *dst, int stride, int eob) {
@@ -2805,14 +2819,10 @@ void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_PVQ
   INV_TXFM_PARAM inv_txfm_param;
-  inv_txfm_param.tx_type = tx_type;
-  inv_txfm_param.tx_size = tx_size;
-  inv_txfm_param.eob = eob;
-  inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+  init_inv_txfm_param(xd, tx_size, tx_type, eob, &inv_txfm_param);
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    inv_txfm_param.bd = xd->bd;
     av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
   } else {
 #endif  // CONFIG_HIGHBITDEPTH

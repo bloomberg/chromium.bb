@@ -4831,6 +4831,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   size_t first_partition_size;
   YV12_BUFFER_CONFIG *new_fb;
 
+#if CONFIG_ADAPT_SCAN
+  av1_deliver_eob_threshold(cm, xd);
+#endif
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
 #endif

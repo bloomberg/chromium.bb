@@ -27,6 +27,9 @@ extern "C" {
 #endif
 
 typedef struct INV_TXFM_PARAM {
+#if CONFIG_ADAPT_SCAN
+  const int16_t *eob_threshold;
+#endif
   TX_TYPE tx_type;
   TX_SIZE tx_size;
   int eob;

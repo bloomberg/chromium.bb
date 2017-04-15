@@ -55,12 +55,8 @@ void av1_update_neighbors(int tx_size, const int16_t *scan,
                           const int16_t *iscan, int16_t *neighbors);
 void av1_init_scan_order(AV1_COMMON *cm);
 void av1_adapt_scan_order(AV1_COMMON *cm);
-
-typedef int16_t EobThreshold[EOB_THRESHOLD_NUM];
-const EobThreshold *av1_get_eob_threshold(const AV1_COMMON *cm,
-                                          const TX_SIZE tx_size,
-                                          const TX_TYPE tx_type);
 #endif
+void av1_deliver_eob_threshold(const AV1_COMMON *cm, MACROBLOCKD *xd);
 
 static INLINE int get_coef_context(const int16_t *neighbors,
                                    const uint8_t *token_cache, int c) {
