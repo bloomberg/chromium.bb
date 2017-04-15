@@ -31,6 +31,7 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/Frame.h"
@@ -124,21 +125,13 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreHiddenElement(
     const Element& element) {
-  // Do not include elements that are are set to hidden without affecting layout
-  // by the page. For those elements that are hidden by default, they will not
-  // be excluded:
-  // 1) All elements that are head or part of head, including head, meta, style,
-  //    link and etc.
-  // 2) Some specific elements in body: meta, style, datalist, option and etc.
-  if (element.GetLayoutObject())
-    return false;
-  if (isHTMLHeadElement(element) || isHTMLMetaElement(element) ||
-      isHTMLStyleElement(element) || isHTMLDataListElement(element) ||
-      isHTMLOptionElement(element) || isHTMLLinkElement(element)) {
-    return false;
-  }
-  Element* parent = element.parentElement();
-  return parent && !isHTMLHeadElement(parent);
+  // Do not include the element that is marked with hidden attribute.
+  if (element.FastHasAttribute(HTMLNames::hiddenAttr))
+    return true;
+
+  // Do not include the hidden form element.
+  return isHTMLInputElement(element) &&
+         toHTMLInputElement(&element)->type() == InputTypeNames::hidden;
 }
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreMetaElement(

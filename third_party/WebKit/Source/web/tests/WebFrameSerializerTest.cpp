@@ -273,16 +273,19 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   String mhtml =
       GenerateMHTMLParts("http://www.test.com", "hidden_elements.html");
 
-  // These hidden elements that do not affect layout should be removed.
-  EXPECT_EQ(WTF::kNotFound, mhtml.Find("<h1"));
+  // The element with hidden attribute should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<p id=3D\"hidden_id\""));
+
+  // The hidden form element should be removed.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<input type=3D\"hidden\""));
 
-  // These default-hidden elements should not be removed.
+  // All other hidden elements should not be removed.
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<html"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<head"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<style"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<title"));
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("<h1"));
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("<h2"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<datalist"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<option"));
   // One for meta in head and another for meta in body.
@@ -292,11 +295,7 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveHiddenElements) {
   // One for link in head and another for link in body.
   EXPECT_EQ(2, MatchSubstring(mhtml, "<link", 5));
 
-  // These hidden elements that affect layout should remain intact.
-  EXPECT_NE(WTF::kNotFound, mhtml.Find("<h2"));
-
   // These visible elements should remain intact.
-  EXPECT_NE(WTF::kNotFound, mhtml.Find("<h2"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<p id=3D\"visible_id\""));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<form"));
   EXPECT_NE(WTF::kNotFound, mhtml.Find("<input type=3D\"text\""));
