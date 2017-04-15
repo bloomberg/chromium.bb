@@ -142,8 +142,8 @@ std::set<std::string> StubNotificationUIManager::GetAllIdsByProfile(
 
 bool StubNotificationUIManager::CancelAllBySourceOrigin(
     const GURL& source_origin) {
-  NOTIMPLEMENTED();
-  return false;
+  last_canceled_source_ = source_origin;
+  return true;
 }
 
 bool StubNotificationUIManager::CancelAllByProfile(ProfileID profile_id) {
