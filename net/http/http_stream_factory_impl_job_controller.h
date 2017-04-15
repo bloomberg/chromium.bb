@@ -172,6 +172,9 @@ class HttpStreamFactoryImpl::JobController
 
   bool is_preconnect() const { return is_preconnect_; }
 
+  // Returns true if |this| has a pending request that is not completed.
+  bool HasPendingRequest() const { return request_ != nullptr; }
+
   // Returns true if |this| has a pending main job that is not completed.
   bool HasPendingMainJob() const;
 
