@@ -42,6 +42,7 @@ class NET_EXPORT TCPSocketPosix {
   virtual ~TCPSocketPosix();
 
   int Open(AddressFamily family);
+
   // Takes ownership of |socket_fd|.
   int AdoptConnectedSocket(int socket_fd, const IPEndPoint& peer_address);
 
@@ -69,13 +70,13 @@ class NET_EXPORT TCPSocketPosix {
 
   // Sets various socket options.
   // The commonly used options for server listening sockets:
-  // - SetAddressReuse(true).
+  // - AllowAddressReuse().
   int SetDefaultOptionsForServer();
   // The commonly used options for client sockets and accepted sockets:
   // - SetNoDelay(true);
   // - SetKeepAlive(true, 45).
   void SetDefaultOptionsForClient();
-  int SetAddressReuse(bool allow);
+  int AllowAddressReuse();
   int SetReceiveBufferSize(int32_t size);
   int SetSendBufferSize(int32_t size);
   bool SetKeepAlive(bool enable, int delay);
