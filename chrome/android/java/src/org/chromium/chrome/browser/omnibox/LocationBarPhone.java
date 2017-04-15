@@ -202,10 +202,13 @@ public class LocationBarPhone extends LocationBarLayout {
                 removeCallbacks(mKeyboardResizeModeTask);
                 mKeyboardResizeModeTask = null;
             }
-            if (windowDelegate.getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING) {
-                windowDelegate.setWindowSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+            // TODO(mdjones): SOFT_INPUT_ADJUST_NOTHING breaks omnibox suggestions but fixes a
+            // content jumping bug in Chrome Home. See https://crbug.com/706918
+            int softInputMode = mBottomSheet != null
+                    ? WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+                    : WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
+            if (windowDelegate.getWindowSoftInputMode() != softInputMode) {
+                windowDelegate.setWindowSoftInputMode(softInputMode);
             }
             UiUtils.showKeyboard(mUrlBar);
             // As the position of the navigation icon has changed, ensure the suggestions are

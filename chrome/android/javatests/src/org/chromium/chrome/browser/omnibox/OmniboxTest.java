@@ -108,7 +108,7 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING, new Callable<Integer>() {
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, new Callable<Integer>() {
                     @Override
                     public Integer call() {
                         return getActivity().getWindow().getAttributes().softInputMode;
