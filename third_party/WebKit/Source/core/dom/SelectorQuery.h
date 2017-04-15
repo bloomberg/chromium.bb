@@ -84,6 +84,9 @@ class CORE_EXPORT SelectorQuery {
   bool CanUseFastQuery(const ContainerNode& root_node) const;
 
   template <typename SelectorQueryTrait>
+  void ExecuteWithId(ContainerNode& root_node,
+                     typename SelectorQueryTrait::OutputType&) const;
+  template <typename SelectorQueryTrait>
   void FindTraverseRootsAndExecute(
       ContainerNode& root_node,
       typename SelectorQueryTrait::OutputType&) const;
@@ -110,6 +113,9 @@ class CORE_EXPORT SelectorQuery {
   // m_selectorList will never be empty as SelectorQueryCache::add would have
   // thrown an exception.
   Vector<const CSSSelector*> selectors_;
+  AtomicString selector_id_;
+  bool selector_id_is_rightmost_ : 1;
+  bool selector_id_affected_by_sibling_combinator_ : 1;
   bool uses_deep_combinator_or_shadow_pseudo_ : 1;
   bool needs_updated_distribution_ : 1;
 };

@@ -139,6 +139,8 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       {"body #multiple", false, 1, {1, 1, 0, 0, 0, 0, 0}},
       {"body span#multiple", false, 1, {2, 2, 0, 0, 0, 0, 0}},
       {"body #multiple", true, 2, {2, 2, 0, 0, 0, 0, 0}},
+      {"[id=multiple]", true, 2, {2, 2, 0, 0, 0, 0, 0}},
+      {"body [id=multiple]", true, 2, {2, 2, 0, 0, 0, 0, 0}},
 
       // Single selector tag fast path.
       {"span", false, 1, {4, 0, 0, 4, 0, 0, 0}},
@@ -149,39 +151,36 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
       {".two", true, 4, {14, 0, 14, 0, 0, 0, 0}},
 
       // Class in the right most selector fast path.
-      {"body .two", false, 1, {6, 0, 0, 0, 6, 0, 0}},
-      {"div .two", false, 1, {12, 0, 0, 0, 12, 0, 0}},
+      {"body .two", false, 1, {6, 0, 6, 0, 0, 0, 0}},
+      {"div .two", false, 1, {12, 0, 12, 0, 0, 0, 0}},
 
       // Classes in the right most selector for querySelectorAll use a fast
       // path.
       {"body .two", true, 4, {14, 0, 14, 0, 0, 0, 0}},
       {"div .two", true, 2, {14, 0, 14, 0, 0, 0, 0}},
 
-      // TODO: querySelector disables the class fast path to favor the id, but
-      // this means some selectors always end up doing fastScan.
-      {"#second .two", false, 1, {2, 0, 0, 0, 2, 0, 0}},
-
-      // TODO(esprehn): This should have used getElementById instead of doing
-      // a fastClass scan. It could have looked at 4 elements instead.
-      {"#second .two", true, 2, {14, 0, 14, 0, 0, 0, 0}},
+      // TODO: We could use the fast class path to find the elements inside
+      // the id scope instead of the fast scan.
+      {"#second .two", false, 1, {3, 1, 0, 0, 2, 0, 0}},
+      {"#second .two", true, 2, {5, 1, 0, 0, 4, 0, 0}},
 
       // We combine the class fast path with the fast scan mode when possible.
-      {".B span", false, 1, {11, 0, 0, 0, 11, 0, 0}},
+      {".B span", false, 1, {11, 0, 10, 0, 1, 0, 0}},
       {".B span", true, 4, {14, 0, 10, 0, 4, 0, 0}},
 
       // We expand the scope of id selectors when affected by an adjectent
       // combinator.
-      {"#c + :last-child", false, 1, {4, 0, 0, 0, 4, 0, 0}},
-      {"#a ~ :last-child", false, 1, {4, 0, 0, 0, 4, 0, 0}},
-      {"#c + div", true, 1, {4, 0, 0, 0, 4, 0, 0}},
-      {"#a ~ span", true, 2, {4, 0, 0, 0, 4, 0, 0}},
+      {"#c + :last-child", false, 1, {5, 1, 0, 0, 4, 0, 0}},
+      {"#a ~ :last-child", false, 1, {5, 1, 0, 0, 4, 0, 0}},
+      {"#c + div", true, 1, {5, 1, 0, 0, 4, 0, 0}},
+      {"#a ~ span", true, 2, {5, 1, 0, 0, 4, 0, 0}},
 
       // We only expand the scope for id selectors if they're directly affected
       // the adjacent combinator.
-      {"#first span + span", false, 1, {2, 0, 0, 0, 2, 0, 0}},
-      {"#first span ~ span", false, 1, {2, 0, 0, 0, 2, 0, 0}},
-      {"#second span + span", true, 3, {4, 0, 0, 0, 4, 0, 0}},
-      {"#second span ~ span", true, 3, {4, 0, 0, 0, 4, 0, 0}},
+      {"#first span + span", false, 1, {3, 1, 0, 0, 2, 0, 0}},
+      {"#first span ~ span", false, 1, {3, 1, 0, 0, 2, 0, 0}},
+      {"#second span + span", true, 3, {5, 1, 0, 0, 4, 0, 0}},
+      {"#second span ~ span", true, 3, {5, 1, 0, 0, 4, 0, 0}},
 
       // We disable the fast path for class selectors when affected by adjacent
       // combinator.
@@ -268,7 +267,7 @@ TEST(SelectorQueryTest, FastPathScoped) {
       {".root-class span:nth-child(2)", true, 1, {7, 0, 0, 0, 7, 0, 0}},
 
       // If the id is an ancestor we scan all the descendants.
-      {"#root-id span", true, 4, {7, 0, 0, 0, 7, 0, 0}},
+      {"#root-id span", true, 4, {8, 1, 0, 0, 7, 0, 0}},
   };
 
   {
@@ -304,6 +303,8 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
       {"#One", false, 1, {5, 0, 0, 0, 0, 5, 0}},
       {"#ONE", false, 1, {5, 0, 0, 0, 0, 5, 0}},
       {"#ONE", true, 2, {6, 0, 0, 0, 0, 6, 0}},
+      {"[id=One]", false, 1, {5, 0, 0, 0, 0, 5, 0}},
+      {"[id=One]", true, 1, {6, 0, 0, 0, 0, 6, 0}},
       {"span", false, 1, {4, 0, 0, 0, 0, 4, 0}},
       {"span", true, 3, {6, 0, 0, 0, 0, 6, 0}},
       {".two", false, 1, {5, 0, 0, 0, 0, 5, 0}},

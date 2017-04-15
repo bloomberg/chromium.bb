@@ -69,6 +69,9 @@ SelectorQuery::QueryStats SelectorQuery::LastQueryStats() {
 struct SingleElementSelectorQueryTrait {
   typedef Element* OutputType;
   static const bool kShouldOnlyMatchFirstElement = true;
+  ALWAYS_INLINE static bool IsEmpty(const OutputType& output) {
+    return !output;
+  }
   ALWAYS_INLINE static void AppendElement(OutputType& output,
                                           Element& element) {
     DCHECK(!output);
@@ -79,6 +82,9 @@ struct SingleElementSelectorQueryTrait {
 struct AllElementsSelectorQueryTrait {
   typedef HeapVector<Member<Element>> OutputType;
   static const bool kShouldOnlyMatchFirstElement = false;
+  ALWAYS_INLINE static bool IsEmpty(const OutputType& output) {
+    return output.IsEmpty();
+  }
   ALWAYS_INLINE static void AppendElement(OutputType& output,
                                           Element& element) {
     output.push_back(&element);
@@ -227,35 +233,12 @@ void SelectorQuery::FindTraverseRootsAndExecute(
   DCHECK_EQ(selectors_.size(), 1u);
 
   bool is_rightmost_selector = true;
-  bool start_from_parent = false;
+  bool is_affected_by_sibling_combinator = false;
 
   for (const CSSSelector* selector = selectors_[0]; selector;
        selector = selector->TagHistory()) {
-    if (selector->Match() == CSSSelector::kId &&
-        !root_node.ContainingTreeScope().ContainsMultipleElementsWithId(
-            selector->Value())) {
-      // Id selectors in the right most selector are handled by the caller,
-      // we should never hit them here.
-      DCHECK(!is_rightmost_selector);
-      Element* element =
-          root_node.ContainingTreeScope().GetElementById(selector->Value());
-      if (!element)
-        return;
-      ContainerNode* start = &root_node;
-      if (element->IsDescendantOf(&root_node))
-        start = element;
-      if (start_from_parent)
-        start = start->parentNode();
-      if (!start)
-        return;
-      ExecuteForTraverseRoot<SelectorQueryTrait>(*start, root_node, output);
-      return;
-    }
-
-    // If we have both CSSSelector::Id and CSSSelector::Class at the same time,
-    // we should use Id to find traverse root.
-    if (!SelectorQueryTrait::kShouldOnlyMatchFirstElement &&
-        !start_from_parent && selector->Match() == CSSSelector::kClass) {
+    if (!is_affected_by_sibling_combinator &&
+        selector->Match() == CSSSelector::kClass) {
       if (is_rightmost_selector) {
         CollectElementsByClassName<SelectorQueryTrait>(
             root_node, selector->Value(), selectors_[0], output);
@@ -273,6 +256,9 @@ void SelectorQuery::FindTraverseRootsAndExecute(
         if (HasClassName(*element, class_name)) {
           ExecuteForTraverseRoot<SelectorQueryTrait>(*element, root_node,
                                                      output);
+          if (SelectorQueryTrait::kShouldOnlyMatchFirstElement &&
+              !SelectorQueryTrait::IsEmpty(output))
+            return;
           element =
               ElementTraversal::NextSkippingChildren(*element, &root_node);
         } else {
@@ -285,11 +271,9 @@ void SelectorQuery::FindTraverseRootsAndExecute(
     if (selector->Relation() == CSSSelector::kSubSelector)
       continue;
     is_rightmost_selector = false;
-    if (selector->Relation() == CSSSelector::kDirectAdjacent ||
-        selector->Relation() == CSSSelector::kIndirectAdjacent)
-      start_from_parent = true;
-    else
-      start_from_parent = false;
+    is_affected_by_sibling_combinator =
+        selector->Relation() == CSSSelector::kDirectAdjacent ||
+        selector->Relation() == CSSSelector::kIndirectAdjacent;
   }
 
   ExecuteForTraverseRoot<SelectorQueryTrait>(root_node, root_node, output);
@@ -399,22 +383,54 @@ void SelectorQuery::ExecuteSlowTraversingShadowTree(
   }
 }
 
-static const CSSSelector* SelectorForIdLookup(
-    const CSSSelector& first_selector) {
-  for (const CSSSelector* selector = &first_selector; selector;
-       selector = selector->TagHistory()) {
-    if (selector->Match() == CSSSelector::kId)
-      return selector;
-    // We only use the fast path when in standards mode where #id selectors
-    // are case sensitive, so we need the same behavior for [id=value].
-    if (selector->Match() == CSSSelector::kAttributeExact &&
-        selector->Attribute() == idAttr &&
-        selector->AttributeMatch() == CSSSelector::kCaseSensitive)
-      return selector;
-    if (selector->Relation() != CSSSelector::kSubSelector)
-      break;
+template <typename SelectorQueryTrait>
+void SelectorQuery::ExecuteWithId(
+    ContainerNode& root_node,
+    typename SelectorQueryTrait::OutputType& output) const {
+  const CSSSelector& first_selector = *selectors_[0];
+  const TreeScope& scope = root_node.ContainingTreeScope();
+
+  if (scope.ContainsMultipleElementsWithId(selector_id_)) {
+    // We don't currently handle cases where there's multiple elements with the
+    // id and it's not in the rightmost selector.
+    if (!selector_id_is_rightmost_) {
+      FindTraverseRootsAndExecute<SelectorQueryTrait>(root_node, output);
+      return;
+    }
+    const auto& elements = scope.GetAllElementsById(selector_id_);
+    for (const auto& element : elements) {
+      if (!element->IsDescendantOf(&root_node))
+        continue;
+      QUERY_STATS_INCREMENT(fast_id);
+      if (SelectorMatches(first_selector, *element, root_node)) {
+        SelectorQueryTrait::AppendElement(output, *element);
+        if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
+          return;
+      }
+    }
+    return;
   }
-  return nullptr;
+
+  Element* element = scope.GetElementById(selector_id_);
+  if (!element)
+    return;
+  if (selector_id_is_rightmost_) {
+    if (!element->IsDescendantOf(&root_node))
+      return;
+    QUERY_STATS_INCREMENT(fast_id);
+    if (SelectorMatches(first_selector, *element, root_node))
+      SelectorQueryTrait::AppendElement(output, *element);
+    return;
+  }
+  ContainerNode* start = &root_node;
+  if (element->IsDescendantOf(&root_node))
+    start = element;
+  if (selector_id_affected_by_sibling_combinator_)
+    start = start->parentNode();
+  if (!start)
+    return;
+  QUERY_STATS_INCREMENT(fast_id);
+  ExecuteForTraverseRoot<SelectorQueryTrait>(*start, root_node, output);
 }
 
 template <typename SelectorQueryTrait>
@@ -438,39 +454,12 @@ void SelectorQuery::Execute(
   DCHECK_EQ(selectors_.size(), 1u);
   DCHECK(!root_node.GetDocument().InQuirksMode());
 
-  const CSSSelector& selector = *selectors_[0];
-  const CSSSelector& first_selector = selector;
-
-  // Fast path for querySelector*('#id'), querySelector*('tag#id'),
-  // querySelector*('tag[id=example]').
-  if (const CSSSelector* id_selector = SelectorForIdLookup(first_selector)) {
-    const AtomicString& id_to_match = id_selector->Value();
-    if (root_node.GetTreeScope().ContainsMultipleElementsWithId(id_to_match)) {
-      const HeapVector<Member<Element>>& elements =
-          root_node.GetTreeScope().GetAllElementsById(id_to_match);
-      for (const auto& element : elements) {
-        if (!element->IsDescendantOf(&root_node))
-          continue;
-        QUERY_STATS_INCREMENT(fast_id);
-        if (SelectorMatches(selector, *element, root_node)) {
-          SelectorQueryTrait::AppendElement(output, *element);
-          if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
-            return;
-        }
-      }
-      return;
-    }
-    Element* element = root_node.GetTreeScope().GetElementById(id_to_match);
-    if (!element)
-      return;
-    if (!element->IsDescendantOf(&root_node))
-      return;
-    QUERY_STATS_INCREMENT(fast_id);
-    if (SelectorMatches(selector, *element, root_node))
-      SelectorQueryTrait::AppendElement(output, *element);
+  if (selector_id_) {
+    ExecuteWithId<SelectorQueryTrait>(root_node, output);
     return;
   }
 
+  const CSSSelector& first_selector = *selectors_[0];
   if (!first_selector.TagHistory()) {
     // Fast path for querySelector*('.foo'), and querySelector*('div').
     switch (first_selector.Match()) {
@@ -504,6 +493,8 @@ std::unique_ptr<SelectorQuery> SelectorQuery::Adopt(
 
 SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
     : selector_list_(std::move(selector_list)),
+      selector_id_is_rightmost_(true),
+      selector_id_affected_by_sibling_combinator_(false),
       uses_deep_combinator_or_shadow_pseudo_(false),
       needs_updated_distribution_(false) {
   selectors_.ReserveInitialCapacity(selector_list_.ComputeLength());
@@ -515,6 +506,31 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
     uses_deep_combinator_or_shadow_pseudo_ |=
         selector->HasDeepCombinatorOrShadowPseudo();
     needs_updated_distribution_ |= selector->NeedsUpdatedDistribution();
+  }
+
+  if (selectors_.size() == 1 && !uses_deep_combinator_or_shadow_pseudo_ &&
+      !needs_updated_distribution_) {
+    for (const CSSSelector* current = selectors_[0]; current;
+         current = current->TagHistory()) {
+      if (current->Match() == CSSSelector::kId) {
+        selector_id_ = current->Value();
+        break;
+      }
+      // We only use the fast path when in standards mode where #id selectors
+      // are case sensitive, so we need the same behavior for [id=value].
+      if (current->Match() == CSSSelector::kAttributeExact &&
+          current->Attribute() == idAttr &&
+          current->AttributeMatch() == CSSSelector::kCaseSensitive) {
+        selector_id_ = current->Value();
+        break;
+      }
+      if (current->Relation() == CSSSelector::kSubSelector)
+        continue;
+      selector_id_is_rightmost_ = false;
+      selector_id_affected_by_sibling_combinator_ =
+          current->Relation() == CSSSelector::kDirectAdjacent ||
+          current->Relation() == CSSSelector::kIndirectAdjacent;
+    }
   }
 }
 
