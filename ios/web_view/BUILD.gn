@@ -20,7 +20,6 @@ config("config") {
 # and CrNetChromeWebView frameworks.
 ios_web_view_public_headers = [
   "public/ChromeWebView.h",
-  "public/cwv.h",
   "public/cwv_export.h",
   "public/cwv_html_element.h",
   "public/cwv_navigation_action.h",
@@ -35,7 +34,6 @@ ios_web_view_public_headers = [
 ]
 
 ios_web_view_sources = [
-  "internal/cwv.mm",
   "internal/cwv_html_element.mm",
   "internal/cwv_html_element_internal.h",
   "internal/cwv_navigation_action.mm",

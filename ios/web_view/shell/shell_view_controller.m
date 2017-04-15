@@ -145,7 +145,12 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [_toolbar addSubview:menu];
   [_toolbar addSubview:_field];
 
-  self.webView = [CWV webViewWithFrame:[_containerView bounds]];
+  [CWVWebView setUserAgentProduct:@"Dummy/1.0"];
+
+  CWVWebViewConfiguration* configuration =
+      [CWVWebViewConfiguration defaultConfiguration];
+  self.webView = [[CWVWebView alloc] initWithFrame:[_containerView bounds]
+                                     configuration:configuration];
   // Gives a restoration identifier so that state restoration works.
   _webView.restorationIdentifier = @"webView";
   _webView.navigationDelegate = self;

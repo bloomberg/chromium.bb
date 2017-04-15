@@ -12,24 +12,17 @@
 #include "ios/web/public/app/web_main_delegate.h"
 
 namespace ios_web_view {
-class WebViewWebClient;
 
 // WebView implementation of WebMainDelegate.
 class WebViewWebMainDelegate : public web::WebMainDelegate {
  public:
-  explicit WebViewWebMainDelegate(const std::string& user_agent_product);
+  WebViewWebMainDelegate();
   ~WebViewWebMainDelegate() override;
 
   // WebMainDelegate implementation.
   void BasicStartupComplete() override;
 
  private:
-  // The name of the product to be used in the User Agent string.
-  std::string user_agent_product_;
-
-  // The content and web clients registered by this object.
-  std::unique_ptr<WebViewWebClient> web_client_;
-
   DISALLOW_COPY_AND_ASSIGN(WebViewWebMainDelegate);
 };
 

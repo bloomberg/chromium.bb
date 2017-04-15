@@ -12,7 +12,6 @@
 @protocol CWVDelegate;
 
 namespace ios_web_view {
-class WebViewBrowserState;
 
 // WebView implementation of WebMainParts.
 class WebViewWebMainParts : public web::WebMainParts {
@@ -22,21 +21,6 @@ class WebViewWebMainParts : public web::WebMainParts {
 
   // WebMainParts implementation.
   void PreMainMessageLoopRun() override;
-
-  // Returns the WebViewBrowserState for this embedder.
-  WebViewBrowserState* browser_state() const { return browser_state_.get(); }
-
-  // Returns the off the record WebViewBrowserState for this embedder.
-  WebViewBrowserState* off_the_record_browser_state() const {
-    return off_the_record_browser_state_.get();
-  }
-
- private:
-  // The BrowserState for this embedder.
-  std::unique_ptr<WebViewBrowserState> browser_state_;
-
-  // Off The Record BrowserState for this embedder.
-  std::unique_ptr<WebViewBrowserState> off_the_record_browser_state_;
 };
 
 }  // namespace ios_web_view

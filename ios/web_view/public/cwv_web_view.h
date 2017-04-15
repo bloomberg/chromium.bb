@@ -54,6 +54,21 @@ CWV_EXPORT
 // is reset to 0.0.
 @property(nonatomic, readonly) double estimatedProgress;
 
+// The User Agent product string used to build the full User Agent.
++ (NSString*)userAgentProduct;
+
+// Customizes the User Agent string by inserting |product|. It should be of the
+// format "product/1.0". For example:
+// "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/603.1.30
+// (KHTML, like Gecko) <product> Mobile/16D32 Safari/602.1" where <product>
+// will be replaced with |product| or empty string if not set.
+//
+// NOTE: It is recommended to set |product| before initializing any web views.
+// Setting |product| is only guaranteed to affect web views which have not yet
+// been initialized. However, exisiting web views could also be affected
+// depending upon their internal state.
++ (void)setUserAgentProduct:(NSString*)product;
+
 // |configuration| must not be null
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration

@@ -11,13 +11,12 @@
 #import "ios/web/public/web_client.h"
 
 namespace ios_web_view {
-class WebViewBrowserState;
 class WebViewWebMainParts;
 
 // WebView implementation of WebClient.
 class WebViewWebClient : public web::WebClient {
  public:
-  explicit WebViewWebClient(const std::string& user_agent_product);
+  WebViewWebClient();
   ~WebViewWebClient() override;
 
   // WebClient implementation.
@@ -26,15 +25,7 @@ class WebViewWebClient : public web::WebClient {
   std::string GetUserAgent(web::UserAgentType type) const override;
   NSString* GetEarlyPageScript(web::BrowserState* browser_state) const override;
 
-  // Normal browser state associated with the receiver.
-  WebViewBrowserState* browser_state() const;
-  // Off the record browser state  associated with the receiver.
-  WebViewBrowserState* off_the_record_browser_state() const;
-
  private:
-  // The name of the product to be used in the User Agent string.
-  std::string user_agent_product_;
-
   // The WebMainParts created by |CreateWebMainParts()|.
   WebViewWebMainParts* web_main_parts_;
 

@@ -4,8 +4,6 @@
 
 #import "ios/web_view/shell/shell_app_delegate.h"
 
-#import <ChromeWebView/ChromeWebView.h>
-
 #import "ios/web_view/shell/shell_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,8 +22,6 @@
 
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   self.window.backgroundColor = [UIColor whiteColor];
-
-  [CWV configureWithUserAgentProductName:@"Dummy/1.0"];
 
   ShellViewController* controller = [[ShellViewController alloc] init];
   // Gives a restoration identifier so that state restoration works.

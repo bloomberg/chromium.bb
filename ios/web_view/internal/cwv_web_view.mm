@@ -39,7 +39,6 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 }
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
-  CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -51,11 +50,15 @@ NSString* const kSessionStorageKey = @"sessionStorage";
       _javaScriptDialogPresenter;
 }
 
+// Redefine the property as readwrite.
+@property(nonatomic, copy) CWVWebViewConfiguration* configuration;
 // Redefine the property as readwrite to define -setEstimatedProgress:, which
 // can be used to send KVO notification.
 @property(nonatomic, readwrite) double estimatedProgress;
 
 @end
+
+static NSString* gUserAgentProduct = nil;
 
 @implementation CWVWebView
 
@@ -64,6 +67,14 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 @synthesize translationDelegate = _translationDelegate;
 @synthesize estimatedProgress = _estimatedProgress;
 @synthesize UIDelegate = _UIDelegate;
+
++ (NSString*)userAgentProduct {
+  return gUserAgentProduct;
+}
+
++ (void)setUserAgentProduct:(NSString*)product {
+  gUserAgentProduct = [product copy];
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
                 configuration:(CWVWebViewConfiguration*)configuration {

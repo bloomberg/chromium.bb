@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CHROMEWEBVIEW_H_
 #define IOS_WEB_VIEW_PUBLIC_CHROMEWEBVIEW_H_
 
-#import <ChromeWebView/cwv.h>
 #import <ChromeWebView/cwv_export.h>
 #import <ChromeWebView/cwv_html_element.h>
 #import <ChromeWebView/cwv_navigation_action.h>

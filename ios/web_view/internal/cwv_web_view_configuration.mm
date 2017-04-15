@@ -5,55 +5,79 @@
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/threading/thread_restrictions.h"
+#include "components/translate/core/browser/translate_download_manager.h"
+#include "ios/web/public/app/web_main.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_web_client.h"
+#import "ios/web_view/internal/web_view_web_main_delegate.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CWVWebViewConfiguration ()
-// Initialize configuration with the specified browser state.
+@interface CWVWebViewConfiguration () {
+  // The BrowserState for this configuration.
+  std::unique_ptr<ios_web_view::WebViewBrowserState> _browserState;
+}
+
+// Initializes configuration with the specified browser state mode.
 - (instancetype)initWithBrowserState:
-    (ios_web_view::WebViewBrowserState*)browserState;
+    (std::unique_ptr<ios_web_view::WebViewBrowserState>)browserState;
 @end
 
-@implementation CWVWebViewConfiguration {
-  // TODO(crbug.com/690182): CWVWebViewConfiguration should own _browserState.
-  ios_web_view::WebViewBrowserState* _browserState;
-}
+@implementation CWVWebViewConfiguration
 
 @synthesize userContentController = _userContentController;
 
 + (instancetype)defaultConfiguration {
-  static dispatch_once_t once;
-  static CWVWebViewConfiguration* configuration;
-  dispatch_once(&once, ^{
-    ios_web_view::WebViewWebClient* client =
-        static_cast<ios_web_view::WebViewWebClient*>(web::GetWebClient());
-    configuration = [[self alloc] initWithBrowserState:client->browser_state()];
-  });
-  return configuration;
+  auto browserState =
+      base::MakeUnique<ios_web_view::WebViewBrowserState>(false);
+  return [[self alloc] initWithBrowserState:std::move(browserState)];
 }
 
 + (instancetype)incognitoConfiguration {
-  static dispatch_once_t once;
-  static CWVWebViewConfiguration* configuration;
-  dispatch_once(&once, ^{
-    ios_web_view::WebViewWebClient* client =
-        static_cast<ios_web_view::WebViewWebClient*>(web::GetWebClient());
-    configuration = [[self alloc]
-        initWithBrowserState:client->off_the_record_browser_state()];
+  auto browserState = base::MakeUnique<ios_web_view::WebViewBrowserState>(true);
+  return [[self alloc] initWithBrowserState:std::move(browserState)];
+}
+
++ (void)initialize {
+  if (self != [CWVWebViewConfiguration class]) {
+    return;
+  }
+
+  static std::unique_ptr<ios_web_view::WebViewWebClient> webClient;
+  static std::unique_ptr<ios_web_view::WebViewWebMainDelegate> webMainDelegate;
+  static std::unique_ptr<web::WebMain> webMain;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    webClient = base::MakeUnique<ios_web_view::WebViewWebClient>();
+    web::SetWebClient(webClient.get());
+
+    webMainDelegate = base::MakeUnique<ios_web_view::WebViewWebMainDelegate>();
+    web::WebMainParams params(webMainDelegate.get());
+    webMain = base::MakeUnique<web::WebMain>(params);
   });
-  return configuration;
 }
 
 - (instancetype)initWithBrowserState:
-    (ios_web_view::WebViewBrowserState*)browserState {
+    (std::unique_ptr<ios_web_view::WebViewBrowserState>)browserState {
   self = [super init];
   if (self) {
-    _browserState = browserState;
+    _browserState = std::move(browserState);
+
+    // Initialize translate.
+    translate::TranslateDownloadManager* downloadManager =
+        translate::TranslateDownloadManager::GetInstance();
+    // TODO(crbug.com/710948): Use global request context here.
+    downloadManager->set_request_context(_browserState->GetRequestContext());
+    // TODO(crbug.com/679895): Bring up application locale correctly.
+    downloadManager->set_application_locale(l10n_util::GetLocaleOverride());
+    downloadManager->language_list()->SetResourceRequestsAllowed(true);
+
     _userContentController =
         [[CWVUserContentController alloc] initWithConfiguration:self];
   }
@@ -65,13 +89,19 @@
 }
 
 - (ios_web_view::WebViewBrowserState*)browserState {
-  return _browserState;
+  return _browserState.get();
 }
 
 // NSCopying
 
 - (id)copyWithZone:(NSZone*)zone {
-  return [[[self class] allocWithZone:zone] initWithBrowserState:_browserState];
+  [[self class] initialize];
+
+  auto browserState = base::MakeUnique<ios_web_view::WebViewBrowserState>(
+      _browserState->IsOffTheRecord());
+
+  return [[[self class] allocWithZone:zone]
+      initWithBrowserState:std::move(browserState)];
 }
 
 @end
