@@ -30,6 +30,10 @@ struct PRINTING_EXPORT CupsJob {
     ABORTED      // an error occurred causing the printer to give up
   };
 
+  CupsJob();
+  CupsJob(const CupsJob& other);
+  ~CupsJob();
+
   // job id
   int id = -1;
   // printer name in CUPS
@@ -47,7 +51,7 @@ struct PRINTING_EXPORT CupsJob {
 
 // Represents the status of a printer containing the properties printer-state,
 // printer-state-reasons, and printer-state-message.
-struct PrinterStatus {
+struct PRINTING_EXPORT PrinterStatus {
   struct PrinterReason {
     // Standardized reasons from RFC2911.
     enum Reason {
@@ -93,6 +97,10 @@ struct PrinterStatus {
     Reason reason;
     Severity severity;
   };
+
+  PrinterStatus();
+  PrinterStatus(const PrinterStatus& other);
+  ~PrinterStatus();
 
   // printer-state
   ipp_pstate_t state;

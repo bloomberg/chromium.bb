@@ -23,6 +23,10 @@ namespace printing {
 
 // Represents the status of a printer queue.
 struct PRINTING_EXPORT QueueStatus {
+  QueueStatus();
+  QueueStatus(const QueueStatus& other);
+  ~QueueStatus();
+
   PrinterStatus printer_status;
   std::vector<CupsJob> jobs;
 };

@@ -59,6 +59,12 @@ class DestinationEnumerator {
 
 }  // namespace
 
+QueueStatus::QueueStatus() = default;
+
+QueueStatus::QueueStatus(const QueueStatus& other) = default;
+
+QueueStatus::~QueueStatus() = default;
+
 CupsConnection::CupsConnection(const GURL& print_server_url,
                                http_encryption_t encryption,
                                bool blocking)

@@ -283,6 +283,18 @@ std::string PrinterUriFromName(const std::string& id) {
 
 }  // namespace
 
+CupsJob::CupsJob() = default;
+
+CupsJob::CupsJob(const CupsJob& other) = default;
+
+CupsJob::~CupsJob() = default;
+
+PrinterStatus::PrinterStatus() = default;
+
+PrinterStatus::PrinterStatus(const PrinterStatus& other) = default;
+
+PrinterStatus::~PrinterStatus() = default;
+
 void ParseJobsResponse(ipp_t* response,
                        const std::string& printer_id,
                        std::vector<CupsJob>* jobs) {

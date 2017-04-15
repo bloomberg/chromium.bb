@@ -146,6 +146,12 @@ bool UpdateCurrentPage(const printing::CupsJob& job,
 
 namespace chromeos {
 
+QueryResult::QueryResult() = default;
+
+QueryResult::QueryResult(const QueryResult& other) = default;
+
+QueryResult::~QueryResult() = default;
+
 CupsPrintJobManagerImpl::CupsPrintJobManagerImpl(Profile* profile)
     : CupsPrintJobManager(profile),
       cups_connection_(GURL(), HTTP_ENCRYPT_NEVER, false),

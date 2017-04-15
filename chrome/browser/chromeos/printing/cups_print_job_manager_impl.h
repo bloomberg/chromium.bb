@@ -24,6 +24,10 @@ class Profile;
 namespace chromeos {
 
 struct QueryResult {
+  QueryResult();
+  QueryResult(const QueryResult& other);
+  ~QueryResult();
+
   bool success;
   std::vector<::printing::QueueStatus> queues;
 };
