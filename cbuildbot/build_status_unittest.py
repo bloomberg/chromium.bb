@@ -295,7 +295,9 @@ class SlaveStatusTest(patch_unittest.MockPatchBase):
         config=self.master_cq_config,
         pool=pool)
 
-    expected_map = {}
+    expected_map = {
+        p[0]: {p[1], p[2]},
+    }
 
     self.assertDictEqual(expected_map, slave_status.dependency_map)
 

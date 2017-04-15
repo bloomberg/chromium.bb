@@ -79,12 +79,9 @@ class SlaveStatus(object):
     self.dependency_map = None
 
     if self.pool is not None:
-      logging.info('Computing dependency map for changes.')
       # Pre-compute dependency map for applied changes.
-      # TODO(nxia): disable depedency map computing, will enable it once
-      # crbug.com/710542 is resolved
-      self.dependency_map = {}
-      logging.info('Got dependency map: %s ', self.dependency_map)
+      self.dependency_map = self.pool.GetDependMapForChanges(
+          self.pool.applied, self.pool.GetAppliedPatches())
 
     self.UpdateSlaveStatus()
 

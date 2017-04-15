@@ -67,6 +67,9 @@ SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 # Default sleep time (second) in the apply_patch loop
 DEFAULT_APPLY_PATCH_SLEEP_TIME = 1
 
+# Default timeout (second) for computing dependency map.
+COMPUTE_DEPENDENCY_MAP_TIMEOUT = 5 * 60
+
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
@@ -896,6 +899,8 @@ class ValidationPool(object):
     #    n to x in flip(G).
     # 3. So S = {x : x has a path to n in G}
     #         = {x : n has a path to x in flip(G)}
+    logging.info('Computing dependency map for changes: %s',
+                 cros_patch.GetChangesAsString(changes))
     flipped_graph = {}
     for change in changes:
       gerrit_deps, cq_deps = patches.GetDepChangesForChange(change)
@@ -903,11 +908,33 @@ class ValidationPool(object):
         # Maps each change to the changes directly depending on it.
         flipped_graph.setdefault(dep, set()).add(change)
 
+    try:
+      return self.GetTransitiveDependMap(changes, flipped_graph)
+    except timeout_util.TimeoutError as e:
+      logging.error('Timeout error at getting transitive dependency map for '
+                    'changes: %s', e)
+
+    return flipped_graph
+
+  @timeout_util.TimeoutDecorator(COMPUTE_DEPENDENCY_MAP_TIMEOUT)
+  def GetTransitiveDependMap(self, changes, flipped_graph):
+    """Get the transitive dependency map for given changes.
+
+    Args:
+      changes: A list of changes to parse to generate the dependency map.
+      flipped_graph: A dict mapping a change (patch.GerritPatch instance) to a
+        set of changes (patch.GerritPatch instances) directly depending on it.
+
+    Returns:
+      A dict mapping a change (patch.GerritPatch instance) to a set of changes
+      (patch.GerritPatch instances) directly or indirectly depending on it.
+    """
     transitive_dependency_map = {}
     for change in changes:
+      logging.info('Getting transitive dependency map for change: %s ',
+                   change.PatchLink())
       # Update dependency_map to map each change to all changes directly or
       # indirectly depending on it.
-      logging.info('Update dependency_map for change %s', change.gerrit_number)
       visited = self._DepthFirstSearch(flipped_graph, change)
       visited.remove(change)
       if visited:

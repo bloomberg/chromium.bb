@@ -39,6 +39,7 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+from chromite.lib import timeout_util
 from chromite.lib import triage_lib
 
 
@@ -999,6 +1000,31 @@ class TestCoreLogic(MoxBase):
         'I': {'H'}
     }
     self.assertDictEqual(dep_map, expect_map)
+
+  def testGetDependMapForChangesWithTimeoutError(self):
+    """Test GetDependMapForChanges with TimeoutError."""
+    self.PatchObject(validation_pool.ValidationPool, 'GetTransitiveDependMap',
+                     side_effect=timeout_util.TimeoutError())
+
+    pool = self.MakePool()
+    patches = patch_series.PatchSeries('path')
+    p = self.GetPatches(how_many=3)
+
+    for patch in p:
+      self.patch_mock.SetGerritDependencies(patch, [])
+
+    # p0 -> p1, p1 -> p2, p2 -> p0
+    self.patch_mock.SetCQDependencies(p[0], [p[1]])
+    self.patch_mock.SetCQDependencies(p[1], [p[2]])
+    self.patch_mock.SetCQDependencies(p[2], [p[0]])
+
+    dep_map = pool.GetDependMapForChanges(p, patches)
+    expected_map = {
+        p[0]: {p[2]},
+        p[1]: {p[0]},
+        p[2]: {p[1]}
+    }
+    self.assertDictEqual(dep_map, expected_map)
 
   def testGetDependMapForChangesOnNoDependency(self):
     """Test GetDependMapForChanges on no dependency."""
