@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 
+#include <utility>
+
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
@@ -85,10 +89,9 @@ void AppLaunchSplashScreenHandler::Show(const std::string& app_id) {
   data.SetBoolean("shortcutEnabled",
                   !KioskAppManager::Get()->GetDisableBailoutShortcut());
 
-  // |data| will take ownership of |app_info|.
-  base::DictionaryValue *app_info = new base::DictionaryValue();
-  PopulateAppInfo(app_info);
-  data.Set("appInfo", app_info);
+  auto app_info = base::MakeUnique<base::DictionaryValue>();
+  PopulateAppInfo(app_info.get());
+  data.Set("appInfo", std::move(app_info));
 
   SetLaunchText(l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
   ShowScreenWithData(kScreenId, &data);

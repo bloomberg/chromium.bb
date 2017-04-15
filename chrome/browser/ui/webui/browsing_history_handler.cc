@@ -194,7 +194,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
        it != entry->all_timestamps.end(); ++it) {
     timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
   }
-  result->Set("allTimestamps", timestamps.release());
+  result->Set("allTimestamps", std::move(timestamps));
 
   // Always pass the short date since it is needed both in the search and in
   // the monthly view.

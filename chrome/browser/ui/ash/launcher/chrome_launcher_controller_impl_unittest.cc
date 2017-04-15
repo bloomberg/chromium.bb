@@ -327,11 +327,12 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
                                     "for testing pinned platform apps");
     manifest_platform_app.SetString(extensions::manifest_keys::kApp, "true");
     manifest_platform_app.Set(extensions::manifest_keys::kPlatformAppBackground,
-                              new base::DictionaryValue());
-    base::ListValue* scripts = new base::ListValue();
+                              base::MakeUnique<base::DictionaryValue>());
+    auto scripts = base::MakeUnique<base::ListValue>();
     scripts->AppendString("main.js");
     manifest_platform_app.Set(
-        extensions::manifest_keys::kPlatformAppBackgroundScripts, scripts);
+        extensions::manifest_keys::kPlatformAppBackgroundScripts,
+        std::move(scripts));
 
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
@@ -371,9 +372,9 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
                              "for testing pinned Gmail");
     manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
                              kGmailLaunchURL);
-    base::ListValue* list = new base::ListValue();
+    auto list = base::MakeUnique<base::ListValue>();
     list->AppendString("*://mail.google.com/mail/ca");
-    manifest_gmail.Set(extensions::manifest_keys::kWebURLs, list);
+    manifest_gmail.Set(extensions::manifest_keys::kWebURLs, std::move(list));
 
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest_gmail, Extension::NO_FLAGS,

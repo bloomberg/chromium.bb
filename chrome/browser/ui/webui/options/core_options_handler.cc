@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -252,7 +253,8 @@ void CoreOptionsHandler::OnFinishedLoading(const base::ListValue* args) {
   handlers_host_->OnFinishedLoading();
 }
 
-base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
+std::unique_ptr<base::Value> CoreOptionsHandler::FetchPref(
+    const std::string& pref_name) {
   return CreateValueForPref(pref_name, std::string());
 }
 
@@ -364,7 +366,7 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
   }
 }
 
-base::Value* CoreOptionsHandler::CreateValueForPref(
+std::unique_ptr<base::Value> CoreOptionsHandler::CreateValueForPref(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
   const PrefService* pref_service = FindServiceForPref(pref_name);
@@ -372,15 +374,15 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
       pref_service->FindPreference(pref_name);
   if (!pref) {
     NOTREACHED();
-    return new base::Value();
+    return base::MakeUnique<base::Value>();
   }
   const PrefService::Preference* controlling_pref =
       pref_service->FindPreference(controlling_pref_name);
   if (!controlling_pref)
     controlling_pref = pref;
 
-  base::DictionaryValue* dict = new base::DictionaryValue;
-  dict->Set("value", pref->GetValue()->DeepCopy());
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->Set("value", base::MakeUnique<base::Value>(*pref->GetValue()));
   if (controlling_pref->IsManaged()) {
     dict->SetString("controlledBy", "policy");
   } else if (controlling_pref->IsExtensionControlled() &&
@@ -397,8 +399,7 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
             extension_id, extensions::ExtensionRegistry::EVERYTHING);
     if (extension) {
       dict->SetString("controlledBy", "extension");
-      dict->Set("extension",
-                extensions::util::GetExtensionInfo(extension).release());
+      dict->Set("extension", extensions::util::GetExtensionInfo(extension));
     }
   } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
@@ -407,9 +408,10 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
   const base::Value* recommended_value =
       controlling_pref->GetRecommendedValue();
   if (recommended_value)
-    dict->Set("recommendedValue", recommended_value->DeepCopy());
+    dict->Set("recommendedValue",
+              base::MakeUnique<base::Value>(*recommended_value));
   dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
-  return dict;
+  return std::move(dict);
 }
 
 PrefService* CoreOptionsHandler::FindServiceForPref(

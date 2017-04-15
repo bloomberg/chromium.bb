@@ -166,7 +166,7 @@ void AppendExtensionData(const std::string& key,
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
   details->SetString("id", extension ? extension->id() : std::string());
   details->SetString("name", extension ? extension->name() : std::string());
-  dict->Set(key, details.release());
+  dict->Set(key, std::move(details));
 }
 
 #if !defined(OS_CHROMEOS)
@@ -662,7 +662,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("username", username);
 #endif
   // Pass along sync status early so it will be available during page init.
-  values->Set("syncData", GetSyncStateDictionary().release());
+  values->Set("syncData", GetSyncStateDictionary());
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
 
@@ -675,7 +675,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
   // TODO(pastarmovj): replace this with a call to the CrosSettings list
   // handling functionality to come.
-  values->Set("timezoneList", chromeos::system::GetTimezoneList().release());
+  values->Set("timezoneList", chromeos::system::GetTimezoneList());
 
   values->SetString("accessibilityLearnMoreURL",
                     chrome::kChromeAccessibilityHelpURL);
@@ -705,7 +705,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL));
   magnifier_list->Append(std::move(option_partial));
 
-  values->Set("magnifierList", magnifier_list.release());
+  values->Set("magnifierList", std::move(magnifier_list));
   values->SetBoolean("enablePolymerPreload", g_enable_polymer_preload);
 #endif  // defined(OS_CHROMEOS)
 
@@ -717,7 +717,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #endif
 
   if (ShouldShowMultiProfilesUserList())
-    values->Set("profilesInfo", GetProfilesInfoList().release());
+    values->Set("profilesInfo", GetProfilesInfoList());
 
   // Profile deletion is not allowed for any users in ChromeOS.
   bool allow_deletion = true;

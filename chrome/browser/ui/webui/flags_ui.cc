@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/flags_ui.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -192,8 +194,8 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
                                      access_,
                                      supported_features.get(),
                                      unsupported_features.get());
-  results.Set(flags_ui::kSupportedFeatures, supported_features.release());
-  results.Set(flags_ui::kUnsupportedFeatures, unsupported_features.release());
+  results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
+  results.Set(flags_ui::kUnsupportedFeatures, std::move(unsupported_features));
   results.SetBoolean(flags_ui::kNeedsRestart,
                      about_flags::IsRestartNeededToCommitChanges());
   results.SetBoolean(flags_ui::kShowOwnerWarning,

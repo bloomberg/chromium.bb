@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -177,7 +178,7 @@ void PowerMessageHandler::GetJsStateOccupancyData(
         state_dict->SetDouble(state_names[index],
                               static_cast<double>(sample.time_in_state[index]));
       }
-      js_sample->Set("timeInState", state_dict.release());
+      js_sample->Set("timeInState", std::move(state_dict));
 
       js_sample_list->Append(std::move(js_sample));
     }

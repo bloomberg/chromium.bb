@@ -182,8 +182,9 @@ std::unique_ptr<base::DictionaryValue> ConvertDisplayModeToValue(
   return result;
 }
 
-base::DictionaryValue* ConvertBoundsToValue(const gfx::Rect& bounds) {
-  base::DictionaryValue* result = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> ConvertBoundsToValue(
+    const gfx::Rect& bounds) {
+  auto result = base::MakeUnique<base::DictionaryValue>();
   result->SetInteger("left", bounds.x());
   result->SetInteger("top", bounds.y());
   result->SetInteger("width", bounds.width());
@@ -329,23 +330,21 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->SetString("id", base::Int64ToString(display.id()));
     js_display->SetString("name",
                           display_manager->GetDisplayNameForId(display.id()));
-    base::DictionaryValue* display_bounds =
-        ConvertBoundsToValue(display.bounds());
-    js_display->Set("bounds", display_bounds);
+    js_display->Set("bounds", ConvertBoundsToValue(display.bounds()));
     js_display->SetBoolean("isPrimary", display.id() == primary_id);
     js_display->SetBoolean("isInternal", display.IsInternal());
     js_display->SetInteger("rotation", display.RotationAsDegree());
 
-    base::ListValue* js_resolutions = new base::ListValue();
+    auto js_resolutions = base::MakeUnique<base::ListValue>();
     for (const scoped_refptr<display::ManagedDisplayMode>& display_mode :
          display_info.display_modes()) {
       js_resolutions->Append(
           ConvertDisplayModeToValue(display.id(), display_mode));
     }
-    js_display->Set("resolutions", js_resolutions);
+    js_display->Set("resolutions", std::move(js_resolutions));
 
     js_display->SetInteger("colorProfileId", display_info.color_profile());
-    base::ListValue* available_color_profiles = new base::ListValue();
+    auto available_color_profiles = base::MakeUnique<base::ListValue>();
     for (const auto& color_profile : display_info.available_color_profiles()) {
       const base::string16 profile_name = GetColorProfileName(color_profile);
       if (profile_name.empty())
@@ -355,7 +354,8 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
       color_profile_dict->SetString("name", profile_name);
       available_color_profiles->Append(std::move(color_profile_dict));
     }
-    js_display->Set("availableColorProfiles", available_color_profiles);
+    js_display->Set("availableColorProfiles",
+                    std::move(available_color_profiles));
 
     if (display_manager->GetNumDisplays() > 1) {
       // The settings UI must use the resolved display layout to show the

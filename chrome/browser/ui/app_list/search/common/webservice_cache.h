@@ -88,7 +88,8 @@ class WebserviceCache : public KeyedService,
   // Returns a dictionary value for a given payload. The returned dictionary
   // will be owned by the data_store_ cached_dict, and freed on the destruction
   // of our dictionary datastore.
-  base::DictionaryValue* DictFromPayload(const Payload& payload);
+  std::unique_ptr<base::DictionaryValue> DictFromPayload(
+      const Payload& payload);
 
   // Trims our MRU cache, making sure that any element that is removed is also
   // removed from the dictionary data store.

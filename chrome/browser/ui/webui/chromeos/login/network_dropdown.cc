@@ -48,7 +48,7 @@ class NetworkMenuWebUI : public NetworkMenu {
 
  private:
   // Converts menu model into the ListValue, ready for passing to WebUI.
-  base::ListValue* ConvertMenuModel(ui::MenuModel* model);
+  std::unique_ptr<base::ListValue> ConvertMenuModel(ui::MenuModel* model);
 
   // WebUI where network menu is located.
   content::WebUI* web_ui_;
@@ -81,8 +81,9 @@ void NetworkMenuWebUI::OnItemChosen(int id) {
   model->ActivatedAt(index);
 }
 
-base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
-  base::ListValue* list = new base::ListValue();
+std::unique_ptr<base::ListValue> NetworkMenuWebUI::ConvertMenuModel(
+    ui::MenuModel* model) {
+  auto list = base::MakeUnique<base::ListValue>();
   for (int i = 0; i < model->GetItemCount(); ++i) {
     ui::MenuModel::ItemType type = model->GetTypeAt(i);
     int id;

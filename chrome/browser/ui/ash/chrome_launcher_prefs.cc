@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "ash/public/cpp/app_launch_id.h"
 #include "base/macros.h"
@@ -137,12 +139,13 @@ void SetPerDisplayPref(PrefService* prefs,
 
   DictionaryPrefUpdate update(prefs, prefs::kShelfPreferences);
   base::DictionaryValue* shelf_prefs = update.Get();
-  base::DictionaryValue* display_prefs = nullptr;
-  if (!shelf_prefs->GetDictionary(display_key, &display_prefs)) {
-    display_prefs = new base::DictionaryValue();
-    shelf_prefs->Set(display_key, display_prefs);
+  base::DictionaryValue* display_prefs_weak = nullptr;
+  if (!shelf_prefs->GetDictionary(display_key, &display_prefs_weak)) {
+    auto display_prefs = base::MakeUnique<base::DictionaryValue>();
+    display_prefs_weak = display_prefs.get();
+    shelf_prefs->Set(display_key, std::move(display_prefs));
   }
-  display_prefs->SetStringWithoutPathExpansion(pref_key, value);
+  display_prefs_weak->SetStringWithoutPathExpansion(pref_key, value);
 }
 
 ShelfAlignment AlignmentFromPref(const std::string& value) {

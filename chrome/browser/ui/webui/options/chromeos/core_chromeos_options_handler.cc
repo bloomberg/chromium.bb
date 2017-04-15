@@ -89,10 +89,11 @@ std::unique_ptr<base::DictionaryValue> CreateUserInfo(
 
 // This function decorates the bare list of emails with some more information
 // needed by the UI to properly display the Accounts page.
-base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
+std::unique_ptr<base::Value> CreateUsersWhitelist(
+    const base::Value* pref_value) {
   const base::ListValue* list_value =
       static_cast<const base::ListValue*>(pref_value);
-  base::ListValue* user_list = new base::ListValue();
+  auto user_list = base::MakeUnique<base::ListValue>();
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   for (base::ListValue::const_iterator i = list_value->begin();
@@ -171,13 +172,13 @@ void CoreChromeOSOptionsHandler::NotifyOwnershipChanged() {
     NotifySettingsChanged(it.first);
 }
 
-base::Value* CoreChromeOSOptionsHandler::FetchPref(
+std::unique_ptr<base::Value> CoreChromeOSOptionsHandler::FetchPref(
     const std::string& pref_name) {
   if (proxy_cros_settings_parser::IsProxyPref(pref_name)) {
-    base::Value* value = nullptr;
+    std::unique_ptr<base::Value> value;
     proxy_cros_settings_parser::GetProxyPrefValue(
         network_guid_, pref_name, GetUiProxyConfigService(), &value);
-    return value ? value : new base::Value();
+    return value;
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -186,7 +187,8 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
         pref_name == proxy_config::prefs::kUseSharedProxies
             ? proxy_config::prefs::kProxy
             : std::string();
-    base::Value* value = CreateValueForPref(pref_name, controlling_pref);
+    std::unique_ptr<base::Value> value =
+        CreateValueForPref(pref_name, controlling_pref);
     if (!IsSettingShared(pref_name) || !IsSecondaryUser(profile))
       return value;
     base::DictionaryValue* dict;
@@ -200,20 +202,20 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     dict->SetBoolean("disabled", true);
     dict->SetBoolean("value", primary_profile->GetPrefs()->GetBoolean(
         pref_name));
-    return dict;
+    return value;
   }
 
   const base::Value* pref_value = CrosSettings::Get()->GetPref(pref_name);
   if (!pref_value)
-    return new base::Value();
+    return base::MakeUnique<base::Value>();
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
   // TODO(estade): seems that this should replicate CreateValueForPref less.
-  base::DictionaryValue* dict = new base::DictionaryValue;
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   if (pref_name == kAccountsPrefUsers)
     dict->Set("value", CreateUsersWhitelist(pref_value));
   else
-    dict->Set("value", pref_value->DeepCopy());
+    dict->Set("value", base::MakeUnique<base::Value>(*pref_value));
 
   std::string controlled_by;
   if (IsSettingPrivileged(pref_name)) {
@@ -281,7 +283,7 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
     ::options::CoreOptionsHandler::StopObservingPref(path);
 }
 
-base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
+std::unique_ptr<base::Value> CoreChromeOSOptionsHandler::CreateValueForPref(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
   // The screen lock setting is shared if multiple users are logged in and at
@@ -302,8 +304,8 @@ base::Value* CoreChromeOSOptionsHandler::CreateValueForPref(
         // Screen lock is enabled for the session, but not in the user's
         // preferences. Show the user's value in the checkbox, but indicate
         // that the password requirement is enabled by some other user.
-        base::DictionaryValue* dict = new base::DictionaryValue;
-        dict->Set("value", pref->GetValue()->DeepCopy());
+        auto dict = base::MakeUnique<base::DictionaryValue>();
+        dict->Set("value", base::MakeUnique<base::Value>(*pref->GetValue()));
         dict->SetString("controlledBy", "shared");
         return dict;
       }
@@ -411,14 +413,13 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
   GetUiProxyConfigService()->UpdateFromPrefs(network_guid_);
   for (size_t i = 0; i < proxy_cros_settings_parser::kProxySettingsCount; ++i) {
-    base::Value* value = NULL;
+    std::unique_ptr<base::Value> value;
     proxy_cros_settings_parser::GetProxyPrefValue(
         network_guid_, proxy_cros_settings_parser::kProxySettings[i],
         GetUiProxyConfigService(), &value);
     DCHECK(value);
-    std::unique_ptr<base::Value> ptr(value);
     DispatchPrefChangeNotification(
-        proxy_cros_settings_parser::kProxySettings[i], std::move(ptr));
+        proxy_cros_settings_parser::kProxySettings[i], std::move(value));
   }
 }
 
