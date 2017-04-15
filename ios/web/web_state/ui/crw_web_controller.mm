@@ -135,6 +135,23 @@ NSString* const kLogJavaScript = @"LogJavascript";
 // Key of UMA IOSFix.ViewportZoomBugCount histogram.
 const char kUMAViewportZoomBugCount[] = "Renderer.ViewportZoomBugCount";
 
+// Key of the UMA Navigation.IOSWKWebViewSlowFastBackForward histogram.
+const char kUMAWKWebViewSlowFastBackForwardNavigationKey[] =
+    "Navigation.IOSWKWebViewSlowFastBackForward";
+
+// Values for the histogram that counts slow/fast back/forward navigations.
+enum class BackForwardNavigationType {
+  // Fast back navigation through WKWebView back-forward list.
+  FAST_BACK = 0,
+  // Slow back navigation when back-forward list navigation is not possible.
+  SLOW_BACK = 1,
+  // Fast forward navigation through WKWebView back-forward list.
+  FAST_FORWARD = 2,
+  // Slow forward navigation when back-forward list navigation is not possible.
+  SLOW_FORWARD = 3,
+  BACK_FORWARD_NAVIGATION_TYPE_COUNT
+};
+
 // URL scheme for messages sent from javascript for asynchronous processing.
 NSString* const kScriptMessageName = @"crwebinvoke";
 
@@ -796,6 +813,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // web view, or use native web view navigation where possible (for example,
 // going back and forward through the history stack).
 - (void)loadRequestForCurrentNavigationItem;
+// Reports Navigation.IOSWKWebViewSlowFastBackForward UMA. No-op if pending
+// navigation is not back forward navigation.
+- (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast;
 
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
@@ -4951,6 +4971,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                      referrer:self.currentNavItemReferrer
                    transition:self.currentTransition];
     [self loadRequest:request];
+    [self reportBackForwardNavigationTypeForFastNavigation:NO];
   };
 
   // When navigating via WKBackForwardListItem to pages created or updated by
@@ -4997,6 +5018,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           [_webView goToBackForwardListItem:holder->back_forward_list_item()];
       [_navigationStates setState:web::WKNavigationState::REQUESTED
                     forNavigation:navigation];
+      [self reportBackForwardNavigationTypeForFastNavigation:YES];
     }
   };
 
@@ -5018,6 +5040,30 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         else
           [self stopLoading];
       }));
+}
+
+- (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast {
+  // TODO(crbug.com/665189): Use NavigationManager::GetPendingItemIndex() once
+  // it returns correct result.
+  int pendingIndex = self.sessionController.pendingItemIndex;
+  if (pendingIndex == -1) {
+    // Pending navigation is not a back forward navigation.
+    return;
+  }
+
+  BOOL isBack = pendingIndex < self.sessionController.lastCommittedItemIndex;
+  BackForwardNavigationType type = BackForwardNavigationType::FAST_BACK;
+  if (isBack) {
+    type = isFast ? BackForwardNavigationType::FAST_BACK
+                  : BackForwardNavigationType::SLOW_BACK;
+  } else {
+    type = isFast ? BackForwardNavigationType::FAST_FORWARD
+                  : BackForwardNavigationType::SLOW_FORWARD;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kUMAWKWebViewSlowFastBackForwardNavigationKey, type,
+      BackForwardNavigationType::BACK_FORWARD_NAVIGATION_TYPE_COUNT);
 }
 
 #pragma mark -
