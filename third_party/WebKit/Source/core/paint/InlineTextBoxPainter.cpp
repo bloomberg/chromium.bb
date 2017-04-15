@@ -622,8 +622,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     }
   }
 
-  // 2. Now paint the foreground, including text and decorations like
-  // underline/overline (in quirks mode only).
+  // 2. Now paint the foreground, including text and decorations.
   int selection_start = 0;
   int selection_end = 0;
   if (paint_selected_text_only || paint_selected_text_separately)
