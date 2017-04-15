@@ -91,7 +91,7 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     params.delegate = new TouchHudUI(widget_);
     params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            ash::kShellWindowId_OverlayContainer);
+            static_cast<int32_t>(ash::kShellWindowId_OverlayContainer));
     params.show_state = ui::SHOW_STATE_FULLSCREEN;
     widget_->Init(params);
     widget_->Show();

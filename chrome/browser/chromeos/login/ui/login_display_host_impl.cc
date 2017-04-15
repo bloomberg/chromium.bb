@@ -1246,7 +1246,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
     using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            ash::kShellWindowId_LockScreenContainer);
+            static_cast<int32_t>(ash::kShellWindowId_LockScreenContainer));
   }
   login_window_ = new views::Widget;
   params.delegate = login_window_delegate_ =
