@@ -27,9 +27,9 @@ static const double kDoubleTickDivisor = 2.0;
 }
 
 // BeginFrameObserverBase -------------------------------------------------
-BeginFrameObserverBase::BeginFrameObserverBase()
-    : last_begin_frame_args_(), dropped_begin_frame_args_(0) {
-}
+BeginFrameObserverBase::BeginFrameObserverBase() = default;
+
+BeginFrameObserverBase::~BeginFrameObserverBase() = default;
 
 const BeginFrameArgs& BeginFrameObserverBase::LastUsedBeginFrameArgs() const {
   return last_begin_frame_args_;
@@ -50,6 +50,15 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
   }
 }
 
+void BeginFrameObserverBase::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetInteger("dropped_begin_frame_args", dropped_begin_frame_args_);
+
+  state->BeginDictionary("last_begin_frame_args");
+  last_begin_frame_args_.AsValueInto(state);
+  state->EndDictionary();
+}
+
 // BeginFrameSource -------------------------------------------------------
 namespace {
 static base::StaticAtomicSequenceNumber g_next_source_id;
@@ -57,8 +66,11 @@ static base::StaticAtomicSequenceNumber g_next_source_id;
 
 BeginFrameSource::BeginFrameSource() : source_id_(g_next_source_id.GetNext()) {}
 
-uint32_t BeginFrameSource::source_id() const {
-  return source_id_;
+BeginFrameSource::~BeginFrameSource() = default;
+
+void BeginFrameSource::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetInteger("source_id", source_id_);
 }
 
 // StubBeginFrameSource ---------------------------------------------------
@@ -241,12 +253,9 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
 }
 
 // BeginFrameObserverAckTracker -------------------------------------------
-BeginFrameObserverAckTracker::BeginFrameObserverAckTracker()
-    : current_source_id_(0),
-      current_sequence_number_(BeginFrameArgs::kStartingFrameNumber),
-      observers_had_damage_(false) {}
+BeginFrameObserverAckTracker::BeginFrameObserverAckTracker() = default;
 
-BeginFrameObserverAckTracker::~BeginFrameObserverAckTracker() {}
+BeginFrameObserverAckTracker::~BeginFrameObserverAckTracker() = default;
 
 void BeginFrameObserverAckTracker::OnBeginFrame(const BeginFrameArgs& args) {
   if (current_source_id_ != args.source_id)
@@ -334,6 +343,23 @@ uint64_t BeginFrameObserverAckTracker::LatestConfirmedSequenceNumber() const {
   return latest_confirmed_sequence_number;
 }
 
+void BeginFrameObserverAckTracker::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  base::SmallMap<std::map<BeginFrameObserver*, uint64_t>, 4>
+      latest_confirmed_sequence_numbers_;
+  state->SetInteger("current_source_id", current_source_id_);
+  state->SetInteger("current_sequence_number", current_sequence_number_);
+  state->SetInteger("num_observers", observers_.size());
+  state->SetInteger("num_finished_observers", finished_observers_.size());
+  state->SetBoolean("observers_had_damage", observers_had_damage_);
+
+  state->BeginArray("latest_confirmed_sequence_numbers");
+  for (const auto& kv : latest_confirmed_sequence_numbers_) {
+    state->AppendInteger(kv.second);
+  }
+  state->EndArray();
+}
+
 // ExternalBeginFrameSource -----------------------------------------------
 ExternalBeginFrameSource::ExternalBeginFrameSource(
     ExternalBeginFrameSourceClient* client)
@@ -342,6 +368,23 @@ ExternalBeginFrameSource::ExternalBeginFrameSource(
 }
 
 ExternalBeginFrameSource::~ExternalBeginFrameSource() = default;
+
+void ExternalBeginFrameSource::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  BeginFrameSource::AsValueInto(state);
+
+  state->SetBoolean("paused", paused_);
+  state->SetBoolean("frame_active", frame_active_);
+  state->SetInteger("num_observers", observers_.size());
+
+  state->BeginDictionary("last_begin_frame_args");
+  last_begin_frame_args_.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("ack_tracker_state");
+  ack_tracker_.AsValueInto(state);
+  state->EndDictionary();
+}
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
@@ -355,16 +398,18 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
     client_->OnNeedsBeginFrames(true);
 
   // Send a MISSED begin frame if necessary.
-  if (missed_begin_frame_args_.IsValid()) {
+  if (last_begin_frame_args_.IsValid()) {
     const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
     if (!last_args.IsValid() ||
-        (missed_begin_frame_args_.frame_time > last_args.frame_time)) {
-      DCHECK((missed_begin_frame_args_.source_id != last_args.source_id) ||
-             (missed_begin_frame_args_.sequence_number >
-              last_args.sequence_number))
-          << "current " << missed_begin_frame_args_.AsValue()->ToString()
+        (last_begin_frame_args_.frame_time > last_args.frame_time)) {
+      DCHECK(
+          (last_begin_frame_args_.source_id != last_args.source_id) ||
+          (last_begin_frame_args_.sequence_number > last_args.sequence_number))
+          << "current " << last_begin_frame_args_.AsValue()->ToString()
           << ", last " << last_args.AsValue()->ToString();
-      obs->OnBeginFrame(missed_begin_frame_args_);
+      BeginFrameArgs missed_args = last_begin_frame_args_;
+      missed_args.type = BeginFrameArgs::MISSED;
+      obs->OnBeginFrame(missed_args);
     }
   }
 }
@@ -377,7 +422,7 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   ack_tracker_.OnObserverRemoved(obs);
   MaybeFinishFrame();
   if (observers_.empty()) {
-    missed_begin_frame_args_ = BeginFrameArgs();
+    last_begin_frame_args_ = BeginFrameArgs();
     client_->OnNeedsBeginFrames(false);
   }
 }
@@ -406,8 +451,7 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
     FinishFrame();
 
   frame_active_ = true;
-  missed_begin_frame_args_ = args;
-  missed_begin_frame_args_.type = BeginFrameArgs::MISSED;
+  last_begin_frame_args_ = args;
   ack_tracker_.OnBeginFrame(args);
   std::unordered_set<BeginFrameObserver*> observers(observers_);
   for (auto* obs : observers) {
@@ -435,8 +479,8 @@ void ExternalBeginFrameSource::MaybeFinishFrame() {
 void ExternalBeginFrameSource::FinishFrame() {
   frame_active_ = false;
 
-  BeginFrameAck ack(missed_begin_frame_args_.source_id,
-                    missed_begin_frame_args_.sequence_number,
+  BeginFrameAck ack(last_begin_frame_args_.source_id,
+                    last_begin_frame_args_.sequence_number,
                     ack_tracker_.LatestConfirmedSequenceNumber(),
                     ack_tracker_.AnyObserversHadDamage());
   client_->OnDidFinishFrame(ack);

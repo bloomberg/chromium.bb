@@ -146,6 +146,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 
+  void AsValueInto(base::trace_event::TracedValue* state) const;
+
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
 
   const BeginFrameSource* begin_frame_source() const {
@@ -159,19 +161,22 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   virtual base::TimeTicks Now() const;
 
   const SchedulerSettings settings_;
-  // Not owned.
-  SchedulerClient* client_;
-  int layer_tree_host_id_;
+  SchedulerClient* const client_;
+  const int layer_tree_host_id_;
   base::SingleThreadTaskRunner* task_runner_;
 
-  // Not owned.  May be null.
-  BeginFrameSource* begin_frame_source_;
-  bool observing_begin_frame_source_;
+  BeginFrameSource* begin_frame_source_ = nullptr;
+  bool observing_begin_frame_source_ = false;
+
+  bool skipped_last_frame_missed_exceeded_deadline_ = false;
+  bool skipped_last_frame_to_reduce_latency_ = false;
 
   std::unique_ptr<CompositorTimingHistory> compositor_timing_history_;
 
   SchedulerStateMachine::BeginImplFrameDeadlineMode
-      begin_impl_frame_deadline_mode_;
+      begin_impl_frame_deadline_mode_ =
+          SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
+
   BeginFrameTracker begin_impl_frame_tracker_;
   BeginFrameArgs begin_main_frame_args_;
 
@@ -180,10 +185,11 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   base::CancelableClosure missed_begin_frame_task_;
 
   SchedulerStateMachine state_machine_;
-  bool inside_process_scheduled_actions_;
-  SchedulerStateMachine::Action inside_action_;
+  bool inside_process_scheduled_actions_ = false;
+  SchedulerStateMachine::Action inside_action_ =
+      SchedulerStateMachine::ACTION_NONE;
 
-  bool stopped_;
+  bool stopped_ = false;
 
  private:
   void ScheduleBeginImplFrameDeadline();

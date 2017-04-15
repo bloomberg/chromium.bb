@@ -216,7 +216,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetString("begin_main_frame_state",
                    BeginMainFrameStateToString(begin_main_frame_state_));
   state->SetString(
-      "compositor_frame_sink_state_",
+      "compositor_frame_sink_state",
       CompositorFrameSinkStateToString(compositor_frame_sink_state_));
   state->SetString("forced_redraw_state",
                    ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
@@ -253,7 +253,7 @@ void SchedulerStateMachine::AsValueInto(
                     impl_side_invalidation_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
                     consecutive_checkerboard_animations_);
-  state->SetInteger("pending_submit_frames_", pending_submit_frames_);
+  state->SetInteger("pending_submit_frames", pending_submit_frames_);
   state->SetInteger("submit_frames_with_current_compositor_frame_sink",
                     submit_frames_with_current_compositor_frame_sink_);
   state->SetBoolean("needs_redraw", needs_redraw_);
@@ -275,7 +275,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetString("tree_priority", TreePriorityToString(tree_priority_));
   state->SetString("scroll_handler_state",
                    ScrollHandlerStateToString(scroll_handler_state_));
-  state->SetBoolean("critical_begin_main_frame_to_activate_is_fast_",
+  state->SetBoolean("critical_begin_main_frame_to_activate_is_fast",
                     critical_begin_main_frame_to_activate_is_fast_);
   state->SetBoolean("main_thread_missed_last_deadline",
                     main_thread_missed_last_deadline_);

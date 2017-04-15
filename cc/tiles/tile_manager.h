@@ -234,6 +234,8 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ActivationStateAsValue();
 
+  void ActivationStateAsValueInto(base::trace_event::TracedValue* state);
+
  protected:
   friend class Tile;
   // Must be called by tile during destruction.

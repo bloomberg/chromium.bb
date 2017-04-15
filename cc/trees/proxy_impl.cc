@@ -232,19 +232,26 @@ NOINLINE void ProxyImpl::DumpForBeginMainFrameHang() {
   DCHECK(IsImplThread());
   DCHECK(scheduler_);
 
-  char stack_string[20000] = "";
+  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+
+  state->SetBoolean("commit_completion_waits_for_activation",
+                    commit_completion_waits_for_activation_);
+  state->SetBoolean("commit_completion_event", !!commit_completion_event_);
+  state->SetBoolean("activation_completion_event",
+                    !!activation_completion_event_);
+
+  state->BeginDictionary("scheduler_state");
+  scheduler_->AsValueInto(state.get());
+  state->EndDictionary();
+
+  state->BeginDictionary("tile_manager_state");
+  layer_tree_host_impl_->tile_manager()->ActivationStateAsValueInto(
+      state.get());
+  state->EndDictionary();
+
+  char stack_string[50000] = "";
   base::debug::Alias(&stack_string);
-
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> scheduler_state =
-      scheduler_->AsValue();
-  strncat(stack_string, scheduler_state->ToString().c_str(),
-          arraysize(stack_string) - strlen(stack_string) - 1);
-
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-      tile_manager_state =
-          layer_tree_host_impl_->tile_manager()->ActivationStateAsValue();
-  strncat(stack_string, tile_manager_state->ToString().c_str(),
-          arraysize(stack_string) - strlen(stack_string) - 1);
+  strncpy(stack_string, state->ToString().c_str(), arraysize(stack_string) - 1);
 
   base::debug::DumpWithoutCrashing();
 }

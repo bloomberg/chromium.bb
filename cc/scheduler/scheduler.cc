@@ -37,16 +37,9 @@ Scheduler::Scheduler(
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
       task_runner_(task_runner),
-      begin_frame_source_(nullptr),
-      observing_begin_frame_source_(false),
       compositor_timing_history_(std::move(compositor_timing_history)),
-      begin_impl_frame_deadline_mode_(
-          SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
       begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       state_machine_(settings),
-      inside_process_scheduled_actions_(false),
-      inside_action_(SchedulerStateMachine::ACTION_NONE),
-      stopped_(false),
       weak_factory_(this) {
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
   DCHECK(client_);
@@ -331,9 +324,12 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
   // Discard missed begin frames if they are too late.
   if (adjusted_args.type == BeginFrameArgs::MISSED &&
       now > adjusted_args.deadline) {
+    skipped_last_frame_missed_exceeded_deadline_ = true;
     SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
     return;
   }
+
+  skipped_last_frame_missed_exceeded_deadline_ = false;
 
   // Run the previous deadline if any.
   if (state_machine_.begin_impl_frame_state() ==
@@ -405,9 +401,12 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
                                       can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginImplFrameToReduceLatency",
                          TRACE_EVENT_SCOPE_THREAD);
+    skipped_last_frame_to_reduce_latency_ = true;
     SendBeginFrameAck(begin_main_frame_args_, kBeginFrameSkipped);
     return;
   }
+
+  skipped_last_frame_to_reduce_latency_ = false;
 
   BeginImplFrame(adjusted_args, now);
 }
@@ -680,38 +679,51 @@ void Scheduler::ProcessScheduledActions() {
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 Scheduler::AsValue() const {
-  std::unique_ptr<base::trace_event::TracedValue> state(
-      new base::trace_event::TracedValue());
+  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  AsValueInto(state.get());
+  return std::move(state);
+}
+
+void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   base::TimeTicks now = Now();
 
   state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state.get());
+  state_machine_.AsValueInto(state);
   state->EndDictionary();
 
-  state->BeginDictionary("scheduler_state");
   state->SetBoolean("observing_begin_frame_source",
                     observing_begin_frame_source_);
   state->SetBoolean("begin_impl_frame_deadline_task",
                     !begin_impl_frame_deadline_task_.IsCancelled());
   state->SetBoolean("missed_begin_frame_task",
                     !missed_begin_frame_task_.IsCancelled());
+  state->SetBoolean("skipped_last_frame_missed_exceeded_deadline",
+                    skipped_last_frame_missed_exceeded_deadline_);
+  state->SetBoolean("skipped_last_frame_to_reduce_latency",
+                    skipped_last_frame_to_reduce_latency_);
   state->SetString("inside_action",
                    SchedulerStateMachine::ActionToString(inside_action_));
-
-  state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_tracker_.AsValueInto(now, state.get());
-  state->EndDictionary();
-
-  state->SetString("begin_impl_frame_deadline_mode_",
+  state->SetString("begin_impl_frame_deadline_mode",
                    SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
                        begin_impl_frame_deadline_mode_));
+
+  state->BeginDictionary("begin_impl_frame_args");
+  begin_impl_frame_tracker_.AsValueInto(now, state);
   state->EndDictionary();
+
+  state->BeginDictionary("begin_frame_observer_state");
+  BeginFrameObserverBase::AsValueInto(state);
+  state->EndDictionary();
+
+  if (begin_frame_source_) {
+    state->BeginDictionary("begin_frame_source_state");
+    begin_frame_source_->AsValueInto(state);
+    state->EndDictionary();
+  }
 
   state->BeginDictionary("compositor_timing_history");
-  compositor_timing_history_->AsValueInto(state.get());
+  compositor_timing_history_->AsValueInto(state);
   state->EndDictionary();
-
-  return std::move(state);
 }
 
 void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {

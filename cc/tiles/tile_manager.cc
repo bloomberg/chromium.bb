@@ -1372,6 +1372,12 @@ scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TileManager::ActivationStateAsValue() {
   auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  ActivationStateAsValueInto(state.get());
+  return std::move(state);
+}
+
+void TileManager::ActivationStateAsValueInto(
+    base::trace_event::TracedValue* state) {
   state->SetString("tree_priority",
                    TreePriorityToString(global_state_.tree_priority));
   state->SetInteger("soft_memory_limit",
@@ -1410,7 +1416,7 @@ TileManager::ActivationStateAsValue() {
   state->BeginArray("raster_tiles");
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     state->BeginDictionary();
-    tile_as_value(raster_priority_queue->Top(), state.get());
+    tile_as_value(raster_priority_queue->Top(), state);
     state->EndDictionary();
   }
   state->EndArray();
@@ -1422,12 +1428,10 @@ TileManager::ActivationStateAsValue() {
   state->BeginArray("activation_tiles");
   for (; !required_priority_queue->IsEmpty(); required_priority_queue->Pop()) {
     state->BeginDictionary();
-    tile_as_value(required_priority_queue->Top(), state.get());
+    tile_as_value(required_priority_queue->Top(), state);
     state->EndDictionary();
   }
   state->EndArray();
-
-  return std::move(state);
 }
 
 TileManager::MemoryUsage::MemoryUsage()
