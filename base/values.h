@@ -450,7 +450,7 @@ class BASE_EXPORT ListValue : public Value {
 
   // Appends a Value to the end of the list.
   void Append(std::unique_ptr<Value> in_value);
-#if !defined(OS_LINUX) && !defined(OS_MACOSX)
+#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Deprecated version of the above. TODO(estade): remove.
   void Append(Value* in_value);
 #endif

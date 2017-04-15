@@ -6,8 +6,12 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "content/browser/android/java/jni_helper.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,25 +128,25 @@ TEST_F(GinJavaMethodInvocationHelperTest, RetrievalOfObjectsNoObjects) {
 TEST_F(GinJavaMethodInvocationHelperTest, RetrievalOfObjectsHaveObjects) {
   base::ListValue objects;
   objects.AppendInteger(100);
-  objects.Append(GinJavaBridgeValue::CreateObjectIDValue(1).release());
-  base::ListValue* sub_list = new base::ListValue();
+  objects.Append(GinJavaBridgeValue::CreateObjectIDValue(1));
+  auto sub_list = base::MakeUnique<base::ListValue>();
   sub_list->AppendInteger(200);
-  sub_list->Append(GinJavaBridgeValue::CreateObjectIDValue(2).release());
-  objects.Append(sub_list);
-  base::DictionaryValue* sub_dict = new base::DictionaryValue();
+  sub_list->Append(GinJavaBridgeValue::CreateObjectIDValue(2));
+  objects.Append(std::move(sub_list));
+  auto sub_dict = base::MakeUnique<base::DictionaryValue>();
   sub_dict->SetInteger("1", 300);
-  sub_dict->Set("2", GinJavaBridgeValue::CreateObjectIDValue(3).release());
-  objects.Append(sub_dict);
-  base::ListValue* sub_list_with_dict = new base::ListValue();
-  base::DictionaryValue* sub_sub_dict = new base::DictionaryValue();
-  sub_sub_dict->Set("1", GinJavaBridgeValue::CreateObjectIDValue(4).release());
-  sub_list_with_dict->Append(sub_sub_dict);
-  objects.Append(sub_list_with_dict);
-  base::DictionaryValue* sub_dict_with_list = new base::DictionaryValue();
-  base::ListValue* sub_sub_list = new base::ListValue();
-  sub_sub_list->Append(GinJavaBridgeValue::CreateObjectIDValue(5).release());
-  sub_dict_with_list->Set("1", sub_sub_list);
-  objects.Append(sub_dict_with_list);
+  sub_dict->Set("2", GinJavaBridgeValue::CreateObjectIDValue(3));
+  objects.Append(std::move(sub_dict));
+  auto sub_list_with_dict = base::MakeUnique<base::ListValue>();
+  auto sub_sub_dict = base::MakeUnique<base::DictionaryValue>();
+  sub_sub_dict->Set("1", GinJavaBridgeValue::CreateObjectIDValue(4));
+  sub_list_with_dict->Append(std::move(sub_sub_dict));
+  objects.Append(std::move(sub_list_with_dict));
+  auto sub_dict_with_list = base::MakeUnique<base::DictionaryValue>();
+  auto sub_sub_list = base::MakeUnique<base::ListValue>();
+  sub_sub_list->Append(GinJavaBridgeValue::CreateObjectIDValue(5));
+  sub_dict_with_list->Set("1", std::move(sub_sub_list));
+  objects.Append(std::move(sub_dict_with_list));
 
   scoped_refptr<GinJavaMethodInvocationHelper> helper =
       new GinJavaMethodInvocationHelper(

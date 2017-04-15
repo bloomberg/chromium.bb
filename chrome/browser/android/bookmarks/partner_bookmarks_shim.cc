@@ -5,8 +5,10 @@
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 
 #include <tuple>
+#include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -282,11 +284,11 @@ void PartnerBookmarksShim::SaveNodeMapping() {
   for (NodeRenamingMap::const_iterator i = node_rename_remove_map_.begin();
        i != node_rename_remove_map_.end();
        ++i) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString(kMappingUrl, i->first.url().spec());
     dict->SetString(kMappingProviderTitle, i->first.provider_title());
     dict->SetString(kMappingTitle, i->second);
-    list.Append(dict);
+    list.Append(std::move(dict));
   }
   prefs_->Set(prefs::kPartnerBookmarkMappings, list);
 }

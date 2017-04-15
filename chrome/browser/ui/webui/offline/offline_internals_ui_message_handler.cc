@@ -6,11 +6,14 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -133,8 +136,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
   base::ListValue results;
 
   for (const auto& page : pages) {
-    base::DictionaryValue* offline_page = new base::DictionaryValue();
-    results.Append(offline_page);
+    auto offline_page = base::MakeUnique<base::DictionaryValue>();
     offline_page->SetString("onlineUrl", page.url.spec());
     offline_page->SetString("namespace", page.client_id.name_space);
     offline_page->SetDouble("size", page.file_size);
@@ -144,6 +146,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetDouble("lastAccessTime", page.last_access_time.ToJsTime());
     offline_page->SetInteger("accessCount", page.access_count);
     offline_page->SetString("originalUrl", page.original_url.spec());
+    results.Append(std::move(offline_page));
   }
   ResolveJavascriptCallback(base::Value(callback_id), results);
 }
@@ -155,8 +158,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
   base::ListValue save_page_requests;
   if (result == offline_pages::GetRequestsResult::SUCCESS) {
     for (const auto& request : requests) {
-      base::DictionaryValue* save_page_request = new base::DictionaryValue();
-      save_page_requests.Append(save_page_request);
+      auto save_page_request = base::MakeUnique<base::DictionaryValue>();
       save_page_request->SetString("onlineUrl", request->url().spec());
       save_page_request->SetDouble("creationTime",
                                    request->creation_time().ToJsTime());
@@ -168,6 +170,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
       save_page_request->SetString("id", std::to_string(request->request_id()));
       save_page_request->SetString("originalUrl",
                                    request->original_url().spec());
+      save_page_requests.Append(std::move(save_page_request));
     }
   }
   ResolveJavascriptCallback(base::Value(callback_id), save_page_requests);

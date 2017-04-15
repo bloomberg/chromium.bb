@@ -357,8 +357,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
                                      routing_id);
     }
     wrapped_result->Append(
-        GinJavaBridgeValue::CreateObjectIDValue(
-            returned_object_id).release());
+        GinJavaBridgeValue::CreateObjectIDValue(returned_object_id));
   } else {
     wrapped_result->Append(base::MakeUnique<base::Value>());
   }

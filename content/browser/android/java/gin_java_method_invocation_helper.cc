@@ -258,8 +258,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       if (std::isfinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
-        result_wrapper.Append(
-            GinJavaBridgeValue::CreateNonFiniteValue(result).release());
+        result_wrapper.Append(GinJavaBridgeValue::CreateNonFiniteValue(result));
       }
       break;
     }
@@ -270,8 +269,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       if (std::isfinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
-        result_wrapper.Append(
-            GinJavaBridgeValue::CreateNonFiniteValue(result).release());
+        result_wrapper.Append(GinJavaBridgeValue::CreateNonFiniteValue(result));
       }
       break;
     }
@@ -280,15 +278,13 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
         env->CallVoidMethodA(object, id, parameters);
       else
         env->CallStaticVoidMethodA(clazz, id, parameters);
-      result_wrapper.Append(
-          GinJavaBridgeValue::CreateUndefinedValue().release());
+      result_wrapper.Append(GinJavaBridgeValue::CreateUndefinedValue());
       break;
     case JavaType::TypeArray:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to not call methods that
       // return arrays. Spec requires calling the method and converting the
       // result to a JavaScript array.
-      result_wrapper.Append(
-          GinJavaBridgeValue::CreateUndefinedValue().release());
+      result_wrapper.Append(GinJavaBridgeValue::CreateUndefinedValue());
       break;
     case JavaType::TypeString: {
       jstring java_string = static_cast<jstring>(
@@ -305,8 +301,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       if (!scoped_java_string.obj()) {
         // LIVECONNECT_COMPLIANCE: Existing behavior is to return undefined.
         // Spec requires returning a null string.
-        result_wrapper.Append(
-            GinJavaBridgeValue::CreateUndefinedValue().release());
+        result_wrapper.Append(GinJavaBridgeValue::CreateUndefinedValue());
         break;
       }
       result_wrapper.AppendString(

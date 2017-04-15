@@ -4,7 +4,10 @@
 
 #include "content/renderer/java/gin_java_function_invocation_helper.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "content/common/android/gin_java_bridge_errors.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/public/child/v8_value_converter.h"
@@ -63,11 +66,10 @@ v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
     v8::Local<v8::Value> val;
     while (args->GetNext(&val)) {
       std::unique_ptr<base::Value> arg(converter_->FromV8Value(val, context));
-      if (arg.get()) {
-        arguments.Append(arg.release());
-      } else {
+      if (arg.get())
+        arguments.Append(std::move(arg));
+      else
         arguments.Append(base::MakeUnique<base::Value>());
-      }
     }
   }
 
