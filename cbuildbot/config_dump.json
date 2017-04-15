@@ -14744,6 +14744,7 @@
             "smaug-cheets-release",
             "smaug-release",
             "snappy-release",
+            "soraka-release",
             "squawks-release",
             "stout-release",
             "stumpy-release",
@@ -22106,6 +22107,79 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "soraka-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "soraka"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "soraka-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "soraka"
+        ]
+    },
+    "soraka-full": {
+        "_template": "full",
+        "boards": [
+            "soraka"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "soraka-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "soraka"
+        ]
+    },
+    "soraka-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "soraka"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "soraka-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "soraka"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "soraka-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "soraka"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "soraka-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "soraka"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "soraka-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "soraka"
         ]
     },
     "squawks-chrome-pfq": {
