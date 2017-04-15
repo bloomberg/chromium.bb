@@ -2808,26 +2808,17 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
 
-const scoped_refptr<RenderMediaLog>& RenderFrameImpl::GetMediaLog() {
-  if (!media_log_.get()) {
-    media_log_ =
-        new RenderMediaLog(url::Origin(frame_->GetSecurityOrigin()).GetURL());
-  }
-
-  return media_log_;
-}
-
 blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     const blink::WebMediaPlayerSource& source,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id) {
+  blink::WebSecurityOrigin security_origin = frame_->GetSecurityOrigin();
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.IsNull())
-    return CreateWebMediaPlayerForMediaStream(client, sink_id,
-                                              frame_->GetSecurityOrigin());
+    return CreateWebMediaPlayerForMediaStream(client, sink_id, security_origin);
 
   // If |source| was not a MediaStream, it must be a URL.
   // TODO(guidou): Fix this when support for other srcObject types is added.
@@ -2842,7 +2833,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
       AudioDeviceFactory::NewSwitchableAudioRendererSink(
           AudioDeviceFactory::kSourceMediaElement, routing_id_, 0,
-          sink_id.Utf8(), frame_->GetSecurityOrigin());
+          sink_id.Utf8(), security_origin);
   // We need to keep a reference to the context provider (see crbug.com/610527)
   // but media/ can't depend on cc/, so for now, just keep a reference in the
   // callback.
@@ -2851,6 +2842,13 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   media::WebMediaPlayerParams::Context3DCB context_3d_cb = base::Bind(
       &GetSharedMainThreadContext3D,
       RenderThreadImpl::current()->SharedMainThreadContextProvider());
+
+  // This must be created for every new WebMediaPlayer, each instance generates
+  // a new player id which is used to collate logs on the browser side.
+  // TODO(chcunningham, dalecurtis): This should be switched to a unique_ptr
+  // owned by WebMediaPlayer to avoid this confusion. http://crbug.com/711818.
+  scoped_refptr<media::MediaLog> media_log(
+      new RenderMediaLog(url::Origin(security_origin).GetURL()));
 
   bool embedded_media_experience_enabled = false;
 #if defined(OS_ANDROID)
@@ -2891,8 +2889,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this),
                  GetWebMediaPlayerDelegate()->has_played_media()),
-      audio_renderer_sink, GetMediaLog(),
-      render_thread->GetMediaThreadTaskRunner(),
+      audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(),
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
@@ -2930,7 +2927,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMojoRenderer)) {
       media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-          GetMediaLog(), GetDecoderFactory(),
+          media_log, GetDecoderFactory(),
           base::Bind(&RenderThreadImpl::GetGpuFactories,
                      base::Unretained(render_thread)));
     }
@@ -2943,7 +2940,7 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     }
 #else
     media_renderer_factory = base::MakeUnique<media::DefaultRendererFactory>(
-        GetMediaLog(), GetDecoderFactory(),
+        media_log, GetDecoderFactory(),
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)));
 #endif  // defined(ENABLE_MOJO_RENDERER)
@@ -4674,7 +4671,8 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::EncryptedMediaClient() {
         // callback.
         base::Bind(&RenderFrameImpl::AreSecureCodecsSupported,
                    base::Unretained(this)),
-        GetCdmFactory(), GetMediaPermission(), GetMediaLog()));
+        GetCdmFactory(), GetMediaPermission(),
+        new RenderMediaLog(url::Origin(frame_->GetSecurityOrigin()).GetURL())));
   }
   return web_encrypted_media_client_.get();
 }

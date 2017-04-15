@@ -155,7 +155,6 @@ class RenderAccessibilityImpl;
 class RendererMediaPlayerManager;
 class RendererPpapiHost;
 class RenderFrameObserver;
-class RenderMediaLog;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
@@ -1118,9 +1117,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
-  // Lazy constructs a RenderMediaLog for use across owned media objects.
-  const scoped_refptr<RenderMediaLog>& GetMediaLog();
-
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1240,8 +1236,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
   UserMediaClientImpl* web_user_media_client_;
-
-  scoped_refptr<RenderMediaLog> media_log_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   std::unique_ptr<media::WebEncryptedMediaClientImpl>
