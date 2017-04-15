@@ -23,9 +23,10 @@ class ChromeBrowserState;
 }
 
 // Google centric new tab page.
-@interface GoogleLandingController : NSObject<LogoAnimationControllerOwnerOwner,
-                                              NewTabPagePanelProtocol,
-                                              ToolbarOwner>
+@interface GoogleLandingController
+    : UIViewController<LogoAnimationControllerOwnerOwner,
+                       NewTabPagePanelProtocol,
+                       ToolbarOwner>
 
 // Initialization method.
 - (id)initWithLoader:(id<UrlLoader>)loader

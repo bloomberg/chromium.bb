@@ -164,6 +164,7 @@ enum {
 
 @synthesize ntpView = newTabPageView_;
 @synthesize swipeRecognizerProvider = swipeRecognizerProvider_;
+@synthesize parentViewController = parentViewController_;
 
 - (id)initWithUrl:(const GURL&)url
                 loader:(id<UrlLoader>)loader
@@ -278,6 +279,14 @@ enum {
   // Animations can last past the life of the NTP controller, nil out the
   // delegate.
   self.ntpView.scrollView.delegate = nil;
+
+  // This is not an ideal place to put view controller contaimnent, rather a
+  // //web -wasDismissed method on CRWNativeContent would be more accurate. If
+  // CRWNativeContent leaks, this will not be called.
+  // TODO(crbug.com/708319): Also call -removeFromParentViewController for
+  // bookmarks, open tabs and incognit here.
+  [googleLandingController_ removeFromParentViewController];
+
   [googleLandingController_ setDelegate:nil];
   [bookmarkController_ setDelegate:nil];
   [openTabsController_ setDelegate:nil];
@@ -287,9 +296,14 @@ enum {
 
 #pragma mark - CRWNativeContent
 
-// Note: No point implementing -handleLowMemory because all native content
-// views but the selected one are dropped, and the selected view doesn't
-// need to do anything.
+- (void)willBeDismissed {
+  // This methods is called by //web immediately before |self|'s view is removed
+  // from the view hierarchy, making it an ideal spot to intiate view controller
+  // containment methods.
+  // TODO(crbug.com/708319): Also call -willMoveToParentViewController:nil for
+  // bookmarks, open tabs and incognito here.
+  [googleLandingController_ willMoveToParentViewController:nil];
+}
 
 - (void)reload {
   [currentController_ reload];
@@ -485,7 +499,8 @@ enum {
 }
 
 - (BOOL)loadPanel:(NewTabPageBarItem*)item {
-  UIView* view;
+  UIView* view = nil;
+  UIViewController* panelController = nil;
   BOOL created = NO;
   // Only load the controllers once.
   if (item.identifier == NewTabPage::kBookmarksPanel) {
@@ -498,6 +513,7 @@ enum {
                                       colorCache:dominantColorCache_] retain]);
     }
     view = [bookmarkController_ view];
+    // TODO(crbug.com/708319): Also set panelController for bookmarks here.
     [bookmarkController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
     if (!googleLandingController_) {
@@ -508,6 +524,7 @@ enum {
           webToolbarDelegate:webToolbarDelegate_
                     tabModel:tabModel_]);
     }
+    panelController = googleLandingController_;
     view = [googleLandingController_ view];
     [googleLandingController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
@@ -515,6 +532,7 @@ enum {
       openTabsController_.reset([[RecentTabsPanelController alloc]
           initWithLoader:loader_
             browserState:browserState_]);
+    // TODO(crbug.com/708319): Also set panelController for opentabs here.
     view = [openTabsController_ view];
     [openTabsController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kIncognitoPanel) {
@@ -523,6 +541,7 @@ enum {
               initWithLoader:loader_
                 browserState:browserState_
           webToolbarDelegate:webToolbarDelegate_]);
+    // TODO(crbug.com/708319): Also set panelController for incognito here.
     view = [incognitoController_ view];
   } else {
     NOTREACHED();
@@ -535,7 +554,21 @@ enum {
     created = YES;
     view.frame = [self.ntpView panelFrameForItemAtIndex:index];
     item.view = view;
+
+    // To ease modernizing the NTP only the internal panels are being converted
+    // to UIViewControllers.  This means all the plumbing between the
+    // BrowserViewController and the internal NTP panels (WebController, NTP)
+    // hierarchy is skipped.  While normally the logic to push and pop a view
+    // controller would be owned by a coordinator, in this case the old NTP
+    // controller adds and removes child view controllers itself when a load
+    // is initiated, and when WebController calls -willBeDismissed.
+    // TODO(crbug.com/708319):This 'if' can become a DCHECK once all panels move
+    // to panelControllers.
+    if (panelController)
+      [self.parentViewController addChildViewController:panelController];
     [self.ntpView.scrollView addSubview:view];
+    if (panelController)
+      [panelController didMoveToParentViewController:self.parentViewController];
   }
   return created;
 }

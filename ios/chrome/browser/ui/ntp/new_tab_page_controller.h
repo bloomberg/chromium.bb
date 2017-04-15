@@ -85,6 +85,15 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
 @property(nonatomic, assign) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;
 
+// To ease modernizing the NTP only the internal panels are being converted
+// to UIViewControllers.  This means all the plumbing between the
+// BrowserViewController and the internal NTP panels (WebController, NTP)
+// hierarchy is skipped.  While normally the logic to push and pop a view
+// controller would be owned by a coordinator, in this case the old NTP
+// controller adds and removes child view controllers itself when a load
+// is initiated, and when WebController calls -willBeDismissed.
+@property(nonatomic, assign) UIViewController* parentViewController;
+
 // Init with the given url (presumably "chrome://newtab") and loader object.
 // |loader| may be nil, but isn't retained so it must outlive this controller.
 // Dominant color cache is passed to bookmark controller only, to optimize

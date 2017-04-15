@@ -191,9 +191,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                       UICollectionViewDelegateFlowLayout,
                                       UIGestureRecognizerDelegate,
                                       WhatsNewHeaderViewDelegate> {
-  // The main view.
-  base::scoped_nsobject<GoogleLandingView> _view;
-
   // Fake omnibox.
   base::scoped_nsobject<UIButton> _searchTapTarget;
 
@@ -274,6 +271,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @property(nonatomic) id<UrlLoader> loader;
 
+// Redeclare the |view| property to be the GoogleLandingView subclass instead of
+// a generic UIView.
+@property(nonatomic, readwrite, strong) GoogleLandingView* view;
+
 // iPhone landscape uses a slightly different layout for the doodle and search
 // field frame. Returns the proper frame from |frames| based on orientation,
 // centered in the view.
@@ -342,6 +343,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @implementation GoogleLandingController
 
+@dynamic view;
 @synthesize loader = _loader;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -393,30 +395,32 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     [_swipeGestureRecognizer
         setDirection:UISwipeGestureRecognizerDirectionDown];
 
-    _view.reset(
-        [[GoogleLandingView alloc] initWithFrame:[UIScreen mainScreen].bounds]);
-    [_view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
-                               UIViewAutoresizingFlexibleWidth];
-    [_view setFrameDelegate:self];
-
     _focuser.reset(focuser);
     _webToolbarDelegate.reset(webToolbarDelegate);
     _tabModel.reset([tabModel retain]);
 
     _scrolledToTop = NO;
     _animateHeader = YES;
-    // Initialise |shiftTilesDownStartTime| to a sentinel value to indicate that
-    // the animation has not yet started.
-    _shiftTilesDownStartTime = -1;
-    _mostVisitedCellSize =
-        [GoogleLandingController mostVisitedCellSizeForView:_view];
-    [self addDoodle];
-    [self addSearchField];
-    [self addMostVisited];
-    [self addOverscrollActions];
-    [self reload];
   }
   return self;
+}
+
+- (void)loadView {
+  self.view =
+      [[GoogleLandingView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  [self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
+                                 UIViewAutoresizingFlexibleWidth];
+  [self.view setFrameDelegate:self];
+  // Initialise |shiftTilesDownStartTime| to a sentinel value to indicate that
+  // the animation has not yet started.
+  _shiftTilesDownStartTime = -1;
+  _mostVisitedCellSize =
+      [GoogleLandingController mostVisitedCellSizeForView:self.view];
+  [self addDoodle];
+  [self addSearchField];
+  [self addMostVisited];
+  [self addOverscrollActions];
+  [self reload];
 }
 
 + (CGSize)mostVisitedCellSizeForView:(UIView*)view {
@@ -484,7 +488,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (CGFloat)viewWidth {
-  return [_view frame].size.width;
+  return [self.view frame].size.width;
 }
 
 - (int)numberOfColumns {
@@ -810,7 +814,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (void)updateSubviewFrames {
   _mostVisitedCellSize =
-      [GoogleLandingController mostVisitedCellSizeForView:_view];
+      [GoogleLandingController mostVisitedCellSizeForView:self.view];
   UICollectionViewFlowLayout* flowLayout =
       base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
           [_mostVisitedView collectionViewLayout]);
@@ -858,7 +862,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 // Initialize and add a panel with most visited sites.
 - (void)addMostVisited {
-  CGRect mostVisitedFrame = [_view bounds];
+  CGRect mostVisitedFrame = [self.view bounds];
   base::scoped_nsobject<UICollectionViewFlowLayout> flowLayout;
   if (IsIPadIdiom())
     flowLayout.reset([[UICollectionViewFlowLayout alloc] init]);
@@ -891,7 +895,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
               withReuseIdentifier:@"header"];
   [_mostVisitedView setAccessibilityIdentifier:@"Google Landing"];
 
-  [_view addSubview:_mostVisitedView];
+  [self.view addSubview:_mostVisitedView];
   _most_visited_sites =
       IOSMostVisitedSitesFactory::NewForBrowserState(_browserState);
   _most_visited_observer_bridge.reset(
@@ -938,9 +942,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (void)shiftTilesUp {
   _scrolledToTop = YES;
-  // Add gesture recognizer to background |_view| when omnibox is focused.
-  [_view addGestureRecognizer:_tapGestureRecognizer];
-  [_view addGestureRecognizer:_swipeGestureRecognizer];
+  // Add gesture recognizer to background |self.view| when omnibox is focused.
+  [self.view addGestureRecognizer:_tapGestureRecognizer];
+  [self.view addGestureRecognizer:_swipeGestureRecognizer];
 
   CGFloat pinnedOffsetY = [self pinnedOffsetY];
   _animateHeader = !IsIPadIdiom();
@@ -1005,8 +1009,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   // Reshow views that are within range of the most visited collection view
   // (if necessary).
-  [_view removeGestureRecognizer:_tapGestureRecognizer];
-  [_view removeGestureRecognizer:_swipeGestureRecognizer];
+  [self.view removeGestureRecognizer:_tapGestureRecognizer];
+  [self.view removeGestureRecognizer:_swipeGestureRecognizer];
 
   // CADisplayLink is used for this animation instead of the standard UIView
   // animation because the standard animation did not properly convert the
@@ -1490,7 +1494,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (CGFloat)alphaForBottomShadow {
-  // Get the frame of the bottommost cell in |_view|'s coordinate system.
+  // Get the frame of the bottommost cell in |self.view|'s coordinate system.
   NSInteger section = SectionWithMostVisited;
   // Account for the fact that the tableview may not yet contain
   // |numberOfNonEmptyTilesShown| tiles because it hasn't been updated yet.
@@ -1507,7 +1511,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   CGRect cellFrameInSuperview =
       [_mostVisitedView convertRect:lastCellFrame toView:self.view];
 
-  // Calculate when the bottom of the cell passes through the bottom of |_view|.
+  // Calculate when the bottom of the cell passes through the bottom of
+  // |self.view|.
   CGFloat maxY = CGRectGetMaxY(cellFrameInSuperview);
   CGFloat viewHeight = CGRectGetHeight(self.view.frame);
 
@@ -1515,10 +1520,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   CGFloat alpha = pixelsBelowFrame / kNewTabPageDistanceToFadeShadow;
   alpha = MIN(MAX(alpha, 0), 1);
   return alpha;
-}
-
-- (UIView*)view {
-  return _view;
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner

@@ -15,27 +15,23 @@
 
 @interface NTPHomeCoordinator ()
 @property(nonatomic, strong) NTPHomeMediator* mediator;
-@property(nonatomic, strong) UIViewController* viewController;
-@property(nonatomic, strong) GoogleLandingController* wrapperController;
+@property(nonatomic, strong) GoogleLandingController* viewController;
 @end
 
 @implementation NTPHomeCoordinator
 @synthesize mediator = _mediator;
 @synthesize viewController = _viewController;
-@synthesize wrapperController = _wrapperController;
 
 - (void)start {
   // PLACEHOLDER: Re-using old view controllers for now.
   self.mediator = [[NTPHomeMediator alloc] init];
   self.mediator.dispatcher = static_cast<id>(self.browser->dispatcher());
-  self.wrapperController = [[GoogleLandingController alloc]
+  self.viewController = [[GoogleLandingController alloc]
           initWithLoader:self.mediator
             browserState:self.browser->browser_state()
                  focuser:self.mediator
       webToolbarDelegate:nil
                 tabModel:nil];
-  self.viewController = [[UIViewController alloc] init];
-  self.viewController.view = [self.wrapperController view];
   [super start];
 }
 
