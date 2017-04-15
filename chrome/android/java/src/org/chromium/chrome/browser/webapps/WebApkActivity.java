@@ -124,10 +124,6 @@ public class WebApkActivity extends WebappActivity {
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         super.onDeferredStartupWithStorage(storage);
 
-        // Initialize the time of the last is-update-needed check with the registration time. This
-        // prevents checking for updates on the first run.
-        storage.updateTimeOfLastCheckForUpdatedWebManifest();
-
         mUpdateManager = new WebApkUpdateManager(WebApkActivity.this, storage);
         mUpdateManager.updateIfNeeded(getActivityTab(),
                 (WebApkInfo) mWebappInfo);
@@ -144,6 +140,10 @@ public class WebApkActivity extends WebappActivity {
                 mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        // Initialize the time of the last is-update-needed check with the
+                        // registration time. This prevents checking for updates on the first run.
+                        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+
                         onDeferredStartupWithStorage(storage);
                     }
                 });
