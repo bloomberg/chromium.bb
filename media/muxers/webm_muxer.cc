@@ -246,6 +246,13 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   DCHECK_EQ(0ull, video_track->crop_bottom());
   DCHECK_EQ(0.0f, video_track->frame_rate());
 
+  // Segment's timestamps should be in milliseconds, DCHECK it. See
+  // http://www.webmproject.org/docs/container/#muxer-guidelines
+  DCHECK_EQ(1000000ull, segment_.GetSegmentInfo()->timecode_scale());
+
+  // Set alpha channel parameters for only VPX (crbug.com/711825).
+  if (video_codec_ == kCodecH264)
+    return;
   video_track->SetAlphaMode(mkvmuxer::VideoTrack::kAlpha);
   // Alpha channel, if present, is stored in a BlockAdditional next to the
   // associated opaque Block, see
@@ -253,10 +260,6 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   // This follows Method 1 for VP8 encoding of A-channel described on
   // http://wiki.webmproject.org/alpha-channel.
   video_track->set_max_block_additional_id(1);
-
-  // Segment's timestamps should be in milliseconds, DCHECK it. See
-  // http://www.webmproject.org/docs/container/#muxer-guidelines
-  DCHECK_EQ(1000000ull, segment_.GetSegmentInfo()->timecode_scale());
 }
 
 void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
