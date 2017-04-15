@@ -97,7 +97,21 @@ HoverType GetPrimaryHoverType(int available_hover_types) {
   return HOVER_TYPE_NONE;
 }
 
+bool return_available_pointer_and_hover_types_for_testing = false;
+int available_pointer_types_for_testing = POINTER_TYPE_NONE;
+int available_hover_types_for_testing = HOVER_TYPE_NONE;
+
+void SetAvailablePointerAndHoverTypesForTesting(int available_pointer_types,
+                                                int available_hover_types) {
+  return_available_pointer_and_hover_types_for_testing = true;
+  available_pointer_types_for_testing = available_pointer_types;
+  available_hover_types_for_testing = available_hover_types;
+}
+
 std::pair<int, int> GetAvailablePointerAndHoverTypes() {
+  if (return_available_pointer_and_hover_types_for_testing)
+    return std::make_pair(available_pointer_types_for_testing,
+                          available_hover_types_for_testing);
   return std::make_pair(GetAvailablePointerTypes(), GetAvailableHoverTypes());
 }
 

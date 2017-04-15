@@ -234,6 +234,8 @@ RenderViewHostImpl::RenderViewHostImpl(
 
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
+
+  input_device_change_observer_.reset(new InputDeviceChangeObserver(this));
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
@@ -244,7 +246,6 @@ RenderViewHostImpl::~RenderViewHostImpl() {
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
                    GetProcess()->GetID(), GetRoutingID()));
   }
-
   delegate_->RenderViewDeleted(this);
   GetProcess()->RemoveObserver(this);
 }

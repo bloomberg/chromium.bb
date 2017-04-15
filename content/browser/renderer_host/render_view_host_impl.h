@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/input/input_device_change_observer.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
@@ -323,6 +324,9 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // OnClosePageACK(), or until the timeout triggers and the page is forcibly
   // closed.
   std::unique_ptr<TimeoutMonitor> close_timeout_;
+
+  // This monitors input changes so they can be reflected to the interaction MQ.
+  std::unique_ptr<InputDeviceChangeObserver> input_device_change_observer_;
 
   bool updating_web_preferences_;
 
