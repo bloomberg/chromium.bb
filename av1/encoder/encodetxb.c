@@ -249,8 +249,9 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
   return;
 }
 
-int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                         int block, TXB_CTX *txb_ctx) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   const TX_SIZE tx_size = get_tx_size(plane, xd);
   const PLANE_TYPE plane_type = get_plane_type(plane);
@@ -283,6 +284,8 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   }
 
   cost = av1_cost_bit(xd->fc->txb_skip[tx_size][txb_skip_ctx], 0);
+
+  cost += av1_tx_type_cost(cpi, xd, mbmi->sb_type, plane, tx_size, tx_type);
 
   for (c = 0; c < eob; ++c) {
     tran_low_t v = qcoeff[scan[c]];
@@ -747,7 +750,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     const SCAN_ORDER *scan_order =
         get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
     this_rd_stats.rate = av1_cost_coeffs(
-        cm, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
+        cpi, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
     int rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
     if (rd < best_rd) {
       best_rd = rd;

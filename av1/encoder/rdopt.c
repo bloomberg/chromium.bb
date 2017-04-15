@@ -1256,11 +1256,12 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 }
 #endif  // !CONFIG_LV_MAP
 
-int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
                     const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
                     int use_fast_coef_costing) {
 #if !CONFIG_LV_MAP
+  const AV1_COMMON *const cm = &cpi->common;
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
 #else  // !CONFIG_LV_MAP
@@ -1284,7 +1285,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_cost_coeffs_txb(cm, x, plane, block, &txb_ctx);
+  return av1_cost_coeffs_txb(cpi, x, plane, block, &txb_ctx);
 #endif  // !CONFIG_LV_MAP
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
@@ -1593,8 +1594,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
-  this_rd_stats.rate = av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order,
-                                       a, l, args->use_fast_coef_costing);
+  this_rd_stats.rate =
+      av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order, a, l,
+                      args->use_fast_coef_costing);
 #else   // !CONFIG_PVQ
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
@@ -1829,8 +1831,11 @@ static int tx_size_cost(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 
 // #TODO(angiebird): use this function whenever it's possible
-static int tx_type_cost(const AV1_COMP *cpi, const MACROBLOCKD *xd,
-                        BLOCK_SIZE bsize, TX_SIZE tx_size, TX_TYPE tx_type) {
+int av1_tx_type_cost(const AV1_COMP *cpi, const MACROBLOCKD *xd,
+                     BLOCK_SIZE bsize, int plane, TX_SIZE tx_size,
+                     TX_TYPE tx_type) {
+  if (plane > 0) return 0;
+
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_EXT_TX
@@ -1892,7 +1897,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
-  rd_stats->rate += tx_type_cost(cpi, xd, bs, tx_size, tx_type);
+#if !CONFIG_LV_MAP
+  int plane = 0;
+  rd_stats->rate += av1_tx_type_cost(cpi, xd, bs, plane, tx_size, tx_type);
+#endif
 
   if (rd_stats->skip) {
     if (is_inter) {
@@ -2716,7 +2724,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if !CONFIG_PVQ
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
-            ratey += av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order,
+            ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
                                      tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
@@ -2761,7 +2769,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
             av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-            ratey += av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order,
+            ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
                                      tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
             skip = (p->eobs[block] == 0);
@@ -2918,9 +2926,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
                           row + idy, col + idx,
 #endif  // CONFIG_CB4X4
                           BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
-          ratey +=
-              av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, tempa + idx,
-                              templ + idy, cpi->sf.use_fast_coef_costing);
+          ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
+                                   tempa + idx, templ + idy,
+                                   cpi->sf.use_fast_coef_costing);
           skip = (p->eobs[block] == 0);
           can_skip &= skip;
           tempa[idx] = !skip;
@@ -2976,9 +2984,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #endif  // CONFIG_CB4X4
                           BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
           av1_optimize_b(cm, x, 0, block, tx_size, coeff_ctx);
-          ratey +=
-              av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, tempa + idx,
-                              templ + idy, cpi->sf.use_fast_coef_costing);
+          ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
+                                   tempa + idx, templ + idy,
+                                   cpi->sf.use_fast_coef_costing);
           skip = (p->eobs[block] == 0);
           can_skip &= skip;
           tempa[idx] = !skip;
@@ -3957,7 +3965,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   }
   rd_stats->dist += tmp * 16;
   txb_coeff_cost =
-      av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l, 0);
+      av1_cost_coeffs(cpi, x, plane, block, tx_size, scan_order, a, l, 0);
   rd_stats->rate += txb_coeff_cost;
   rd_stats->skip &= (eob == 0);
 
@@ -5270,7 +5278,7 @@ static int64_t encode_inter_mb_segment_sub8x8(
       thissse += ssz;
 #if !CONFIG_PVQ
       thisrate +=
-          av1_cost_coeffs(cm, x, 0, block, tx_size, scan_order, (ta + (k & 1)),
+          av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order, (ta + (k & 1)),
                           (tl + (k >> 1)), cpi->sf.use_fast_coef_costing);
       *(ta + (k & 1)) = !(p->eobs[block] == 0);
       *(tl + (k >> 1)) = !(p->eobs[block] == 0);

@@ -139,7 +139,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     OUTPUT_STATUS output_status);
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
-int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
                     const ENTROPY_CONTEXT *a, const ENTROPY_CONTEXT *l,
                     int use_fast_coef_costing);
@@ -210,5 +210,9 @@ void av1_txfm_rd_in_plane_supertx(MACROBLOCK *x, const AV1_COMP *cpi, int *rate,
 #ifdef __cplusplus
 }  // extern "C"
 #endif
+
+int av1_tx_type_cost(const AV1_COMP *cpi, const MACROBLOCKD *xd,
+                     BLOCK_SIZE bsize, int plane, TX_SIZE tx_size,
+                     TX_TYPE tx_type);
 
 #endif  // AV1_ENCODER_RDOPT_H_
