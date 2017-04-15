@@ -5,14 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/options/language_options_handler_common.h"
-
-namespace base {
-class ListValue;
-}
 
 namespace options {
 
@@ -35,7 +29,7 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  static std::unique_ptr<base::ListValue> GetLanguageList();
+  static base::ListValue* GetLanguageList();
 
  private:
   // LanguageOptionsHandlerCommon implementation.

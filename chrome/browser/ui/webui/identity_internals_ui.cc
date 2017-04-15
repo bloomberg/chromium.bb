@@ -66,7 +66,7 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Gets a list of scopes specified in |token_cache_key| and returns a pointer
   // to a ListValue containing the scopes. The caller gets ownership of the
   // returned object.
-  std::unique_ptr<base::ListValue> GetScopes(
+  base::ListValue* GetScopes(
       const extensions::ExtensionTokenKey& token_cache_key);
 
   // Gets a localized status of the access token in |token_cache_value|.
@@ -181,9 +181,9 @@ const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
   return extension->name();
 }
 
-std::unique_ptr<base::ListValue> IdentityInternalsUIMessageHandler::GetScopes(
+base::ListValue* IdentityInternalsUIMessageHandler::GetScopes(
     const extensions::ExtensionTokenKey& token_cache_key) {
-  auto scopes_value = base::MakeUnique<base::ListValue>();
+  base::ListValue* scopes_value = new base::ListValue();
   for (std::set<std::string>::const_iterator
            iter = token_cache_key.scopes.begin();
        iter != token_cache_key.scopes.end(); ++iter) {

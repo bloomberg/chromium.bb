@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -132,7 +131,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
     sinks_val->Append(std::move(sink_val));
   }
 
-  sink_list_and_identity->Set("sinks", std::move(sinks_val));
+  sink_list_and_identity->Set("sinks", sinks_val.release());
   sink_list_and_identity->SetBoolean("showEmail", show_email);
   sink_list_and_identity->SetBoolean("showDomain", show_domain);
   return sink_list_and_identity;
@@ -415,17 +414,17 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
 
   std::unique_ptr<base::DictionaryValue> sinks_and_identity(
       SinksAndIdentityToValue(media_router_ui_->sinks(), GetAccountInfo()));
-  initial_data.Set("sinksAndIdentity", std::move(sinks_and_identity));
+  initial_data.Set("sinksAndIdentity", sinks_and_identity.release());
 
   std::unique_ptr<base::ListValue> routes(RoutesToValue(
       media_router_ui_->routes(), media_router_ui_->joinable_route_ids(),
       media_router_ui_->routes_and_cast_modes()));
-  initial_data.Set("routes", std::move(routes));
+  initial_data.Set("routes", routes.release());
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
   std::unique_ptr<base::ListValue> cast_modes_list(CastModesToValue(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
-  initial_data.Set("castModes", std::move(cast_modes_list));
+  initial_data.Set("castModes", cast_modes_list.release());
 
   // If the cast mode last chosen for the current origin is tab mirroring,
   // that should be the cast mode initially selected in the dialog. Otherwise

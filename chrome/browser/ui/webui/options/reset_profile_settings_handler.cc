@@ -261,7 +261,7 @@ void ResetProfileSettingsHandler::UpdateFeedbackUI() {
   std::unique_ptr<base::ListValue> list = GetReadableFeedbackForSnapshot(
       Profile::FromWebUI(web_ui()), *setting_snapshot_);
   base::DictionaryValue feedback_info;
-  feedback_info.Set("feedbackInfo", std::move(list));
+  feedback_info.Set("feedbackInfo", list.release());
   web_ui()->CallJavascriptFunctionUnsafe(
       "ResetProfileSettingsOverlay.setFeedbackInfo", feedback_info);
 }

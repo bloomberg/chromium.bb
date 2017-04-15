@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_COMPONENTS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_COMPONENTS_UI_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -15,7 +14,6 @@
 #include "ui/base/layout.h"
 
 namespace base {
-class ListValue;
 class RefCountedMemory;
 }
 
@@ -27,7 +25,7 @@ class ComponentsUI : public content::WebUIController,
 
   static void OnDemandUpdate(const std::string& component_id);
 
-  static std::unique_ptr<base::ListValue> LoadComponents();
+  static base::ListValue* LoadComponents();
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);

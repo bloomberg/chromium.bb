@@ -246,10 +246,11 @@ void NetworkScreenHandler::GetAdditionalParameters(
   const bool enable_layouts =
       !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_slave;
 
-  dict->Set("languageList", std::move(language_list));
-  dict->Set("inputMethodsList",
-            GetAndActivateLoginKeyboardLayouts(
-                application_locale, selected_input_method, enable_layouts));
+  dict->Set("languageList", language_list.release());
+  dict->Set(
+      "inputMethodsList",
+      GetAndActivateLoginKeyboardLayouts(
+          application_locale, selected_input_method, enable_layouts).release());
   dict->Set("timezoneList", GetTimezoneList());
 }
 
@@ -267,7 +268,7 @@ void NetworkScreenHandler::Initialize() {
 // NetworkScreenHandler, private: ----------------------------------------------
 
 // static
-std::unique_ptr<base::ListValue> NetworkScreenHandler::GetTimezoneList() {
+base::ListValue* NetworkScreenHandler::GetTimezoneList() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
 
@@ -291,7 +292,7 @@ std::unique_ptr<base::ListValue> NetworkScreenHandler::GetTimezoneList() {
     timezone_list->Append(std::move(timezone_option));
   }
 
-  return timezone_list;
+  return timezone_list.release();
 }
 
 }  // namespace chromeos

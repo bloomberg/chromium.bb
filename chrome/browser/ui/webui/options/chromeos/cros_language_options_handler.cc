@@ -94,7 +94,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU));
 
   // GetSupportedInputMethods() never returns NULL.
-  localized_strings->Set("languageList", GetAcceptLanguageList());
+  localized_strings->Set("languageList", GetAcceptLanguageList().release());
   localized_strings->Set("inputMethodList", GetInputMethodList());
 
   input_method::InputMethodManager* manager =
@@ -102,10 +102,10 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   input_method::InputMethodDescriptors ext_ime_descriptors;
   manager->GetActiveIMEState()->GetInputMethodExtensions(&ext_ime_descriptors);
 
-  std::unique_ptr<base::ListValue> ext_ime_list =
-      ConvertInputMethodDescriptorsToIMEList(ext_ime_descriptors);
-  AddImeProvider(ext_ime_list.get());
-  localized_strings->Set("extensionImeList", std::move(ext_ime_list));
+  base::ListValue* ext_ime_list = ConvertInputMethodDescriptorsToIMEList(
+      ext_ime_descriptors);
+  AddImeProvider(ext_ime_list);
+  localized_strings->Set("extensionImeList", ext_ime_list);
 
   ComponentExtensionIMEManager* component_extension_manager =
       input_method::InputMethodManager::Get()
@@ -134,15 +134,14 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 }
 
 // static
-std::unique_ptr<base::ListValue>
-CrosLanguageOptionsHandler::GetInputMethodList() {
+base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   // GetSupportedInputMethods() never return NULL.
   std::unique_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
 
-  auto input_method_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* input_method_list = new base::ListValue();
 
   for (size_t i = 0; i < descriptors->size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
@@ -156,11 +155,11 @@ CrosLanguageOptionsHandler::GetInputMethodList() {
 
     // One input method can be associated with multiple languages, hence
     // we use a dictionary here.
-    auto languages = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* languages = new base::DictionaryValue();
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i) {
       languages->SetBoolean(descriptor.language_codes().at(i), true);
     }
-    dictionary->Set("languageCodeSet", std::move(languages));
+    dictionary->Set("languageCodeSet", languages);
 
     input_method_list->Append(std::move(dictionary));
   }
@@ -168,9 +167,9 @@ CrosLanguageOptionsHandler::GetInputMethodList() {
   return input_method_list;
 }
 
-std::unique_ptr<base::ListValue>
-CrosLanguageOptionsHandler::ConvertInputMethodDescriptorsToIMEList(
-    const input_method::InputMethodDescriptors& descriptors) {
+base::ListValue*
+    CrosLanguageOptionsHandler::ConvertInputMethodDescriptorsToIMEList(
+        const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodUtil* util =
       input_method::InputMethodManager::Get()->GetInputMethodUtil();
   std::unique_ptr<base::ListValue> ime_ids_list(new base::ListValue());
@@ -186,10 +185,10 @@ CrosLanguageOptionsHandler::ConvertInputMethodDescriptorsToIMEList(
         new base::DictionaryValue());
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i)
       language_codes->SetBoolean(descriptor.language_codes().at(i), true);
-    dictionary->Set("languageCodeSet", std::move(language_codes));
+    dictionary->Set("languageCodeSet", language_codes.release());
     ime_ids_list->Append(std::move(dictionary));
   }
-  return ime_ids_list;
+  return ime_ids_list.release();
 }
 
 void CrosLanguageOptionsHandler::SetApplicationLocale(

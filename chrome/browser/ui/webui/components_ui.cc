@@ -104,8 +104,9 @@ void ComponentsDOMHandler::RegisterMessages() {
 
 void ComponentsDOMHandler::HandleRequestComponentsData(
     const base::ListValue* args) {
+  base::ListValue* list = ComponentsUI::LoadComponents();
   base::DictionaryValue result;
-  result.Set("components", ComponentsUI::LoadComponents());
+  result.Set("components", list);
   web_ui()->CallJavascriptFunctionUnsafe("returnComponentsData", result);
 }
 
@@ -163,14 +164,14 @@ void ComponentsUI::OnDemandUpdate(const std::string& component_id) {
 }
 
 // static
-std::unique_ptr<base::ListValue> ComponentsUI::LoadComponents() {
+base::ListValue* ComponentsUI::LoadComponents() {
   component_updater::ComponentUpdateService* cus =
       g_browser_process->component_updater();
   std::vector<std::string> component_ids;
   component_ids = cus->GetComponentIDs();
 
   // Construct DictionaryValues to return to UI.
-  auto component_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* component_list = new base::ListValue();
   for (size_t j = 0; j < component_ids.size(); ++j) {
     update_client::CrxUpdateItem item;
     if (cus->GetComponentDetails(component_ids[j], &item)) {

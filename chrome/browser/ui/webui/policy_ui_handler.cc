@@ -644,18 +644,18 @@ void PolicyUIHandler::SendPolicyNames() const {
   scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   // Add Chrome policy names.
-  auto chrome_policy_names = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* chrome_policy_names = new base::DictionaryValue;
   policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
   for (policy::Schema::Iterator it = chrome_schema->GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
-    AddPolicyName(it.key(), chrome_policy_names.get());
+    AddPolicyName(it.key(), chrome_policy_names);
   }
-  names.Set("chromePolicyNames", std::move(chrome_policy_names));
+  names.Set("chromePolicyNames", chrome_policy_names);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy names.
-  auto extension_policy_names = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
 
   for (const scoped_refptr<const extensions::Extension>& extension :
        extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
@@ -663,12 +663,12 @@ void PolicyUIHandler::SendPolicyNames() const {
     if (!extension->manifest()->HasPath(
         extensions::manifest_keys::kStorageManagedSchema))
       continue;
-    auto extension_value = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* extension_value = new base::DictionaryValue;
     extension_value->SetString("name", extension->name());
     const policy::Schema* schema =
         schema_map->GetSchema(policy::PolicyNamespace(
             policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
-    auto policy_names = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* policy_names = new base::DictionaryValue;
     if (schema && schema->valid()) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
@@ -677,10 +677,10 @@ void PolicyUIHandler::SendPolicyNames() const {
         policy_names->SetBoolean(prop.key(), true);
       }
     }
-    extension_value->Set("policyNames", std::move(policy_names));
-    extension_policy_names->Set(extension->id(), std::move(extension_value));
+    extension_value->Set("policyNames", policy_names);
+    extension_policy_names->Set(extension->id(), extension_value);
   }
-  names.Set("extensionPolicyNames", std::move(extension_policy_names));
+  names.Set("extensionPolicyNames", extension_policy_names);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyNames", names);
@@ -690,15 +690,15 @@ void PolicyUIHandler::SendPolicyValues() const {
   base::DictionaryValue all_policies;
 
   // Add Chrome policy values.
-  auto chrome_policies = base::MakeUnique<base::DictionaryValue>();
-  GetChromePolicyValues(chrome_policies.get());
-  all_policies.Set("chromePolicies", std::move(chrome_policies));
+  base::DictionaryValue* chrome_policies = new base::DictionaryValue;
+  GetChromePolicyValues(chrome_policies);
+  all_policies.Set("chromePolicies", chrome_policies);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy values.
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));
-  auto extension_values = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* extension_values = new base::DictionaryValue;
 
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
@@ -706,15 +706,15 @@ void PolicyUIHandler::SendPolicyValues() const {
     if (!extension->manifest()->HasPath(
         extensions::manifest_keys::kStorageManagedSchema))
       continue;
-    auto extension_policies = base::MakeUnique<base::DictionaryValue>();
+    base::DictionaryValue* extension_policies = new base::DictionaryValue;
     policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
         policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
     policy::PolicyErrorMap empty_error_map;
     GetPolicyValues(GetPolicyService()->GetPolicies(policy_namespace),
-                    &empty_error_map, extension_policies.get());
-    extension_values->Set(extension->id(), std::move(extension_policies));
+                    &empty_error_map, extension_policies);
+    extension_values->Set(extension->id(), extension_policies);
   }
-  all_policies.Set("extensionPolicies", std::move(extension_values));
+  all_policies.Set("extensionPolicies", extension_values);
 #endif
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyValues",
                                          all_policies);
@@ -779,9 +779,9 @@ void PolicyUIHandler::SendStatus() const {
 
   base::DictionaryValue status;
   if (!device_status->empty())
-    status.Set("device", std::move(device_status));
+    status.Set("device", device_status.release());
   if (!user_status->empty())
-    status.Set("user", std::move(user_status));
+    status.Set("user", user_status.release());
 
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setStatus", status);
 }

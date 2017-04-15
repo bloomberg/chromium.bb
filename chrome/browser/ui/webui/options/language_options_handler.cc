@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -58,7 +57,7 @@ void LanguageOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-std::unique_ptr<base::ListValue> LanguageOptionsHandler::GetLanguageList() {
+base::ListValue* LanguageOptionsHandler::GetLanguageList() {
   // Collect the language codes from the supported accept-languages.
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   std::vector<std::string> language_codes;
@@ -92,7 +91,7 @@ std::unique_ptr<base::ListValue> LanguageOptionsHandler::GetLanguageList() {
   l10n_util::SortStrings16(app_locale, &display_names);
 
   // Build the language list from the language map.
-  auto language_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* language_list = new base::ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
     base::string16& display_name = display_names[i];
     base::string16 adjusted_display_name(display_name);

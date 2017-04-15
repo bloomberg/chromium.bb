@@ -282,10 +282,12 @@ void SetProxyPrefValue(const std::string& network_guid,
   config_service->SetProxyConfig(network_guid, config);
 }
 
+// TODO(crbug.com/697817): Change |out_value| to be
+// std::unique_ptr<base::Value>*.
 bool GetProxyPrefValue(const std::string& network_guid,
                        const std::string& path,
                        UIProxyConfigService* config_service,
-                       std::unique_ptr<base::Value>* out_value) {
+                       base::Value** out_value) {
   std::string controlled_by;
   std::unique_ptr<base::Value> data;
   UIProxyConfig config;
@@ -356,12 +358,12 @@ bool GetProxyPrefValue(const std::string& network_guid,
       list->AppendString(rule->ToString());
     data = std::move(list);
   } else {
-    out_value->reset();
+    *out_value = NULL;
     return false;
   }
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* dict = new base::DictionaryValue;
   if (!data)
     data = base::MakeUnique<base::Value>(base::Value::Type::STRING);
   dict->Set("value", std::move(data));
@@ -372,7 +374,7 @@ bool GetProxyPrefValue(const std::string& network_guid,
   } else {
     dict->SetBoolean("disabled", false);
   }
-  *out_value = std::move(dict);
+  *out_value = dict;
   return true;
 }
 

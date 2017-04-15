@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -69,7 +68,7 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
   base::DictionaryValue dict;
   dict.SetBoolean("enabled", enabled);
   if (enabled) {
-    auto db = base::MakeUnique<base::ListValue>();
+    base::ListValue* db = new base::ListValue();
     for (AutocompleteActionPredictor::DBCacheMap::const_iterator it =
              autocomplete_action_predictor_->db_cache_.begin();
          it != autocomplete_action_predictor_->db_cache_.end();
@@ -83,7 +82,7 @@ void PredictorsHandler::RequestAutocompleteActionPredictorDb(
           autocomplete_action_predictor_->CalculateConfidenceForDbEntry(it));
       db->Append(std::move(entry));
     }
-    dict.Set("db", std::move(db));
+    dict.Set("db", db);
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("updateAutocompleteActionPredictorDb",
@@ -98,15 +97,15 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
 
   if (enabled) {
     // Url Database cache.
-    auto db = base::MakeUnique<base::ListValue>();
+    base::ListValue* db = new base::ListValue();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor_->url_table_cache_, db.get());
-    dict.Set("url_db", std::move(db));
+        *resource_prefetch_predictor_->url_table_cache_, db);
+    dict.Set("url_db", db);
 
-    db = base::MakeUnique<base::ListValue>();
+    db = new base::ListValue();
     AddPrefetchDataMapToListValue(
-        *resource_prefetch_predictor_->host_table_cache_, db.get());
-    dict.Set("host_db", std::move(db));
+        *resource_prefetch_predictor_->host_table_cache_, db);
+    dict.Set("host_db", db);
   }
 
   web_ui()->CallJavascriptFunctionUnsafe("updateResourcePrefetchPredictorDb",
@@ -119,7 +118,7 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
   for (const auto& p : data_map) {
     std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
     main->SetString("main_frame_url", p.first);
-    auto resources = base::MakeUnique<base::ListValue>();
+    base::ListValue* resources = new base::ListValue();
     for (const predictors::ResourceData& r : p.second.resources()) {
       std::unique_ptr<base::DictionaryValue> resource(
           new base::DictionaryValue());
@@ -137,7 +136,7 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
           resource_prefetch_predictor_->IsResourcePrefetchable(r));
       resources->Append(std::move(resource));
     }
-    main->Set("resources", std::move(resources));
+    main->Set("resources", resources);
     db->Append(std::move(main));
   }
 }

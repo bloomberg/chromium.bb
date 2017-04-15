@@ -207,7 +207,8 @@ SearchEngineManagerHandler::CreateDictionaryForEngine(int index,
             ->GetExtensionById(template_url->GetExtensionId(),
                                extensions::ExtensionRegistry::EVERYTHING);
     if (extension) {
-      dict->Set("extension", extensions::util::GetExtensionInfo(extension));
+      dict->Set("extension",
+                extensions::util::GetExtensionInfo(extension).release());
     }
   }
   return dict;

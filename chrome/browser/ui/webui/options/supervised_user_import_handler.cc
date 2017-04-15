@@ -96,7 +96,7 @@ void SupervisedUserImportHandler::GetLocalizedValues(
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
-  localized_strings->Set("avatarIcons", GetAvatarIcons());
+  localized_strings->Set("avatarIcons", GetAvatarIcons().release());
 }
 
 void SupervisedUserImportHandler::InitializeHandler() {

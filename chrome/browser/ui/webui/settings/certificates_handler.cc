@@ -1043,7 +1043,7 @@ void CertificatesHandler::PopulateTree(
       dict->SetString(kNameField, i->first);
 
       // Populate second level (certs).
-      auto subnodes = base::MakeUnique<base::ListValue>();
+      base::ListValue* subnodes = new base::ListValue;
       for (net::CertificateList::const_iterator org_cert_it = i->second.begin();
            org_cert_it != i->second.end(); ++org_cert_it) {
         std::unique_ptr<base::DictionaryValue> cert_dict(
@@ -1075,7 +1075,7 @@ void CertificatesHandler::PopulateTree(
       }
       std::sort(subnodes->begin(), subnodes->end(), comparator);
 
-      dict->Set(kSubnodesField, std::move(subnodes));
+      dict->Set(kSubnodesField, subnodes);
       nodes->Append(std::move(dict));
     }
     std::sort(nodes->begin(), nodes->end(), comparator);

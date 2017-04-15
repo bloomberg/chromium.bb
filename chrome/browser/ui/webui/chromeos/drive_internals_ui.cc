@@ -352,7 +352,7 @@ void DriveInternalsWebUIHandler::OnGetAppList(
   base::DictionaryValue app_list;
   app_list.SetString("etag", parsed_app_list->etag());
 
-  auto items = base::MakeUnique<base::ListValue>();
+  base::ListValue* items = new base::ListValue();
   for (size_t i = 0; i < parsed_app_list->items().size(); ++i) {
     const google_apis::AppResource* app = parsed_app_list->items()[i].get();
     auto app_data = base::MakeUnique<base::DictionaryValue>();
@@ -363,7 +363,7 @@ void DriveInternalsWebUIHandler::OnGetAppList(
 
     items->Append(std::move(app_data));
   }
-  app_list.Set("items", std::move(items));
+  app_list.Set("items", items);
 
   web_ui()->CallJavascriptFunctionUnsafe("updateAppList", app_list);
 }

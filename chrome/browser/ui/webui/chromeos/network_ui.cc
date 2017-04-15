@@ -67,7 +67,7 @@ void SetDeviceProperties(base::DictionaryValue* dictionary) {
                                                ip_configs.release());
   }
   if (!device_dictionary->empty())
-    dictionary->Set(shill::kDeviceProperty, std::move(device_dictionary));
+    dictionary->Set(shill::kDeviceProperty, device_dictionary.release());
 }
 
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {

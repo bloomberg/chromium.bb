@@ -6,10 +6,7 @@
 
 #include <stddef.h>
 
-#include <memory>
-
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
@@ -112,21 +109,17 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
   bool modification_is_removal =
       content::ZoomValuesEqual(level, host_zoom_map_->GetDefaultZoomLevel());
 
-  base::DictionaryValue* host_zoom_dictionary_weak = nullptr;
+  base::DictionaryValue* host_zoom_dictionary = nullptr;
   if (!host_zoom_dictionaries->GetDictionary(partition_key_,
-                                             &host_zoom_dictionary_weak)) {
-    auto host_zoom_dictionary = base::MakeUnique<base::DictionaryValue>();
-    host_zoom_dictionary_weak = host_zoom_dictionary.get();
-    host_zoom_dictionaries->Set(partition_key_,
-                                std::move(host_zoom_dictionary));
+                                             &host_zoom_dictionary)) {
+    host_zoom_dictionary = new base::DictionaryValue();
+    host_zoom_dictionaries->Set(partition_key_, host_zoom_dictionary);
   }
 
-  if (modification_is_removal) {
-    host_zoom_dictionary_weak->RemoveWithoutPathExpansion(change.host, nullptr);
-  } else {
-    host_zoom_dictionary_weak->SetDoubleWithoutPathExpansion(change.host,
-                                                             level);
-  }
+  if (modification_is_removal)
+    host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, nullptr);
+  else
+    host_zoom_dictionary->SetDoubleWithoutPathExpansion(change.host, level);
 }
 
 // TODO(wjmaclean): Remove the dictionary_path once the migration code is

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 
 #include <map>
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -28,14 +27,14 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler,
 
   // ::CoreOptionsHandler overrides
   void RegisterMessages() override;
-  std::unique_ptr<base::Value> FetchPref(const std::string& pref_name) override;
+  base::Value* FetchPref(const std::string& pref_name) override;
   void InitializeHandler() override;
   void ObservePref(const std::string& pref_name) override;
   void SetPref(const std::string& pref_name,
                const base::Value* value,
                const std::string& metric) override;
   void StopObservingPref(const std::string& path) override;
-  std::unique_ptr<base::Value> CreateValueForPref(
+  base::Value* CreateValueForPref(
       const std::string& pref_name,
       const std::string& controlling_pref_name) override;
 

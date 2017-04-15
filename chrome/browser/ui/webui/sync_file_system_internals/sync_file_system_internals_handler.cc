@@ -107,7 +107,7 @@ void SyncFileSystemInternalsHandler::OnLogRecorded(
 
   std::unique_ptr<base::ListValue> details(new base::ListValue);
   details->AppendStrings(task_log.details);
-  dict.Set("details", std::move(details));
+  dict.Set("details", details.release());
   web_ui()->CallJavascriptFunctionUnsafe("TaskLog.onTaskLogRecorded", dict);
 }
 

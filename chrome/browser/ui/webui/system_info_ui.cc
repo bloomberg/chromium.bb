@@ -152,7 +152,8 @@ void SystemInfoUIHTMLSource::RequestComplete() {
   webui::SetLoadTimeDataDefaults(app_locale, &strings);
 
   if (response_.get()) {
-    auto details = base::MakeUnique<base::ListValue>();
+    base::ListValue* details = new base::ListValue();
+    strings.Set("details", details);
     for (SystemLogsResponse::const_iterator it = response_->begin();
          it != response_->end();
          ++it) {
@@ -161,7 +162,6 @@ void SystemInfoUIHTMLSource::RequestComplete() {
       val->SetString("statValue", it->second);
       details->Append(std::move(val));
     }
-    strings.Set("details", std::move(details));
   }
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

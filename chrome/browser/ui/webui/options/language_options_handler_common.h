@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_COMMON_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_LANGUAGE_OPTIONS_HANDLER_COMMON_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
@@ -51,7 +49,7 @@ class LanguageOptionsHandlerCommon
   //
   // Note that true in values does not mean anything. We just use the
   // dictionary as a set.
-  static std::unique_ptr<base::DictionaryValue> GetUILanguageCodeSet();
+  static base::DictionaryValue* GetUILanguageCodeSet();
 
   // Gets the set of language codes that can be used for spellchecking.
   // The return value will look like:
@@ -59,7 +57,7 @@ class LanguageOptionsHandlerCommon
   //
   // Note that true in values does not mean anything. We just use the
   // dictionary as a set.
-  static std::unique_ptr<base::DictionaryValue> GetSpellCheckLanguageCodeSet();
+  static base::DictionaryValue* GetSpellCheckLanguageCodeSet();
 
  private:
   // Sets the application locale.

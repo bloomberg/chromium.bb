@@ -290,7 +290,7 @@ void AutofillOptionsHandler::LoadAddressEditorComponents(
   autofill::GetAddressComponents(country_code,
                                  g_browser_process->GetApplicationLocale(),
                                  components.get(), &language_code);
-  input.Set(kComponents, std::move(components));
+  input.Set(kComponents, components.release());
   input.SetString(kLanguageCode, language_code);
 
   web_ui()->CallJavascriptFunctionUnsafe(
@@ -501,7 +501,7 @@ void AutofillOptionsHandler::AutofillProfileToDictionary(
   autofill::GetAddressComponents(
       base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)),
       profile.language_code(), components.get(), nullptr);
-  address->Set(kComponents, std::move(components));
+  address->Set(kComponents, components.release());
 }
 
 }  // namespace options

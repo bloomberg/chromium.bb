@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -118,14 +117,13 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   std::vector<std::string> languages;
   translate::TranslateDownloadManager::GetSupportedLanguages(&languages);
 
-  auto languages_list = base::MakeUnique<base::ListValue>();
+  base::ListValue* languages_list = new base::ListValue();
   for (std::vector<std::string>::iterator it = languages.begin();
        it != languages.end(); ++it) {
     languages_list->AppendString(*it);
   }
 
-  localized_strings->Set("translateSupportedLanguages",
-                         std::move(languages_list));
+  localized_strings->Set("translateSupportedLanguages", languages_list);
 }
 
 void LanguageOptionsHandlerCommon::Uninitialize() {
@@ -185,9 +183,8 @@ void LanguageOptionsHandlerCommon::OnHunspellDictionaryDownloadFailure(
       base::Value(language));
 }
 
-std::unique_ptr<base::DictionaryValue>
-LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
+base::DictionaryValue* LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
+  base::DictionaryValue* dictionary = new base::DictionaryValue();
   const std::vector<std::string>& available_locales =
       l10n_util::GetAvailableLocales();
   for (size_t i = 0; i < available_locales.size(); ++i)
@@ -195,9 +192,9 @@ LanguageOptionsHandlerCommon::GetUILanguageCodeSet() {
   return dictionary;
 }
 
-std::unique_ptr<base::DictionaryValue>
+base::DictionaryValue*
 LanguageOptionsHandlerCommon::GetSpellCheckLanguageCodeSet() {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
+  base::DictionaryValue* dictionary = new base::DictionaryValue();
   std::vector<std::string> spell_check_languages;
   spellcheck::SpellCheckLanguages(&spell_check_languages);
   for (size_t i = 0; i < spell_check_languages.size(); ++i) {
