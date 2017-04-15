@@ -6,7 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -31,12 +34,10 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
 
   for (NSString* family_name in sortedFonts) {
     NSString* localized_family_name = fonts_dict[family_name];
-    base::ListValue* font_item = new base::ListValue();
-    base::string16 family = base::SysNSStringToUTF16(family_name);
-    base::string16 loc_family = base::SysNSStringToUTF16(localized_family_name);
-    font_item->Append(new base::Value(family));
-    font_item->Append(new base::Value(loc_family));
-    font_list->Append(font_item);
+    auto font_item = base::MakeUnique<base::ListValue>();
+    font_item->AppendString(base::SysNSStringToUTF16(family_name));
+    font_item->AppendString(base::SysNSStringToUTF16(localized_family_name));
+    font_list->Append(std::move(font_item));
   }
 
   return font_list;

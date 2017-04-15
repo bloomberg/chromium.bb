@@ -125,7 +125,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
   ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
-    type_list->Append(new base::Value(ModelTypeToString(it.Get())));
+    type_list->AppendString(ModelTypeToString(it.Get()));
   }
   event_details.Set(syncer::sync_ui_util::kTypes, type_list.release());
   web_ui()->CallJavascriptFunction(

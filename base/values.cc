@@ -1233,7 +1233,7 @@ void ListValue::Append(std::unique_ptr<Value> in_value) {
   list_->push_back(std::move(*in_value));
 }
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_MACOSX)
 void ListValue::Append(Value* in_value) {
   DCHECK(in_value);
   Append(WrapUnique(in_value));

@@ -280,8 +280,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // wildcard pattern. So only show settings that the user is able to modify.
     if (entries[i].secondary_pattern == ContentSettingsPattern::Wildcard() &&
         entries[i].setting == CONTENT_SETTING_ALLOW) {
-      _exceptions.Append(
-          new base::Value(entries[i].primary_pattern.ToString()));
+      _exceptions.AppendString(entries[i].primary_pattern.ToString());
     } else {
       LOG(ERROR) << "Secondary content settings patterns are not "
                  << "supported by the content settings UI";

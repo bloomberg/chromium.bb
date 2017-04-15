@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -88,7 +89,7 @@ std::unique_ptr<base::Value> PopulateObject(id value);
 std::unique_ptr<base::ListValue> PopulateArray(NSArray* array) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (NSUInteger i = 0; i < [array count]; i++)
-    list->Append(PopulateObject([array objectAtIndex:i]).release());
+    list->Append(PopulateObject([array objectAtIndex:i]));
   return list;
 }
 
@@ -253,11 +254,11 @@ void AccessibilityTreeFormatterMac::AddProperties(
     if (value != nil) {
       dict->Set(
           SysNSStringToUTF8(requestedAttribute),
-          PopulateObject(value).release());
+          PopulateObject(value));
     }
   }
-  dict->Set(kPositionDictAttr, PopulatePosition(node).release());
-  dict->Set(kSizeDictAttr, PopulateSize(cocoa_node).release());
+  dict->Set(kPositionDictAttr, PopulatePosition(node));
+  dict->Set(kSizeDictAttr, PopulateSize(cocoa_node));
 }
 
 base::string16 AccessibilityTreeFormatterMac::ToString(

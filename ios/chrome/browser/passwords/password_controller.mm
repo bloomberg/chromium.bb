@@ -21,6 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -220,14 +221,14 @@ NSString* SerializePasswordFormFillData(
   auto usernameField = base::MakeUnique<base::DictionaryValue>();
   usernameField->SetString("name", formData.username_field.name);
   usernameField->SetString("value", formData.username_field.value);
-  fieldList->Append(usernameField.release());
+  fieldList->Append(std::move(usernameField));
 
   auto passwordField = base::MakeUnique<base::DictionaryValue>();
   passwordField->SetString("name", formData.password_field.name);
   passwordField->SetString("value", formData.password_field.value);
-  fieldList->Append(passwordField.release());
+  fieldList->Append(std::move(passwordField));
 
-  rootDict.Set("fields", fieldList.release());
+  rootDict.Set("fields", std::move(fieldList));
 
   std::string jsonString;
   base::JSONWriter::Write(rootDict, &jsonString);

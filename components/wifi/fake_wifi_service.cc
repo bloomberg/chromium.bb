@@ -5,9 +5,11 @@
 #include "components/wifi/fake_wifi_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/values.h"
 #include "components/onc/onc_constants.h"
 
 namespace wifi {
@@ -118,7 +120,7 @@ void FakeWiFiService::GetVisibleNetworks(const std::string& network_type,
         it->type == network_type) {
       std::unique_ptr<base::DictionaryValue> network(
           it->ToValue(!include_details));
-      network_list->Append(network.release());
+      network_list->Append(std::move(network));
     }
   }
 }

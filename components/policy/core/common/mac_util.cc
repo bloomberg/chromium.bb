@@ -40,7 +40,7 @@ void ArrayEntryToValue(const void* value, void* context) {
   std::unique_ptr<base::Value> converted =
       PropertyToValue(static_cast<CFPropertyListRef>(value));
   if (converted)
-    static_cast<base::ListValue *>(context)->Append(converted.release());
+    static_cast<base::ListValue*>(context)->Append(std::move(converted));
 }
 
 }  // namespace
