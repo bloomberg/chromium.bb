@@ -92,7 +92,7 @@ void NavigateToSingletonTab(Browser* browser, const GURL& url) {
 // is created.
 void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   base::RecordAction(UserMetricsAction("ShowHelpTab"));
-#if defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           genius_app::kGeniusAppId,
