@@ -751,7 +751,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
     this_rd_stats.rate = av1_cost_coeffs(
         cpi, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
-    int rd = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.dist);
+    int rd =
+        RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
     if (rd < best_rd) {
       best_rd = rd;
       *rd_stats = this_rd_stats;
