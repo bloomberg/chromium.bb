@@ -20,6 +20,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
+#include "aom_ports/system_state.h"
 
 #include "av1/common/onyxc_int.h"
 #include "av1/common/quant_common.h"
@@ -224,6 +225,8 @@ static void get_proj_subspace(uint8_t *src8, int width, int height,
   double Det;
   double x[2];
   const int size = width * height;
+
+  aom_clear_system_state();
 
   // Default
   xq[0] = 0;
@@ -430,6 +433,7 @@ static double find_average(uint8_t *src, int h_start, int h_end, int v_start,
   uint64_t sum = 0;
   double avg = 0;
   int i, j;
+  aom_clear_system_state();
   for (i = v_start; i < v_end; i++)
     for (j = h_start; j < h_end; j++) sum += src[i * stride + j];
   avg = (double)sum / ((v_end - v_start) * (h_end - h_start));
@@ -481,6 +485,7 @@ static double find_average_highbd(uint16_t *src, int h_start, int h_end,
   uint64_t sum = 0;
   double avg = 0;
   int i, j;
+  aom_clear_system_state();
   for (i = v_start; i < v_end; i++)
     for (j = h_start; j < h_end; j++) sum += src[i * stride + j];
   avg = (double)sum / ((v_end - v_start) * (h_end - h_start));
@@ -534,22 +539,26 @@ static void compute_stats_highbd(uint8_t *dgd8, uint8_t *src8, int h_start,
 static int linsolve(int n, double *A, int stride, double *b, double *x) {
   int i, j, k;
   double c;
-  // Partial pivoting
-  for (i = n - 1; i > 0; i--) {
-    if (A[(i - 1) * stride] < A[i * stride]) {
-      for (j = 0; j < n; j++) {
-        c = A[i * stride + j];
-        A[i * stride + j] = A[(i - 1) * stride + j];
-        A[(i - 1) * stride + j] = c;
-      }
-      c = b[i];
-      b[i] = b[i - 1];
-      b[i - 1] = c;
-    }
-  }
+
+  aom_clear_system_state();
+
   // Forward elimination
   for (k = 0; k < n - 1; k++) {
+    // Bring the largest magitude to the diagonal position
+    for (i = n - 1; i > k; i--) {
+      if (fabs(A[(i - 1) * stride + k]) < fabs(A[i * stride + k])) {
+        for (j = 0; j < n; j++) {
+          c = A[i * stride + j];
+          A[i * stride + j] = A[(i - 1) * stride + j];
+          A[(i - 1) * stride + j] = c;
+        }
+        c = b[i];
+        b[i] = b[i - 1];
+        b[i - 1] = c;
+      }
+    }
     for (i = k; i < n - 1; i++) {
+      if (fabs(A[k * stride + k]) < 1e-10) return 0;
       c = A[(i + 1) * stride + k] / A[k * stride + k];
       for (j = 0; j < n; j++) A[(i + 1) * stride + j] -= c * A[k * stride + j];
       b[i + 1] -= c * b[k];
@@ -562,6 +571,7 @@ static int linsolve(int n, double *A, int stride, double *b, double *x) {
     for (j = i + 1; j <= n - 1; j++) c += A[i * stride + j] * x[j];
     x[i] = (b[i] - c) / A[i * stride + i];
   }
+
   return 1;
 }
 
@@ -697,6 +707,9 @@ static double compute_score(double *M, double *H, InterpKernel vfilt,
   double iP = 0, iQ = 0;
   double Score, iScore;
   double a[WIENER_WIN], b[WIENER_WIN];
+
+  aom_clear_system_state();
+
   a[WIENER_HALFWIN] = b[WIENER_HALFWIN] = 1.0;
   for (i = 0; i < WIENER_HALFWIN; ++i) {
     a[i] = a[WIENER_WIN - i - 1] = (double)vfilt[i] / WIENER_FILT_STEP;
