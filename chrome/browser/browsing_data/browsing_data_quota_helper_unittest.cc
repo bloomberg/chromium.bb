@@ -13,11 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
-#include "content/public/test/mock_storage_client.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/mock_storage_client.h"
 
 using content::BrowserThread;
 using content::MockOriginData;

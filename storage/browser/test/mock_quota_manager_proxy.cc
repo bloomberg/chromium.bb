@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/quota/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_quota_manager_proxy.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"

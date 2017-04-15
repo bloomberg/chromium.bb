@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/quota/mock_quota_manager.h"
+#include "storage/browser/test/mock_quota_manager.h"
 
 #include <memory>
 #include <set>
@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/mock_storage_client.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::kQuotaStatusOk;

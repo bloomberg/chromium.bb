@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "content/browser/quota/mock_quota_manager.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/mock_quota_manager.h"
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 

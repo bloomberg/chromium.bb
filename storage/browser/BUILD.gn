@@ -262,7 +262,11 @@ test("storage_unittests") {
     "fileapi/timed_task_helper_unittest.cc",
     "fileapi/transient_file_util_unittest.cc",
     "quota/quota_database_unittest.cc",
+    "quota/quota_manager_unittest.cc",
+    "quota/quota_temporary_storage_evictor_unittest.cc",
+    "quota/storage_monitor_unittest.cc",
     "quota/usage_tracker_unittest.cc",
+    "test/mock_quota_manager_unittest.cc",
   ]
 
   deps = [
@@ -283,8 +287,14 @@ static_library("test_support") {
   sources = [
     "test/async_file_test_helper.cc",
     "test/async_file_test_helper.h",
+    "test/mock_quota_manager.cc",
+    "test/mock_quota_manager.h",
+    "test/mock_quota_manager_proxy.cc",
+    "test/mock_quota_manager_proxy.h",
     "test/mock_special_storage_policy.cc",
     "test/mock_special_storage_policy.h",
+    "test/mock_storage_client.cc",
+    "test/mock_storage_client.h",
     "test/test_file_system_backend.cc",
     "test/test_file_system_backend.h",
     "test/test_file_system_context.cc",
