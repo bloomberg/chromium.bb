@@ -79,12 +79,14 @@ cr.define('settings-languages', function() {
 
     suiteSetup(function() {
       CrSettingsPrefs.deferInitialization = true;
+      PolymerTest.clearBody();
     });
 
     setup(function() {
       var settingsPrefs = document.createElement('settings-prefs');
       var settingsPrivate = new settings.FakeSettingsPrivate(getFakePrefs());
       settingsPrefs.initialize(settingsPrivate);
+      document.body.appendChild(settingsPrefs);
 
       languageSettingsPrivate = new settings.FakeLanguageSettingsPrivate();
       languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
@@ -103,6 +105,7 @@ cr.define('settings-languages', function() {
       // Prefs would normally be data-bound to settings-languages.
       fakeDataBind(settingsPrefs, languageHelper, 'prefs');
 
+      document.body.appendChild(languageHelper);
       return languageHelper.whenReady().then(function() {
         assertEquals(
             cr.isChromeOS || cr.isWindows, getProspectiveUILanguageCalled);
