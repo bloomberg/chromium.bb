@@ -32,6 +32,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
+#include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "components/policy/core/common/async_policy_provider.h"
@@ -907,14 +908,14 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   policy.SetInteger("int", -123);
   policy.SetDouble("double", 456.78e9);
   base::ListValue list;
-  list.Append(policy.DeepCopy());
-  list.Append(policy.DeepCopy());
-  policy.Set("list", list.DeepCopy());
+  list.Append(base::MakeUnique<base::Value>(policy));
+  list.Append(base::MakeUnique<base::Value>(policy));
+  policy.Set("list", base::MakeUnique<base::Value>(list));
   // Encode |policy| before adding the "dict" entry.
   std::string encoded_dict;
   base::JSONWriter::Write(policy, &encoded_dict);
   ASSERT_FALSE(encoded_dict.empty());
-  policy.Set("dict", policy.DeepCopy());
+  policy.Set("dict", base::MakeUnique<base::Value>(policy));
   std::string encoded_list;
   base::JSONWriter::Write(list, &encoded_list);
   ASSERT_FALSE(encoded_list.empty());
@@ -1001,7 +1002,7 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   policy.SetString("double2", "123.456e7");
   policy.SetString("invalid", "omg");
   base::DictionaryValue all_policies;
-  all_policies.Set("policy", policy.DeepCopy());
+  all_policies.Set("policy", base::MakeUnique<base::Value>(policy));
 
   const base::string16 kPathSuffix =
       kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions\\test");
@@ -1014,7 +1015,8 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   expected_policy.SetDouble("double1", 789.0);
   expected_policy.SetDouble("double2", 123.456e7);
   base::DictionaryValue expected_policies;
-  expected_policies.Set("policy", expected_policy.DeepCopy());
+  expected_policies.Set("policy",
+                        base::MakeUnique<base::Value>(expected_policy));
   PolicyBundle expected;
   expected.Get(ns).LoadFrom(&expected_policies, POLICY_LEVEL_MANDATORY,
                             POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM);

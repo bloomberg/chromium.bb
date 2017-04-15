@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -15,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -174,7 +177,7 @@ void EtwTracingAgent::AddSyncEventToBuffer() {
                          "%08X%08X", now_in_us.HighPart, now_in_us.LowPart)));
 
   // Append it to the events buffer.
-  events_->Append(value.release());
+  events_->Append(std::move(value));
 }
 
 void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
@@ -204,7 +207,7 @@ void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
   value->Set("payload", new base::Value(payload));
 
   // Append it to the events buffer.
-  events_->Append(value.release());
+  events_->Append(std::move(value));
 }
 
 void EtwTracingAgent::TraceAndConsumeOnThread() {
@@ -228,7 +231,7 @@ void EtwTracingAgent::FlushOnThread(
   header->Set("name", new base::Value("ETW"));
 
   // Release and pass the events buffer.
-  header->Set("content", events_.release());
+  header->Set("content", std::move(events_));
 
   // Serialize the results as a JSon string.
   std::string output;

@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -24,6 +25,7 @@
 #include "base/file_version_info.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_number_conversions.h"
@@ -606,7 +608,7 @@ base::ListValue* EnumerateModulesModel::GetModuleList() {
   for (ModuleEnumerator::ModulesVector::const_iterator module =
            enumerated_modules_.begin();
        module != enumerated_modules_.end(); ++module) {
-    base::DictionaryValue* data = new base::DictionaryValue();
+    auto data = base::MakeUnique<base::DictionaryValue>();
     data->SetInteger("type", module->type);
     base::string16 type_string;
     if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {
@@ -670,7 +672,7 @@ base::ListValue* EnumerateModulesModel::GetModuleList() {
     // TODO(chrisha): Set help_url when we have a meaningful place for users
     // to land.
 
-    list->Append(data);
+    list->Append(std::move(data));
   }
 
   return list;

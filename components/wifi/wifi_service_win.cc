@@ -10,7 +10,9 @@
 #include <stdint.h>
 #include <wlanapi.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/base_paths_win.h"
 #include "base/bind.h"
@@ -22,6 +24,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/win/registry.h"
 #include "components/onc/onc_constants.h"
 #include "components/wifi/network_properties.h"
@@ -581,7 +584,7 @@ void WiFiServiceImpl::SetProperties(
     existing_properties->MergeDictionary(properties.get());
   } else {
     connect_properties_.SetWithoutPathExpansion(network_guid,
-                                                properties.release());
+                                                std::move(properties));
   }
 }
 
@@ -630,7 +633,7 @@ void WiFiServiceImpl::CreateNetwork(
     tkip_profile->SetString(kProfileXmlKey, tkip_profile_xml);
     tkip_profile->SetBoolean(kProfileSharedKey, shared);
     created_profiles_.SetWithoutPathExpansion(network_properties.guid,
-                                              tkip_profile.release());
+                                              std::move(tkip_profile));
   }
 
   *network_guid = network_properties.guid;
@@ -656,7 +659,7 @@ void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
            ++it) {
         std::unique_ptr<base::DictionaryValue> network(
             it->ToValue(!include_details));
-        network_list->Append(network.release());
+        network_list->Append(std::move(network));
       }
     }
   }
