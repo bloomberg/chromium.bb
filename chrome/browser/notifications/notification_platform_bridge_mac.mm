@@ -183,7 +183,13 @@ void NotificationPlatformBridgeMac::Display(
   [builder
       setTitle:base::SysUTF16ToNSString(CreateNotificationTitle(notification))];
 
-  [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
+  base::string16 context_message =
+      notification.items().empty()
+          ? notification.message()
+          : (notification.items().at(0).title + base::UTF8ToUTF16(" - ") +
+             notification.items().at(0).message);
+
+  [builder setContextMessage:base::SysUTF16ToNSString(context_message)];
 
   bool requires_attribution =
       notification.context_message().empty() &&
