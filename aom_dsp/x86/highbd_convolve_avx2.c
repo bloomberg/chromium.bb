@@ -38,34 +38,8 @@ typedef void (*WritePixels)(const __m256i *y0, const __m256i *y1,
                             const __m256i *mask, uint16_t *dst,
                             ptrdiff_t pitch);
 
+// -----------------------------------------------------------------------------
 // Copy and average
-
-static void convolve_copy_row(const uint16_t *src, uint16_t *dst, int width) {
-  while (width >= 16) {
-    const __m256i p = _mm256_loadu_si256((const __m256i *)src);
-    _mm256_storeu_si256((__m256i *)dst, p);
-    src += 16;
-    dst += 16;
-    width -= 16;
-  }
-  while (width >= 8) {
-    const __m128i p = _mm_loadu_si128((const __m128i *)src);
-    _mm_storeu_si128((__m128i *)dst, p);
-    src += 8;
-    dst += 8;
-    width -= 8;
-  }
-  while (width >= 4) {
-    const __m128i p = _mm_loadl_epi64((const __m128i *)src);
-    _mm_storel_epi64((__m128i *)dst, p);
-    src += 4;
-    dst += 4;
-    width -= 4;
-  }
-  if (width) {
-    memcpy(dst, src, width * sizeof(uint16_t));
-  }
-}
 
 void aom_highbd_convolve_copy_avx2(const uint8_t *src8, ptrdiff_t src_stride,
                                    uint8_t *dst8, ptrdiff_t dst_stride,
@@ -80,47 +54,73 @@ void aom_highbd_convolve_copy_avx2(const uint8_t *src8, ptrdiff_t src_stride,
   (void)filter_y_stride;
   (void)bd;
 
-  do {
-    convolve_copy_row(src, dst, width);
-    h -= 1;
-    src += src_stride;
-    dst += dst_stride;
-  } while (h > 0);
-}
+  assert(width % 4 == 0);
+  if (width > 32) {  // width = 64
+    do {
+      const __m256i p0 = _mm256_loadu_si256((const __m256i *)src);
+      const __m256i p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
+      const __m256i p2 = _mm256_loadu_si256((const __m256i *)(src + 32));
+      const __m256i p3 = _mm256_loadu_si256((const __m256i *)(src + 48));
+      src += src_stride;
+      _mm256_storeu_si256((__m256i *)dst, p0);
+      _mm256_storeu_si256((__m256i *)(dst + 16), p1);
+      _mm256_storeu_si256((__m256i *)(dst + 32), p2);
+      _mm256_storeu_si256((__m256i *)(dst + 48), p3);
+      dst += dst_stride;
+      h--;
+    } while (h > 0);
+  } else if (width > 16) {  // width = 32
+    do {
+      const __m256i p0 = _mm256_loadu_si256((const __m256i *)src);
+      const __m256i p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
+      src += src_stride;
+      _mm256_storeu_si256((__m256i *)dst, p0);
+      _mm256_storeu_si256((__m256i *)(dst + 16), p1);
+      dst += dst_stride;
+      h--;
+    } while (h > 0);
+  } else if (width > 8) {  // width = 16
+    __m256i p0, p1;
+    do {
+      p0 = _mm256_loadu_si256((const __m256i *)src);
+      src += src_stride;
+      p1 = _mm256_loadu_si256((const __m256i *)src);
+      src += src_stride;
 
-static void convolve_avg_row(const uint16_t *src, uint16_t *dst, int width) {
-  int i = 0;
-  while (width >= 16) {
-    __m256i p = _mm256_loadu_si256((const __m256i *)src);
-    const __m256i u = _mm256_loadu_si256((const __m256i *)dst);
-    p = _mm256_avg_epu16(p, u);
-    _mm256_storeu_si256((__m256i *)dst, p);
-    src += 16;
-    dst += 16;
-    width -= 16;
-  }
-  while (width >= 8) {
-    __m128i p = _mm_loadu_si128((const __m128i *)src);
-    const __m128i u = _mm_loadu_si128((const __m128i *)dst);
-    p = _mm_avg_epu16(p, u);
-    _mm_storeu_si128((__m128i *)dst, p);
-    src += 8;
-    dst += 8;
-    width -= 8;
-  }
-  while (width >= 4) {
-    __m128i p = _mm_loadl_epi64((const __m128i *)src);
-    const __m128i u = _mm_loadl_epi64((const __m128i *)dst);
-    p = _mm_avg_epu16(p, u);
-    _mm_storel_epi64((__m128i *)dst, p);
-    src += 4;
-    dst += 4;
-    width -= 4;
-  }
-  while (width) {
-    dst[i] = ROUND_POWER_OF_TWO(dst[i] + src[i], 1);
-    i++;
-    width--;
+      _mm256_storeu_si256((__m256i *)dst, p0);
+      dst += dst_stride;
+      _mm256_storeu_si256((__m256i *)dst, p1);
+      dst += dst_stride;
+      h -= 2;
+    } while (h > 0);
+  } else if (width > 4) {  // width = 8
+    __m128i p0, p1;
+    do {
+      p0 = _mm_loadu_si128((const __m128i *)src);
+      src += src_stride;
+      p1 = _mm_loadu_si128((const __m128i *)src);
+      src += src_stride;
+
+      _mm_storeu_si128((__m128i *)dst, p0);
+      dst += dst_stride;
+      _mm_storeu_si128((__m128i *)dst, p1);
+      dst += dst_stride;
+      h -= 2;
+    } while (h > 0);
+  } else {  // width = 4
+    __m128i p0, p1;
+    do {
+      p0 = _mm_loadl_epi64((const __m128i *)src);
+      src += src_stride;
+      p1 = _mm_loadl_epi64((const __m128i *)src);
+      src += src_stride;
+
+      _mm_storel_epi64((__m128i *)dst, p0);
+      dst += dst_stride;
+      _mm_storel_epi64((__m128i *)dst, p1);
+      dst += dst_stride;
+      h -= 2;
+    } while (h > 0);
   }
 }
 
@@ -128,7 +128,7 @@ void aom_highbd_convolve_avg_avx2(const uint8_t *src8, ptrdiff_t src_stride,
                                   uint8_t *dst8, ptrdiff_t dst_stride,
                                   const int16_t *filter_x, int filter_x_stride,
                                   const int16_t *filter_y, int filter_y_stride,
-                                  int width, int height, int bd) {
+                                  int width, int h, int bd) {
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   (void)filter_x;
@@ -137,14 +137,86 @@ void aom_highbd_convolve_avg_avx2(const uint8_t *src8, ptrdiff_t src_stride,
   (void)filter_y_stride;
   (void)bd;
 
-  do {
-    convolve_avg_row(src, dst, width);
-    height -= 1;
-    src += src_stride;
-    dst += dst_stride;
-  } while (height > 0);
+  assert(width % 4 == 0);
+  if (width > 32) {  // width = 64
+    __m256i p0, p1, p2, p3, u0, u1, u2, u3;
+    do {
+      p0 = _mm256_loadu_si256((const __m256i *)src);
+      p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
+      p2 = _mm256_loadu_si256((const __m256i *)(src + 32));
+      p3 = _mm256_loadu_si256((const __m256i *)(src + 48));
+      src += src_stride;
+      u0 = _mm256_loadu_si256((const __m256i *)dst);
+      u1 = _mm256_loadu_si256((const __m256i *)(dst + 16));
+      u2 = _mm256_loadu_si256((const __m256i *)(dst + 32));
+      u3 = _mm256_loadu_si256((const __m256i *)(dst + 48));
+      _mm256_storeu_si256((__m256i *)dst, _mm256_avg_epu16(p0, u0));
+      _mm256_storeu_si256((__m256i *)(dst + 16), _mm256_avg_epu16(p1, u1));
+      _mm256_storeu_si256((__m256i *)(dst + 32), _mm256_avg_epu16(p2, u2));
+      _mm256_storeu_si256((__m256i *)(dst + 48), _mm256_avg_epu16(p3, u3));
+      dst += dst_stride;
+      h--;
+    } while (h > 0);
+  } else if (width > 16) {  // width = 32
+    __m256i p0, p1, u0, u1;
+    do {
+      p0 = _mm256_loadu_si256((const __m256i *)src);
+      p1 = _mm256_loadu_si256((const __m256i *)(src + 16));
+      src += src_stride;
+      u0 = _mm256_loadu_si256((const __m256i *)dst);
+      u1 = _mm256_loadu_si256((const __m256i *)(dst + 16));
+      _mm256_storeu_si256((__m256i *)dst, _mm256_avg_epu16(p0, u0));
+      _mm256_storeu_si256((__m256i *)(dst + 16), _mm256_avg_epu16(p1, u1));
+      dst += dst_stride;
+      h--;
+    } while (h > 0);
+  } else if (width > 8) {  // width = 16
+    __m256i p0, p1, u0, u1;
+    do {
+      p0 = _mm256_loadu_si256((const __m256i *)src);
+      p1 = _mm256_loadu_si256((const __m256i *)(src + src_stride));
+      src += src_stride << 1;
+      u0 = _mm256_loadu_si256((const __m256i *)dst);
+      u1 = _mm256_loadu_si256((const __m256i *)(dst + dst_stride));
+
+      _mm256_storeu_si256((__m256i *)dst, _mm256_avg_epu16(p0, u0));
+      _mm256_storeu_si256((__m256i *)(dst + dst_stride),
+                          _mm256_avg_epu16(p1, u1));
+      dst += dst_stride << 1;
+      h -= 2;
+    } while (h > 0);
+  } else if (width > 4) {  // width = 8
+    __m128i p0, p1, u0, u1;
+    do {
+      p0 = _mm_loadu_si128((const __m128i *)src);
+      p1 = _mm_loadu_si128((const __m128i *)(src + src_stride));
+      src += src_stride << 1;
+      u0 = _mm_loadu_si128((const __m128i *)dst);
+      u1 = _mm_loadu_si128((const __m128i *)(dst + dst_stride));
+
+      _mm_storeu_si128((__m128i *)dst, _mm_avg_epu16(p0, u0));
+      _mm_storeu_si128((__m128i *)(dst + dst_stride), _mm_avg_epu16(p1, u1));
+      dst += dst_stride << 1;
+      h -= 2;
+    } while (h > 0);
+  } else {  // width = 4
+    __m128i p0, p1, u0, u1;
+    do {
+      p0 = _mm_loadl_epi64((const __m128i *)src);
+      p1 = _mm_loadl_epi64((const __m128i *)(src + src_stride));
+      src += src_stride << 1;
+      u0 = _mm_loadl_epi64((const __m128i *)dst);
+      u1 = _mm_loadl_epi64((const __m128i *)(dst + dst_stride));
+
+      _mm_storel_epi64((__m128i *)dst, _mm_avg_epu16(u0, p0));
+      _mm_storel_epi64((__m128i *)(dst + dst_stride), _mm_avg_epu16(u1, p1));
+      dst += dst_stride << 1;
+      h -= 2;
+    } while (h > 0);
+  }
 }
 
+// -----------------------------------------------------------------------------
 // Horizontal Filtering
 
 static INLINE void pack_pixels(const __m256i *s, __m256i *p /*p[4]*/) {

@@ -943,6 +943,46 @@ TEST_P(ConvolveTest, CheckScalingFiltering) {
   }
 }
 
+TEST_P(ConvolveTest, DISABLED_Copy_Speed) {
+  const uint8_t *const in = input();
+  uint8_t *const out = output();
+  const int kNumTests = 5000000;
+  const int width = Width();
+  const int height = Height();
+  aom_usec_timer timer;
+
+  aom_usec_timer_start(&timer);
+  for (int n = 0; n < kNumTests; ++n) {
+    UUT_->copy_(in, kInputStride, out, kOutputStride, NULL, 0, NULL, 0, width,
+                height);
+  }
+  aom_usec_timer_mark(&timer);
+
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("convolve_copy_%dx%d_%d: %d us\n", width, height,
+         UUT_->use_highbd_ ? UUT_->use_highbd_ : 8, elapsed_time);
+}
+
+TEST_P(ConvolveTest, DISABLED_Avg_Speed) {
+  const uint8_t *const in = input();
+  uint8_t *const out = output();
+  const int kNumTests = 5000000;
+  const int width = Width();
+  const int height = Height();
+  aom_usec_timer timer;
+
+  aom_usec_timer_start(&timer);
+  for (int n = 0; n < kNumTests; ++n) {
+    UUT_->avg_(in, kInputStride, out, kOutputStride, NULL, 0, NULL, 0, width,
+               height);
+  }
+  aom_usec_timer_mark(&timer);
+
+  const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+  printf("convolve_avg_%dx%d_%d: %d us\n", width, height,
+         UUT_->use_highbd_ ? UUT_->use_highbd_ : 8, elapsed_time);
+}
+
 TEST_P(ConvolveTest, DISABLED_Speed) {
   uint8_t *const in = input();
   uint8_t *const out = output();
