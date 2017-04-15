@@ -496,6 +496,8 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   swap_chain_->Present(1, 0);
 
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
+                        is_yuy2_swapchain_);
   frames_since_color_space_change_++;
 
   base::win::ScopedComPtr<IDXGISwapChainMedia> swap_chain_media;
@@ -591,8 +593,6 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
         swap_chain_.Receive());
     CHECK(SUCCEEDED(hr));
   }
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapchainFormat",
-                        is_yuy2_swapchain_);
   out_view_.Reset();
 }
 
