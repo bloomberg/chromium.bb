@@ -194,8 +194,9 @@ void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
                                                  int width,
                                                  int height,
                                                  bool success) {
-  if (video_size_ != gfx::Size(width, height))
-    OnVideoSizeChanged(kUnusedAndIrrelevantPlayerId, width, height);
+  // Always try to propage the video size.
+  // This call will no-op if |video_size_| is already current.
+  OnVideoSizeChanged(kUnusedAndIrrelevantPlayerId, width, height);
 
   // For HLS streams, the reported duration may be zero for infinite streams.
   // See http://crbug.com/501213.
@@ -234,8 +235,14 @@ void MediaPlayerRenderer::OnError(int player_id, int error) {
 void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
                                              int width,
                                              int height) {
-  video_size_ = gfx::Size(width, height);
-  renderer_client_->OnVideoNaturalSizeChange(video_size_);
+  // This method is called when we find a video size from metadata or when
+  // |media_player|'s size actually changes.
+  // We therefore may already have the latest video size.
+  gfx::Size new_size = gfx::Size(width, height);
+  if (video_size_ != new_size) {
+    video_size_ = new_size;
+    renderer_client_->OnVideoNaturalSizeChange(video_size_);
+  }
 }
 
 media::MediaPlayerAndroid* MediaPlayerRenderer::GetFullscreenPlayer() {
