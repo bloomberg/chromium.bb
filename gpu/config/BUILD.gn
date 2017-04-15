@@ -55,7 +55,19 @@ action("process_json") {
     "--output-dir",
     rebase_path("$target_gen_dir", root_build_dir),
     "--skip-testing-data",
+    "--os-filter",
   ]
+  if (is_win) {
+    args += [ "win" ]
+  } else if (is_mac) {
+    args += [ "macosx" ]
+  } else if (is_android) {
+    args += [ "android" ]
+  } else if (is_chromeos) {
+    args += [ "chromeos" ]
+  } else {
+    args += [ "linux" ]
+  }
 }
 
 source_set("config_sources") {

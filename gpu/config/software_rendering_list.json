@@ -1497,7 +1497,6 @@
     }
   ],
   "comment": [
-    "Please update the version number on top whenever you change this file",
-    "Please run gpu/config/process_json.py whenever you change this file"
+    "Please update the version number on top whenever you change this file"
   ]
 }

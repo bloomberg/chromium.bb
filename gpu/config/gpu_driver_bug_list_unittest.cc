@@ -16,6 +16,7 @@ class GpuDriverBugListTest : public testing::Test {
   ~GpuDriverBugListTest() override {}
 };
 
+#if defined(OS_ANDROID)
 TEST_F(GpuDriverBugListTest, CurrentListForARM) {
   std::unique_ptr<GpuDriverBugList> list = GpuDriverBugList::Create();
   GPUInfo gpu_info;
@@ -35,6 +36,7 @@ TEST_F(GpuDriverBugListTest, CurrentListForImagination) {
       GpuControlList::kOsAndroid, "4.1", gpu_info);
   EXPECT_EQ(1u, bugs.count(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
 }
+#endif  // OS_ANDROID
 
 TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
   base::CommandLine command_line(0, NULL);
