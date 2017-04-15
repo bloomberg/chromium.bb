@@ -43,38 +43,41 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-// Loads |URL| in the current WebState with transition of type
-// ui::PAGE_TRANSITION_TYPED, and waits for the page to complete loading, or
-// a timeout.
+// Loads |URL| in the current WebState with transition type
+// ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
+// timeout, or a GREYAssert is induced.
 + (void)loadURL:(GURL)URL;
 
-// Reloads the page and waits for the loading to complete, or a timeout.
+// Reloads the page and waits for the loading to complete within a timeout, or a
+// GREYAssert is induced.
 + (void)reload;
 
-// Navigates back to the previous page and waits for the loading to complete, or
-// a timeout.
+// Navigates back to the previous page and waits for the loading to complete
+// within a timeout, or a GREYAssert is induced.
 + (void)goBack;
 
-// Navigates forward to the next page and waits for the loading to complete, or
-// a timeout.
+// Navigates forward to the next page and waits for the loading to complete
+// within a timeout, or a GREYAssert is induced.
 + (void)goForward;
 
-// Waits for the page to finish loading or a timeout.
+// Waits for the page to finish loading within a timeout, or a GREYAssert is
+// induced.
 + (void)waitForPageToFinishLoading;
 
 // Taps html element with |elementID| in the current web view.
 + (void)tapWebViewElementWithID:(NSString*)elementID;
 
 // Waits for a static html view containing |text|. If the condition is not met
-// before a timeout, there is a GREYAssert.
+// within a timeout, a GREYAssert is induced.
 + (void)waitForStaticHTMLViewContainingText:(NSString*)text;
 
 // Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met before a timeout, there is a
-// GREYAssert.
+// not contain |text|. If the condition is not met within a timeout, a
+// GREYAssert is induced.
 + (void)waitForStaticHTMLViewNotContainingText:(NSString*)text;
 
-// Waits for a Chrome error page. If it is not found, a GREYAssert is induced.
+// Waits for a Chrome error page. If it is not found within a timeout, a
+// GREYAssert is induced.
 + (void)waitForErrorPage;
 @end
 

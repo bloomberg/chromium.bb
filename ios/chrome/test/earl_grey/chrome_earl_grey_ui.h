@@ -22,16 +22,17 @@
 // Open a new incognito tab via the tools menu.
 + (void)openNewIncognitoTab;
 
-// Reloads the page. Does not wait until reload finishes.
+// Reloads the page via the reload button, and does not wait for the page to
+// finish loading.
 + (void)reload;
 
-// Opens the share menu by tapping on the share button.
-// Requires having a tab opened.
+// Opens the share menu via the share button.
+// This method requires that there is at least one tab open.
 + (void)openShareMenu;
 
-// Waits for toolbar to become visible if |isVisible| is YES, or waits for it
-// to disappear if |isVisible| is NO. Induces a GREYAssert if the condition is
-// not met after a timeout.
+// Waits for toolbar to become visible if |isVisible| is YES, otherwise waits
+// for it to disappear. If the condition is not met within a timeout, a
+// GREYAssert is induced.
 + (void)waitForToolbarVisible:(BOOL)isVisible;
 
 @end
