@@ -62,10 +62,13 @@ typedef enum {
 static LayerType layers = 0;
 
 static int stop_after = 0;
+static int compress = 0;
 
 static const arg_def_t limit_arg =
     ARG_DEF(NULL, "limit", 1, "Stop decoding after n frames");
 static const arg_def_t dump_all_arg = ARG_DEF("A", "all", 0, "Dump All");
+static const arg_def_t compress_arg =
+    ARG_DEF("x", "compress", 0, "Compress JSON using RLE");
 static const arg_def_t dump_accounting_arg =
     ARG_DEF("a", "accounting", 0, "Dump Accounting");
 static const arg_def_t dump_block_size_arg =
@@ -89,6 +92,7 @@ static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
 
 static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_all_arg,
+                                        &compress_arg,
 #if CONFIG_ACCOUNTING
                                         &dump_accounting_arg,
 #endif
@@ -297,7 +301,7 @@ int put_reference_frame(char *buffer) {
   const int mi_rows = frame_data.mi_rows;
   const int mi_cols = frame_data.mi_cols;
   char *buf = buffer;
-  int r, c;
+  int r, c, t;
   buf += put_str(buf, "  \"referenceFrameMap\": {");
   buf += put_map(buf, refs_map);
   buf += put_str(buf, "},\n");
@@ -306,9 +310,23 @@ int put_reference_frame(char *buffer) {
     *(buf++) = '[';
     for (c = 0; c < mi_cols; ++c) {
       insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
-      if (c) *(buf++) = ',';
       buf += put_num(buf, '[', mi->ref_frame[0], 0);
       buf += put_num(buf, ',', mi->ref_frame[1], ']');
+      if (compress) {  // RLE
+        for (t = c + 1; t < mi_cols; ++t) {
+          insp_mi_data *next_mi = &frame_data.mi_grid[r * mi_cols + t];
+          if (mi->ref_frame[0] != next_mi->ref_frame[0] ||
+              mi->ref_frame[1] != next_mi->ref_frame[1]) {
+            break;
+          }
+        }
+        if (t - c > 1) {
+          *(buf++) = ',';
+          buf += put_num(buf, '[', t - c - 1, ']');
+          c = t - 1;
+        }
+      }
+      if (c < mi_cols - 1) *(buf++) = ',';
     }
     *(buf++) = ']';
     if (r < mi_rows - 1) *(buf++) = ',';
@@ -321,17 +339,33 @@ int put_motion_vectors(char *buffer) {
   const int mi_rows = frame_data.mi_rows;
   const int mi_cols = frame_data.mi_cols;
   char *buf = buffer;
-  int r, c;
+  int r, c, t;
   buf += put_str(buf, "  \"motionVectors\": [");
   for (r = 0; r < mi_rows; ++r) {
     *(buf++) = '[';
     for (c = 0; c < mi_cols; ++c) {
       insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
-      if (c) *(buf++) = ',';
       buf += put_num(buf, '[', mi->mv[0].col, 0);
       buf += put_num(buf, ',', mi->mv[0].row, 0);
       buf += put_num(buf, ',', mi->mv[1].col, 0);
       buf += put_num(buf, ',', mi->mv[1].row, ']');
+      if (compress) {  // RLE
+        for (t = c + 1; t < mi_cols; ++t) {
+          insp_mi_data *next_mi = &frame_data.mi_grid[r * mi_cols + t];
+          if (mi->mv[0].col != next_mi->mv[0].col ||
+              mi->mv[0].row != next_mi->mv[0].row ||
+              mi->mv[1].col != next_mi->mv[1].col ||
+              mi->mv[1].row != next_mi->mv[1].row) {
+            break;
+          }
+        }
+        if (t - c > 1) {
+          *(buf++) = ',';
+          buf += put_num(buf, '[', t - c - 1, ']');
+          c = t - 1;
+        }
+      }
+      if (c < mi_cols - 1) *(buf++) = ',';
     }
     *(buf++) = ']';
     if (r < mi_rows - 1) *(buf++) = ',';
@@ -345,7 +379,7 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
   const int mi_rows = frame_data.mi_rows;
   const int mi_cols = frame_data.mi_cols;
   char *buf = buffer;
-  int r, c, v;
+  int r, c, t, v;
   if (map) {
     buf += snprintf(buf, MAX_BUFFER, "  \"%sMap\": {", name);
     buf += put_map(buf, map);
@@ -355,10 +389,23 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
   for (r = 0; r < mi_rows; ++r) {
     *(buf++) = '[';
     for (c = 0; c < mi_cols; ++c) {
-      insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
-      v = *(((int8_t *)mi) + offset);
-      if (c) *(buf++) = ',';
+      insp_mi_data *curr_mi = &frame_data.mi_grid[r * mi_cols + c];
+      v = *(((int8_t *)curr_mi) + offset);
       buf += put_num(buf, 0, v, 0);
+      if (compress) {  // RLE
+        for (t = c + 1; t < mi_cols; ++t) {
+          insp_mi_data *next_mi = &frame_data.mi_grid[r * mi_cols + t];
+          if (v != *(((int8_t *)next_mi) + offset)) {
+            break;
+          }
+        }
+        if (t - c > 1) {
+          *(buf++) = ',';
+          buf += put_num(buf, '[', t - c - 1, ']');
+          c = t - 1;
+        }
+      }
+      if (c < mi_cols - 1) *(buf++) = ',';
     }
     *(buf++) = ']';
     if (r < mi_rows - 1) *(buf++) = ',';
@@ -589,6 +636,8 @@ static void parse_args(char **argv) {
       layers |= MOTION_VECTORS_LAYER;
     else if (arg_match(&arg, &dump_all_arg, argi))
       layers |= ALL_LAYERS;
+    else if (arg_match(&arg, &compress_arg, argi))
+      compress = 1;
     else if (arg_match(&arg, &usage_arg, argi))
       usage_exit();
     else if (arg_match(&arg, &limit_arg, argi))
@@ -633,3 +682,6 @@ void quit() {
 
 EMSCRIPTEN_KEEPALIVE
 void set_layers(LayerType v) { layers = v; }
+
+EMSCRIPTEN_KEEPALIVE
+void set_compress(int v) { compress = v; }
