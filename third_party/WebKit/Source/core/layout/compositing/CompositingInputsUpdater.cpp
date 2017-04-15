@@ -186,6 +186,13 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
                                        : parent->FilterAncestor();
       bool layer_is_fixed_position =
           layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed;
+
+      if (layer_is_fixed_position && properties.filter_ancestor &&
+          layer->FixedToViewport()) {
+        UseCounter::Count(layer->GetLayoutObject().GetDocument(),
+                          UseCounter::kViewportFixedPositionUnderFilter);
+      }
+
       properties.nearest_fixed_position_layer =
           layer_is_fixed_position ? layer : parent->NearestFixedPositionLayer();
 

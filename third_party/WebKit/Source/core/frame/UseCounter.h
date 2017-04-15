@@ -1574,6 +1574,7 @@ class CORE_EXPORT UseCounter {
     kMediaStreamConstraintsGoogDAEchoCancellation = 1958,
     kMediaStreamConstraintsGoogNoiseReduction = 1959,
     kMediaStreamConstraintsGoogPowerLineFrequency = 1960,
+    kViewportFixedPositionUnderFilter = 1961,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
