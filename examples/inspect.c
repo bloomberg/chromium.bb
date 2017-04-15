@@ -177,37 +177,28 @@ const map_entry tx_type_map[] = { ENUM(DCT_DCT),
 #endif
                                   LAST_ENUM };
 
-const map_entry prediction_mode_map[] = { ENUM(DC_PRED),
-                                          ENUM(V_PRED),
-                                          ENUM(H_PRED),
-                                          ENUM(D45_PRED),
-                                          ENUM(D135_PRED),
-                                          ENUM(D117_PRED),
-                                          ENUM(D153_PRED),
-                                          ENUM(D207_PRED),
-                                          ENUM(D63_PRED),
+const map_entry prediction_mode_map[] = {
+  ENUM(DC_PRED),        ENUM(V_PRED),
+  ENUM(H_PRED),         ENUM(D45_PRED),
+  ENUM(D135_PRED),      ENUM(D117_PRED),
+  ENUM(D153_PRED),      ENUM(D207_PRED),
+  ENUM(D63_PRED),
 #if CONFIG_ALT_INTRA
-                                          ENUM(SMOOTH_PRED),
+  ENUM(SMOOTH_PRED),
 #endif
-                                          ENUM(TM_PRED),
-                                          ENUM(NEARESTMV),
-                                          ENUM(NEARMV),
-                                          ENUM(ZEROMV),
-                                          ENUM(NEWMV),
+  ENUM(TM_PRED),        ENUM(NEARESTMV),
+  ENUM(NEARMV),         ENUM(ZEROMV),
+  ENUM(NEWMV),
 #if CONFIG_EXT_INTER
-                                          ENUM(NEWFROMNEARMV),
-                                          ENUM(NEAREST_NEARESTMV),
-                                          ENUM(NEAREST_NEARMV),
-                                          ENUM(NEAR_NEARESTMV),
-                                          ENUM(NEAR_NEARMV),
-                                          ENUM(NEAREST_NEWMV),
-                                          ENUM(NEW_NEARESTMV),
-                                          ENUM(NEAR_NEWMV),
-                                          ENUM(NEW_NEARMV),
-                                          ENUM(ZERO_ZEROMV),
-                                          ENUM(NEW_NEWMV),
+  ENUM(NEWFROMNEARMV),  ENUM(NEAREST_NEARESTMV),
+  ENUM(NEAREST_NEARMV), ENUM(NEAR_NEARESTMV),
+  ENUM(NEAR_NEARMV),    ENUM(NEAREST_NEWMV),
+  ENUM(NEW_NEARESTMV),  ENUM(NEAR_NEWMV),
+  ENUM(NEW_NEARMV),     ENUM(ZERO_ZEROMV),
+  ENUM(NEW_NEWMV),
 #endif
-                                          LAST_ENUM };
+  ENUM(INTRA_INVALID),  LAST_ENUM
+};
 
 #define NO_SKIP 0
 #define SKIP 1
