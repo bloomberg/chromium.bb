@@ -384,6 +384,8 @@ void FrameView::Dispose() {
   if (owner_element && owner_element->OwnedWidget() == this)
     owner_element->SetWidget(nullptr);
 
+  ClearPrintContext();
+
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
 #endif

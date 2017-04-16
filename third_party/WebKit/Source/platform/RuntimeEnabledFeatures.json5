@@ -881,7 +881,6 @@
     },
     {
       name: "SlimmingPaintV2",
-      implied_by: ["PrintBrowser"],
     },
     {
       name: "smil",
