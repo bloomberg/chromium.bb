@@ -95,6 +95,12 @@ enum InitialRttEstimateSource {
 const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 
+// QUIC's socket receive buffer size.
+// We should adaptively set this buffer size, but for now, we'll use a size
+// that seems large enough to receive data at line rate for most connections,
+// and does not consume "too much" memory.
+const int32_t kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
+
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
@@ -772,7 +778,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_non_blocking_io,
     bool disable_disk_cache,
     bool prefer_aes,
-    int socket_receive_buffer_size,
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
@@ -823,7 +828,6 @@ QuicStreamFactory::QuicStreamFactory(
       prefer_aes_(prefer_aes),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
-      socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
       reduced_ping_timeout_(
@@ -1614,7 +1618,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     return rv;
   }
 
-  rv = socket->SetReceiveBufferSize(socket_receive_buffer_size_);
+  rv = socket->SetReceiveBufferSize(kQuicSocketReceiveBufferSize);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
     return rv;
@@ -1696,7 +1700,7 @@ int QuicStreamFactory::CreateSession(
   connection->SetMaxPacketLength(max_packet_length_);
 
   QuicConfig config = config_;
-  config.SetSocketReceiveBufferToSend(socket_receive_buffer_size_);
+  config.SetSocketReceiveBufferToSend(kQuicSocketReceiveBufferSize);
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
   config.SetInitialSessionFlowControlWindowToSend(
       kQuicSessionMaxRecvWindowSize);

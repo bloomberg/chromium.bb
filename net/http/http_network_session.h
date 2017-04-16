@@ -143,8 +143,6 @@ class NET_EXPORT HttpNetworkSession
     bool quic_disable_disk_cache;
     // Prefer AES-GCM to ChaCha20 even if no hardware support is present.
     bool quic_prefer_aes;
-    // Size in bytes of the QUIC DUP socket receive buffer.
-    int quic_socket_receive_buffer_size;
     // Delay starting a TCP connection when QUIC believes it can speak
     // 0-RTT to a server.
     bool quic_delay_tcp_race;

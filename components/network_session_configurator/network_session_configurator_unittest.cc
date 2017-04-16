@@ -450,17 +450,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, QuicReceiveBufferSize) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["receive_buffer_size"] = "2097152";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_EQ(2097152, params_.quic_socket_receive_buffer_size);
-}
-
 TEST_F(NetworkSessionConfiguratorTest, QuicDisableDelayTcpRace) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["disable_delay_tcp_race"] = "true";

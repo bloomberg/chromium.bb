@@ -195,17 +195,6 @@ bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
 }
 
-int GetQuicSocketReceiveBufferSize(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(
-          GetVariationParam(quic_trial_params, "receive_buffer_size"),
-          &value)) {
-    return value;
-  }
-  return 0;
-}
-
 bool ShouldQuicDelayTcpRace(const VariationParameters& quic_trial_params) {
   return !base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_delay_tcp_race"), "true");
@@ -364,10 +353,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params);
     params->quic_disable_connection_pooling =
         ShouldQuicDisableConnectionPooling(quic_trial_params);
-    int receive_buffer_size = GetQuicSocketReceiveBufferSize(quic_trial_params);
-    if (receive_buffer_size != 0) {
-      params->quic_socket_receive_buffer_size = receive_buffer_size;
-    }
     params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);

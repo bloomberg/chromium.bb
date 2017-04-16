@@ -542,8 +542,6 @@ class QuicNetworkTransactionTest
 
     session_.reset(new HttpNetworkSession(params_));
     session_->quic_stream_factory()->set_require_confirmation(false);
-    ASSERT_EQ(params_.quic_socket_receive_buffer_size,
-              session_->quic_stream_factory()->socket_receive_buffer_size());
   }
 
   void CheckWasQuicResponse(HttpNetworkTransaction* trans) {
@@ -4254,8 +4252,6 @@ class QuicNetworkTransactionWithDestinationTest
 
     session_.reset(new HttpNetworkSession(params));
     session_->quic_stream_factory()->set_require_confirmation(true);
-    ASSERT_EQ(params.quic_socket_receive_buffer_size,
-              session_->quic_stream_factory()->socket_receive_buffer_size());
   }
 
   void TearDown() override {

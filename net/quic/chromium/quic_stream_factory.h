@@ -215,7 +215,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_non_blocking_io,
       bool disable_disk_cache,
       bool prefer_aes,
-      int socket_receive_buffer_size,
       bool delay_tcp_race,
       int max_server_configs_stored_in_properties,
       bool close_sessions_on_ip_change,
@@ -394,8 +393,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void set_enable_connection_racing(bool enable_connection_racing) {
     enable_connection_racing_ = enable_connection_racing;
   }
-
-  int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
 
   bool delay_tcp_race() const { return delay_tcp_race_; }
 
@@ -599,9 +596,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // True if QUIC should be marked as broken when a connection blackholes after
   // the handshake is confirmed.
   bool mark_quic_broken_when_network_blackholes_;
-
-  // Size of the UDP receive buffer.
-  int socket_receive_buffer_size_;
 
   // Set if we do want to delay TCP connection when it is racing with QUIC.
   bool delay_tcp_race_;
