@@ -1895,6 +1895,8 @@ crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/711529 http/tests/streams/piping/multiple-propagation.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/streams/writable-streams/properties.sharedworker.html [ Timeout ]
+crbug.com/626703 external/wpt/XMLHttpRequest/getresponseheader-chunked-trailer.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/anonymous-mode-unsupported.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/open-after-setrequestheader.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/open-referer.htm [ Failure ]
