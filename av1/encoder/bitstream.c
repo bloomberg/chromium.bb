@@ -1423,7 +1423,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
                        const int supertx_enabled,
 #endif
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
                        int block, int plane,
 #endif
                        aom_writer *w) {
@@ -1440,7 +1440,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
 #else
   // Only y plane's tx_type is transmitted
@@ -1939,13 +1939,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_DUAL_FILTE || CONFIG_WARPED_MOTION
   }
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   av1_write_tx_type(cm, xd,
 #if CONFIG_SUPERTX
                     supertx_enabled,
 #endif
                     w);
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 }
 
 #if CONFIG_DELTA_Q
@@ -2046,13 +2046,13 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
     write_filter_intra_mode_info(cm, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   av1_write_tx_type(cm, xd,
 #if CONFIG_SUPERTX
                     0,
 #endif
                     w);
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 }
 
 #if CONFIG_SUPERTX

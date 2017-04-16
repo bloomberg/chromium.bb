@@ -1547,7 +1547,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   const AV1_COMP *cpi = args->cpi;
   ENTROPY_CONTEXT *a = args->t_above + blk_col;
   ENTROPY_CONTEXT *l = args->t_left + blk_row;
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   const AV1_COMMON *cm = &cpi->common;
 #endif
   int64_t rd1, rd2, rd;
@@ -1564,7 +1564,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
   }
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   // full forward transform and quantization
   int coeff_ctx = combine_entropy_contexts(*a, *l);
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -1600,11 +1600,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #else   // !CONFIG_PVQ
   this_rd_stats.rate = x->rate;
 #endif  // !CONFIG_PVQ
-#else   // !CONFIG_LV_MAP
+#else   // !CONFIG_TXK_SEL
   av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, a, l, args->use_fast_coef_costing,
                       &this_rd_stats);
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 
 #if !CONFIG_PVQ
 #if CONFIG_RD_DEBUG
@@ -1897,7 +1897,7 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   int plane = 0;
   rd_stats->rate += av1_tx_type_cost(cpi, xd, bs, plane, tx_size, tx_type);
 #endif
@@ -2168,12 +2168,12 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
                    cpi->sf.use_fast_coef_costing);
 }
 
-#if CONFIG_LV_MAP || CONFIG_VAR_TX
+#if CONFIG_TXK_SEL || CONFIG_VAR_TX
 static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
   int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
   return num_blk;
 }
-#endif  // CONFIG_LV_MAP || CONFIG_VAR_TX
+#endif  // CONFIG_TXK_SEL || CONFIG_VAR_TX
 
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                         MACROBLOCK *x, RD_STATS *rd_stats,
@@ -2188,10 +2188,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   const TX_SIZE max_tx_size = max_txsize_lookup[bs];
   TX_SIZE best_tx_size = max_tx_size;
   TX_TYPE best_tx_type = DCT_DCT;
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
   TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
   const int num_blk = bsize_to_num_blk(bs);
-#endif  // !CONFIG_LV_MAP
+#endif  // CONFIG_TXK_SEL
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   const int is_inter = is_inter_block(mbmi);
 #if CONFIG_PVQ
@@ -2214,7 +2214,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   if (evaluate_rect_tx) {
     TX_TYPE tx_start = DCT_DCT;
     TX_TYPE tx_end = TX_TYPES;
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
     // The tx_type becomes dummy when lv_map is on. The tx_type search will be
     // performed in av1_search_txk_type()
     tx_end = DCT_DCT + 1;
@@ -2233,7 +2233,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
         rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type,
                       rect_tx_size);
         if (rd < best_rd) {
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
           memcpy(best_txk_type, mbmi->txk_type,
                  sizeof(best_txk_type[0]) * num_blk);
 #endif
@@ -2268,7 +2268,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
     TX_TYPE tx_start = DCT_DCT;
     TX_TYPE tx_end = TX_TYPES;
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
     // The tx_type becomes dummy when lv_map is on. The tx_type search will be
     // performed in av1_search_txk_type()
     tx_end = DCT_DCT + 1;
@@ -2290,7 +2290,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
       last_rd = rd;
       if (rd < best_rd) {
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
         memcpy(best_txk_type, mbmi->txk_type,
                sizeof(best_txk_type[0]) * num_blk);
 #endif
@@ -2307,7 +2307,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   }
   mbmi->tx_size = best_tx_size;
   mbmi->tx_type = best_tx_type;
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
   memcpy(mbmi->txk_type, best_txk_type, sizeof(best_txk_type[0]) * num_blk);
 #endif
 

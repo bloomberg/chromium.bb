@@ -5759,14 +5759,14 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
 #endif
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
                               int block, int plane,
 #endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,
                               FRAME_COUNTS *counts) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   int is_inter = is_inter_block(mbmi);
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   TX_TYPE tx_type = mbmi->tx_type;
 #else
   // Only y plane's tx_type is updated
@@ -6017,7 +6017,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     ++td->counts->tx_size_totals[txsize_sqr_map[tx_size]];
     ++td->counts
           ->tx_size_totals[txsize_sqr_map[get_uv_tx_size(mbmi, &xd->plane[1])]];
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
     av1_update_tx_type_count(cm, xd, bsize, tx_size, td->counts);
 #endif
   }

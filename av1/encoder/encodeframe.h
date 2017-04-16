@@ -45,7 +45,7 @@ void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
 void av1_set_variance_partition_thresholds(struct AV1_COMP *cpi, int q);
 
 void av1_update_tx_type_count(const struct AV1Common *cm, MACROBLOCKD *xd,
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
                               int block, int plane,
 #endif
                               BLOCK_SIZE bsize, TX_SIZE tx_size,

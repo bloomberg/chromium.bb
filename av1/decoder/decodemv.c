@@ -743,7 +743,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_SUPERTX
                       int supertx_enabled,
 #endif
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
                       int block, int plane,
 #endif
                       aom_reader *r) {
@@ -760,7 +760,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = cm->fc;
 #endif
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   TX_TYPE *tx_type = &mbmi->tx_type;
 #else
   // only y plane's tx_type is transmitted
@@ -980,13 +980,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     read_filter_intra_mode_info(cm, xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd,
 #if CONFIG_SUPERTX
                    0,
 #endif
                    r);
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
@@ -2183,13 +2183,13 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   else
     read_intra_block_mode_info(cm, mi_row, mi_col, xd, mi, r);
 
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   av1_read_tx_type(cm, xd,
 #if CONFIG_SUPERTX
                    supertx_enabled,
 #endif
                    r);
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 }
 
 void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,

@@ -324,7 +324,7 @@ typedef struct {
 #endif
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
-#if CONFIG_LV_MAP
+#if CONFIG_TXK_SEL
   TX_TYPE txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 #endif
 
@@ -906,7 +906,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
                                   int block, TX_SIZE tx_size) {
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
-#if !CONFIG_LV_MAP
+#if !CONFIG_TXK_SEL
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   if (FIXED_TX_TYPE)
     return get_default_tx_type(plane_type, xd, block_raster_idx, tx_size);
@@ -955,7 +955,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
     return DCT_DCT;
   return mbmi->tx_type;
 #endif  // CONFIG_EXT_TX
-#else   // !CONFIG_LV_MAP
+#else   // !CONFIG_TXK_SEL
   (void)tx_size;
   TX_TYPE tx_type;
   if (plane_type != PLANE_TYPE_Y || xd->lossless[mbmi->segment_id] ||
@@ -966,7 +966,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   }
   assert(tx_type >= DCT_DCT && tx_type < TX_TYPES);
   return tx_type;
-#endif  // !CONFIG_LV_MAP
+#endif  // !CONFIG_TXK_SEL
 }
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);

@@ -312,6 +312,7 @@ EXPERIMENT_LIST="
     palette_throughput
     ref_adapt
     lv_map
+    txk_sel
     mv_compress
     frame_superres
     new_multisymbol
@@ -505,6 +506,7 @@ post_process_cmdline() {
     enabled ec_multisymbol && ! enabled ans && soft_enable daala_ec
     enabled ec_multisymbol && ! enabled daala_ec && soft_enable ans
     enabled palette_throughput && soft_enable palette
+    enabled txk_sel && soft_enable lv_map
     if enabled rawbits && ! enabled daala_ec; then
       log_echo "rawbits requires daala_ec, so disabling rawbits"
       disable_feature rawbits
