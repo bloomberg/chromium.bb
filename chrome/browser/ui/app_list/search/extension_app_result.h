@@ -51,6 +51,10 @@ class ExtensionAppResult : public AppResult,
   // running.
   bool RunExtensionEnableFlow();
 
+  // Creates new icon in case icon does not exist or previous icon was
+  // invalidated.
+  void CreateOrUpdateIcon();
+
   // Updates the app item's icon, if necessary making it gray.
   void UpdateIcon();
 

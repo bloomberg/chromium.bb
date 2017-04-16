@@ -77,6 +77,9 @@ class IconImage : public content::NotificationObserver {
   gfx::Image image() const { return image_; }
   const gfx::ImageSkia& image_skia() const { return image_skia_; }
 
+  // Returns true if the icon is attached to an existing extension.
+  bool is_valid() const { return extension_ ? true : false; }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
