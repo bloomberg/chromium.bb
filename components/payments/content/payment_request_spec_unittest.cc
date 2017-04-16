@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
-#include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/mojom/payment_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 #define CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 
-#include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

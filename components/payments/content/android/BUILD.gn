@@ -22,9 +22,9 @@ static_library("android") {
   deps = [
     ":jni_headers",
     "//base",
-    "//components/payments/content:mojom",
     "//components/payments/content:utils",
     "//components/payments/core",
+    "//components/payments/mojom",
     "//content/public/browser",
     "//net",
   ]
@@ -49,8 +49,8 @@ android_library("java") {
   ]
   deps = [
     "//base:base_java",
-    "//components/payments/content:mojom_java",
-    "//components/payments/content:mojom_parser_java",
+    "//components/payments/mojom:mojom_java",
+    "//components/payments/mojom:mojom_parser_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
   ]
