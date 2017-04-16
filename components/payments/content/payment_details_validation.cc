@@ -7,8 +7,8 @@
 #include <set>
 #include <vector>
 
-#include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payments_validators.h"
+#include "components/payments/mojom/payment_request.mojom.h"
 
 namespace payments {
 namespace {

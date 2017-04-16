@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/payments/content/payment_app.mojom.h"
+#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/browser/payments/payment_app_content_unittest_base.h"
 #include "content/browser/payments/payment_app_provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"

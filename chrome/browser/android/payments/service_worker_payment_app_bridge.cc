@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/payments/content/payment_app.mojom.h"
+#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
