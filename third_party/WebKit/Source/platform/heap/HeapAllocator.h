@@ -141,11 +141,11 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T>
   static void* NewArray(size_t bytes) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 
-  static void DeleteArray(void* ptr) { ASSERT_NOT_REACHED(); }
+  static void DeleteArray(void* ptr) { NOTREACHED(); }
 
   static bool IsAllocationAllowed() {
     return ThreadState::Current()->IsAllocationAllowed() &&

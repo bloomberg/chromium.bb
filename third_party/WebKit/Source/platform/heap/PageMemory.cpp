@@ -171,7 +171,7 @@ PageMemory* PageMemory::Allocate(size_t payload_size, RegionTree* region_tree) {
       PageMemoryRegion::AllocateLargePage(allocation_size, region_tree);
   PageMemory* storage =
       SetupPageMemoryInRegion(page_memory_region, 0, payload_size);
-  RELEASE_ASSERT(storage->Commit());
+  CHECK(storage->Commit());
   return storage;
 }
 

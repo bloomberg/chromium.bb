@@ -48,9 +48,9 @@ void StackFrameDepth::EnableStackLimit() {
   static const int kStackRoomSize = 1024;
 
   Address stack_base = reinterpret_cast<Address>(WTF::GetStackStart());
-  RELEASE_ASSERT(stack_size > static_cast<const size_t>(kStackRoomSize));
+  CHECK_GT(stack_size, static_cast<const size_t>(kStackRoomSize));
   size_t stack_room = stack_size - kStackRoomSize;
-  RELEASE_ASSERT(stack_base > reinterpret_cast<Address>(stack_room));
+  CHECK_GT(stack_base, reinterpret_cast<Address>(stack_room));
   stack_frame_limit_ = reinterpret_cast<uintptr_t>(stack_base - stack_room);
 
   // If current stack use is already exceeding estimated limit, mark as

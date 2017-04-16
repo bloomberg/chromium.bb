@@ -246,7 +246,7 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   if (!first_unswept_page_)
     return nullptr;
 
-  RELEASE_ASSERT(GetThreadState()->IsSweepingInProgress());
+  CHECK(GetThreadState()->IsSweepingInProgress());
 
   // lazySweepPages() can be called recursively if finalizers invoked in
   // page->sweep() allocate memory and the allocation triggers
@@ -289,7 +289,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
   // pages.
   static const int kDeadlineCheckInterval = 10;
 
-  RELEASE_ASSERT(GetThreadState()->IsSweepingInProgress());
+  CHECK(GetThreadState()->IsSweepingInProgress());
   ASSERT(GetThreadState()->SweepForbidden());
   ASSERT(!GetThreadState()->IsMainThread() ||
          ScriptForbiddenScope::IsScriptForbidden());
@@ -323,7 +323,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
 }
 
 void BaseArena::CompleteSweep() {
-  RELEASE_ASSERT(GetThreadState()->IsSweepingInProgress());
+  CHECK(GetThreadState()->IsSweepingInProgress());
   ASSERT(GetThreadState()->SweepForbidden());
   ASSERT(!GetThreadState()->IsMainThread() ||
          ScriptForbiddenScope::IsScriptForbidden());
@@ -622,7 +622,7 @@ void NormalPageArena::AllocatePage() {
         // If you hit the ASSERT, it will mean that you're hitting
         // the limit of the number of mmapped regions OS can support
         // (e.g., /proc/sys/vm/max_map_count in Linux).
-        RELEASE_ASSERT(result);
+        CHECK(result);
         page_memory = memory;
       } else {
         GetThreadState()->Heap().GetFreePagePool()->Add(ArenaIndex(), memory);
@@ -913,7 +913,7 @@ Address NormalPageArena::OutOfLineAllocate(size_t allocation_size,
 
   // 9. Try to allocate from a free list. This allocation must succeed.
   result = AllocateFromFreeList(allocation_size, gc_info_index);
-  RELEASE_ASSERT(result);
+  CHECK(result);
   return result;
 }
 

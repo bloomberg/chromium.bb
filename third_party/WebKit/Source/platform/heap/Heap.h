@@ -379,7 +379,7 @@ class PLATFORM_EXPORT ThreadHeap {
     // Add space for header.
     size_t allocation_size = size + sizeof(HeapObjectHeader);
     // The allocation size calculation can overflow for large sizes.
-    RELEASE_ASSERT(allocation_size > size);
+    CHECK_GT(allocation_size, size);
     // Align size with allocation granularity.
     allocation_size = (allocation_size + kAllocationMask) & ~kAllocationMask;
     return allocation_size;
@@ -493,7 +493,7 @@ class GarbageCollected {
   // the delete[] operator in the GarbageCollected subclasses as it
   // is called when a class is exported in a DLL.
  protected:
-  void operator delete[](void* p) { ASSERT_NOT_REACHED(); }
+  void operator delete[](void* p) { NOTREACHED(); }
 #else
   void operator delete[](void* p);
 #endif
@@ -509,7 +509,7 @@ class GarbageCollected {
     return ThreadHeap::Allocate<T>(size, eagerly_sweep);
   }
 
-  void operator delete(void* p) { ASSERT_NOT_REACHED(); }
+  void operator delete(void* p) { NOTREACHED(); }
 
  protected:
   GarbageCollected() {}

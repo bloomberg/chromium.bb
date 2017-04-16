@@ -212,7 +212,7 @@ void ThreadState::RunTerminationGC() {
   ASSERT(!current_count);
   // All of pre-finalizers should be consumed.
   ASSERT(ordered_pre_finalizers_.IsEmpty());
-  RELEASE_ASSERT(GcState() == kNoGCScheduled);
+  CHECK_EQ(GcState(), kNoGCScheduled);
 
   RemoveAllPages();
 }
@@ -701,7 +701,7 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kSweepingAndIdleGCScheduled);
     UNEXPECTED_GCSTATE(kSweepingAndPreciseGCScheduled);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
   }
 }
@@ -751,7 +751,7 @@ void ThreadState::SetGCState(GCState gc_state) {
                               gc_state_ == kSweepingAndPreciseGCScheduled);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   gc_state_ = gc_state;
 }
@@ -1067,7 +1067,7 @@ void ThreadState::PostSweep() {
       ScheduleIdleGC();
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -1116,7 +1116,7 @@ NO_SANITIZE_ADDRESS static void* AdjustScopeMarkerForAdressSanitizer(
     void* scope_marker) {
   Address start = reinterpret_cast<Address>(WTF::GetStackStart());
   Address end = reinterpret_cast<Address>(&start);
-  RELEASE_ASSERT(end < start);
+  CHECK_LT(end, start);
 
   if (end <= scope_marker && scope_marker < start)
     return scope_marker;
@@ -1199,8 +1199,8 @@ void ThreadState::CopyStackUntilSafePointScope() {
 
   Address* to = reinterpret_cast<Address*>(safe_point_scope_marker_);
   Address* from = reinterpret_cast<Address*>(end_of_stack_);
-  RELEASE_ASSERT(from < to);
-  RELEASE_ASSERT(to <= reinterpret_cast<Address*>(start_of_stack_));
+  CHECK_LT(from, to);
+  CHECK_LE(to, reinterpret_cast<Address*>(start_of_stack_));
   size_t slot_count = static_cast<size_t>(to - from);
 // Catch potential performance issues.
 #if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
@@ -1374,7 +1374,7 @@ void ThreadState::TakeSnapshot(SnapshotType type) {
             heaps_dump_name + "/" #ArenaType);                            \
         break;                                                            \
       default:                                                            \
-        ASSERT_NOT_REACHED();                                             \
+        NOTREACHED();                                                     \
     }                                                                     \
   }
 
@@ -1434,7 +1434,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
                                  BlinkGC::GCType gc_type,
                                  BlinkGC::GCReason reason) {
   // Nested collectGarbage() invocations aren't supported.
-  RELEASE_ASSERT(!IsGCForbidden());
+  CHECK(!IsGCForbidden());
   CompleteSweep();
 
   GCForbiddenScope gc_forbidden_scope(this);
