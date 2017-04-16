@@ -50,20 +50,21 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
         last_sw_registration_id_(kInvalidServiceWorkerRegistrationId) {}
   ~PaymentAppForWorkerTestHelper() override {}
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
     ServiceWorkerVersion* version =
         context()->GetLiveVersion(service_worker_version_id);
     last_sw_registration_id_ = version->registration_id();
     last_sw_scope_ = scope;
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(request));
+        pause_after_download, std::move(request), std::move(instance_host));
   }
 
   void OnPaymentRequestEvent(

@@ -13,6 +13,8 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -21,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_start_params.h"
@@ -71,7 +74,8 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
     const EmbeddedWorkerStartParams& params,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) {
+    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
   if (!helper_)
     return;
 
@@ -82,11 +86,11 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
   ASSERT_TRUE(worker);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
 
-  helper_->OnStartWorkerStub(params, std::move(dispatcher_request));
+  helper_->OnStartWorkerStub(params, std::move(dispatcher_request),
+                             std::move(instance_host));
 }
 
-void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(
-    const StopWorkerCallback& callback) {
+void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker() {
   if (!helper_)
     return;
 
@@ -97,7 +101,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker(
   // is removed right after sending StopWorker.
   if (worker)
     EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
-  helper_->OnStopWorkerStub(callback);
+  helper_->OnStopWorkerStub(embedded_worker_id_.value());
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
@@ -277,6 +281,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       wrapper_(new ServiceWorkerContextWrapper(browser_context_.get())),
       mock_instance_clients_next_index_(0),
       next_thread_id_(0),
+      next_provider_id_(1000),
       mock_render_process_id_(render_process_host_->GetID()),
       new_mock_render_process_id_(new_render_process_host_->GetID()),
       weak_factory_(this) {
@@ -375,7 +380,8 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
     const GURL& scope,
     const GURL& script_url,
     bool pause_after_download,
-    mojom::ServiceWorkerEventDispatcherRequest request) {
+    mojom::ServiceWorkerEventDispatcherRequest request,
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   MockServiceWorkerEventDispatcher::Create(AsWeakPtr(), worker->thread_id(),
@@ -383,6 +389,9 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
 
   embedded_worker_id_service_worker_version_id_map_[embedded_worker_id] =
       service_worker_version_id;
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].Bind(
+      std::move(instance_host));
+
   SimulateWorkerReadyForInspection(embedded_worker_id);
   SimulateWorkerScriptCached(embedded_worker_id);
   SimulateWorkerScriptLoaded(embedded_worker_id);
@@ -391,15 +400,15 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownload(int embedded_worker_id) {
-  SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+  SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id,
+                              GetNextProviderId());
   SimulateWorkerScriptEvaluated(embedded_worker_id, true /* success */);
   SimulateWorkerStarted(embedded_worker_id);
 }
 
-void EmbeddedWorkerTestHelper::OnStopWorker(
-    const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback) {
+void EmbeddedWorkerTestHelper::OnStopWorker(int embedded_worker_id) {
   // By default just notify the sender that the worker is stopped.
-  callback.Run();
+  SimulateWorkerStopped(embedded_worker_id);
 }
 
 bool EmbeddedWorkerTestHelper::OnMessageToWorker(int thread_id,
@@ -532,8 +541,10 @@ void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
     int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  registry()->OnWorkerReadyForInspection(worker->process_id(),
-                                         embedded_worker_id);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->OnReadyForInspection();
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
@@ -560,17 +571,29 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(
     int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  registry()->OnWorkerScriptLoaded(worker->process_id(), embedded_worker_id);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->OnScriptLoaded();
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerThreadStarted(
     int thread_id,
-    int embedded_worker_id) {
-  thread_id_embedded_worker_id_map_[thread_id] = embedded_worker_id;
+    int embedded_worker_id,
+    int provider_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  registry()->OnWorkerThreadStarted(worker->process_id(), thread_id,
-                                    embedded_worker_id);
+  // Prepare a provider host to be used by following OnThreadStarted().
+  std::unique_ptr<ServiceWorkerProviderHost> host =
+      CreateProviderHostForServiceWorkerContext(
+          worker->process_id(), provider_id, true /* is_parent_frame_secure */,
+          context()->AsWeakPtr());
+  context()->AddProviderHost(std::move(host));
+
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->OnThreadStarted(thread_id, provider_id);
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptEvaluated(
@@ -578,20 +601,27 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptEvaluated(
     bool success) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  registry()->OnWorkerScriptEvaluated(worker->process_id(), embedded_worker_id,
-                                      success);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]
+      ->OnScriptEvaluated(success);
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStarted(int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  registry()->OnWorkerStarted(worker->process_id(), embedded_worker_id);
+  ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStarted();
+  base::RunLoop().RunUntilIdle();
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStopped(int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  if (worker)
-    registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
+  if (worker) {
+    ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
+    embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStopped();
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 void EmbeddedWorkerTestHelper::SimulateSend(IPC::Message* message) {
@@ -601,7 +631,8 @@ void EmbeddedWorkerTestHelper::SimulateSend(IPC::Message* message) {
 
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
     const EmbeddedWorkerStartParams& params,
-    mojom::ServiceWorkerEventDispatcherRequest request) {
+    mojom::ServiceWorkerEventDispatcherRequest request,
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params.embedded_worker_id);
   ASSERT_TRUE(worker);
@@ -611,7 +642,7 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
       base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker, AsWeakPtr(),
                  params.embedded_worker_id, params.service_worker_version_id,
                  params.scope, params.script_url, params.pause_after_download,
-                 base::Passed(&request)));
+                 base::Passed(&request), base::Passed(&instance_host)));
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
@@ -623,11 +654,10 @@ void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
                             AsWeakPtr(), embedded_worker_id));
 }
 
-void EmbeddedWorkerTestHelper::OnStopWorkerStub(
-    const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback) {
+void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnStopWorker,
-                            AsWeakPtr(), callback));
+                            AsWeakPtr(), embedded_worker_id));
 }
 
 void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(

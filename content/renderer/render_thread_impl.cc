@@ -118,7 +118,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
-#include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
@@ -634,7 +633,6 @@ void RenderThreadImpl::Init(
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
   main_thread_cache_storage_dispatcher_.reset(
       new CacheStorageDispatcher(thread_safe_sender()));
-  embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
 
   // Note: This may reorder messages from the ResourceDispatcher with respect to
   // other subsystems.
@@ -865,8 +863,7 @@ void RenderThreadImpl::Init(
 
   GetInterfaceRegistry()->AddInterface(base::Bind(&CreateFrameFactory));
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&EmbeddedWorkerInstanceClientImpl::Create,
-                 base::Unretained(embedded_worker_dispatcher_.get())));
+      base::Bind(&EmbeddedWorkerInstanceClientImpl::Create));
 
   GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                 mojo::MakeRequest(&storage_partition_service_));
@@ -1613,8 +1610,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg) ||
-      dom_storage_dispatcher_->OnMessageReceived(msg) ||
-      embedded_worker_dispatcher_->OnMessageReceived(msg)) {
+      dom_storage_dispatcher_->OnMessageReceived(msg)) {
     return true;
   }
 

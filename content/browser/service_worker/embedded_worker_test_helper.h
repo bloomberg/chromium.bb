@@ -81,8 +81,10 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     // Implementation of mojo interfaces.
     void StartWorker(
         const EmbeddedWorkerStartParams& params,
-        mojom::ServiceWorkerEventDispatcherRequest dispatcher_request) override;
-    void StopWorker(const StopWorkerCallback& callback) override;
+        mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+        mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host)
+        override;
+    void StopWorker() override;
     void ResumeAfterDownload() override;
     void AddMessageToConsole(blink::WebConsoleMessage::Level level,
                              const std::string& message) override;
@@ -136,6 +138,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void ShutdownContext();
 
   int GetNextThreadId() { return next_thread_id_++; }
+  int GetNextProviderId() { return next_provider_id_++; }
 
   int mock_render_process_id() const { return mock_render_process_id_; }
   MockRenderProcessHost* mock_render_process_host() {
@@ -167,12 +170,12 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request);
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host);
   virtual void OnResumeAfterDownload(int embedded_worker_id);
   // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
-  // This calls StopWorkerCallback by default.
-  virtual void OnStopWorker(
-      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback);
+  // This calls SimulateWorkerStopped() by default.
+  virtual void OnStopWorker(int embedded_worker_id);
   // The legacy IPC message handler. This passes the messages to their
   // respective On*Event handler by default.
   virtual bool OnMessageToWorker(int thread_id,
@@ -242,7 +245,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
   void SimulateWorkerScriptCached(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
-  void SimulateWorkerThreadStarted(int thread_id, int embedded_worker_id);
+  void SimulateWorkerThreadStarted(int thread_id,
+                                   int embedded_worker_id,
+                                   int provider_id);
   void SimulateWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void SimulateWorkerStarted(int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
@@ -253,11 +258,12 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
  private:
   class MockServiceWorkerEventDispatcher;
 
-  void OnStartWorkerStub(const EmbeddedWorkerStartParams& params,
-                         mojom::ServiceWorkerEventDispatcherRequest request);
+  void OnStartWorkerStub(
+      const EmbeddedWorkerStartParams& params,
+      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
-  void OnStopWorkerStub(
-      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback);
+  void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,
                              const IPC::Message& message);
@@ -329,6 +335,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   size_t mock_instance_clients_next_index_;
 
   int next_thread_id_;
+  int next_provider_id_;
   int mock_render_process_id_;
   int new_mock_render_process_id_;
 
@@ -338,6 +345,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
   std::map<int /* thread_id */, int /* embedded_worker_id */>
       thread_id_embedded_worker_id_map_;
+
+  std::map<
+      int /* embedded_worker_id */,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+      embedded_worker_id_instance_host_ptr_map_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

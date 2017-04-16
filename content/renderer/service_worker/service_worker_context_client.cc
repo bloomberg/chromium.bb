@@ -37,7 +37,6 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -45,7 +44,6 @@
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
-#include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
@@ -78,14 +76,6 @@ namespace {
 // For now client must be a per-thread instance.
 base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient>>::
     Leaky g_worker_client_tls = LAZY_INSTANCE_INITIALIZER;
-
-void CallWorkerContextDestroyedOnMainThread(int embedded_worker_id) {
-  if (!RenderThreadImpl::current() ||
-      !RenderThreadImpl::current()->embedded_worker_dispatcher())
-    return;
-  RenderThreadImpl::current()->embedded_worker_dispatcher()->
-      WorkerContextDestroyed(embedded_worker_id);
-}
 
 // Called on the main thread only and blink owns it.
 class WebServiceWorkerNetworkProviderImpl
@@ -512,6 +502,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& service_worker_scope,
     const GURL& script_url,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -522,6 +513,9 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       embedded_worker_client_(std::move(embedded_worker_client)) {
+  instance_host_ =
+      mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
+          std::move(instance_host), main_thread_task_runner_);
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContextClient::StartingWorkerContext",
                            this);
@@ -608,24 +602,26 @@ void ServiceWorkerContextClient::ClearCachedMetadata(const blink::WebURL& url) {
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
-  Send(new EmbeddedWorkerHostMsg_WorkerReadyForInspection(embedded_worker_id_));
+  DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
+  (*instance_host_)->OnReadyForInspection();
 }
 
 void ServiceWorkerContextClient::WorkerContextFailedToStart() {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!proxy_);
 
-  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoadFailed(embedded_worker_id_));
+  (*instance_host_)->OnScriptLoadFailed();
+  (*instance_host_)->OnStopped();
 
-  RenderThreadImpl::current()->embedded_worker_dispatcher()->
-      WorkerContextDestroyed(embedded_worker_id_);
+  DCHECK(embedded_worker_client_);
+  embedded_worker_client_->WorkerContextDestroyed();
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoaded() {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!proxy_);
 
-  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(embedded_worker_id_));
+  (*instance_host_)->OnScriptLoaded();
 }
 
 bool ServiceWorkerContextClient::HasAssociatedRegistration() {
@@ -663,9 +659,9 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   SetRegistrationInServiceWorkerGlobalScope(registration_info, version_attrs);
 
-  Send(new EmbeddedWorkerHostMsg_WorkerThreadStarted(
-      embedded_worker_id_, WorkerThread::GetCurrentId(),
-      provider_context_->provider_id()));
+  (*instance_host_)
+      ->OnThreadStarted(WorkerThread::GetCurrentId(),
+                        provider_context_->provider_id());
 
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
@@ -675,8 +671,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 }
 
 void ServiceWorkerContextClient::DidEvaluateWorkerScript(bool success) {
-  Send(new EmbeddedWorkerHostMsg_WorkerScriptEvaluated(
-      embedded_worker_id_, success));
+  DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  (*instance_host_)->OnScriptEvaluated(success);
 
   // Schedule a task to send back WorkerStarted asynchronously,
   // so that at the time we send it we can be sure that the
@@ -729,22 +725,27 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
 void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
 
-  // Check if mojo is enabled
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    DCHECK(embedded_worker_client_);
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EmbeddedWorkerInstanceClientImpl::StopWorkerCompleted,
-                   base::Passed(&embedded_worker_client_)));
-    return;
-  }
+  // TODO(shimazu): The signals to the browser should be in the order:
+  // (1) WorkerStopped (via mojo call EmbeddedWorkerInstanceHost.OnStopped())
+  // (2) ProviderDestroyed (via mojo call
+  // ServiceWorkerDispatcherHost.OnProviderDestroyed()), this is triggered by
+  // the following EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed(),
+  // which will eventually lead to destruction of the service worker provider.
+  // But currently EmbeddedWorkerInstanceHost interface is associated with
+  // EmbeddedWorkerInstanceClient interface, and ServiceWorkerDispatcherHost
+  // interface is associated with the IPC channel, since they are using
+  // different mojo message pipes, the FIFO ordering can not be guaranteed now.
+  // This will be solved once ServiceWorkerProvider{Host,Client} are mojoified
+  // and they are also associated with EmbeddedWorkerInstanceClient in other CLs
+  // (https://crrev.com/2653493009 and https://crrev.com/2779763004).
+  (*instance_host_)->OnStopped();
 
-  // Now we should be able to free the WebEmbeddedWorker container on the
-  // main thread.
+  DCHECK(embedded_worker_client_);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CallWorkerContextDestroyedOnMainThread,
-                 embedded_worker_id_));
+      base::Bind(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
+                 base::Passed(&embedded_worker_client_)));
+  return;
 }
 
 void ServiceWorkerContextClient::CountFeature(uint32_t feature) {
@@ -757,9 +758,9 @@ void ServiceWorkerContextClient::ReportException(
     int line_number,
     int column_number,
     const blink::WebString& source_url) {
-  Send(new EmbeddedWorkerHostMsg_ReportException(
-      embedded_worker_id_, error_message.Utf16(), line_number, column_number,
-      blink::WebStringToGURL(source_url)));
+  (*instance_host_)
+      ->OnReportException(error_message.Utf16(), line_number, column_number,
+                          blink::WebStringToGURL(source_url));
 }
 
 void ServiceWorkerContextClient::ReportConsoleMessage(
@@ -768,15 +769,9 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
     const blink::WebString& message,
     int line_number,
     const blink::WebString& source_url) {
-  EmbeddedWorkerHostMsg_ReportConsoleMessage_Params params;
-  params.source_identifier = source;
-  params.message_level = level;
-  params.message = message.Utf16();
-  params.line_number = line_number;
-  params.source_url = blink::WebStringToGURL(source_url);
-
-  Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
-      embedded_worker_id_, params));
+  (*instance_host_)
+      ->OnReportConsoleMessage(source, level, message.Utf16(), line_number,
+                               blink::WebStringToGURL(source_url));
 }
 
 void ServiceWorkerContextClient::SendDevToolsMessage(
@@ -1112,7 +1107,7 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerContextClient::StartingWorkerContext",
                          this);
-  Send(new EmbeddedWorkerHostMsg_WorkerStarted(embedded_worker_id_));
+  (*instance_host_)->OnStarted();
 }
 
 void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(

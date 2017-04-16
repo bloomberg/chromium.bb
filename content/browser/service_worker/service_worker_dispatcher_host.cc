@@ -159,25 +159,7 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnGetRegistrationForReady)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
-                        OnWorkerReadyForInspection)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
-                        OnWorkerScriptLoaded)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerThreadStarted,
-                        OnWorkerThreadStarted)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
-                        OnWorkerScriptLoadFailed)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptEvaluated,
-                        OnWorkerScriptEvaluated)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
-                        OnWorkerStarted)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
-                        OnWorkerStopped)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
-                        OnReportException)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportConsoleMessage,
-                        OnReportConsoleMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount,
                         OnIncrementServiceWorkerRefCount)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount,
@@ -1313,103 +1295,6 @@ void ServiceWorkerDispatcherHost::UpdateComplete(
   Send(new ServiceWorkerMsg_ServiceWorkerUpdated(thread_id, request_id));
 }
 
-void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
-    int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerReadyForInspection");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerReadyForInspection(render_process_id_, embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerScriptLoaded");
-  if (!GetContext())
-    return;
-
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerScriptLoaded(render_process_id_, embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerThreadStarted(int embedded_worker_id,
-                                                        int thread_id,
-                                                        int provider_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerThreadStarted");
-  if (!GetContext())
-    return;
-
-  ServiceWorkerProviderHost* provider_host =
-      GetContext()->GetProviderHost(render_process_id_, provider_id);
-  if (!provider_host) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_WORKER_SCRIPT_LOAD_NO_HOST);
-    return;
-  }
-
-  provider_host->SetReadyToSendMessagesToWorker(thread_id);
-
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerThreadStarted(render_process_id_, thread_id,
-                                  embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
-    int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerScriptLoadFailed(render_process_id_, embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerScriptEvaluated(
-    int embedded_worker_id,
-    bool success) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerScriptEvaluated");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerScriptEvaluated(
-      render_process_id_, embedded_worker_id, success);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerStarted(int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerStarted");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerStarted(render_process_id_, embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnWorkerStopped");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnWorkerStopped(render_process_id_, embedded_worker_id);
-}
-
 void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
                                                  uint32_t feature) {
   if (!GetContext())
@@ -1418,44 +1303,6 @@ void ServiceWorkerDispatcherHost::OnCountFeature(int64_t version_id,
   if (!version)
     return;
   version->CountFeature(feature);
-}
-
-void ServiceWorkerDispatcherHost::OnReportException(
-    int embedded_worker_id,
-    const base::string16& error_message,
-    int line_number,
-    int column_number,
-    const GURL& source_url) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnReportException");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnReportException(embedded_worker_id,
-                              error_message,
-                              line_number,
-                              column_number,
-                              source_url);
-}
-
-void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
-    int embedded_worker_id,
-    const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnReportConsoleMessage");
-  if (!GetContext())
-    return;
-  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
-  if (!registry->CanHandle(embedded_worker_id))
-    return;
-  registry->OnReportConsoleMessage(embedded_worker_id,
-                                   params.source_identifier,
-                                   params.message_level,
-                                   params.message,
-                                   params.line_number,
-                                   params.source_url);
 }
 
 void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(

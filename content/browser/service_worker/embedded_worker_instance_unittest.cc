@@ -153,20 +153,32 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
   StalledInStartWorkerHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~StalledInStartWorkerHelper() override{};
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
     if (force_stall_in_start_) {
+      // Prepare for OnStopWorker().
+      instance_host_ptr_map_[embedded_worker_id].Bind(std::move(instance_host));
       // Do nothing to simulate a stall in the worker process.
       return;
     }
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(request));
+        pause_after_download, std::move(request), std::move(instance_host));
+  }
+
+  void OnStopWorker(int embedded_worker_id) override {
+    if (instance_host_ptr_map_[embedded_worker_id]) {
+      instance_host_ptr_map_[embedded_worker_id]->OnStopped();
+      base::RunLoop().RunUntilIdle();
+      return;
+    }
+    EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
   }
 
   void set_force_stall_in_start(bool force_stall_in_start) {
@@ -175,6 +187,11 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
 
  private:
   bool force_stall_in_start_ = true;
+
+  std::map<
+      int /* embedded_worker_id */,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+      instance_host_ptr_map_;
 };
 
 TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
@@ -708,7 +725,9 @@ class FailEmbeddedWorkerInstanceClientImpl
  private:
   void StartWorker(
       const EmbeddedWorkerStartParams& /* unused */,
-      mojom::ServiceWorkerEventDispatcherRequest /* unused */) override {
+      mojom::ServiceWorkerEventDispatcherRequest /* unused */,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo /* unused */)
+      override {
     helper_->mock_instance_clients()->clear();
   }
 };

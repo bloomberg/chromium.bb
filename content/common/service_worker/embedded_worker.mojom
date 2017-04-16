@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
+import "mojo/common/string16.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
 import "url/mojo/url.mojom";
@@ -12,12 +13,50 @@ import "url/mojo/url.mojom";
 [Native]
 struct EmbeddedWorkerStartParams;
 
-// Interface to control a renderer-side worker's environment.
+// Interface to control a renderer-side embedded worker. The browser uses this
+// interface to start, stop, and issue commands to the worker.
 interface EmbeddedWorkerInstanceClient {
   StartWorker(EmbeddedWorkerStartParams params,
-              ServiceWorkerEventDispatcher& dispatcher_request);
-  StopWorker() => ();
+              ServiceWorkerEventDispatcher& dispatcher_request,
+              associated EmbeddedWorkerInstanceHost instance_host);
+  // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
+  StopWorker();
   ResumeAfterDownload();
   AddMessageToConsole(blink.mojom.ConsoleMessageLevel level,
                       string message);
+};
+
+// Interface to control a browser-side embedded worker instance. The renderer
+// uses this interface to report embedded worker state back to the browser.
+// This interface is associated with the EmbeddedWorkerInstanceClient interface.
+interface EmbeddedWorkerInstanceHost {
+  // Indicates that the worker is ready for inspection.
+  OnReadyForInspection();
+  // Indicates that the worker has finished loading the script.
+  OnScriptLoaded();
+  // Indicates that the worker has failed to load the script.
+  OnScriptLoadFailed();
+  // Indicates that the worker thread has started. |thread_id| is the actual
+  // platform thread id on which the worker runs, while |provider_id| is the id
+  // of the ServiceWorkerNetworkProvider instance, which is unique in one
+  // renderer process, and the browser process uses this id to maintain a
+  // counterpart ServiceWorkerProviderHost instance.
+  // This is called after OnScriptLoaded.
+  OnThreadStarted(int32 thread_id, int32 provider_id);
+  // Indicates that the worker has evaluated the script. |success| means
+  // evaluating the script completed and no uncaught exception occurred.
+  // This is called after OnThreadStarted.
+  OnScriptEvaluated(bool success);
+  // Indicates that the worker has started.
+  // This is called after OnScriptEvaluated.
+  OnStarted();
+  // Reports that an uncaught exception occurred in the worker.
+  OnReportException(mojo.common.mojom.String16 error_message, int32 line_number,
+                    int32 column_number, url.mojom.Url source_url);
+  // Reports that a console message was emitted to the worker's console.
+  OnReportConsoleMessage(int32 source_identifier, int32 message_level,
+                         mojo.common.mojom.String16 message, int32 line_number,
+                         url.mojom.Url source_url);
+  // Indicates that the worker has stopped.
+  OnStopped();
 };

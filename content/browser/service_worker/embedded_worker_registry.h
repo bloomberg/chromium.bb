@@ -19,8 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
-class GURL;
-
 namespace IPC {
 class Message;
 }
@@ -53,37 +51,13 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // This doesn't actually start or stop the worker.
   std::unique_ptr<EmbeddedWorkerInstance> CreateWorker();
 
-  // Called from EmbeddedWorkerInstance, relayed to the child process.
-  ServiceWorkerStatusCode StopWorker(int process_id,
-                                     int embedded_worker_id);
-
   // Stop all active workers, even if they're handling events.
   void Shutdown();
 
-  // Called back from EmbeddedWorker in the child process, relayed via
-  // ServiceWorkerDispatcherHost.
-  void OnWorkerReadyForInspection(int process_id, int embedded_worker_id);
-  void OnWorkerScriptLoaded(int process_id, int embedded_worker_id);
-  void OnWorkerThreadStarted(int process_id,
-                             int thread_id,
-                             int embedded_worker_id);
-  void OnWorkerScriptLoadFailed(int process_id, int embedded_worker_id);
-  void OnWorkerScriptEvaluated(int process_id,
-                               int embedded_worker_id,
-                               bool success);
-  void OnWorkerStarted(int process_id, int embedded_worker_id);
+  // Called by EmbeddedWorkerInstance to do some necessary work in the registry.
+  bool OnWorkerStarted(int process_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
-  void OnReportException(int embedded_worker_id,
-                         const base::string16& error_message,
-                         int line_number,
-                         int column_number,
-                         const GURL& source_url);
-  void OnReportConsoleMessage(int embedded_worker_id,
-                              int source_identifier,
-                              int message_level,
-                              const base::string16& message,
-                              int line_number,
-                              const GURL& source_url);
+
   // Called by EmbeddedWorkerInstance when it learns DevTools has attached to
   // it.
   void OnDevToolsAttached(int embedded_worker_id);

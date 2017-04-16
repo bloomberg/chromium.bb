@@ -40,23 +40,6 @@ int kMockProviderId = 1;
 
 }
 
-class FailureHelper : public EmbeddedWorkerTestHelper {
- public:
-  FailureHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~FailureHelper() override {}
-
- protected:
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
-    SimulateWorkerStopped(embedded_worker_id);
-  }
-};
-
 class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
  public:
   class ServiceWorkerRequestTestResources {

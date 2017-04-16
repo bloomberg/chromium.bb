@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 
 class GURL;
-struct EmbeddedWorkerHostMsg_ReportConsoleMessage_Params;
 
 namespace url {
 class Origin;
@@ -143,24 +142,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                                     int provider_id,
                                     int64_t registration_id,
                                     const std::string& value);
-  void OnWorkerReadyForInspection(int embedded_worker_id);
-  void OnWorkerScriptLoaded(int embedded_worker_id);
-  void OnWorkerThreadStarted(int embedded_worker_id,
-                             int thread_id,
-                             int provider_id);
-  void OnWorkerScriptLoadFailed(int embedded_worker_id);
-  void OnWorkerScriptEvaluated(int embedded_worker_id, bool success);
-  void OnWorkerStarted(int embedded_worker_id);
-  void OnWorkerStopped(int embedded_worker_id);
   void OnCountFeature(int64_t version_id, uint32_t feature);
-  void OnReportException(int embedded_worker_id,
-                         const base::string16& error_message,
-                         int line_number,
-                         int column_number,
-                         const GURL& source_url);
-  void OnReportConsoleMessage(
-      int embedded_worker_id,
-      const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params);
   void OnIncrementServiceWorkerRefCount(int handle_id);
   void OnDecrementServiceWorkerRefCount(int handle_id);
   void OnIncrementRegistrationRefCount(int registration_handle_id);

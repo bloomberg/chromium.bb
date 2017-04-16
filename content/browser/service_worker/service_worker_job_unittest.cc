@@ -379,15 +379,18 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
   FailToStartWorkerTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
-    EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-    registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
+    instance_host_ptr.Bind(std::move(instance_host));
+    instance_host_ptr->OnStopped();
+    base::RunLoop().RunUntilIdle();
   }
 };
 
@@ -840,13 +843,14 @@ class UpdateJobTestHelper
   }
 
   // EmbeddedWorkerTestHelper overrides
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t version_id,
-      const GURL& scope,
-      const GURL& script,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t version_id,
+                     const GURL& scope,
+                     const GURL& script,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
@@ -884,7 +888,11 @@ class UpdateJobTestHelper
             script, kMockScriptSize, net::ERR_FILE_EXISTS, std::string());
         version->SetMainScriptHttpResponseInfo(
             EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-        SimulateWorkerScriptLoaded(embedded_worker_id);
+
+        mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
+        instance_host_ptr.Bind(std::move(instance_host));
+        instance_host_ptr->OnScriptLoaded();
+        base::RunLoop().RunUntilIdle();
         return;
       }
 
@@ -896,16 +904,17 @@ class UpdateJobTestHelper
           EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     }
 
-    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
-                                            scope, script, pause_after_download,
-                                            std::move(request));
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, version_id, scope, script, pause_after_download,
+        std::move(request), std::move(instance_host));
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
     if (!force_start_worker_failure_) {
       EmbeddedWorkerTestHelper::OnResumeAfterDownload(embedded_worker_id);
     } else {
-      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id);
+      SimulateWorkerThreadStarted(GetNextThreadId(), embedded_worker_id,
+                                  GetNextProviderId());
       SimulateWorkerScriptEvaluated(embedded_worker_id, false);
     }
   }
@@ -953,13 +962,14 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   EvictIncumbentVersionHelper() {}
   ~EvictIncumbentVersionHelper() override {}
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t version_id,
-      const GURL& scope,
-      const GURL& script,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t version_id,
+                     const GURL& scope,
+                     const GURL& script,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
         context()->GetLiveRegistration(version->registration_id());
@@ -971,9 +981,9 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       registration->DeleteVersion(
           make_scoped_refptr(registration->active_version()));
     }
-    UpdateJobTestHelper::OnStartWorker(embedded_worker_id, version_id, scope,
-                                       script, pause_after_download,
-                                       std::move(request));
+    UpdateJobTestHelper::OnStartWorker(
+        embedded_worker_id, version_id, scope, script, pause_after_download,
+        std::move(request), std::move(instance_host));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1645,14 +1655,15 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
   }
 
  protected:
-  void StartWorker(
-      const EmbeddedWorkerStartParams& params,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void StartWorker(const EmbeddedWorkerStartParams& params,
+                   mojom::ServiceWorkerEventDispatcherRequest request,
+                   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                       instance_host) override {
     ASSERT_TRUE(next_pause_after_download_.has_value());
     EXPECT_EQ(next_pause_after_download_.value(), params.pause_after_download);
     num_of_startworker_++;
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-        params, std::move(request));
+        params, std::move(request), std::move(instance_host));
   }
 
  private:

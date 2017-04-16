@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/payments/mojom/payment_app.mojom.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -84,6 +85,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const GURL& service_worker_scope,
       const GURL& script_url,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
   ~ServiceWorkerContextClient() override;
 
@@ -331,6 +333,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
 
   // This is bound on the worker thread.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
+
+  // This is bound on the main thread.
+  scoped_refptr<mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
+      instance_host_;
 
   // Renderer-side object corresponding to WebEmbeddedWorkerInstance.
   // This is valid from the ctor to workerContextDestroyed.

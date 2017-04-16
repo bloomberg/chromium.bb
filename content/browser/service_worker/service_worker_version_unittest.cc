@@ -292,15 +292,19 @@ class MessageReceiverDisallowStart : public MessageReceiver {
 
   enum class StartMode { STALL, FAIL, SUCCEED };
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request) override {
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download,
+                     mojom::ServiceWorkerEventDispatcherRequest request,
+                     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+                         instance_host) override {
     switch (mode_) {
       case StartMode::STALL:
+        // Prepare for OnStopWorker().
+        instance_host_ptr_map_[embedded_worker_id].Bind(
+            std::move(instance_host));
         break;  // Do nothing.
       case StartMode::FAIL:
         ASSERT_EQ(current_mock_instance_index_ + 1,
@@ -311,10 +315,19 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
-            pause_after_download, std::move(request));
+            pause_after_download, std::move(request), std::move(instance_host));
         break;
     }
     current_mock_instance_index_++;
+  }
+
+  void OnStopWorker(int embedded_worker_id) override {
+    if (instance_host_ptr_map_[embedded_worker_id]) {
+      instance_host_ptr_map_[embedded_worker_id]->OnStopped();
+      base::RunLoop().RunUntilIdle();
+      return;
+    }
+    EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
   }
 
   void set_start_mode(StartMode mode) { mode_ = mode; }
@@ -322,6 +335,11 @@ class MessageReceiverDisallowStart : public MessageReceiver {
  private:
   uint32_t current_mock_instance_index_ = 0;
   StartMode mode_ = StartMode::STALL;
+
+  std::map<
+      int /* embedded_worker_id */,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+      instance_host_ptr_map_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
 
@@ -350,18 +368,12 @@ class NoOpStopWorkerEmbeddedWorkerInstanceClient
       base::WeakPtr<EmbeddedWorkerTestHelper> helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
   ~NoOpStopWorkerEmbeddedWorkerInstanceClient() override {
-    // Stop callback should be called once.
-    if (pending_stop_callback_)
-      pending_stop_callback_.Run();
   }
 
  protected:
-  void StopWorker(const StopWorkerCallback& callback) override {
-    pending_stop_callback_ = std::move(callback);
+  void StopWorker() override {
     // Do nothing.
   }
-
-  StopWorkerCallback pending_stop_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpStopWorkerEmbeddedWorkerInstanceClient);
@@ -375,9 +387,7 @@ class MessageReceiverDisallowStop : public MessageReceiver {
   }
   ~MessageReceiverDisallowStop() override {}
 
-  void OnStopWorker(
-      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback)
-      override {
+  void OnStopWorker(int embedded_worker_id) override {
     // Do nothing.
   }
 
@@ -830,11 +840,11 @@ class MessageReceiverControlEvents : public MessageReceiver {
     extendable_message_event_callback_ = callback;
   }
 
-  void OnStopWorker(
-      const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback& callback)
-      override {
+  void OnStopWorker(int embedded_worker_id) override {
     EXPECT_FALSE(stop_worker_callback_);
-    stop_worker_callback_ = callback;
+    stop_worker_callback_ =
+        base::Bind(&MessageReceiverControlEvents::SimulateWorkerStopped,
+                   base::Unretained(this), embedded_worker_id);
   }
 
   const mojom::ServiceWorkerEventDispatcher::
@@ -843,15 +853,12 @@ class MessageReceiverControlEvents : public MessageReceiver {
     return extendable_message_event_callback_;
   }
 
-  const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback&
-  stop_worker_callback() {
-    return stop_worker_callback_;
-  }
+  const base::Closure& stop_worker_callback() { return stop_worker_callback_; }
 
  private:
   mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
       extendable_message_event_callback_;
-  mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback stop_worker_callback_;
+  base::Closure stop_worker_callback_;
 };
 
 class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
@@ -869,8 +876,7 @@ class ServiceWorkerRequestTimeoutTest : public ServiceWorkerVersionTest {
         ->extendable_message_event_callback();
   }
 
-  const mojom::EmbeddedWorkerInstanceClient::StopWorkerCallback&
-  stop_worker_callback() {
+  const base::Closure& stop_worker_callback() {
     return static_cast<MessageReceiverControlEvents*>(helper_.get())
         ->stop_worker_callback();
   }

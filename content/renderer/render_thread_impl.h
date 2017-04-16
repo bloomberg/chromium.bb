@@ -119,7 +119,6 @@ class CompositorForwardingMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
-class EmbeddedWorkerDispatcher;
 class FrameSwapMessageQueue;
 class IndexedDBDispatcher;
 class InputHandlerManager;
@@ -307,10 +306,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   DomStorageDispatcher* dom_storage_dispatcher() const {
     return dom_storage_dispatcher_.get();
-  }
-
-  EmbeddedWorkerDispatcher* embedded_worker_dispatcher() const {
-    return embedded_worker_dispatcher_.get();
   }
 
   AudioInputMessageFilter* audio_input_message_filter() {
@@ -609,7 +604,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
-  std::unique_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
   blink::WebMediaStreamCenter* media_stream_center_;

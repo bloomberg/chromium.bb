@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -477,7 +478,6 @@ bool EmbeddedWorkerInstance::Stop() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
     if (status_ == EmbeddedWorkerStatus::STARTING &&
         !HasSentStartWorker(starting_phase())) {
       // Don't send the StopWorker message when the StartWorker message hasn't
@@ -487,26 +487,12 @@ bool EmbeddedWorkerInstance::Stop() {
       OnDetached();
       return false;
     }
-    client_->StopWorker(base::Bind(&EmbeddedWorkerRegistry::OnWorkerStopped,
-                                   base::Unretained(registry_.get()),
-                                   process_id(), embedded_worker_id()));
-  } else {
-    ServiceWorkerStatusCode status =
-        registry_->StopWorker(process_id(), embedded_worker_id_);
-    UMA_HISTOGRAM_ENUMERATION("ServiceWorker.SendStopWorker.Status", status,
-                              SERVICE_WORKER_ERROR_MAX_VALUE);
-    // StopWorker could fail if we were starting up and don't have a process
-    // yet, or we can no longer communicate with the process. So just detach.
-    if (status != SERVICE_WORKER_OK) {
-      OnDetached();
-      return false;
-    }
-  }
+    client_->StopWorker();
 
-  status_ = EmbeddedWorkerStatus::STOPPING;
-  for (auto& observer : listener_list_)
-    observer.OnStopping();
-  return true;
+    status_ = EmbeddedWorkerStatus::STOPPING;
+    for (auto& observer : listener_list_)
+      observer.OnStopping();
+    return true;
 }
 
 void EmbeddedWorkerInstance::StopIfIdle() {
@@ -556,6 +542,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       starting_phase_(NOT_STARTING),
       restart_count_(0),
       thread_id_(kInvalidEmbeddedWorkerThreadId),
+      instance_host_binding_(this),
       devtools_attached_(false),
       network_accessed_for_script_(false),
       weak_factory_(this) {}
@@ -595,8 +582,14 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
+
+  DCHECK(!instance_host_binding_.is_bound());
+  mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
+  instance_host_binding_.Bind(&host_ptr_info);
+
   DCHECK(pending_dispatcher_request_.is_pending());
-  client_->StartWorker(*params, std::move(pending_dispatcher_request_));
+  client_->StartWorker(*params, std::move(pending_dispatcher_request_),
+                       std::move(host_ptr_info));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
                                this, "SendStartWorker");
@@ -619,6 +612,7 @@ void EmbeddedWorkerInstance::OnStartWorkerMessageSent() {
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnReadyForInspection");
   if (devtools_proxy_)
     devtools_proxy_->NotifyWorkerReadyForInspection();
 }
@@ -633,6 +627,8 @@ void EmbeddedWorkerInstance::OnScriptReadFinished() {
 
 void EmbeddedWorkerInstance::OnScriptLoaded() {
   using LoadSource = ServiceWorkerMetrics::LoadSource;
+
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnScriptLoaded");
 
   if (!inflight_start_task_)
     return;
@@ -683,7 +679,21 @@ void EmbeddedWorkerInstance::OnWorkerVersionDoomed() {
     devtools_proxy_->NotifyWorkerVersionDoomed();
 }
 
-void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
+void EmbeddedWorkerInstance::OnThreadStarted(int thread_id, int provider_id) {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnThreadStarted");
+  if (!context_)
+    return;
+
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHost(process_id(), provider_id);
+  if (!provider_host) {
+    bad_message::ReceivedBadMessage(
+        process_id(), bad_message::SWDH_WORKER_SCRIPT_LOAD_NO_HOST);
+    return;
+  }
+
+  provider_host->SetReadyToSendMessagesToWorker(thread_id);
+
   if (!inflight_start_task_)
     return;
   TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
@@ -702,6 +712,7 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnScriptLoadFailed");
   if (!inflight_start_task_)
     return;
   TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
@@ -712,6 +723,7 @@ void EmbeddedWorkerInstance::OnScriptLoadFailed() {
 }
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnScriptEvaluated");
   if (!inflight_start_task_)
     return;
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
@@ -736,6 +748,9 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
 }
 
 void EmbeddedWorkerInstance::OnStarted() {
+  TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstance::OnStarted");
+  if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
+    return;
   // Stop is requested before OnStarted is sent back from the worker.
   if (status_ == EmbeddedWorkerStatus::STOPPING)
     return;
@@ -747,6 +762,8 @@ void EmbeddedWorkerInstance::OnStarted() {
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
+  registry_->OnWorkerStopped(process_id(), embedded_worker_id_);
+
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
   for (auto& observer : listener_list_)
@@ -841,6 +858,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   inflight_start_task_.reset();
 
   client_.reset();
+  instance_host_binding_.Close();
   devtools_proxy_.reset();
   process_handle_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;

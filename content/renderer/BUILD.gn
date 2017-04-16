@@ -347,8 +347,6 @@ target(link_target_type, "renderer") {
     "seccomp_sandbox_status_android.h",
     "service_worker/embedded_worker_devtools_agent.cc",
     "service_worker/embedded_worker_devtools_agent.h",
-    "service_worker/embedded_worker_dispatcher.cc",
-    "service_worker/embedded_worker_dispatcher.h",
     "service_worker/embedded_worker_instance_client_impl.cc",
     "service_worker/embedded_worker_instance_client_impl.h",
     "service_worker/service_worker_context_client.cc",
