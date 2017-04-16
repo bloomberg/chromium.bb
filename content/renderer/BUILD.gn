@@ -432,7 +432,7 @@ target(link_target_type, "renderer") {
     "//cc/surfaces:surface_id",
     "//cc/surfaces:surfaces",
     "//components/discardable_memory/client",
-    "//components/payments/mojom:mojom_payment_app",
+    "//components/payments/content:mojom_payment_app",
     "//components/url_formatter",
     "//components/variations",
     "//content:resources",

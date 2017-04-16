@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 

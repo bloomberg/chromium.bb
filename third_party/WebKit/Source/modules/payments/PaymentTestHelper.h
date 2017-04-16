@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/V8DOMException.h"
-#include "components/payments/mojom/payment_request.mojom-blink.h"
+#include "components/payments/content/payment_request.mojom-blink.h"
 #include "modules/payments/PaymentDetailsInit.h"
 #include "modules/payments/PaymentDetailsUpdate.h"
 #include "modules/payments/PaymentItem.h"
