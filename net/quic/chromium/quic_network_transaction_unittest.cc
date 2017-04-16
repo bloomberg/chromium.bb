@@ -223,15 +223,14 @@ class QuicNetworkTransactionTest
  protected:
   QuicNetworkTransactionTest()
       : version_(GetParam()),
-        clock_(new MockClock),
         client_maker_(version_,
                       0,
-                      clock_,
+                      &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_CLIENT),
         server_maker_(version_,
                       0,
-                      clock_,
+                      &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_SERVER),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
@@ -246,7 +245,7 @@ class QuicNetworkTransactionTest
     url.append(kDefaultServerHostName);
     request_.url = GURL(url);
     request_.load_flags = 0;
-    clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
     scoped_refptr<X509Certificate> cert(
         ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
@@ -516,7 +515,7 @@ class QuicNetworkTransactionTest
 
   void CreateSession() {
     params_.enable_quic = true;
-    params_.quic_clock = clock_;
+    params_.quic_clock = &clock_;
     params_.quic_random = &random_generator_;
     params_.client_socket_factory = &socket_factory_;
     params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
@@ -741,7 +740,7 @@ class QuicNetworkTransactionTest
 
   const QuicVersion version_;
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
-  MockClock* clock_;     // Owned by QuicStreamFactory after CreateSession.
+  MockClock clock_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -1504,11 +1503,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -1603,11 +1602,11 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -1706,11 +1705,11 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -1881,11 +1880,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -1999,11 +1998,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2112,11 +2111,11 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2240,11 +2239,11 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2354,11 +2353,11 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
-                                                 clock_));
+                                                 &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
@@ -2729,9 +2728,9 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1));
 
   // Second request.
-  QuicTestPacketMaker client_maker2(version_, 0, clock_, origin2.host(),
+  QuicTestPacketMaker client_maker2(version_, 0, &clock_, origin2.host(),
                                     Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker2(version_, 0, clock_, origin2.host(),
+  QuicTestPacketMaker server_maker2(version_, 0, &clock_, origin2.host(),
                                     Perspective::IS_SERVER);
   mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
       4, kClientDataStreamId2, false, true,
@@ -2823,7 +2822,7 @@ TEST_P(QuicNetworkTransactionTest,
   QuicStreamOffset request_header_offset = 0;
   QuicStreamOffset response_header_offset = 0;
 
-  QuicTestPacketMaker client_maker(version_, 0, clock_, "mail.example.org",
+  QuicTestPacketMaker client_maker(version_, 0, &clock_, "mail.example.org",
                                    Perspective::IS_CLIENT);
   server_maker_.set_hostname("www.example.org");
   client_maker_.set_hostname("www.example.org");
@@ -4207,8 +4206,7 @@ class QuicNetworkTransactionWithDestinationTest
       public ::testing::WithParamInterface<PoolingTestParams> {
  protected:
   QuicNetworkTransactionWithDestinationTest()
-      : clock_(new MockClock),
-        version_(GetParam().version),
+      : version_(GetParam().version),
         destination_type_(GetParam().destination_type),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
@@ -4224,8 +4222,8 @@ class QuicNetworkTransactionWithDestinationTest
 
     HttpNetworkSession::Params params;
 
-    clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
-    params.quic_clock = clock_;
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    params.quic_clock = &clock_;
 
     crypto_client_stream_factory_.set_handshake_mode(
         MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -4409,7 +4407,7 @@ class QuicNetworkTransactionWithDestinationTest
     EXPECT_EQ(443, response->socket_address.port());
   }
 
-  MockClock* clock_;
+  MockClock clock_;
   QuicVersion version_;
   DestinationType destination_type_;
   std::string origin1_;
@@ -4503,9 +4501,9 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
   verify_details.cert_verify_result.is_issued_by_known_root = true;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  QuicTestPacketMaker client_maker1(version_, 0, clock_, origin1_,
+  QuicTestPacketMaker client_maker1(version_, 0, &clock_, origin1_,
                                     Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker1(version_, 0, clock_, origin1_,
+  QuicTestPacketMaker server_maker1(version_, 0, &clock_, origin1_,
                                     Perspective::IS_SERVER);
 
   QuicStreamOffset request_header_offset(0);
@@ -4523,9 +4521,9 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
       ConstructServerDataPacket(2, kClientDataStreamId1, &server_maker1));
   mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1, &client_maker1));
 
-  QuicTestPacketMaker client_maker2(version_, 0, clock_, origin2_,
+  QuicTestPacketMaker client_maker2(version_, 0, &clock_, origin2_,
                                     Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker2(version_, 0, clock_, origin2_,
+  QuicTestPacketMaker server_maker2(version_, 0, &clock_, origin2_,
                                     Perspective::IS_SERVER);
 
   mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
@@ -4582,9 +4580,9 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
   verify_details2.cert_verify_result.is_issued_by_known_root = true;
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
 
-  QuicTestPacketMaker client_maker1(version_, 0, clock_, origin1_,
+  QuicTestPacketMaker client_maker1(version_, 0, &clock_, origin1_,
                                     Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker1(version_, 0, clock_, origin1_,
+  QuicTestPacketMaker server_maker1(version_, 0, &clock_, origin1_,
                                     Perspective::IS_SERVER);
 
   MockQuicData mock_quic_data1;
@@ -4607,9 +4605,9 @@ TEST_P(QuicNetworkTransactionWithDestinationTest,
 
   AddHangingSocketData();
 
-  QuicTestPacketMaker client_maker2(version_, 0, clock_, origin2_,
+  QuicTestPacketMaker client_maker2(version_, 0, &clock_, origin2_,
                                     Perspective::IS_CLIENT);
-  QuicTestPacketMaker server_maker2(version_, 0, clock_, origin2_,
+  QuicTestPacketMaker server_maker2(version_, 0, &clock_, origin2_,
                                     Perspective::IS_SERVER);
 
   MockQuicData mock_quic_data2;

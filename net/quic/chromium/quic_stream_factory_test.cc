@@ -219,17 +219,16 @@ class QuicStreamFactoryTestBase {
   QuicStreamFactoryTestBase(QuicVersion version, bool enable_connection_racing)
       : ssl_config_service_(new MockSSLConfigService),
         random_generator_(0),
-        clock_(new MockClock()),
-        runner_(new TestTaskRunner(clock_)),
+        runner_(new TestTaskRunner(&clock_)),
         version_(version),
         client_maker_(version_,
                       0,
-                      clock_,
+                      &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_CLIENT),
         server_maker_(version_,
                       0,
-                      clock_,
+                      &clock_,
                       kDefaultServerHostName,
                       Perspective::IS_SERVER),
         cert_verifier_(CertVerifier::CreateDefault()),
@@ -263,14 +262,7 @@ class QuicStreamFactoryTestBase {
         force_hol_blocking_(false),
         race_cert_verification_(false),
         estimate_initial_rtt_(false) {
-    clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  }
-
-  ~QuicStreamFactoryTestBase() {
-    // If |factory_| was initialized, then it took over ownership of |clock_|.
-    // If |factory_| was not initialized, then |clock_| needs to be destroyed.
-    if (!factory_)
-      delete clock_;
+    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   void Initialize() {
@@ -281,7 +273,7 @@ class QuicStreamFactoryTestBase {
         cert_verifier_.get(), &ct_policy_enforcer_, channel_id_service_.get(),
         &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
-        &crypto_client_stream_factory_, &random_generator_, clock_,
+        &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
         always_require_handshake_confirmation_, disable_connection_pooling_,
         load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
@@ -757,7 +749,7 @@ class QuicStreamFactoryTestBase {
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
-  MockClock* clock_;  // Owned by |factory_| once created.
+  MockClock clock_;
   scoped_refptr<TestTaskRunner> runner_;
   QuicVersion version_;
   QuicTestPacketMaker client_maker_;

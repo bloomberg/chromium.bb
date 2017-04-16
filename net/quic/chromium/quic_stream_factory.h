@@ -523,8 +523,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CTVerifier* cert_transparency_verifier_;
   std::unique_ptr<QuicServerInfoFactory> quic_server_info_factory_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
-  QuicRandom* random_generator_;
-  std::unique_ptr<QuicClock> clock_;
+  QuicRandom* random_generator_;  // Unowned.
+  QuicClock* clock_;              // Unowned.
   const size_t max_packet_length_;
   QuicClockSkewDetector clock_skew_detector_;
 

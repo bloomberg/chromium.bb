@@ -2219,21 +2219,20 @@ class HttpStreamFactoryBidirectionalQuicTest
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
-        clock_(new MockClock),
         client_packet_maker_(GetParam(),
                              0,
-                             clock_,
+                             &clock_,
                              "www.example.org",
                              Perspective::IS_CLIENT),
         server_packet_maker_(GetParam(),
                              0,
-                             clock_,
+                             &clock_,
                              "www.example.org",
                              Perspective::IS_SERVER),
         random_generator_(0),
         proxy_service_(ProxyService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
-    clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
   void TearDown() override { session_.reset(); }
@@ -2249,7 +2248,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     params_.http_server_properties = &http_server_properties_;
     params_.quic_host_whitelist.insert("www.example.org");
     params_.quic_random = &random_generator_;
-    params_.quic_clock = clock_;
+    params_.quic_clock = &clock_;
 
     // Load a certificate that is valid for *.example.org
     scoped_refptr<X509Certificate> test_cert(
@@ -2299,7 +2298,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   const GURL default_url_;
 
  private:
-  MockClock* clock_;  // Owned by QuicStreamFactory
+  MockClock clock_;
   test::QuicTestPacketMaker client_packet_maker_;
   test::QuicTestPacketMaker server_packet_maker_;
   MockClientSocketFactory socket_factory_;

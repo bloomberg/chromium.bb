@@ -152,7 +152,7 @@ class NET_EXPORT HttpNetworkSession
     // If not empty, QUIC will be used for all connections to the set of
     // origins in |origins_to_force_quic_on|.
     std::set<HostPortPair> origins_to_force_quic_on;
-    // Source of time for QUIC connections. Will be owned by QuicStreamFactory.
+    // Source of time for QUIC connections.
     QuicClock* quic_clock;
     // Source of entropy for QUIC connections.
     QuicRandom* quic_random;

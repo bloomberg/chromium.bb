@@ -191,7 +191,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.socket_performance_watcher_factory,
           params.quic_crypto_client_stream_factory,
           params.quic_random ? params.quic_random : QuicRandom::GetInstance(),
-          params.quic_clock ? params.quic_clock : new QuicChromiumClock(),
+          params.quic_clock ? params.quic_clock
+                            : QuicChromiumClock::GetInstance(),
           params.quic_max_packet_length,
           params.quic_user_agent_id,
           params.quic_supported_versions,

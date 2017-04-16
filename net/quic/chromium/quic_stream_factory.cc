@@ -1538,7 +1538,7 @@ MigrationResult QuicStreamFactory::MigrateSessionInner(
     return MigrationResult::FAILURE;
   }
   std::unique_ptr<QuicChromiumPacketReader> new_reader(
-      new QuicChromiumPacketReader(socket.get(), clock_.get(), session,
+      new QuicChromiumPacketReader(socket.get(), clock_, session,
                                    yield_after_packets_, yield_after_duration_,
                                    session->net_log()));
   std::unique_ptr<QuicChromiumPacketWriter> new_writer(
@@ -1680,13 +1680,12 @@ int QuicStreamFactory::CreateSession(
     return rv;
 
   if (!helper_.get()) {
-    helper_.reset(
-        new QuicChromiumConnectionHelper(clock_.get(), random_generator_));
+    helper_.reset(new QuicChromiumConnectionHelper(clock_, random_generator_));
   }
 
   if (!alarm_factory_.get()) {
     alarm_factory_.reset(new QuicChromiumAlarmFactory(
-        base::ThreadTaskRunnerHandle::Get().get(), clock_.get()));
+        base::ThreadTaskRunnerHandle::Get().get(), clock_));
   }
   QuicConnectionId connection_id = random_generator_->RandUint64();
   InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);
@@ -1730,9 +1729,9 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicChromiumClientSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
-      clock_.get(), transport_security_state_, std::move(server_info),
-      server_id, require_confirmation, yield_after_packets_,
-      yield_after_duration_, cert_verify_flags, config, &crypto_config_,
+      clock_, transport_security_state_, std::move(server_info), server_id,
+      require_confirmation, yield_after_packets_, yield_after_duration_,
+      cert_verify_flags, config, &crypto_config_,
       network_connection_.connection_description(), dns_resolution_start_time,
       dns_resolution_end_time, &push_promise_index_, push_delegate_,
       task_runner_, std::move(socket_performance_watcher), net_log.net_log());
