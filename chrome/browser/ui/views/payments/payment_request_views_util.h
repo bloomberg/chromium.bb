@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/mojom/payment_request.mojom.h"
 
 namespace autofill {
 class AutofillProfile;

@@ -13,7 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/payments/content/payment_manifest_parser.mojom.h"
+#include "components/payments/mojom/payment_manifest_parser.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

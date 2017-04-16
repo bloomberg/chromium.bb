@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/payments/content/payment_app.mojom.h"
+#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/browser/payments/payment_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
