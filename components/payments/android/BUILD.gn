@@ -11,7 +11,7 @@ static_library("android") {
   ]
 
   deps = [
-    "//components/payments/mojom:mojom_parser",
+    "//components/payments/content:mojom_parser",
     "//components/webdata/common",
     "//sql",
   ]

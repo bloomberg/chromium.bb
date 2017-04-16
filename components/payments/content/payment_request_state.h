@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_response_helper.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 
 namespace i18n {
 namespace addressinput {

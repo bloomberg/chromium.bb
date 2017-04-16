@@ -35,7 +35,7 @@ blink_modules_sources("payments") {
     "PaymentsValidators.h",
   ]
   deps = [
-    "//components/payments/mojom:mojom_blink",
-    "//components/payments/mojom:mojom_payment_app_blink",
+    "//components/payments/content:mojom_blink",
+    "//components/payments/content:mojom_payment_app_blink",
   ]
 }

@@ -13,7 +13,7 @@
 
 #include "base/android/jni_android.h"
 #include "components/payments/content/payment_details_validation.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "jni/PaymentValidator_jni.h"
 
 namespace payments {

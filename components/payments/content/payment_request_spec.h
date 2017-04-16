@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 
 namespace payments {
 

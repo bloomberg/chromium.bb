@@ -6,8 +6,8 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 
 #include "base/macros.h"
+#include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/core/payment_instrument.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 
 namespace autofill {
 class AutofillProfile;
