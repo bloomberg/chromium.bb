@@ -16,8 +16,8 @@
 #endif
 
 void ifd_init(insp_frame_data *fd, int frame_width, int frame_height) {
-  fd->mi_cols = ALIGN_POWER_OF_TWO(frame_width, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
-  fd->mi_rows = ALIGN_POWER_OF_TWO(frame_height, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
+  fd->mi_cols = ALIGN_POWER_OF_TWO(frame_width, 3) >> MI_SIZE_LOG2;
+  fd->mi_rows = ALIGN_POWER_OF_TWO(frame_height, 3) >> MI_SIZE_LOG2;
   fd->mi_grid = (insp_mi_data *)aom_malloc(sizeof(insp_mi_data) * fd->mi_rows *
                                            fd->mi_cols);
 }
