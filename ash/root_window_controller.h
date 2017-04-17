@@ -280,7 +280,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
                        ui::MenuSourceType source_type);
 
   // Called when the login status changes after login (such as lock/unlock).
-  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
  private:
@@ -323,7 +322,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void OnMenuClosed();
 
   // Overridden from ShellObserver.
-  void OnLoginStateChanged(LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;

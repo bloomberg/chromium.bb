@@ -1019,6 +1019,10 @@ void ShelfLayoutManager::OnSessionStateChanged(
   UpdateVisibilityState();
 }
 
+void ShelfLayoutManager::OnLoginStatusChanged(LoginStatus loing_status) {
+  UpdateVisibilityState();
+}
+
 void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
   UpdateVisibilityState();
   LayoutShelf();

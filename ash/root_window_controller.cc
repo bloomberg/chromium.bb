@@ -1102,10 +1102,6 @@ void RootWindowController::OnMenuClosed() {
   wm_shelf_->UpdateVisibilityState();
 }
 
-void RootWindowController::OnLoginStateChanged(LoginStatus status) {
-  wm_shelf_->UpdateVisibilityState();
-}
-
 void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {
   if (enabled)
     EnableTouchHudProjection();
