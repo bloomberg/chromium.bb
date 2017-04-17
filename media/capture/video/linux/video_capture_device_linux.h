@@ -53,9 +53,10 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   static int TranslatePowerLineFrequencyToV4L2(PowerLineFrequency frequency);
 
   // Internal delegate doing the actual capture setting, buffer allocation and
-  // circulation with the V4L2 API. Created and deleted in the thread where
-  // VideoCaptureDeviceLinux lives but otherwise operating on |v4l2_thread_|.
-  scoped_refptr<V4L2CaptureDelegate> capture_impl_;
+  // circulation with the V4L2 API. Created in the thread where
+  // VideoCaptureDeviceLinux lives but otherwise operating and deleted on
+  // |v4l2_thread_|.
+  std::unique_ptr<V4L2CaptureDelegate> capture_impl_;
 
   // Photo-related requests waiting for |v4l2_thread_| to be active.
   std::list<base::Closure> photo_requests_queue_;

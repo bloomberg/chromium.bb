@@ -213,14 +213,15 @@ class V4L2CaptureDelegateTest : public ::testing::Test {
  public:
   V4L2CaptureDelegateTest()
       : device_descriptor_("Device 0", "/dev/video0"),
-        delegate_(new V4L2CaptureDelegate(device_descriptor_,
-                                          base::ThreadTaskRunnerHandle::Get(),
-                                          50)) {}
+        delegate_(base::MakeUnique<V4L2CaptureDelegate>(
+            device_descriptor_,
+            base::ThreadTaskRunnerHandle::Get(),
+            50)) {}
   ~V4L2CaptureDelegateTest() override = default;
 
   base::MessageLoop loop_;
   VideoCaptureDeviceDescriptor device_descriptor_;
-  scoped_refptr<V4L2CaptureDelegate> delegate_;
+  std::unique_ptr<V4L2CaptureDelegate> delegate_;
 };
 
 }  // anonymous namespace

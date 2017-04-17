@@ -10,7 +10,6 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -27,11 +26,9 @@ class Location;
 namespace media {
 
 // Class doing the actual Linux capture using V4L2 API. V4L2 SPLANE/MPLANE
-// capture specifics are implemented in derived classes. Created and destroyed
-// on the owner's thread, otherwise living and operating on |v4l2_task_runner_|.
-// TODO(mcasas): Make this class a non-ref-counted.
-class CAPTURE_EXPORT V4L2CaptureDelegate final
-    : public base::RefCountedThreadSafe<V4L2CaptureDelegate> {
+// capture specifics are implemented in derived classes. Created on the owner's
+// thread, otherwise living, operating and destroyed on |v4l2_task_runner_|.
+class CAPTURE_EXPORT V4L2CaptureDelegate final {
  public:
   // Retrieves the #planes for a given |fourcc|, or 0 if unknown.
   static size_t GetNumPlanesForFourCc(uint32_t fourcc);
@@ -47,6 +44,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final
       const VideoCaptureDeviceDescriptor& device_descriptor,
       const scoped_refptr<base::SingleThreadTaskRunner>& v4l2_task_runner,
       int power_line_frequency);
+  ~V4L2CaptureDelegate();
 
   // Forward-to versions of VideoCaptureDevice virtual methods.
   void AllocateAndStart(int width,
@@ -64,11 +62,10 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final
 
   void SetRotation(int rotation);
 
+  base::WeakPtr<V4L2CaptureDelegate> GetWeakPtr();
+
  private:
   friend class V4L2CaptureDelegateTest;
-
-  friend class base::RefCountedThreadSafe<V4L2CaptureDelegate>;
-  ~V4L2CaptureDelegate();
 
   class BufferTracker;
 
@@ -103,6 +100,8 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final
 
   // Clockwise rotation in degrees. This value should be 0, 90, 180, or 270.
   int rotation_;
+
+  base::WeakPtrFactory<V4L2CaptureDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2CaptureDelegate);
 };
