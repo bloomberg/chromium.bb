@@ -71,6 +71,39 @@ const ui::DeviceCapabilities kWacomIntuos5SPen = {
     arraysize(kWacomIntuos5SPenAbsAxes),
 };
 
+
+const ui::DeviceAbsoluteAxis EpsonBrightLink1430AbsAxes[] = {
+    {ABS_X, {0, 0, 32767, 0, 0, 200}},
+    {ABS_Y, {0, 0, 32767, 0, 0, 200}},
+    {ABS_Z, {0, 0, 32767, 0, 0, 200}},
+    {ABS_RX,{0, 0, 32767, 0, 0, 200}},
+    {ABS_PRESSURE, {0, 0, 32767, 0, 0, 0}},
+};
+
+const ui::DeviceCapabilities EpsonBrightLink1430 = {
+    /* path */ "/sys/devices/ff580000.usb/usb3/3-1/"
+               "3-1.1/3-1.1.3/3-1.1.3:1.1/0003:04B8:061B.0006/"
+               "input/input12/event6",
+    /* name */ "EPSON EPSON EPSON 1430",
+    /* phys */ "USB-ff580000.USB-1.1.3/input1",
+    /* uniq */ "2.04",
+    /* bustype */ "0003",
+    /* vendor */ "04b8",
+    /* product */ "061b",
+    /* version */ "0200",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "c07 30000 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "100000f",
+    /* msc */ "10",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    EpsonBrightLink1430AbsAxes,
+    arraysize(EpsonBrightLink1430AbsAxes),
+};
+
 }  // namespace
 
 namespace ui {
@@ -500,4 +533,63 @@ TEST_F(TabletEventConverterEvdevTest, CheckStylusFiltering) {
 
   dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
   EXPECT_EQ(0u, size());
+}
+
+// for digitizer pen with only one side button
+TEST_F(TabletEventConverterEvdevTest, DigitizerPenOneSideButtonPress) {
+  std::unique_ptr<ui::MockTabletEventConverterEvdev> dev =
+      base::WrapUnique(CreateDevice(EpsonBrightLink1430));
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 63},
+      {{0, 0}, EV_ABS, ABS_X, 18372},
+      {{0, 0}, EV_ABS, ABS_Y, 9880},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 61},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 60},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 63},
+      {{0, 0}, EV_ABS, ABS_MISC, 1050626},
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 1},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      {{0, 0}, EV_ABS, ABS_X, 18294},
+      {{0, 0}, EV_ABS, ABS_Y, 9723},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 20},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 1015},
+      {{0, 0}, EV_KEY, BTN_STYLUS, 1},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      {{0, 0}, EV_ABS, ABS_X, 18516},
+      {{0, 0}, EV_ABS, ABS_Y, 9723},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 23},
+      {{0, 0}, EV_KEY, BTN_STYLUS, 0},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+
+      {{0, 0}, EV_ABS, ABS_X, 0},
+      {{0, 0}, EV_ABS, ABS_Y, 0},
+      {{0, 0}, EV_ABS, ABS_DISTANCE, 0},
+      {{0, 0}, EV_ABS, ABS_TILT_X, 0},
+      {{0, 0}, EV_ABS, ABS_TILT_Y, 0},
+      {{0, 0}, EV_KEY, BTN_TOOL_PEN, 0},
+      {{0, 0}, EV_ABS, ABS_MISC, 0},
+      {{0, 0}, EV_MSC, MSC_SERIAL, 897618290},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  dev->ProcessEvents(mock_kernel_queue, arraysize(mock_kernel_queue));
+  EXPECT_EQ(3u, size());
+
+  ui::MouseEvent* event = dispatched_event(0);
+  EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
+
+  event = dispatched_event(1);
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, event->type());
+  EXPECT_EQ(true, event->IsRightMouseButton());
+
+  event = dispatched_event(2);
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, event->type());
+  EXPECT_EQ(true, event->IsRightMouseButton());
+
 }

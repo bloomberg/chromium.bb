@@ -57,6 +57,9 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
   tilt_x_range_ = info.GetAbsMaximum(ABS_TILT_X) - tilt_x_min_ + 1;
   tilt_y_range_ = info.GetAbsMaximum(ABS_TILT_Y) - tilt_y_min_ + 1;
   pressure_max_ = info.GetAbsMaximum(ABS_PRESSURE);
+
+  if (info.HasKeyEvent(BTN_STYLUS) && !info.HasKeyEvent(BTN_STYLUS2))
+    one_side_btn_pen_ = true;
 }
 
 TabletEventConverterEvdev::~TabletEventConverterEvdev() {
@@ -174,7 +177,10 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
   else if (input.code == BTN_STYLUS2)
     button = BTN_RIGHT;
   else if (input.code == BTN_STYLUS)
-    button = BTN_MIDDLE;
+    if (one_side_btn_pen_)
+      button = BTN_RIGHT;
+    else
+      button = BTN_MIDDLE;
   else
     return;
 

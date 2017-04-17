@@ -87,6 +87,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   // Set if we drop events in kernel (SYN_DROPPED) or in process.
   bool dropped_events_ = false;
 
+  // Pen has only one side button
+  bool one_side_btn_pen_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TabletEventConverterEvdev);
 };
 
