@@ -354,6 +354,9 @@ function initialize() {
         // Make sure the "Report anonymously" option comes last.
         $('user-email-drop-down').insertBefore(optionElement,
             $('anonymous-user-option'));
+
+        // Now we can unhide the user email section:
+        $('user-email').hidden = false;
       });
 
       // Initiate getting the system info.
