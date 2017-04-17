@@ -33,7 +33,7 @@
 ] interface WorkerNavigator {
 };
 
-WorkerNavigator implements NavigatorCPU;
+WorkerNavigator implements NavigatorConcurrentHardware;
 WorkerNavigator implements NavigatorID;
 // TODO(foolip): WorkerNavigator implements NavigatorLanguage;
 WorkerNavigator implements NavigatorOnLine;

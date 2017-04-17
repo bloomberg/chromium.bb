@@ -474,7 +474,7 @@ core_dependency_idl_files =
                     "events/EventListener.idl",
                     "events/NavigatorEvents.idl",
                     "fileapi/URLFileAPI.idl",
-                    "frame/NavigatorCPU.idl",
+                    "frame/NavigatorConcurrentHardware.idl",
                     "frame/NavigatorCookies.idl",
                     "frame/NavigatorID.idl",
                     "frame/NavigatorLanguage.idl",

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorCPU_h
-#define NavigatorCPU_h
+#ifndef NavigatorConcurrentHardware_h
+#define NavigatorConcurrentHardware_h
 
 #include "core/CoreExport.h"
 
 namespace blink {
 
-class CORE_EXPORT NavigatorCPU {
+class CORE_EXPORT NavigatorConcurrentHardware {
  public:
   unsigned hardwareConcurrency() const;
 };
 
 }  // namespace blink
 
-#endif  // NavigatorCPU_h
+#endif  // NavigatorConcurrentHardware_h

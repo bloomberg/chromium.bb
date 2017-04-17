@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/frame/NavigatorCPU.h"
+#include "core/frame/NavigatorConcurrentHardware.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/NavigatorOnLine.h"
 #include "platform/Supplementable.h"
@@ -40,7 +40,7 @@ namespace blink {
 class CORE_EXPORT WorkerNavigator final
     : public GarbageCollectedFinalized<WorkerNavigator>,
       public ScriptWrappable,
-      public NavigatorCPU,
+      public NavigatorConcurrentHardware,
       public NavigatorID,
       public NavigatorOnLine,
       public Supplementable<WorkerNavigator> {

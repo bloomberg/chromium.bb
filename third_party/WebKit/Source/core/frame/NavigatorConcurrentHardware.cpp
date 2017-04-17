@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/NavigatorCPU.h"
+#include "core/frame/NavigatorConcurrentHardware.h"
 
 #include "public/platform/Platform.h"
 
 namespace blink {
 
-unsigned NavigatorCPU::hardwareConcurrency() const {
+unsigned NavigatorConcurrentHardware::hardwareConcurrency() const {
   return Platform::Current()->NumberOfProcessors();
 }
 
