@@ -734,7 +734,6 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE txk_end = TX_TYPES - 1;
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
-  int best_eob = tx_size_2d[tx_size];
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
   TX_TYPE tx_type;
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
@@ -753,7 +752,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
       av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
-                   &this_rd_stats.dist, &this_rd_stats.sse, 0);
+                   &this_rd_stats.dist, &this_rd_stats.sse,
+                   OUTPUT_HAS_PREDICTED_PIXELS);
     const SCAN_ORDER *scan_order =
         get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
     this_rd_stats.rate = av1_cost_coeffs(
@@ -764,13 +764,21 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_rd = rd;
       *rd_stats = this_rd_stats;
       best_tx_type = tx_type;
-      best_eob = x->plane[plane].eobs[block];
     }
   }
   if (plane == 0) mbmi->txk_type[block] = best_tx_type;
-  x->plane[plane].eobs[block] = best_eob;
-  av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
-                                     best_eob);
+  // TODO(angiebird): Instead of re-call av1_xform_quant and av1_optimize_b,
+  // copy the best result in the above tx_type search for loop
+  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  coeff_ctx, AV1_XFORM_QUANT_FP);
+  if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
+    av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+  if (!is_inter_block(mbmi)) {
+    // intra mode needs decoded result such that the next transform block
+    // can use it for prediction.
+    av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+                                       x->plane[plane].eobs[block]);
+  }
   return best_rd;
 }
 #endif  // CONFIG_TXK_SEL
