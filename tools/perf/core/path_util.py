@@ -5,15 +5,18 @@
 import os
 import sys
 
+sys.path.insert(1, os.path.join(os.path.abspath(__file__), '..', '..'))
+
+from chrome_telemetry_build import chromium_config
+
 
 def GetChromiumSrcDir():
-  return os.path.abspath(os.path.join(
-      os.path.dirname(__file__), '..', '..', '..'))
+  return chromium_config.GetChromiumSrcDir()
+
 
 
 def GetTelemetryDir():
-  return os.path.join(
-      GetChromiumSrcDir(), 'third_party', 'catapult', 'telemetry')
+  return chromium_config.GetTelemetryDir()
 
 
 def GetPerfDir():

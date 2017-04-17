@@ -15,11 +15,8 @@ from chrome_telemetry_build import chromium_config
 
 
 def main():
-  config = chromium_config.ChromiumConfig(
-      benchmark_dirs=[path_util.GetPerfBenchmarksDir()],
-      top_level_dir=path_util.GetPerfDir())
+  config = chromium_config.ChromiumConfig()
   return benchmark_runner.main(config, [trybot_command.Trybot])
-
 
 if __name__ == '__main__':
   sys.exit(main())
