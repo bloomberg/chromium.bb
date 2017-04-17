@@ -1715,6 +1715,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 // small blocks, only blend with neighbors from one side. If block-size of
 // current plane is 4x4 or 8x4, the above neighbor (dir = 0) will be skipped. If
 // it is 4x8, the left neighbor (dir = 1) will be skipped.
+#define DISABLE_CHROMA_U8X8_OBMC 0  // 0: one-sided obmc; 1: disable
+
 int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
                            int dir) {
   assert(is_motion_variation_allowed_bsize(bsize));
@@ -1725,9 +1727,15 @@ int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
   if (bsize_plane < BLOCK_4X4) return 1;
 #endif
   switch (bsize_plane) {
+#if DISABLE_CHROMA_U8X8_OBMC
     case BLOCK_4X4:
+    case BLOCK_8X4:
+    case BLOCK_4X8: return 1; break;
+#else
+    case BLOCK_4X4: return dir == 1; break;
     case BLOCK_8X4: return dir == 0; break;
     case BLOCK_4X8: return dir == 1; break;
+#endif
     default: return 0;
   }
 }
