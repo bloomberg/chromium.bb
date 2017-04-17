@@ -134,6 +134,12 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
 
   LocalFrame* frame = document_loader_->GetFrame();
   Document* document = frame->GetDocument();
+  if (document->IsSandboxed(kSandboxOrigin) ||
+      document->GetSecurityOrigin()->HasSuborigin()) {
+    // Prevent sandboxes and suborigins from establishing application caches.
+    SelectCacheWithoutManifest();
+    return;
+  }
   if (document->IsSecureContext()) {
     UseCounter::Count(document,
                       UseCounter::kApplicationCacheManifestSelectSecureOrigin);

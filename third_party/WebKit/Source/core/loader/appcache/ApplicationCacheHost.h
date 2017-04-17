@@ -32,6 +32,8 @@
 #define ApplicationCacheHost_h
 
 #include <memory>
+#include "base/gtest_prod_util.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
@@ -44,9 +46,9 @@ class DocumentLoader;
 class ResourceRequest;
 class ResourceResponse;
 
-class ApplicationCacheHost final
+class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
-      public WebApplicationCacheHostClient {
+      NON_EXPORTED_BASE(public WebApplicationCacheHostClient) {
   WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
 
  public:
@@ -214,6 +216,9 @@ class ApplicationCacheHost final
                         const String& error_message);
 
   std::unique_ptr<WebApplicationCacheHost> host_;
+
+  FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
+  FRIEND_TEST_ALL_PREFIXES(DocumentTest, SuboriginDisablesAppCache);
 };
 
 }  // namespace blink

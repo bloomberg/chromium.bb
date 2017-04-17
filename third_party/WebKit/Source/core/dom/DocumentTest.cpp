@@ -40,6 +40,8 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/testing/DummyPageHolder.h"
@@ -47,6 +49,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -283,6 +286,24 @@ class MockValidationMessageClient
   void WillBeDestroyed() override {}
 
   // DEFINE_INLINE_VIRTUAL_TRACE() { ValidationMessageClient::trace(visitor); }
+};
+
+class MockWebApplicationCacheHost
+    : NON_EXPORTED_BASE(public blink::WebApplicationCacheHost) {
+ public:
+  MockWebApplicationCacheHost() {}
+  ~MockWebApplicationCacheHost() override {}
+
+  void SelectCacheWithoutManifest() override {
+    without_manifest_was_called_ = true;
+  }
+  bool SelectCacheWithManifest(const blink::WebURL& manifestURL) override {
+    with_manifest_was_called_ = true;
+    return true;
+  }
+
+  bool with_manifest_was_called_ = false;
+  bool without_manifest_was_called_ = false;
 };
 
 }  // anonymous namespace
@@ -734,6 +755,46 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   EXPECT_FALSE(mock_client->show_validation_message_was_called);
 
   GetPage().SetValidationMessageClient(original_client);
+}
+
+TEST_F(DocumentTest, SandboxDisablesAppCache) {
+  RefPtr<SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://test.com");
+  GetDocument().SetSecurityOrigin(origin);
+  SandboxFlags mask = kSandboxOrigin;
+  GetDocument().EnforceSandboxFlags(mask);
+  GetDocument().SetURL(KURL(KURL(), "https://test.com/foobar/document"));
+
+  ApplicationCacheHost* appcache_host =
+      GetDocument().Loader()->GetApplicationCacheHost();
+  appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
+  appcache_host->SelectCacheWithManifest(
+      KURL(KURL(), "https://test.com/foobar/manifest"));
+  MockWebApplicationCacheHost* mock_web_host =
+      static_cast<MockWebApplicationCacheHost*>(appcache_host->host_.get());
+  EXPECT_FALSE(mock_web_host->with_manifest_was_called_);
+  EXPECT_TRUE(mock_web_host->without_manifest_was_called_);
+}
+
+TEST_F(DocumentTest, SuboriginDisablesAppCache) {
+  RuntimeEnabledFeatures::setSuboriginsEnabled(true);
+  RefPtr<SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://test.com");
+  Suborigin suborigin;
+  suborigin.SetName("foobar");
+  origin->AddSuborigin(suborigin);
+  GetDocument().SetSecurityOrigin(origin);
+  GetDocument().SetURL(KURL(KURL(), "https://test.com/foobar/document"));
+
+  ApplicationCacheHost* appcache_host =
+      GetDocument().Loader()->GetApplicationCacheHost();
+  appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
+  appcache_host->SelectCacheWithManifest(
+      KURL(KURL(), "https://test.com/foobar/manifest"));
+  MockWebApplicationCacheHost* mock_web_host =
+      static_cast<MockWebApplicationCacheHost*>(appcache_host->host_.get());
+  EXPECT_FALSE(mock_web_host->with_manifest_was_called_);
+  EXPECT_TRUE(mock_web_host->without_manifest_was_called_);
 }
 
 }  // namespace blink
