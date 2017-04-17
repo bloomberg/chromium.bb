@@ -224,8 +224,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 #endif  // CONFIG_ALT_INTRA
 
 #if CONFIG_EXT_INTER
-  { NEAR_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
@@ -235,8 +233,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { ZERO_ZEROMV, { LAST_FRAME, ALTREF_FRAME } },
 
 #if CONFIG_EXT_REFS
-  { NEAR_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
@@ -245,8 +241,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
   { ZERO_ZEROMV, { LAST2_FRAME, ALTREF_FRAME } },
 
-  { NEAR_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
@@ -256,8 +250,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { ZERO_ZEROMV, { LAST3_FRAME, ALTREF_FRAME } },
 #endif  // CONFIG_EXT_REFS
 
-  { NEAR_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
@@ -267,8 +259,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { ZERO_ZEROMV, { GOLDEN_FRAME, ALTREF_FRAME } },
 
 #if CONFIG_EXT_REFS
-  { NEAR_NEARESTMV, { LAST_FRAME, BWDREF_FRAME } },
-  { NEAREST_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAR_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
@@ -277,8 +267,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { ZERO_ZEROMV, { LAST_FRAME, BWDREF_FRAME } },
 
-  { NEAR_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
-  { NEAREST_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAR_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
@@ -287,8 +275,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { ZERO_ZEROMV, { LAST2_FRAME, BWDREF_FRAME } },
 
-  { NEAR_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
-  { NEAREST_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAR_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
@@ -297,8 +283,6 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { ZERO_ZEROMV, { LAST3_FRAME, BWDREF_FRAME } },
 
-  { NEAR_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
-  { NEAREST_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAR_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
@@ -5153,8 +5137,6 @@ static int set_and_cost_bmi_mvs(
       thismvcost += av1_mv_bit_cost(&this_mv[1].as_mv, &best_ref_mv[1]->as_mv,
                                     mvjcost, mvcost, MV_COST_WEIGHT_SUB);
       break;
-    case NEAREST_NEARMV:
-    case NEAR_NEARESTMV:
     case NEAREST_NEARESTMV:
     case NEAR_NEARMV:
       this_mv[0].as_int = frame_mv[mode][mbmi->ref_frame[0]].as_int;
@@ -5456,36 +5438,25 @@ static int check_best_zero_mv(
     }
   }
 #if CONFIG_EXT_INTER
-  else if ((this_mode == NEAREST_NEARESTMV || this_mode == NEAREST_NEARMV ||
-            this_mode == NEAR_NEARESTMV || this_mode == NEAR_NEARMV ||
+  else if ((this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
             this_mode == ZERO_ZEROMV) &&
            frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
            frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int) {
     int16_t rfc = compound_mode_context[ref_frames[0]];
-    int c1 = cost_mv_ref(cpi, NEAREST_NEARMV, rfc);
     int c2 = cost_mv_ref(cpi, NEAREST_NEARESTMV, rfc);
     int c3 = cost_mv_ref(cpi, ZERO_ZEROMV, rfc);
-    int c4 = cost_mv_ref(cpi, NEAR_NEARESTMV, rfc);
     int c5 = cost_mv_ref(cpi, NEAR_NEARMV, rfc);
 
-    if (this_mode == NEAREST_NEARMV) {
-      if (c1 > c3) return 0;
-    } else if (this_mode == NEAREST_NEARESTMV) {
+    if (this_mode == NEAREST_NEARESTMV) {
       if (c2 > c3) return 0;
-    } else if (this_mode == NEAR_NEARESTMV) {
-      if (c4 > c3) return 0;
     } else if (this_mode == NEAR_NEARMV) {
       if (c5 > c3) return 0;
     } else {
       assert(this_mode == ZERO_ZEROMV);
       if ((c3 >= c2 && frame_mv[NEAREST_NEARESTMV][ref_frames[0]].as_int == 0 &&
            frame_mv[NEAREST_NEARESTMV][ref_frames[1]].as_int == 0) ||
-          (c3 >= c1 && frame_mv[NEAREST_NEARMV][ref_frames[0]].as_int == 0 &&
-           frame_mv[NEAREST_NEARMV][ref_frames[1]].as_int == 0) ||
           (c3 >= c5 && frame_mv[NEAR_NEARMV][ref_frames[0]].as_int == 0 &&
-           frame_mv[NEAR_NEARMV][ref_frames[1]].as_int == 0) ||
-          (c3 >= c4 && frame_mv[NEAR_NEARESTMV][ref_frames[0]].as_int == 0 &&
-           frame_mv[NEAR_NEARESTMV][ref_frames[1]].as_int == 0))
+           frame_mv[NEAR_NEARMV][ref_frames[1]].as_int == 0))
         return 0;
     }
   }
@@ -5923,20 +5894,12 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
               frame_mv[NEARESTMV][frame].as_int;
 
           if (ref == 0) {
-            frame_mv[NEAREST_NEARMV][frame].as_int =
-                frame_mv[NEARESTMV][frame].as_int;
-            frame_mv[NEAR_NEARESTMV][frame].as_int =
-                frame_mv[NEARMV][frame].as_int;
             frame_mv[NEAREST_NEWMV][frame].as_int =
                 frame_mv[NEARESTMV][frame].as_int;
             frame_mv[NEAR_NEWMV][frame].as_int = frame_mv[NEARMV][frame].as_int;
             frame_mv[NEAR_NEARMV][frame].as_int =
                 frame_mv[NEARMV][frame].as_int;
           } else if (ref == 1) {
-            frame_mv[NEAREST_NEARMV][frame].as_int =
-                frame_mv[NEARMV][frame].as_int;
-            frame_mv[NEAR_NEARESTMV][frame].as_int =
-                frame_mv[NEARESTMV][frame].as_int;
             frame_mv[NEW_NEARESTMV][frame].as_int =
                 frame_mv[NEARESTMV][frame].as_int;
             frame_mv[NEW_NEARMV][frame].as_int = frame_mv[NEARMV][frame].as_int;
@@ -7366,16 +7329,6 @@ static InterpFilter predict_interp_filter(
               single_filter[NEARESTMV][refs[1]])
             best_filter = single_filter[NEARESTMV][refs[0]];
           break;
-        case NEAREST_NEARMV:
-          if (single_filter[NEARESTMV][refs[0]] ==
-              single_filter[NEARMV][refs[1]])
-            best_filter = single_filter[NEARESTMV][refs[0]];
-          break;
-        case NEAR_NEARESTMV:
-          if (single_filter[NEARMV][refs[0]] ==
-              single_filter[NEARESTMV][refs[1]])
-            best_filter = single_filter[NEARMV][refs[0]];
-          break;
         case NEAR_NEARMV:
           if (single_filter[NEARMV][refs[0]] == single_filter[NEARMV][refs[1]])
             best_filter = single_filter[NEARMV][refs[0]];
@@ -8568,7 +8521,7 @@ static int64_t handle_inter_mode(
 
 #if CONFIG_EXT_INTER
   if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
-    if (this_mode == NEAREST_NEWMV || this_mode == NEAREST_NEARMV) {
+    if (this_mode == NEAREST_NEWMV) {
       cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
 
       lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
@@ -8577,7 +8530,7 @@ static int64_t handle_inter_mode(
       mbmi->mv[0].as_int = cur_mv[0].as_int;
     }
 
-    if (this_mode == NEW_NEARESTMV || this_mode == NEAR_NEARESTMV) {
+    if (this_mode == NEW_NEARESTMV) {
       cur_mv[1] = mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
 
       lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
@@ -8589,8 +8542,7 @@ static int64_t handle_inter_mode(
 
   if (mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
     int ref_mv_idx = mbmi->ref_mv_idx + 1;
-    if (this_mode == NEAR_NEWMV || this_mode == NEAR_NEARESTMV ||
-        this_mode == NEAR_NEARMV) {
+    if (this_mode == NEAR_NEWMV || this_mode == NEAR_NEARMV) {
       cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
 
       lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv);
@@ -8599,8 +8551,7 @@ static int64_t handle_inter_mode(
       mbmi->mv[0].as_int = cur_mv[0].as_int;
     }
 
-    if (this_mode == NEW_NEARMV || this_mode == NEAREST_NEARMV ||
-        this_mode == NEAR_NEARMV) {
+    if (this_mode == NEW_NEARMV || this_mode == NEAR_NEARMV) {
       cur_mv[1] = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
 
       lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv);
@@ -9906,10 +9857,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_EXT_INTER
       if (frame_mv[NEAREST_NEARESTMV][ALTREF_FRAME].as_int != zeromv.as_int)
         mode_skip_mask[ALTREF_FRAME] |= (1 << NEAREST_NEARESTMV);
-      if (frame_mv[NEAREST_NEARMV][ALTREF_FRAME].as_int != zeromv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEAREST_NEARMV);
-      if (frame_mv[NEAR_NEARESTMV][ALTREF_FRAME].as_int != zeromv.as_int)
-        mode_skip_mask[ALTREF_FRAME] |= (1 << NEAR_NEARESTMV);
       if (frame_mv[NEAR_NEARMV][ALTREF_FRAME].as_int != zeromv.as_int)
         mode_skip_mask[ALTREF_FRAME] |= (1 << NEAR_NEARMV);
 #endif  // CONFIG_EXT_INTER
@@ -11180,17 +11127,9 @@ PALETTE_EXIT:
           nearmv[0] = mbmi_ext->ref_mv_stack[rf_type][i + 1].this_mv;
           nearmv[1] = mbmi_ext->ref_mv_stack[rf_type][i + 1].comp_mv;
 
-          // Try switching to the NEAR_NEAREST type modes first
-          if (nearestmv[0].as_int == best_mbmode.mv[0].as_int &&
+          // Try switching to the NEAR_NEARMV mode
+          if (nearmv[0].as_int == best_mbmode.mv[0].as_int &&
               nearmv[1].as_int == best_mbmode.mv[1].as_int) {
-            best_mbmode.mode = NEAREST_NEARMV;
-            best_mbmode.ref_mv_idx = i;
-          } else if (nearmv[0].as_int == best_mbmode.mv[0].as_int &&
-                     nearestmv[1].as_int == best_mbmode.mv[1].as_int) {
-            best_mbmode.mode = NEAR_NEARESTMV;
-            best_mbmode.ref_mv_idx = i;
-          } else if (nearmv[0].as_int == best_mbmode.mv[0].as_int &&
-                     nearmv[1].as_int == best_mbmode.mv[1].as_int) {
             best_mbmode.mode = NEAR_NEARMV;
             best_mbmode.ref_mv_idx = i;
           }

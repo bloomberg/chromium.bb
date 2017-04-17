@@ -1015,13 +1015,13 @@ static const aom_prob
 #if CONFIG_EXT_INTER
 static const aom_prob default_inter_compound_mode_probs
     [INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1] = {
-      { 2, 173, 68, 192, 64, 192, 128, 180, 180 },   // 0 = both zero mv
-      { 7, 145, 160, 192, 64, 192, 128, 180, 180 },  // 1 = 1 zero + 1 predicted
-      { 7, 166, 126, 192, 64, 192, 128, 180, 180 },  // 2 = two predicted mvs
-      { 7, 94, 132, 192, 64, 192, 128, 180, 180 },   // 3 = 1 pred/zero, 1 new
-      { 8, 64, 64, 192, 64, 192, 128, 180, 180 },    // 4 = two new mvs
-      { 17, 81, 52, 192, 64, 192, 128, 180, 180 },   // 5 = one intra neighbour
-      { 25, 29, 50, 192, 64, 192, 128, 180, 180 },   // 6 = two intra neighbours
+      { 2, 173, 68, 192, 128, 180, 180 },   // 0 = both zero mv
+      { 7, 145, 160, 192, 128, 180, 180 },  // 1 = 1 zero + 1 predicted
+      { 7, 166, 126, 192, 128, 180, 180 },  // 2 = two predicted mvs
+      { 7, 94, 132, 192, 128, 180, 180 },   // 3 = 1 pred/zero, 1 new
+      { 8, 64, 64, 192, 128, 180, 180 },    // 4 = two new mvs
+      { 17, 81, 52, 192, 128, 180, 180 },   // 5 = one intra neighbour
+      { 25, 29, 50, 192, 128, 180, 180 },   // 6 = two intra neighbours
     };
 
 #if CONFIG_COMPOUND_SINGLEREF
@@ -1330,11 +1330,8 @@ const aom_tree_index av1_inter_compound_mode_tree
   -INTER_COMPOUND_OFFSET(ZERO_ZEROMV), 2,
   -INTER_COMPOUND_OFFSET(NEAREST_NEARESTMV), 4,
   6, -INTER_COMPOUND_OFFSET(NEW_NEWMV),
-  8, 12,
-  -INTER_COMPOUND_OFFSET(NEAR_NEARMV), 10,
-  -INTER_COMPOUND_OFFSET(NEAREST_NEARMV),
-      -INTER_COMPOUND_OFFSET(NEAR_NEARESTMV),
-  14, 16,
+  -INTER_COMPOUND_OFFSET(NEAR_NEARMV), 8,
+  10, 12,
   -INTER_COMPOUND_OFFSET(NEAREST_NEWMV), -INTER_COMPOUND_OFFSET(NEW_NEARESTMV),
   -INTER_COMPOUND_OFFSET(NEAR_NEWMV), -INTER_COMPOUND_OFFSET(NEW_NEARMV)
 };

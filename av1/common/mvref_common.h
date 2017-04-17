@@ -68,8 +68,6 @@ static const int mode_2_counter[MB_MODE_COUNT] = {
   1,    // SR_NEW_NEWMV
 #endif  // CONFIG_COMPOUND_SINGLEREF
   0,    // NEAREST_NEARESTMV
-  0,    // NEAREST_NEARMV
-  0,    // NEAR_NEARESTMV
   0,    // NEAR_NEARMV
   1,    // NEAREST_NEWMV
   1,    // NEW_NEARESTMV

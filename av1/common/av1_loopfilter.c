@@ -273,8 +273,8 @@ static const int mode_lf_lut[] = {
 #endif         // CONFIG_ALT_INTRA
   1, 1, 0, 1,  // INTER_MODES (ZEROMV == 0)
 #if CONFIG_EXT_INTER
-  1, 1, 1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (ZERO_ZEROMV == 0)
-#endif                          // CONFIG_EXT_INTER
+  1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (ZERO_ZEROMV == 0)
+#endif                    // CONFIG_EXT_INTER
 };
 
 static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {

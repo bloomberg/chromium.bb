@@ -155,8 +155,6 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     NEWMV,      // SR_NEW_NEWMV
 #endif          // CONFIG_COMPOUND_SINGLEREF
     NEARESTMV,  // NEAREST_NEARESTMV
-    NEARESTMV,  // NEAREST_NEARMV
-    NEARMV,     // NEAR_NEARESTMV
     NEARMV,     // NEAR_NEARMV
     NEARESTMV,  // NEAREST_NEWMV
     NEWMV,      // NEW_NEARESTMV
@@ -196,8 +194,6 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     NEWMV,      // SR_NEW_NEWMV
 #endif          // CONFIG_COMPOUND_SINGLEREF
     NEARESTMV,  // NEAREST_NEARESTMV
-    NEARMV,     // NEAREST_NEARMV
-    NEARESTMV,  // NEAR_NEARESTMV
     NEARMV,     // NEAR_NEARMV
     NEWMV,      // NEAREST_NEWMV
     NEARESTMV,  // NEW_NEARESTMV
@@ -211,8 +207,8 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE int have_nearmv_in_inter_mode(PREDICTION_MODE mode) {
-  return (mode == NEARMV || mode == NEAR_NEARMV || mode == NEAREST_NEARMV ||
-          mode == NEAR_NEARESTMV || mode == NEAR_NEWMV || mode == NEW_NEARMV);
+  return (mode == NEARMV || mode == NEAR_NEARMV || mode == NEAR_NEWMV ||
+          mode == NEW_NEARMV);
 }
 
 static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {

@@ -1679,18 +1679,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       mv[1].as_int = nearest_mv[1].as_int;
       break;
     }
-    case NEAREST_NEARMV: {
-      assert(is_compound);
-      mv[0].as_int = nearest_mv[0].as_int;
-      mv[1].as_int = near_mv[1].as_int;
-      break;
-    }
-    case NEAR_NEARESTMV: {
-      assert(is_compound);
-      mv[0].as_int = near_mv[0].as_int;
-      mv[1].as_int = nearest_mv[1].as_int;
-      break;
-    }
     case NEAR_NEARMV: {
       assert(is_compound);
       mv[0].as_int = near_mv[0].as_int;
@@ -1962,10 +1950,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
 #if CONFIG_EXT_INTER
-      } else if (mbmi->mode == NEAREST_NEWMV || mbmi->mode == NEAREST_NEARMV) {
+      } else if (mbmi->mode == NEAREST_NEWMV) {
         nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
-      } else if (mbmi->mode == NEW_NEARESTMV || mbmi->mode == NEAR_NEARESTMV) {
+      } else if (mbmi->mode == NEW_NEARESTMV) {
         nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
       }

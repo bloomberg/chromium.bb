@@ -73,8 +73,8 @@ static struct av1_token partition_encodings[PARTITION_TYPES];
 #if CONFIG_EXT_INTER
 static const struct av1_token
     inter_compound_mode_encodings[INTER_COMPOUND_MODES] = {
-      { 2, 2 },  { 50, 6 }, { 51, 6 }, { 24, 5 }, { 52, 6 },
-      { 53, 6 }, { 54, 6 }, { 55, 6 }, { 0, 1 },  { 7, 3 }
+      { 2, 2 },  { 12, 4 }, { 52, 6 }, { 53, 6 },
+      { 54, 6 }, { 55, 6 }, { 0, 1 },  { 7, 3 }
     };
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_PALETTE
