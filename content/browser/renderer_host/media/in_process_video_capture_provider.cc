@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 
-#include "content/browser/renderer_host/media/in_process_buildable_video_capture_device.h"
+#include "content/browser/renderer_host/media/in_process_video_capture_device_launcher.h"
 
 namespace content {
 
@@ -27,11 +27,9 @@ void InProcessVideoCaptureProvider::GetDeviceInfosAsync(
                             result_callback));
 }
 
-std::unique_ptr<BuildableVideoCaptureDevice>
-InProcessVideoCaptureProvider::CreateBuildableDevice(
-    const std::string& device_id,
-    MediaStreamType stream_type) {
-  return base::MakeUnique<InProcessBuildableVideoCaptureDevice>(
+std::unique_ptr<VideoCaptureDeviceLauncher>
+InProcessVideoCaptureProvider::CreateDeviceLauncher() {
+  return base::MakeUnique<InProcessVideoCaptureDeviceLauncher>(
       device_task_runner_, video_capture_system_.get());
 }
 

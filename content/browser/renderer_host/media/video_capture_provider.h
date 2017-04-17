@@ -7,47 +7,49 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
+#include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 
 namespace content {
 
-class VideoCaptureController;
+class LaunchedVideoCaptureDevice;
 
-// Abstraction for a video capture device that must be "built" before it can be
-// operated and must be "stopped", before it can be released. Typical operation
-// is that a newly created instance initially reports IsDeviceAlive() == false.
-// Clients call CreateAndStartDeviceAsync(), which kicks off the asynchronous
-// building of the device. The outcome of the device building is reported to an
-// instance of Callbacks. Once the device has been built successfully, the
-// "Device operation methods", are allowed to be called. ReleaseDeviceAsync()
-// must be called in order to release the device if it has before been built
-// successfully. After calling ReleaseDeviceAsync(), it is legal to call
-// CreateAndStartDeviceAsync() to rebuild and start the device again.
-class CONTENT_EXPORT BuildableVideoCaptureDevice {
+// Asynchronously launches video capture devices. After a call to
+// LaunchDeviceAsync() it is illegal to call LaunchDeviceAsync() again until
+// |callbacks| has been notified about the outcome of the asynchronous launch.
+class CONTENT_EXPORT VideoCaptureDeviceLauncher {
  public:
   class CONTENT_EXPORT Callbacks {
    public:
     virtual ~Callbacks() {}
-    virtual void OnDeviceStarted(VideoCaptureController* controller) = 0;
-    virtual void OnDeviceStartFailed(VideoCaptureController* controller) = 0;
-    virtual void OnDeviceStartAborted() = 0;
+    virtual void OnDeviceLaunched(
+        std::unique_ptr<LaunchedVideoCaptureDevice> device) = 0;
+    virtual void OnDeviceLaunchFailed() = 0;
+    virtual void OnDeviceLaunchAborted() = 0;
   };
 
-  virtual ~BuildableVideoCaptureDevice() {}
+  virtual ~VideoCaptureDeviceLauncher() {}
 
-  // Device management methods.
-  virtual void CreateAndStartDeviceAsync(
-      VideoCaptureController* controller,
+  // The passed-in |done_cb| must guarantee that the context relevant
+  // during the asynchronous processing stays alive.
+  virtual void LaunchDeviceAsync(
+      const std::string& device_id,
+      MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
+      base::WeakPtr<media::VideoFrameReceiver> receiver,
       Callbacks* callbacks,
       base::OnceClosure done_cb) = 0;
-  virtual void ReleaseDeviceAsync(VideoCaptureController* controller,
-                                  base::OnceClosure done_cb) = 0;
-  virtual bool IsDeviceAlive() const = 0;
 
+  virtual void AbortLaunch() = 0;
+};
+
+class LaunchedVideoCaptureDevice
+    : public media::VideoFrameConsumerFeedbackObserver {
+ public:
   // Device operation methods.
   virtual void GetPhotoCapabilities(
       media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
@@ -77,9 +79,8 @@ class CONTENT_EXPORT VideoCaptureProvider {
           void(const std::vector<media::VideoCaptureDeviceInfo>&)>&
           result_callback) = 0;
 
-  virtual std::unique_ptr<BuildableVideoCaptureDevice> CreateBuildableDevice(
-      const std::string& device_id,
-      MediaStreamType stream_type) = 0;
+  virtual std::unique_ptr<VideoCaptureDeviceLauncher>
+  CreateDeviceLauncher() = 0;
 };
 
 }  // namespace content

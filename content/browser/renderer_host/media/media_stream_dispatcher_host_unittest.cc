@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
+#include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
@@ -235,19 +236,6 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
       OnStarted,
       void(const base::Closure& stop,
            const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
-};
-
-class MockVideoCaptureProvider : public VideoCaptureProvider {
- public:
-  MOCK_METHOD1(GetDeviceInfosAsync,
-               void(const base::Callback<
-                    void(const std::vector<media::VideoCaptureDeviceInfo>&)>&
-                        result_callback));
-
-  MOCK_METHOD2(CreateBuildableDevice,
-               std::unique_ptr<BuildableVideoCaptureDevice>(
-                   const std::string& device_id,
-                   MediaStreamType stream_type));
 };
 
 class MediaStreamDispatcherHostTest : public testing::Test {

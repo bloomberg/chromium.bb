@@ -23,6 +23,8 @@
 
 namespace content {
 
+class VideoCaptureDeviceLaunchObserver;
+
 // Implementation of media::VideoFrameReceiver that distributes received frames
 // to potentially multiple connected clients.
 // A call to CreateAndStartDeviceAsync() asynchronously brings up the device. If
@@ -31,27 +33,20 @@ namespace content {
 // Instances must be RefCountedThreadSafe, because an owner
 // (VideoCaptureManager) wants to be able to release its reference during an
 // (asynchronously executing) run of CreateAndStartDeviceAsync(). To this end,
-// the owner passes in the shared ownership as part of |context_reference| into
+// the owner passes in the shared ownership as part of |done_cb| into
 // CreateAndStartDeviceAsync().
 class CONTENT_EXPORT VideoCaptureController
     : public media::VideoFrameReceiver,
+      public VideoCaptureDeviceLauncher::Callbacks,
       public base::RefCountedThreadSafe<VideoCaptureController> {
  public:
   VideoCaptureController(
       const std::string& device_id,
       MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
-      std::unique_ptr<BuildableVideoCaptureDevice> buildable_device);
+      std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher);
 
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
-
-  // Factory code creating instances of VideoCaptureController may optionally
-  // set a VideoFrameConsumerFeedbackObserver. Setting the observer is done in
-  // this method separate from the constructor to allow clients to create and
-  // use instances before they can provide the observer. (This is the case with
-  // VideoCaptureManager).
-  void SetConsumerFeedbackObserver(
-      std::unique_ptr<media::VideoFrameConsumerFeedbackObserver> observer);
 
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
@@ -119,10 +114,15 @@ class CONTENT_EXPORT VideoCaptureController
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
 
-  void CreateAndStartDeviceAsync(
-      const media::VideoCaptureParams& params,
-      BuildableVideoCaptureDevice::Callbacks* callbacks,
-      base::OnceClosure done_cb);
+  // Implementation of VideoCaptureDeviceLauncher::Callbacks interface:
+  void OnDeviceLaunched(
+      std::unique_ptr<LaunchedVideoCaptureDevice> device) override;
+  void OnDeviceLaunchFailed() override;
+  void OnDeviceLaunchAborted() override;
+
+  void CreateAndStartDeviceAsync(const media::VideoCaptureParams& params,
+                                 VideoCaptureDeviceLaunchObserver* callbacks,
+                                 base::OnceClosure done_cb);
   void ReleaseDeviceAsync(base::OnceClosure done_cb);
   bool IsDeviceAlive() const;
   void GetPhotoCapabilities(
@@ -222,10 +222,9 @@ class CONTENT_EXPORT VideoCaptureController
   const std::string device_id_;
   const MediaStreamType stream_type_;
   const media::VideoCaptureParams parameters_;
-  std::unique_ptr<BuildableVideoCaptureDevice> buildable_device_;
-
-  std::unique_ptr<media::VideoFrameConsumerFeedbackObserver>
-      consumer_feedback_observer_;
+  std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher_;
+  std::unique_ptr<LaunchedVideoCaptureDevice> launched_device_;
+  VideoCaptureDeviceLaunchObserver* device_launch_observer_;
 
   std::vector<BufferContext> buffer_contexts_;
 

@@ -25,9 +25,7 @@ class CONTENT_EXPORT InProcessVideoCaptureProvider
           const std::vector<media::VideoCaptureDeviceInfo>&)>& result_callback)
       override;
 
-  std::unique_ptr<BuildableVideoCaptureDevice> CreateBuildableDevice(
-      const std::string& device_id,
-      MediaStreamType stream_type) override;
+  std::unique_ptr<VideoCaptureDeviceLauncher> CreateDeviceLauncher() override;
 
  private:
   const std::unique_ptr<media::VideoCaptureSystem> video_capture_system_;

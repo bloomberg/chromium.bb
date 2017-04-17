@@ -21,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
+#include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -115,38 +116,6 @@ class MockVideoCaptureControllerEventHandler
   bool enable_auto_return_buffer_on_buffer_ready_ = true;
 };
 
-class MockConsumerFeedbackObserver
-    : public media::VideoFrameConsumerFeedbackObserver {
- public:
-  MOCK_METHOD2(OnUtilizationReport,
-               void(int frame_feedback_id, double utilization));
-};
-
-class MockBuildableVideoCaptureDevice : public BuildableVideoCaptureDevice {
- public:
-  void CreateAndStartDeviceAsync(
-      VideoCaptureController* controller,
-      const media::VideoCaptureParams& params,
-      BuildableVideoCaptureDevice::Callbacks* callbacks,
-      base::OnceClosure done_cb) override {}
-  void ReleaseDeviceAsync(VideoCaptureController* controller,
-                          base::OnceClosure done_cb) override {}
-  bool IsDeviceAlive() const override { return false; }
-  void GetPhotoCapabilities(
-      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
-      const override {}
-  void SetPhotoOptions(
-      media::mojom::PhotoSettingsPtr settings,
-      media::VideoCaptureDevice::SetPhotoOptionsCallback callback) override {}
-  void TakePhoto(
-      media::VideoCaptureDevice::TakePhotoCallback callback) override {}
-  void MaybeSuspendDevice() override {}
-  void ResumeDevice() override {}
-  void RequestRefreshFrame() override {}
-  void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
-                                      base::OnceClosure done_cb) override {}
-};
-
 // Test fixture for testing a unit consisting of an instance of
 // VideoCaptureController connected to an instance of VideoCaptureDeviceClient,
 // an instance of VideoCaptureBufferPoolImpl, as well as related threading glue
@@ -169,16 +138,15 @@ class VideoCaptureControllerTest
     const MediaStreamType arbitrary_stream_type =
         content::MEDIA_DEVICE_VIDEO_CAPTURE;
     const media::VideoCaptureParams arbitrary_params;
-    auto buildable_device = base::MakeUnique<MockBuildableVideoCaptureDevice>();
+    auto device_launcher = base::MakeUnique<MockVideoCaptureDeviceLauncher>();
     controller_ = new VideoCaptureController(
         arbitrary_device_id, arbitrary_stream_type, arbitrary_params,
-        std::move(buildable_device));
+        std::move(device_launcher));
     InitializeNewDeviceClientAndBufferPoolInstances();
-    auto consumer_feedback_observer =
-        base::MakeUnique<MockConsumerFeedbackObserver>();
-    mock_consumer_feedback_observer_ = consumer_feedback_observer.get();
-    controller_->SetConsumerFeedbackObserver(
-        std::move(consumer_feedback_observer));
+    auto mock_launched_device =
+        base::MakeUnique<MockLaunchedVideoCaptureDevice>();
+    mock_launched_device_ = mock_launched_device.get();
+    controller_->OnDeviceLaunched(std::move(mock_launched_device));
     client_a_.reset(
         new MockVideoCaptureControllerEventHandler(controller_.get()));
     client_b_.reset(
@@ -222,7 +190,7 @@ class VideoCaptureControllerTest
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_b_;
   scoped_refptr<VideoCaptureController> controller_;
   std::unique_ptr<media::VideoCaptureDevice::Client> device_client_;
-  MockConsumerFeedbackObserver* mock_consumer_feedback_observer_;
+  MockLaunchedVideoCaptureDevice* mock_launched_device_;
   const float arbitrary_frame_rate_ = 10.0f;
   const base::TimeTicks arbitrary_reference_time_ = base::TimeTicks();
   const base::TimeDelta arbitrary_timestamp_ = base::TimeDelta();
@@ -380,7 +348,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   client_b_->resource_utilization_ = -1.0;
   // Expect VideoCaptureController to call the load observer with a
   // resource utilization of 0.5 (the largest of all reported values).
-  EXPECT_CALL(*mock_consumer_feedback_observer_,
+  EXPECT_CALL(*mock_launched_device_,
               OnUtilizationReport(arbitrary_frame_feedback_id, 0.5));
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
@@ -390,7 +358,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
-  Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
+  Mock::VerifyAndClearExpectations(mock_launched_device_);
 
   // Second buffer which ought to use the same shared memory buffer. In this
   // case pretend that the Buffer pointer is held by the device for a long
@@ -407,7 +375,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   client_b_->resource_utilization_ = 3.14;
   // Expect VideoCaptureController to call the load observer with a
   // resource utilization of 3.14 (the largest of all reported values).
-  EXPECT_CALL(*mock_consumer_feedback_observer_,
+  EXPECT_CALL(*mock_launched_device_,
               OnUtilizationReport(arbitrary_frame_feedback_id_2, 3.14));
 
   device_client_->OnIncomingCapturedBuffer(std::move(buffer2), device_format,
@@ -436,7 +404,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
-  Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
+  Mock::VerifyAndClearExpectations(mock_launched_device_);
 
   // Add a fourth client now that some buffers have come through.
   controller_->AddClient(client_b_route_2, client_b_.get(), 1, session_1);
@@ -653,7 +621,7 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
                 DoBufferReady(route_id, arbitrary_format.frame_size))
         .Times(1);
     EXPECT_CALL(
-        *mock_consumer_feedback_observer_,
+        *mock_launched_device_,
         OnUtilizationReport(stub_frame_feedback_id, stub_consumer_utilization))
         .Times(1);
 
@@ -679,7 +647,7 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
 
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(client_a_.get());
-    Mock::VerifyAndClearExpectations(mock_consumer_feedback_observer_);
+    Mock::VerifyAndClearExpectations(mock_launched_device_);
   }
 }
 
