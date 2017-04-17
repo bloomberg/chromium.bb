@@ -89,9 +89,8 @@ cr.define('login', function() {
    * @const
    */
   var UserPodTabOrder = {
-    POD_INPUT: 1,        // Password input field, Action box menu button, submit
-                         // button next to password input field and the pod
-                         // itself.
+    POD_INPUT: 1,        // Password input field, Action box menu button and
+                         // the pod itself.
     PIN_KEYBOARD: 2,     // Pin keyboard below the password input field.
     POD_CUSTOM_ICON: 3,  // Pod custom icon next to password input field.
     HEADER_BAR: 4,       // Buttons on the header bar (Shutdown, Add User).
@@ -819,7 +818,6 @@ cr.define('login', function() {
       if (this.submitButton) {
         this.submitButton.addEventListener('click',
             this.handleSubmitButtonClick_.bind(this));
-        this.submitButton.tabIndex = UserPodTabOrder.POD_INPUT;
       }
 
       this.imageElement.addEventListener('load',
