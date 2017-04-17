@@ -489,11 +489,6 @@ html[dir=rtl] #supervised-user-creation-image-preview {
   width: 32px;
 }
 
-/* TODO(merkulova): remove when webkit crbug.com/126479 is fixed. */
-.flip-trick {
-  transform: translateZ(1px);
-}
-
 html[dir=rtl] #supervised-user-creation-flip-photo {
   left: 8px;
   right: auto;
