@@ -177,8 +177,12 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 #pragma mark - NSObject(Accessibility)
 
 - (NSString*)accessibilityLabel {
-  return [NSString stringWithFormat:@"%@, %@", self.textLabel.text,
-                                    self.detailTextLabel.text];
+  NSString* accessibilityLabel = self.textLabel.text;
+  if (self.detailTextLabel.text) {
+    return [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
+                                      self.detailTextLabel.text];
+  }
+  return accessibilityLabel;
 }
 
 @end
