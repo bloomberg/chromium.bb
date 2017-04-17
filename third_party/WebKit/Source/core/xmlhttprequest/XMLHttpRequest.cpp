@@ -78,11 +78,11 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/Assertions.h"
-#include "wtf/AutoReset.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 

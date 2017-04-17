@@ -31,9 +31,9 @@
 #include "core/CoreExport.h"
 #include "platform/FrameViewBase.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFocusType.h"
 #include "v8/include/v8.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 class WebLayer;

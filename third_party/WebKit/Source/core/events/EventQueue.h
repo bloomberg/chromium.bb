@@ -29,8 +29,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
 
 namespace blink {
 

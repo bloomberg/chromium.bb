@@ -4,6 +4,7 @@
 
 #include "core/input/TouchEventManager.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/events/TouchEvent.h"
 #include "core/frame/Deprecation.h"
@@ -16,10 +17,9 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebTouchEvent.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

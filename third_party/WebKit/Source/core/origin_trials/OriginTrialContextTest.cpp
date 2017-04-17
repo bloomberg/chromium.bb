@@ -4,6 +4,7 @@
 
 #include "core/origin_trials/OriginTrialContext.h"
 
+#include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/frame/FrameView.h"
@@ -14,12 +15,11 @@
 #include "platform/testing/HistogramTester.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebOriginTrialTokenStatus.h"
 #include "public/platform/WebTrialTokenValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 namespace {

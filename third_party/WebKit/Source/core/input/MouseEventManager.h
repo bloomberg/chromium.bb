@@ -11,10 +11,10 @@
 #include "core/page/DragActions.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/Timer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebMouseEvent.h"
-#include "wtf/Allocator.h"
-#include "wtf/Time.h"
 
 namespace blink {
 

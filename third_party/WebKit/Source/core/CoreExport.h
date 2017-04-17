@@ -5,7 +5,7 @@
 #ifndef CoreExport_h
 #define CoreExport_h
 
-#include "wtf/Compiler.h"
+#include "platform/wtf/Compiler.h"
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

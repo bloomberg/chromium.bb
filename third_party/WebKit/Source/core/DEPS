@@ -13,4 +13,7 @@ include_rules = [
     "-public/web",
     "+third_party/skia/include",
     "-web",
+
+    # Use platform/wtf/ now (see crbug.com/691465).
+    "-wtf",
 ]

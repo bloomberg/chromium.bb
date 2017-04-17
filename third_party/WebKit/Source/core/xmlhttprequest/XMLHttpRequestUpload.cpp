@@ -28,8 +28,8 @@
 #include "core/EventTypeNames.h"
 #include "core/events/ProgressEvent.h"
 #include "core/probe/CoreProbes.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

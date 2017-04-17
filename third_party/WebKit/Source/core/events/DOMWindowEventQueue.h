@@ -28,8 +28,8 @@
 #define DOMWindowEventQueue_h
 
 #include "core/events/EventQueue.h"
-#include "wtf/HashSet.h"
-#include "wtf/ListHashSet.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 

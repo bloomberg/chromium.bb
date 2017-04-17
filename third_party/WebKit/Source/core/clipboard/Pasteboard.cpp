@@ -34,12 +34,12 @@
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

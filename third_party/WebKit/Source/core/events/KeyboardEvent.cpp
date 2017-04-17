@@ -27,9 +27,9 @@
 #include "core/editing/InputMethodController.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "platform/WindowsKeyboardCodes.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInputEvent.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

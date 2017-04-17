@@ -31,17 +31,17 @@
 #ifndef FileReaderLoader_h
 #define FileReaderLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Forward.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/TextEncoding.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/typed_arrays/ArrayBufferBuilder.h"
-#include <memory>
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/TextEncoding.h"
+#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
 
 namespace blink {
 

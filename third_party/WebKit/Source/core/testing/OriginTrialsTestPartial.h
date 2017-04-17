@@ -5,7 +5,7 @@
 #ifndef OriginTrialsTestPartial_h
 #define OriginTrialsTestPartial_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

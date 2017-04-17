@@ -31,7 +31,7 @@
 #ifndef NavigatorEvents_h
 #define NavigatorEvents_h
 
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

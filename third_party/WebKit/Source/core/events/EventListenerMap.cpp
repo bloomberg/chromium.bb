@@ -33,12 +33,12 @@
 #include "core/events/EventListenerMap.h"
 
 #include "core/events/EventTarget.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Vector.h"
 
 #if DCHECK_IS_ON()
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #endif
 
 namespace blink {

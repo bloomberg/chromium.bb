@@ -41,10 +41,10 @@
 #include "core/timing/PerformancePaintTiming.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/HashSet.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

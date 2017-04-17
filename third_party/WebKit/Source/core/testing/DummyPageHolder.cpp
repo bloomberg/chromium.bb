@@ -30,15 +30,15 @@
 
 #include "core/testing/DummyPageHolder.h"
 
+#include <memory>
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/loader/EmptyClients.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

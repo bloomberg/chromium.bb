@@ -8,10 +8,10 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Visitor.h"
+#include "platform/wtf/Allocator.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

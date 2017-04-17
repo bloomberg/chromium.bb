@@ -29,6 +29,7 @@
 #ifndef MessageEvent_h
 #define MessageEvent_h
 
+#include <memory>
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -37,8 +38,7 @@
 #include "core/events/EventTarget.h"
 #include "core/events/MessageEventInit.h"
 #include "core/fileapi/Blob.h"
-#include "wtf/Compiler.h"
-#include <memory>
+#include "platform/wtf/Compiler.h"
 
 namespace blink {
 

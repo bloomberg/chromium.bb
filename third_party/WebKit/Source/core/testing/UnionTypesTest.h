@@ -10,7 +10,7 @@
 #include "bindings/core/v8/DoubleOrStringOrStringArray.h"
 #include "bindings/core/v8/DoubleOrStringOrStringSequence.h"
 #include "bindings/core/v8/NodeListOrElement.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

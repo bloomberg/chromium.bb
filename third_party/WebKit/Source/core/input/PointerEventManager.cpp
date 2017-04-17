@@ -18,8 +18,8 @@
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "platform/wtf/AutoReset.h"
 #include "public/platform/WebTouchEvent.h"
-#include "wtf/AutoReset.h"
 
 namespace blink {
 

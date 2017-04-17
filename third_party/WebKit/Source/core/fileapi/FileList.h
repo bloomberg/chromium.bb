@@ -30,7 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/fileapi/File.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

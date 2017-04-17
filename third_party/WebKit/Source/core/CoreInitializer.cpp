@@ -59,9 +59,9 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/AtomicStringTable.h"
 #include "public/platform/Platform.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/AtomicStringTable.h"
 
 namespace blink {
 

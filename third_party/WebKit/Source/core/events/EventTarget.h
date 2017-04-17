@@ -32,6 +32,7 @@
 #ifndef EventTarget_h
 #define EventTarget_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/EventNames.h"
@@ -42,9 +43,8 @@
 #include "core/events/EventListenerMap.h"
 #include "core/frame/UseCounter.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

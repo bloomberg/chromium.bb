@@ -34,10 +34,10 @@
 #include "platform/FileMetadata.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileUtilities.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
 
 namespace blink {
 

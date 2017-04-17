@@ -5,11 +5,11 @@
 #ifndef DeathAwareScriptWrappable_h
 #define DeathAwareScriptWrappable_h
 
+#include <signal.h>
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "platform/heap/Heap.h"
-#include "wtf/text/WTFString.h"
-#include <signal.h>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

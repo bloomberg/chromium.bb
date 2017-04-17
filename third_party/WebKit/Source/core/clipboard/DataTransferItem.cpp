@@ -37,9 +37,9 @@
 #include "core/dom/StringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/probe/CoreProbes.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

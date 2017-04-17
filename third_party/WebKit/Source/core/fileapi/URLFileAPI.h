@@ -5,8 +5,8 @@
 #ifndef URLFileAPI_h
 #define URLFileAPI_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

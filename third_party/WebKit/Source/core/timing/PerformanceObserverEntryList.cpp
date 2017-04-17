@@ -4,9 +4,9 @@
 
 #include "core/timing/PerformanceObserverEntryList.h"
 
-#include "core/timing/PerformanceEntry.h"
-#include "wtf/StdLibExtras.h"
 #include <algorithm>
+#include "core/timing/PerformanceEntry.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 

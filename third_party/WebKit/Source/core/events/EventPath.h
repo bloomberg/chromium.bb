@@ -32,8 +32,8 @@
 #include "core/events/TreeScopeEventContext.h"
 #include "core/events/WindowEventContext.h"
 #include "platform/heap/Handle.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

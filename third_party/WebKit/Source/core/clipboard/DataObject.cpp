@@ -34,10 +34,10 @@
 #include "core/clipboard/Pasteboard.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
+#include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
-#include "wtf/HashSet.h"
 
 namespace blink {
 

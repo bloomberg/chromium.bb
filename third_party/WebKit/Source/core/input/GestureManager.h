@@ -9,9 +9,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/EventWithHitTestResults.h"
+#include "platform/wtf/Optional.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebInputEventResult.h"
-#include "wtf/Optional.h"
-#include "wtf/Time.h"
 
 namespace blink {
 

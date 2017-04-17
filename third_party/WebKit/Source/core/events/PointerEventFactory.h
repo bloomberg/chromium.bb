@@ -7,9 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/events/PointerEvent.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
 #include "public/platform/WebPointerProperties.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
 
 namespace blink {
 

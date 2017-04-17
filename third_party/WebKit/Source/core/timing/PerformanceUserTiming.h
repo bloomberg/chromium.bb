@@ -29,7 +29,7 @@
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceTiming.h"
 #include "platform/heap/Handle.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

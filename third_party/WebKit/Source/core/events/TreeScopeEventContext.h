@@ -31,7 +31,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/TreeScope.h"
 #include "core/events/EventTarget.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -41,11 +41,11 @@
 #include "core/fileapi/File.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Supplementable.h"
-#include "wtf/AutoReset.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/Deque.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

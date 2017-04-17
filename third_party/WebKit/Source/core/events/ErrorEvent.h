@@ -31,13 +31,13 @@
 #ifndef ErrorEvent_h
 #define ErrorEvent_h
 
+#include <memory>
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/events/ErrorEventInit.h"
 #include "core/events/Event.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
