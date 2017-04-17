@@ -32,6 +32,7 @@ sk_sp<SkImage> CreateImage(int width, int height) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(width, height, color_space.ToSkColorSpace()));
+  bitmap.eraseColor(0);
   return SkImage::MakeFromBitmap(bitmap);
 }
 
