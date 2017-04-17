@@ -7,11 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/payments/cells/payments_has_accessory_type.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // PaymentMethodItem is the model class corresponding to PaymentMethodCell.
-@interface PaymentMethodItem : CollectionViewItem
+@interface PaymentMethodItem : CollectionViewItem<PaymentsHasAccessoryType>
 
 // A unique identifier for the payment method (for example, the type and last 4
 // digits of a credit card).
@@ -35,9 +36,6 @@
 // item has an accessory type. This is used to ensure the content area always
 // has the same size regardless of whether the accessory type is set.
 @property(nonatomic, assign) BOOL reserveRoomForAccessoryType;
-
-// The accessory type to be shown in the cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
 @end
 

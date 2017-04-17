@@ -10,6 +10,7 @@ source_set("cells") {
     "page_info_item.mm",
     "payment_method_item.h",
     "payment_method_item.mm",
+    "payments_has_accessory_type.h",
     "payments_text_item.h",
     "payments_text_item.mm",
     "price_item.h",

@@ -7,14 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/payments/cells/payments_has_accessory_type.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // PriceItem is the model class corresponding to PriceCell.
-@interface PriceItem : CollectionViewItem
-
-// The accessory type to display on the trailing edge of the cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+@interface PriceItem : CollectionViewItem<PaymentsHasAccessoryType>
 
 // The leading item string.
 @property(nonatomic, copy) NSString* item;
