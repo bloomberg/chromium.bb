@@ -104,6 +104,8 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
             RecordUserAction.record("Android.ChromeHome.ShowBookmarks");
         } else if (newContent.getType() == BottomSheetContentController.TYPE_HISTORY) {
             RecordUserAction.record("Android.ChromeHome.ShowHistory");
+        } else if (newContent.getType() == BottomSheetContentController.TYPE_INCOGNITO_HOME) {
+            RecordUserAction.record("Android.ChromeHome.ShowIncognitoHome");
         } else {
             assert false;
         }

@@ -10,6 +10,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -25,7 +26,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     private FadingBackgroundView mFadingBackgroundView;
-    private StateChangeBottomSheetObserver mObserver;
+    private StateChangeBottomSheetObserver mBottomSheetObserver;
+    private TestTabModelObserver mTabModelObserver;
     private int mStateChangeCurrentCalls;
 
     /** On observer used to record state change events on the bottom sheet. */
@@ -39,17 +41,31 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         }
     }
 
+    /** An observer used to detect changes in the tab model. */
+    private static class TestTabModelObserver extends EmptyTabModelObserver {
+        private final CallbackHelper mDidCloseTabCallbackHelper = new CallbackHelper();
+
+        @Override
+        public void didCloseTab(int tabId, boolean incognito) {
+            mDidCloseTabCallbackHelper.notifyCalled();
+        }
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
 
-        mObserver = new StateChangeBottomSheetObserver();
-        mBottomSheet.addObserver(mObserver);
+        mBottomSheetObserver = new StateChangeBottomSheetObserver();
+        mBottomSheet.addObserver(mBottomSheetObserver);
+
+        mTabModelObserver = new TestTabModelObserver();
+        getActivity().getTabModelSelector().getModel(false).addObserver(mTabModelObserver);
+        getActivity().getTabModelSelector().getModel(true).addObserver(mTabModelObserver);
 
         mFadingBackgroundView = getActivity().getFadingBackgroundView();
 
         // Once setup is done, get the initial call count for onStateChanged().
-        mStateChangeCurrentCalls = mObserver.mStateChangedCallbackHelper.getCallCount();
+        mStateChangeCurrentCalls = mBottomSheetObserver.mStateChangedCallbackHelper.getCallCount();
     }
 
     @SmallTest
@@ -65,7 +81,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         // Close the new tab.
         closeNewTab();
         assertEquals(0, getActivity().getTabModelSelector().getTotalTabCount());
-        assertFalse("Overview mode should not be showing",
+        assertTrue("Overview mode should be showing",
                 getActivity().getLayoutManager().overviewVisible());
     }
 
@@ -73,7 +89,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     public void testCloseNTP_TwoTabs()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create a new tab.
-        createNewTab();
+        createNewTab(false);
 
         // Close the new tab.
         closeNewTab();
@@ -94,7 +110,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         });
 
         // Create a new tab.
-        createNewTab();
+        createNewTab(false);
 
         // Close the new tab.
         closeNewTab();
@@ -104,10 +120,23 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
     }
 
     @SmallTest
+    public void testCloseNTP_Incognito()
+            throws IllegalArgumentException, InterruptedException, TimeoutException {
+        // Create new incognito NTP.
+        createNewTab(true);
+
+        // Close the new tab.
+        closeNewTab();
+        assertEquals(1, getActivity().getTabModelSelector().getTotalTabCount());
+        assertFalse("Overview mode should not be showing",
+                getActivity().getLayoutManager().overviewVisible());
+    }
+
+    @SmallTest
     public void testToggleSelectedTab()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         // Create a new tab.
-        createNewTab();
+        createNewTab(false);
 
         // Select the original tab.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -133,21 +162,26 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         validateState(true, true);
     }
 
-    private void createNewTab() throws InterruptedException, TimeoutException {
+    private void createNewTab(boolean incognito) throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(
-                getInstrumentation(), getActivity(), UrlConstants.NTP_URL, false);
+                getInstrumentation(), getActivity(), UrlConstants.NTP_URL, incognito);
         validateState(true, true);
     }
 
     private void closeNewTab() throws InterruptedException, TimeoutException {
+        int currentCallCount = mTabModelObserver.mDidCloseTabCallbackHelper.getCallCount();
         Tab tab = getActivity().getActivityTab();
-        final ChromeHomeNewTabPage mNewTabPage = (ChromeHomeNewTabPage) tab.getNativePage();
+        final ChromeHomeNewTabPageBase mNewTabPage = (ChromeHomeNewTabPageBase) tab.getNativePage();
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mNewTabPage.getCloseButtonForTests().callOnClick();
+                getActivity().getLayoutManager().getActiveLayout().finishAnimationsForTests();
             }
         });
+
+        mTabModelObserver.mDidCloseTabCallbackHelper.waitForCallback(currentCallCount, 1);
 
         validateState(false, true);
     }
@@ -156,7 +190,7 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
             throws InterruptedException, TimeoutException {
         // Wait for two calls if animating; one is to SHEET_STATE_SCROLLING and the other is to the
         // final state.
-        mObserver.mStateChangedCallbackHelper.waitForCallback(
+        mBottomSheetObserver.mStateChangedCallbackHelper.waitForCallback(
                 mStateChangeCurrentCalls, animatesToState ? 2 : 1);
 
         if (newTabPageSelected) {
@@ -171,6 +205,6 @@ public class ChromeHomeNewTabPageTest extends BottomSheetTestCaseBase {
         }
 
         // Once the state is validated, update the call count.
-        mStateChangeCurrentCalls = mObserver.mStateChangedCallbackHelper.getCallCount();
+        mStateChangeCurrentCalls = mBottomSheetObserver.mStateChangedCallbackHelper.getCallCount();
     }
 }

@@ -36,9 +36,14 @@ public class NativePageFactory {
     static class NativePageBuilder {
         protected NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
-            if (FeatureUtilities.isChromeHomeEnabled() && !tab.isIncognito()) {
-                return new ChromeHomeNewTabPage(activity, tab, tabModelSelector,
-                        ((ChromeTabbedActivity) activity).getLayoutManager());
+            if (FeatureUtilities.isChromeHomeEnabled()) {
+                if (tab.isIncognito()) {
+                    return new ChromeHomeIncognitoNewTabPage(activity, tab, tabModelSelector,
+                            ((ChromeTabbedActivity) activity).getLayoutManager());
+                } else {
+                    return new ChromeHomeNewTabPage(activity, tab, tabModelSelector,
+                            ((ChromeTabbedActivity) activity).getLayoutManager());
+                }
             } else if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity);
             } else {

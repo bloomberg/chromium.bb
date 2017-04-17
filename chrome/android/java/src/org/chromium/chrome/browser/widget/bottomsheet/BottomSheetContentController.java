@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.support.annotation.IntDef;
 import android.support.design.internal.BottomNavigationItemView;
@@ -18,15 +19,20 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
 import org.chromium.chrome.browser.history.HistorySheetContent;
+import org.chromium.chrome.browser.ntp.IncognitoBottomSheetContent;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
@@ -46,13 +52,18 @@ import java.util.Map.Entry;
 public class BottomSheetContentController extends BottomNavigationView
         implements OnNavigationItemSelectedListener {
     /** The different types of content that may be displayed in the bottom sheet. */
-    @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY})
+    @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY, TYPE_INCOGNITO_HOME})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContentType {}
     public static final int TYPE_SUGGESTIONS = 0;
     public static final int TYPE_DOWNLOADS = 1;
     public static final int TYPE_BOOKMARKS = 2;
     public static final int TYPE_HISTORY = 3;
+    public static final int TYPE_INCOGNITO_HOME = 4;
+
+    // R.id.action_home is overloaded, so an invalid ID is used to reference the incognito version
+    // of the home content.
+    private static final int INCOGNITO_HOME_ID = -1;
 
     private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
@@ -76,21 +87,24 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetClosed() {
+            if (mSelectedItemId != 0 && mSelectedItemId != R.id.action_home) {
+                showBottomSheetContent(R.id.action_home);
+            }
+
             Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
                     mBottomSheetContents.entrySet().iterator();
             while (contentIterator.hasNext()) {
                 Entry<Integer, BottomSheetContent> entry = contentIterator.next();
-                if (entry.getKey() == R.id.action_home) continue;
+                if (entry.getKey() == R.id.action_home || entry.getKey() == INCOGNITO_HOME_ID) {
+                    continue;
+                }
 
                 entry.getValue().destroy();
                 contentIterator.remove();
             }
+
             // TODO(twellington): determine a policy for destroying the
             //                    SuggestionsBottomSheetContent.
-
-            if (mSelectedItemId == 0 || mSelectedItemId == R.id.action_home) return;
-
-            showBottomSheetContent(R.id.action_home);
         }
     };
 
@@ -117,6 +131,20 @@ public class BottomSheetContentController extends BottomNavigationView
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(mBottomSheetObserver);
         mTabModelSelector = tabModelSelector;
+        mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                updateVisuals(newModel.isIncognito());
+                showBottomSheetContent(R.id.action_home);
+
+                // Release incognito bottom sheet content so that it can be garbage collected.
+                if (!newModel.isIncognito()
+                        && mBottomSheetContents.containsKey(INCOGNITO_HOME_ID)) {
+                    mBottomSheetContents.get(INCOGNITO_HOME_ID).destroy();
+                    mBottomSheetContents.remove(INCOGNITO_HOME_ID);
+                }
+            }
+        });
 
         Resources res = getContext().getResources();
         mDistanceBelowToolbarPx = controlContainerHeight
@@ -178,22 +206,27 @@ public class BottomSheetContentController extends BottomNavigationView
     }
 
     private BottomSheetContent getSheetContentForId(int navItemId) {
+        if (mTabModelSelector.isIncognitoSelected() && navItemId == R.id.action_home) {
+            navItemId = INCOGNITO_HOME_ID;
+        }
+
         BottomSheetContent content = mBottomSheetContents.get(navItemId);
         if (content != null) return content;
 
+        ChromeActivity activity = mTabModelSelector.getCurrentTab().getActivity();
+
         if (navItemId == R.id.action_home) {
             content = new SuggestionsBottomSheetContent(
-                    mTabModelSelector.getCurrentTab().getActivity(), mBottomSheet,
-                    mTabModelSelector, mSnackbarManager);
+                    activity, mBottomSheet, mTabModelSelector, mSnackbarManager);
         } else if (navItemId == R.id.action_downloads) {
-            content = new DownloadSheetContent(mTabModelSelector.getCurrentTab().getActivity(),
-                    mTabModelSelector.getCurrentModel().isIncognito(), mSnackbarManager);
+            content = new DownloadSheetContent(
+                    activity, mTabModelSelector.getCurrentModel().isIncognito(), mSnackbarManager);
         } else if (navItemId == R.id.action_bookmarks) {
-            content = new BookmarkSheetContent(
-                    mTabModelSelector.getCurrentTab().getActivity(), mSnackbarManager);
+            content = new BookmarkSheetContent(activity, mSnackbarManager);
         } else if (navItemId == R.id.action_history) {
-            content = new HistorySheetContent(
-                    mTabModelSelector.getCurrentTab().getActivity(), mSnackbarManager);
+            content = new HistorySheetContent(activity, mSnackbarManager);
+        } else if (navItemId == INCOGNITO_HOME_ID) {
+            content = new IncognitoBottomSheetContent(activity);
         }
         mBottomSheetContents.put(navItemId, content);
         return content;
@@ -208,6 +241,17 @@ public class BottomSheetContentController extends BottomNavigationView
         getMenu().findItem(mSelectedItemId).setChecked(true);
 
         mBottomSheet.showContent(getSheetContentForId(mSelectedItemId));
+    }
+
+    private void updateVisuals(boolean isIncognitoTabModelSelected) {
+        setBackgroundResource(isIncognitoTabModelSelected ? R.color.incognito_primary_color
+                                                          : R.color.appbar_background);
+
+        ColorStateList tint = ApiCompatibilityUtils.getColorStateList(getResources(),
+                isIncognitoTabModelSelected ? R.color.bottom_nav_tint_incognito
+                                            : R.color.bottom_nav_tint);
+        setItemIconTintList(tint);
+        setItemTextColor(tint);
     }
 
     /**

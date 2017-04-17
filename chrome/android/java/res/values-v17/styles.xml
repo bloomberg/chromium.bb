@@ -583,13 +583,8 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">20sp</item>
     </style>
-    <style name="PrivacyDisclaimerText">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">6dp</item>
-        <item name="android:lineSpacingExtra">6sp</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:visibility">gone</item>
+    <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
     </style>
 
     <!-- New tab page RecyclerView overscroll color -->
@@ -610,6 +605,14 @@
         <item name="android:background">@null</item>
         <item name="android:scaleType">center</item>
         <item name="android:paddingEnd">@dimen/selectable_list_layout_row_end_padding</item>
+    </style>
+    <style name="PrivacyDisclaimerText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:lineSpacingExtra">6sp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:visibility">gone</item>
     </style>
 
     <!-- Download Home -->
@@ -703,8 +706,19 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <!-- Miscellaneous -->
-    <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">20sp</item>
+    <!-- Incognito New Tab Page -->
+    <style name="IncognitoNewTabMessage">
+        <item name="android:maxWidth">660dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
+    <style name="IncognitoNewTabLearnMoreLink">
+        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
 </resources>

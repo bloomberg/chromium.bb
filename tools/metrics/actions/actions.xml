@@ -1162,6 +1162,14 @@ should be able to be added at any place in this file.
   <description>User showed the history bottom sheet content.</description>
 </action>
 
+<action name="Android.ChromeHome.ShowIncognitoHome">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User showed the incognito bottom sheet content in the &quot;Home&quot; tab.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.ShowSuggestions">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
