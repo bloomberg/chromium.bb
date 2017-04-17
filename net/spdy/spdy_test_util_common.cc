@@ -347,7 +347,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_server_push_cancellation(false),
       session_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
-      enable_http2_alternative_service_with_different_host(false),
+      enable_http2_alternative_service(false),
       net_log(nullptr),
       http_09_on_non_default_ports_enabled(false),
       restrict_to_one_preconnect_for_proxies(false),
@@ -413,8 +413,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.http2_settings = session_deps->http2_settings;
   params.time_func = session_deps->time_func;
   params.proxy_delegate = session_deps->proxy_delegate.get();
-  params.enable_http2_alternative_service_with_different_host =
-      session_deps->enable_http2_alternative_service_with_different_host;
+  params.enable_http2_alternative_service =
+      session_deps->enable_http2_alternative_service;
   params.net_log = session_deps->net_log;
   params.http_09_on_non_default_ports_enabled =
       session_deps->http_09_on_non_default_ports_enabled;

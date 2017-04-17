@@ -398,7 +398,7 @@ class HttpNetworkTransactionTest : public PlatformTest {
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
             HttpNetworkSession::NORMAL_SOCKET_POOL)) {
-    session_deps_.enable_http2_alternative_service_with_different_host = true;
+    session_deps_.enable_http2_alternative_service = true;
   }
 
   struct SimpleGetHelperResult {
@@ -10162,12 +10162,11 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_TRUE(alternative_service_vector.empty());
 }
 
-// HTTP/2 Alternative Services should be disabled if alternative service
-// hostname is different from that of origin.
+// HTTP/2 Alternative Services should be disabled by default.
 // TODO(bnc): Remove when https://crbug.com/615413 is fixed.
 TEST_F(HttpNetworkTransactionTest,
        DisableHTTP2AlternativeServicesWithDifferentHost) {
-  session_deps_.enable_http2_alternative_service_with_different_host = false;
+  session_deps_.enable_http2_alternative_service = false;
 
   HttpRequestInfo request;
   request.method = "GET";

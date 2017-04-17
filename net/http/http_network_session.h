@@ -111,9 +111,8 @@ class NET_EXPORT HttpNetworkSession
     SettingsMap http2_settings;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
-    // Whether to enable HTTP/2 Alt-Svc entries with hostname different than
-    // that of the origin.
-    bool enable_http2_alternative_service_with_different_host;
+    // Whether to enable HTTP/2 Alt-Svc entries.
+    bool enable_http2_alternative_service;
     // Whether to enable QUIC Alt-Svc entries with hostname different than that
     // of the origin.
     bool enable_quic_alternative_service_with_different_host;

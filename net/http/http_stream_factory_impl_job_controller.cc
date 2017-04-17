@@ -995,7 +995,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       continue;
     }
 
-
     // Some shared unix systems may have user home directories (like
     // http://foo.com/~mike) which allow users to emit headers.  This is a bad
     // idea already, but with Alternate-Protocol, it provides the ability for a
@@ -1009,11 +1008,8 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       continue;
 
     if (alternative_service.protocol == kProtoHTTP2) {
-      if (origin.host() != alternative_service.host &&
-          !session_->params()
-               .enable_http2_alternative_service_with_different_host) {
+      if (!session_->params().enable_http2_alternative_service)
         continue;
-      }
 
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
       if (first_alternative_service.protocol == kProtoUnknown)

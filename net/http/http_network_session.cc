@@ -119,7 +119,7 @@ HttpNetworkSession::Params::Params()
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       time_func(&base::TimeTicks::Now),
-      enable_http2_alternative_service_with_different_host(false),
+      enable_http2_alternative_service(false),
       enable_quic_alternative_service_with_different_host(true),
       enable_quic(false),
       mark_quic_broken_when_network_blackholes(false),
