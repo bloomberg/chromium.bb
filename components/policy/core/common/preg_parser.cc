@@ -31,7 +31,7 @@
 #include "components/policy/core/common/registry_dict.h"
 
 #if defined(OS_WIN)
-#include "windows.h"
+#include <windows.h>
 #else
 // Registry data type constants.
 #define REG_NONE 0
@@ -63,7 +63,7 @@ const base::char16 kDelimBracketClose = L']';
 const base::char16 kDelimSemicolon = L';';
 
 // Registry path separator.
-const base::string16 kRegistryPathSeparator = base::ASCIIToUTF16("\\");
+const base::char16 kRegistryPathSeparator[] = {L'\\', L'\0'};
 
 // Magic strings for the PReg value field to trigger special actions.
 const char kActionTriggerPrefix[] = "**";
