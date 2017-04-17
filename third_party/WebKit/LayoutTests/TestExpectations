@@ -2801,7 +2801,3 @@ crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 crbug.com/682753 fast/canvas-experimental [ Skip ]
 
 crbug.com/708934 fast/backgrounds/background-image-relative-url-in-iframe.html [ Failure Pass ]
-
-# Sheriff failures 2017-04-14
-crbug.com/711689 [ Mac ] paint/invalidation/text-match-document-change.html [ Failure ]
-crbug.com/711689 [ Mac ] virtual/disable-spinvalidation/paint/invalidation/text-match-document-change.html [ Failure ]
