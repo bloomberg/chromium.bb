@@ -180,13 +180,6 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   void SetEndOffset(unsigned offset) { end_offset_ = offset; }
   void ShiftOffsets(int delta);
 
-  bool operator==(const DocumentMarker& o) const {
-    return GetType() == o.GetType() && StartOffset() == o.StartOffset() &&
-           EndOffset() == o.EndOffset();
-  }
-
-  bool operator!=(const DocumentMarker& o) const { return !(*this == o); }
-
   DECLARE_TRACE();
 
  private:
