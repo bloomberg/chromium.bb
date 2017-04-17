@@ -18,10 +18,11 @@ namespace blink {
 
 class Document;
 class InputDeviceCapabilitiesConstants;
-class Location;
 class LocalDOMWindow;
+class Location;
 class MessageEvent;
 class SerializedScriptValue;
+class WindowProxyManager;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
                               public DOMWindowBase64 {
@@ -108,6 +109,8 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   bool isSecureContext() const;
 
+  v8::Local<v8::Object> GlobalProxy(DOMWrapperWorld&);
+
   InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 
  protected:
@@ -121,6 +124,10 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
  private:
   Member<Frame> frame_;
+  // Unlike |frame_|, |window_proxy_manager_| is available even after the
+  // window's frame gets detached from the DOM, until the end of the lifetime
+  // of this object.
+  const Member<WindowProxyManager> window_proxy_manager_;
   Member<InputDeviceCapabilitiesConstants> input_capabilities_;
   mutable Member<Location> location_;
 

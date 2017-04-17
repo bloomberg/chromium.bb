@@ -19,14 +19,8 @@ v8::Local<v8::Value> ToV8(DOMWindow* window,
 
   if (UNLIKELY(!window))
     return v8::Null(isolate);
-  // Initializes environment of a frame, and return the global object
-  // of the frame.
-  Frame* frame = window->GetFrame();
-  if (!frame)
-    return V8Undefined();
 
-  return frame->GetWindowProxy(DOMWrapperWorld::Current(isolate))
-      ->GlobalProxyIfNotDetached();
+  return window->GlobalProxy(DOMWrapperWorld::Current(isolate));
 }
 
 v8::Local<v8::Value> ToV8(EventTarget* impl,

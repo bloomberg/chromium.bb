@@ -5,6 +5,8 @@
 #include "core/frame/DOMWindow.h"
 
 #include <memory>
+
+#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
@@ -29,7 +31,10 @@
 
 namespace blink {
 
-DOMWindow::DOMWindow(Frame& frame) : frame_(frame), window_is_closing_(false) {}
+DOMWindow::DOMWindow(Frame& frame)
+    : frame_(frame),
+      window_proxy_manager_(frame.GetWindowProxyManager()),
+      window_is_closing_(false) {}
 
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
@@ -420,6 +425,14 @@ void DOMWindow::focus(ExecutionContext* context) {
                                                true /* notifyEmbedder */);
 }
 
+v8::Local<v8::Object> DOMWindow::GlobalProxy(DOMWrapperWorld& world) {
+  // TODO(yukishiino): Make this function always return the non-empty handle
+  // even if the frame is detached because the global proxy must always exist
+  // per spec.
+  return window_proxy_manager_->GetWindowProxy(world)
+      ->GlobalProxyIfNotDetached();
+}
+
 InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
   if (!input_capabilities_)
     input_capabilities_ = new InputDeviceCapabilitiesConstants;
@@ -428,6 +441,7 @@ InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
 
 DEFINE_TRACE(DOMWindow) {
   visitor->Trace(frame_);
+  visitor->Trace(window_proxy_manager_);
   visitor->Trace(input_capabilities_);
   visitor->Trace(location_);
   EventTargetWithInlineData::Trace(visitor);
