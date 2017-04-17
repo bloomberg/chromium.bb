@@ -42,7 +42,7 @@ import java.util.UUID;
  * pass through to the Android object and instead provide fake implementations.
  */
 @JNINamespace("device")
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+@TargetApi(Build.VERSION_CODES.M)
 class Wrappers {
     private static final String TAG = "Bluetooth";
 
@@ -110,7 +110,7 @@ class Wrappers {
          */
         @CalledByNative("BluetoothAdapterWrapper")
         public static BluetoothAdapterWrapper createWithDefaultAdapter(Context context) {
-            final boolean hasMinAPI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+            final boolean hasMinAPI = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
             if (!hasMinAPI) {
                 Log.i(TAG, "BluetoothAdapterWrapper.create failed: SDK version (%d) too low.",
                         Build.VERSION.SDK_INT);
@@ -315,11 +315,11 @@ class Wrappers {
                     new HashMap<BluetoothGattDescriptor, BluetoothGattDescriptorWrapper>();
         }
 
-        public BluetoothGattWrapper connectGatt(
-                Context context, boolean autoConnect, BluetoothGattCallbackWrapper callback) {
+        public BluetoothGattWrapper connectGatt(Context context, boolean autoConnect,
+                BluetoothGattCallbackWrapper callback, int transport) {
             return new BluetoothGattWrapper(
                     mDevice.connectGatt(context, autoConnect,
-                            new ForwardBluetoothGattCallbackToWrapper(callback, this)),
+                            new ForwardBluetoothGattCallbackToWrapper(callback, this), transport),
                     this);
         }
 

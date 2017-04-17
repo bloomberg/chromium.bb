@@ -23,7 +23,7 @@ import java.util.HashMap;
  * Lifetime is controlled by device::BluetoothDeviceAndroid.
  */
 @JNINamespace("device")
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+@TargetApi(Build.VERSION_CODES.M)
 final class ChromeBluetoothDevice {
     private static final String TAG = "Bluetooth";
 
@@ -108,7 +108,9 @@ final class ChromeBluetoothDevice {
         // autoConnect set to false as under experimentation using autoConnect failed to complete
         // connections.
         mBluetoothGatt =
-                mDevice.connectGatt(context, false /* autoConnect */, mBluetoothGattCallbackImpl);
+                mDevice.connectGatt(context, false /* autoConnect */, mBluetoothGattCallbackImpl,
+                        // Prefer LE for dual-mode devices due to lower energy consumption.
+                        BluetoothDevice.TRANSPORT_LE);
     }
 
     // Implements BluetoothDeviceAndroid::DisconnectGatt.

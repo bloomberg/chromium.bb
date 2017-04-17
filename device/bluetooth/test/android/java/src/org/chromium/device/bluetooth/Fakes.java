@@ -39,7 +39,7 @@ import java.util.UUID;
  * each of these classes.
  */
 @JNINamespace("device")
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+@TargetApi(Build.VERSION_CODES.M)
 class Fakes {
     private static final String TAG = "cr.Bluetooth";
 
@@ -412,7 +412,7 @@ class Fakes {
 
         @Override
         public Wrappers.BluetoothGattWrapper connectGatt(Context context, boolean autoConnect,
-                Wrappers.BluetoothGattCallbackWrapper callback) {
+                Wrappers.BluetoothGattCallbackWrapper callback, int transport) {
             if (mGattCallback != null && mGattCallback != callback) {
                 throw new IllegalArgumentException(
                         "BluetoothGattWrapper doesn't support calls to connectGatt() with "
