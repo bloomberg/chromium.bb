@@ -45,6 +45,8 @@ const char* CardTypeFromWalletCardType(
       return kJCBCard;
     case sync_pb::WalletMaskedCreditCard::MASTER_CARD:
       return kMasterCard;
+    case sync_pb::WalletMaskedCreditCard::UNIONPAY:
+      return kUnionPay;
     case sync_pb::WalletMaskedCreditCard::VISA:
       return kVisaCard;
 

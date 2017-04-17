@@ -90,6 +90,7 @@ message WalletMaskedCreditCard {
     SOLO = 6;
     SWITCH = 7;
     VISA = 8;
+    UNIONPAY = 9;
   }
 
   enum WalletCardClass {

@@ -244,6 +244,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, MASTER_CARD);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, SOLO);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, SWITCH);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNIONPAY);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, VISA);
   }
   NOTREACHED();
