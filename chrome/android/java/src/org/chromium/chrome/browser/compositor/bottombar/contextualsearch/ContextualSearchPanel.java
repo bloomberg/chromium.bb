@@ -415,6 +415,15 @@ public class ContextualSearchPanel extends OverlayPanel {
         addBarHandle(mActivity.getToolbarManager().getToolbar().getHeight());
     }
 
+    @Override
+    protected boolean doesMatchFullWidthCriteria(float containerWidth) {
+        if (!mOverrideIsFullWidthSizePanelForTesting && mActivity != null
+                && mActivity.getBottomSheet() != null) {
+            return true;
+        }
+        return super.doesMatchFullWidthCriteria(containerWidth);
+    }
+
     // ============================================================================================
     // Animation Handling
     // ============================================================================================
