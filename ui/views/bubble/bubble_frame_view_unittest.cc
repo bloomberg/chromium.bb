@@ -145,12 +145,12 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
   EXPECT_EQ(kArrow, frame.bubble_border()->arrow());
   EXPECT_EQ(kColor, frame.bubble_border()->background_color());
 
-  int margin_x = frame.content_margins().left();
-  int margin_y = frame.content_margins().top() +
-                 frame.GetCloseButtonForTest()->height();
-  gfx::Insets insets = frame.bubble_border()->GetInsets();
-  EXPECT_EQ(insets.left() + margin_x, frame.GetBoundsForClientView().x());
-  EXPECT_EQ(insets.top() + margin_y, frame.GetBoundsForClientView().y());
+  gfx::Insets frame_insets = frame.GetInsets();
+  gfx::Insets border_insets = frame.bubble_border()->GetInsets();
+  EXPECT_EQ(border_insets.left() + frame_insets.left(),
+            frame.GetBoundsForClientView().x());
+  EXPECT_EQ(border_insets.top() + frame_insets.top(),
+            frame.GetBoundsForClientView().y());
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.
