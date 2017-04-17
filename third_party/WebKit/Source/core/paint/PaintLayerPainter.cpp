@@ -964,6 +964,13 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       case kPaintPhaseMask:  // Mask painting will handle clipping to self.
         clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
         break;
+      case kPaintPhaseClippingMask:
+        if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
+          // The ancestor is the thing that needs to clip, so do not include
+          // this layer's clips.
+          clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
+          break;
+        }
       default:
         clipping_rule = LayerClipRecorder::kIncludeSelfForBorderRadius;
         break;
