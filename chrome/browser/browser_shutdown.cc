@@ -49,20 +49,21 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/lifetime/termination_notification.h"
+#endif
+
 #if BUILDFLAG(ENABLE_BACKGROUND)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
-#if BUILDFLAG(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/boot_times_recorder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/service_process/service_process_control.h"
+#endif
+
+#if BUILDFLAG(ENABLE_RLZ)
+#include "components/rlz/rlz_tracker.h"
 #endif
 
 using base::Time;
@@ -276,7 +277,7 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
   }
 
 #if defined(OS_CHROMEOS)
-  chrome::NotifyAndTerminate(false);
+  NotifyAndTerminate(false /* fast_path */);
 #endif
 }
 #endif  // !defined(OS_ANDROID)

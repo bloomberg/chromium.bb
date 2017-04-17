@@ -3312,6 +3312,8 @@ split_static_library("browser") {
       "lifetime/keep_alive_types.h",
       "lifetime/scoped_keep_alive.cc",
       "lifetime/scoped_keep_alive.h",
+      "lifetime/termination_notification.cc",
+      "lifetime/termination_notification.h",
       "media/webrtc/tab_desktop_media_list.cc",
       "media/webrtc/tab_desktop_media_list.h",
       "media_galleries/chromeos/mtp_device_delegate_impl_chromeos.cc",

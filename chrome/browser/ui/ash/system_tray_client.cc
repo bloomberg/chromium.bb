@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
@@ -370,11 +371,11 @@ void SystemTrayClient::SignOut() {
 
 void SystemTrayClient::RequestRestartForUpdate() {
   // Flash updates on Chrome OS require device reboot.
-  const chrome::RebootPolicy reboot_policy =
-      flash_update_available_ ? chrome::RebootPolicy::kForceReboot
-                              : chrome::RebootPolicy::kOptionalReboot;
+  const browser_shutdown::RebootPolicy reboot_policy =
+      flash_update_available_ ? browser_shutdown::RebootPolicy::kForceReboot
+                              : browser_shutdown::RebootPolicy::kOptionalReboot;
 
-  chrome::NotifyAndTerminate(true /* fast_path */, reboot_policy);
+  browser_shutdown::NotifyAndTerminate(true /* fast_path */, reboot_policy);
 }
 
 void SystemTrayClient::HandleUpdateAvailable() {

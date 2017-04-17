@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -602,7 +603,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
 void InProcessBrowserTest::QuitBrowsers() {
   if (chrome::GetTotalBrowserCount() == 0) {
-    chrome::NotifyAppTerminating();
+    browser_shutdown::NotifyAppTerminating();
     return;
   }
 

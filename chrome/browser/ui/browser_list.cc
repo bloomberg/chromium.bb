@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -106,7 +107,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
     // to call ProfileManager::ShutdownSessionServices() as part of the
     // shutdown, because Browser::WindowClosing() already makes sure that the
     // SessionService is created and notified.
-    chrome::NotifyAppTerminating();
+    browser_shutdown::NotifyAppTerminating();
     chrome::OnAppExiting();
   }
 }

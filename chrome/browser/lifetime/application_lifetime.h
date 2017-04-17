@@ -49,6 +49,9 @@ void AttemptExit();
 // If you need to exit or restart in your code on ChromeOS,
 // use AttemptExit or AttemptRestart respectively.
 void ExitCleanly();
+
+// Returns true if any of the above Attempt calls have been called.
+bool IsAttemptingShutdown();
 #endif
 
 #if !defined(OS_ANDROID)
@@ -68,23 +71,6 @@ void ShutdownIfNeeded();
 // Begins shutdown of the application when the desktop session is ending.
 void SessionEnding();
 
-#endif  // !defined(OS_ANDROID)
-
-// Emits APP_TERMINATING notification. It is guaranteed that the
-// notification is sent only once.
-void NotifyAppTerminating();
-
-// Send out notifications.
-// For ChromeOS, also request session manager to end the session.
-// |lifetime| is used to signal whether or not a reboot should be forced. By
-// default, the functions only reboot the system if an update is available. When
-// a component flash update is present, but not a system update, the
-// kForceReboot flag is passed.
-enum class RebootPolicy { kForceReboot, kOptionalReboot };
-void NotifyAndTerminate(bool fast_path);
-void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy);
-
-#if !defined(OS_ANDROID)
 // Called once the application is exiting.
 void OnAppExiting();
 

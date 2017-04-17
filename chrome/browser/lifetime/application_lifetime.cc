@@ -27,11 +27,6 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -43,16 +38,20 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
+#endif
+
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "ui/base/l10n/l10n_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -136,7 +135,7 @@ void AttemptExitInternal(bool try_to_quit_application) {
 #endif
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+      NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
@@ -150,7 +149,7 @@ void CloseAllBrowsersAndQuit() {
 }
 
 void ShutdownIfNoBrowsers() {
-  if (chrome::GetTotalBrowserCount() > 0)
+  if (GetTotalBrowserCount() > 0)
     return;
 
   // Tell everyone that we are shutting down.
@@ -163,15 +162,15 @@ void ShutdownIfNoBrowsers() {
   ProfileManager::ShutdownSessionServices();
 #endif
 
-  chrome::NotifyAndTerminate(true);
-  chrome::OnAppExiting();
+  browser_shutdown::NotifyAndTerminate(true /* fast_path */);
+  OnAppExiting();
 }
 
 void CloseAllBrowsers() {
   // If there are no browsers and closing the last browser would quit the
   // application, send the APP_TERMINATING action here. Otherwise, it will be
   // sent by RemoveBrowser() when the last browser has closed.
-  if (chrome::GetTotalBrowserCount() == 0 &&
+  if (GetTotalBrowserCount() == 0 &&
       (browser_shutdown::IsTryingToQuit() ||
        !KeepAliveRegistry::GetInstance()->IsKeepingAlive())) {
     ShutdownIfNoBrowsers();
@@ -207,7 +206,7 @@ void AttemptUserExit() {
   g_send_stop_request_to_session_manager = true;
   // On ChromeOS, always terminate the browser, regardless of the result of
   // AreAllBrowsersCloseable(). See crbug.com/123107.
-  chrome::NotifyAndTerminate(true);
+  browser_shutdown::NotifyAndTerminate(true /* fast_path */);
 #else
   // Reset the restart bit that might have been set in cancelled restart
   // request.
@@ -229,7 +228,7 @@ void AttemptRestart() {
   // before restarting, as the restarted processes will inherit their
   // environment variables from ours, thus suppressing crash uploads.
   if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    HMODULE exe_module = GetModuleHandle(kBrowserProcessExecutableName);
     if (exe_module) {
       typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
       ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
@@ -269,7 +268,7 @@ void AttemptRelaunch() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
   // If running the Chrome OS build, but we're not on the device, fall through.
 #endif
-  chrome::AttemptRestart();
+  AttemptRestart();
 }
 
 void AttemptExit() {
@@ -305,6 +304,10 @@ void ExitCleanly() {
   else
     browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
   AttemptExitInternal(true);
+}
+
+bool IsAttemptingShutdown() {
+  return g_send_stop_request_to_session_manager;
 }
 #endif
 
@@ -346,7 +349,7 @@ void SessionEnding() {
   browser_shutdown::RecordShutdownInfoPrefs();
 
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+      NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
@@ -370,67 +373,6 @@ void ShutdownIfNeeded() {
   ShutdownIfNoBrowsers();
 }
 
-#endif  // !defined(OS_ANDROID)
-
-void NotifyAppTerminating() {
-  static bool notified = false;
-  if (notified)
-    return;
-  notified = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_APP_TERMINATING,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-}
-
-void NotifyAndTerminate(bool fast_path) {
-  NotifyAndTerminate(fast_path, RebootPolicy::kOptionalReboot);
-}
-
-void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
-#if defined(OS_CHROMEOS)
-  static bool notified = false;
-  // Return if a shutdown request has already been sent.
-  if (notified)
-    return;
-  notified = true;
-#endif
-
-  if (fast_path)
-    NotifyAppTerminating();
-
-#if defined(OS_CHROMEOS)
-  if (chromeos::PowerPolicyController::IsInitialized())
-    chromeos::PowerPolicyController::Get()->NotifyChromeIsExiting();
-
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    // If we're on a ChromeOS device, reboot if an update has been applied,
-    // or else signal the session manager to log out.
-    chromeos::UpdateEngineClient* update_engine_client =
-        chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    if (update_engine_client->GetLastStatus().status ==
-            chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT ||
-        reboot_policy == RebootPolicy::kForceReboot) {
-      update_engine_client->RebootAfterUpdate();
-    } else if (g_send_stop_request_to_session_manager) {
-      // Don't ask SessionManager to stop session if the shutdown request comes
-      // from session manager.
-      chromeos::DBusThreadManager::Get()
-          ->GetSessionManagerClient()
-          ->StopSession();
-    }
-  } else {
-    if (g_send_stop_request_to_session_manager) {
-      // If running the Chrome OS build, but we're not on the device, act
-      // as if we received signal from SessionManager.
-      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                       base::Bind(&ExitCleanly));
-    }
-  }
-#endif
-}
-
-#if !defined(OS_ANDROID)
 void OnAppExiting() {
   static bool notified = false;
   if (notified)
