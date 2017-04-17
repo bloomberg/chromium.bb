@@ -11,7 +11,6 @@ import android.animation.ObjectAnimator;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.support.annotation.IdRes;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -102,8 +101,7 @@ class AppMenuAdapter extends BaseAdapter {
     private final LayoutInflater mInflater;
     private final List<MenuItem> mMenuItems;
     private final int mNumMenuItems;
-    @IdRes
-    private final int mHighlightedItemId;
+    private final Integer mHighlightedItemId;
     private final float mDpToPx;
 
     // Use a single PulseDrawable to spawn the other drawables so that the ConstantState gets
@@ -113,7 +111,7 @@ class AppMenuAdapter extends BaseAdapter {
     private PulseDrawable mHighlightDrawableSource;
 
     public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
-            @IdRes int highlightedItemId) {
+            Integer highlightedItemId) {
         mAppMenu = appMenu;
         mMenuItems = menuItems;
         mInflater = inflater;
@@ -445,6 +443,8 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     private void highlightItemIfNecessary(View view, boolean isIcon, int itemId) {
+        if (mHighlightedItemId == null) return;
+
         Drawable background = (Drawable) view.getTag(R.id.menu_item_original_background);
         if (background == null) return;
 

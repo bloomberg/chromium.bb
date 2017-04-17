@@ -10,7 +10,6 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IdRes;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,11 +37,11 @@ public class AppMenuHandler {
     private final Activity mActivity;
 
     /**
-     * The resource id of the menu item to highlight when the menu next opens. A value of 0 means
-     * no item will be highlighted.  This value will be cleared after the menu is opened.
+     * The resource id of the menu item to highlight when the menu next opens. A value of
+     * {@code null} means no item will be highlighted.  This value will be cleared after the menu is
+     * opened.
      */
-    @IdRes
-    private int mHighlightMenuId;
+    private Integer mHighlightMenuId;
 
     /**
      * Constructs an AppMenuHandler object.
@@ -76,13 +75,14 @@ public class AppMenuHandler {
     /**
      * Calls attention to this menu and a particular item in it.  The menu will only stay
      * highlighted for one menu usage.  After that the highlight will be cleared.
-     * @param highlightItemId The id of a menu item to highlight or {@code 0} to turn off the
+     * @param highlightItemId The id of a menu item to highlight or {@code null} to turn off the
      *                        highlight.
      */
-    public void setMenuHighlight(@IdRes int highlightItemId) {
-        if (mHighlightMenuId == highlightItemId) return;
+    public void setMenuHighlight(Integer highlightItemId) {
+        if (mHighlightMenuId == null && highlightItemId == null) return;
+        if (mHighlightMenuId != null && mHighlightMenuId.equals(highlightItemId)) return;
         mHighlightMenuId = highlightItemId;
-        boolean highlighting = mHighlightMenuId != 0;
+        boolean highlighting = mHighlightMenuId != null;
         for (AppMenuObserver observer : mObservers) observer.onMenuHighlightChanged(highlighting);
     }
 
@@ -165,7 +165,7 @@ public class AppMenuHandler {
         mAppMenu.show(wrapper, anchorView, isByPermanentButton, rotation, appRect, pt.y,
                 footerResourceId, mHighlightMenuId);
         mAppMenuDragHelper.onShow(startDragging);
-        setMenuHighlight(0);
+        setMenuHighlight(null);
         RecordUserAction.record("MobileMenuShow");
         return true;
     }

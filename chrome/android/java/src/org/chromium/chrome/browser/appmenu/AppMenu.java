@@ -144,11 +144,13 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      * @param footerResourceId    The resource id for a view to add to the end of the menu list. Can
      *                            be 0 if no such view is required.
      * @param highlightedItemId   The resource id of the menu item that should be highlighted.  Can
-     *                            be 0 if no item should be highlighted.
+     *                            be {@code null} if no item should be highlighted.  Note that
+     *                            {@code 0} is dedicated to custom menu items and can be declared by
+     *                            external apps.
      */
     void show(Context context, View anchorView, boolean isByPermanentButton, int screenRotation,
             Rect visibleDisplayFrame, int screenHeight, @IdRes int footerResourceId,
-            @IdRes int highlightedItemId) {
+            Integer highlightedItemId) {
         mPopup = new ListPopupWindow(context, null, android.R.attr.popupMenuStyle);
         mPopup.setModal(true);
         mPopup.setAnchorView(anchorView);
