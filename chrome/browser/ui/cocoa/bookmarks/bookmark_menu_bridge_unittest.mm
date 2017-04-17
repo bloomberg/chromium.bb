@@ -81,7 +81,8 @@ class BookmarkMenuBridgeTest : public CocoaProfileTest {
   }
 
   NSMenuItem* AddTestMenuItem(NSMenu *menu, NSString *title, SEL selector) {
-    NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:title action:NULL
+    NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
+                                                   action:nullptr
                                             keyEquivalent:@""] autorelease];
     if (selector)
       [item setAction:selector];
@@ -182,7 +183,7 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
 
   // 3 nodes; middle one has a child, last one has a HUGE URL
   // Set their titles to be the same as the URLs
-  const BookmarkNode* node = NULL;
+  const BookmarkNode* node = nullptr;
   model->AddURL(root, 0, ASCIIToUTF16(short_url), GURL(short_url));
   bridge_->UpdateMenu(menu);
   int prev_count = [menu numberOfItems] - 1; // "extras" added at this point
@@ -260,19 +261,20 @@ TEST_F(BookmarkMenuBridgeTest, TestAddItemToMenu) {
                 IDS_BOOKMARK_BAR_OPEN_INCOGNITO, root, menu, true);
   EXPECT_EQ(3, [menu numberOfItems]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_ALL);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(@selector(openAllBookmarks:), [item action]);
   EXPECT_TRUE([item isEnabled]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
+  title =
+      l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(@selector(openAllBookmarksNewWindow:), [item action]);
   EXPECT_TRUE([item isEnabled]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_INCOGNITO, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(@selector(openAllBookmarksIncognitoWindow:), [item action]);
@@ -289,19 +291,20 @@ TEST_F(BookmarkMenuBridgeTest, TestAddItemToMenu) {
                 IDS_BOOKMARK_BAR_OPEN_INCOGNITO, root, menu, false);
   EXPECT_EQ(3, [menu numberOfItems]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_ALL);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(nil, [item action]);
   EXPECT_FALSE([item isEnabled]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
+  title =
+      l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(nil, [item action]);
   EXPECT_FALSE([item isEnabled]);
 
-  title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
+  title = l10n_util::GetPluralNSStringF(IDS_BOOKMARK_BAR_OPEN_INCOGNITO, 0);
   item = [menu itemWithTitle:title];
   EXPECT_TRUE(item);
   EXPECT_EQ(nil, [item action]);
@@ -337,7 +340,7 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
 
   const BookmarkNode empty_node(GURL("http://no-where/"));
   EXPECT_FALSE(MenuItemForNode(bridge_.get(), &empty_node));
-  EXPECT_FALSE(MenuItemForNode(bridge_.get(), NULL));
+  EXPECT_FALSE(MenuItemForNode(bridge_.get(), nullptr));
 }
 
 // Test that Loaded() adds both the bookmark bar nodes and the "other" nodes.

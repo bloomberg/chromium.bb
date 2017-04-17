@@ -1310,11 +1310,11 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ui_test_utils::MoveMouseToCenterAndPress(button, ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
         CreateEventTask(this, &BookmarkBarViewTest12::Step2));
-    chrome::num_bookmark_urls_before_prompting = 1;
+    chrome::kNumBookmarkUrlsBeforePrompting = 1;
   }
 
   ~BookmarkBarViewTest12() override {
-    chrome::num_bookmark_urls_before_prompting = 15;
+    chrome::kNumBookmarkUrlsBeforePrompting = 15;
   }
 
  private:

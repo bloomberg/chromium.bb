@@ -28,7 +28,7 @@ namespace chrome {
 //
 // NOTE: treat this as a const. It is not const so unit tests can change the
 // value.
-extern int num_bookmark_urls_before_prompting;
+extern size_t kNumBookmarkUrlsBeforePrompting;
 
 // Opens all the bookmarks in |nodes| that are of type url and all the child
 // bookmarks that are of type url for folders in |nodes|. |initial_disposition|
@@ -46,6 +46,18 @@ void OpenAll(gfx::NativeWindow parent,
              const bookmarks::BookmarkNode* node,
              WindowOpenDisposition initial_disposition,
              content::BrowserContext* browser_context);
+
+// Returns the count of bookmarks that would be opened by OpenAll. If
+// |incognito_context| is set, the function will use it to check if the URLs can
+// be opened in incognito mode, which may affect the count.
+int OpenCount(gfx::NativeWindow parent,
+              const std::vector<const bookmarks::BookmarkNode*>& nodes,
+              content::BrowserContext* incognito_context = nullptr);
+
+// Convenience for OpenCount() with a single BookmarkNode.
+int OpenCount(gfx::NativeWindow parent,
+              const bookmarks::BookmarkNode* node,
+              content::BrowserContext* incognito_context = nullptr);
 
 // Asks the user before deleting a non-empty bookmark folder.
 bool ConfirmDeleteBookmarkNode(const bookmarks::BookmarkNode* node,

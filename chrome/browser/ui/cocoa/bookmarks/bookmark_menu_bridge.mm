@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
@@ -202,7 +203,7 @@ void BookmarkMenuBridge::ObserveBookmarkModel() {
 
 BookmarkModel* BookmarkMenuBridge::GetBookmarkModel() {
   if (!profile_)
-    return NULL;
+    return nullptr;
   return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
@@ -312,7 +313,11 @@ void BookmarkMenuBridge::AddItemToMenu(int command_id,
                                        const BookmarkNode* node,
                                        NSMenu* menu,
                                        bool enabled) {
-  NSString* title = l10n_util::GetNSStringWithFixup(message_id);
+  int count = (message_id == IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO)
+                  ? chrome::OpenCount(nullptr, node, profile_)
+                  : chrome::OpenCount(nullptr, node);
+
+  NSString* title = l10n_util::GetPluralNSStringF(message_id, count);
   SEL action;
   if (!enabled) {
     // A nil action makes a menu item appear disabled. NSMenuItem setEnabled

@@ -46,7 +46,7 @@ class BookmarkContextMenuController
       public ui::SimpleMenuModel::Delegate {
  public:
   // Creates the bookmark context menu.
-  // |browser| is used to open the bookmark manager and is NULL in tests.
+  // |browser| is used to open the bookmark manager and is null in tests.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |navigator| is used if |browser| is null, and is provided for testing.
   // |parent| is the parent for newly created nodes if |selection| is empty.
@@ -78,6 +78,8 @@ class BookmarkContextMenuController
  private:
   void BuildMenu();
 
+  // Adds a IDC_* style command to the menu with a string16.
+  void AddItem(int id, const base::string16 str);
   // Adds a IDC_* style command to the menu with a localized string.
   void AddItem(int id, int localization_id);
   // Adds a separator to the menu.
