@@ -37,6 +37,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   class ObserverForTest {
    public:
     virtual void OnCanMakePaymentCalled() = 0;
+    virtual void OnNotSupportedError() = 0;
 
    protected:
     virtual ~ObserverForTest() {}
@@ -62,7 +63,6 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // PaymentRequestSpec::Observer:
   void OnSpecUpdated() override {}
-  void OnInvalidSpecProvided() override;
 
   // PaymentRequestState::Delegate:
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;

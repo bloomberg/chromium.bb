@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -54,7 +55,8 @@ PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase(
     const std::string& test_file_path)
     : test_file_path_(test_file_path),
       delegate_(nullptr),
-      incognito_for_testing_(false) {}
+      is_incognito_(false),
+      is_valid_ssl_(true) {}
 PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
 
 void PaymentRequestBrowserTestBase::SetUpCommandLine(
@@ -87,13 +89,22 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
                  base::Unretained(this), web_contents));
 }
 
-void PaymentRequestBrowserTestBase::SetIncognitoForTesting() {
-  incognito_for_testing_ = true;
+void PaymentRequestBrowserTestBase::SetIncognito() {
+  is_incognito_ = true;
+}
+
+void PaymentRequestBrowserTestBase::SetInvalidSsl() {
+  is_valid_ssl_ = false;
 }
 
 void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+}
+
+void PaymentRequestBrowserTestBase::OnNotSupportedError() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::NOT_SUPPORTED_ERROR);
 }
 
 void PaymentRequestBrowserTestBase::OnDialogOpened() {
@@ -188,7 +199,7 @@ void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
 }
 
 void PaymentRequestBrowserTestBase::ExpectBodyContains(
-    const std::vector<base::string16>& expected_strings) {
+    const std::vector<std::string>& expected_strings) {
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string extract_contents_js =
       "(function() { "
@@ -197,11 +208,19 @@ void PaymentRequestBrowserTestBase::ExpectBodyContains(
   std::string contents;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents, extract_contents_js, &contents));
-  for (const auto expected_string : expected_strings) {
-    EXPECT_NE(std::string::npos,
-              contents.find(base::UTF16ToUTF8(expected_string)))
+  for (const std::string& expected_string : expected_strings) {
+    EXPECT_NE(std::string::npos, contents.find(expected_string))
         << "String not present: " << expected_string;
   }
+}
+
+void PaymentRequestBrowserTestBase::ExpectBodyContains(
+    const std::vector<base::string16>& expected_strings) {
+  std::vector<std::string> converted(expected_strings.size());
+  std::transform(expected_strings.begin(), expected_strings.end(),
+                 converted.begin(),
+                 [](const base::string16& s) { return base::UTF16ToUTF8(s); });
+  ExpectBodyContains(converted);
 }
 
 void PaymentRequestBrowserTestBase::OpenOrderSummaryScreen() {
@@ -336,7 +355,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       base::MakeUnique<TestChromePaymentRequestDelegate>(
           web_contents, this /* observer */, this /* widget_observer */,
-          incognito_for_testing_);
+          is_incognito_, is_valid_ssl_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents, std::move(delegate),

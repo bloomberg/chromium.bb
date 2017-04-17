@@ -16,12 +16,14 @@ TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
     content::WebContents* web_contents,
     PaymentRequestDialogView::ObserverForTest* observer,
     views::WidgetObserver* widget_observer,
-    bool is_incognito)
+    bool is_incognito,
+    bool is_valid_ssl)
     : ChromePaymentRequestDelegate(web_contents),
       address_input_provider_(nullptr),
       observer_(observer),
       widget_observer_(widget_observer),
-      is_incognito_for_testing_(is_incognito) {}
+      is_incognito_(is_incognito),
+      is_valid_ssl_(is_valid_ssl) {}
 
 void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   PaymentRequestDialogView* dialog_view =
@@ -36,7 +38,11 @@ void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
 }
 
 bool TestChromePaymentRequestDelegate::IsIncognito() const {
-  return is_incognito_for_testing_;
+  return is_incognito_;
+}
+
+bool TestChromePaymentRequestDelegate::IsSslCertificateValid() {
+  return is_valid_ssl_;
 }
 
 std::unique_ptr<const ::i18n::addressinput::Source>

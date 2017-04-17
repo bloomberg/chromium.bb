@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -406,6 +407,31 @@ public class PaymentRequestImpl
         if (mClient != null || client == null) return;
         mClient = client;
 
+        if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
+            recordAbortReasonHistogram(
+                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Not in a secure context");
+            return;
+        }
+
+        mRequestShipping = options != null && options.requestShipping;
+        mRequestPayerName = options != null && options.requestPayerName;
+        mRequestPayerPhone = options != null && options.requestPayerPhone;
+        mRequestPayerEmail = options != null && options.requestPayerEmail;
+        mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
+
+        PaymentRequestMetrics.recordRequestedInformationHistogram(
+                mRequestPayerEmail, mRequestPayerPhone, mRequestShipping, mRequestPayerName);
+
+        if (OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
+                && !SslValidityChecker.isSslCertificateValid(mWebContents)) {
+            Log.d(TAG, "SSL certificate is not valid");
+            // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
+            // "NotSupportedError".
+            onAllPaymentAppsCreated();
+            return;
+        }
+
         if (mMethodData != null) {
             disconnectFromClientWithDebugMessage("PaymentRequest.show() called more than once.");
             recordAbortReasonHistogram(
@@ -433,12 +459,6 @@ public class PaymentRequestImpl
         PaymentAppFactory.getInstance().create(mWebContents,
                 Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
 
-        mRequestShipping = options != null && options.requestShipping;
-        mRequestPayerName = options != null && options.requestPayerName;
-        mRequestPayerPhone = options != null && options.requestPayerPhone;
-        mRequestPayerEmail = options != null && options.requestPayerEmail;
-        mShippingType = options == null ? PaymentShippingType.SHIPPING : options.shippingType;
-
         // If there is a single payment method and the merchant has not requested any other
         // information, we can safely go directly to the payment app instead of showing
         // Payment Request UI.
@@ -451,9 +471,6 @@ public class PaymentRequestImpl
                 // the payment request UI, thus can't be skipped.
                 && mMethodData.keySet().iterator().next() != null
                 && mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX);
-
-        PaymentRequestMetrics.recordRequestedInformationHistogram(mRequestPayerEmail,
-                mRequestPayerPhone, mRequestShipping, mRequestPayerName);
     }
 
     private void buildUI(Activity activity) {

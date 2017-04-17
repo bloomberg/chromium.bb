@@ -17,9 +17,6 @@ class PaymentRequestSpecTest : public testing::Test,
  protected:
   ~PaymentRequestSpecTest() override {}
 
-  void OnInvalidSpecProvided() override {
-    on_invalid_spec_provided_called_ = true;
-  }
   void OnSpecUpdated() override { on_spec_updated_called_ = true; }
 
   void RecreateSpecWithMethodData(
@@ -37,21 +34,16 @@ class PaymentRequestSpecTest : public testing::Test,
   }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
-  bool on_invalid_spec_provided_called() {
-    return on_invalid_spec_provided_called_;
-  }
 
  private:
   std::unique_ptr<PaymentRequestSpec> spec_;
-  bool on_invalid_spec_provided_called_ = false;
   bool on_spec_updated_called_ = false;
 };
 
-// Test that empty method data notifies observers of an invalid spec.
+// Test that empty method data is parsed correctly.
 TEST_F(PaymentRequestSpecTest, EmptyMethodData) {
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_TRUE(on_invalid_spec_provided_called());
 
   // No supported card networks.
   EXPECT_EQ(0u, spec()->supported_card_networks().size());
@@ -127,7 +119,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods) {
   method_data.push_back(std::move(entry));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   // Only "visa" and "mastercard" remain, in order.
   EXPECT_EQ(2u, spec()->supported_card_networks().size());
@@ -151,7 +142,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods_MultipleEntries) {
   method_data.push_back(std::move(entry3));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   // Only "visa" and "mastercard" remain, in order.
   EXPECT_EQ(2u, spec()->supported_card_networks().size());
@@ -177,7 +167,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods_MultipleEntries_OneEmpty) {
   method_data.push_back(std::move(entry3));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_TRUE(on_invalid_spec_provided_called());
 
   // Visa was parsed, but not mastercard.
   EXPECT_EQ(1u, spec()->supported_card_networks().size());
@@ -192,7 +181,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods_OnlyBasicCard) {
   method_data.push_back(std::move(entry));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   // All of the basic card networks are supported.
   EXPECT_EQ(8u, spec()->supported_card_networks().size());
@@ -216,7 +204,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods_BasicCard_WithSpecificMethod) {
   method_data.push_back(std::move(entry));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   // All of the basic card networks are supported, but JCB is first because it
   // was specified first.
@@ -248,7 +235,6 @@ TEST_F(PaymentRequestSpecTest, SupportedMethods_BasicCard_Overlap) {
   method_data.push_back(std::move(entry2));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   EXPECT_EQ(3u, spec()->supported_card_networks().size());
   EXPECT_EQ("mastercard", spec()->supported_card_networks()[0]);
@@ -268,7 +254,6 @@ TEST_F(PaymentRequestSpecTest,
   method_data.push_back(std::move(entry));
 
   RecreateSpecWithMethodData(std::move(method_data));
-  EXPECT_FALSE(on_invalid_spec_provided_called());
 
   // Only the specified networks are supported.
   EXPECT_EQ(2u, spec()->supported_card_networks().size());

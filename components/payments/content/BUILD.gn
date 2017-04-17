@@ -30,6 +30,8 @@ static_library("content") {
 
 static_library("utils") {
   sources = [
+    "origin_security_checker.cc",
+    "origin_security_checker.h",
     "payment_details_validation.cc",
     "payment_details_validation.h",
     "payment_manifest_downloader.cc",

@@ -12,6 +12,8 @@ static_library("android") {
     "component_jni_registrar.h",
     "currency_formatter_android.cc",
     "currency_formatter_android.h",
+    "origin_security_checker_android.cc",
+    "origin_security_checker_android.h",
     "payment_details_validation_android.cc",
     "payment_details_validation_android.h",
     "payment_manifest_downloader_android.cc",
@@ -33,6 +35,7 @@ static_library("android") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
@@ -43,6 +46,7 @@ generate_jni("jni_headers") {
 android_library("java") {
   java_files = [
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
+    "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",

@@ -7,6 +7,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -53,6 +54,14 @@ bool ChromePaymentRequestDelegate::IsIncognito() const {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   return profile && profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+}
+
+bool ChromePaymentRequestDelegate::IsSslCertificateValid() {
+  return SslValidityChecker::IsSslCertificateValid(web_contents_);
+}
+
+const GURL& ChromePaymentRequestDelegate::GetLastCommittedURL() const {
+  return web_contents_->GetLastCommittedURL();
 }
 
 void ChromePaymentRequestDelegate::DoFullCardRequest(

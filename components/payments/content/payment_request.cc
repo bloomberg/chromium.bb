@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "components/payments/content/origin_security_checker.h"
 #include "components/payments/content/payment_details_validation.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +20,7 @@ PaymentRequest::PaymentRequest(
     content::WebContents* web_contents,
     std::unique_ptr<PaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
-    mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,
+    mojo::InterfaceRequest<mojom::PaymentRequest> request,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
       delegate_(std::move(delegate)),
@@ -37,24 +38,49 @@ PaymentRequest::PaymentRequest(
 
 PaymentRequest::~PaymentRequest() {}
 
-void PaymentRequest::Init(
-    payments::mojom::PaymentRequestClientPtr client,
-    std::vector<payments::mojom::PaymentMethodDataPtr> method_data,
-    payments::mojom::PaymentDetailsPtr details,
-    payments::mojom::PaymentOptionsPtr options) {
+void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
+                          std::vector<mojom::PaymentMethodDataPtr> method_data,
+                          mojom::PaymentDetailsPtr details,
+                          mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  client_ = std::move(client);
+
+  if (!OriginSecurityChecker::IsOriginSecure(
+          delegate_->GetLastCommittedURL())) {
+    LOG(ERROR) << "Not in a secure origin";
+    OnConnectionTerminated();
+    return;
+  }
+
+  if (OriginSecurityChecker::IsSchemeCryptographic(
+          delegate_->GetLastCommittedURL()) &&
+      !delegate_->IsSslCertificateValid()) {
+    LOG(ERROR) << "SSL certificate is not valid";
+    // Don't show UI. Resolve .canMakepayment() with "false". Reject .show()
+    // with "NotSupportedError".
+    spec_ = base::MakeUnique<PaymentRequestSpec>(
+        mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
+        std::vector<mojom::PaymentMethodDataPtr>(), this,
+        delegate_->GetApplicationLocale());
+    state_ = base::MakeUnique<PaymentRequestState>(
+        spec_.get(), this, delegate_->GetApplicationLocale(),
+        delegate_->GetPersonalDataManager(), delegate_.get());
+    return;
+  }
+
   std::string error;
-  if (!payments::validatePaymentDetails(details, &error)) {
+  if (!validatePaymentDetails(details, &error)) {
     LOG(ERROR) << error;
     OnConnectionTerminated();
     return;
   }
+
   if (!details->total) {
     LOG(ERROR) << "Missing total";
     OnConnectionTerminated();
     return;
   }
-  client_ = std::move(client);
+
   spec_ = base::MakeUnique<PaymentRequestSpec>(
       std::move(options), std::move(details), std::move(method_data), this,
       delegate_->GetApplicationLocale());
@@ -69,12 +95,21 @@ void PaymentRequest::Show() {
     OnConnectionTerminated();
     return;
   }
+
+  if (!state_->AreRequestedMethodsSupported()) {
+    client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
+    if (observer_for_testing_)
+      observer_for_testing_->OnNotSupportedError();
+    OnConnectionTerminated();
+    return;
+  }
+
   delegate_->ShowDialog(this);
 }
 
 void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   std::string error;
-  if (!payments::validatePaymentDetails(details, &error)) {
+  if (!validatePaymentDetails(details, &error)) {
     LOG(ERROR) << error;
     OnConnectionTerminated();
     return;
@@ -114,10 +149,6 @@ void PaymentRequest::CanMakePayment() {
     observer_for_testing_->OnCanMakePaymentCalled();
 }
 
-void PaymentRequest::OnInvalidSpecProvided() {
-  OnConnectionTerminated();
-}
-
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
   client_->OnPaymentResponse(std::move(response));
@@ -140,7 +171,7 @@ void PaymentRequest::UserCancelled() {
     return;
 
   // This sends an error to the renderer, which informs the API user.
-  client_->OnError(payments::mojom::PaymentErrorReason::USER_CANCEL);
+  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
 
   // We close all bindings and ask to be destroyed.
   client_.reset();

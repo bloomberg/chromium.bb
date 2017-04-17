@@ -48,24 +48,17 @@ IN_PROC_BROWSER_TEST_F(
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the card details were sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"cardNumber\": \"4111111111111111\""),
-      base::UTF8ToUTF16("\"cardSecurityCode\": \"123\""),
-      base::UTF8ToUTF16("\"cardholderName\": \"Test User\""),
-      base::UTF8ToUTF16("\"expiryMonth\": \"11\""),
-      base::UTF8ToUTF16("\"expiryYear\": \"2022\"")});
+  ExpectBodyContains({"\"cardNumber\": \"4111111111111111\"",
+                      "\"cardSecurityCode\": \"123\"",
+                      "\"cardholderName\": \"Test User\"",
+                      "\"expiryMonth\": \"11\"", "\"expiryYear\": \"2022\""});
 
   // Test that the billing address was sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"billingAddress\": {"),
-      base::UTF8ToUTF16("\"666 Erebus St.\""), base::UTF8ToUTF16("\"Apt 8\""),
-      base::UTF8ToUTF16("\"city\": \"Elysium\""),
-      base::UTF8ToUTF16("\"country\": \"US\""),
-      base::UTF8ToUTF16("\"organization\": \"Underworld\""),
-      base::UTF8ToUTF16("\"phone\": \"16502111111\""),
-      base::UTF8ToUTF16("\"postalCode\": \"91111\""),
-      base::UTF8ToUTF16("\"recipient\": \"John H. Doe\""),
-      base::UTF8ToUTF16("\"region\": \"CA\"")});
+  ExpectBodyContains({"\"billingAddress\": {", "\"666 Erebus St.\"",
+                      "\"Apt 8\"", "\"city\": \"Elysium\"",
+                      "\"country\": \"US\"", "\"organization\": \"Underworld\"",
+                      "\"phone\": \"16502111111\"", "\"postalCode\": \"91111\"",
+                      "\"recipient\": \"John H. Doe\"", "\"region\": \"CA\""});
 }
 
 class PaymentRequestPaymentResponseShippingAddressTest
@@ -103,22 +96,16 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the shipping address was sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"country\": \"US\""),
-      base::UTF8ToUTF16("\"123 Main Street\""), base::UTF8ToUTF16("\"Unit 1\""),
-      base::UTF8ToUTF16("\"region\": \"MI\""),
-      base::UTF8ToUTF16("\"city\": \"Greensdale\""),
-      base::UTF8ToUTF16("\"dependentLocality\": \"\""),
-      base::UTF8ToUTF16("\"postalCode\": \"48838\""),
-      base::UTF8ToUTF16("\"sortingCode\": \"\""),
-      base::UTF8ToUTF16("\"languageCode\": \"\""),
-      base::UTF8ToUTF16("\"organization\": \"ACME\""),
-      base::UTF8ToUTF16("\"recipient\": \"Jane A. Smith\""),
-      base::UTF8ToUTF16("\"phone\": \"13105557889\"")});
+  ExpectBodyContains({"\"country\": \"US\"", "\"123 Main Street\"",
+                      "\"Unit 1\"", "\"region\": \"MI\"",
+                      "\"city\": \"Greensdale\"", "\"dependentLocality\": \"\"",
+                      "\"postalCode\": \"48838\"", "\"sortingCode\": \"\"",
+                      "\"languageCode\": \"\"", "\"organization\": \"ACME\"",
+                      "\"recipient\": \"Jane A. Smith\"",
+                      "\"phone\": \"13105557889\""});
 
   // Test that the shipping option was sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"shippingOption\": \"freeShippingOption\"")});
+  ExpectBodyContains({"\"shippingOption\": \"freeShippingOption\""});
 }
 
 class PaymentRequestPaymentResponseAllContactDetailsTest
@@ -149,10 +136,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"payerName\": \"John H. Doe\""),
-      base::UTF8ToUTF16("\"payerEmail\": \"johndoe@hades.com\""),
-      base::UTF8ToUTF16("\"payerPhone\": \"+16502111111\"")});
+  ExpectBodyContains({"\"payerName\": \"John H. Doe\"",
+                      "\"payerEmail\": \"johndoe@hades.com\"",
+                      "\"payerPhone\": \"+16502111111\""});
 }
 
 class PaymentRequestPaymentResponseOneContactDetailTest
@@ -183,10 +169,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseOneContactDetailTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"payerName\": null"),
-      base::UTF8ToUTF16("\"payerEmail\": \"johndoe@hades.com\""),
-      base::UTF8ToUTF16("\"payerPhone\": null")});
+  ExpectBodyContains({"\"payerName\": null",
+                      "\"payerEmail\": \"johndoe@hades.com\"",
+                      "\"payerPhone\": null"});
 }
 
 }  // namespace payments

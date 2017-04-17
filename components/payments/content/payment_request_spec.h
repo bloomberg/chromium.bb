@@ -37,9 +37,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // notification about spec events.
   class Observer {
    public:
-    // Called when the provided spec (details, options, method_data) is invalid.
-    virtual void OnInvalidSpecProvided() = 0;
-
     // Called when the website is notified that the user selected shipping
     // options or a shipping address. This will be followed by a call to
     // OnSpecUpdated or the PaymentRequest being aborted due to a timeout.
@@ -118,8 +115,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // the last option marked selected in the options array.
   void UpdateSelectedShippingOption();
 
-  // Will notify all observers that the spec is invalid.
-  void NotifyOnInvalidSpecProvided();
   // Will notify all observers that the spec has changed.
   void NotifyOnSpecUpdated();
 

@@ -95,7 +95,7 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
   return response;
 }
 
-bool ParseBasicCardSupportedNetworks(
+void ParseBasicCardSupportedNetworks(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_specified_networks) {
@@ -107,7 +107,7 @@ bool ParseBasicCardSupportedNetworks(
                                       "unionpay", "visa"};
   for (const PaymentMethodData& method_data_entry : method_data) {
     if (method_data_entry.supported_methods.empty())
-      return false;
+      return;
 
     for (const std::string& method : method_data_entry.supported_methods) {
       if (method.empty())
@@ -153,7 +153,6 @@ bool ParseBasicCardSupportedNetworks(
       }
     }
   }
-  return true;
 }
 
 std::string FormatPhoneForDisplay(const std::string& phone_number,

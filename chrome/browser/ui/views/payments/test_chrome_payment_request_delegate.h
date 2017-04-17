@@ -30,7 +30,8 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
       content::WebContents* web_contents,
       PaymentRequestDialogView::ObserverForTest* observer,
       views::WidgetObserver* widget_observer,
-      bool is_incognito);
+      bool is_incognito,
+      bool is_valid_ssl);
 
   // This class allows tests to provide their own AddressInput data.
   class AddressInputProvider {
@@ -48,6 +49,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   // ChromePaymentRequestDelegate.
   void ShowDialog(PaymentRequest* request) override;
   bool IsIncognito() const override;
+  bool IsSslCertificateValid() override;
   std::unique_ptr<const ::i18n::addressinput::Source> GetAddressInputSource()
       override;
   std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage()
@@ -63,7 +65,8 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
 
   PaymentRequestDialogView::ObserverForTest* observer_;
   views::WidgetObserver* widget_observer_;
-  bool is_incognito_for_testing_;
+  bool is_incognito_;
+  bool is_valid_ssl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromePaymentRequestDelegate);
 };

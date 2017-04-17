@@ -136,12 +136,6 @@ void PaymentRequestSpec::StartWaitingForUpdateWith(
 
 void PaymentRequestSpec::PopulateValidatedMethodData(
     const std::vector<mojom::PaymentMethodDataPtr>& method_data_mojom) {
-  if (method_data_mojom.empty()) {
-    LOG(ERROR) << "Invalid payment methods or data";
-    NotifyOnInvalidSpecProvided();
-    return;
-  }
-
   std::vector<PaymentMethodData> method_data_vector;
   method_data_vector.reserve(method_data_mojom.size());
   for (const mojom::PaymentMethodDataPtr& method_data_entry :
@@ -161,13 +155,9 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
     method_data_vector.push_back(std::move(method_data));
   }
 
-  if (!data_util::ParseBasicCardSupportedNetworks(
-          method_data_vector, &supported_card_networks_,
-          &basic_card_specified_networks_)) {
-    LOG(ERROR) << "Invalid payment methods or data";
-    NotifyOnInvalidSpecProvided();
-    return;
-  }
+  data_util::ParseBasicCardSupportedNetworks(method_data_vector,
+                                             &supported_card_networks_,
+                                             &basic_card_specified_networks_);
   supported_card_networks_set_.insert(supported_card_networks_.begin(),
                                       supported_card_networks_.end());
 }
@@ -190,13 +180,6 @@ void PaymentRequestSpec::UpdateSelectedShippingOption() {
     // TODO(crbug.com/710004): Show an error in this case.
     selected_shipping_option_ = nullptr;
   }
-}
-
-void PaymentRequestSpec::NotifyOnInvalidSpecProvided() {
-  for (auto& observer : observers_)
-    observer.OnInvalidSpecProvided();
-  if (observer_for_testing_)
-    observer_for_testing_->OnInvalidSpecProvided();
 }
 
 void PaymentRequestSpec::NotifyOnSpecUpdated() {

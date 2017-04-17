@@ -118,20 +118,39 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
   WaitForObservedEvent();
 
   // The actual structure of the card response is unit-tested.
-  ExpectBodyContains(std::vector<base::string16>{
-      card.GetRawInfo(autofill::CREDIT_CARD_NUMBER),
-      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
-      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH),
-      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)});
-  ExpectBodyContains(std::vector<base::string16>{
-      billing_address.GetRawInfo(autofill::NAME_FIRST),
-      billing_address.GetRawInfo(autofill::NAME_LAST),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE1),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE2),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_ZIP),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_CITY),
-      billing_address.GetRawInfo(autofill::ADDRESS_HOME_STATE)});
+  ExpectBodyContains({card.GetRawInfo(autofill::CREDIT_CARD_NUMBER),
+                      card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
+                      card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH),
+                      card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)});
+  ExpectBodyContains(
+      {billing_address.GetRawInfo(autofill::NAME_FIRST),
+       billing_address.GetRawInfo(autofill::NAME_LAST),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE1),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_LINE2),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_ZIP),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_CITY),
+       billing_address.GetRawInfo(autofill::ADDRESS_HOME_STATE)});
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InvalidSSL) {
+  SetInvalidSsl();
+
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  AddAutofillProfile(billing_address);
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(billing_address.guid());
+  AddCreditCard(card);  // Visa.
+
+  ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
+
+  EXPECT_TRUE(content::ExecuteScript(
+      GetActiveWebContents(),
+      "(function() { document.getElementById('buy').click(); })();"));
+
+  WaitForObservedEvent();
+
+  ExpectBodyContains({"NotSupportedError"});
 }
 
 class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {

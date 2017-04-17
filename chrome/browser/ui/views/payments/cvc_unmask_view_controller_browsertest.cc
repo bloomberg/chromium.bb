@@ -25,8 +25,7 @@ IN_PROC_BROWSER_TEST_F(CvcUnmaskViewControllerTest, CvcSentToResponse) {
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
   PayWithCreditCardAndWait(base::ASCIIToUTF16("012"));
 
-  ExpectBodyContains(std::vector<base::string16>{
-      base::UTF8ToUTF16("\"cardSecurityCode\": \"012\"")});
+  ExpectBodyContains({"\"cardSecurityCode\": \"012\""});
 }
 
 }  // namespace payments

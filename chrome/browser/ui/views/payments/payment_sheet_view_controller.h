@@ -29,7 +29,6 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   ~PaymentSheetViewController() override;
 
   // PaymentRequestSpec::Observer:
-  void OnInvalidSpecProvided() override {}
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
   void OnSpecUpdated() override;
 

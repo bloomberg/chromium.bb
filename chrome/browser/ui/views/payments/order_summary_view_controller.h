@@ -31,7 +31,6 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
   ~OrderSummaryViewController() override;
 
   // PaymentRequestSpec::Observer:
-  void OnInvalidSpecProvided() override {}
   void OnSpecUpdated() override;
 
   // PaymentRequestState::Observer:

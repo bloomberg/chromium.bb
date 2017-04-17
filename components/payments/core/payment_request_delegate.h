@@ -13,6 +13,8 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
+class GURL;
+
 namespace i18n {
 namespace addressinput {
 class Storage;
@@ -52,6 +54,13 @@ class PaymentRequestDelegate {
 
   // Returns whether the user is in Incognito mode.
   virtual bool IsIncognito() const = 0;
+
+  // Returns true if the SSL certificate is valid. Should be called only for
+  // cryptographic schemes.
+  virtual bool IsSslCertificateValid() = 0;
+
+  // Returns the URL of the page that is currently being displayed.
+  virtual const GURL& GetLastCommittedURL() const = 0;
 
   // Starts a FullCardRequest to unmask |credit_card|.
   virtual void DoFullCardRequest(

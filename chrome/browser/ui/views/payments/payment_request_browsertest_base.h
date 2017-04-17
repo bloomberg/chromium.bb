@@ -71,10 +71,12 @@ class PaymentRequestBrowserTestBase
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  void SetIncognitoForTesting();
+  void SetIncognito();
+  void SetInvalidSsl();
 
   // PaymentRequest::ObserverForTest:
   void OnCanMakePaymentCalled() override;
+  void OnNotSupportedError() override;
 
   // PaymentRequestDialogView::ObserverForTest:
   void OnDialogOpened() override;
@@ -101,6 +103,7 @@ class PaymentRequestBrowserTestBase
   void InvokePaymentRequestUI();
 
   // Will expect that all strings in |expected_strings| are present in output.
+  void ExpectBodyContains(const std::vector<std::string>& expected_strings);
   void ExpectBodyContains(const std::vector<base::string16>& expected_strings);
 
   // Utility functions that will click on Dialog views and wait for the
@@ -205,6 +208,7 @@ class PaymentRequestBrowserTestBase
     ERROR_MESSAGE_SHOWN,
     SPEC_DONE_UPDATING,
     CVC_PROMPT_SHOWN,
+    NOT_SUPPORTED_ERROR,
   };
 
   // DialogEventObserver is used to wait on specific events that may have
@@ -251,7 +255,8 @@ class PaymentRequestBrowserTestBase
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
-  bool incognito_for_testing_;
+  bool is_incognito_;
+  bool is_valid_ssl_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestBrowserTestBase);
 };

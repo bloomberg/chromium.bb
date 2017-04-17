@@ -82,6 +82,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate {
   // Returns whether the user has at least one instrument that satisfies the
   // specified supported payment methods.
   bool CanMakePayment() const;
+
+  // Returns true if the payment methods that the merchant website have
+  // requested are supported. For example, may return true for "basic-card", but
+  // false for "https://bobpay.com".
+  bool AreRequestedMethodsSupported() const;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

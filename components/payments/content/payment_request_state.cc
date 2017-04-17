@@ -50,13 +50,20 @@ void PaymentRequestState::OnPaymentResponseReady(
 bool PaymentRequestState::CanMakePayment() const {
   for (const std::unique_ptr<PaymentInstrument>& instrument :
        available_instruments_) {
-    if (instrument->IsValidForCanMakePayment() &&
-        spec_->supported_card_networks_set().count(
-            instrument.get()->method_name())) {
+    if (instrument->IsValidForCanMakePayment()) {
+      // AddAutofillPaymentInstrument() filters out available instruments based
+      // on supported card networks.
+      DCHECK(spec_->supported_card_networks_set().find(
+                 instrument->method_name()) !=
+             spec_->supported_card_networks_set().end());
       return true;
     }
   }
   return false;
+}
+
+bool PaymentRequestState::AreRequestedMethodsSupported() const {
+  return !spec_->supported_card_networks().empty();
 }
 
 void PaymentRequestState::AddObserver(Observer* observer) {

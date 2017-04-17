@@ -8,12 +8,14 @@
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
 #include "chrome/browser/payments/android/journey_logger_android.h"
+#include "chrome/browser/payments/android/ssl_validity_checker_android.h"
 
 namespace payments {
 namespace android {
 
 static base::android::RegistrationMethod kChromePaymentsRegisteredMethods[] = {
     {"JourneyLogger", JourneyLoggerAndroid::Register},
+    {"SslValidityChecker", RegisterSslValidityChecker},
 };
 
 bool RegisterChromePayments(JNIEnv* env) {

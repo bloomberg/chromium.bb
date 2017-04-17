@@ -38,21 +38,35 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 
   CallCanMakePayment();
 
-  ExpectBodyContains(std::vector<base::string16>{base::ASCIIToUTF16("true")});
+  ExpectBodyContains({"true"});
 }
 
-// Visa is required, user has a visa instrument, and user is in incognito
-// mode.
+// Pages without a valid SSL cerificate always get "false" from
+// .canMakePayment().
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
-                       CanMakePayment_Supported_InIncognitoMode) {
-  SetIncognitoForTesting();
+                       CanMakePayment_InvalidSSL) {
+  SetInvalidSsl();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
 
   CallCanMakePayment();
 
-  ExpectBodyContains(std::vector<base::string16>{base::ASCIIToUTF16("true")});
+  ExpectBodyContains({"false"});
+}
+
+// Visa is required, user has a visa instrument, and user is in incognito
+// mode.
+IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
+                       CanMakePayment_Supported_InIncognitoMode) {
+  SetIncognito();
+
+  const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+  AddCreditCard(card);
+
+  CallCanMakePayment();
+
+  ExpectBodyContains({"true"});
 }
 
 // Visa is required, and user doesn't have a visa instrument.
@@ -63,14 +77,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 
   CallCanMakePayment();
 
-  ExpectBodyContains(std::vector<base::string16>{base::ASCIIToUTF16("false")});
+  ExpectBodyContains({"false"});
 }
 
 // Visa is required, user doesn't have a visa instrument and the user is in
 // incognito mode. In this case canMakePayment always returns true.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_NotSupported_InIncognitoMode) {
-  SetIncognitoForTesting();
+  SetIncognito();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
   AddCreditCard(card);
@@ -79,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 
   // Returns true because the user is in incognito mode, even though it should
   // return false in a normal profile.
-  ExpectBodyContains(std::vector<base::string16>{base::ASCIIToUTF16("true")});
+  ExpectBodyContains({"true"});
 }
 
 }  // namespace payments

@@ -27,7 +27,9 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
  public:
   FakePaymentRequestDelegate(
       autofill::PersonalDataManager* personal_data_manager)
-      : personal_data_manager_(personal_data_manager), locale_("en-US") {}
+      : personal_data_manager_(personal_data_manager),
+        locale_("en-US"),
+        last_committed_url_("https://shop.com") {}
   void ShowDialog(PaymentRequest* request) override {}
 
   void CloseDialog() override {}
@@ -41,6 +43,12 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
   const std::string& GetApplicationLocale() const override { return locale_; }
 
   bool IsIncognito() const override { return false; }
+
+  bool IsSslCertificateValid() override { return true; }
+
+  const GURL& GetLastCommittedURL() const override {
+    return last_committed_url_;
+  }
 
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,
@@ -63,6 +71,7 @@ class FakePaymentRequestDelegate : public PaymentRequestDelegate {
  private:
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
+  const GURL last_committed_url_;
   DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
 };
 

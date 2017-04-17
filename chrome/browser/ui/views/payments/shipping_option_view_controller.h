@@ -23,7 +23,6 @@ class ShippingOptionViewController : public PaymentRequestSheetController,
   ~ShippingOptionViewController() override;
 
   // PaymentRequestSpec::Observer:
-  void OnInvalidSpecProvided() override {}
   void OnSpecUpdated() override;
 
  private:

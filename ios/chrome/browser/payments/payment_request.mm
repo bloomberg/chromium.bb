@@ -108,13 +108,10 @@ void PaymentRequest::PopulateProfileCache() {
 }
 
 void PaymentRequest::PopulateCreditCardCache() {
-  if (!payments::data_util::ParseBasicCardSupportedNetworks(
-          web_payment_request_.method_data, &supported_card_networks_,
-          &basic_card_specified_networks_)) {
-    // TODO(crbug.com/709036): close the UI and reject the promise since the
-    // data is invalid.
-    return;
-  }
+  // TODO(crbug.com/709036): Validate method data.
+  payments::data_util::ParseBasicCardSupportedNetworks(
+      web_payment_request_.method_data, &supported_card_networks_,
+      &basic_card_specified_networks_);
 
   const std::vector<autofill::CreditCard*>& credit_cards_to_suggest =
       personal_data_manager_->GetCreditCardsToSuggest();
