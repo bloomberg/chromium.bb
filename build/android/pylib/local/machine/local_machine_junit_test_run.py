@@ -4,15 +4,13 @@
 
 import json
 import os
-import zipfile
+import tempfile
 
 from devil.utils import cmd_helper
-from devil.utils import reraiser_thread
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.results import json_results
-from py_utils import tempfile_ext
 
 
 class LocalMachineJunitTestRun(test_run.TestRun):
@@ -29,34 +27,14 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
   #override
   def RunTests(self):
-    with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
-      json_file_path = os.path.join(temp_dir, 'results.json')
-
-      # Extract resources needed for test.
-      # TODO(mikecase): Investigate saving md5sums of zipfiles, and only
-      # extract zipfiles when they change.
-      def extract_resource_zip(resource_zip):
-        def helper():
-          extract_dest = os.path.join(
-              temp_dir, os.path.splitext(os.path.basename(resource_zip))[0])
-          with zipfile.ZipFile(resource_zip, 'r') as zf:
-            zf.extractall(extract_dest)
-          return extract_dest
-        return helper
-
-      resource_dirs = reraiser_thread.RunAsync(
-          [extract_resource_zip(resource_zip)
-           for resource_zip in self._test_instance.resource_zips
-           if os.path.exists(resource_zip)])
-
-      java_script = os.path.join(
-          constants.GetOutDirectory(), 'bin', 'helper',
-          self._test_instance.suite)
+    with tempfile.NamedTemporaryFile() as json_file:
+      java_script = os.path.join(constants.GetOutDirectory(), 'bin', 'helper',
+                                 self._test_instance.suite)
       command = [java_script]
 
       # Add Jar arguments.
       jar_args = ['-test-jars', self._test_instance.suite + '.jar',
-                  '-json-results-file', json_file_path]
+                  '-json-results-file', json_file.name]
       if self._test_instance.test_filter:
         jar_args.extend(['-gtest-filter', self._test_instance.test_filter])
       if self._test_instance.package_filter:
@@ -67,22 +45,15 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       command.extend(['--jar-args', '"%s"' % ' '.join(jar_args)])
 
       # Add JVM arguments.
-      jvm_args = ['-Drobolectric.dependency.dir=%s' %
-                      self._test_instance.robolectric_runtime_deps_dir,
-                  '-Ddir.source.root=%s' % constants.DIR_SOURCE_ROOT,]
-
-      if self._test_instance.android_manifest_path:
-        jvm_args += ['-Dchromium.robolectric.manifest=%s' %
-                     self._test_instance.android_manifest_path]
-
-      if self._test_instance.package_name:
-        jvm_args += ['-Dchromium.robolectric.package.name=%s' %
-                     self._test_instance.package_name]
-
-      if resource_dirs:
-        jvm_args += ['-Dchromium.robolectric.resource.dirs=%s' %
-                     ':'.join(resource_dirs)]
-
+      jvm_args = []
+      # TODO(mikecase): Add a --robolectric-dep-dir arg to test runner.
+      # Have this arg set by GN in the generated test runner scripts.
+      jvm_args += [
+          '-Drobolectric.dependency.dir=%s' % os.path.join(
+              constants.GetOutDirectory(), 'lib.java', 'third_party',
+              'robolectric'),
+          '-Ddir.source.root=%s' % constants.DIR_SOURCE_ROOT,
+      ]
       if self._test_instance.coverage_dir:
         if not os.path.exists(self._test_instance.coverage_dir):
           os.makedirs(self._test_instance.coverage_dir)
@@ -91,14 +62,12 @@ class LocalMachineJunitTestRun(test_run.TestRun):
         jvm_args.append('-Demma.coverage.out.file=%s' % os.path.join(
             self._test_instance.coverage_dir,
             '%s.ec' % self._test_instance.suite))
-
       if jvm_args:
         command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])
 
       cmd_helper.RunCmd(command)
-      with open(json_file_path, 'r') as f:
-        results_list = json_results.ParseResultsFromJson(
-            json.loads(f.read()))
+      results_list = json_results.ParseResultsFromJson(
+          json.loads(json_file.read()))
 
       test_run_results = base_test_result.TestRunResults()
       test_run_results.AddResults(results_list)
