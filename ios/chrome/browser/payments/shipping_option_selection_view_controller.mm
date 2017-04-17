@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -59,7 +58,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.
-  CollectionViewTextItem* _selectedItem;
+  PaymentsTextItem* _selectedItem;
 }
 
 @end
@@ -120,19 +119,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   for (const auto* shippingOption : _paymentRequest->shipping_options()) {
-    CollectionViewTextItem* item =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingOption];
+    PaymentsTextItem* item =
+        [[PaymentsTextItem alloc] initWithType:ItemTypeShippingOption];
     item.text = base::SysUTF16ToNSString(shippingOption->label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
     item.detailText = SysUTF16ToNSString(currencyFormatter->Format(
         base::UTF16ToASCII(shippingOption->amount.value)));
-
-    // Styling.
-    item.textFont = [MDCTypography body2Font];
-    item.textColor = [[MDCPalette greyPalette] tint900];
-    item.detailTextFont = [MDCTypography body1Font];
-    item.detailTextColor = [[MDCPalette greyPalette] tint900];
 
     if (_paymentRequest->selected_shipping_option() == shippingOption) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -155,28 +148,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
 }
 
-#pragma mark UICollectionViewDataSource
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  switch (itemType) {
-    case ItemTypeMessage: {
-      PaymentsTextCell* messageCell =
-          base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
-      messageCell.textLabel.textColor = [[MDCPalette cr_redPalette] tint600];
-      break;
-    }
-    default:
-      break;
-  }
-  return cell;
-}
-
 #pragma mark UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -195,8 +166,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
 
     // Update the newly selected cell.
-    CollectionViewTextItem* newlySelectedItem =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(item);
+    PaymentsTextItem* newlySelectedItem =
+        base::mac::ObjCCastStrict<PaymentsTextItem>(item);
     newlySelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
     [self reconfigureCellsForItems:@[ newlySelectedItem ]
            inSectionWithIdentifier:SectionIdentifierShippingOption];

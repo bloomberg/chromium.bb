@@ -19,10 +19,12 @@ namespace {
 TEST(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
   PaymentsTextItem* item = [[PaymentsTextItem alloc] initWithType:0];
 
-  NSString* text = @"Lorem ipsum dolor sit amet";
+  NSString* text = @"Lorem ipsum";
+  NSString* detailText = @"Dolor sit amet";
   UIImage* image = ios_internal::CollectionViewTestImage();
 
   item.text = text;
+  item.detailText = detailText;
   item.image = image;
 
   id cell = [[[item cellClass] alloc] init];
@@ -30,10 +32,12 @@ TEST(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
 
   PaymentsTextCell* paymentsTextCell = cell;
   EXPECT_FALSE(paymentsTextCell.textLabel.text);
+  EXPECT_FALSE(paymentsTextCell.detailTextLabel.text);
   EXPECT_FALSE(paymentsTextCell.imageView.image);
 
   [item configureCell:paymentsTextCell];
   EXPECT_NSEQ(text, paymentsTextCell.textLabel.text);
+  EXPECT_NSEQ(detailText, paymentsTextCell.detailTextLabel.text);
   EXPECT_NSEQ(image, paymentsTextCell.imageView.image);
 }
 

@@ -18,14 +18,19 @@ const CGFloat kHorizontalPadding = 16;
 // Padding of the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 
-// Spacing between the image and the text label.
-const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
+// Spacing between the image and the text labels.
+const CGFloat kHorizontalSpacingBetweenImageAndLabels = 8;
+
+// Spacing between the labels.
+const CGFloat kVerticalSpacingBetweenLabels = 8;
 }  // namespace
 
 @implementation PaymentsTextItem
 
 @synthesize text = _text;
+@synthesize detailText = _detailText;
 @synthesize image = _image;
+@synthesize accessoryType = _accessoryType;
 
 #pragma mark CollectionViewItem
 
@@ -39,21 +44,25 @@ const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
 
 - (void)configureCell:(PaymentsTextCell*)cell {
   [super configureCell:cell];
+  cell.accessoryType = self.accessoryType;
   cell.textLabel.text = self.text;
+  cell.detailTextLabel.text = self.detailText;
   cell.imageView.image = self.image;
 }
 
 @end
 
 @interface PaymentsTextCell () {
-  NSLayoutConstraint* _textLeadingAnchorConstraint;
+  NSLayoutConstraint* _labelsLeadingAnchorConstraint;
   NSLayoutConstraint* _imageLeadingAnchorConstraint;
+  UIStackView* _stackView;
 }
 @end
 
 @implementation PaymentsTextCell
 
 @synthesize textLabel = _textLabel;
+@synthesize detailTextLabel = _detailTextLabel;
 @synthesize imageView = _imageView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -72,9 +81,21 @@ const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
   UIView* contentView = self.contentView;
   contentView.clipsToBounds = YES;
 
+  _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  _stackView.axis = UILayoutConstraintAxisVertical;
+  _stackView.layoutMarginsRelativeArrangement = YES;
+  _stackView.layoutMargins = UIEdgeInsetsMake(
+      kVerticalPadding, 0, kVerticalPadding, kHorizontalPadding);
+  _stackView.alignment = UIStackViewAlignmentLeading;
+  _stackView.spacing = kVerticalSpacingBetweenLabels;
+  _stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_stackView];
+
   _textLabel = [[UILabel alloc] init];
-  _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  [contentView addSubview:_textLabel];
+  [_stackView addArrangedSubview:_textLabel];
+
+  _detailTextLabel = [[UILabel alloc] init];
+  [_stackView addArrangedSubview:_detailTextLabel];
 
   _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -83,30 +104,34 @@ const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
 
 // Set default font and text colors for labels.
 - (void)setDefaultViewStyling {
-  _textLabel.font = [MDCTypography body1Font];
+  _textLabel.font = [MDCTypography body2Font];
   _textLabel.textColor = [[MDCPalette greyPalette] tint900];
   _textLabel.numberOfLines = 0;
   _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+
+  _detailTextLabel.font = [MDCTypography body1Font];
+  _detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
+  _detailTextLabel.numberOfLines = 0;
+  _detailTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
 }
 
 // Set constraints on subviews.
 - (void)setViewConstraints {
   UIView* contentView = self.contentView;
 
-  _textLeadingAnchorConstraint = [_textLabel.leadingAnchor
-      constraintEqualToAnchor:_imageView.trailingAnchor];
+  _labelsLeadingAnchorConstraint = [_stackView.leadingAnchor
+      constraintEqualToAnchor:_imageView.trailingAnchor
+                     constant:kHorizontalSpacingBetweenImageAndLabels];
   _imageLeadingAnchorConstraint = [_imageView.leadingAnchor
       constraintEqualToAnchor:contentView.leadingAnchor
                      constant:kHorizontalPadding];
 
   [NSLayoutConstraint activateConstraints:@[
-    [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                         constant:kVerticalPadding],
-    [_textLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
-                                            constant:-kVerticalPadding],
+    [_stackView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+    [_stackView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
     [_imageView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
-    _textLeadingAnchorConstraint,
+    _labelsLeadingAnchorConstraint,
     _imageLeadingAnchorConstraint,
   ]];
 }
@@ -116,23 +141,26 @@ const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
 // Implement -layoutSubviews as per instructions in documentation for
 // +[MDCCollectionViewCell cr_preferredHeightForWidth:forItem:].
 - (void)layoutSubviews {
+  _textLabel.hidden = !_textLabel.text;
+  _detailTextLabel.hidden = !_detailTextLabel.text;
+
   [super layoutSubviews];
 
-  // Adjust the text label preferredMaxLayoutWidth when the parent's width
+  // Adjust the text labels' preferredMaxLayoutWidth when the parent's width
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.frame);
+  CGFloat preferredMaxLayoutWidth = parentWidth - (2 * kHorizontalPadding);
   if (_imageView.image) {
-    _textLabel.preferredMaxLayoutWidth =
-        parentWidth - (2 * kHorizontalPadding) -
-        kHorizontalSpacingBetweenImageAndLabel - _imageView.image.size.width;
-    _textLeadingAnchorConstraint.constant =
-        kHorizontalSpacingBetweenImageAndLabel;
+    preferredMaxLayoutWidth -=
+        kHorizontalSpacingBetweenImageAndLabels - _imageView.image.size.width;
   } else {
-    _textLabel.preferredMaxLayoutWidth = parentWidth - (2 * kHorizontalPadding);
-    _textLeadingAnchorConstraint.constant = 0;
+    _imageLeadingAnchorConstraint.constant = 0;
+    _labelsLeadingAnchorConstraint.constant = kHorizontalPadding;
   }
+  _textLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
+  _detailTextLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
 
-  // Re-layout with the new preferred width to allow the label to adjust its
+  // Re-layout with the new preferred width to allow the labels to adjust thier
   // height.
   [super layoutSubviews];
 }
@@ -142,13 +170,15 @@ const CGFloat kHorizontalSpacingBetweenImageAndLabel = 8;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.textLabel.text = nil;
+  self.detailTextLabel.text = nil;
   self.imageView.image = nil;
 }
 
 #pragma mark - NSObject(Accessibility)
 
 - (NSString*)accessibilityLabel {
-  return [NSString stringWithFormat:@"%@", self.textLabel.text];
+  return [NSString stringWithFormat:@"%@, %@", self.textLabel.text,
+                                    self.detailTextLabel.text];
 }
 
 @end

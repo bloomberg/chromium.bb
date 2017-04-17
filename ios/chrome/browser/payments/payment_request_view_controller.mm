@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -29,7 +30,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -113,7 +113,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   __weak PriceItem* _paymentSummaryItem;
   __weak AutofillProfileItem* _selectedShippingAddressItem;
-  __weak CollectionViewTextItem* _selectedShippingOptionItem;
+  __weak PaymentsTextItem* _selectedShippingOptionItem;
   __weak PaymentMethodItem* _selectedPaymentMethodItem;
   __weak AutofillProfileItem* _selectedContactInfoItem;
 }
@@ -242,8 +242,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Shipping section.
   [model addSectionWithIdentifier:SectionIdentifierShipping];
 
-  CollectionViewTextItem* shippingTitle =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingTitle];
+  PaymentsTextItem* shippingTitle =
+      [[PaymentsTextItem alloc] initWithType:ItemTypeShippingTitle];
   shippingTitle.text =
       GetShippingSectionTitle(_paymentRequest->shipping_type());
   [model setHeader:shippingTitle
@@ -276,13 +276,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewItem* shippingOptionItem = nil;
   if (_paymentRequest->selected_shipping_option()) {
-    CollectionViewTextItem* selectedShippingOptionItem =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeShippingOption];
-    selectedShippingOptionItem.textFont = [MDCTypography body2Font];
-    selectedShippingOptionItem.textColor = [[MDCPalette greyPalette] tint900];
-    selectedShippingOptionItem.detailTextFont = [MDCTypography body1Font];
-    selectedShippingOptionItem.detailTextColor =
-        [[MDCPalette greyPalette] tint900];
+    PaymentsTextItem* selectedShippingOptionItem =
+        [[PaymentsTextItem alloc] initWithType:ItemTypeShippingOption];
     shippingOptionItem = selectedShippingOptionItem;
 
     _selectedShippingOptionItem = selectedShippingOptionItem;
@@ -311,8 +306,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewItem* paymentMethodItem = nil;
   if (_paymentRequest->selected_credit_card()) {
-    CollectionViewTextItem* paymentTitle =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypePaymentTitle];
+    PaymentsTextItem* paymentTitle =
+        [[PaymentsTextItem alloc] initWithType:ItemTypePaymentTitle];
     paymentTitle.text =
         l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
     [model setHeader:paymentTitle
@@ -345,8 +340,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   CollectionViewItem* contactInfoItem = nil;
   if (_paymentRequest->selected_contact_profile()) {
-    CollectionViewTextItem* contactInfoTitle =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeContactInfoTitle];
+    PaymentsTextItem* contactInfoTitle =
+        [[PaymentsTextItem alloc] initWithType:ItemTypeContactInfoTitle];
     contactInfoTitle.text =
         l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
     [model setHeader:contactInfoTitle
@@ -471,7 +466,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
 }
 
-- (void)fillShippingOptionItem:(CollectionViewTextItem*)item
+- (void)fillShippingOptionItem:(PaymentsTextItem*)item
                     withOption:(web::PaymentShippingOption*)option {
   item.text = base::SysUTF16ToNSString(option->label);
   payments::CurrencyFormatter* currencyFormatter =

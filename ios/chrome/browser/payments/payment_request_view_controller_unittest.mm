@@ -14,12 +14,12 @@
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
+#import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/payments/payment_request.h"
@@ -89,10 +89,10 @@ TEST_F(PaymentRequestViewControllerTest, TestModel) {
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             shipping_address_item.accessoryType);
 
-  // The next item should be of type CollectionViewTextItem.
+  // The next item should be of type PaymentsTextItem.
   item = GetCollectionViewItem(1, 1);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
-  CollectionViewTextItem* shipping_option_item = item;
+  EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* shipping_option_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             shipping_option_item.accessoryType);
 

@@ -13,25 +13,34 @@
 // PaymentsTextItem is the model class corresponding to PaymentsTextCell.
 @interface PaymentsTextItem : CollectionViewItem
 
-// The message to display.
+// The main text to display.
 @property(nonatomic, copy) NSString* text;
+
+// The secondary text to display.
+@property(nonatomic, copy) NSString* detailText;
 
 // The image to display.
 @property(nonatomic, strong) UIImage* image;
 
+// The accessory type for the represented cell.
+@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+
 @end
 
 // PaymentsTextCell implements a MDCCollectionViewCell subclass containing
-// a text label and an optional image. The label is laid out to fill the full
-// width of the cell and is wrapped as needed to fit in the cell. The image is
-// laid out on the leading edge of the cell. The text label is laid out on the
-// the trailing edge of the image, if one exists, or the leading edge of the
-// cell otherwise, up to the trailing edge of the cell. This is suitable for
-// displaying text that needs to wrap which may or may not feature an image.
+// a main text label, a secondary text label and an optional image. The labels
+// are laid out to fill the full width of the cell and are wrapped as needed to
+// fit in the cell. The image is laid out on the leading edge of the cell. The
+// text labels are laid out on the the trailing edge of the image, if one
+// exists, or the leading edge of the cell otherwise, up to the trailing edge of
+// the cell.
 @interface PaymentsTextCell : MDCCollectionViewCell
 
 // UILabel corresponding to |text| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
+
+// UILabel corresponding to |detailText| from the item.
+@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
 
 // UIImageView corresponding to |image| from the item.
 @property(nonatomic, readonly, strong) UIImageView* imageView;

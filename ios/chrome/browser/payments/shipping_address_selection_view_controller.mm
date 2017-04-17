@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -181,12 +180,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       messageCell.textLabel.textColor =
           _errorMessage ? [[MDCPalette cr_redPalette] tint600]
                         : [[MDCPalette greyPalette] tint600];
-      break;
-    }
-    case ItemTypeAddShippingAddress: {
-      PaymentsTextCell* addAddressCell =
-          base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
-      addAddressCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
       break;
     }
     default:

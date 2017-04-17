@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,15 +56,15 @@ TEST_F(PaymentRequestShippingOptionSelectionViewControllerTest, TestModel) {
   // One item for each of shipping options.
   ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-  // The next two items should be of type CollectionViewTextItem. The first one
+  // The next two items should be of type PaymentsTextItem. The first one
   // should appear to be selected.
   id item = GetCollectionViewItem(0, 0);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
-  CollectionViewTextItem* text_item = item;
+  EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* text_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, text_item.accessoryType);
 
   item = GetCollectionViewItem(0, 1);
-  EXPECT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
+  EXPECT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
   text_item = item;
   EXPECT_EQ(MDCCollectionViewCellAccessoryNone, text_item.accessoryType);
 
