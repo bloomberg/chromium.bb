@@ -4719,6 +4719,7 @@ test("net_unittests") {
     "socket/websocket_transport_client_socket_pool_unittest.cc",
     "spdy/array_output_buffer.cc",
     "spdy/array_output_buffer.h",
+    "spdy/array_output_buffer_test.cc",
     "spdy/bidirectional_stream_spdy_impl_unittest.cc",
     "spdy/buffered_spdy_framer_unittest.cc",
     "spdy/fuzzing/hpack_fuzz_util_test.cc",

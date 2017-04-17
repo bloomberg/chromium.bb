@@ -4087,6 +4087,9 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
 TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
   uint8_t flags = 0;
   do {
+    if (use_output_) {
+      output_.Reset();
+    }
     SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
                                     << static_cast<int>(flags));
 
@@ -4105,18 +4108,26 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 
     SpdyHeadersIR headers_ir(42);
     headers_ir.SetHeader("foo", "bar");
-    SpdySerializedFrame frame0(SpdyFramerPeer::SerializeHeaders(
-        &framer, headers_ir, use_output_ ? &output_ : nullptr));
+    SpdySerializedFrame frame0;
+    if (use_output_) {
+      ASSERT_TRUE(framer.SerializeHeaders(headers_ir, &output_));
+      frame0 = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
+    } else {
+      frame0 = framer.SerializeHeaders(headers_ir);
+    }
     SetFrameFlags(&frame0, 0);
 
     SpdyContinuationIR continuation(42);
-    SpdySerializedFrame frame(framer.SerializeContinuation(continuation));
+    SpdySerializedFrame frame1;
     if (use_output_) {
-      output_.Reset();
+      char* begin = output_.Begin() + output_.Size();
       ASSERT_TRUE(framer.SerializeContinuation(continuation, &output_));
-      frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
+      frame1 =
+          SpdySerializedFrame(begin, output_.Size() - frame0.size(), false);
+    } else {
+      frame1 = framer.SerializeContinuation(continuation);
     }
-    SetFrameFlags(&frame, flags);
+    SetFrameFlags(&frame1, flags);
 
     EXPECT_CALL(debug_visitor,
                 OnReceiveCompressedFrame(42, SpdyFrameType::CONTINUATION, _));
@@ -4127,7 +4138,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
     }
 
     framer.ProcessInput(frame0.data(), frame0.size());
-    framer.ProcessInput(frame.data(), frame.size());
+    framer.ProcessInput(frame1.data(), frame1.size());
     EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
     EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.spdy_framer_error())
         << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());

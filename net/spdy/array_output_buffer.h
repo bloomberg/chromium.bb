@@ -24,7 +24,12 @@ class ArrayOutputBuffer : public ZeroCopyOutputBuffer {
 
   size_t Size() const { return current_ - begin_; }
   char* Begin() const { return begin_; }
-  void Reset() { begin_ = current_; }
+
+  // Resets the buffer to its original state.
+  void Reset() {
+    capacity_ += Size();
+    current_ = begin_;
+  }
 
   ArrayOutputBuffer(const ArrayOutputBuffer&) = delete;
   ArrayOutputBuffer& operator=(const ArrayOutputBuffer&) = delete;
