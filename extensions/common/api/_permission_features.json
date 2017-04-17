@@ -78,6 +78,12 @@
   },
   "audio": [
     {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "platforms": ["chromeos"],
+      "session_types": ["kiosk"]
+    },
+    {
       "channel": "dev",
       "extension_types": ["platform_app"]
     },
