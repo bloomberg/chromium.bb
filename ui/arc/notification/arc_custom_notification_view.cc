@@ -534,6 +534,11 @@ void ArcCustomNotificationView::OnFocus() {
 }
 
 void ArcCustomNotificationView::OnBlur() {
+  if (!parent()) {
+    // OnBlur may be called when this view is being removed.
+    return;
+  }
+
   CHECK_EQ(message_center::CustomNotificationView::kViewClassName,
            parent()->GetClassName());
 
