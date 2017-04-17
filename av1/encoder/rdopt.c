@@ -8194,10 +8194,6 @@ static int64_t motion_mode_rd(
   (void)is_comp_pred;
   (void)this_mode;
 
-#if CONFIG_EXT_INTER && CONFIG_MOTION_VAR
-  int mv_idx = 0;
-#endif  // CONFIG_EXT_INTER && CONFIG_MOTION_VAR
-
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   MOTION_MODE motion_mode, last_motion_mode_allowed;
   int rate2_nocoeff = 0, best_xskip, best_disable_skip = 0;
@@ -8261,7 +8257,7 @@ static int64_t motion_mode_rd(
 
         single_motion_search(cpi, x, bsize, mi_row, mi_col,
 #if CONFIG_EXT_INTER
-                             0, mv_idx,
+                             0,
 #endif  // CONFIG_EXT_INTER
                              &tmp_rate_mv);
         mbmi->mv[0].as_int = x->best_mv.as_int;
