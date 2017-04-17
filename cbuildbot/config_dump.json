@@ -23403,9 +23403,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23417,6 +23414,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
@@ -23433,7 +23433,8 @@
         "factory_toolkit": false,
         "image_test": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "packages": [
             "virtual/target-os",
@@ -23443,6 +23444,9 @@
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "-chrome_internal"
         ],
@@ -23458,9 +23462,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23472,6 +23473,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
@@ -23488,9 +23492,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "important": false,
         "internal": true,
         "manifest": "official.xml",
@@ -23504,6 +23505,9 @@
         "prebuilts": "private",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ],
@@ -23520,9 +23524,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23534,6 +23535,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ],
@@ -23555,7 +23559,8 @@
         "hwqual": false,
         "image_test": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "packages": [
             "virtual/target-os",
@@ -23567,6 +23572,9 @@
         "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -23580,7 +23588,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "internal": true,
         "manifest": "official.xml",
@@ -23593,6 +23602,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
@@ -23607,9 +23619,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23621,6 +23630,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
@@ -23637,7 +23649,8 @@
         "factory_toolkit": false,
         "image_test": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "packages": [
             "virtual/target-os",
@@ -23647,6 +23660,9 @@
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "-chrome_internal"
         ],
@@ -23662,9 +23678,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23676,6 +23689,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
@@ -23693,9 +23709,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "important": false,
         "internal": true,
         "manifest": "official.xml",
@@ -23709,6 +23722,9 @@
         "prebuilts": "private",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ],
@@ -23725,9 +23741,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "images": [
-            "base"
-        ],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23739,6 +23752,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ],
@@ -23760,7 +23776,8 @@
         "hwqual": false,
         "image_test": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "packages": [
             "virtual/target-os",
@@ -23772,6 +23789,9 @@
         "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -23785,7 +23805,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "images": [
-            "base"
+            "base",
+            "test"
         ],
         "internal": true,
         "manifest": "official.xml",
@@ -23798,6 +23819,9 @@
         ],
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
+        "upload_stripped_packages": [
+            "sys-kernel/*kernel*"
+        ],
         "useflags": [
             "chrome_internal"
         ]
