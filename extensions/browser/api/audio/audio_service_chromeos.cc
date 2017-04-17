@@ -9,12 +9,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/audio/audio_device_id_calculator.h"
 
 using content::BrowserThread;
 
@@ -69,7 +71,7 @@ api::audio::DeviceType GetAsAudioApiDeviceType(chromeos::AudioDeviceType type) {
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  AudioServiceImpl();
+  explicit AudioServiceImpl(AudioDeviceIdCalculator* id_calculator);
   ~AudioServiceImpl() override;
 
   // Called by listeners to this service to add/remove themselves as observers.
@@ -118,6 +120,8 @@ class AudioServiceImpl : public AudioService,
 
   chromeos::CrasAudioHandler* cras_audio_handler_;
 
+  AudioDeviceIdCalculator* id_calculator_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<AudioServiceImpl> weak_ptr_factory_;
@@ -125,9 +129,12 @@ class AudioServiceImpl : public AudioService,
   DISALLOW_COPY_AND_ASSIGN(AudioServiceImpl);
 };
 
-AudioServiceImpl::AudioServiceImpl()
+AudioServiceImpl::AudioServiceImpl(AudioDeviceIdCalculator* id_calculator)
     : cras_audio_handler_(NULL),
+      id_calculator_(id_calculator),
       weak_ptr_factory_(this) {
+  CHECK(id_calculator_);
+
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     cras_audio_handler_->AddAudioObserver(this);
@@ -359,8 +366,8 @@ AudioDeviceInfo AudioServiceImpl::ToAudioDeviceInfo(
       device.is_input
           ? cras_audio_handler_->GetOutputVolumePercentForDevice(device.id)
           : cras_audio_handler_->GetInputGainPercentForDevice(device.id);
-  info.stable_device_id.reset(
-      new std::string(base::Uint64ToString(device.stable_device_id)));
+  info.stable_device_id = base::MakeUnique<std::string>(
+      id_calculator_->GetStableDeviceId(device.stable_device_id));
 
   return info;
 }
@@ -435,8 +442,9 @@ void AudioServiceImpl::NotifyDevicesChanged() {
   NotifyDeviceChanged();
 }
 
-AudioService* AudioService::CreateInstance() {
-  return new AudioServiceImpl;
+AudioService* AudioService::CreateInstance(
+    AudioDeviceIdCalculator* id_calculator) {
+  return new AudioServiceImpl(id_calculator);
 }
 
 }  // namespace extensions

@@ -39,7 +39,8 @@ void AudioServiceImpl::RemoveObserver(Observer* observer) {
   // TODO: implement this for platforms other than Chrome OS.
 }
 
-AudioService* AudioService::CreateInstance() {
+AudioService* AudioService::CreateInstance(
+    AudioDeviceIdCalculator* id_calculator) {
   return new AudioServiceImpl;
 }
 

@@ -5,16 +5,25 @@
 #ifndef EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_
 #define EXTENSIONS_BROWSER_API_AUDIO_AUDIO_API_H_
 
+#include <memory>
+#include <string>
+
+#include "base/scoped_observer.h"
 #include "extensions/browser/api/audio/audio_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
+class PrefRegistrySimple;
+
 namespace extensions {
 
 class AudioService;
+class AudioDeviceIdCalculator;
 
 class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
  public:
+  static void RegisterUserPrefs(PrefRegistrySimple* registry);
+
   explicit AudioAPI(content::BrowserContext* context);
   ~AudioAPI() override;
 
@@ -38,7 +47,12 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   }
 
   content::BrowserContext* const browser_context_;
-  AudioService* service_;
+  std::unique_ptr<AudioDeviceIdCalculator> stable_id_calculator_;
+  std::unique_ptr<AudioService> service_;
+
+  ScopedObserver<AudioService, AudioService::Observer> audio_service_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioAPI);
 };
 
 class AudioGetInfoFunction : public UIThreadExtensionFunction {

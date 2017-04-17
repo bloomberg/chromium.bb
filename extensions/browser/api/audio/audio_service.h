@@ -20,6 +20,8 @@ using InputInfo = std::vector<api::audio::InputDeviceInfo>;
 using DeviceIdList = std::vector<std::string>;
 using DeviceInfoList = std::vector<api::audio::AudioDeviceInfo>;
 
+class AudioDeviceIdCalculator;
+
 class AudioService {
  public:
   class Observer {
@@ -42,7 +44,7 @@ class AudioService {
   };
 
   // Creates a platform-specific AudioService instance.
-  static AudioService* CreateInstance();
+  static AudioService* CreateInstance(AudioDeviceIdCalculator* id_calculator);
 
   virtual ~AudioService() {}
 

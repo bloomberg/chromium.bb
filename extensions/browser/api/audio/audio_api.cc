@@ -7,7 +7,11 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "extensions/browser/api/audio/audio_device_id_calculator.h"
+#include "extensions/browser/api/audio/pref_names.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/audio.h"
 #include "extensions/common/extension.h"
@@ -19,6 +23,11 @@ namespace extensions {
 namespace audio = api::audio;
 
 namespace {
+
+std::unique_ptr<AudioDeviceIdCalculator> CreateIdCalculator(
+    content::BrowserContext* context) {
+  return base::MakeUnique<AudioDeviceIdCalculator>(context);
+}
 
 // Checks if an extension is whitelisted to use deprecated version of audio API.
 // TODO(tbarzic): Retire this whitelist and remove the deprecated API methods,
@@ -51,24 +60,27 @@ static base::LazyInstance<
     BrowserContextKeyedAPIFactory<AudioAPI>>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
+void AudioAPI::RegisterUserPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(kAudioApiStableDeviceIds);
+}
+
 // static
 BrowserContextKeyedAPIFactory<AudioAPI>* AudioAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 AudioAPI::AudioAPI(content::BrowserContext* context)
-    : browser_context_(context), service_(AudioService::CreateInstance()) {
-  service_->AddObserver(this);
+    : browser_context_(context),
+      stable_id_calculator_(CreateIdCalculator(context)),
+      service_(AudioService::CreateInstance(stable_id_calculator_.get())),
+      audio_service_observer_(this) {
+  audio_service_observer_.Add(service_.get());
 }
 
-AudioAPI::~AudioAPI() {
-  service_->RemoveObserver(this);
-  delete service_;
-  service_ = NULL;
-}
+AudioAPI::~AudioAPI() {}
 
 AudioService* AudioAPI::GetService() const {
-  return service_;
+  return service_.get();
 }
 
 void AudioAPI::OnDeviceChanged() {

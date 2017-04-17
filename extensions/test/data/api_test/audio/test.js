@@ -97,42 +97,42 @@ chrome.test.runTests([
     var kTestDevices = {
       '30001': {
         id: '30001',
-        stableDeviceId: '116606',
+        stableDeviceId: '0',
         displayName: 'Jabra Speaker 1',
         deviceName: 'Jabra Speaker',
         streamType: 'OUTPUT'
       },
       '30002': {
         id: '30002',
-        stableDeviceId: '116605',
+        stableDeviceId: '1',
         displayName: 'Jabra Speaker 2',
         deviceName: 'Jabra Speaker',
         streamType: 'OUTPUT'
       },
       '30003': {
         id: '30003',
-        stableDeviceId: '116604',
+        stableDeviceId: '2',
         displayName: 'HDA Intel MID',
         deviceName: 'HDMI output',
         streamType: 'OUTPUT'
       },
       '40001': {
         id: '40001',
-        stableDeviceId: '106606',
+        stableDeviceId: '3',
         displayName: 'Jabra Mic 1',
         deviceName: 'Jabra Mic',
         streamType: 'INPUT'
       },
       '40002': {
         id: '40002',
-        stableDeviceId: '106605',
+        stableDeviceId: '4',
         displayName: 'Jabra Mic 2',
         deviceName: 'Jabra Mic',
         streamType: 'INPUT'
       },
       '40003': {
         id: '40003',
-        stableDeviceId: '106604',
+        stableDeviceId: '5',
         displayName: 'Logitech Webcam',
         deviceName: 'Webcam Mic',
         streamType: 'INPUT'
@@ -149,42 +149,42 @@ chrome.test.runTests([
     var kTestDevices = {
       '30001': {
         id: '30001',
-        stableDeviceId: '116606',
+        stableDeviceId: '0',
         displayName: 'Jabra Speaker 1',
         deviceName: 'Jabra Speaker',
         streamType: 'OUTPUT'
       },
       '30002': {
         id: '30002',
-        stableDeviceId: '116605',
+        stableDeviceId: '1',
         displayName: 'Jabra Speaker 2',
         deviceName: 'Jabra Speaker',
         streamType: 'OUTPUT'
       },
       '30003': {
         id: '30003',
-        stableDeviceId: '116604',
+        stableDeviceId: '2',
         displayName: 'HDA Intel MID',
         deviceName: 'HDMI output',
         streamType: 'OUTPUT'
       },
       '40001': {
         id: '40001',
-        stableDeviceId: '106606',
+        stableDeviceId: '3',
         displayName: 'Jabra Mic 1',
         deviceName: 'Jabra Mic',
         streamType: 'INPUT'
       },
       '40002': {
         id: '40002',
-        stableDeviceId: '106605',
+        stableDeviceId: '4',
         displayName: 'Jabra Mic 2',
         deviceName: 'Jabra Mic',
         streamType: 'INPUT'
       },
       '40003': {
         id: '40003',
-        stableDeviceId: '106604',
+        stableDeviceId: '5',
         displayName: 'Logitech Webcam',
         deviceName: 'Webcam Mic',
         streamType: 'INPUT'

@@ -6,7 +6,11 @@ source_set("audio") {
   sources = [
     "audio_api.cc",
     "audio_api.h",
+    "audio_device_id_calculator.cc",
+    "audio_device_id_calculator.h",
     "audio_service.h",
+    "pref_names.cc",
+    "pref_names.h",
   ]
 
   if (is_chromeos) {
@@ -16,6 +20,7 @@ source_set("audio") {
   }
 
   deps = [
+    "//components/prefs",
     "//extensions/common/api",
   ]
 }
