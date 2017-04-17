@@ -281,7 +281,6 @@ void TranslateBubbleView::OnMenuButtonClicked(views::MenuButton* source,
                                                     views::MenuRunner::ASYNC));
   }
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
-  screen_bounds.Inset(source->GetInsets());
   denial_menu_runner_->RunMenuAt(source->GetWidget(), source, screen_bounds,
                                  views::MENU_ANCHOR_TOPRIGHT,
                                  ui::MENU_SOURCE_MOUSE);
