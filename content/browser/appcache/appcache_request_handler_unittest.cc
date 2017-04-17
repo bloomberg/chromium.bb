@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,6 +31,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -105,15 +107,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
    public:
     MockURLRequestJob(net::URLRequest* request,
                       net::NetworkDelegate* network_delegate,
-                      int response_code)
-        : net::URLRequestJob(request, network_delegate),
-          response_code_(response_code),
-          has_response_info_(false) {}
-    MockURLRequestJob(net::URLRequest* request,
-                      net::NetworkDelegate* network_delegate,
                       const net::HttpResponseInfo& info)
         : net::URLRequestJob(request, network_delegate),
-          response_code_(info.headers->response_code()),
           has_response_info_(true),
           response_info_(info) {}
 
@@ -121,7 +116,6 @@ class AppCacheRequestHandlerTest : public testing::Test {
 
    protected:
     void Start() override { NotifyHeadersComplete(); }
-    int GetResponseCode() const override { return response_code_; }
     void GetResponseInfo(net::HttpResponseInfo* info) override {
       if (!has_response_info_)
         return;
@@ -129,7 +123,6 @@ class AppCacheRequestHandlerTest : public testing::Test {
     }
 
    private:
-    int response_code_;
     bool has_response_info_;
     net::HttpResponseInfo response_info_;
   };
@@ -397,11 +390,16 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void SimulateResponseCode(int response_code) {
+    net::HttpResponseInfo info;
+    std::string headers =
+        base::StringPrintf("HTTP/1.1 %i Muffin\r\n\r\n", response_code);
+    info.headers = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+
     job_factory_->SetJob(base::MakeUnique<MockURLRequestJob>(
-        request_.get(), request_->context()->network_delegate(),
-        response_code));
+        request_.get(), request_->context()->network_delegate(), info));
     request_->Start();
-    // All our simulation needs  to satisfy are the following two DCHECKs
+    // All our simulation needs to satisfy are the following two DCHECKs.
     DCHECK_EQ(net::OK, delegate_.request_status());
     DCHECK_EQ(response_code, request_->GetResponseCode());
   }

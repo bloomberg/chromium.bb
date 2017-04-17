@@ -417,12 +417,6 @@ void AppCacheURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   *info = *http_info();
 }
 
-int AppCacheURLRequestJob::GetResponseCode() const {
-  if (!http_info())
-    return -1;
-  return http_info()->headers->response_code();
-}
-
 int AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   DCHECK(is_delivering_appcache_response());
   DCHECK_NE(buf_size, 0);

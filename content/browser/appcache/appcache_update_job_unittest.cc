@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,6 +26,7 @@
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
@@ -401,17 +403,13 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
     ++num_requests_;
     if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
       --num_retries_;
-      return new RetryRequestTestJob(
-          request, network_delegate, RetryRequestTestJob::retry_headers(), 503);
+      return new RetryRequestTestJob(request, network_delegate,
+                                     RetryRequestTestJob::retry_headers());
     } else {
-      return new RetryRequestTestJob(
-          request,
-          network_delegate,
-          RetryRequestTestJob::manifest_headers(), 200);
+      return new RetryRequestTestJob(request, network_delegate,
+                                     RetryRequestTestJob::manifest_headers());
     }
   }
-
-  int GetResponseCode() const override { return response_code_; }
 
  private:
   ~RetryRequestTestJob() override {}
@@ -455,14 +453,12 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 
   RetryRequestTestJob(net::URLRequest* request,
                       net::NetworkDelegate* network_delegate,
-                      const std::string& headers,
-                      int response_code)
-      : net::URLRequestTestJob(
-            request, network_delegate, headers, data(), true),
-        response_code_(response_code) {
-  }
-
-  int response_code_;
+                      const std::string& headers)
+      : net::URLRequestTestJob(request,
+                               network_delegate,
+                               headers,
+                               data(),
+                               true) {}
 
   static int num_requests_;
   static int num_retries_;

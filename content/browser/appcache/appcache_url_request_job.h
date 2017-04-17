@@ -158,7 +158,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob
 
   // FilterContext methods
   bool GetMimeType(std::string* mime_type) const override;
-  int GetResponseCode() const override;
 
   // Invokes |prepare_to_restart_callback_| and then calls
   // net::URLRequestJob::NotifyRestartRequired.
