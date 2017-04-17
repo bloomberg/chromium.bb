@@ -40,7 +40,7 @@ class CORE_EXPORT ScriptModule final {
 
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
-  void Evaluate(ScriptState*);
+  void Evaluate(ScriptState*) const;
 
   Vector<String> ModuleRequests(ScriptState*);
 

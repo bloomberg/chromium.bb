@@ -42,6 +42,7 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
 ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
 
   DCHECK(!IsNull());
   v8::Local<v8::Context> context = script_state->GetContext();
@@ -55,16 +56,23 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
   return ScriptValue();
 }
 
-void ScriptModule::Evaluate(ScriptState* script_state) {
+void ScriptModule::Evaluate(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
+
+  // Isolate exceptions that occur when executing the code. These exceptions
+  // should not interfere with javascript code we might evaluate from C++ when
+  // returning from here.
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
+
+  // TODO(kouhei): We currently don't have a code-path which use return value of
+  // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
   if (!V8Call(
           V8ScriptRunner::EvaluateModule(module_->NewLocal(isolate),
                                          script_state->GetContext(), isolate),
           result, try_catch)) {
-    // TODO(adamk): report error
+    return;
   }
 }
 
