@@ -12294,6 +12294,7 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
     std::vector<std::vector<MockRead>> mock_reads(1);
     std::vector<std::vector<MockWrite>> mock_writes(1);
     for (int round = 0; round < test_config.num_auth_rounds; ++round) {
+      SCOPED_TRACE(round);
       const TestRound& read_write_round = test_config.rounds[round];
 
       // Set up expected reads and writes.
@@ -12334,6 +12335,7 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
     for (int round = 0; round < test_config.num_auth_rounds; ++round) {
+      SCOPED_TRACE(round);
       const TestRound& read_write_round = test_config.rounds[round];
       // Start or restart the transaction.
       TestCompletionCallback callback;

@@ -181,6 +181,7 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
   const HostPortPair endpoint_;
   SpdySessionPool* const spdy_session_pool_;
 
+  bool has_restarted_;
   const bool tunnel_;
   ProxyDelegate* const proxy_delegate_;
 
