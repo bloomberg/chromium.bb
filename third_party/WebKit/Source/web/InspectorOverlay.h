@@ -131,7 +131,8 @@ class InspectorOverlay final
   void ScheduleUpdate();
   void ClearInternal();
 
-  bool HandleMousePress();
+  bool HandleMouseDown();
+  bool HandleMouseUp();
   bool HandleGestureEvent(const WebGestureEvent&);
   bool HandleTouchEvent(const WebTouchEvent&);
   bool HandleMouseMove(const WebMouseEvent&);
@@ -160,6 +161,7 @@ class InspectorOverlay final
   Member<InspectorDOMAgent> dom_agent_;
   std::unique_ptr<PageOverlay> page_overlay_;
   Member<Node> hovered_node_for_inspect_mode_;
+  bool swallow_next_mouse_up_;
   InspectorDOMAgent::SearchMode inspect_mode_;
   std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
 };

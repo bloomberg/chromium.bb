@@ -193,6 +193,7 @@ InspectorOverlay::InspectorOverlay(WebLocalFrameImpl* frame_impl)
       show_reloading_blanket_(false),
       in_layout_(false),
       needs_update_(false),
+      swallow_next_mouse_up_(false),
       inspect_mode_(InspectorDOMAgent::kNotSearching) {}
 
 InspectorOverlay::~InspectorOverlay() {
@@ -263,7 +264,9 @@ bool InspectorOverlay::HandleInputEvent(const WebInputEvent& input_event) {
     if (mouse_event.GetType() == WebInputEvent::kMouseMove)
       handled = HandleMouseMove(mouse_event);
     else if (mouse_event.GetType() == WebInputEvent::kMouseDown)
-      handled = HandleMousePress();
+      handled = HandleMouseDown();
+    else if (mouse_event.GetType() == WebInputEvent::kMouseUp)
+      handled = HandleMouseUp();
 
     if (handled)
       return true;
@@ -766,13 +769,23 @@ bool InspectorOverlay::HandleMouseMove(const WebMouseEvent& event) {
   return true;
 }
 
-bool InspectorOverlay::HandleMousePress() {
+bool InspectorOverlay::HandleMouseDown() {
+  swallow_next_mouse_up_ = false;
   if (!ShouldSearchForNode())
     return false;
 
   if (hovered_node_for_inspect_mode_) {
+    swallow_next_mouse_up_ = true;
     Inspect(hovered_node_for_inspect_mode_.Get());
     hovered_node_for_inspect_mode_.Clear();
+    return true;
+  }
+  return false;
+}
+
+bool InspectorOverlay::HandleMouseUp() {
+  if (swallow_next_mouse_up_) {
+    swallow_next_mouse_up_ = false;
     return true;
   }
   return false;
