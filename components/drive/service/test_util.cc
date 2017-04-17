@@ -10,9 +10,9 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 
-using google_apis::FileResource;
 using google_apis::DRIVE_OTHER_ERROR;
 using google_apis::DriveApiErrorCode;
+using google_apis::FileResource;
 using google_apis::HTTP_CREATED;
 
 namespace drive {
