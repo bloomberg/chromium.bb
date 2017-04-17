@@ -19,7 +19,8 @@ enum class PathValidationResult {
   SUCCESS,
   PATH_NOT_WRITABLE,
   NAME_TOO_LONG,
-  CONFLICT
+  CONFLICT,
+  SAME_AS_SOURCE
 };
 
 // Chrome attempts to uniquify filenames that are assigned to downloads in order

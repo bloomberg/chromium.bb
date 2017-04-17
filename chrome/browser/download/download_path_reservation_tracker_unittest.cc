@@ -308,6 +308,31 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingFiles_Overwrite) {
   base::RunLoop().RunUntilIdle();
 }
 
+// If the source is a file:// URL that is in the download directory, then Chrome
+// could download the file onto itself. Test that this is flagged by DPRT.
+TEST_F(DownloadPathReservationTrackerTest, ConflictWithSource) {
+  std::unique_ptr<MockDownloadItem> item(CreateDownloadItem(1));
+  base::FilePath path(
+      GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo.txt")));
+  ASSERT_EQ(0, base::WriteFile(path, "", 0));
+  ASSERT_TRUE(IsPathInUse(path));
+  EXPECT_CALL(*item, GetURL())
+      .WillRepeatedly(ReturnRefOfCopy(net::FilePathToFileURL(path)));
+
+  base::FilePath reserved_path;
+  PathValidationResult result = PathValidationResult::NAME_TOO_LONG;
+  bool create_directory = false;
+  DownloadPathReservationTracker::FilenameConflictAction conflict_action =
+      DownloadPathReservationTracker::UNIQUIFY;
+  CallGetReservedPath(item.get(), path, create_directory, conflict_action,
+                      &reserved_path, &result);
+  EXPECT_EQ(PathValidationResult::SAME_AS_SOURCE, result);
+
+  SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
+  item.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
 // Multiple reservations for the same path should uniquify around each other.
 TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   std::unique_ptr<MockDownloadItem> item1(CreateDownloadItem(1));

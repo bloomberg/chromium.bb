@@ -54,6 +54,9 @@ INTERRUPT_REASON(FILE_TOO_SHORT, 13)
 // The partial file didn't match the expected hash.
 INTERRUPT_REASON(FILE_HASH_MISMATCH, 14)
 
+// The source and the target of the download were the same.
+INTERRUPT_REASON(FILE_SAME_AS_SOURCE, 15)
+
 // Network errors.
 
 // Generic network failure.

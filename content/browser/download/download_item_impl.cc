@@ -994,7 +994,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
     case DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
-      // Unhandled.
+    case DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE:
       return RESUME_MODE_INVALID;
   }
 
@@ -1364,17 +1364,22 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     return;
   }
 
-  target_path_ = target_path;
-  target_disposition_ = disposition;
-  SetDangerType(danger_type);
-
   // There were no other pending errors, and we just failed to determined the
-  // download target.
+  // download target. The target path, if it is non-empty, should be considered
+  // suspect. The safe option here is to interrupt the download without doing an
+  // intermediate rename. In the case of a new download, we'll lose the partial
+  // data that may have been downloaded, but that should be a small loss.
   if (state_ == TARGET_PENDING_INTERNAL &&
       interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     deferred_interrupt_reason_ = interrupt_reason;
     TransitionTo(INTERRUPTED_TARGET_PENDING_INTERNAL);
+    OnTargetResolved();
+    return;
   }
+
+  target_path_ = target_path;
+  target_disposition_ = disposition;
+  SetDangerType(danger_type);
 
   // This was an interrupted download that was looking for a filename. Resolve
   // early without performing the intermediate rename. If there is a

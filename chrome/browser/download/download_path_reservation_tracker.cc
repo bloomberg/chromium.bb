@@ -219,6 +219,13 @@ PathValidationResult ValidatePathAndResolveConflicts(
       return PathValidationResult::NAME_TOO_LONG;
   }
 
+  // Disallow downloading a file onto itself. Assume that downloading a file
+  // onto another file that differs only by case is not enough of a legitimate
+  // edge case to justify determining the case sensitivity of the underlying
+  // filesystem.
+  if (*target_path == info.source_path)
+    return PathValidationResult::SAME_AS_SOURCE;
+
   if (!IsPathInUse(*target_path))
     return PathValidationResult::SUCCESS;
 

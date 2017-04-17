@@ -890,6 +890,7 @@ TEST_F(DownloadTargetDeterminerTest, DefaultVirtual) {
     RunTestCasesWithActiveItem(&kSaveAsToVirtualDir, 1);
   }
 
+  // "Save as" is not supported on Android.
   {
     SCOPED_TRACE(testing::Message() << "Save As to local directory");
     const DownloadTestCase kSaveAsToLocalDir = {

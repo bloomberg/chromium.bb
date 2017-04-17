@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -1378,6 +1379,21 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_CancelWithEmptyName) {
                DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
                DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
+}
+
+TEST_F(DownloadItemTest, DownloadTargetDetermined_Conflict) {
+  DownloadItemImpl* item = CreateDownloadItem();
+  DownloadTargetCallback callback;
+  MockDownloadFile* download_file = CallDownloadItemStart(item, &callback);
+  base::FilePath target_path(FILE_PATH_LITERAL("/foo/bar"));
+
+  EXPECT_CALL(*download_file, Cancel());
+  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+               DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE);
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
+            item->GetLastReason());
 }
 
 TEST_F(DownloadItemTest, FileRemoved) {

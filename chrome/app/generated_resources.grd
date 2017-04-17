@@ -1402,12 +1402,20 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         Anti-virus software failed unexpectedly while scanning this file.
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_SHORT"
-              desc="A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
-       File truncated
+               desc="A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+        File truncated
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_SHORT"
-              desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
-       Destination file was truncated or removed since last download.
+               desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+        Destination file was truncated or removed since last download.
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_SAME_AS_SOURCE"
+               desc="The source and the target of the download file were the same. I.e. the user attempted to download the file onto itself.">
+        Already downloaded
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_SAME_AS_SOURCE"
+               desc="Download page message: The source and the target of the download were the same.">
+        The file already exists in your download folder.
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
                desc="Network Timeout.">

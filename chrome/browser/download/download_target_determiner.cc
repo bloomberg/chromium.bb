@@ -316,6 +316,7 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
 
   switch (result) {
     case PathValidationResult::SUCCESS:
+    case PathValidationResult::SAME_AS_SOURCE:
       break;
 
     case PathValidationResult::PATH_NOT_WRITABLE:
