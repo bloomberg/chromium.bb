@@ -64,7 +64,7 @@ def RunCompiler(js_files, externs=[]):
   args = [_java_executable, '-jar', _CLOSURE_COMPILER_JAR]
   args.extend(['--compilation_level', 'SIMPLE_OPTIMIZATIONS'])
   args.extend(['--jscomp_error=%s' % error for error in _JSCOMP_ERRORS])
-  args.extend(['--language_in', 'ECMASCRIPT5'])
+  args.extend(['--language_in', 'ECMASCRIPT6'])
   args.extend(['--externs=%s' % extern for extern in externs])
   args.extend(['--js=%s' % js for js in js_files])
   args.extend(['--js_output_file', '/dev/null'])

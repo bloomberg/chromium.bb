@@ -8,13 +8,13 @@
 
 goog.provide('cvox.BrailleBackground');
 
+goog.require('BrailleKeyEventRewriter');
 goog.require('ChromeVoxState');
 goog.require('cvox.BrailleDisplayManager');
 goog.require('cvox.BrailleInputHandler');
 goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.BrailleTranslatorManager');
-
 
 /**
  * @constructor
@@ -61,6 +61,9 @@ cvox.BrailleBackground = function(opt_displayManagerForTest,
 
   /** @private {boolean} */
   this.frozen_ = false;
+
+  /** @private {BrailleKeyEventRewriter} */
+  this.keyEventRewriter_ = new BrailleKeyEventRewriter();
 };
 goog.addSingletonGetter(cvox.BrailleBackground);
 
@@ -149,6 +152,10 @@ cvox.BrailleBackground.prototype.setContent_ = function(
  */
 cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
     brailleEvt, content) {
+  if (this.keyEventRewriter_.onBrailleKeyEvent(brailleEvt)) {
+    return;
+  }
+
   if (this.inputHandler_.onBrailleKeyEvent(brailleEvt)) {
     return;
   }

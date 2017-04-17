@@ -166,3 +166,25 @@ TEST_F('CvoxLibLouisTest', 'testDetachWithOutstandingCallbacks', function() {
     liblouis.detach();
   });
 });
+
+TEST_F('CvoxLibLouisTest', 'testKeyEventStaticData', function() {
+  var liblouis = this.createAndAttachLiblouis();
+  this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
+    translator.translate('abcdefghijklmnopqrstuvwxyz 0123456789',
+                         this.newCallback(
+        function(cells, textToBraille, brailleToText) {
+          // A-Z.
+          var view = new Uint8Array(cells);
+          for (var i = 0; i < 26; i++) {
+            assertEquals(String.fromCharCode(i + 65),
+                cvox.BrailleKeyEvent.brailleDotsToStandardKeyCode[view[i]]);
+          }
+
+          // 0-9.
+          for (var i = 27; i < 37; i++) {
+            assertEquals(String.fromCharCode(i + 21),
+                cvox.BrailleKeyEvent.brailleDotsToStandardKeyCode[view[i]]);
+          }
+        }));
+  });
+});

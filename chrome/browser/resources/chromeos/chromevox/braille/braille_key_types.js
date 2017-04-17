@@ -94,6 +94,88 @@ cvox.BrailleKeyEvent.keyCodeToCharValue = function(keyCode) {
   return SPECIAL_CODES[keyCode] || keyCode.charCodeAt(0);
 };
 
+/*
+ * Note: Some of the below mappings contain raw braille dot
+ * patterns. These are written out in binary form to make clear
+ * exactly what dots in the braille cell make up the pattern. The
+ * braille cell is arranged in a 2 by 4 dot grid with each dot
+ * assigned a number from 1-8.
+ * 1 4
+ * 2 5
+ * 3 6
+ * 7 8
+ *
+ * In binary form, the dot number minus 1 maps to the bit position
+ * (from right to left).
+ * For example, dots 1-6-7 would be
+ * 0b1100001
+ */
+
+/**
+ * Maps a braille pattern to a standard key code.
+ * @type {!Object<number, string>}
+ */
+cvox.BrailleKeyEvent.brailleDotsToStandardKeyCode = {
+  0b1: 'A',
+  0b11: 'B',
+  0b1001: 'C',
+  0b11001: 'D',
+  0b10001: 'E',
+  0b1011: 'F',
+  0b11011: 'G',
+  0b10011: 'H',
+  0b1010: 'I',
+  0b11010: 'J',
+  0b101: 'K',
+  0b111: 'L',
+  0b1101: 'M',
+  0b11101: 'N',
+  0b10101: 'O',
+  0b1111: 'P',
+  0b11111: 'Q',
+  0b10111: 'R',
+  0b1110: 'S',
+  0b11110: 'T',
+  0b100101: 'U',
+  0b100111: 'V',
+  0b111010: 'W',
+  0b101101: 'X',
+  0b111101: 'Y',
+  0b110101: 'Z',
+  0b110100: '0',
+  0b10: '1',
+  0b110: '2',
+  0b10010: '3',
+  0b110010: '4',
+  0b100010: '5',
+  0b10110: '6',
+  0b110110: '7',
+  0b100110: '8',
+  0b10100: '9'
+};
+
+/**
+ * Maps a braille chord pattern to a standard key code.
+ * @type {!Object<number, string>}
+ */
+cvox.BrailleKeyEvent.brailleChordsToStandardKeyCode = {
+  0b1000000: 'Backspace',
+  0b10100: 'Tab',
+  0b110101: 'Escape',
+  0b101000: 'Enter'
+};
+
+/**
+ * Maps a braille dot chord pattern to standard key modifiers.
+ */
+cvox.BrailleKeyEvent.brailleDotsToModifiers = {
+  0b010010: {ctrlKey: true},
+  0b100100: {altKey: true},
+  0b1000100: {shiftKey: true},
+  0b1010010: {ctrlKey: true, shiftKey: true},
+  0b1100100: {altKey: true, shiftKey: true}
+};
+
 
 /**
  * Map from DOM level 4 key codes to legacy numeric key codes.
@@ -113,11 +195,23 @@ cvox.BrailleKeyEvent.legacyKeyCodeMap_ = {
   'PageDown': 34,
   'End': 35,
   'Insert': 45,
-  'Delete': 46
+  'Delete': 46,
+  'AudioVolumeDown': 174,
+  'AudioVolumeUp': 175
 };
 
-// Add the F1 to F12 keys.
 (function() {
+  // Add 0-9.
+  for (var i = '0'.charCodeAt(0); i < '9'.charCodeAt(0); ++i) {
+    cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
+  }
+
+  // Add A-Z.
+  for (var i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); ++i) {
+    cvox.BrailleKeyEvent.legacyKeyCodeMap_[String.fromCharCode(i)] = i;
+  }
+
+  // Add the F1 to F12 keys.
   for (var i = 0; i < 12; ++i) {
     cvox.BrailleKeyEvent.legacyKeyCodeMap_['F' + (i + 1)] = 112 + i;
   }

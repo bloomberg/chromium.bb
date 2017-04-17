@@ -24,6 +24,7 @@ closure_library_dir =
 chromevox_modules = [
   "braille/braille_display_manager.js",
   "braille/braille_input_handler.js",
+  "braille/braille_key_event_rewriter.js",
   "braille/braille_key_types.js",
   "braille/braille_table.js",
   "braille/braille_translator_manager.js",
