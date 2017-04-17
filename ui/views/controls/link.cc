@@ -167,6 +167,7 @@ void Link::SetText(const base::string16& text) {
 }
 
 void Link::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  Label::OnNativeThemeChanged(theme);
   Label::SetEnabledColor(GetEnabledColor());
   SetDisabledColor(
       theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled));
