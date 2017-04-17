@@ -209,7 +209,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const std::string& user_agent_id,
       const QuicVersionVector& supported_versions,
       bool always_require_handshake_confirmation,
-      bool disable_connection_pooling,
       float load_server_info_timeout_srtt_multiplier,
       bool enable_connection_racing,
       bool enable_non_blocking_io,
@@ -569,9 +568,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if we always require handshake confirmation. If true, this will
   // introduce at least one RTT for the handshake before the client sends data.
   bool always_require_handshake_confirmation_;
-
-  // Set if we do not want connection pooling.
-  bool disable_connection_pooling_;
 
   // Specifies the ratio between time to load QUIC server information from disk
   // cache to 'smoothed RTT'. This ratio is used to calculate the timeout in

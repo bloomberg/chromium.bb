@@ -123,13 +123,6 @@ bool ShouldRetryWithoutAltSvcOnQuicErrors(
       "true");
 }
 
-bool ShouldQuicDisableConnectionPooling(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_connection_pooling"),
-      "true");
-}
-
 bool ShouldQuicEnableAlternativeServicesForDifferentHost(
     const VariationParameters& quic_trial_params) {
   return !base::LowerCaseEqualsASCII(
@@ -339,8 +332,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
   if (params->enable_quic) {
     params->quic_always_require_handshake_confirmation =
         ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params);
-    params->quic_disable_connection_pooling =
-        ShouldQuicDisableConnectionPooling(quic_trial_params);
     params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);

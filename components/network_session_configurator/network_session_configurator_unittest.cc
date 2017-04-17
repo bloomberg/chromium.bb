@@ -72,7 +72,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
-  EXPECT_FALSE(params_.quic_disable_connection_pooling);
   EXPECT_EQ(0.25f, params_.quic_load_server_info_timeout_srtt_multiplier);
   EXPECT_FALSE(params_.quic_enable_connection_racing);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
@@ -367,18 +366,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_always_require_handshake_confirmation);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicDisableConnectionPoolingFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["disable_connection_pooling"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_disable_connection_pooling);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

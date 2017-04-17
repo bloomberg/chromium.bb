@@ -772,7 +772,6 @@ QuicStreamFactory::QuicStreamFactory(
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
     bool always_require_handshake_confirmation,
-    bool disable_connection_pooling,
     float load_server_info_timeout_srtt_multiplier,
     bool enable_connection_racing,
     bool enable_non_blocking_io,
@@ -819,7 +818,6 @@ QuicStreamFactory::QuicStreamFactory(
       supported_versions_(supported_versions),
       always_require_handshake_confirmation_(
           always_require_handshake_confirmation),
-      disable_connection_pooling_(disable_connection_pooling),
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
       enable_connection_racing_(enable_connection_racing),
@@ -1065,7 +1063,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   }
 
   // Pool to active session to |destination| if possible.
-  if (!active_sessions_.empty() && !disable_connection_pooling_) {
+  if (!active_sessions_.empty()) {
     for (const auto& key_value : active_sessions_) {
       QuicChromiumClientSession* session = key_value.second;
       if (destination.Equals(all_sessions_[session].destination()) &&
@@ -1161,8 +1159,6 @@ bool QuicStreamFactory::OnResolution(const QuicSessionKey& key,
                                      const AddressList& address_list) {
   const QuicServerId& server_id(key.server_id());
   DCHECK(!HasActiveSession(server_id));
-  if (disable_connection_pooling_)
-    return false;
   for (const IPEndPoint& address : address_list) {
     if (!base::ContainsKey(ip_aliases_, address))
       continue;

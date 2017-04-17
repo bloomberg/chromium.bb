@@ -244,7 +244,6 @@ class QuicStreamFactoryTestBase {
         url4_(kServer4Url),
         privacy_mode_(PRIVACY_MODE_DISABLED),
         always_require_handshake_confirmation_(false),
-        disable_connection_pooling_(false),
         load_server_info_timeout_srtt_multiplier_(0.0f),
         enable_connection_racing_(enable_connection_racing),
         enable_non_blocking_io_(true),
@@ -275,7 +274,7 @@ class QuicStreamFactoryTestBase {
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
-        always_require_handshake_confirmation_, disable_connection_pooling_,
+        always_require_handshake_confirmation_,
         load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
         enable_non_blocking_io_, disable_disk_cache_, prefer_aes_,
         delay_tcp_race_,
@@ -776,7 +775,6 @@ class QuicStreamFactoryTestBase {
 
   // Variables to configure QuicStreamFactory.
   bool always_require_handshake_confirmation_;
-  bool disable_connection_pooling_;
   double load_server_info_timeout_srtt_multiplier_;
   bool enable_connection_racing_;
   bool enable_non_blocking_io_;
@@ -1189,55 +1187,6 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
   // EXPECT_EQ(GetActiveSession(host_port_pair_), GetActiveSession(server2));
 }
 
-TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
-  disable_connection_pooling_ = true;
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  MockQuicData socket_data1;
-  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data1.AddSocketDataToFactory(&socket_factory_);
-  MockQuicData socket_data2;
-  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data2.AddSocketDataToFactory(&socket_factory_);
-
-  HostPortPair server2(kServer2HostName, kDefaultServerPort);
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                           "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
-
-  QuicStreamRequest request(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request.Request(host_port_pair_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                                callback_.callback()));
-  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
-  EXPECT_TRUE(stream.get());
-
-  TestCompletionCallback callback;
-  QuicStreamRequest request2(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, "GET",
-                                 net_log_, callback.callback()));
-  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
-  EXPECT_TRUE(stream2.get());
-
-  EXPECT_NE(GetActiveSession(host_port_pair_), GetActiveSession(server2));
-
-  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-}
-
 TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1339,57 +1288,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
-  disable_connection_pooling_ = true;
-  Initialize();
-
-  MockQuicData socket_data1;
-  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data1.AddSocketDataToFactory(&socket_factory_);
-  MockQuicData socket_data2;
-  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data2.AddSocketDataToFactory(&socket_factory_);
-
-  HostPortPair server1(kDefaultServerHostName, 443);
-  HostPortPair server2(kServer2HostName, 443);
-
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
-
-  QuicStreamRequest request(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request.Request(server1, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                                callback_.callback()));
-  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
-  EXPECT_TRUE(stream.get());
-
-  TestCompletionCallback callback;
-  QuicStreamRequest request2(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, "GET",
-                                 net_log_, callback_.callback()));
-  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
-  EXPECT_TRUE(stream2.get());
-
-  EXPECT_NE(GetActiveSession(server1), GetActiveSession(server2));
-
-  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-}
-
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   Initialize();
   MockQuicData socket_data;
@@ -1434,63 +1332,6 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
-  disable_connection_pooling_ = true;
-  Initialize();
-
-  MockQuicData socket_data1;
-  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data1.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data1.AddSocketDataToFactory(&socket_factory_);
-  MockQuicData socket_data2;
-  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data2.AddWrite(
-      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
-                              kDefaultMaxUncompressedHeaderSize, nullptr));
-  socket_data2.AddSocketDataToFactory(&socket_factory_);
-
-  HostPortPair server1(kDefaultServerHostName, 443);
-  HostPortPair server2(kServer2HostName, 443);
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  test::AddPin(&transport_security_state_, kServer2HostName, primary_pin,
-               backup_pin);
-
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  verify_details.cert_verify_result.public_key_hashes.push_back(
-      test::GetTestHashValue(primary_pin));
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  host_resolver_.set_synchronous_mode(true);
-  host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
-  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
-
-  QuicStreamRequest request(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request.Request(server1, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                                callback_.callback()));
-  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
-  EXPECT_TRUE(stream.get());
-
-  TestCompletionCallback callback;
-  QuicStreamRequest request2(factory_.get(), &http_server_properties_);
-  EXPECT_EQ(OK, request2.Request(server2, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, "GET",
-                                 net_log_, callback_.callback()));
-  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
-  EXPECT_TRUE(stream2.get());
-
-  EXPECT_NE(GetActiveSession(server1), GetActiveSession(server2));
-
-  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
-  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
