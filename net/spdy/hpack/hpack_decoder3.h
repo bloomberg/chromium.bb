@@ -85,6 +85,9 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
                     size_t insert_count,
                     int64_t insert_time) override;
 
+    void AddToTotalHpackBytes(size_t delta) { total_hpack_bytes_ += delta; }
+    size_t total_hpack_bytes() const { return total_hpack_bytes_; }
+
    private:
     // If the caller doesn't provide a handler, the header list is stored in
     // this SpdyHeaderBlock.
@@ -92,6 +95,10 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
 
     // If non-NULL, handles decoded headers. Not owned.
     SpdyHeadersHandlerInterface* handler_;
+
+    // Total bytes that have been received as input (i.e. HPACK encoded)
+    // in the current HPACK block.
+    size_t total_hpack_bytes_;
 
     // Total bytes of the name and value strings in the current HPACK block.
     size_t total_uncompressed_bytes_;
@@ -107,10 +114,6 @@ class NET_EXPORT_PRIVATE HpackDecoder3 : public HpackDecoderInterface {
 
   // The actual decoder.
   Http2HpackDecoder hpack_decoder_;
-
-  // Total bytes that have been received as input (i.e. HPACK encoded)
-  // in the current HPACK block.
-  size_t total_hpack_bytes_;
 
   // How much encoded data this decoder is willing to buffer.
   size_t max_decode_buffer_size_bytes_;

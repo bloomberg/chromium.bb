@@ -23,6 +23,7 @@
 #include "net/spdy/hpack/hpack_huffman_table.h"
 #include "net/spdy/hpack/hpack_output_stream.h"
 #include "net/spdy/platform/api/spdy_string.h"
+#include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,19 +86,33 @@ class HpackDecoder3Peer {
 
 namespace {
 
+const bool kNoCheckDecodedSize = false;
+
 // Is HandleControlFrameHeadersStart to be called, and with what value?
 enum StartChoice { START_WITH_HANDLER, START_WITHOUT_HANDLER, NO_START };
 
 class HpackDecoder3Test
-    : public ::testing::TestWithParam<std::tuple<StartChoice, bool>> {
+    : public ::testing::TestWithParam<std::tuple<StartChoice, bool, bool>> {
  protected:
   HpackDecoder3Test() : decoder_(), decoder_peer_(&decoder_) {}
 
   void SetUp() override {
-    std::tie(start_choice_, randomly_split_input_buffer_) = GetParam();
+    std::tie(start_choice_, randomly_split_input_buffer_,
+             expect_total_hpack_bytes_) = GetParam();
+    if (start_choice_ != START_WITH_HANDLER) {
+      EXPECT_FALSE(expect_total_hpack_bytes_) << start_choice_;
+    }
+    // Set the flag true for when it is expected, and sometimes when it is not
+    // needed, as a way to test that it doesn't matter which value it has.
+    if (expect_total_hpack_bytes_ || start_choice_ != NO_START) {
+      FLAGS_chromium_http2_flag_log_compressed_size = true;
+    } else {
+      FLAGS_chromium_http2_flag_log_compressed_size = false;
+    }
   }
 
   void HandleControlFrameHeadersStart() {
+    bytes_passed_in_ = 0;
     switch (start_choice_) {
       case START_WITH_HANDLER:
         decoder_.HandleControlFrameHeadersStart(&handler_);
@@ -113,14 +128,19 @@ class HpackDecoder3Test
   bool HandleControlFrameHeadersData(SpdyStringPiece str) {
     VLOG(3) << "HandleControlFrameHeadersData:\n"
             << base::HexEncode(str.data(), str.size());
+    bytes_passed_in_ += str.size();
     return decoder_.HandleControlFrameHeadersData(str.data(), str.size());
   }
 
   bool HandleControlFrameHeadersComplete(size_t* size) {
-    return decoder_.HandleControlFrameHeadersComplete(size);
+    bool rc = decoder_.HandleControlFrameHeadersComplete(size);
+    if (size != nullptr) {
+      EXPECT_EQ(*size, bytes_passed_in_);
+    }
+    return rc;
   }
 
-  bool DecodeHeaderBlock(SpdyStringPiece str) {
+  bool DecodeHeaderBlock(SpdyStringPiece str, bool check_decoded_size = true) {
     // Don't call this again if HandleControlFrameHeadersData failed previously.
     EXPECT_FALSE(decode_has_failed_);
     HandleControlFrameHeadersStart();
@@ -142,9 +162,24 @@ class HpackDecoder3Test
       decode_has_failed_ = true;
       return false;
     }
-    if (!HandleControlFrameHeadersComplete(nullptr)) {
-      decode_has_failed_ = true;
-      return false;
+    // Want to get out the number of compressed bytes that were decoded,
+    // so pass in a pointer if no handler.
+    size_t total_hpack_bytes = 0;
+    if (start_choice_ == START_WITH_HANDLER && expect_total_hpack_bytes_) {
+      if (!HandleControlFrameHeadersComplete(nullptr)) {
+        decode_has_failed_ = true;
+        return false;
+      }
+      total_hpack_bytes = handler_.compressed_header_bytes_parsed();
+    } else {
+      if (!HandleControlFrameHeadersComplete(&total_hpack_bytes)) {
+        decode_has_failed_ = true;
+        return false;
+      }
+    }
+    EXPECT_EQ(total_hpack_bytes, bytes_passed_in_);
+    if (check_decoded_size && start_choice_ == START_WITH_HANDLER) {
+      EXPECT_EQ(handler_.header_bytes_parsed(), SizeOfHeaders(decoded_block()));
     }
     return true;
   }
@@ -164,6 +199,14 @@ class HpackDecoder3Test
     } else {
       return decoder_.decoded_block();
     }
+  }
+
+  static size_t SizeOfHeaders(const SpdyHeaderBlock& headers) {
+    size_t size = 0;
+    for (const auto& kv : headers) {
+      size += kv.first.size() + kv.second.size();
+    }
+    return size;
   }
 
   const SpdyHeaderBlock& DecodeBlockExpectingSuccess(SpdyStringPiece str) {
@@ -197,15 +240,24 @@ class HpackDecoder3Test
   TestHeadersHandler handler_;
   StartChoice start_choice_;
   bool randomly_split_input_buffer_;
+  bool expect_total_hpack_bytes_;
   bool decode_has_failed_ = false;
+  size_t bytes_passed_in_;
 };
 
 INSTANTIATE_TEST_CASE_P(
-    StartChoiceAndRandomlySplitChoice,
+    NoHandler,
     HpackDecoder3Test,
-    ::testing::Combine(
-        ::testing::Values(START_WITH_HANDLER, START_WITHOUT_HANDLER, NO_START),
-        ::testing::Bool()));
+    ::testing::Combine(::testing::Values(START_WITHOUT_HANDLER, NO_START),
+                       ::testing::Bool(),
+                       ::testing::Values(false)));
+
+INSTANTIATE_TEST_CASE_P(
+    WithHandler,
+    HpackDecoder3Test,
+    ::testing::Combine(::testing::Values(START_WITH_HANDLER),
+                       ::testing::Bool(),
+                       ::testing::Bool()));
 
 TEST_P(HpackDecoder3Test, AddHeaderDataWithHandleControlFrameHeadersData) {
   // The hpack decode buffer size is limited in size. This test verifies that
@@ -988,7 +1040,11 @@ TEST_P(HpackDecoder3Test, ReuseNameOfEvictedEntry) {
   // Confirm that entry has been added by re-using it.
   hbb.AppendIndexedHeader(62);
 
-  EXPECT_TRUE(DecodeHeaderBlock(hbb.buffer()));
+  // Can't have DecodeHeaderBlock do the default check for size of the decoded
+  // data because SpdyHeaderBlock will join multiple headers with the same
+  // name into a single entry, thus we won't see repeated occurrences of the
+  // name, instead seeing separators between values.
+  EXPECT_TRUE(DecodeHeaderBlock(hbb.buffer(), kNoCheckDecodedSize));
 
   SpdyHeaderBlock expected_header_set;
   expected_header_set.AppendValueOrAddHeader(name, value1);
@@ -1005,6 +1061,12 @@ TEST_P(HpackDecoder3Test, ReuseNameOfEvictedEntry) {
             2 * value1.size() + 2 * value2.size() + 2 * value3.size() + 5);
 
   EXPECT_EQ(expected_header_set, decoded_block());
+
+  if (start_choice_ == START_WITH_HANDLER) {
+    EXPECT_EQ(handler_.header_bytes_parsed(),
+              6 * name.size() + 2 * value1.size() + 2 * value2.size() +
+                  2 * value3.size());
+  }
 }
 
 }  // namespace

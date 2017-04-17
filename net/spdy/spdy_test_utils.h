@@ -68,7 +68,7 @@ void AddPin(TransportSecurityState* state,
 // reconstructs multiple header values for the same name.
 class TestHeadersHandler : public SpdyHeadersHandlerInterface {
  public:
-  TestHeadersHandler() : header_bytes_parsed_(0) {}
+  TestHeadersHandler() {}
 
   void OnHeaderBlockStart() override;
 
@@ -77,14 +77,18 @@ class TestHeadersHandler : public SpdyHeadersHandlerInterface {
   void OnHeaderBlockEnd(size_t header_bytes_parsed) override;
 
   void OnHeaderBlockEnd(size_t header_bytes_parsed,
-                        size_t /* compressed_header_bytes_parsed */) override;
+                        size_t compressed_header_bytes_parsed) override;
 
   const SpdyHeaderBlock& decoded_block() const { return block_; }
-  size_t header_bytes_parsed() { return header_bytes_parsed_; }
+  size_t header_bytes_parsed() const { return header_bytes_parsed_; }
+  size_t compressed_header_bytes_parsed() const {
+    return compressed_header_bytes_parsed_;
+  }
 
  private:
   SpdyHeaderBlock block_;
-  size_t header_bytes_parsed_;
+  size_t header_bytes_parsed_ = 0;
+  size_t compressed_header_bytes_parsed_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestHeadersHandler);
 };

@@ -153,12 +153,14 @@ void TestHeadersHandler::OnHeader(SpdyStringPiece name, SpdyStringPiece value) {
 
 void TestHeadersHandler::OnHeaderBlockEnd(size_t header_bytes_parsed) {
   header_bytes_parsed_ = header_bytes_parsed;
+  compressed_header_bytes_parsed_ = 0;
 }
 
 void TestHeadersHandler::OnHeaderBlockEnd(
     size_t header_bytes_parsed,
-    size_t /* compressed_header_bytes_parsed */) {
+    size_t compressed_header_bytes_parsed) {
   header_bytes_parsed_ = header_bytes_parsed;
+  compressed_header_bytes_parsed_ = compressed_header_bytes_parsed;
 }
 
 TestServerPushDelegate::TestServerPushDelegate() {}

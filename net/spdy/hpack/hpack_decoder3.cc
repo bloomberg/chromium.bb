@@ -8,6 +8,7 @@
 #include "net/http2/decoder/decode_buffer.h"
 #include "net/http2/decoder/decode_status.h"
 #include "net/spdy/platform/api/spdy_estimate_memory_usage.h"
+#include "net/spdy/spdy_flags.h"
 
 namespace net {
 namespace {
@@ -40,7 +41,6 @@ bool HpackDecoder3::HandleControlFrameHeadersData(const char* headers_data,
   if (!header_block_started_) {
     // Initialize the decoding process here rather than in
     // HandleControlFrameHeadersStart because that method is not always called.
-    total_hpack_bytes_ = 0;
     header_block_started_ = true;
     if (!hpack_decoder_.StartDecodingBlock()) {
       header_block_started_ = false;
@@ -58,7 +58,7 @@ bool HpackDecoder3::HandleControlFrameHeadersData(const char* headers_data,
                << max_decode_buffer_size_bytes_ << " < " << headers_data_length;
       return false;
     }
-    total_hpack_bytes_ += headers_data_length;
+    listener_adapter_.AddToTotalHpackBytes(headers_data_length);
     DecodeBuffer db(headers_data, headers_data_length);
     bool ok = hpack_decoder_.DecodeFragment(&db);
     DCHECK(!ok || db.Empty()) << "Remaining=" << db.Remaining();
@@ -73,7 +73,7 @@ bool HpackDecoder3::HandleControlFrameHeadersData(const char* headers_data,
 bool HpackDecoder3::HandleControlFrameHeadersComplete(size_t* compressed_len) {
   DVLOG(2) << "HpackDecoder3::HandleControlFrameHeadersComplete";
   if (compressed_len != nullptr) {
-    *compressed_len = total_hpack_bytes_;
+    *compressed_len = listener_adapter_.total_hpack_bytes();
   }
   if (!hpack_decoder_.EndDecodingBlock()) {
     DVLOG(3) << "EndDecodingBlock returned false";
@@ -125,6 +125,7 @@ void HpackDecoder3::ListenerAdapter::SetHeaderTableDebugVisitor(
 
 void HpackDecoder3::ListenerAdapter::OnHeaderListStart() {
   DVLOG(2) << "HpackDecoder3::ListenerAdapter::OnHeaderListStart";
+  total_hpack_bytes_ = 0;
   total_uncompressed_bytes_ = 0;
   decoded_block_.clear();
   if (handler_ != nullptr) {
@@ -152,7 +153,11 @@ void HpackDecoder3::ListenerAdapter::OnHeaderListEnd() {
   // We don't clear the SpdyHeaderBlock here to allow access to it until the
   // next HPACK block is decoded.
   if (handler_ != nullptr) {
-    handler_->OnHeaderBlockEnd(total_uncompressed_bytes_);
+    if (FLAGS_chromium_http2_flag_log_compressed_size) {
+      handler_->OnHeaderBlockEnd(total_uncompressed_bytes_, total_hpack_bytes_);
+    } else {
+      handler_->OnHeaderBlockEnd(total_uncompressed_bytes_);
+    }
     handler_ = nullptr;
   }
 }
