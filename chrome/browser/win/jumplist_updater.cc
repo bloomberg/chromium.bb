@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -117,6 +118,9 @@ bool JumpListUpdater::IsEnabled() {
 }
 
 bool JumpListUpdater::BeginUpdate() {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.BeginUpdateDuration");
+
   // This instance is expected to be one-time-use only.
   DCHECK(!destination_list_.get());
 
@@ -153,6 +157,9 @@ bool JumpListUpdater::BeginUpdate() {
 }
 
 bool JumpListUpdater::CommitUpdate() {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.CommitUpdateDuration");
+
   if (!destination_list_.get())
     return false;
 
@@ -161,6 +168,9 @@ bool JumpListUpdater::CommitUpdate() {
 }
 
 bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddTasksDuration");
+
   if (!destination_list_.get())
     return false;
 
@@ -198,7 +208,10 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
 bool JumpListUpdater::AddCustomCategory(const std::wstring& category_name,
                                         const ShellLinkItemList& link_items,
                                         size_t max_items) {
- if (!destination_list_.get())
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplistUpdater.AddCustomCategoryDuration");
+
+  if (!destination_list_.get())
     return false;
 
   // Retrieve the absolute path to "chrome.exe".
