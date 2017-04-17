@@ -649,7 +649,7 @@ bool JSONParser::DecodeUTF16(std::string* dest_string) {
     CBU8_APPEND_UNSAFE(code_unit8, offset, code_unit16_high);
   }
 
-  dest_string->append(code_unit8);
+  dest_string->append(code_unit8, offset);
   return true;
 }
 
