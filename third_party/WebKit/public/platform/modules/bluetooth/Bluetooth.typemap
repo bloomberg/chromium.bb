@@ -4,7 +4,7 @@
 
 mojom =
     "//third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom"
-public_headers = [ "//third_party/WebKit/Source/wtf/text/WTFString.h" ]
+public_headers = [ "//third_party/WebKit/Source/platform/wtf/text/WTFString.h" ]
 traits_headers =
     [ "//third_party/WebKit/Source/platform/mojo/BluetoothStructTraits.h" ]
 deps = [

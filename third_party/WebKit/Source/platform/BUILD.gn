@@ -1483,7 +1483,7 @@ component("platform") {
     "//services/service_manager/public/interfaces:interfaces_blink",
     "//skia",
     "//third_party:jpeg",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/iccjpeg",
     "//third_party/libpng",
@@ -1899,7 +1899,7 @@ test("blink_platform_unittests") {
 
   configs += [
     ":blink_platform_pch",
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -1919,7 +1919,7 @@ test("blink_platform_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/platform/loader:unit_tests",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//third_party/harfbuzz-ng",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -1947,12 +1947,12 @@ test("image_decode_bench") {
 
   deps = [
     ":platform",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//ui/gfx:test_support",
   ]
 
   configs += [
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -1969,7 +1969,7 @@ test("blink_platform_perftests") {
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -2050,7 +2050,7 @@ fuzzer_test("mhtml_parser_fuzzer") {
   dict = "//testing/libfuzzer/fuzzers/dicts/mhtml.dict"
   seed_corpus = "//third_party/WebKit/LayoutTests/mhtml"
   additional_configs = [
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 }

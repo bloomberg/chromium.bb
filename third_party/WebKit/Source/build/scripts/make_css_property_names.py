@@ -15,7 +15,7 @@ HEADER_TEMPLATE = """
 #define %(class_name)s_h
 
 #include "core/CoreExport.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 #include <stddef.h>
 
 namespace WTF {
@@ -85,9 +85,9 @@ GPERF_TEMPLATE = """
 #include "core/css/HashTools.h"
 #include <string.h>
 
-#include "wtf/ASCIICType.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #ifdef _MSC_VER
 // Disable the warnings from casting a 64-bit pointer to 32-bit long

@@ -94,7 +94,7 @@ source_set("generated") {
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
     "//third_party/WebKit/Source/platform:make_platform_generated",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//url",
     "//v8",
   ]
@@ -106,7 +106,7 @@ source_set("prerequisites") {
     "//skia",
     "//third_party/WebKit/Source/core/inspector:generated",
     "//third_party/WebKit/Source/core/probe:generated",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//third_party/angle:translator",
     "//third_party/iccjpeg",
     "//third_party/icu",
@@ -166,7 +166,7 @@ component("core") {
     ":core_generated",
     "//skia",
     "//third_party/WebKit/Source/platform",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//url",
     "//v8",
   ]
@@ -1067,7 +1067,7 @@ target(core_link_small_target_type, "core_generated") {
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
     "//third_party/WebKit/Source/bindings/modules/v8:bindings_modules_generated",
     "//third_party/WebKit/Source/platform:make_platform_generated",
-    "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/wtf",
     "//url",
     "//v8",
   ]

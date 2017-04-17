@@ -8,11 +8,11 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/push_messaging/PushSubscriptionOptionsInit.h"
+#include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
-#include "third_party/WebKit/Source/wtf/ASCIICType.h"
 
 namespace blink {
 namespace {

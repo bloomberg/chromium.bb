@@ -123,7 +123,7 @@ source_set("unit_tests") {
   defines = [ "INSIDE_BLINK" ]
 
   configs += [
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -155,7 +155,7 @@ source_set("test_support") {
   defines = [ "INSIDE_BLINK" ]
 
   configs += [
-    "//third_party/WebKit/Source/wtf:wtf_config",
+    "//third_party/WebKit/Source/platform/wtf:wtf_config",
     "//third_party/WebKit/Source:config",
   ]
 

@@ -79,11 +79,6 @@ config("blink_pch") {
 
 config("config") {
   include_dirs = [
-    # crbug.com/691465: Temporary solution to fix an issue related to MSVC-
-    # specific #include search order. This essentially lets
-    # #include "wtf/Foo.h" actually include "platform/wtf/Foo.h". This is okay
-    # because these files are equivalent if both exist.
-    "platform",
     ".",
     "..",
     "$root_gen_dir/blink",

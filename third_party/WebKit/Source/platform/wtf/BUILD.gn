@@ -2,25 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# The below is a temporary setup during the WTF migration project:
-# https://groups.google.com/a/chromium.org/d/msg/blink-dev/tLdAZCTlcAA/bYXVT8gYCAAJ
-#
-# We are moving wtf/ files to platform/wtf/ incrementally, thus, conceptually,
-# the "wtf" target in wtf/BUILD.gn is being split into two, in a way that
-# only wtf/ can refer the contents in platform/wtf/.
-#
-# To achieve this, we introduce a new target "platform_wtf" here, and configure
-# it so the source files are compiled in the same way as the original "wtf"
-# target. This gn file should only be used from wtf/BUILD.gn, and this
-# restriction is enforced by the visibility rule below (but it's okay to
-# #include a header in this directory from core/ or modules/).
-#
-# The following configurations are mostly copied from wtf/BUILD.gn, so we
-# can build the source files in the same way.
-#
-# When we finish moving all the files, "platform_wtf" target will take over
-# the role of "wtf".
-
 assert(!is_ios)
 
 import("//testing/test.gni")
@@ -28,7 +9,8 @@ import("//third_party/WebKit/Source/config.gni")
 
 visibility = [
   ":*",
-  "//third_party/WebKit/Source/wtf/*",
+  "//mojo/public/cpp/bindings/*",
+  "//third_party/WebKit/*",
 ]
 
 config("wtf_config") {
@@ -59,7 +41,7 @@ config("wtf_config") {
   }
 }
 
-component("platform_wtf") {
+component("wtf") {
   sources = [
     "ASCIICType.cpp",
     "ASCIICType.h",
@@ -391,7 +373,7 @@ test("wtf_unittests") {
   ]
 
   deps = [
-    ":platform_wtf",
+    ":wtf",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",

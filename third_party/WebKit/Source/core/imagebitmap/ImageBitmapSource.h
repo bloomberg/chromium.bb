@@ -12,7 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
-#include "third_party/WebKit/Source/wtf/Optional.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
