@@ -89,7 +89,9 @@ component("vr") {
       deps += [ "//third_party/openvr:openvr" ]
       sources += [
         "openvr/openvr_device.cc",
+        "openvr/openvr_device.h",
         "openvr/openvr_device_provider.cc",
+        "openvr/openvr_device_provider.h",
       ]
     }
   }
