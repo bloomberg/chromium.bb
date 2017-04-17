@@ -539,10 +539,9 @@ void HttpStreamFactoryImpl::JobController::OnOrphanedJobComplete(
 void HttpStreamFactoryImpl::JobController::AddConnectionAttemptsToRequest(
     Job* job,
     const ConnectionAttempts& attempts) {
-  if (is_preconnect_ || (job_bound_ && bound_job_ != job))
+  if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
-  DCHECK(request_);
   request_->AddConnectionAttempts(attempts);
 }
 
@@ -622,10 +621,9 @@ bool HttpStreamFactoryImpl::JobController::ShouldWait(Job* job) {
 void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
     Job* job,
     const SpdySessionKey& spdy_session_key) {
-  if (is_preconnect_ || (job_bound_ && bound_job_ != job))
+  if (is_preconnect_ || IsJobOrphaned(job))
     return;
 
-  DCHECK(request_);
   if (!request_->HasSpdySessionKey()) {
     RequestSet& request_set =
         factory_->spdy_session_request_map_[spdy_session_key];
@@ -637,9 +635,8 @@ void HttpStreamFactoryImpl::JobController::SetSpdySessionKey(
 
 void HttpStreamFactoryImpl::JobController::
     RemoveRequestFromSpdySessionRequestMapForJob(Job* job) {
-  if (is_preconnect_ || (job_bound_ && bound_job_ != job))
+  if (is_preconnect_ || IsJobOrphaned(job))
     return;
-  DCHECK(request_);
 
   RemoveRequestFromSpdySessionRequestMap();
 }
