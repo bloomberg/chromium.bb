@@ -615,7 +615,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   }
   CHECK(debug_weak_this.get());
 
-  ResourceIdSet referenced_resources;
+  std::vector<ResourceId> referenced_resources;
   size_t reserve_size = frame.resource_list.size();
   referenced_resources.reserve(reserve_size);
 
@@ -704,7 +704,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
           invalid_frame = true;
           break;
         }
-        referenced_resources.insert(resource_id);
+        referenced_resources.push_back(resource_id);
       }
     }
   }
@@ -714,8 +714,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   CHECK(debug_weak_this.get());
   valid_surfaces_.insert(surface->surface_id());
 
+  ResourceIdSet resource_set(std::move(referenced_resources),
+                             base::KEEP_FIRST_OF_DUPES);
   if (provider_)
-    provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
+    provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
   CHECK(debug_weak_this.get());
 
   gfx::Rect damage_rect;

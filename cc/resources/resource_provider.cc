@@ -1623,7 +1623,7 @@ void ResourceProvider::ReceiveFromChild(
     // Don't allocate a texture for a child.
     resource->allocated = true;
     resource->imported_count = 1;
-    child_info.parent_to_child_map[local_id] = it->id;
+    resource->id_in_child = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
   }
 }
@@ -1835,9 +1835,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     Resource& resource = it->second;
 
     DCHECK(!resource.locked_for_write);
-    DCHECK(child_info->parent_to_child_map.count(local_id));
 
-    ResourceId child_id = child_info->parent_to_child_map[local_id];
+    ResourceId child_id = resource.id_in_child;
     DCHECK(child_info->child_to_parent_map.count(child_id));
 
     bool is_lost = resource.lost ||
@@ -1892,7 +1891,6 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       }
     }
 
-    child_info->parent_to_child_map.erase(local_id);
     child_info->child_to_parent_map.erase(child_id);
     resource.imported_count = 0;
     DeleteResourceInternal(it, style);
@@ -1924,8 +1922,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
                                     blocking_main_thread_task_runner_);
 
   if (child_info->marked_for_deletion &&
-      child_info->parent_to_child_map.empty()) {
-    DCHECK(child_info->child_to_parent_map.empty());
+      child_info->child_to_parent_map.empty()) {
     children_.erase(child_it);
   }
 }

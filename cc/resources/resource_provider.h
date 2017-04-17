@@ -619,6 +619,7 @@ class CC_EXPORT ResourceProvider
     void WaitSyncToken(gpu::gles2::GLES2Interface* gl);
 
     int child_id;
+    ResourceId id_in_child;
     unsigned gl_id;
     // Pixel buffer used for set pixels without unnecessary copying.
     unsigned gl_pixel_buffer_id;
@@ -696,7 +697,6 @@ class CC_EXPORT ResourceProvider
     ~Child();
 
     ResourceIdMap child_to_parent_map;
-    ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
     bool marked_for_deletion;
     bool needs_sync_tokens;
