@@ -87,6 +87,7 @@ if 'LLVM_REPO_URL' in os.environ:
 DIA_DLL = {
   '2013': 'msdia120.dll',
   '2015': 'msdia140.dll',
+  '2017': 'msdia140.dll',
 }
 
 
