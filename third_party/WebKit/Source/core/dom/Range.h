@@ -140,7 +140,6 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
   Node* PastLastNode() const;
 
   // Not transform-friendly
-  void TextRects(Vector<IntRect>&, bool use_selection_height = false) const;
   IntRect BoundingBox() const;
 
   // Transform-friendly

@@ -1440,35 +1440,40 @@ Node* Range::PastLastNode() const {
   return EndPosition().NodeAsRangePastLastNode();
 }
 
+// TODO(hs1217.lee):: we should move this implement to VisibleUnits and then
+// this function will remove.
+static Vector<IntRect> computeTextRects(const EphemeralRange&);
+
 IntRect Range::BoundingBox() const {
   IntRect result;
-  Vector<IntRect> rects;
-  TextRects(rects);
+  const Vector<IntRect>& rects = computeTextRects(EphemeralRange(this));
   for (const IntRect& rect : rects)
     result.Unite(rect);
   return result;
 }
 
-void Range::TextRects(Vector<IntRect>& rects, bool use_selection_height) const {
-  Node* start_container = &start_.Container();
+static Vector<IntRect> computeTextRects(const EphemeralRange& range) {
+  const Position& start_position = range.StartPosition();
+  const Position& end_position = range.EndPosition();
+  Node* const start_container = start_position.ComputeContainerNode();
   DCHECK(start_container);
-  Node* end_container = &end_.Container();
+  Node* const end_container = end_position.ComputeContainerNode();
   DCHECK(end_container);
 
-  Node* stop_node = PastLastNode();
-  for (Node* node = FirstNode(); node != stop_node;
-       node = NodeTraversal::Next(*node)) {
-    LayoutObject* r = node->GetLayoutObject();
-    if (!r || !r->IsText())
+  Vector<IntRect> rects;
+  for (const Node& node : range.Nodes()) {
+    LayoutObject* const layoutObject = node.GetLayoutObject();
+    if (!layoutObject || !layoutObject->IsText())
       continue;
-    LayoutText* layout_text = ToLayoutText(r);
-    unsigned start_offset = node == start_container ? start_.Offset() : 0;
+    LayoutText* layout_text = ToLayoutText(layoutObject);
+    unsigned start_offset =
+        node == start_container ? start_position.OffsetInContainerNode() : 0;
     unsigned end_offset = node == end_container
-                              ? end_.Offset()
+                              ? end_position.OffsetInContainerNode()
                               : std::numeric_limits<unsigned>::max();
-    layout_text->AbsoluteRectsForRange(rects, start_offset, end_offset,
-                                       use_selection_height);
+    layout_text->AbsoluteRectsForRange(rects, start_offset, end_offset);
   }
+  return rects;
 }
 
 void Range::TextQuads(Vector<FloatQuad>& quads,
