@@ -2214,7 +2214,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
       DownloadUrlParameters::CreateForWebContentsMainFrame(
           web_contents, url));
   params->set_file_path(target_file_full_path);
-  params->set_transient(true);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2232,7 +2231,39 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   ASSERT_EQ(1u, downloads.size());
   content::DownloadUpdatedObserver(
       downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, TransientDownload) {
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+
+  base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  base::ScopedTempDir other_directory;
+  ASSERT_TRUE(other_directory.CreateUniqueTempDir());
+  base::FilePath target_file_full_path =
+      other_directory.GetPath().Append(file.BaseName());
+  content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
+  std::unique_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::CreateForWebContentsMainFrame(web_contents, url));
+  params->set_file_path(target_file_full_path);
+  params->set_transient(true);
+  DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
+  observer->WaitForFinished();
+  EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+
+  // Check state.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(CheckDownloadFullPaths(browser(), target_file_full_path,
+                                     OriginFile(file)));
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
   ASSERT_TRUE(downloads[0]->IsTransient());
+  ASSERT_FALSE(downloads[0]->IsTemporary());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
