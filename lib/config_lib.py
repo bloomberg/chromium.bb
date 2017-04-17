@@ -126,7 +126,8 @@ def UseBuildbucketScheduler(config):
           config.name in (constants.CQ_MASTER,
                           constants.CANARY_MASTER,
                           constants.PFQ_MASTER,
-                          constants.ANDROID_PFQ_MASTER,
+                          constants.MNC_ANDROID_PFQ_MASTER,
+                          constants.NYC_ANDROID_PFQ_MASTER,
                           constants.TOOLCHAIN_MASTTER,
                           constants.PRE_CQ_LAUNCHER_NAME))
 

@@ -512,9 +512,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
                         'type for a master build. Please consult with '
                         'chrome-infra before adding this config.' %
                         (config.name, config.build_type))
-        self.assertFalse(config.build_type in found_types,
-                         'Duplicate master configs of build type %s' %
-                         config.build_type)
+        # We have multiple masters for Android PFQ.
+        self.assertTrue(config.build_type not in found_types or
+                        config.build_type == 'android',
+                        'Duplicate master configs of build type %s' %
+                        config.build_type)
         found_types.add(config.build_type)
 
   def _getSlaveConfigsForMaster(self, master_config_name):

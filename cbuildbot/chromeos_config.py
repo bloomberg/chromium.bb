@@ -1991,8 +1991,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
+  # Generic template shared by all Android versions.
   site_config.AddTemplate(
-      'android_pfq',
+      'generic_android_pfq',
       site_config.templates.default_hw_tests_override,
       build_type=constants.ANDROID_PFQ_TYPE,
       important=True,
@@ -2000,51 +2001,103 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
-      android_package='android-container',
-      android_import_branch='git_mnc-dr-arc-dev',
       description='Preflight Android Uprev & Build (internal)',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
 
-  master_config = site_config.Add(
-      'master-android-pfq',
-      site_config.templates.android_pfq,
+  # Template for Android MNC.
+  # For historical reason, we want to name MNC Android PFQ builders as
+  # $BOARD-android-pfq, so we should name this template also without mnc-
+  # prefix (see testConfigNamesMatchTemplate in chromeos_config_unittest).
+  site_config.AddTemplate(
+      'android_pfq',
+      site_config.templates.generic_android_pfq,
+      android_package='android-container',
+      android_import_branch='git_mnc-dr-arc-dev',
+  )
+
+  # Template for Android NYC.
+  site_config.AddTemplate(
+      'nyc_android_pfq',
+      site_config.templates.generic_android_pfq,
+      android_package='android-container-nyc',
+      android_import_branch='git_nyc-mr1-arc',
+  )
+
+  # Mixin for masters.
+  site_config.AddTemplate(
+      'master_android_pfq_mixin',
       site_config.templates.internal,
+      site_config.templates.no_vmtest_builder,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       boards=[],
       master=True,
-      slave_configs=[],
       push_overlays=constants.BOTH_OVERLAYS,
   )
 
-  _android_pfq_hwtest_boards = frozenset([
+  # Android MNC master.
+  mnc_master_config = site_config.Add(
+      constants.MNC_ANDROID_PFQ_MASTER,
+      site_config.templates.android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+  )
+
+  # Android NYC master.
+  nyc_master_config = site_config.Add(
+      constants.NYC_ANDROID_PFQ_MASTER,
+      site_config.templates.nyc_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+  )
+
+  _mnc_hwtest_boards = frozenset([
       'cyan',
       'samus',
       'veyron_minnie',
   ])
-
-  _android_pfq_no_hwtest_boards = frozenset([
+  _mnc_no_hwtest_boards = frozenset([
       'glados-cheets',
   ])
+  _nyc_hwtest_boards = frozenset([
+  ])
+  _nyc_no_hwtest_boards = frozenset([
+      'caroline',
+      'reef',
+  ])
 
-  master_config.AddSlaves(
+  # Android MNC slaves.
+  # For historical reason, slave names do not contain "mnc".
+  mnc_master_config.AddSlaves(
       site_config.AddForBoards(
           'android-pfq',
-          _android_pfq_hwtest_boards,
+          _mnc_hwtest_boards,
           board_configs,
           site_config.templates.android_pfq,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'android-pfq',
+          _mnc_no_hwtest_boards,
+          board_configs,
+          site_config.templates.android_pfq,
       )
   )
 
-  master_config.AddSlaves(
+  # Android NYC slaves.
+  nyc_master_config.AddSlaves(
       site_config.AddForBoards(
-          'android-pfq',
-          _android_pfq_no_hwtest_boards,
+          'nyc-android-pfq',
+          _nyc_hwtest_boards,
           board_configs,
-          site_config.templates.android_pfq,
+          site_config.templates.nyc_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'nyc-android-pfq',
+          _nyc_no_hwtest_boards,
+          board_configs,
+          site_config.templates.nyc_android_pfq,
       )
   )
 
