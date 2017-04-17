@@ -523,8 +523,10 @@ void vttdemux::CloseFiles(metadata_map_t* metadata_map) {
     metadata_map_t::value_type& v = *i++;
     MetadataInfo& info = v.second;
 
-    fclose(info.file);
-    info.file = NULL;
+    if (info.file != NULL) {
+      fclose(info.file);
+      info.file = NULL;
+    }
   }
 }
 
