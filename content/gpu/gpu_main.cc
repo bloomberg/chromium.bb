@@ -191,9 +191,6 @@ int GpuMain(const MainFunctionParams& parameters) {
       SEM_FAILCRITICALERRORS |
       SEM_NOGPFAULTERRORBOX |
       SEM_NOOPENFILEERRORBOX);
-#elif defined(USE_X11)
-  ui::SetDefaultX11ErrorHandlers();
-
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
@@ -218,6 +215,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(USE_X11)
     // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
     // and https://crbug.com/326995.
+    ui::SetDefaultX11ErrorHandlers();
+    if (!gfx::GetXDisplay())
+      return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
     main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
     event_source = ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE)
