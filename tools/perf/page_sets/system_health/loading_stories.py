@@ -39,9 +39,10 @@ class LoadYahooStory(_LoadingStory):
   URL = 'https://search.yahoo.com/search;_ylt=?p=google'
 
 
-class LoadAmazonStory(_LoadingStory):
+class LoadAmazonDesktopStory(_LoadingStory):
   NAME = 'load:search:amazon'
   URL = 'https://www.amazon.com/s/?field-keywords=nexus'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadTaobaoDesktopStory(_LoadingStory):
@@ -98,9 +99,10 @@ class LoadVkStory(_LoadingStory):
   TAGS = [story_tags.INTERNATIONAL]
 
 
-class LoadInstagramStory(_LoadingStory):
+class LoadInstagramDesktopStory(_LoadingStory):
   NAME = 'load:social:instagram'
   URL = 'https://www.instagram.com/selenagomez/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
 class LoadPinterestStory(_LoadingStory):
@@ -208,6 +210,14 @@ class LoadWashingtonPostMobileStory(_LoadingStory):
 class LoadWikipediaStory(_LoadingStory):
   NAME = 'load:news:wikipedia'
   URL = 'https://en.wikipedia.org/wiki/Science'
+  TAGS = [story_tags.EMERGING_MARKET]
+
+
+class LoadIrctcStory(_LoadingStory):
+  NAME = 'load:news:irctc'
+  URL = 'https://www.irctc.co.in'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET]
 
 
 ################################################################################
@@ -220,6 +230,7 @@ class LoadYouTubeStory(_LoadingStory):
   NAME = 'load:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
   PLATFORM_SPECIFIC = True
+  TAGS = [story_tags.EMERGING_MARKET]
 
 
 class LoadDailymotionStory(_LoadingStory):
@@ -269,6 +280,7 @@ class LoadFacebookPhotosMobileStory(_LoadingStory):
   URL = (
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET]
 
 
 class LoadFacebookPhotosDesktopStory(_LoadingStory):
@@ -330,11 +342,6 @@ class LoadGmailMobileStory(_LoadGmailBaseStory):
     action_runner.WaitForElement('#apploadingdiv')
     action_runner.WaitForJavaScriptCondition(
         'document.getElementById("apploadingdiv").style.height === "0px"')
-
-class LoadMapsStory(_LoadingStory):
-  NAME = 'load:tools:maps'
-  URL = 'https://www.google.com/maps/place/London,+UK/'
-
 
 class LoadStackOverflowStory(_LoadingStory):
   NAME = 'load:tools:stackoverflow'

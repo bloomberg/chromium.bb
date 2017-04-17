@@ -25,6 +25,9 @@ IMAGES = Tag(
 INTERNATIONAL = Tag(
     'international', 'Story has navigations to websites with content in non '
     'English languages.')
+EMERGING_MARKET = Tag(
+    'emerging_market', 'Story has significant usage in emerging markets with '
+    'low-end mobile devices and slow network connections.')
 JAVASCRIPT_HEAVY = Tag(
     'javascript_heavy', 'Story has navigations to websites with heavy usages '
     'of JavaScript. The story uses 20Mb+ memory for javascript and local '
