@@ -197,7 +197,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) override;
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
-                          const cryptohome::AuthorizationRequest& auth,
                           const VoidDBusMethodCallback& callback) override;
   void SetDircryptoMigrationProgressHandler(
       const DircryptoMigrationProgessHandler& handler) override;

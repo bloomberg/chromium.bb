@@ -170,6 +170,10 @@ class CHROMEOS_EXPORT MountParameters {
   // forces to use the new encryption. That is, makes it an error to mount
   // an existing home directory encrypted in the old way (ecryptfs).
   bool force_dircrypto_if_available = false;
+
+  // If |true|, mounts the existing ecryptfs vault to a temporary location while
+  // setting up a new dircrypto directory.
+  bool to_migrate_from_ecryptfs = false;
 };
 
 // This function returns true if cryptohome of |account_id| is migrated to

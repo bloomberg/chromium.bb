@@ -922,7 +922,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
-                          const cryptohome::AuthorizationRequest& auth,
                           const VoidDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeMigrateToDircrypto);
@@ -932,7 +931,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id_proto);
-    writer.AppendProtoAsArrayOfBytes(auth);
 
     // The migration progress takes unpredicatable time depending on the
     // user file size and the number. Setting the time limit to infinite.

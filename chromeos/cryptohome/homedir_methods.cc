@@ -222,6 +222,9 @@ class HomedirMethodsImpl : public HomedirMethods {
     if (request.force_dircrypto_if_available)
       request_proto.set_force_dircrypto_if_available(true);
 
+    if (request.to_migrate_from_ecryptfs)
+      request_proto.set_to_migrate_from_ecryptfs(true);
+
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
         id, auth_proto, request_proto,
         base::Bind(&HomedirMethodsImpl::OnMountExCallback,
@@ -297,15 +300,10 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
   void MigrateToDircrypto(const Identification& id,
-                          const Authorization& auth,
                           const DBusResultCallback& callback) override {
-    cryptohome::AuthorizationRequest auth_proto;
-    FillAuthorizationProtobuf(auth, &auth_proto);
-
     DBusThreadManager::Get()->GetCryptohomeClient()->MigrateToDircrypto(
-        id, auth_proto,
-        base::Bind(&HomedirMethodsImpl::OnDBusResultCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        id, base::Bind(&HomedirMethodsImpl::OnDBusResultCallback,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:

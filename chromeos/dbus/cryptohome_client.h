@@ -573,11 +573,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // start migration, and is immediately called back by |callback|. The actual
   // result response is done via DircryptoMigrationProgress callback with its
   // status flag indicating the completion.
-  // MigrateToDircrypto attempts to migrate the home dir using given
-  // authorization to the new "dircrypto" encryption.
+  // MigrateToDircrypto attempts to migrate the home dir to the new "dircrypto"
+  // encryption.
   virtual void MigrateToDircrypto(
       const cryptohome::Identification& cryptohome_id,
-      const cryptohome::AuthorizationRequest& auth,
       const VoidDBusMethodCallback& callback) = 0;
 
   // Asynchronously calls RemoveFirmwareManagementParameters method. |callback|

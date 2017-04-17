@@ -254,12 +254,37 @@ void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
 void EncryptionMigrationScreenHandler::StartMigration() {
   UpdateUIState(UIState::MIGRATING);
 
+  // Mount the existing eCryptfs vault to a temporary location for migration.
+  cryptohome::MountParameters mount(false);
+  mount.to_migrate_from_ecryptfs = true;
+  cryptohome::HomedirMethods::GetInstance()->MountEx(
+      cryptohome::Identification(user_context_.GetAccountId()),
+      cryptohome::Authorization(GetAuthKey()), mount,
+      base::Bind(&EncryptionMigrationScreenHandler::OnMountExistingVault,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EncryptionMigrationScreenHandler::OnMountExistingVault(
+    bool success,
+    cryptohome::MountError return_code,
+    const std::string& mount_hash) {
+  if (!success || return_code != cryptohome::MOUNT_ERROR_NONE) {
+    UpdateUIState(UIState::MIGRATION_FAILED);
+    return;
+  }
+
   DBusThreadManager::Get()
       ->GetCryptohomeClient()
       ->SetDircryptoMigrationProgressHandler(
           base::Bind(&EncryptionMigrationScreenHandler::OnMigrationProgress,
                      weak_ptr_factory_.GetWeakPtr()));
+  cryptohome::HomedirMethods::GetInstance()->MigrateToDircrypto(
+      cryptohome::Identification(user_context_.GetAccountId()),
+      base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
+cryptohome::KeyDefinition EncryptionMigrationScreenHandler::GetAuthKey() {
   // |auth_key| is created in the same manner as CryptohomeAuthenticator.
   const Key* key = user_context_.GetKey();
   // If the |key| is a plain text password, crash rather than attempting to
@@ -270,13 +295,8 @@ void EncryptionMigrationScreenHandler::StartMigration() {
   // Chrome OS M38 and older will have a legacy key with no label while those
   // created by Chrome OS M39 and newer will have a key with the label
   // kCryptohomeGAIAKeyLabel.
-  const cryptohome::KeyDefinition auth_key(key->GetSecret(), std::string(),
-                                           cryptohome::PRIV_DEFAULT);
-  cryptohome::HomedirMethods::GetInstance()->MigrateToDircrypto(
-      cryptohome::Identification(user_context_.GetAccountId()),
-      cryptohome::Authorization(auth_key),
-      base::Bind(&EncryptionMigrationScreenHandler::OnMigrationRequested,
-                 weak_ptr_factory_.GetWeakPtr()));
+  return cryptohome::KeyDefinition(key->GetSecret(), std::string(),
+                                   cryptohome::PRIV_DEFAULT);
 }
 
 void EncryptionMigrationScreenHandler::OnMigrationProgress(

@@ -533,7 +533,8 @@ void FakeCryptohomeClient::MountEx(
       reply.MutableExtension(cryptohome::MountReply::reply);
   mount->set_sanitized_username(GetStubSanitizedUsername(cryptohome_id));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestEncryptionMigrationUI)) {
+          switches::kTestEncryptionMigrationUI) &&
+      !request.to_migrate_from_ecryptfs()) {
     reply.set_error(cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION);
   }
   ReturnProtobufMethodCallback(reply, callback);
@@ -592,7 +593,6 @@ void FakeCryptohomeClient::FlushAndSignBootAttributes(
 
 void FakeCryptohomeClient::MigrateToDircrypto(
     const cryptohome::Identification& cryptohome_id,
-    const cryptohome::AuthorizationRequest& auth,
     const VoidDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));

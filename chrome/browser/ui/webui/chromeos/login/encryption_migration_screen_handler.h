@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
@@ -61,11 +62,15 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // Updates UI state.
   void UpdateUIState(UIState state);
 
-  // Requests cryptohome to start encryption migration.
   void CheckAvailableStorage();
   void OnGetAvailableStorage(int64_t size);
   void WaitBatteryAndMigrate();
   void StartMigration();
+  void OnMountExistingVault(bool success,
+                            cryptohome::MountError return_code,
+                            const std::string& mount_hash);
+  // Creates authorization key for MountEx method using |user_context_|.
+  cryptohome::KeyDefinition GetAuthKey();
 
   // Handlers for cryptohome API callbacks.
   void OnMigrationProgress(cryptohome::DircryptoMigrationStatus status,
