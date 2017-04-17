@@ -1220,4 +1220,55 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   VerifyPostMessageToOpener(popup->GetMainFrame(), extension_frame);
 }
 
+// Test that when a web site has an extension iframe, navigating that iframe to
+// a different web site without --site-per-process will place it in the parent
+// frame's process.  See https://crbug.com/711006.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       ExtensionFrameNavigatesToParentSiteInstance) {
+  // This test matters only *without* --site-per-process.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  // Create a simple extension without a background page.
+  const Extension* extension = CreateExtension("Extension", false);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to a web page with a blank iframe.  There should be no
+  // extension frames yet.
+  NavigateToURL(embedded_test_server()->GetURL("a.com", "/blank_iframe.html"));
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate subframe to an extension URL.  This should go into a new
+  // extension process.
+  const GURL extension_url(extension->url().Resolve("empty.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0", extension_url));
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+  {
+    content::RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
+    EXPECT_NE(subframe->GetProcess(), main_frame->GetProcess());
+    EXPECT_NE(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+  }
+
+  // Navigate subframe to b.com.  This should be brought back to the parent
+  // frame's (a.com) process.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/empty.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0", b_url));
+  {
+    content::RenderFrameHost* subframe = ChildFrameAt(main_frame, 0);
+    EXPECT_EQ(subframe->GetProcess(), main_frame->GetProcess());
+    EXPECT_EQ(subframe->GetSiteInstance(), main_frame->GetSiteInstance());
+  }
+}
+
 }  // namespace extensions

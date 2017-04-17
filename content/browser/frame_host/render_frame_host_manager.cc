@@ -1454,6 +1454,33 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME);
   }
 
+  // Keep subframes in the parent's SiteInstance unless a dedicated process is
+  // required for either the parent or the subframe's destination URL.  This
+  // isn't a strict invariant but rather a heuristic to avoid unnecessary
+  // OOPIFs; see https://crbug.com/711006.  Note that this shouldn't apply to
+  // TopDocumentIsolation, so do this after TDI checks above.
+  if (!frame_tree_node_->IsMainFrame()) {
+    RenderFrameHostImpl* parent =
+        frame_tree_node_->parent()->current_frame_host();
+    bool dest_url_requires_dedicated_process =
+        SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
+                                                          dest_url);
+    // Web iframes embedded in DevTools extensions should not reuse the parent
+    // SiteInstance, but DevTools extensions are currently kept in the DevTools
+    // SiteInstance, which is not considered to require a dedicated process.
+    // Work around this by also checking whether the parent's URL requires a
+    // dedicated process.
+    // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
+    bool parent_url_requires_dedicated_process =
+        SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+            browser_context, parent->last_successful_url());
+    if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
+        !dest_url_requires_dedicated_process &&
+        !parent_url_requires_dedicated_process) {
+      return SiteInstanceDescriptor(parent->GetSiteInstance());
+    }
+  }
+
   // Start the new renderer in a new SiteInstance, but in the current
   // BrowsingInstance.
   return SiteInstanceDescriptor(browser_context, dest_url,
