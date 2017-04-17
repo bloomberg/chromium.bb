@@ -153,10 +153,10 @@ NSString* PromptActionString(NSString* scheme) {
     return NO;
   NSURL* URL = net::NSURLWithGURL(gURL);
 
-  // iOS 10.3.2 introduced new prompts when facetime: and facetime-audio:
+  // iOS 10.3 introduced new prompts when facetime: and facetime-audio:
   // URL schemes are opened. It is no longer necessary for Chrome to present
   // another prompt before the system-provided prompt.
-  if (!base::ios::IsRunningOnOrLater(10, 3, 2) && UrlHasPhoneCallScheme(gURL)) {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0) && UrlHasPhoneCallScheme(gURL)) {
     // Showing an alert view immediately has a side-effect where focus is
     // taken from the UIWebView so quickly that mouseup events are lost and
     // buttons get 'stuck' in the on position. The solution is to defer
