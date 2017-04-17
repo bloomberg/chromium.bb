@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -27,7 +26,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
@@ -159,17 +157,18 @@ void AddViewToLayout(views::GridLayout* layout, views::View* view) {
 
 }  // namespace
 
-void InitWindowTypeLauncher() {
+void InitWindowTypeLauncher(const base::Closure& show_views_examples_callback) {
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new WindowTypeLauncher, Shell::GetPrimaryRootWindow(),
-      gfx::Rect(120, 150, 300, 410));
+      new WindowTypeLauncher(show_views_examples_callback),
+      Shell::GetPrimaryRootWindow(), gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ::wm::SetShadowElevation(widget->GetNativeView(),
                            ::wm::ShadowElevation::MEDIUM);
   widget->Show();
 }
 
-WindowTypeLauncher::WindowTypeLauncher()
+WindowTypeLauncher::WindowTypeLauncher(
+    const base::Closure& show_views_examples_callback)
     : create_button_(
           MdTextButton::Create(this, base::ASCIIToUTF16("Create Window"))),
       panel_button_(
@@ -204,7 +203,8 @@ WindowTypeLauncher::WindowTypeLauncher()
           MdTextButton::Create(this, base::ASCIIToUTF16("Show/Hide a Window"))),
       show_web_notification_(MdTextButton::Create(
           this,
-          base::ASCIIToUTF16("Show a web/app notification"))) {
+          base::ASCIIToUTF16("Show a web/app notification"))),
+      show_views_examples_callback_(show_views_examples_callback) {
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
@@ -300,16 +300,14 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
         ->message_center()
         ->AddNotification(std::move(notification));
   } else if (sender == examples_button_) {
-    views::examples::ShowExamplesWindowWithContent(
-        views::examples::DO_NOTHING_ON_CLOSE,
-        ShellContentState::GetInstance()->GetActiveBrowserContext(), NULL);
+    show_views_examples_callback_.Run();
   }
 }
 
 void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case COMMAND_NEW_WINDOW:
-      InitWindowTypeLauncher();
+      InitWindowTypeLauncher(show_views_examples_callback_);
       break;
     case COMMAND_TOGGLE_FULLSCREEN:
       GetWidget()->SetFullscreen(!GetWidget()->IsFullscreen());

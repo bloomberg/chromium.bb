@@ -997,6 +997,8 @@ static_library("ash_shell_lib") {
     "shell/toplevel_window.cc",
     "shell/toplevel_window.h",
     "shell/widgets.cc",
+    "shell/window_type_launcher.cc",
+    "shell/window_type_launcher.h",
     "shell/window_watcher.cc",
     "shell/window_watcher.h",
     "shell/window_watcher_shelf_item_delegate.cc",
@@ -1023,6 +1025,7 @@ static_library("ash_shell_lib") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/message_center",
     "//ui/views",
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_lib",
@@ -1041,8 +1044,6 @@ static_library("ash_shell_lib_with_content") {
     "shell/content/client/shell_main_delegate.h",
     "shell/content/shell_content_state_impl.cc",
     "shell/content/shell_content_state_impl.h",
-    "shell/window_type_launcher.cc",
-    "shell/window_type_launcher.h",
   ]
 
   deps = [

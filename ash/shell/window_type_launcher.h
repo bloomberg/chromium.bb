@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -20,6 +21,12 @@ class MenuRunner;
 namespace ash {
 namespace shell {
 
+// Creates a Widget to host WindowTypeLauncher. |show_views_examples_callback|
+// is Run() when the user clicks on the views examples button. This should
+// be bound to either views::examples::ShowExamplesWindow() or
+// views::examples::ShowExamplesWindowWithContent().
+void InitWindowTypeLauncher(const base::Closure& show_views_examples_callback);
+
 // The contents view/delegate of a window that shows some buttons that create
 // various window types.
 class WindowTypeLauncher : public views::WidgetDelegateView,
@@ -27,7 +34,8 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
                            public views::MenuDelegate,
                            public views::ContextMenuController {
  public:
-  WindowTypeLauncher();
+  explicit WindowTypeLauncher(
+      const base::Closure& show_views_examples_callback);
   ~WindowTypeLauncher() override;
 
  private:
@@ -73,6 +81,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::Button* show_hide_window_button_;
   views::Button* show_web_notification_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
+  base::Closure show_views_examples_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

@@ -11,6 +11,7 @@
 #include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
+#include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
 #include "base/bind.h"
@@ -39,6 +40,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -48,7 +50,6 @@
 
 namespace ash {
 namespace shell {
-void InitWindowTypeLauncher();
 
 namespace {
 
@@ -142,7 +143,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   window_watcher_.reset(new ash::shell::WindowWatcher);
   display::Screen::GetScreen()->AddObserver(window_watcher_.get());
 
-  ash::shell::InitWindowTypeLauncher();
+  ash::shell::InitWindowTypeLauncher(base::Bind(
+      &views::examples::ShowExamplesWindowWithContent,
+      views::examples::DO_NOTHING_ON_CLOSE,
+      ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr));
 
   // Initialize the example app list presenter.
   example_app_list_presenter_ = base::MakeUnique<ExampleAppListPresenter>();
