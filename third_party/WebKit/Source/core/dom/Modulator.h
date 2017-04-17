@@ -78,8 +78,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual Vector<String> ModuleRequestsFromScriptModule(ScriptModule) = 0;
 
-  virtual void ExecuteModule(ScriptModule) = 0;
-
  private:
   friend class ModuleMap;
 

@@ -45,7 +45,6 @@ class DummyModulator : public Modulator {
                              AccessControlStatus) override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<String> ModuleRequestsFromScriptModule(ScriptModule) override;
-  void ExecuteModule(ScriptModule) override;
 };
 
 }  // namespace blink

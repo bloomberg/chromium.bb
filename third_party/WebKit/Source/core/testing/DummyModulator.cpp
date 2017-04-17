@@ -64,8 +64,4 @@ Vector<String> DummyModulator::ModuleRequestsFromScriptModule(ScriptModule) {
   return Vector<String>();
 }
 
-void DummyModulator::ExecuteModule(ScriptModule) {
-  NOTREACHED();
-}
-
 }  // namespace blink
