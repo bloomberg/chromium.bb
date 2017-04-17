@@ -1221,13 +1221,6 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
-  # pylint: disable=global-statement
-  # Disable installing llvm pkgs till binary package is available
-  global TARGET_LLVM_PKGS_ENABLED
-  global TARGET_COMPILER_RT_ENABLED
-  if options.usepkg:
-    TARGET_LLVM_PKGS_ENABLED = ()
-    TARGET_COMPILER_RT_ENABLED = ('armv7a-cros-linux-gnueabi',)
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
