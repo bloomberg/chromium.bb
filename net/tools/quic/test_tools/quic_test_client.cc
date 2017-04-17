@@ -27,7 +27,6 @@
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
-#include "third_party/boringssl/src/include/openssl/x509.h"
 
 using std::string;
 using testing::_;

@@ -24,7 +24,6 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
-#include "third_party/boringssl/src/include/openssl/x509v3.h"
 #include "url/gurl.h"
 
 namespace net {
