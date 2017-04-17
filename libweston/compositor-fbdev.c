@@ -253,7 +253,8 @@ calculate_refresh_rate(struct fb_var_screeninfo *vinfo)
 		if (refresh_rate > 200000)
 			refresh_rate = 200000; /* cap at 200 Hz */
 
-		return refresh_rate;
+		if (refresh_rate >= 1000) /* at least 1 Hz */
+			return refresh_rate;
 	}
 
 	return 60 * 1000; /* default to 60 Hz */
