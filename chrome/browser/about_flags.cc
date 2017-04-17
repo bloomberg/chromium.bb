@@ -2521,7 +2521,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          autofill::kAutofillCreditCardPopupLayout,
          kAutofillCreditCardPopupLayoutFeatureVariations,
-         "AutofillCreditCardPopupLayout")},
+         // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
+         // when the flag is manually enabled in a local build.
+         "AutofillCreditCardDropdownVariations")},
     {"native-android-history-manager",
      flag_descriptions::kNativeAndroidHistoryManager,
      flag_descriptions::kNativeAndroidHistoryManagerDescription, kOsAndroid,
@@ -2534,7 +2536,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          autofill::kAutofillCreditCardLastUsedDateDisplay,
          kAutofillCreditCardLastUsedDateFeatureVariations,
-         "AutofillCreditCardLastUsedDate")},
+         // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
+         // when the flag is manually enabled in a local build.
+         "AutofillCreditCardDropdownVariations")},
     {"enable-autofill-credit-card-upload-cvc-prompt",
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPrompt,
      flag_descriptions::kEnableAutofillCreditCardUploadCvcPromptDescription,
