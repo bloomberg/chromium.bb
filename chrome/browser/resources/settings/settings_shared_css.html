@@ -132,6 +132,11 @@
         -webkit-margin-start: var(--checkbox-margin-start);
       }
 
+      paper-input {
+        /* Fix issue with focus animation making labels wiggle. */
+        transform: translate3d(0, 0, 0);
+      }
+
       controlled-radio-button,
       paper-radio-button {
         --paper-radio-button-checked-color: var(--google-blue-500);

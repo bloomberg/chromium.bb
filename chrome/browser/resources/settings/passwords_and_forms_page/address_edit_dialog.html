@@ -31,6 +31,8 @@
 
       #select-row {
         display: block;
+        /* Fix issue with focus animation making labels wiggle. */
+        transform: translate3d(0, 0, 0);
       }
 
       .md-select-wrapper {
@@ -82,6 +84,8 @@
         --layout-relative : {
           line-height: 1;
         };
+        /* Fix issue with focus animation making labels wiggle. */
+        transform: translate3d(0, 0, 0);
       }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
