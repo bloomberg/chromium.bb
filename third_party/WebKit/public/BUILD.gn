@@ -664,14 +664,8 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.pak",
   ]
-  if (use_concatenated_impulse_responses) {
-    grit_flags = [
-      "-D",
-      "use_concatenated_impulse_responses",
-    ]
-  }
   html_min_css = "$blink_core_output_dir/html.css"
-  grit_flags += [
+  grit_flags = [
     "-E",
     "html_min_css=" + rebase_path(html_min_css),
   ]

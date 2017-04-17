@@ -35,24 +35,12 @@ use_openmax_dl_fft =
 
 use_webaudio_ffmpeg = !is_mac && !is_android
 
-# Set this to true to enable use of concatenated impulse responses for the HRTF
-# panner in WebAudio.
-# TODO(brettw) do we need this or can we assume its always on?
-use_concatenated_impulse_responses = true
-
 # feature_defines_list ---------------------------------------------------------
 
-feature_defines_list = [
-  "ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0",
-  "ENABLE_OILPAN=1",
-]
+feature_defines_list = []
 
 if (is_debug) {
   feature_defines_list += [ "WTF_USE_DYNAMIC_ANNOTATIONS=1" ]
-}
-
-if (use_concatenated_impulse_responses) {
-  feature_defines_list += [ "WTF_USE_CONCATENATED_IMPULSE_RESPONSES=1" ]
 }
 
 if (use_low_quality_image_interpolation) {

@@ -56,8 +56,6 @@ const size_t kResponseFrameSize = 256;
 // (depending on the audio hardware) when they are loaded.
 const float kResponseSampleRate = 44100;
 
-#if USE(CONCATENATED_IMPULSE_RESPONSES)
-
 // This table maps the index into the elevation table with the corresponding
 // angle. See https://bugs.webkit.org/show_bug.cgi?id=98294#c9 for the
 // elevation angles and their order in the concatenated response.
@@ -103,7 +101,6 @@ static PassRefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
 
   return bus;
 }
-#endif
 
 bool HRTFElevation::CalculateKernelsForAzimuthElevation(
     int azimuth,
@@ -135,7 +132,6 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   // implementation detail.
   int positive_elevation = elevation < 0 ? elevation + 360 : elevation;
 
-#if USE(CONCATENATED_IMPULSE_RESPONSES)
   RefPtr<AudioBus> bus(GetConcatenatedImpulseResponsesForSubject(subject_name));
 
   if (!bus)
@@ -182,33 +178,6 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
       response->Channel(AudioBus::kChannelLeft);
   AudioChannel* right_ear_impulse_response =
       response->Channel(AudioBus::kChannelRight);
-#else
-  String resourceName =
-      String::format("IRC_%s_C_R0195_T%03d_P%03d", subjectName.utf8().data(),
-                     azimuth, positiveElevation);
-
-  RefPtr<AudioBus> impulseResponse(
-      AudioBus::loadPlatformResource(resourceName.utf8().data(), sampleRate));
-
-  DCHECK(impulseResponse.get());
-  if (!impulseResponse.get())
-    return false;
-
-  size_t responseLength = impulseResponse->length();
-  size_t expectedLength = static_cast<size_t>(256 * (sampleRate / 44100.0));
-
-  // Check number of channels and length.  For now these are fixed and known.
-  bool isBusGood = responseLength == expectedLength &&
-                   impulseResponse->numberOfChannels() == 2;
-  DCHECK(isBusGood);
-  if (!isBusGood)
-    return false;
-
-  AudioChannel* leftEarImpulseResponse =
-      impulseResponse->channelByType(AudioBus::ChannelLeft);
-  AudioChannel* rightEarImpulseResponse =
-      impulseResponse->channelByType(AudioBus::ChannelRight);
-#endif
 
   // Note that depending on the fftSize returned by the panner, we may be
   // truncating the impulse response we just loaded in.
