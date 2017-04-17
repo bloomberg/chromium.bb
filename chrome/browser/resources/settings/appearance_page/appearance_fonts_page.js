@@ -5,13 +5,6 @@
 (function() {
   'use strict';
 
-  /**
-   * This is the absolute difference maintained between standard and
-   * fixed-width font sizes. http://crbug.com/91922.
-   * @const @private {number}
-   */
-  var SIZE_DIFFERENCE_FIXED_STANDARD_ = 3;
-
   /** @const @private {!Array<number>} */
   var FONT_SIZE_RANGE_ = [
     9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36,
@@ -26,11 +19,6 @@
   /**
    * 'settings-appearance-fonts-page' is the settings page containing appearance
    * settings.
-   *
-   * Example:
-   *
-   *   <settings-appearance-fonts-page prefs="{{prefs}}">
-   *   </settings-appearance-fonts-page>
    */
   Polymer({
     is: 'settings-appearance-fonts-page',
@@ -88,10 +76,6 @@
     /** @private {?string} */
     advancedExtensionUrl_: null,
 
-    observers: [
-      'fontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
-    ],
-
     /** @override */
     created: function() {
       this.browserProxy_ = settings.FontsBrowserProxyImpl.getInstance();
@@ -141,18 +125,6 @@
       }
       this.fontOptions_ = fontMenuOptions;
       this.advancedExtensionUrl_ = response.extensionUrl;
-    },
-
-    /**
-     * @param {number} value The changed font size slider value.
-     * @private
-     */
-    fontSizeChanged_: function(value) {
-      // TODO(michaelpg): Whitelist this pref in prefs_utils.cc so it is
-      // included in the <settings-prefs> getAllPrefs call, otherwise this path
-      // is invalid and nothing happens. See crbug.com/612535.
-      this.set('prefs.webkit.webprefs.default_fixed_font_size.value',
-          value - SIZE_DIFFERENCE_FIXED_STANDARD_);
     },
 
     /**

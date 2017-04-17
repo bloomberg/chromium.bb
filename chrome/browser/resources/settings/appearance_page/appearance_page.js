@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/**
+ * This is the absolute difference maintained between standard and
+ * fixed-width font sizes. http://crbug.com/91922.
+ * @const @private {number}
+ */
+var SIZE_DIFFERENCE_FIXED_STANDARD_ = 3;
+
+
 /**
  * 'settings-appearance-page' is the settings page containing appearance
  * settings.
@@ -110,12 +119,13 @@ Polymer({
   themeUrl_: '',
 
   observers: [
+    'defaultFontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
     'themeChanged_(prefs.extensions.theme.id.value, useSystemTheme_)',
 
-// <if expr="is_linux and not chromeos">
+    // <if expr="is_linux and not chromeos">
     // NOTE: this pref only exists on Linux.
     'useSystemThemePrefChanged_(prefs.extensions.theme.use_system.value)',
-// </if>
+    // </if>
   ],
 
   created: function() {
@@ -163,6 +173,18 @@ Polymer({
   /** @private */
   onDisableExtension_: function() {
     this.fire('refresh-pref', 'homepage');
+  },
+
+  /**
+   * @param {number} value The changed font size slider value.
+   * @private
+   */
+  defaultFontSizeChanged_: function(value) {
+    // This pref is handled separately in some extensions, but here it is tied
+    // to default_font_size (to simplify the UI).
+    this.set(
+        'prefs.webkit.webprefs.default_fixed_font_size.value',
+        value - SIZE_DIFFERENCE_FIXED_STANDARD_);
   },
 
   /** @private */
@@ -250,12 +272,12 @@ Polymer({
     }
 
     var i18nId;
-// <if expr="is_linux and not chromeos">
+    // <if expr="is_linux and not chromeos">
     i18nId = useSystemTheme ? 'systemTheme' : 'classicTheme';
-// </if>
-// <if expr="not is_linux or chromeos">
+    // </if>
+    // <if expr="not is_linux or chromeos">
     i18nId = 'chooseFromWebStore';
-// </if>
+    // </if>
     this.themeSublabel_ = this.i18n(i18nId);
     this.themeUrl_ = '';
   },
