@@ -248,7 +248,6 @@ class QuicStreamFactoryTestBase {
         enable_connection_racing_(enable_connection_racing),
         enable_non_blocking_io_(true),
         disable_disk_cache_(false),
-        prefer_aes_(false),
         delay_tcp_race_(true),
         close_sessions_on_ip_change_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
@@ -276,8 +275,7 @@ class QuicStreamFactoryTestBase {
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
         always_require_handshake_confirmation_,
         load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
-        enable_non_blocking_io_, disable_disk_cache_, prefer_aes_,
-        delay_tcp_race_,
+        enable_non_blocking_io_, disable_disk_cache_, delay_tcp_race_,
         /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         /*mark_quic_broken_when_network_blackholes*/ false,
@@ -779,7 +777,6 @@ class QuicStreamFactoryTestBase {
   bool enable_connection_racing_;
   bool enable_non_blocking_io_;
   bool disable_disk_cache_;
-  bool prefer_aes_;
   bool delay_tcp_race_;
   bool close_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;

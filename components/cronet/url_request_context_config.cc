@@ -47,7 +47,6 @@ const char kQuicIdleConnectionTimeoutSeconds[] =
 const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
 const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
-const char kQuicPreferAes[] = "prefer_aes";
 const char kQuicUserAgentId[] = "user_agent_id";
 const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 const char kQuicDisableBidirectionalStreams[] =
@@ -185,11 +184,6 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
                                 &quic_migrate_sessions_on_network_change)) {
         context_builder->set_quic_migrate_sessions_on_network_change(
             quic_migrate_sessions_on_network_change);
-      }
-
-      bool quic_prefer_aes = false;
-      if (quic_args->GetBoolean(kQuicPreferAes, &quic_prefer_aes)) {
-        context_builder->set_quic_prefer_aes(quic_prefer_aes);
       }
 
       std::string quic_user_agent_id;

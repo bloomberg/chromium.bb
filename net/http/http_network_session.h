@@ -138,8 +138,6 @@ class NET_EXPORT HttpNetworkSession
     bool quic_enable_non_blocking_io;
     // Disables using the disk cache to store QUIC server configs.
     bool quic_disable_disk_cache;
-    // Prefer AES-GCM to ChaCha20 even if no hardware support is present.
-    bool quic_prefer_aes;
     // Delay starting a TCP connection when QUIC believes it can speak
     // 0-RTT to a server.
     bool quic_delay_tcp_race;

@@ -189,7 +189,6 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),
       quic_delay_tcp_race(true),
-      quic_prefer_aes(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_close_sessions_on_ip_change(false),
       quic_migrate_sessions_on_network_change(false),
@@ -435,8 +434,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_migrate_sessions_on_network_change;
   network_session_params.quic_user_agent_id =
       http_network_session_params_.quic_user_agent_id;
-  network_session_params.quic_prefer_aes =
-      http_network_session_params_.quic_prefer_aes;
   network_session_params.quic_migrate_sessions_early =
       http_network_session_params_.quic_migrate_sessions_early;
   network_session_params.quic_disable_bidirectional_streams =

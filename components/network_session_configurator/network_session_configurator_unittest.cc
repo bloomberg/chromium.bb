@@ -77,7 +77,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_enable_non_blocking_io);
   EXPECT_FALSE(params_.quic_disable_disk_cache);
-  EXPECT_FALSE(params_.quic_prefer_aes);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
   EXPECT_TRUE(params_.quic_delay_tcp_race);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
@@ -411,17 +410,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicDisableDiskCache) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_disable_disk_cache);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicPreferAes) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["prefer_aes"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_prefer_aes);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

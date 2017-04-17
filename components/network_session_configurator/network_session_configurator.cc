@@ -178,11 +178,6 @@ bool ShouldQuicDisableDiskCache(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
 }
 
-bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "prefer_aes"), "true");
-}
-
 bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
@@ -345,7 +340,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicEnableNonBlockingIO(quic_trial_params);
     params->quic_disable_disk_cache =
         ShouldQuicDisableDiskCache(quic_trial_params);
-    params->quic_prefer_aes = ShouldQuicPreferAes(quic_trial_params);
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);

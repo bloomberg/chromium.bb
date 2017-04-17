@@ -213,7 +213,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_connection_racing,
       bool enable_non_blocking_io,
       bool disable_disk_cache,
-      bool prefer_aes,
       bool delay_tcp_race,
       int max_server_configs_stored_in_properties,
       bool close_sessions_on_ip_change,
@@ -585,9 +584,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if we do not want to load server config from the disk cache.
   bool disable_disk_cache_;
-
-  // Set if AES-GCM should be preferred, even if there is no hardware support.
-  bool prefer_aes_;
 
   // True if QUIC should be marked as broken when a connection blackholes after
   // the handshake is confirmed.

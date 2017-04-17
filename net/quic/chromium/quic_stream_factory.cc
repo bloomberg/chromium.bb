@@ -776,7 +776,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_connection_racing,
     bool enable_non_blocking_io,
     bool disable_disk_cache,
-    bool prefer_aes,
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
@@ -823,7 +822,6 @@ QuicStreamFactory::QuicStreamFactory(
       enable_connection_racing_(enable_connection_racing),
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
-      prefer_aes_(prefer_aes),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       delay_tcp_race_(delay_tcp_race),
@@ -871,7 +869,7 @@ QuicStreamFactory::QuicStreamFactory(
   bool has_aes_hardware_support = !!EVP_has_aes_hardware();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
                         has_aes_hardware_support);
-  if (has_aes_hardware_support || prefer_aes_)
+  if (has_aes_hardware_support)
     crypto_config_.PreferAesGcm();
   // When disk cache is used to store the server configs, HttpCache code calls
   // |set_quic_server_info_factory| if |quic_server_info_factory_| wasn't
