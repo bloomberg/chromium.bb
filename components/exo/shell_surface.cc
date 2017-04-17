@@ -1667,13 +1667,14 @@ void ShellSurface::UpdateShadow() {
           widget_->non_client_view()->frame_view()->GetBoundsForClientView());
     }
 
+    shadow_underlay_->Show();
+
     // TODO(oshima): Setting to the same value should be no-op.
     // crbug.com/642223.
     if (shadow_underlay_opacity !=
         shadow_underlay_->layer()->GetTargetOpacity()) {
       shadow_underlay_->layer()->SetOpacity(shadow_underlay_opacity);
     }
-    shadow_underlay_->Show();
 
     wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
     // Maximized/Fullscreen window does not create a shadow.
