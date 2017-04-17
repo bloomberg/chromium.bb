@@ -1425,7 +1425,7 @@ static const uint8_t kWtvSignature[] = {0xb7, 0xd8, 0x00, 0x20, 0x37, 0x49,
 static MediaContainerName LookupContainerByFirst4(const uint8_t* buffer,
                                                   int buffer_size) {
   // Minimum size that the code expects to exist without checking size.
-  if (buffer_size < 12)
+  if (buffer_size < kMinimumContainerSize)
     return CONTAINER_UNKNOWN;
 
   uint32_t first4 = Read32(buffer);

@@ -62,6 +62,9 @@ enum MediaContainerName {
   CONTAINER_MAX               // Must be last
 };
 
+// Minimum size considered for processing.
+enum { kMinimumContainerSize = 12 };
+
 // Determine the container type.
 MEDIA_EXPORT MediaContainerName DetermineContainer(const uint8_t* buffer,
                                                    int buffer_size);

@@ -10,6 +10,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
+#include "media/base/container_names.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_data_util.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -61,8 +63,8 @@ class FFmpegGlueTest : public ::testing::Test {
   }
 
   int ReadPacket(int size, uint8_t* data) {
-    return glue_->format_context()->pb->read_packet(
-        protocol_.get(), data, size);
+    return glue_->format_context()->pb->read_packet(protocol_.get(), data,
+                                                    size);
   }
 
   int64_t Seek(int64_t offset, int whence) {
@@ -111,6 +113,29 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
   scoped_refptr<DecoderBuffer> data_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegGlueDestructionTest);
+};
+
+// Tests that ensure we are using the correct AVInputFormat name given by ffmpeg
+// for supported containers.
+class FFmpegGlueContainerTest : public FFmpegGlueDestructionTest {
+ public:
+  FFmpegGlueContainerTest() {}
+  ~FFmpegGlueContainerTest() override {}
+
+ protected:
+  void InitializeAndOpen(const char* filename) {
+    Initialize(filename);
+    ASSERT_TRUE(glue_->OpenContext());
+  }
+
+  void ExpectContainer(container_names::MediaContainerName container) {
+    histogram_tester_.ExpectUniqueSample("Media.DetectedContainer", container,
+                                         1);
+  }
+
+ private:
+  base::HistogramTester histogram_tester_;
+  DISALLOW_COPY_AND_ASSIGN(FFmpegGlueContainerTest);
 };
 
 // Ensure writing has been disabled.
@@ -251,6 +276,62 @@ TEST_F(FFmpegGlueDestructionTest, WithOpenWithOpenStreams) {
   ASSERT_NE(nullptr, context.get());
   ASSERT_EQ(0, avcodec_open2(context.get(),
                              avcodec_find_decoder(context->codec_id), nullptr));
+}
+
+TEST_F(FFmpegGlueContainerTest, OGG) {
+  InitializeAndOpen("sfx.ogg");
+  ExpectContainer(container_names::CONTAINER_OGG);
+}
+
+TEST_F(FFmpegGlueContainerTest, WEBM) {
+  InitializeAndOpen("sfx-opus-441.webm");
+  ExpectContainer(container_names::CONTAINER_WEBM);
+}
+
+TEST_F(FFmpegGlueContainerTest, FLAC) {
+  InitializeAndOpen("sfx.flac");
+  ExpectContainer(container_names::CONTAINER_FLAC);
+}
+
+TEST_F(FFmpegGlueContainerTest, WAV) {
+  InitializeAndOpen("sfx_s16le.wav");
+  ExpectContainer(container_names::CONTAINER_WAV);
+}
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(FFmpegGlueContainerTest, MOV) {
+  InitializeAndOpen("sfx.m4a");
+  ExpectContainer(container_names::CONTAINER_MOV);
+}
+
+TEST_F(FFmpegGlueContainerTest, MP3) {
+  InitializeAndOpen("sfx.mp3");
+  ExpectContainer(container_names::CONTAINER_MP3);
+}
+
+TEST_F(FFmpegGlueContainerTest, AAC) {
+  InitializeAndOpen("sfx.adts");
+  ExpectContainer(container_names::CONTAINER_AAC);
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(FFmpegGlueContainerTest, AVI) {
+  InitializeAndOpen("bear.avi");
+  ExpectContainer(container_names::CONTAINER_AVI);
+}
+
+TEST_F(FFmpegGlueContainerTest, AMR) {
+  InitializeAndOpen("bear.amr");
+  ExpectContainer(container_names::CONTAINER_AMR);
+}
+#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+// Probe something unsupported to ensure we fall back to the our internal guess.
+TEST_F(FFmpegGlueContainerTest, FLV) {
+  Initialize("bear.flv");
+  ASSERT_FALSE(glue_->OpenContext());
+  ExpectContainer(container_names::CONTAINER_FLV);
 }
 
 }  // namespace media
