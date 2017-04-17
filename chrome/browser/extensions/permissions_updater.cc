@@ -146,6 +146,38 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   NotifyPermissionsUpdated(REMOVED, extension, to_remove);
 }
 
+void PermissionsUpdater::SetPolicyHostRestrictions(
+    const Extension* extension,
+    const URLPatternSet& runtime_blocked_hosts,
+    const URLPatternSet& runtime_allowed_hosts) {
+  extension->permissions_data()->SetPolicyHostRestrictions(
+      runtime_blocked_hosts, runtime_allowed_hosts);
+
+  // Send notification to the currently running renderers of the runtime block
+  // hosts settings.
+  const PermissionSet perms;
+  NotifyPermissionsUpdated(POLICY, extension, perms);
+}
+
+void PermissionsUpdater::SetUsesDefaultHostRestrictions(
+    const Extension* extension) {
+  extension->permissions_data()->SetUsesDefaultHostRestrictions();
+  const PermissionSet perms;
+  NotifyPermissionsUpdated(POLICY, extension, perms);
+}
+
+void PermissionsUpdater::SetDefaultPolicyHostRestrictions(
+    const URLPatternSet& default_runtime_blocked_hosts,
+    const URLPatternSet& default_runtime_allowed_hosts) {
+  PermissionsData::SetDefaultPolicyHostRestrictions(
+      default_runtime_blocked_hosts, default_runtime_allowed_hosts);
+
+  // Send notification to the currently running renderers of the runtime block
+  // hosts settings.
+  NotifyDefaultPolicyHostRestrictionsUpdated(default_runtime_blocked_hosts,
+                                             default_runtime_allowed_hosts);
+}
+
 void PermissionsUpdater::RemovePermissionsUnsafe(
     const Extension* extension,
     const PermissionSet& to_remove) {
@@ -257,28 +289,31 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     const Extension* extension,
     const PermissionSet& changed) {
   DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
-  if (changed.IsEmpty())
+
+  if (changed.IsEmpty() && event_type != POLICY)
     return;
 
   UpdatedExtensionPermissionsInfo::Reason reason;
-  events::HistogramValue histogram_value;
+  events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   if (event_type == REMOVED) {
     reason = UpdatedExtensionPermissionsInfo::REMOVED;
     histogram_value = events::PERMISSIONS_ON_REMOVED;
     event_name = permissions::OnRemoved::kEventName;
-  } else {
-    CHECK_EQ(ADDED, event_type);
+  } else if (event_type == ADDED) {
     reason = UpdatedExtensionPermissionsInfo::ADDED;
     histogram_value = events::PERMISSIONS_ON_ADDED;
     event_name = permissions::OnAdded::kEventName;
+  } else {
+    DCHECK_EQ(POLICY, event_type);
+    reason = UpdatedExtensionPermissionsInfo::POLICY;
   }
 
   // Notify other APIs or interested parties.
-  UpdatedExtensionPermissionsInfo info = UpdatedExtensionPermissionsInfo(
-      extension, changed, reason);
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  UpdatedExtensionPermissionsInfo info =
+      UpdatedExtensionPermissionsInfo(extension, changed, reason);
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
       content::Source<Profile>(profile),
@@ -290,6 +325,14 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
       extension->permissions_data()->active_permissions());
   params.withheld_permissions = ExtensionMsg_PermissionSetStruct(
       extension->permissions_data()->withheld_permissions());
+  params.uses_default_policy_host_restrictions =
+      extension->permissions_data()->UsesDefaultPolicyHostRestrictions();
+  if (!params.uses_default_policy_host_restrictions) {
+    params.policy_blocked_hosts =
+        extension->permissions_data()->policy_blocked_hosts();
+    params.policy_allowed_hosts =
+        extension->permissions_data()->policy_allowed_hosts();
+  }
 
   // Send the new permissions to the renderers.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
@@ -301,8 +344,35 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     }
   }
 
-  // Trigger the onAdded and onRemoved events in the extension.
-  DispatchEvent(extension->id(), histogram_value, event_name, changed);
+  // Trigger the onAdded and onRemoved events in the extension. We explicitly
+  // don't do this for policy-related events.
+  if (event_name)
+    DispatchEvent(extension->id(), histogram_value, event_name, changed);
+}
+
+// Notify the renderers that extension policy (policy_blocked_hosts) is updated
+// and provide new set of hosts.
+void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
+    const URLPatternSet& default_runtime_blocked_hosts,
+    const URLPatternSet& default_runtime_allowed_hosts) {
+  DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
+  params.default_policy_blocked_hosts = default_runtime_blocked_hosts;
+  params.default_policy_allowed_hosts = default_runtime_allowed_hosts;
+
+  // Send the new policy to the renderers.
+  for (RenderProcessHost::iterator host_iterator(
+           RenderProcessHost::AllHostsIterator());
+       !host_iterator.IsAtEnd(); host_iterator.Advance()) {
+    RenderProcessHost* host = host_iterator.GetCurrentValue();
+    if (profile->IsSameProfile(
+            Profile::FromBrowserContext(host->GetBrowserContext()))) {
+      host->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
+    }
+  }
 }
 
 }  // namespace extensions

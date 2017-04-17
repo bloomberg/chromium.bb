@@ -117,12 +117,30 @@ class ExtensionManagement : public KeyedService {
   // Returns the list of hosts blocked by policy for |extension|.
   const URLPatternSet& GetRuntimeBlockedHosts(const Extension* extension) const;
 
-  // Returns the list of hosts |extension| is limited to by policy.
+  // Returns the hosts exempted by policy from the RuntimeBlockedHosts for
+  // |extension|.
   const URLPatternSet& GetRuntimeAllowedHosts(const Extension* extension) const;
+
+  // Returns the list of hosts blocked by policy for Default scope. This can be
+  // overridden by an invividual scope which is queried via
+  // GetRuntimeBlockedHosts.
+  const URLPatternSet& GetDefaultRuntimeBlockedHosts() const;
+
+  // Returns the hosts exempted by policy from RuntimeBlockedHosts for
+  // the default scope. This can be overridden by an individual scope which is
+  // queries via GetRuntimeAllowedHosts. This should only be used to
+  // initialize a new renderer.
+  const URLPatternSet& GetDefaultRuntimeAllowedHosts() const;
+
+  // Checks if an |extension| has its own runtime_blocked_hosts or
+  // runtime_allowed_hosts defined in the individual scope of the
+  // ExtensionSettings policy.
+  // Returns false if an individual scoped setting isn't defined.
+  bool UsesDefaultRuntimeHostRestrictions(const Extension* extension) const;
 
   // Checks if a URL is on the blocked host permissions list for a specific
   // extension.
-  bool IsBlockedHost(const Extension* extension, const GURL& url) const;
+  bool IsRuntimeBlockedHost(const Extension* extension, const GURL& url) const;
 
   // Returns blocked permission set for |extension|.
   std::unique_ptr<const PermissionSet> GetBlockedPermissions(
