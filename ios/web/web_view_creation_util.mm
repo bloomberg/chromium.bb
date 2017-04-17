@@ -5,7 +5,6 @@
 #import "ios/web/public/web_view_creation_util.h"
 
 #include "base/logging.h"
-#include "ios/web/public/user_agent.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 
@@ -28,8 +27,7 @@ WKWebView* BuildWKWebViewWithCustomContextMenu(
   WKWebViewConfigurationProvider& config_provider =
       WKWebViewConfigurationProvider::FromBrowserState(browser_state);
   return BuildWKWebView(frame, config_provider.GetWebViewConfiguration(),
-                        browser_state, UserAgentType::MOBILE,
-                        context_menu_delegate);
+                        browser_state, NO, context_menu_delegate);
 }
 
 }  // namespace web
