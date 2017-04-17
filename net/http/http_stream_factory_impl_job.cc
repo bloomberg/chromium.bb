@@ -312,7 +312,8 @@ int HttpStreamFactoryImpl::Job::RestartTunnelWithProxyAuth() {
   DCHECK(establishing_tunnel_);
   next_state_ = STATE_RESTART_TUNNEL_AUTH;
   stream_.reset();
-  return RunLoop(OK);
+  RunLoop(OK);
+  return ERR_IO_PENDING;
 }
 
 LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
@@ -559,19 +560,19 @@ void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {
   RunLoop(result);
 }
 
-int HttpStreamFactoryImpl::Job::RunLoop(int result) {
+void HttpStreamFactoryImpl::Job::RunLoop(int result) {
   TRACE_EVENT0(kNetTracingCategory, "HttpStreamFactoryImpl::Job::RunLoop");
   result = DoLoop(result);
 
   if (result == ERR_IO_PENDING)
-    return result;
+    return;
 
   if (job_type_ == PRECONNECT) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnPreconnectsComplete,
                    ptr_factory_.GetWeakPtr()));
-    return ERR_IO_PENDING;
+    return;
   }
 
   if (IsCertificateError(result)) {
@@ -583,15 +584,20 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
         FROM_HERE,
         base::Bind(&HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
                    ptr_factory_.GetWeakPtr(), result, ssl_info_));
-    return ERR_IO_PENDING;
+    return;
   }
 
   switch (result) {
     case ERR_PROXY_AUTH_REQUESTED: {
       UMA_HISTOGRAM_BOOLEAN("Net.ProxyAuthRequested.HasConnection",
                             connection_.get() != NULL);
-      if (!connection_.get())
-        return ERR_PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION;
+      if (!connection_.get()) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(&Job::OnStreamFailedCallback, ptr_factory_.GetWeakPtr(),
+                       ERR_PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION));
+        return;
+      }
       CHECK(connection_->socket());
       CHECK(establishing_tunnel_);
 
@@ -603,7 +609,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
           base::Bind(&Job::OnNeedsProxyAuthCallback, ptr_factory_.GetWeakPtr(),
                      *proxy_socket->GetConnectResponseInfo(),
                      base::RetainedRef(proxy_socket->GetAuthController())));
-      return ERR_IO_PENDING;
+      return;
     }
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
@@ -613,7 +619,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
               &Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
               base::RetainedRef(
                   connection_->ssl_error_response_info().cert_request_info)));
-      return ERR_IO_PENDING;
+      return;
 
     case ERR_HTTPS_PROXY_TUNNEL_RESPONSE: {
       DCHECK(connection_.get());
@@ -627,7 +633,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
                                 ptr_factory_.GetWeakPtr(),
                                 *proxy_socket->GetConnectResponseInfo(),
                                 proxy_socket->CreateConnectResponseStream()));
-      return ERR_IO_PENDING;
+      return;
     }
 
     case OK:
@@ -659,13 +665,13 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
             FROM_HERE,
             base::Bind(&Job::OnStreamReadyCallback, ptr_factory_.GetWeakPtr()));
       }
-      return ERR_IO_PENDING;
+      return;
 
     default:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
                                 ptr_factory_.GetWeakPtr(), result));
-      return ERR_IO_PENDING;
+      return;
   }
 }
 
@@ -732,9 +738,8 @@ int HttpStreamFactoryImpl::Job::DoLoop(int result) {
 int HttpStreamFactoryImpl::Job::StartInternal() {
   CHECK_EQ(STATE_NONE, next_state_);
   next_state_ = STATE_START;
-  int rv = RunLoop(OK);
-  DCHECK_EQ(ERR_IO_PENDING, rv);
-  return rv;
+  RunLoop(OK);
+  return ERR_IO_PENDING;
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {

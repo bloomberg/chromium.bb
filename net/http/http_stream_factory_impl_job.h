@@ -309,7 +309,9 @@ class HttpStreamFactoryImpl::Job {
   void OnPreconnectsComplete();
 
   void OnIOComplete(int result);
-  int RunLoop(int result);
+  // RunLoop() finishes asynchronously and invokes one of the On* methods (see
+  // above) when done.
+  void RunLoop(int result);
   int DoLoop(int result);
   int StartInternal();
   int DoInitConnectionImpl();
