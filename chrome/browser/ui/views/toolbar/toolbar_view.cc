@@ -83,7 +83,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_global_error_factory.h"
-#include "chrome/browser/sync/sync_global_error_factory.h"
 #endif
 
 #if defined(USE_ASH)
@@ -238,9 +237,6 @@ void ToolbarView::Init() {
 #if !defined(OS_CHROMEOS)
   if (!HasAshShell()) {
     SigninGlobalErrorFactory::GetForProfile(browser_->profile());
-#if !defined(OS_ANDROID)
-    SyncGlobalErrorFactory::GetForProfile(browser_->profile());
-#endif
   }
 
 #if defined(OS_WIN)

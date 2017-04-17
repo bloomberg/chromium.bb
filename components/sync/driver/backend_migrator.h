@@ -56,7 +56,6 @@ class BackendMigrator {
   void MigrateTypes(ModelTypeSet types);
 
   void AddMigrationObserver(MigrationObserver* observer);
-  bool HasMigrationObserver(const MigrationObserver* observer) const;
   void RemoveMigrationObserver(MigrationObserver* observer);
 
   State state() const;

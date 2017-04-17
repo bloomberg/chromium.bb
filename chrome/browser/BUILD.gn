@@ -2603,10 +2603,6 @@ split_static_library("browser") {
       "signin/signin_global_error.h",
       "signin/signin_global_error_factory.cc",
       "signin/signin_global_error_factory.h",
-      "sync/sync_global_error.cc",
-      "sync/sync_global_error.h",
-      "sync/sync_global_error_factory.cc",
-      "sync/sync_global_error_factory.h",
       "upgrade_detector_impl.cc",
       "upgrade_detector_impl.h",
     ]

@@ -59,121 +59,12 @@ namespace {
 const char kTestGaiaId[] = "gaia-id-test_user@test.com";
 const char kTestUser[] = "test_user@test.com";
 
-#if !defined(OS_CHROMEOS)
-// Utility function to test that GetStatusLabelsForSyncGlobalError returns
-// the correct results for the given states.
-void VerifySyncGlobalErrorResult(ProfileSyncServiceMock* service,
-                                 GoogleServiceAuthError::State error_state,
-                                 bool is_signed_in,
-                                 bool is_error) {
-  EXPECT_CALL(*service, IsFirstSetupComplete())
-      .WillRepeatedly(Return(is_signed_in));
-
-  GoogleServiceAuthError auth_error(error_state);
-  EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
-
-  base::string16 label1, label2, label3;
-  sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service, &label1, &label2, &label3);
-  EXPECT_EQ(label1.empty(), !is_error);
-  EXPECT_EQ(label2.empty(), !is_error);
-  EXPECT_EQ(label3.empty(), !is_error);
-}
-#endif
-
 }  // namespace
 
 class SyncUIUtilTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
-
-#if !defined(OS_CHROMEOS)
-// Test that GetStatusLabelsForSyncGlobalError returns an error if a
-// passphrase is required.
-TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
-  std::unique_ptr<Profile> profile = MakeSignedInTestingProfile();
-  ProfileSyncServiceMock service(
-      CreateProfileSyncServiceParamsForTest(profile.get()));
-  syncer::SyncEngine::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
-              .WillRepeatedly(Return(false));
-  EXPECT_CALL(service, IsPassphraseRequired())
-              .WillRepeatedly(Return(true));
-  EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
-              .WillRepeatedly(Return(true));
-
-  VerifySyncGlobalErrorResult(&service,
-                              GoogleServiceAuthError::NONE,
-                              true /* signed in */,
-                              true /* error */);
-}
-
-// Test that GetStatusLabelsForSyncGlobalError returns an error if a
-// passphrase is required and not for auth errors.
-TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
-  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  ProfileSyncServiceMock service(
-      CreateProfileSyncServiceParamsForTest(profile.get()));
-  syncer::SyncEngine::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
-              .WillRepeatedly(Return(false));
-
-  EXPECT_CALL(service, IsPassphraseRequired())
-              .WillRepeatedly(Return(true));
-  EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
-              .WillRepeatedly(Return(true));
-  EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
-
-  GoogleServiceAuthError auth_error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
-  base::string16 menu_label, label2, label3;
-  sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      &service, &menu_label, &label2, &label3);
-  // Make sure we are still displaying the passphrase error badge (don't show
-  // auth errors through SyncUIUtil).
-  EXPECT_EQ(menu_label, l10n_util::GetStringUTF16(
-      IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM));
-}
-
-// Test that GetStatusLabelsForSyncGlobalError does not indicate errors for
-// auth errors (these are reported through SigninGlobalError).
-TEST_F(SyncUIUtilTest, AuthStateGlobalError) {
-  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  ProfileSyncService::InitParams init_params =
-      CreateProfileSyncServiceParamsForTest(profile.get());
-  NiceMock<ProfileSyncServiceMock> service(&init_params);
-
-  syncer::SyncEngine::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
-              .WillRepeatedly(Return(false));
-
-  GoogleServiceAuthError::State table[] = {
-    GoogleServiceAuthError::NONE,
-    GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-    GoogleServiceAuthError::USER_NOT_SIGNED_UP,
-    GoogleServiceAuthError::CONNECTION_FAILED,
-    GoogleServiceAuthError::CAPTCHA_REQUIRED,
-    GoogleServiceAuthError::ACCOUNT_DELETED,
-    GoogleServiceAuthError::ACCOUNT_DISABLED,
-    GoogleServiceAuthError::SERVICE_UNAVAILABLE,
-    GoogleServiceAuthError::TWO_FACTOR,
-    GoogleServiceAuthError::REQUEST_CANCELED
-  };
-
-  for (size_t i = 0; i < arraysize(table); ++i) {
-    VerifySyncGlobalErrorResult(&service,
-                                table[i],
-                                true /* signed in */,
-                                false /* no error */);
-    VerifySyncGlobalErrorResult(&service,
-                                table[i],
-                                false /* not signed in */,
-                                false /* no error */);
-  }
-}
-#endif
 
 // TODO(tim): This shouldn't be required. r194857 removed the
 // AuthInProgress override from FakeSigninManager, which meant this test started

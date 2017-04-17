@@ -76,15 +76,6 @@ MessageType GetStatusLabelsForNewTabPage(
     base::string16* link_label);
 
 #if !defined(OS_CHROMEOS)
-// Gets various labels for the sync global error based on the sync error state.
-// |menu_item_label|, |bubble_message|, and |bubble_accept_label| must not be
-// null. Note that we don't use SyncGlobalError on Chrome OS.
-void GetStatusLabelsForSyncGlobalError(
-    const browser_sync::ProfileSyncService* service,
-    base::string16* menu_item_label,
-    base::string16* bubble_message,
-    base::string16* bubble_accept_label);
-
 // Gets the error message and button label for the sync errors that should be
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,

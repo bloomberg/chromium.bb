@@ -47,9 +47,7 @@ namespace sync_bookmarks {
 // * Algorithm to associate bookmark model and sync model.
 // * Methods to get a bookmark node for a given sync node and vice versa.
 // * Persisting model associations and loading them back.
-class BookmarkModelAssociator
-    : public syncer::PerDataTypeAssociatorInterface<bookmarks::BookmarkNode,
-                                                    int64_t> {
+class BookmarkModelAssociator : public syncer::AssociatorInterface {
  public:
   static syncer::ModelType model_type() { return syncer::BOOKMARKS; }
   // |expect_mobile_bookmarks_folder| controls whether or not we
@@ -85,24 +83,23 @@ class BookmarkModelAssociator
   // Returns sync id for the given bookmark node id.
   // Returns syncer::kInvalidId if the sync node is not found for the given
   // bookmark node id.
-  int64_t GetSyncIdFromChromeId(const int64_t& node_id) override;
+  int64_t GetSyncIdFromChromeId(const int64_t& node_id);
 
   // Returns the bookmark node for the given sync id.
   // Returns null if no bookmark node is found for the given sync id.
-  const bookmarks::BookmarkNode* GetChromeNodeFromSyncId(
-      int64_t sync_id) override;
+  const bookmarks::BookmarkNode* GetChromeNodeFromSyncId(int64_t sync_id);
 
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
   bool InitSyncNodeFromChromeId(const int64_t& node_id,
-                                syncer::BaseNode* sync_node) override;
+                                syncer::BaseNode* sync_node);
 
   // Associates the given bookmark node with the given sync node.
   void Associate(const bookmarks::BookmarkNode* node,
-                 const syncer::BaseNode& sync_node) override;
+                 const syncer::BaseNode& sync_node);
   // Remove the association that corresponds to the given sync id.
-  void Disassociate(int64_t sync_id) override;
+  void Disassociate(int64_t sync_id);
 
   void AbortAssociation() override {
     // No implementation needed, this associator runs on the main
@@ -277,10 +274,6 @@ class BookmarkModelAssociator
       const GURL& url,
       Context* context,
       syncer::SyncError* error);
-
-  // Helper method for deleting a sync node and all its children.
-  // Returns the number of sync nodes deleted.
-  int RemoveSyncNodeHierarchy(syncer::WriteTransaction* trans, int64_t sync_id);
 
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.

@@ -70,11 +70,6 @@ void BackendMigrator::AddMigrationObserver(MigrationObserver* observer) {
   migration_observers_.AddObserver(observer);
 }
 
-bool BackendMigrator::HasMigrationObserver(
-    const MigrationObserver* observer) const {
-  return migration_observers_.HasObserver(observer);
-}
-
 void BackendMigrator::RemoveMigrationObserver(MigrationObserver* observer) {
   migration_observers_.RemoveObserver(observer);
 }

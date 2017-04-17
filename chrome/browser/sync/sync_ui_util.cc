@@ -402,35 +402,6 @@ MessageType GetStatusLabelsForNewTabPage(Profile* profile,
 }
 
 #if !defined(OS_CHROMEOS)
-void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
-                                       base::string16* menu_label,
-                                       base::string16* bubble_message,
-                                       base::string16* bubble_accept_label) {
-  DCHECK(menu_label);
-  DCHECK(bubble_message);
-  DCHECK(bubble_accept_label);
-  *menu_label = base::string16();
-  *bubble_message = base::string16();
-  *bubble_accept_label = base::string16();
-
-  // Only display an error if we've completed sync setup.
-  if (!service->IsFirstSetupComplete())
-    return;
-
-  // Display a passphrase error if we have one.
-  if (service->IsPassphraseRequired() &&
-      service->IsPassphraseRequiredForDecryption()) {
-    // This is not the first machine so ask user to enter passphrase.
-    *menu_label = l10n_util::GetStringUTF16(
-        IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM);
-    *bubble_message = l10n_util::GetStringUTF16(
-        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE);
-    *bubble_accept_label = l10n_util::GetStringUTF16(
-        IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT);
-    return;
-  }
-}
-
 AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
                                                   int* content_string_id,
                                                   int* button_string_id) {

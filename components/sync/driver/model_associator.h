@@ -13,7 +13,6 @@
 
 namespace syncer {
 
-class BaseNode;
 class SyncMergeResult;
 
 // This represents the fundamental operations used for model association that
@@ -51,40 +50,6 @@ class AssociatorInterface {
   // TODO(zea): This should be implemented automatically for each datatype, see
   // http://crbug.com/76232.
   virtual bool CryptoReadyIfNecessary() = 0;
-};
-
-// In addition to the generic methods, association can refer to operations
-// that depend on the types of the actual IDs we are associating and the
-// underlying node type in the browser.  We collect these into a templatized
-// interface that encapsulates everything you need to implement to have a model
-// associator for a specific data type.
-// This template is appropriate for data types where a Node* makes sense for
-// referring to a particular item.  If we encounter a type that does not fit
-// in this world, we may want to have several PerDataType templates.
-template <class Node, class IDType>
-class PerDataTypeAssociatorInterface : public AssociatorInterface {
- public:
-  virtual ~PerDataTypeAssociatorInterface() {}
-  // Returns sync id for the given chrome model id.
-  // Returns kInvalidId if the sync node is not found for the given
-  // chrome id.
-  virtual int64_t GetSyncIdFromChromeId(const IDType& id) = 0;
-
-  // Returns the chrome node for the given sync id.
-  // Returns null if no node is found for the given sync id.
-  virtual const Node* GetChromeNodeFromSyncId(int64_t sync_id) = 0;
-
-  // Initializes the given sync node from the given chrome node id.
-  // Returns false if no sync node was found for the given chrome node id or
-  // if the initialization of sync node fails.
-  virtual bool InitSyncNodeFromChromeId(const IDType& node_id,
-                                        BaseNode* sync_node) = 0;
-
-  // Associates the given chrome node with the given sync node.
-  virtual void Associate(const Node* node, const BaseNode& sync_node) = 0;
-
-  // Remove the association that corresponds to the given sync id.
-  virtual void Disassociate(int64_t sync_id) = 0;
 };
 
 }  // namespace syncer
