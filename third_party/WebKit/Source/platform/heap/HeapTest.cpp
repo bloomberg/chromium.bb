@@ -1517,12 +1517,15 @@ class PreFinalizerBackingShrinkForbidden
   }
 
   void Dispose() {
-    // Remove elemets so that vector_ will try to shrink.
-    for (int i = 0; i < 32; ++i) {
+    // Remove all elemets except one so that vector_ will try to shrink.
+    for (int i = 1; i < 32; ++i) {
       vector_.pop_back();
     }
     // Check that vector_ hasn't shrunk.
-    EXPECT_LT(31ul, map_.Capacity());
+    EXPECT_LT(31ul, vector_.Capacity());
+    // Just releasing the backing is allowed.
+    vector_.Clear();
+    EXPECT_EQ(0ul, vector_.Capacity());
 
     // Remove elemets so that map_ will try to shrink.
     for (int i = 0; i < 32; ++i) {

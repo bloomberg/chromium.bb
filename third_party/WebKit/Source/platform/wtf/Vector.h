@@ -1626,9 +1626,6 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(size_t new_capacity) {
   if (new_capacity < size())
     Shrink(new_capacity);
 
-  if (Allocator::IsObjectResurrectionForbidden())
-    return;
-
   T* old_buffer = begin();
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   size_t old_capacity = Capacity();
@@ -1638,6 +1635,9 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(size_t new_capacity) {
       ANNOTATE_CHANGE_CAPACITY(begin(), old_capacity, size_, Capacity());
       return;
     }
+
+    if (Allocator::IsObjectResurrectionForbidden())
+      return;
 
     T* old_end = end();
     Base::AllocateBuffer(new_capacity);
