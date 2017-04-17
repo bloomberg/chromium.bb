@@ -14,8 +14,8 @@
 namespace ash {
 namespace {
 
-const int kInactiveAlpha = 0x8A;
-const int kDisabledAlpha = 0x61;
+constexpr int kInactiveAlpha = TrayPopupItemStyle::kInactiveIconAlpha * 0xFF;
+constexpr int kDisabledAlpha = 0x61;
 
 }  // namespace
 

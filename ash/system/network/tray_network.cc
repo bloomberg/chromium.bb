@@ -28,6 +28,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -141,10 +142,17 @@ class NetworkDefaultView : public TrayItemMore,
     gfx::ImageSkia image;
     base::string16 label;
     bool animating = false;
-    // TODO(bruthig): Update the image to use the proper color. See
-    // https://crbug.com/632027.
     network_icon::GetDefaultNetworkImageAndLabel(
         network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
+    // We use the inactive icon alpha only if there is no active network and
+    // wifi is disabled.
+    if (!IsActive() &&
+        !NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+            NetworkTypePattern::WiFi())) {
+      image = gfx::ImageSkiaOperations::CreateTransparentImage(
+          image, TrayPopupItemStyle::kInactiveIconAlpha);
+    }
+
     if (animating)
       network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
     else
@@ -163,11 +171,14 @@ class NetworkDefaultView : public TrayItemMore,
   std::unique_ptr<TrayPopupItemStyle> HandleCreateStyle() const override {
     std::unique_ptr<TrayPopupItemStyle> style =
         TrayItemMore::HandleCreateStyle();
-    style->set_color_style(GetConnectedNetwork() != nullptr
+    style->set_color_style(IsActive()
                                ? TrayPopupItemStyle::ColorStyle::ACTIVE
                                : TrayPopupItemStyle::ColorStyle::INACTIVE);
     return style;
   }
+
+  // Determines whether to use the ACTIVE or INACTIVE text style.
+  bool IsActive() const { return GetConnectedNetwork() != nullptr; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
@@ -204,11 +215,11 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   }
 
   void Update() override {
-    bool wifi_enabled =
+    const bool wifi_enabled =
         NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
             NetworkTypePattern::WiFi());
     image_view_->SetImage(
-        network_icon::GetBasicImageForWiFiNetwork(wifi_enabled));
+        network_icon::GetImageForWiFiEnabledState(wifi_enabled));
 
     const int string_id = wifi_enabled
                               ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED

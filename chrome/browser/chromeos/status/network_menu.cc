@@ -511,7 +511,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     if (scanning_msg)
       AddMessageItem(l10n_util::GetStringUTF16(scanning_msg));
     const gfx::ImageSkia icon =
-        ash::network_icon::GetBasicImageForWiFiNetwork(true);
+        ash::network_icon::GetImageForWiFiEnabledState(true);
     menu_items_.push_back(MenuItem(
         ui::MenuModel::TYPE_COMMAND,
         l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),

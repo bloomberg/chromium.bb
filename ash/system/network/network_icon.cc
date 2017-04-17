@@ -436,21 +436,14 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
   return gfx::ImageSkia(source, source->size());
 }
 
-// Returns an image to represent either a fully connected/enabled network or a
-// disconnected/disabled network.
+// Returns an image to represent either a fully connected network or a
+// disconnected network.
 const gfx::ImageSkia GetBasicImage(bool connected,
                                    IconType icon_type,
                                    const std::string& network_type) {
   DCHECK_NE(shill::kTypeVPN, network_type);
-  SignalStrengthImageSource* source = new SignalStrengthImageSource(
-      ImageTypeForNetworkType(network_type), icon_type, kNumNetworkImages - 1);
-  gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
-  Badges badges;
-  if (!connected) {
-    badges.center = {&kNetworkBadgeOffIcon,
-                     GetDefaultColorForIconType(icon_type)};
-  }
-  return NetworkIconImageSource::CreateImage(icon, badges);
+  return GetImageForIndex(ImageTypeForNetworkType(network_type), icon_type,
+                          connected ? kNumNetworkImages - 1 : 0);
 }
 
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
@@ -769,12 +762,20 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
   return icon->image();
 }
 
-gfx::ImageSkia GetBasicImageForWiFiNetwork(bool connected) {
-  return GetBasicImage(connected, ICON_TYPE_LIST, shill::kTypeWifi);
+gfx::ImageSkia GetImageForWiFiEnabledState(bool enabled, IconType icon_type) {
+  gfx::ImageSkia image =
+      GetBasicImage(true /* connected */, icon_type, shill::kTypeWifi);
+  Badges badges;
+  if (!enabled) {
+    badges.center = {&kNetworkBadgeOffIcon,
+                     GetDefaultColorForIconType(icon_type)};
+  }
+  return NetworkIconImageSource::CreateImage(image, badges);
 }
 
 gfx::ImageSkia GetImageForDisconnectedCellNetwork() {
-  return GetBasicImage(false, ICON_TYPE_LIST, shill::kTypeCellular);
+  return GetBasicImage(false /* not connected */, ICON_TYPE_LIST,
+                       shill::kTypeCellular);
 }
 
 gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
@@ -930,8 +931,16 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
         *label = l10n_util::GetStringUTF16(uninitialized_msg);
       *animating = true;
     } else {
-      // Otherwise show the disconnected wifi icon.
-      *image = GetBasicImage(false, icon_type, shill::kTypeWifi);
+      // Otherwise show a Wi-Fi icon. If Wi-Fi is disabled, show a full icon
+      // with a strikethrough. If it's enabled then it's disconnected, so show
+      // an empty wedge.
+      bool wifi_enabled =
+          NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+              NetworkTypePattern::WiFi());
+      *image = wifi_enabled ? GetBasicImage(false /* not connected */,
+                                            icon_type, shill::kTypeWifi)
+                            : GetImageForWiFiEnabledState(
+                                  false /* not enabled*/, icon_type);
       if (label) {
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);

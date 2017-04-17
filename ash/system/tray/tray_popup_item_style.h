@@ -50,6 +50,8 @@ class TrayPopupItemStyle {
     CAPTION,
   };
 
+  static constexpr double kInactiveIconAlpha = 0.54;
+
   static SkColor GetIconColor(ColorStyle color_style);
 
   explicit TrayPopupItemStyle(FontStyle font_style);
