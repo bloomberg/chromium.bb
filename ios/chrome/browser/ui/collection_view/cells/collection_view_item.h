@@ -21,7 +21,6 @@
 @property(nonatomic, assign) Class cellClass;
 
 - (instancetype)initWithType:(NSInteger)type NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
 
 // Configures the given cell with the item's information. Override this method
 // to specialize. At this level, only accessibility properties are ported from

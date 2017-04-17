@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,8 +27,7 @@
 }
 
 - (instancetype)init {
-  NOTREACHED();
-  return nil;
+  return [self initWithType:0];
 }
 
 - (void)setCellClass:(Class)cellClass {
@@ -39,6 +39,14 @@
   DCHECK([cell class] == self.cellClass);
   cell.accessibilityTraits = self.accessibilityTraits;
   cell.accessibilityIdentifier = self.accessibilityIdentifier;
+}
+
+@end
+
+@implementation CollectionViewItem (CollectionViewController)
+
+- (void)setType:(NSInteger)type {
+  _type = type;
 }
 
 @end
