@@ -195,7 +195,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_fix_quic_callback_crash, true)
 
 // If true, enable version 38 which supports new PADDING frame and respects NSTP
 // connection option.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_38, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_38, true)
 
 // If true, enable QUIC v39.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_39, false)
