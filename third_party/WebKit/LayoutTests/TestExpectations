@@ -2065,7 +2065,6 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1252.html [ Timeout ]
 crbug.com/626703 [ Android Mac ] external/wpt/pointerevents/pointerevent_disabled_form_control-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/streams/readable-streams/floating-point-total-queue-size.dedicatedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-streams/floating-point-total-queue-size.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/floating-point-total-queue-size.dedicatedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/floating-point-total-queue-size.sharedworker.html [ Timeout ]

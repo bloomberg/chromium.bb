@@ -2,6 +2,7 @@ This is a testharness.js-based test.
 FAIL RequestInit's window is not null assert_throws: Expect TypeError exception function "function () { new Request("", {"window" : "http://test.url"}); }" did not throw
 PASS Input URL is not valid 
 PASS Input URL has credentials 
+PASS RequestInit's mode is navigate 
 PASS RequestInit's referrer is invalid 
 PASS RequestInit's method is invalid 
 PASS RequestInit's method is forbidden 
