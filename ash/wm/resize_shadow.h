@@ -32,6 +32,7 @@ class ResizeShadow : public aura::WindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
 
   // Shows resize effects for one or more edges based on a |hit_test| code, such
   // as HTRIGHT or HTBOTTOMRIGHT.

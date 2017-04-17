@@ -94,6 +94,10 @@ void ResizeShadow::OnWindowHierarchyChanged(
   ReparentLayer();
 }
 
+void ResizeShadow::OnWindowStackingChanged(aura::Window* window) {
+  ReparentLayer();
+}
+
 void ResizeShadow::ShowForHitTest(int hit) {
   // Don't start animations unless something changed.
   if (hit == last_hit_test_)
