@@ -131,7 +131,7 @@ ScriptPromise PaymentManager::getManifest(ScriptState* script_state) {
 
 PaymentInstruments* PaymentManager::instruments() {
   if (!instruments_)
-    instruments_ = new PaymentInstruments();
+    instruments_ = new PaymentInstruments(manager_);
   return instruments_;
 }
 

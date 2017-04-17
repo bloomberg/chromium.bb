@@ -46,8 +46,8 @@ class MODULES_EXPORT PaymentManager final
   void OnServiceConnectionError();
 
   Member<ServiceWorkerRegistration> registration_;
-  Member<PaymentInstruments> instruments_;
   payments::mojom::blink::PaymentManagerPtr manager_;
+  Member<PaymentInstruments> instruments_;
 };
 
 }  // namespace blink

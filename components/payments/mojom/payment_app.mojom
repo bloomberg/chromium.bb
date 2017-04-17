@@ -28,12 +28,30 @@ struct PaymentAppManifest {
   array<PaymentAppOption> options;
 };
 
+enum PaymentHandlerStatus {
+  SUCCESS,
+  NOT_IMPLEMENTED,
+  NOT_FOUND,
+  NO_ACTIVE_WORKER,
+  STORAGE_OPERATION_FAILED,
+};
+
+struct PaymentInstrument {
+  string name;
+  array<string> enabled_methods;
+  string stringified_capabilities;
+};
+
 interface PaymentManager {
   Init(string service_worker_scope);
   SetManifest(PaymentAppManifest payment_app_manifest)
       => (PaymentAppManifestError error);
   GetManifest()
       => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
+  SetPaymentInstrument(string instrumentKey, PaymentInstrument instrument)
+      => (PaymentHandlerStatus status);
+  GetPaymentInstrument(string instrumentKey)
+      => (PaymentInstrument instrument, PaymentHandlerStatus status);
 };
 
 struct PaymentAppRequest {

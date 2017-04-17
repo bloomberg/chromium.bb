@@ -57,6 +57,20 @@ void PaymentManager::GetManifest(const GetManifestCallback& callback) {
   payment_app_context_->payment_app_database()->ReadManifest(scope_, callback);
 }
 
+void PaymentManager::SetPaymentInstrument(
+    const std::string& instrumentKey,
+    payments::mojom::PaymentInstrumentPtr details,
+    const PaymentManager::SetPaymentInstrumentCallback& callback) {
+  callback.Run(payments::mojom::PaymentHandlerStatus::NOT_IMPLEMENTED);
+}
+
+void PaymentManager::GetPaymentInstrument(
+    const std::string& instrumentKey,
+    const PaymentManager::GetPaymentInstrumentCallback& callback) {
+  callback.Run(payments::mojom::PaymentInstrument::New(),
+               payments::mojom::PaymentHandlerStatus::NOT_IMPLEMENTED);
+}
+
 void PaymentManager::OnConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   payment_app_context_->PaymentManagerHadConnectionError(this);

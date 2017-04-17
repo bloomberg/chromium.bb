@@ -35,6 +35,13 @@ class CONTENT_EXPORT PaymentManager
   void SetManifest(payments::mojom::PaymentAppManifestPtr manifest,
                    const SetManifestCallback& callback) override;
   void GetManifest(const GetManifestCallback& callback) override;
+  void SetPaymentInstrument(
+      const std::string& instrumentKey,
+      payments::mojom::PaymentInstrumentPtr details,
+      const SetPaymentInstrumentCallback& callback) override;
+  void GetPaymentInstrument(
+      const std::string& instrumentKey,
+      const GetPaymentInstrumentCallback& callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

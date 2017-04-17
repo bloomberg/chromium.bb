@@ -9,8 +9,8 @@
     Exposed=ServiceWorker
 ] interface PaymentInstruments {
     [ImplementedAs=deleteInstrument] Promise<boolean> delete(DOMString instrumentKey);
-    Promise<PaymentInstrument> get(DOMString instrumentKey);
+    [CallWith=ScriptState] Promise<PaymentInstrument> get(DOMString instrumentKey);
     Promise<sequence<DOMString>> keys();
     Promise<boolean> has(DOMString instrumentKey);
-    Promise<void> set(DOMString instrumentKey, PaymentInstrument details);
+    [CallWith=ScriptState, RaisesException] Promise<void> set(DOMString instrumentKey, PaymentInstrument details);
 };
