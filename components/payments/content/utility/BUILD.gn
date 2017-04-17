@@ -11,7 +11,7 @@ static_library("utility") {
   ]
   deps = [
     "//base",
-    "//components/payments/mojom:mojom_parser",
+    "//components/payments/content:mojom_parser",
     "//url",
   ]
 }

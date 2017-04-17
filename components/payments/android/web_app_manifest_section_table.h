@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/payments/mojom/payment_manifest_parser.mojom.h"
+#include "components/payments/content/payment_manifest_parser.mojom.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/web_database_table.h"
 

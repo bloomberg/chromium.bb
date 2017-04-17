@@ -6,7 +6,7 @@
 
 let paymentRequestMock = loadMojoModules(
     'paymentRequestMock',
-    ['components/payments/mojom/payment_request.mojom',
+    ['components/payments/content/payment_request.mojom',
      'mojo/public/js/bindings',
     ]).then(mojo => {
   let [paymentRequest, bindings] =  mojo.modules;

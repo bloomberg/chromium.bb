@@ -614,7 +614,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/leveldb/public/interfaces",
-    "//components/payments/mojom:mojom_payment_app",
+    "//components/payments/content:mojom_payment_app",
     "//content/public/common:interfaces",
 
     # TODO(mcasas): remove the following dep after https://crbug.com/653994
