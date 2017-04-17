@@ -70,10 +70,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kDisabledMenuItemForegroundColor =
       SkColorSetRGB(0xA1, 0xA1, 0x92);
   static const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
-  static const SkColor kEnabledMenuButtonBorderColor =
-      SkColorSetA(SK_ColorBLACK, 0x24);
-  static const SkColor kFocusedMenuButtonBorderColor =
-      SkColorSetA(SK_ColorBLACK, 0x48);
   static const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
   static const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
   // Separator:
@@ -169,11 +165,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kSelectedMenuItemForegroundColor;
     case NativeTheme::kColorId_MenuBorderColor:
       return kMenuBorderColor;
-    case NativeTheme::kColorId_EnabledMenuButtonBorderColor:
-      return kEnabledMenuButtonBorderColor;
-    case NativeTheme::kColorId_FocusedMenuButtonBorderColor:
-    case NativeTheme::kColorId_HoverMenuButtonBorderColor:
-      return kFocusedMenuButtonBorderColor;
     case NativeTheme::kColorId_MenuSeparatorColor:
       return kMenuSeparatorColor;
     case NativeTheme::kColorId_MenuBackgroundColor:
@@ -266,8 +257,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return base_theme->GetSystemColor(
           NativeTheme::kColorId_MenuBackgroundColor);
     case NativeTheme::kColorId_TableHeaderSeparator:
-      return base_theme->GetSystemColor(
-          NativeTheme::kColorId_EnabledMenuButtonBorderColor);
+      return base_theme->GetSystemColor(NativeTheme::kColorId_MenuBorderColor);
 
     // FocusableBorder
     case NativeTheme::kColorId_FocusedBorderColor:

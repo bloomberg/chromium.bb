@@ -19,7 +19,10 @@ enum MenuSeparatorType {
   LOWER_SEPARATOR,
 
   // Spacing - top to bottom: Spacing only.
-  SPACING_SEPARATOR
+  SPACING_SEPARATOR,
+
+  // Vertical separator within a row.
+  VERTICAL_SEPARATOR,
 };
 
 }  // namespace ui

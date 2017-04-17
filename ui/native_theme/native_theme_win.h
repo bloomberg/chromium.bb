@@ -132,7 +132,8 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   void UpdateSystemColors();
 
   // Painting functions that paint to PaintCanvas.
-  void PaintMenuSeparator(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
+  void PaintMenuSeparator(cc::PaintCanvas* canvas,
+                          const MenuSeparatorExtraParams& params) const;
   void PaintMenuGutter(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
   void PaintMenuBackground(cc::PaintCanvas* canvas,
                            const gfx::Rect& rect) const;
@@ -169,10 +170,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                       int state_id,
                       RECT* rect) const;
 
-  HRESULT PaintMenuSeparator(HDC hdc, const gfx::Rect& rect) const;
-
-  HRESULT PaintMenuGutter(HDC hdc, const gfx::Rect& rect) const;
-
   // |arrow_direction| determines whether the arrow is pointing to the left or
   // to the right. In RTL locales, sub-menus open from right to left and
   // therefore the menu arrow should point to the left and not to the right.
@@ -180,8 +177,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                          State state,
                          const gfx::Rect& rect,
                          const MenuArrowExtraParams& extra) const;
-
-  HRESULT PaintMenuBackground(HDC hdc, const gfx::Rect& rect) const;
 
   HRESULT PaintMenuCheck(HDC hdc,
                          State state,
@@ -191,11 +186,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   HRESULT PaintMenuCheckBackground(HDC hdc,
                                    State state,
                                    const gfx::Rect& rect) const;
-
-  HRESULT PaintMenuItemBackground(HDC hdc,
-                                  State state,
-                                  const gfx::Rect& rect,
-                                  const MenuItemExtraParams& extra) const;
 
   HRESULT PaintPushButton(HDC hdc,
                           Part part,

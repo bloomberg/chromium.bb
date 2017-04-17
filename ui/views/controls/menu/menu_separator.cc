@@ -52,9 +52,9 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   ui::NativeTheme::ExtraParams params;
   params.menu_separator.paint_rect = &paint_rect;
   params.menu_separator.type = type_;
-  GetNativeTheme()->Paint(
-      canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
-      ui::NativeTheme::kNormal, gfx::Rect(bounds().size()), params);
+  GetNativeTheme()->Paint(canvas->sk_canvas(),
+                          ui::NativeTheme::kMenuPopupSeparator,
+                          ui::NativeTheme::kNormal, GetLocalBounds(), params);
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() const {

@@ -182,16 +182,11 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
 
     case kColorId_FocusedBorderColor:
       return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
-    case kColorId_FocusedMenuButtonBorderColor:
-      return NSSystemColorToSkColor([NSColor keyboardFocusIndicatorColor]);
     case kColorId_UnfocusedBorderColor:
       return NSSystemColorToSkColor([NSColor controlColor]);
 
     // Buttons and labels.
-    case kColorId_HoverMenuButtonBorderColor:
-      return NSSystemColorToSkColor([NSColor controlBackgroundColor]);
     case kColorId_ButtonEnabledColor:
-    case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_LabelEnabledColor:
     case kColorId_ProminentButtonColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);

@@ -154,8 +154,6 @@ class InMenuButtonBackground : public views::Background {
   // Overridden from views::Background.
   void Paint(gfx::Canvas* canvas, View* view) const override {
     CustomButton* button = CustomButton::AsCustomButton(view);
-    views::Button::ButtonState state =
-        button ? button->state() : views::Button::STATE_NORMAL;
     int h = view->height();
 
     // Draw leading border if desired.
@@ -165,32 +163,26 @@ class InMenuButtonBackground : public views::Background {
       // already, so we end up flipping exactly once.
       gfx::ScopedRTLFlipCanvas scoped_canvas(
           canvas, view->width(), !view->flip_canvas_on_paint_for_rtl_ui());
-      canvas->FillRect(gfx::Rect(0, 0, 1, h),
-                       BorderColor(view, views::Button::STATE_NORMAL));
-      bounds.Inset(gfx::Insets(0, 1, 0, 0));
+      ui::NativeTheme::ExtraParams params;
+      gfx::Rect separator_bounds =
+          gfx::Rect(0, 0, MenuConfig::instance().separator_thickness, h);
+      params.menu_separator.paint_rect = &separator_bounds;
+      params.menu_separator.type = ui::VERTICAL_SEPARATOR;
+      view->GetNativeTheme()->Paint(
+          canvas->sk_canvas(), ui::NativeTheme::kMenuPopupSeparator,
+          ui::NativeTheme::kNormal, separator_bounds, params);
+      bounds.Inset(
+          gfx::Insets(0, MenuConfig::instance().separator_thickness, 0, 0));
     }
 
     // Fill in background for state.
     bounds.set_x(view->GetMirroredXForRect(bounds));
+    views::Button::ButtonState state =
+        button ? button->state() : views::Button::STATE_NORMAL;
     DrawBackground(canvas, view, bounds, state);
   }
 
  private:
-  static SkColor BorderColor(View* view, views::Button::ButtonState state) {
-    ui::NativeTheme* theme = view->GetNativeTheme();
-    switch (state) {
-      case views::Button::STATE_HOVERED:
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_HoverMenuButtonBorderColor);
-      case views::Button::STATE_PRESSED:
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor);
-      default:
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor);
-    }
-  }
-
   static SkColor BackgroundColor(const View* view,
                                  views::Button::ButtonState state) {
     const ui::NativeTheme* theme = view->GetNativeTheme();

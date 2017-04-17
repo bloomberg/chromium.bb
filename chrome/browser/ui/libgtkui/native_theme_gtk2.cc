@@ -156,15 +156,9 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuItemSubtitleColor:
     case kColorId_DisabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), INSENSITIVE);
-    case kColorId_FocusedMenuButtonBorderColor:
-      return GetBgColor(GetEntry(), NORMAL);
-    case kColorId_HoverMenuButtonBorderColor:
-      return GetTextAAColor(GetEntry(), PRELIGHT);
     case kColorId_MenuBorderColor:
-    case kColorId_EnabledMenuButtonBorderColor:
-    case kColorId_MenuSeparatorColor: {
+    case kColorId_MenuSeparatorColor:
       return GetTextColor(GetMenuItem(), INSENSITIVE);
-    }
     case kColorId_MenuBackgroundColor:
       return GetBgColor(GetMenu(), NORMAL);
 

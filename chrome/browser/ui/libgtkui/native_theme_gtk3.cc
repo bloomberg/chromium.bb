@@ -14,6 +14,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace libgtkui {
@@ -110,10 +111,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor(
           "GtkMenu#menu GtkMenuItem#menuitem GtkLabel.accelerator");
     case ui::NativeTheme::kColorId_MenuSeparatorColor:
-    // MenuButton borders are used as vertical menu separators in Chrome.
-    case ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor:
-    case ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor:
-    case ui::NativeTheme::kColorId_HoverMenuButtonBorderColor:
       if (GtkVersionCheck(3, 20)) {
         return GetSeparatorColor(
             "GtkMenu#menu GtkSeparator#separator.horizontal");
@@ -520,6 +517,17 @@ void NativeThemeGtk3::PaintMenuSeparator(
     State state,
     const gfx::Rect& rect,
     const MenuSeparatorExtraParams& menu_separator) const {
+  // TODO(estade): use GTK to draw vertical separators too. See
+  // crbug.com/710183
+  if (menu_separator.type == ui::VERTICAL_SEPARATOR) {
+    cc::PaintFlags paint;
+    paint.setStyle(cc::PaintFlags::kFill_Style);
+    paint.setColor(
+        GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor));
+    canvas->drawRect(gfx::RectToSkRect(rect), paint);
+    return;
+  }
+
   auto separator_offset = [&](int separator_thickness) {
     switch (menu_separator.type) {
       case ui::LOWER_SEPARATOR:

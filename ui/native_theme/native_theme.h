@@ -319,10 +319,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,
     kColorId_MenuBorderColor,
-    // MenuButton - buttons in wrench menu
-    kColorId_EnabledMenuButtonBorderColor,
-    kColorId_FocusedMenuButtonBorderColor,
-    kColorId_HoverMenuButtonBorderColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
