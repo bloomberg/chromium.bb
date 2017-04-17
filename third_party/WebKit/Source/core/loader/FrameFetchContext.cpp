@@ -78,7 +78,6 @@
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
@@ -296,22 +295,33 @@ WebCachePolicy DetermineFrameWebCachePolicy(Frame* frame,
 }  // namespace
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
-    : document_(document), document_loader_(loader) {
+    : BaseFetchContext(document), document_loader_(loader) {
   DCHECK(GetFrame());
 }
 
+void FrameFetchContext::ProvideDocumentToContext(FetchContext& context,
+                                                 Document* document) {
+  DCHECK(document);
+  CHECK(context.IsFrameFetchContext());
+  static_cast<FrameFetchContext&>(context).execution_context_ = document;
+}
+
 FrameFetchContext::~FrameFetchContext() {
-  document_ = nullptr;
   document_loader_ = nullptr;
 }
 
 LocalFrame* FrameFetchContext::FrameOfImportsController() const {
-  DCHECK(document_);
-  HTMLImportsController* imports_controller = document_->ImportsController();
+  DCHECK(GetDocument());
+  HTMLImportsController* imports_controller =
+      GetDocument()->ImportsController();
   DCHECK(imports_controller);
   LocalFrame* frame = imports_controller->Master()->GetFrame();
   DCHECK(frame);
   return frame;
+}
+
+Document* FrameFetchContext::GetDocument() const {
+  return ToDocument(execution_context_.Get());
 }
 
 LocalFrame* FrameFetchContext::GetFrame() const {
@@ -333,28 +343,7 @@ ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
 
 void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
                                                     FetchResourceType type) {
-  bool is_main_resource = type == kFetchMainResource;
-  if (!is_main_resource) {
-    if (!request.DidSetHTTPReferrer()) {
-      DCHECK(document_);
-      request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          document_->GetReferrerPolicy(), request.Url(),
-          document_->OutgoingReferrer()));
-      request.AddHTTPOriginIfNeeded(document_->GetSecurityOrigin());
-    } else {
-      DCHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
-                                                 request.Url(),
-                                                 request.HttpReferrer())
-                    .referrer,
-                request.HttpReferrer());
-      request.AddHTTPOriginIfNeeded(request.HttpReferrer());
-    }
-  }
-
-  if (document_) {
-    request.SetExternalRequestStateFromRequestorAddressSpace(
-        document_->AddressSpace());
-  }
+  BaseFetchContext::AddAdditionalRequestHeaders(request, type);
 
   // The remaining modifications are only necessary for HTTP and HTTPS.
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
@@ -398,8 +387,8 @@ WebCachePolicy FrameFetchContext::ResourceRequestCachePolicy(
   // add significant delays before page content is displayed on the screen.
   // TODO(toyoshim): Move following logic that rewrites ResourceRequest to
   // somewhere that should be relevant to the script resource handling.
-  if (type == Resource::kScript && IsMainFrame() && document_ &&
-      ShouldDisallowFetchForMainFrameScript(request, defer, *document_))
+  if (type == Resource::kScript && IsMainFrame() && GetDocument() &&
+      ShouldDisallowFetchForMainFrameScript(request, defer, *GetDocument()))
     return WebCachePolicy::kReturnCacheDataDontLoad;
 
   const WebCachePolicy cache_policy = DetermineFrameWebCachePolicy(
@@ -629,14 +618,14 @@ void FrameFetchContext::RecordLoadingActivity(
 void FrameFetchContext::DidLoadResource(Resource* resource) {
   if (resource->IsLoadEventBlockingResourceType())
     GetFrame()->Loader().CheckCompleted();
-  if (document_)
-    FirstMeaningfulPaintDetector::From(*document_).CheckNetworkStable();
+  if (GetDocument())
+    FirstMeaningfulPaintDetector::From(*GetDocument()).CheckNetworkStable();
 }
 
 void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
-  Document* initiator_document = document_ && info.IsMainResource()
-                                     ? document_->ParentDocument()
-                                     : document_.Get();
+  Document* initiator_document = GetDocument() && info.IsMainResource()
+                                     ? GetDocument()->ParentDocument()
+                                     : GetDocument();
   if (!initiator_document || !initiator_document->domWindow())
     return;
   DOMWindowPerformance::performance(*initiator_document->domWindow())
@@ -645,27 +634,6 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 
 bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
   return GetContentSettingsClient()->AllowImage(images_enabled, url);
-}
-
-void FrameFetchContext::PrintAccessDeniedMessage(const KURL& url) const {
-  if (url.IsNull())
-    return;
-
-  String message;
-  if (!document_ || document_->Url().IsNull()) {
-    message = "Unsafe attempt to load URL " + url.ElidedString() + '.';
-  } else if (url.IsLocalFile() || document_->Url().IsLocalFile()) {
-    message = "Unsafe attempt to load URL " + url.ElidedString() +
-              " from frame with URL " + document_->Url().ElidedString() +
-              ". 'file:' URLs are treated as unique security origins.\n";
-  } else {
-    message = "Unsafe attempt to load URL " + url.ElidedString() +
-              " from frame with URL " + document_->Url().ElidedString() +
-              ". Domains, protocols and ports must match.\n";
-  }
-
-  GetFrame()->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      kSecurityMessageSource, kErrorMessageLevel, message));
 }
 
 ResourceRequestBlockedReason FrameFetchContext::CanRequest(
@@ -718,8 +686,8 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kInspector;
 
   SecurityOrigin* security_origin = options.security_origin.Get();
-  if (!security_origin && document_)
-    security_origin = document_->GetSecurityOrigin();
+  if (!security_origin && execution_context_)
+    security_origin = execution_context_->GetSecurityOrigin();
 
   if (origin_restriction != FetchParameters::kNoOriginRestriction &&
       security_origin && !security_origin->CanDisplay(url)) {
@@ -771,10 +739,10 @@ ResourceRequestBlockedReason FrameFetchContext::CanRequestInternal(
       options.content_security_policy_option ==
           kDoNotCheckContentSecurityPolicy;
 
-  if (document_) {
-    DCHECK(document_->GetContentSecurityPolicy());
+  if (execution_context_) {
+    DCHECK(execution_context_->GetContentSecurityPolicy());
     if (!should_bypass_main_world_csp &&
-        !document_->GetContentSecurityPolicy()->AllowRequest(
+        !execution_context_->GetContentSecurityPolicy()->AllowRequest(
             resource_request.GetRequestContext(), url,
             options.content_security_policy_nonce, options.integrity_metadata,
             options.parser_disposition, redirect_status, reporting_policy))
@@ -907,12 +875,12 @@ bool FrameFetchContext::DefersLoading() const {
 }
 
 bool FrameFetchContext::IsLoadComplete() const {
-  return document_ && document_->LoadEventFinished();
+  return GetDocument() && GetDocument()->LoadEventFinished();
 }
 
 bool FrameFetchContext::PageDismissalEventBeingDispatched() const {
-  return document_ && document_->PageDismissalEventBeingDispatched() !=
-                          Document::kNoDismissal;
+  return GetDocument() && GetDocument()->PageDismissalEventBeingDispatched() !=
+                              Document::kNoDismissal;
 }
 
 bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
@@ -946,43 +914,39 @@ void FrameFetchContext::AddConsoleMessage(const String& message,
   }
 }
 
-SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
-  return document_ ? document_->GetSecurityOrigin() : nullptr;
-}
-
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   // Record the latest requiredCSP value that will be used when sending this
   // request.
   GetFrame()->Loader().RecordLatestRequiredCSP();
-  GetFrame()->Loader().ModifyRequestForCSP(resource_request, document_);
+  GetFrame()->Loader().ModifyRequestForCSP(resource_request, GetDocument());
 }
 
 void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
-  if (!RuntimeEnabledFeatures::clientHintsEnabled() || !document_)
+  if (!RuntimeEnabledFeatures::clientHintsEnabled() || !GetDocument())
     return;
 
   bool should_send_dpr =
-      document_->GetClientHintsPreferences().ShouldSendDPR() ||
+      GetDocument()->GetClientHintsPreferences().ShouldSendDPR() ||
       hints_preferences.ShouldSendDPR();
   bool should_send_resource_width =
-      document_->GetClientHintsPreferences().ShouldSendResourceWidth() ||
+      GetDocument()->GetClientHintsPreferences().ShouldSendResourceWidth() ||
       hints_preferences.ShouldSendResourceWidth();
   bool should_send_viewport_width =
-      document_->GetClientHintsPreferences().ShouldSendViewportWidth() ||
+      GetDocument()->GetClientHintsPreferences().ShouldSendViewportWidth() ||
       hints_preferences.ShouldSendViewportWidth();
 
   if (should_send_dpr) {
     request.AddHTTPHeaderField(
-        "DPR", AtomicString(String::Number(document_->DevicePixelRatio())));
+        "DPR", AtomicString(String::Number(GetDocument()->DevicePixelRatio())));
   }
 
   if (should_send_resource_width) {
     if (resource_width.is_set) {
       float physical_width =
-          resource_width.width * document_->DevicePixelRatio();
+          resource_width.width * GetDocument()->DevicePixelRatio();
       request.AddHTTPHeaderField(
           "Width", AtomicString(String::Number(ceil(physical_width))));
     }
@@ -993,16 +957,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
   }
-}
-
-void FrameFetchContext::AddCSPHeaderIfNecessary(Resource::Type type,
-                                                ResourceRequest& request) {
-  if (!document_)
-    return;
-
-  const ContentSecurityPolicy* csp = document_->GetContentSecurityPolicy();
-  if (csp->ShouldSendCSPHeader(type))
-    request.AddHTTPHeaderField("CSP", "active");
 }
 
 void FrameFetchContext::PopulateResourceRequest(
@@ -1018,13 +972,13 @@ void FrameFetchContext::PopulateResourceRequest(
 
 void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     ResourceRequest& request) {
-  if (!document_)
+  if (!GetDocument())
     return;
 
   if (request.FirstPartyForCookies().IsNull()) {
     request.SetFirstPartyForCookies(
-        document_ ? document_->FirstPartyForCookies()
-                  : SecurityOrigin::UrlWithUniqueSecurityOrigin());
+        GetDocument() ? GetDocument()->FirstPartyForCookies()
+                      : SecurityOrigin::UrlWithUniqueSecurityOrigin());
   }
 
   // Subresource requests inherit their requestor origin from |m_document|
@@ -1036,9 +990,10 @@ void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(
   // `isNull()` check. https://crbug.com/625969
   if (request.GetFrameType() == WebURLRequest::kFrameTypeNone &&
       request.RequestorOrigin()->IsUnique()) {
-    request.SetRequestorOrigin(document_->IsSandboxed(kSandboxOrigin)
-                                   ? SecurityOrigin::Create(document_->Url())
-                                   : document_->GetSecurityOrigin());
+    request.SetRequestorOrigin(
+        GetDocument()->IsSandboxed(kSandboxOrigin)
+            ? SecurityOrigin::Create(execution_context_->Url())
+            : execution_context_->GetSecurityOrigin());
   }
 }
 
@@ -1076,9 +1031,8 @@ RefPtr<WebTaskRunner> FrameFetchContext::LoadingTaskRunner() const {
 }
 
 DEFINE_TRACE(FrameFetchContext) {
-  visitor->Trace(document_);
   visitor->Trace(document_loader_);
-  FetchContext::Trace(visitor);
+  BaseFetchContext::Trace(visitor);
 }
 
 }  // namespace blink

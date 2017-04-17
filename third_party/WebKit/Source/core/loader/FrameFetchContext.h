@@ -32,9 +32,8 @@
 #define FrameFetchContext_h
 
 #include "core/CoreExport.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/loader/BaseFetchContext.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -51,7 +50,7 @@ class LocalFrameClient;
 class ResourceError;
 class ResourceResponse;
 
-class CORE_EXPORT FrameFetchContext final : public FetchContext {
+class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:
   static ResourceFetcher* CreateFetcherFromDocumentLoader(
       DocumentLoader* loader) {
@@ -61,16 +60,11 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
     return ResourceFetcher::Create(new FrameFetchContext(nullptr, document));
   }
 
-  static void ProvideDocumentToContext(FetchContext& context,
-                                       Document* document) {
-    DCHECK(document);
-    CHECK(context.IsLiveContext());
-    static_cast<FrameFetchContext&>(context).document_ = document;
-  }
+  static void ProvideDocumentToContext(FetchContext&, Document*);
 
-  ~FrameFetchContext();
+  ~FrameFetchContext() override;
 
-  bool IsLiveContext() { return true; }
+  bool IsFrameFetchContext() { return true; }
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
@@ -146,7 +140,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   void SendImagePing(const KURL&) override;
   void AddConsoleMessage(const String&,
                          LogMessageType = kLogErrorMessage) const override;
-  SecurityOrigin* GetSecurityOrigin() const override;
 
   void PopulateResourceRequest(Resource::Type,
                                const ClientHintsPreferences&,
@@ -178,6 +171,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   // relevant document loader or frame in either cases without null-checks.
   // TODO(kinuko): Remove constness, these return non-const members.
   DocumentLoader* MasterDocumentLoader() const;
+  Document* GetDocument() const;
   LocalFrame* GetFrame() const;
   LocalFrameClient* GetLocalFrameClient() const;
 
@@ -185,7 +179,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
   LocalFrame* FrameOfImportsController() const;
 
-  void PrintAccessDeniedMessage(const KURL&) const;
   ResourceRequestBlockedReason CanRequestInternal(
       Resource::Type,
       const ResourceRequest&,
@@ -195,12 +188,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
 
-  void AddCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
-
-  // FIXME: Oilpan: Ideally this should just be a traced Member but that will
-  // currently leak because ComputedStyle and its data are not on the heap.
-  // See crbug.com/383860 for details.
-  WeakMember<Document> document_;
   Member<DocumentLoader> document_loader_;
 };
 

@@ -1338,6 +1338,7 @@ source_set("unit_tests") {
     "layout/shapes/BoxShapeTest.cpp",
     "layout/svg/LayoutSVGForeignObjectTest.cpp",
     "layout/svg/LayoutSVGRootTest.cpp",
+    "loader/BaseFetchContextTest.cpp",
     "loader/DocumentLoadTimingTest.cpp",
     "loader/FrameFetchContextTest.cpp",
     "loader/LinkLoaderTest.cpp",

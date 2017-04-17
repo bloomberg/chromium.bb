@@ -76,7 +76,7 @@ class PLATFORM_EXPORT FetchContext
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool IsLiveContext() { return false; }
+  virtual bool IsFrameFetchContext() { return false; }
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
