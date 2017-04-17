@@ -1954,7 +1954,6 @@ crbug.com/626703 external/wpt/streams/writable-streams/general.sharedworker.html
 crbug.com/626703 external/wpt/streams/writable-streams/reentrant-strategy.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/start.sharedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/write.sharedworker.html [ Timeout ]
-crbug.com/626703 external/wpt/css/selectors4/focus-within-shadow-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ Skip ]
 crbug.com/626703 external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Failure ]
 crbug.com/626703 [ Android Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
