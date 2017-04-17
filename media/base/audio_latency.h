@@ -7,6 +7,10 @@
 
 #include "media/base/media_export.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace media {
 
 class MEDIA_EXPORT AudioLatency {
@@ -35,6 +39,10 @@ class MEDIA_EXPORT AudioLatency {
   static int GetRtcBufferSize(int sample_rate, int hardware_buffer_size);
 
   static int GetInteractiveBufferSize(int hardware_buffer_size);
+
+  static int GetExactBufferSize(base::TimeDelta duration,
+                                int sample_rate,
+                                int hardware_buffer_size);
 };
 
 }  // namespace media

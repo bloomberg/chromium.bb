@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace media {
@@ -124,6 +125,21 @@ int AudioLatency::GetInteractiveBufferSize(int hardware_buffer_size) {
 #endif
 
   return hardware_buffer_size;
+}
+
+int AudioLatency::GetExactBufferSize(base::TimeDelta duration,
+                                     int sample_rate,
+                                     int hardware_buffer_size) {
+  const double requested_buffer_size = duration.InSecondsF() * sample_rate;
+
+  DCHECK_NE(0, hardware_buffer_size);
+
+  // Round the requested size to the nearest multiple of the hardware size
+  const int buffer_size =
+      std::round(std::max(requested_buffer_size, 1.0) / hardware_buffer_size) *
+      hardware_buffer_size;
+
+  return std::max(buffer_size, hardware_buffer_size);
 }
 
 }  // namespace media

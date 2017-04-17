@@ -68,7 +68,8 @@ ContentRendererClient::OverrideCreateMIDIAccessor(
   return nullptr;
 }
 
-blink::WebAudioDevice* ContentRendererClient::OverrideCreateAudioDevice() {
+blink::WebAudioDevice* ContentRendererClient::OverrideCreateAudioDevice(
+    const blink::WebAudioLatencyHint& latency_hint) {
   return nullptr;
 }
 

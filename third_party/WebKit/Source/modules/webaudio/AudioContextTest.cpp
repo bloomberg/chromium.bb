@@ -40,15 +40,24 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
                                     const WebString& device_id,
                                     const WebSecurityOrigin&) override {
     double buffer_size = 0;
+    const double interactive_size = AudioHardwareBufferSize();
+    const double balanced_size = AudioHardwareBufferSize() * 2;
+    const double playback_size = AudioHardwareBufferSize() * 4;
     switch (latency_hint.Category()) {
       case WebAudioLatencyHint::kCategoryInteractive:
-        buffer_size = AudioHardwareBufferSize();
+        buffer_size = interactive_size;
         break;
       case WebAudioLatencyHint::kCategoryBalanced:
-        buffer_size = AudioHardwareBufferSize() * 2;
+        buffer_size = balanced_size;
         break;
       case WebAudioLatencyHint::kCategoryPlayback:
-        buffer_size = AudioHardwareBufferSize() * 4;
+        buffer_size = playback_size;
+        break;
+      case WebAudioLatencyHint::kCategoryExact:
+        buffer_size =
+            clampTo(latency_hint.Seconds() * AudioHardwareSampleRate(),
+                    static_cast<double>(AudioHardwareBufferSize()),
+                    static_cast<double>(playback_size));
         break;
       default:
         NOTREACHED();
@@ -100,6 +109,34 @@ TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
   AudioContext* playback_context = AudioContext::Create(
       GetDocument(), playback_options, ASSERT_NO_EXCEPTION);
   EXPECT_GT(playback_context->baseLatency(), balanced_context->baseLatency());
+
+  AudioContextOptions exact_too_small_options;
+  exact_too_small_options.setLatencyHint(
+      AudioContextLatencyCategoryOrDouble::fromDouble(
+          interactive_context->baseLatency() / 2));
+  AudioContext* exact_too_small_context = AudioContext::Create(
+      GetDocument(), exact_too_small_options, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(exact_too_small_context->baseLatency(),
+            interactive_context->baseLatency());
+
+  const double exact_latency_sec =
+      (interactive_context->baseLatency() + playback_context->baseLatency()) /
+      2;
+  AudioContextOptions exact_ok_options;
+  exact_ok_options.setLatencyHint(
+      AudioContextLatencyCategoryOrDouble::fromDouble(exact_latency_sec));
+  AudioContext* exact_ok_context = AudioContext::Create(
+      GetDocument(), exact_ok_options, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(exact_ok_context->baseLatency(), exact_latency_sec);
+
+  AudioContextOptions exact_too_big_options;
+  exact_too_big_options.setLatencyHint(
+      AudioContextLatencyCategoryOrDouble::fromDouble(
+          playback_context->baseLatency() * 2));
+  AudioContext* exact_too_big_context = AudioContext::Create(
+      GetDocument(), exact_too_big_options, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(exact_too_big_context->baseLatency(),
+            playback_context->baseLatency());
 }
 
 }  // namespace blink

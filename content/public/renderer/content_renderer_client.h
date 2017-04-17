@@ -34,6 +34,7 @@ class FilePath;
 
 namespace blink {
 class WebAudioDevice;
+class WebAudioLatencyHint;
 class WebClipboard;
 class WebFrame;
 class WebLocalFrame;
@@ -171,7 +172,8 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to override creating a WebAudioDevice.  If it
   // returns NULL the content layer will create the audio device.
-  virtual blink::WebAudioDevice* OverrideCreateAudioDevice();
+  virtual blink::WebAudioDevice* OverrideCreateAudioDevice(
+      const blink::WebAudioLatencyHint& latency_hint);
 
   // Allows the embedder to override the blink::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.

@@ -54,8 +54,12 @@ AudioContext* AudioContext::Create(Document& document,
   if (context_options.latencyHint().isAudioContextLatencyCategory()) {
     latency_hint = WebAudioLatencyHint(
         context_options.latencyHint().getAsAudioContextLatencyCategory());
+  } else if (context_options.latencyHint().isDouble()) {
+    // This should be the requested output latency in seconds, without taking
+    // into account double buffering (same as baseLatency).
+    latency_hint =
+        WebAudioLatencyHint(context_options.latencyHint().getAsDouble());
   }
-  // TODO: add support for latencyHint().isDouble()
 
   AudioContext* audio_context = new AudioContext(document, latency_hint);
   audio_context->SuspendIfNeeded();
@@ -264,7 +268,7 @@ void AudioContext::StopRendering() {
 }
 
 double AudioContext::baseLatency() const {
-  return FramesPerBuffer() * 2 / static_cast<double>(sampleRate());
+  return FramesPerBuffer() / static_cast<double>(sampleRate());
 }
 
 }  // namespace blink

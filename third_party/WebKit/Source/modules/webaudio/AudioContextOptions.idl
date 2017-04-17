@@ -4,5 +4,8 @@
 
 // See https://webaudio.github.io/web-audio-api/#audiocontextoptions
 dictionary AudioContextOptions {
+    // If passed as a double this should be the requested output latency in
+    // seconds, without taking into account double buffering (same as
+    // AudioContext.baseLatency).
     (AudioContextLatencyCategory or double) latencyHint = "interactive";
 };

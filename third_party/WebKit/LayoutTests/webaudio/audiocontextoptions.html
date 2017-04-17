@@ -4,67 +4,136 @@
   <title>Test AudioContextOptions</title>
   <script src="../resources/testharness.js"></script>
   <script src="../resources/testharnessreport.js"></script>
-  <script src="resources/audio-testing.js"></script>
+  <script src="resources/audit.js"></script>
 </head>
 
 <body>
   <script>
-    var context;
-    var audit = Audit.createTaskRunner();
+    let context;
+    let defaultLatency;
+    let interactiveLatency;
+    let balancedLatency;
+    let playbackLatency;
 
-    // Task: test AudioContextOptions (1).
-    audit.defineTask('test-audiocontextoptions-1', function (done) {
+    let audit = Audit.createTaskRunner();
 
-      // Verify that an AudioContext can be created with default options.
-      Should("context = new AudioContext()", function () {
-        context = new AudioContext();
-      }).notThrow();
+    audit.define(
+        {
+          label : "test-audiocontextoptions-latencyHint-basic",
+          description : "Test creating contexts with basic latencyHint types."
+        },
+        function(task, should) {
+          let closingPromises = [];
 
-      var defaultLatency = context.baseLatency;
-      Should("default baseLatency", defaultLatency).beGreaterThan(0);
+          // Verify that an AudioContext can be created with default options.
+          should(function(){context = new AudioContext()},
+                 "context = new AudioContext()")
+              .notThrow();
 
-      // Verify that any double can be passed and that it results in interactive latency
-      Should("context = new AudioContext({'latencyHint': 0.05})", function () {
-        context = new AudioContext({'latencyHint': 0.05});
-      }).notThrow();
-      Should("double-constructor baseLatency", context.baseLatency).beEqualTo(defaultLatency);
+          defaultLatency = context.baseLatency;
+          should(defaultLatency, "default baseLatency").beGreaterThan(0);
 
-      // Verify that an AudioContext can be created with the expected latency types.
-      Should("context = new AudioContext({'latencyHint': 'interactive'})", function () {
-        context = new AudioContext({'latencyHint': 'interactive'});
-      }).notThrow();
+          // Verify that an AudioContext can be created with the expected
+          // latency types.
+          should(function(){context = new AudioContext(
+                                {'latencyHint' : 'interactive'})},
+                 "context = new AudioContext({'latencyHint': 'interactive'})")
+              .notThrow();
 
-      var interactiveLatency = context.baseLatency;
-      Should("interactive baseLatency", interactiveLatency).beEqualTo(defaultLatency);
+          interactiveLatency = context.baseLatency;
+          should(interactiveLatency, "interactive baseLatency")
+              .beEqualTo(defaultLatency);
+          closingPromises.push(context.close());
 
-      Should("context = new AudioContext({'latencyHint': 'balanced'})", function () {
-        context = new AudioContext({'latencyHint': 'balanced'});
-      }).notThrow();
+          should(function(){context =
+                                new AudioContext({'latencyHint' : 'balanced'})},
+                 "context = new AudioContext({'latencyHint': 'balanced'})")
+              .notThrow();
 
-      var balancedLatency = context.baseLatency;
-      Should("balanced baseLatency", balancedLatency).beGreaterThanOrEqualTo(interactiveLatency);
+          balancedLatency = context.baseLatency;
+          should(balancedLatency, "balanced baseLatency")
+              .beGreaterThanOrEqualTo(interactiveLatency);
+          closingPromises.push(context.close());
 
-      Should("context = new AudioContext({'latencyHint': 'playback'})", function () {
-        context = new AudioContext({'latencyHint': 'playback'});
-      }).notThrow();
+          should(function(){context =
+                                new AudioContext({'latencyHint' : 'playback'})},
+                 "context = new AudioContext({'latencyHint': 'playback'})")
+              .notThrow();
 
-      var playbackLatency = context.baseLatency;
-      Should("playback baseLatency", playbackLatency).beGreaterThanOrEqualTo(balancedLatency);
+          playbackLatency = context.baseLatency;
+          should(playbackLatency, "playback baseLatency")
+              .beGreaterThanOrEqualTo(balancedLatency);
+          closingPromises.push(context.close());
 
-      // Verify that invalid latencyHint values are rejected.
-      Should("context = new AudioContext({'latencyHint': 'foo'})", function () {
-        context = new AudioContext({'latencyHint': 'foo'});
-      }).throw("TypeError");
+          Promise.all(closingPromises).then(function() { task.done(); });
+        });
 
-      // Verify that no extra options can be passed into the AudioContextOptions.
-      Should("context = new AudioContext('latencyHint')", function () {
-        context = new AudioContext('latencyHint');
-      }).throw("TypeError");
+    audit.define(
+        {
+          label : "test-audiocontextoptions-latencyHint-double",
+          description :
+              "Test creating contexts with explicit latencyHint values."
+        },
+        function(task, should) {
+          var closingPromises = [];
 
-      done();
-    });
+          // Verify too small exact latency clamped to 'interactive'
+          should(function(){context = new AudioContext(
+                                {'latencyHint' : interactiveLatency / 2})},
+                 "context = new AudioContext({'latencyHint': " +
+                     "interactiveLatency/2})")
+              .notThrow();
+          should(context.baseLatency, "double-constructor baseLatency small")
+              .beEqualTo(interactiveLatency);
+          closingPromises.push(context.close());
 
-    audit.runTasks();
+          // Verify that exact latency in range works as expected
+          var validLatency = (interactiveLatency + playbackLatency) / 2;
+          should(function(){context = new AudioContext(
+                                {'latencyHint' : validLatency})},
+                 "context = new AudioContext({'latencyHint': validLatency})")
+              .notThrow();
+          should(context.baseLatency,
+                 "double-constructor baseLatency inrange 1")
+              .beGreaterThanOrEqualTo(interactiveLatency);
+          should(context.baseLatency,
+                 "double-constructor baseLatency inrange 2")
+              .beLessThanOrEqualTo(playbackLatency);
+          closingPromises.push(context.close());
+
+          // Verify too big exact latency clamped to some value
+          var context1;
+          var context2;
+          should(
+              function() {
+                context1 =
+                    new AudioContext({'latencyHint' : playbackLatency * 10});
+                context2 =
+                    new AudioContext({'latencyHint' : playbackLatency * 20});
+              },
+              "creating two high latency contexts")
+              .notThrow();
+          should(context1.baseLatency, "high latency context baseLatency")
+              .beEqualTo(context2.baseLatency);
+          closingPromises.push(context1.close());
+          closingPromises.push(context2.close());
+
+          // Verify that invalid latencyHint values are rejected.
+          should(
+              function(){context = new AudioContext({'latencyHint' : 'foo'})},
+              "context = new AudioContext({'latencyHint': 'foo'})")
+              .throw("TypeError");
+
+          // Verify that no extra options can be passed into the
+          // AudioContextOptions.
+          should(function(){context = new AudioContext('latencyHint')},
+                 "context = new AudioContext('latencyHint')")
+              .throw("TypeError");
+
+          Promise.all(closingPromises).then(function() { task.done(); });
+        });
+
+    audit.run();
   </script>
 </body>
 </html>

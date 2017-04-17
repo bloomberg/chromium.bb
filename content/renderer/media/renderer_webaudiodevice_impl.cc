@@ -41,11 +41,41 @@ AudioDeviceFactory::SourceType GetLatencyHintSourceType(
     case WebAudioLatencyHint::kCategoryPlayback:
       return AudioDeviceFactory::kSourceWebAudioPlayback;
     case WebAudioLatencyHint::kCategoryExact:
-      // TODO implement CategoryExact
-      return AudioDeviceFactory::kSourceWebAudioInteractive;
+      return AudioDeviceFactory::kSourceWebAudioExact;
   }
   NOTREACHED();
   return AudioDeviceFactory::kSourceWebAudioInteractive;
+}
+
+int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
+                        media::AudioLatency::LatencyType latency,
+                        const media::AudioParameters& hardware_params) {
+  // Adjust output buffer size according to the latency requirement.
+  switch (latency) {
+    case media::AudioLatency::LATENCY_INTERACTIVE:
+      return media::AudioLatency::GetInteractiveBufferSize(
+          hardware_params.frames_per_buffer());
+      break;
+    case media::AudioLatency::LATENCY_RTC:
+      return media::AudioLatency::GetRtcBufferSize(
+          hardware_params.sample_rate(), hardware_params.frames_per_buffer());
+      break;
+    case media::AudioLatency::LATENCY_PLAYBACK:
+      return media::AudioLatency::GetHighLatencyBufferSize(
+          hardware_params.sample_rate(), 0);
+      break;
+    case media::AudioLatency::LATENCY_EXACT_MS:
+      // TODO(andrew.macpherson@soundtrap.com): http://crbug.com/708917
+      return std::min(4096,
+                      media::AudioLatency::GetExactBufferSize(
+                          base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
+                          hardware_params.sample_rate(),
+                          hardware_params.frames_per_buffer()));
+      break;
+    default:
+      NOTREACHED();
+  }
+  return 0;
 }
 
 int FrameIdFromCurrentContext() {
@@ -104,36 +134,16 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
   DCHECK(client_callback_);
   DCHECK_NE(frame_id_, MSG_ROUTING_NONE);
 
-  media::AudioParameters hardware_params(device_params_cb.Run(
+  const media::AudioParameters hardware_params(device_params_cb.Run(
       frame_id_, session_id_, std::string(), security_origin_));
 
-  int output_buffer_size = 0;
-
-  media::AudioLatency::LatencyType latency =
+  const media::AudioLatency::LatencyType latency =
       AudioDeviceFactory::GetSourceLatencyType(
           GetLatencyHintSourceType(latency_hint_.Category()));
 
-  // Adjust output buffer size according to the latency requirement.
-  switch (latency) {
-    case media::AudioLatency::LATENCY_INTERACTIVE:
-      output_buffer_size = media::AudioLatency::GetInteractiveBufferSize(
-          hardware_params.frames_per_buffer());
-      break;
-    case media::AudioLatency::LATENCY_RTC:
-      output_buffer_size = media::AudioLatency::GetRtcBufferSize(
-          hardware_params.sample_rate(), hardware_params.frames_per_buffer());
-      break;
-    case media::AudioLatency::LATENCY_PLAYBACK:
-      output_buffer_size = media::AudioLatency::GetHighLatencyBufferSize(
-          hardware_params.sample_rate(), 0);
-      break;
-    case media::AudioLatency::LATENCY_EXACT_MS:
-    // TODO(olka): add support when WebAudio requires it.
-    default:
-      NOTREACHED();
-  }
-
-  DCHECK_NE(output_buffer_size, 0);
+  const int output_buffer_size =
+      GetOutputBufferSize(latency_hint_, latency, hardware_params);
+  DCHECK_NE(0, output_buffer_size);
 
   sink_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY, layout,
                      hardware_params.sample_rate(), 16, output_buffer_size);

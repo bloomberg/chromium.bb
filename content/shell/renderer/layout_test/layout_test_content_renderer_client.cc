@@ -31,7 +31,9 @@
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "gin/modules/module_registry.h"
+#include "media/base/audio_latency.h"
 #include "media/media_features.h"
+#include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -194,10 +196,38 @@ LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
   return interfaces->CreateMIDIAccessor(client);
 }
 
-WebAudioDevice* LayoutTestContentRendererClient::OverrideCreateAudioDevice() {
+WebAudioDevice* LayoutTestContentRendererClient::OverrideCreateAudioDevice(
+    const blink::WebAudioLatencyHint& latency_hint) {
+  const double hw_buffer_size = 128;
+  const double hw_sample_rate = 44100;
+  double buffer_size = 0;
+  switch (latency_hint.Category()) {
+    case blink::WebAudioLatencyHint::kCategoryInteractive:
+      buffer_size =
+          media::AudioLatency::GetInteractiveBufferSize(hw_buffer_size);
+      break;
+    case blink::WebAudioLatencyHint::kCategoryBalanced:
+      buffer_size =
+          media::AudioLatency::GetRtcBufferSize(hw_sample_rate, hw_buffer_size);
+      break;
+    case blink::WebAudioLatencyHint::kCategoryPlayback:
+      buffer_size =
+          media::AudioLatency::GetHighLatencyBufferSize(hw_sample_rate, 0);
+      break;
+    case blink::WebAudioLatencyHint::kCategoryExact:
+      // TODO(andrew.macpherson@soundtrap.com): http://crbug.com/708917
+      buffer_size = std::min(
+          4096, media::AudioLatency::GetExactBufferSize(
+                    base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
+                    hw_sample_rate, hw_buffer_size));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateAudioDevice(44100, 128);
+  return interfaces->CreateAudioDevice(hw_sample_rate, buffer_size);
 }
 
 WebClipboard* LayoutTestContentRendererClient::OverrideWebClipboard() {

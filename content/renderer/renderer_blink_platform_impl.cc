@@ -693,7 +693,7 @@ WebAudioDevice* RendererBlinkPlatformImpl::CreateAudioDevice(
     const blink::WebSecurityOrigin& security_origin) {
   // Use a mock for testing.
   blink::WebAudioDevice* mock_device =
-      GetContentClient()->renderer()->OverrideCreateAudioDevice();
+      GetContentClient()->renderer()->OverrideCreateAudioDevice(latency_hint);
   if (mock_device)
     return mock_device;
 
