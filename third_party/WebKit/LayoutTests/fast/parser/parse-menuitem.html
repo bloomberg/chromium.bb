@@ -2,12 +2,12 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 </head>
-<div id="div"><menuitem></div>
-<menu id="menu" type=context><menuitem id="first_item"><menuitem id="second_item"></menu>
+<div id="div"><menuitem></menuitem></div>
+<menu id="menu" type=context><menuitem id="first_item"></menuitem><menuitem id="second_item"></menuitem></menu>
 <script>
-description("This test checks parsing of menuitem tag which is a self closing tag with no end tag.");
-shouldBeEqualToString("document.getElementById('div').innerHTML", "<menuitem>");
-shouldBeEqualToString("document.getElementById('menu').innerHTML", "<menuitem id=\"first_item\"><menuitem id=\"second_item\">");
+description("This test checks parsing of menuitem tag which has an end tag.");
+shouldBeEqualToString("document.getElementById('div').innerHTML", "<menuitem></menuitem>");
+shouldBeEqualToString("document.getElementById('menu').innerHTML", "<menuitem id=\"first_item\"></menuitem><menuitem id=\"second_item\"></menuitem>");
 shouldBeNull("document.getElementById('first_item').firstChild");
 shouldBe("document.getElementById('menu').firstChild.nextSibling", "document.getElementById('second_item')");
 </script>

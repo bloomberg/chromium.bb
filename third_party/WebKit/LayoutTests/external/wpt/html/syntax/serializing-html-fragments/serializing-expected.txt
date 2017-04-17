@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 242 tests; 228 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 234 tests; 220 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS innerHTML 0  
 PASS innerHTML 1 <a></a> 
 PASS innerHTML 2 <a b="c"></a> 
@@ -103,7 +103,6 @@ PASS innerHTML Void context node img
 PASS innerHTML Void context node input 
 PASS innerHTML Void context node keygen 
 PASS innerHTML Void context node link 
-PASS innerHTML Void context node menuitem 
 PASS innerHTML Void context node meta 
 PASS innerHTML Void context node param 
 PASS innerHTML Void context node source 
@@ -122,7 +121,6 @@ PASS innerHTML void as first child with following siblings img
 PASS innerHTML void as first child with following siblings input 
 PASS innerHTML void as first child with following siblings keygen 
 PASS innerHTML void as first child with following siblings link 
-PASS innerHTML void as first child with following siblings menuitem 
 PASS innerHTML void as first child with following siblings meta 
 PASS innerHTML void as first child with following siblings param 
 PASS innerHTML void as first child with following siblings source 
@@ -141,7 +139,6 @@ PASS innerHTML void as second child with following siblings img
 PASS innerHTML void as second child with following siblings input 
 PASS innerHTML void as second child with following siblings keygen 
 PASS innerHTML void as second child with following siblings link 
-PASS innerHTML void as second child with following siblings menuitem 
 PASS innerHTML void as second child with following siblings meta 
 PASS innerHTML void as second child with following siblings param 
 PASS innerHTML void as second child with following siblings source 
@@ -160,7 +157,6 @@ PASS innerHTML void as last child with preceding siblings img
 PASS innerHTML void as last child with preceding siblings input 
 PASS innerHTML void as last child with preceding siblings keygen 
 PASS innerHTML void as last child with preceding siblings link 
-PASS innerHTML void as last child with preceding siblings menuitem 
 PASS innerHTML void as last child with preceding siblings meta 
 PASS innerHTML void as last child with preceding siblings param 
 PASS innerHTML void as last child with preceding siblings source 
@@ -179,7 +175,6 @@ PASS outerHTML Void context node img
 PASS outerHTML Void context node input 
 PASS outerHTML Void context node keygen 
 PASS outerHTML Void context node link 
-PASS outerHTML Void context node menuitem 
 PASS outerHTML Void context node meta 
 PASS outerHTML Void context node param 
 PASS outerHTML Void context node source 
@@ -198,7 +193,6 @@ PASS outerHTML void as first child with following siblings img
 PASS outerHTML void as first child with following siblings input 
 PASS outerHTML void as first child with following siblings keygen 
 PASS outerHTML void as first child with following siblings link 
-PASS outerHTML void as first child with following siblings menuitem 
 PASS outerHTML void as first child with following siblings meta 
 PASS outerHTML void as first child with following siblings param 
 PASS outerHTML void as first child with following siblings source 
@@ -217,7 +211,6 @@ PASS outerHTML void as second child with following siblings img
 PASS outerHTML void as second child with following siblings input 
 PASS outerHTML void as second child with following siblings keygen 
 PASS outerHTML void as second child with following siblings link 
-PASS outerHTML void as second child with following siblings menuitem 
 PASS outerHTML void as second child with following siblings meta 
 PASS outerHTML void as second child with following siblings param 
 PASS outerHTML void as second child with following siblings source 
@@ -236,7 +229,6 @@ PASS outerHTML void as last child with preceding siblings img
 PASS outerHTML void as last child with preceding siblings input 
 PASS outerHTML void as last child with preceding siblings keygen 
 PASS outerHTML void as last child with preceding siblings link 
-PASS outerHTML void as last child with preceding siblings menuitem 
 PASS outerHTML void as last child with preceding siblings meta 
 PASS outerHTML void as last child with preceding siblings param 
 PASS outerHTML void as last child with preceding siblings source 

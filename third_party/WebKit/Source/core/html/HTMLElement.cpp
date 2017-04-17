@@ -144,9 +144,8 @@ bool HTMLElement::ShouldSerializeEndTag() const {
       HasTagName(bgsoundTag) || HasTagName(brTag) || HasTagName(colTag) ||
       HasTagName(embedTag) || HasTagName(frameTag) || HasTagName(hrTag) ||
       HasTagName(imgTag) || HasTagName(inputTag) || HasTagName(keygenTag) ||
-      HasTagName(linkTag) || HasTagName(menuitemTag) || HasTagName(metaTag) ||
-      HasTagName(paramTag) || HasTagName(sourceTag) || HasTagName(trackTag) ||
-      HasTagName(wbrTag))
+      HasTagName(linkTag) || HasTagName(metaTag) || HasTagName(paramTag) ||
+      HasTagName(sourceTag) || HasTagName(trackTag) || HasTagName(wbrTag))
     return false;
   return true;
 }

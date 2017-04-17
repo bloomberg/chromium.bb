@@ -160,8 +160,6 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
            tag_name == HTMLNames::mainTag ||
            tag_name == HTMLNames::marqueeTag ||
            tag_name == HTMLNames::menuTag ||
-           (RuntimeEnabledFeatures::contextMenuEnabled() &&
-            tag_name == HTMLNames::menuitemTag) ||
            tag_name == HTMLNames::metaTag || tag_name == HTMLNames::navTag ||
            tag_name == HTMLNames::noembedTag ||
            tag_name == HTMLNames::noframesTag ||
