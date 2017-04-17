@@ -287,7 +287,8 @@ TEST_F(BlacklistTest, SuccessfullyBlocked) {
   }
 }
 
-TEST_F(BlacklistTest, LoadBlacklistedLibrary) {
+// Disabled due to flakiness.  https://crbug.com/711651.
+TEST_F(BlacklistTest, DISABLED_LoadBlacklistedLibrary) {
   base::FilePath current_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &current_dir));
 
