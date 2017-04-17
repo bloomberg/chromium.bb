@@ -62,7 +62,8 @@ class PLATFORM_EXPORT PropertyTreeState {
   // Returns the compositor element id, if any, for this property state. If
   // neither the effect nor transform nodes have a compositor element id then a
   // default instance is returned.
-  const CompositorElementId GetCompositorElementId() const;
+  const CompositorElementId GetCompositorElementId(
+      const CompositorElementIdSet& element_ids) const;
 
   enum InnermostNode {
     kNone,  // None means that all nodes are their root values

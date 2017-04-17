@@ -644,7 +644,8 @@ void PaintArtifactCompositor::Update(
 
     layer->set_offset_to_transform_parent(layer_offset);
     CompositorElementId element_id =
-        pending_layer.property_tree_state.GetCompositorElementId();
+        pending_layer.property_tree_state.GetCompositorElementId(
+            composited_element_ids);
     if (element_id) {
       layer->SetElementId(element_id);
       composited_element_ids.insert(element_id);
