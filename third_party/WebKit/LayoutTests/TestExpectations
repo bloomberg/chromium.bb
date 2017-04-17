@@ -2733,8 +2733,6 @@ crbug.com/659139 [ Mac ] shapedetection/detection-options.html [ Skip ]
 
 crbug.com/685951 css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 
-crbug.com/706792 [ Win ] fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
