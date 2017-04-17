@@ -120,12 +120,13 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
 // Helper method for RunUpdate to create icon files for the asynchrounously
 // loaded icons.
 void CreateIconFiles(const base::FilePath& icon_dir,
-                     const ShellLinkItemList& item_list) {
+                     const ShellLinkItemList& item_list,
+                     size_t max_items) {
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.CreateIconFilesDuration");
 
   for (ShellLinkItemList::const_iterator item = item_list.begin();
-      item != item_list.end(); ++item) {
+       item != item_list.end() && max_items > 0; ++item, --max_items) {
     base::FilePath icon_path;
     if (CreateIconFile((*item)->icon_image(), icon_dir, &icon_path))
       (*item)->set_icon(icon_path.value(), 0);
@@ -177,12 +178,10 @@ bool UpdateTaskCategory(
 
 // Updates the application JumpList.
 bool UpdateJumpList(const wchar_t* app_id,
+                    const base::FilePath& icon_dir,
                     const ShellLinkItemList& most_visited_pages,
                     const ShellLinkItemList& recently_closed_pages,
                     IncognitoModePrefs::Availability incognito_availability) {
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
-  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
-
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
   // of Windows.
@@ -208,6 +207,27 @@ bool UpdateJumpList(const wchar_t* app_id,
     most_visited_items += recently_closed_items - recently_closed_pages.size();
     recently_closed_items = recently_closed_pages.size();
   }
+
+  // If JumpListIcons directory doesn't exist (we have tried to create it
+  // already) or is not empty, skip updating the jumplist icons. The jumplist
+  // links should be updated anyway, as it doesn't involve disk IO. In this
+  // case, Chrome's icon will be used for the new links.
+
+  if (base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir)) {
+    // TODO(chengx): Remove this UMA metric after fixing http://crbug.com/40407.
+    UMA_HISTOGRAM_COUNTS_100(
+        "WinJumplist.CreateIconFilesCount",
+        most_visited_pages.size() + recently_closed_pages.size());
+
+    // Create icon files for shortcuts in the "Most Visited" category.
+    CreateIconFiles(icon_dir, most_visited_pages, most_visited_items);
+
+    // Create icon files for shortcuts in the "Recently Closed" category.
+    CreateIconFiles(icon_dir, recently_closed_pages, recently_closed_items);
+  }
+
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.UpdateJumpListDuration");
 
   // Update the "Most Visited" category of the JumpList if it exists.
   // This update request is applied into the JumpList when we commit this
@@ -257,28 +277,10 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
     local_recently_closed_pages = data->recently_closed_pages_;
   }
 
-  // If JumpListIcons directory doesn't exist or is not empty, skip updating the
-  // jumplist icons. The jumplist links should be updated anyway, as it doesn't
-  // involve disk IO.
-  if (base::DirectoryExists(icon_dir) && base::IsDirectoryEmpty(icon_dir)) {
-    // TODO(chengx): Remove the UMA histogram after fixing
-    // http://crbug.com/40407.
-    UMA_HISTOGRAM_COUNTS_100(
-        "WinJumplist.CreateIconFilesCount",
-        local_most_visited_pages.size() + local_recently_closed_pages.size());
-
-    // Create icon files for shortcuts in the "Most Visited" category.
-    CreateIconFiles(icon_dir, local_most_visited_pages);
-
-    // Create icon files for shortcuts in the "Recently Closed"
-    // category.
-    CreateIconFiles(icon_dir, local_recently_closed_pages);
-  }
-
   // Create a new JumpList and replace the current JumpList with it. The
   // jumplist links are updated anyway, while the jumplist icons may not as
   // mentioned above.
-  UpdateJumpList(app_id.c_str(), local_most_visited_pages,
+  UpdateJumpList(app_id.c_str(), icon_dir, local_most_visited_pages,
                  local_recently_closed_pages, incognito_availability);
 }
 
