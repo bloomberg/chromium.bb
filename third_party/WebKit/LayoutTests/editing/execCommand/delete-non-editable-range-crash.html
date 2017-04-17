@@ -1,21 +1,39 @@
 <!DOCTYPE html>
-<body contenteditable="true"><div contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="false"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span contenteditable="true"><span>foo</span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol><head>
-<style>
-</style>
-
-</head></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></span><ol>bar</ol></div><div></div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner) {
-  testRunner.dumpAsText();
-  testRunner.waitUntilDone();
-}
-
-document.execCommand("SelectAll");
-document.execCommand("Indent");
-
-window.setTimeout(function() {
-  document.write("PASS");
-  if (window.testRunner)
-    testRunner.notifyDone();
-}, 0);
+test(() => assert_selection(
+    [
+      '<div contenteditable="true">',
+        '<span contenteditable="false">',
+          '<span contenteditable="true">',
+            '<span>foo</span>',
+            '<ol>bar</ol>',
+          '</span>',
+          '<ol>bar</ol>',
+        '</span>',
+        '<ol>bar</ol>',
+      '</div>',
+    ].join(''),
+    selection => {
+      selection.document.designMode = 'on';
+      selection.document.execCommand('selectAll');
+      selection.document.execCommand('indent');
+    },
+    // Note: This is a crash test. The output HTML only reflects the current
+    // behavior, which may be incorrect due to the unusual input HTML.
+    [
+      '<div contenteditable="true">',
+        '<blockquote style="margin: 0 0 0 40px; border: none; padding: 0px;">',
+          '<span>^foo<br></span>',
+          'barbarbar',
+        '</blockquote>',
+        '<span contenteditable="false">',
+          '<span contenteditable="true">|</span>',
+          '<ol>bar</ol>',
+        '</span>',
+      '</div>'
+    ].join('')),
+    'The test passes if it does not crash.');
 </script>

@@ -1060,8 +1060,10 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     selection_to_delete_ = EndingSelection();
 
   if (!selection_to_delete_.IsNonOrphanedRange() ||
-      !selection_to_delete_.IsContentEditable())
+      !selection_to_delete_.IsContentEditable()) {
+    // editing/execCommand/delete-non-editable-range-crash.html reaches here.
     return;
+  }
 
   RelocatablePosition relocatable_reference_position(reference_move_position_);
 
