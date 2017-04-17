@@ -27,6 +27,7 @@ component("views") {
   deps = [
     "//base",
     "//chrome/app:command_ids",
+    "//content/public/browser",
     "//printing/features",
     "//skia",
     "//ui/base",
