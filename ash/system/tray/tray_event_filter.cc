@@ -9,7 +9,6 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,8 +46,8 @@ void TrayEventFilter::OnPointerEventObserved(
 void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
                                           views::Widget* target) {
   if (target) {
-    WmWindow* window = WmWindow::Get(target->GetNativeWindow());
-    int container_id = wm::GetContainerForWindow(window)->aura_window()->id();
+    aura::Window* window = target->GetNativeWindow();
+    int container_id = wm::GetContainerForWindow(window)->id();
     // Don't process events that occurred inside an embedded menu, for example
     // the right-click menu in a popup notification.
     if (container_id == kShellWindowId_MenuContainer)
@@ -56,7 +55,7 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
     // Don't process events that occurred inside a popup notification
     // from message center.
     if (container_id == kShellWindowId_StatusContainer &&
-        window->GetType() == ui::wm::WINDOW_TYPE_POPUP &&
+        window->type() == ui::wm::WINDOW_TYPE_POPUP &&
         target->IsAlwaysOnTop()) {
       return;
     }

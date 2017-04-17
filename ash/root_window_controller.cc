@@ -389,9 +389,10 @@ SystemModalContainerLayoutManager*
 RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
   WmWindow* modal_container = nullptr;
   if (window) {
-    WmWindow* window_container = wm::GetContainerForWindow(window);
-    if (window_container && window_container->aura_window()->id() >=
-                                kShellWindowId_LockScreenContainer) {
+    aura::Window* window_container =
+        wm::GetContainerForWindow(window->aura_window());
+    if (window_container &&
+        window_container->id() >= kShellWindowId_LockScreenContainer) {
       modal_container = GetWmContainer(kShellWindowId_LockSystemModalContainer);
     } else {
       modal_container = GetWmContainer(kShellWindowId_SystemModalContainer);

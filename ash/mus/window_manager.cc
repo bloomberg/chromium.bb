@@ -356,12 +356,11 @@ void WindowManager::OnWmSetModalType(aura::Window* window, ui::ModalType type) {
   if (type != ui::MODAL_TYPE_SYSTEM && old_type != ui::MODAL_TYPE_SYSTEM)
     return;
 
-  WmWindow* new_parent =
-      wm::GetDefaultParent(WmWindow::Get(window), window->bounds());
+  aura::Window* new_parent = wm::GetDefaultParent(window, window->bounds());
   DCHECK(new_parent);
   if (window->parent())
     window->parent()->RemoveChild(window);
-  new_parent->aura_window()->AddChild(window);
+  new_parent->AddChild(window);
 }
 
 void WindowManager::OnWmSetCanFocus(aura::Window* window, bool can_focus) {

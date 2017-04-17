@@ -13,65 +13,72 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm_window.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
 namespace {
 
-WmWindow* FindContainerRoot(const gfx::Rect& bounds) {
+aura::Window* FindContainerRoot(const gfx::Rect& bounds) {
   if (bounds == gfx::Rect())
-    return Shell::GetWmRootWindowForNewWindows();
-  return GetRootWindowMatching(bounds);
+    return Shell::GetRootWindowForNewWindows();
+  WmWindow* root = GetRootWindowMatching(bounds);
+  return root ? root->aura_window() : nullptr;
 }
 
-bool HasTransientParentWindow(const WmWindow* window) {
-  return window->GetTransientParent() &&
-         window->GetTransientParent()->GetType() != ui::wm::WINDOW_TYPE_UNKNOWN;
+bool HasTransientParentWindow(const aura::Window* window) {
+  const aura::Window* transient_parent = ::wm::GetTransientParent(window);
+  return transient_parent &&
+         transient_parent->type() != ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
-WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
-  DCHECK(window->IsSystemModal());
+aura::Window* GetSystemModalContainer(aura::Window* root,
+                                      aura::Window* window) {
+  aura::Window* transient_parent = ::wm::GetTransientParent(window);
+  DCHECK_EQ(ui::MODAL_TYPE_SYSTEM,
+            window->GetProperty(aura::client::kModalKey));
 
   // If screen lock is not active and user session is active,
   // all modal windows are placed into the normal modal container.
   // In case of missing transient parent (it could happen for alerts from
   // background pages) assume that the window belongs to user session.
   if (!Shell::Get()->session_controller()->IsUserSessionBlocked() ||
-      !window->GetTransientParent()) {
-    return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
+      !transient_parent) {
+    return root->GetChildById(kShellWindowId_SystemModalContainer);
   }
 
   // Otherwise those that originate from LockScreen container and above are
   // placed in the screen lock modal container.
-  int window_container_id =
-      window->GetTransientParent()->GetParent()->aura_window()->id();
+  int window_container_id = transient_parent->parent()->id();
   if (window_container_id < kShellWindowId_LockScreenContainer)
-    return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
-  return root->GetChildByShellWindowId(kShellWindowId_LockSystemModalContainer);
+    return root->GetChildById(kShellWindowId_SystemModalContainer);
+  return root->GetChildById(kShellWindowId_LockSystemModalContainer);
 }
 
-WmWindow* GetContainerFromAlwaysOnTopController(WmWindow* root,
-                                                WmWindow* window) {
-  return root->GetRootWindowController()
-      ->always_on_top_controller()
-      ->GetContainer(window);
+aura::Window* GetContainerFromAlwaysOnTopController(aura::Window* root,
+                                                    aura::Window* window) {
+  WmWindow* result = RootWindowController::ForWindow(root)
+                         ->always_on_top_controller()
+                         ->GetContainer(WmWindow::Get(window));
+  return result ? result->aura_window() : nullptr;
 }
 
 }  // namespace
 
-WmWindow* GetContainerForWindow(WmWindow* window) {
-  WmWindow* parent = window->GetParent();
+aura::Window* GetContainerForWindow(aura::Window* window) {
+  aura::Window* parent = window->parent();
   // The first parent with an explicit shell window ID is the container.
-  while (parent && parent->aura_window()->id() == kShellWindowId_Invalid)
-    parent = parent->GetParent();
+  while (parent && parent->id() == kShellWindowId_Invalid)
+    parent = parent->parent();
   return parent;
 }
 
-WmWindow* GetDefaultParent(WmWindow* window, const gfx::Rect& bounds) {
-  WmWindow* target_root = nullptr;
-  WmWindow* transient_parent = window->GetTransientParent();
+aura::Window* GetDefaultParent(aura::Window* window, const gfx::Rect& bounds) {
+  aura::Window* target_root = nullptr;
+  aura::Window* transient_parent = ::wm::GetTransientParent(window);
   if (transient_parent) {
     // Transient window should use the same root as its transient parent.
     target_root = transient_parent->GetRootWindow();
@@ -79,30 +86,29 @@ WmWindow* GetDefaultParent(WmWindow* window, const gfx::Rect& bounds) {
     target_root = FindContainerRoot(bounds);
   }
 
-  switch (window->GetType()) {
+  switch (window->type()) {
     case ui::wm::WINDOW_TYPE_NORMAL:
     case ui::wm::WINDOW_TYPE_POPUP:
-      if (window->IsSystemModal())
+      if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM)
         return GetSystemModalContainer(target_root, window);
       if (HasTransientParentWindow(window))
-        return GetContainerForWindow(window->GetTransientParent());
+        return GetContainerForWindow(transient_parent);
       return GetContainerFromAlwaysOnTopController(target_root, window);
     case ui::wm::WINDOW_TYPE_CONTROL:
-      return target_root->GetChildByShellWindowId(
+      return target_root->GetChildById(
           kShellWindowId_UnparentedControlContainer);
     case ui::wm::WINDOW_TYPE_PANEL:
-      if (window->aura_window()->GetProperty(kPanelAttachedKey))
-        return target_root->GetChildByShellWindowId(
-            kShellWindowId_PanelContainer);
+      if (window->GetProperty(kPanelAttachedKey))
+        return target_root->GetChildById(kShellWindowId_PanelContainer);
       return GetContainerFromAlwaysOnTopController(target_root, window);
     case ui::wm::WINDOW_TYPE_MENU:
-      return target_root->GetChildByShellWindowId(kShellWindowId_MenuContainer);
+      return target_root->GetChildById(kShellWindowId_MenuContainer);
     case ui::wm::WINDOW_TYPE_TOOLTIP:
-      return target_root->GetChildByShellWindowId(
+      return target_root->GetChildById(
           kShellWindowId_DragImageAndTooltipContainer);
     default:
-      NOTREACHED() << "Window " << window->aura_window()->id()
-                   << " has unhandled type " << window->GetType();
+      NOTREACHED() << "Window " << window->id() << " has unhandled type "
+                   << window->type();
       break;
   }
   return nullptr;

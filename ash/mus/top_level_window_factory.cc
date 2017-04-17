@@ -187,9 +187,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                   .bounds()
                   .OffsetFromOrigin();
     gfx::Rect bounds_in_screen(origin, bounds.size());
-    ash::wm::GetDefaultParent(WmWindow::Get(window), bounds_in_screen)
-        ->aura_window()
-        ->AddChild(window);
+    ash::wm::GetDefaultParent(window, bounds_in_screen)->AddChild(window);
   }
   return window;
 }
