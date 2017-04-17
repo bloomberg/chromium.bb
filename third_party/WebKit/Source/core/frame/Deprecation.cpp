@@ -19,6 +19,7 @@ enum Milestone {
   M59,
   M60,
   M61,
+  M62,
 };
 
 const char* milestoneString(Milestone milestone) {
@@ -34,6 +35,8 @@ const char* milestoneString(Milestone milestone) {
       return "M60, around August 2017";
     case M61:
       return "M61, around September 2017";
+    case M62:
+      return "M62, around October 2017";
   }
 
   ASSERT_NOT_REACHED();
@@ -440,6 +443,10 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
           "https://www.chromestatus.com/features/5735596811091968 for more "
           "details.",
           milestoneString(M60));
+
+    case UseCounter::kV8RTCPeerConnection_GetStreamById_Method:
+      return willBeRemoved("RTCPeerConnection.getStreamById()", M62,
+                           "5751819573657600");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
