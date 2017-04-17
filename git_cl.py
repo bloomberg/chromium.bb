@@ -1608,11 +1608,11 @@ class Changelist(object):
       self.SetWatchers(watchlist.GetWatchersForPaths(files))
 
     if not options.bypass_hooks:
-      if options.reviewers or options.tbr_owners:
+      if options.reviewers or options.add_owners_to:
         # Set the reviewer list now so that presubmit checks can access it.
         change_description = ChangeDescription(change.FullDescriptionText())
         change_description.update_reviewers(options.reviewers,
-                                            options.tbr_owners,
+                                            options.add_owners_to,
                                             change)
         change.SetDescriptionText(change_description.description)
       hook_results = self.RunHook(committing=False,
@@ -2216,9 +2216,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         if options.title:
           message = options.title + '\n\n' + message
       change_desc = ChangeDescription(message)
-      if options.reviewers or options.tbr_owners:
+      if options.reviewers or options.add_owners_to:
         change_desc.update_reviewers(options.reviewers,
-                                     options.tbr_owners,
+                                     options.add_owners_to,
                                      change)
       if not options.force:
         change_desc.prompt(bug=options.bug, git_footer=False)
@@ -2927,8 +2927,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             'single commit.')
       confirm_or_exit(action='upload')
 
-    if options.reviewers or options.tbr_owners:
-      change_desc.update_reviewers(options.reviewers, options.tbr_owners,
+    if options.reviewers or options.add_owners_to:
+      change_desc.update_reviewers(options.reviewers, options.add_owners_to,
                                    change)
 
     # Extra options that can be specified at push time. Doc:
@@ -3247,10 +3247,11 @@ class ChangeDescription(object):
       lines.pop(-1)
     self._description_lines = lines
 
-  def update_reviewers(self, reviewers, add_owners_tbr=False, change=None):
+  def update_reviewers(self, reviewers, add_owners_to=None, change=None):
     """Rewrites the R=/TBR= line(s) as a single line each."""
     assert isinstance(reviewers, list), reviewers
-    if not reviewers and not add_owners_tbr:
+    assert add_owners_to in (None, 'TBR', 'R'), add_owners_to
+    if not reviewers and not add_owners_to:
       return
     reviewers = reviewers[:]
 
@@ -3275,14 +3276,19 @@ class ChangeDescription(object):
     for name in r_names:
       if name not in reviewers:
         reviewers.append(name)
-    if add_owners_tbr:
+    if add_owners_to:
       owners_db = owners.Database(change.RepositoryRoot(),
                                   fopen=file, os_path=os.path)
       all_reviewers = set(tbr_names + reviewers)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
                                                      all_reviewers)
-      tbr_names.extend(owners_db.reviewers_for(missing_files,
-                                               change.author_email))
+      names = owners_db.reviewers_for(missing_files, change.author_email)
+
+      {
+        'TBR': tbr_names,
+        'R': reviewers,
+      }[add_owners_to].extend(names)
+
     new_r_line = 'R=' + ', '.join(reviewers) if reviewers else None
     new_tbr_line = 'TBR=' + ', '.join(tbr_names) if tbr_names else None
 
@@ -4733,8 +4739,10 @@ def CMDupload(parser, args):
                     help='Topic to specify when uploading (Gerrit only)')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
-  parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
-                    help='add a set of OWNERS to TBR')
+  parser.add_option('--tbr-owners', dest='add_owners_to', action='store_const',
+                    const='TBR', help='add a set of OWNERS to TBR')
+  parser.add_option('--r-owners', dest='add_owners_to', action='store_const',
+                    const='R', help='add a set of OWNERS to R')
   parser.add_option('-d', '--cq-dry-run', dest='cq_dry_run',
                     action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
