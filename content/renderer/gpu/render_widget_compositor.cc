@@ -992,7 +992,10 @@ void RenderWidgetCompositor::SetShowPaintRects(bool show) {
 
 void RenderWidgetCompositor::SetShowDebugBorders(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
-  debug_state.show_debug_borders = show;
+  if (show)
+    debug_state.show_debug_borders.set();
+  else
+    debug_state.show_debug_borders.reset();
   layer_tree_host_->SetDebugState(debug_state);
 }
 
