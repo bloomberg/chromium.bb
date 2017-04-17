@@ -158,6 +158,7 @@
 -MaximizeModeControllerTest.MaximizeModeAfterExitingDockedMode
 -MaximizeModeControllerTest.MaximizeModeTest
 -MaximizeModeControllerTest.NoMaximizeModeWithDisabledInternalDisplay
+-MaximizeModeControllerTest.RestoreAfterExit
 -MaximizeModeControllerTest.StableHingeAnglesWithLidOpened
 -MaximizeModeControllerTest.TabletModeTransition
 -MaximizeModeControllerTest.TabletModeTransitionNoKeyboardAccelerometer
@@ -183,6 +184,9 @@
 -NormalPanelPopup/PanelWindowResizerTransientTest.PanelWithTransientChild/1
 -NormalPanelPopup/PanelWindowResizerTransientTest.PanelWithTransientChild/2
 -OverviewButtonTrayTest.HideAnimationAlwaysCompletes
+-OverviewGestureHandlerTest.HorizontalScrollInOverview
+-OverviewGestureHandlerTest.ScrollUpDownWithoutReleasing
+-OverviewGestureHandlerTest.VerticalScrolls
 -PanelLayoutManagerTest.DockUndockTest
 -PanelLayoutManagerTest.UndockTest
 -PanelWindowResizerTest.AttachToSecondDisplay
@@ -321,6 +325,8 @@
 -TouchHudProjectionTest.DoubleTouch
 -TouchHudProjectionTest.TouchMoveCancel
 -TouchHudProjectionTest.TouchMoveRelease
+-TrayIMETest.HidesOnA11yEnabled
+-TrayIMETest.PerformActionOnDetailedView
 -TrayRotationLockTest.CreateDefaultView
 -TrayRotationLockTest.CreateDefaultViewDuringMaximizeMode
 -TrayRotationLockTest.CreateTrayViewDuringMaximizeModeAndRotationLock
@@ -330,8 +336,10 @@
 -TrayRotationLockTest.TrayViewVisibilityChangesDuringMaximizeMode
 -UnifiedMouseWarpControllerTest.BoundaryTest
 -UnifiedMouseWarpControllerTest.WarpMouse
--VirtualKeyboardRootWindowControllerTest.FollowInputFocus
--VirtualKeyboardRootWindowControllerTest.VirtualKeyboardOnTouchableDisplayOnly
+-VirtualKeyboardControllerAlwaysEnabledTest.*
+-VirtualKeyboardControllerAutoTest.*
+-VirtualKeyboardRootWindowControllerTest.*
+-VirtualKeyboardControllerTest.*
 -WallpaperControllerTest.GetMaxDisplaySize
 -WebNotificationTrayTest.PopupShownOnBothDisplays
 -WindowCycleControllerTest.MultiDisplayPositioning
