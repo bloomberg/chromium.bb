@@ -40,6 +40,16 @@ Polymer({
     networkingPrivate: Object,
 
     /**
+     * Reflects networkProperties.Cellular.SIMLockStatus.LockEnabled for the
+     * toggle button.
+     * @private
+     */
+    lockEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Set to true when a PUK is required to unlock the SIM.
      * @private
      */
@@ -61,14 +71,17 @@ Polymer({
 
   sendSimLockEnabled_: false,
 
+  /** @private */
   networkPropertiesChanged_: function() {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
     var simLockStatus = this.networkProperties.Cellular.SIMLockStatus;
     this.pukRequired_ =
         !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
+    this.lockEnabled_ = simLockStatus.LockEnabled;
   },
 
+  /** @private */
   pukRequiredChanged_: function() {
     if (this.$.unlockPukDialog.open) {
       if (this.pukRequired_)
@@ -112,8 +125,8 @@ Polymer({
       return;
     this.sendSimLockEnabled_ = event.target.checked;
     this.error_ = ErrorType.NONE;
-    this.$.enterPinDialog.showModal();
     this.$.enterPin.value = '';
+    this.$.enterPinDialog.showModal();
   },
 
   /**
@@ -124,9 +137,10 @@ Polymer({
   sendEnterPin_: function(event) {
     var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var pin = this.$.enterPin.value;
-    if (!this.validatePin_(pin))
+    if (!this.validatePin_(pin)) {
+      this.onEnterPinDialogCancel_();
       return;
-
+    }
     var simState = /** @type {!CrOnc.CellularSimState} */ ({
       currentPin: pin,
       requirePin: this.sendSimLockEnabled_,
@@ -152,10 +166,10 @@ Polymer({
       return;
     event.preventDefault();
     this.error_ = ErrorType.NONE;
-    this.$.changePinDialog.showModal();
     this.$.changePinOld.value = '';
     this.$.changePinNew1.value = '';
     this.$.changePinNew2.value = '';
+    this.$.changePinDialog.showModal();
   },
 
   /**
@@ -193,8 +207,8 @@ Polymer({
   onUnlockPinTap_: function(event) {
     event.preventDefault();
     this.error_ = ErrorType.NONE;
-    this.$.unlockPinDialog.showModal();
     this.$.unlockPin.value = '';
+    this.$.unlockPinDialog.showModal();
   },
 
   /**
@@ -340,7 +354,13 @@ Polymer({
   },
 
   /** @private */
-  onEnterPinDialogClosed_: function() {
+  onEnterPinDialogCancel_: function() {
+    this.lockEnabled_ =
+        this.networkProperties.Cellular.SIMLockStatus.LockEnabled;
+  },
+
+  /** @private */
+  onEnterPinDialogClose_: function() {
     this.$$('#simLockButton').focus();
   },
 
