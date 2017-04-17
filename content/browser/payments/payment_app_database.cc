@@ -17,6 +17,10 @@
 namespace content {
 namespace {
 
+using ::payments::mojom::PaymentHandlerStatus;
+using ::payments::mojom::PaymentInstrument;
+using ::payments::mojom::PaymentInstrumentPtr;
+
 const char kPaymentAppManifestDataKey[] = "PaymentAppManifestData";
 
 payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
@@ -43,6 +47,21 @@ payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
   }
 
   return manifest;
+}
+
+PaymentInstrumentPtr DeserializePaymentInstrument(const std::string& input) {
+  PaymentInstrumentProto instrument_proto;
+  if (!instrument_proto.ParseFromString(input))
+    return nullptr;
+
+  PaymentInstrumentPtr instrument = PaymentInstrument::New();
+  instrument->name = instrument_proto.name();
+  for (const auto& method : instrument_proto.enabled_methods())
+    instrument->enabled_methods.push_back(method);
+  instrument->stringified_capabilities =
+      instrument_proto.stringified_capabilities();
+
+  return instrument;
 }
 
 }  // namespace
@@ -86,6 +105,36 @@ void PaymentAppDatabase::ReadAllManifests(
       kPaymentAppManifestDataKey,
       base::Bind(&PaymentAppDatabase::DidReadAllManifests,
                  weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void PaymentAppDatabase::ReadPaymentInstrument(
+    const GURL& scope,
+    const std::string& instrumentKey,
+    ReadPaymentInstrumentCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->FindReadyRegistrationForPattern(
+      scope,
+      base::Bind(
+          &PaymentAppDatabase::DidFindRegistrationToReadPaymentInstrument,
+          weak_ptr_factory_.GetWeakPtr(), instrumentKey,
+          base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::WritePaymentInstrument(
+    const GURL& scope,
+    const std::string& instrumentKey,
+    PaymentInstrumentPtr instrument,
+    WritePaymentInstrumentCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->FindReadyRegistrationForPattern(
+      scope,
+      base::Bind(
+          &PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument,
+          weak_ptr_factory_.GetWeakPtr(), instrumentKey,
+          base::Passed(std::move(instrument)),
+          base::Passed(std::move(callback))));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
@@ -198,6 +247,88 @@ void PaymentAppDatabase::DidReadAllManifests(
   }
 
   callback.Run(std::move(manifests));
+}
+
+void PaymentAppDatabase::DidFindRegistrationToReadPaymentInstrument(
+    const std::string& instrumentKey,
+    ReadPaymentInstrumentCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentInstrument::New(),
+                            PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  service_worker_context_->GetRegistrationUserData(
+      registration->id(), {instrumentKey},
+      base::Bind(&PaymentAppDatabase::DidReadPaymentInstrument,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidReadPaymentInstrument(
+    ReadPaymentInstrumentCallback callback,
+    const std::vector<std::string>& data,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK || data.size() != 1) {
+    std::move(callback).Run(PaymentInstrument::New(),
+                            PaymentHandlerStatus::NOT_FOUND);
+    return;
+  }
+
+  PaymentInstrumentPtr instrument = DeserializePaymentInstrument(data[0]);
+  if (!instrument) {
+    std::move(callback).Run(PaymentInstrument::New(),
+                            PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
+    return;
+  }
+
+  std::move(callback).Run(std::move(instrument), PaymentHandlerStatus::SUCCESS);
+}
+
+void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
+    const std::string& instrumentKey,
+    PaymentInstrumentPtr instrument,
+    WritePaymentInstrumentCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  PaymentInstrumentProto instrument_proto;
+  instrument_proto.set_name(instrument->name);
+  for (const auto& method : instrument->enabled_methods) {
+    instrument_proto.add_enabled_methods(method);
+  }
+  instrument_proto.set_stringified_capabilities(
+      instrument->stringified_capabilities);
+
+  std::string serialized;
+  bool success = instrument_proto.SerializeToString(&serialized);
+  DCHECK(success);
+
+  service_worker_context_->StoreRegistrationUserData(
+      registration->id(), registration->pattern().GetOrigin(),
+      {{instrumentKey, serialized}},
+      base::Bind(&PaymentAppDatabase::DidWritePaymentInstrument,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidWritePaymentInstrument(
+    WritePaymentInstrumentCallback callback,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return std::move(callback).Run(
+      status == SERVICE_WORKER_OK
+          ? PaymentHandlerStatus::SUCCESS
+          : PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
 }
 
 }  // namespace content

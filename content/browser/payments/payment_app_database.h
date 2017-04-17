@@ -32,6 +32,11 @@ class CONTENT_EXPORT PaymentAppDatabase {
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
   using ReadAllManifestsCallback = base::Callback<void(Manifests)>;
+  using ReadPaymentInstrumentCallback =
+      base::OnceCallback<void(payments::mojom::PaymentInstrumentPtr,
+                              payments::mojom::PaymentHandlerStatus)>;
+  using WritePaymentInstrumentCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
 
   explicit PaymentAppDatabase(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
@@ -42,6 +47,13 @@ class CONTENT_EXPORT PaymentAppDatabase {
                      const WriteManifestCallback& callback);
   void ReadManifest(const GURL& scope, const ReadManifestCallback& callback);
   void ReadAllManifests(const ReadAllManifestsCallback& callback);
+  void ReadPaymentInstrument(const GURL& scope,
+                             const std::string& instrumentKey,
+                             ReadPaymentInstrumentCallback callback);
+  void WritePaymentInstrument(const GURL& scope,
+                              const std::string& instrumentKey,
+                              payments::mojom::PaymentInstrumentPtr instrument,
+                              WritePaymentInstrumentCallback callback);
 
  private:
   // WriteManifest callbacks
@@ -67,6 +79,26 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const ReadAllManifestsCallback& callback,
       const std::vector<std::pair<int64_t, std::string>>& raw_data,
       ServiceWorkerStatusCode status);
+
+  // ReadPaymentInstrument callbacks
+  void DidFindRegistrationToReadPaymentInstrument(
+      const std::string& instrumentKey,
+      ReadPaymentInstrumentCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidReadPaymentInstrument(ReadPaymentInstrumentCallback callback,
+                                const std::vector<std::string>& data,
+                                ServiceWorkerStatusCode status);
+
+  // WritePaymentInstrument callbacks
+  void DidFindRegistrationToWritePaymentInstrument(
+      const std::string& instrumentKey,
+      payments::mojom::PaymentInstrumentPtr instrument,
+      WritePaymentInstrumentCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidWritePaymentInstrument(WritePaymentInstrumentCallback callback,
+                                 ServiceWorkerStatusCode status);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;

@@ -61,14 +61,19 @@ void PaymentManager::SetPaymentInstrument(
     const std::string& instrumentKey,
     payments::mojom::PaymentInstrumentPtr details,
     const PaymentManager::SetPaymentInstrumentCallback& callback) {
-  callback.Run(payments::mojom::PaymentHandlerStatus::NOT_IMPLEMENTED);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->WritePaymentInstrument(
+      scope_, instrumentKey, std::move(details), callback);
 }
 
 void PaymentManager::GetPaymentInstrument(
     const std::string& instrumentKey,
     const PaymentManager::GetPaymentInstrumentCallback& callback) {
-  callback.Run(payments::mojom::PaymentInstrument::New(),
-               payments::mojom::PaymentHandlerStatus::NOT_IMPLEMENTED);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_context_->payment_app_database()->ReadPaymentInstrument(
+      scope_, instrumentKey, callback);
 }
 
 void PaymentManager::OnConnectionError() {
