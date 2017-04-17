@@ -21,6 +21,7 @@ class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;
+class ScriptValue;
 class SerializedScriptValue;
 class WindowProxyManager;
 
@@ -83,10 +84,9 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   virtual void blur() = 0;
   void close(ExecutionContext*);
 
-  // FIXME: This handles both window[index] and window.frames[index]. However,
-  // the spec exposes window.frames[index] across origins but not
-  // window[index]...
-  DOMWindow* AnonymousIndexedGetter(uint32_t) const;
+  // Indexed properties
+  DOMWindow* AnonymousIndexedGetter(uint32_t index) const;
+  bool AnonymousIndexedSetter(uint32_t index, const ScriptValue&);
 
   void postMessage(PassRefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
