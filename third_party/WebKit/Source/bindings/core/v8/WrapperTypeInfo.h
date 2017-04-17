@@ -105,6 +105,16 @@ struct WrapperTypeInfo {
         v8::External::Cast(*type_info_wrapper)->Value());
   }
 
+  static void WrapperCreated() {
+    ThreadState::Current()->Heap().HeapStats().IncreaseWrapperCount(1);
+  }
+
+  static void WrapperDestroyed() {
+    ThreadHeapStats& heap_stats = ThreadState::Current()->Heap().HeapStats();
+    heap_stats.DecreaseWrapperCount(1);
+    heap_stats.IncreaseCollectedWrapperCount(1);
+  }
+
   bool Equals(const WrapperTypeInfo* that) const { return this == that; }
 
   bool IsSubclass(const WrapperTypeInfo* that) const {
@@ -127,16 +137,6 @@ struct WrapperTypeInfo {
       v8::Isolate* isolate,
       const DOMWrapperWorld& world) const {
     return dom_template_function(isolate, world);
-  }
-
-  void WrapperCreated() const {
-    ThreadState::Current()->Heap().HeapStats().IncreaseWrapperCount(1);
-  }
-
-  void WrapperDestroyed() const {
-    ThreadHeapStats& heap_stats = ThreadState::Current()->Heap().HeapStats();
-    heap_stats.DecreaseWrapperCount(1);
-    heap_stats.IncreaseCollectedWrapperCount(1);
   }
 
   void Trace(Visitor* visitor, ScriptWrappable* script_wrappable) const {

@@ -155,7 +155,7 @@ v8::Local<v8::Object> WindowProxy::AssociateWithWrapper(
     v8::Local<v8::Object> wrapper) {
   if (world_->DomDataStore().Set(isolate_, window, wrapper_type_info,
                                  wrapper)) {
-    wrapper_type_info->WrapperCreated();
+    WrapperTypeInfo::WrapperCreated();
     V8DOMWrapper::SetNativeInfo(isolate_, wrapper, wrapper_type_info, window);
     DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
   }

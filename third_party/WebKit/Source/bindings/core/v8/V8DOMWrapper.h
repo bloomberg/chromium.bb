@@ -113,7 +113,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::AssociateObjectWithWrapper(
     const WrapperTypeInfo* wrapper_type_info,
     v8::Local<v8::Object> wrapper) {
   if (DOMDataStore::SetWrapper(isolate, impl, wrapper_type_info, wrapper)) {
-    wrapper_type_info->WrapperCreated();
+    WrapperTypeInfo::WrapperCreated();
     SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);
     ASSERT(HasInternalFieldsSet(wrapper));
   }

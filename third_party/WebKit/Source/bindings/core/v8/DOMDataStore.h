@@ -176,18 +176,16 @@ class DOMDataStore {
 template <>
 inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(
     v8::Isolate*,
-    v8::Global<v8::Object> value,
+    v8::Global<v8::Object>,
     ScriptWrappable*) {
-  ToWrapperTypeInfo(value)->WrapperDestroyed();
+  WrapperTypeInfo::WrapperDestroyed();
 }
 
 template <>
 inline void
 DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(
-    const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {
-  auto wrapper_type_info = reinterpret_cast<WrapperTypeInfo*>(
-      data.GetInternalField(kV8DOMWrapperTypeIndex));
-  wrapper_type_info->WrapperDestroyed();
+    const v8::WeakCallbackInfo<WeakCallbackDataType>&) {
+  WrapperTypeInfo::WrapperDestroyed();
 }
 
 }  // namespace blink
