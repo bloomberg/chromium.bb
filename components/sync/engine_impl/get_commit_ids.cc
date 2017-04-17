@@ -163,9 +163,9 @@ class Traversal {
  private:
   // The following functions do not modify the traversal directly. They return
   // their results in the |result| vector instead.
-  void AddUncommittedParents(const std::set<int64_t>& ready_unsynced_set,
-                             const Entry& item,
-                             Directory::Metahandles* result) const;
+  bool TryAddUncommittedParents(const std::set<int64_t>& ready_unsynced_set,
+                                const Entry& item,
+                                Directory::Metahandles* result) const;
 
   bool TryAddItem(const std::set<int64_t>& ready_unsynced_set,
                   const Entry& item,
@@ -203,7 +203,7 @@ Traversal::Traversal(syncable::BaseTransaction* trans,
 
 Traversal::~Traversal() {}
 
-void Traversal::AddUncommittedParents(
+bool Traversal::TryAddUncommittedParents(
     const std::set<int64_t>& ready_unsynced_set,
     const Entry& item,
     Directory::Metahandles* result) const {
@@ -214,7 +214,16 @@ void Traversal::AddUncommittedParents(
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
     Entry parent(trans_, syncable::GET_BY_ID, parent_id);
-    CHECK(parent.good()) << "Bad user-only parent in item path.";
+
+    // This apparently does happen, see crbug.com/711381. Someone is violating
+    // some constraint and some ancestor isn't current present in the directory
+    // while the child is. Because we do not know where this comes from, be
+    // defensive and skip this inclusion instead.
+    if (!parent.good()) {
+      DVLOG(1) << "Bad user-only parent in item path with id " << parent_id;
+      return false;
+    }
+
     int64_t handle = parent.GetMetahandle();
     if (HaveItem(handle)) {
       // We've already added this parent (and therefore all of its parents).
@@ -232,6 +241,7 @@ void Traversal::AddUncommittedParents(
 
   // Reverse what we added to get the correct order.
   result->insert(result->end(), dependencies.rbegin(), dependencies.rend());
+  return true;
 }
 
 // Adds the given item to the list if it is unsynced and ready for commit.
@@ -338,7 +348,14 @@ void Traversal::AddCreatesAndMoves(
         // We only commit an item + its dependencies if it and all its
         // dependencies are not in conflict.
         Directory::Metahandles item_dependencies;
-        AddUncommittedParents(ready_unsynced_set, entry, &item_dependencies);
+
+        // If we fail to add a required parent, give up on this entry.
+        if (!TryAddUncommittedParents(ready_unsynced_set, entry,
+                                      &item_dependencies)) {
+          continue;
+        }
+
+        // Okay if this fails, the parents were still valid.
         TryAddItem(ready_unsynced_set, entry, &item_dependencies);
         AppendManyToTraversal(item_dependencies);
       } else {
@@ -399,8 +416,7 @@ void Traversal::AddDeletes(const std::set<int64_t>& ready_unsynced_set) {
     out_->resize(max_entries_);
 }
 
-// Excludes ancestors of deleted conflicted items from
-// |ready_unsynced_set|.
+// Excludes ancestors of deleted conflicted items from |ready_unsynced_set|.
 void ExcludeDeletedAncestors(
     syncable::BaseTransaction* trans,
     const std::vector<int64_t>& deleted_conflicted_items,

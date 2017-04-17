@@ -320,6 +320,35 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Bookmark) {
   EXPECT_FALSE(commit_message.entries(0).parent_id_string().empty());
 }
 
+TEST_F(DirectoryCommitContributionTest,
+       HierarchySupport_BookmarkMissingParent) {
+  // Create a bookmark item that references an unknown client parent id.
+  int64_t bm1;
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
+    bm1 = CreateSyncedItem(&trans, BOOKMARKS, "bm1");
+    syncable::MutableEntry e(&trans, syncable::GET_BY_HANDLE, bm1);
+
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+    bm_specifics->set_url("http://www.chrome.com");
+    bm_specifics->set_title("Chrome");
+    e.PutSpecifics(specifics);
+    e.PutIsDel(false);
+    e.PutIsUnsynced(true);
+    e.PutParentId(syncable::Id::CreateFromClientString("does not exist"));
+
+    EXPECT_TRUE(e.ShouldMaintainHierarchy());
+  }
+
+  DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
+  // Because the above bookmark is skipped, there are no contributions and so
+  // expect a null DirectoryCommitContribution back.
+  EXPECT_EQ(
+      nullptr,
+      DirectoryCommitContribution::Build(dir(), BOOKMARKS, 25, &emitter).get());
+}
+
 // Test that preferences do not support hierarchy.
 TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
   // Create a normal-looking prefs item.
