@@ -4,7 +4,7 @@
 
 module payments.mojom;
 
-import "components/payments/content/payment_request.mojom";
+import "components/payments/mojom/payment_request.mojom";
 import "mojo/common/time.mojom";
 import "url/mojo/url.mojom";
 

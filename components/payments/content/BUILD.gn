@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
-
 static_library("content") {
   sources = [
     "payment_request.cc",
@@ -20,41 +18,13 @@ static_library("content") {
   ]
 
   deps = [
-    ":mojom",
     ":utils",
     "//components/autofill/core/browser",
     "//components/payments/core",
+    "//components/payments/mojom",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//third_party/libphonenumber",
-  ]
-}
-
-mojom("mojom") {
-  sources = [
-    "payment_request.mojom",
-  ]
-}
-
-mojom("mojom_parser") {
-  sources = [
-    "payment_manifest_parser.mojom",
-  ]
-
-  public_deps = [
-    "//url/mojo:url_mojom_gurl",
-  ]
-}
-
-mojom("mojom_payment_app") {
-  sources = [
-    "payment_app.mojom",
-  ]
-
-  public_deps = [
-    ":mojom",
-    "//mojo/common:common_custom_types",
-    "//url/mojo:url_mojom_gurl",
   ]
 }
 
@@ -71,13 +41,13 @@ static_library("utils") {
   ]
 
   deps = [
-    ":mojom",
-    ":mojom_parser",
     "//base",
     "//components/autofill/core/browser",
     "//components/data_use_measurement/core",
     "//components/link_header_util",
     "//components/payments/core",
+    "//components/payments/mojom",
+    "//components/payments/mojom:mojom_parser",
     "//components/strings",
     "//content/public/browser",
     "//net",
@@ -104,13 +74,13 @@ source_set("unit_tests") {
 
   deps = [
     ":content",
-    ":mojom",
     ":utils",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/payments/mojom",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",

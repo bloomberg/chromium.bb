@@ -19,7 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/payments/content/payment_app.mojom.h"
+#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"

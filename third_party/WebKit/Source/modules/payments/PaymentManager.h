@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "components/payments/content/payment_app.mojom-blink.h"
+#include "components/payments/mojom/payment_app.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 

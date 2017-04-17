@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "components/payments/content/payment_app.mojom.h"
+#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"

@@ -754,7 +754,7 @@ mojom("android_mojo_bindings") {
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
-    "//components/payments/content:mojom",
+    "//components/payments/mojom",
     "//url/mojo:url_mojom_gurl",
   ]
 
