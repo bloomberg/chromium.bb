@@ -191,8 +191,11 @@ class CORE_EXPORT PaintLayerClipper {
                                    ClipRect& output) const;
 
   // This method figures out our layerBounds in coordinates relative to
-  // |rootLayer|. It also computes our background and foreground clip rects
+  // |root_layer|. It also computes our background and foreground clip rects
   // for painting/event handling. Pass offsetFromRoot if known.
+  // If provided, |offset_from_root| is not changed and assumed to already
+  // include subpixel accumualation. Otherwise it is set to the offset from
+  // |layer_| to |root_layer|, plus |context.sub_pixel_accumuation|.
   void CalculateRects(const ClipRectsContext&,
                       const LayoutRect& paint_dirty_rect,
                       LayoutRect& layer_bounds,
@@ -221,9 +224,6 @@ class CORE_EXPORT PaintLayerClipper {
 
   // Returned clip rect in |output| is in the space of the context's rootLayer.
   ALWAYS_INLINE void CalculateBackgroundClipRectWithGeometryMapper(
-      const ClipRectsContext&,
-      ClipRect& output) const;
-  ALWAYS_INLINE void CalculateForegroundClipRectWithGeometryMapper(
       const ClipRectsContext&,
       ClipRect& output) const;
 

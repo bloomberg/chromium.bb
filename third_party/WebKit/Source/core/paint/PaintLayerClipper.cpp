@@ -266,6 +266,13 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     ClipRect& background_rect,
     ClipRect& foreground_rect,
     const LayoutPoint* offset_from_root) const {
+  LayoutPoint offset(context.sub_pixel_accumulation);
+  if (offset_from_root)
+    offset = *offset_from_root;
+  else
+    layer_.ConvertToLayerCoords(context.root_layer, offset);
+  layer_bounds = LayoutRect(offset, LayoutSize(layer_.size()));
+
   // TODO(chrishtr): fix the underlying bug that causes this situation.
   if (!layer_.GetLayoutObject().PaintProperties() &&
       !layer_.GetLayoutObject().LocalBorderBoxProperties()) {
@@ -276,17 +283,23 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     background_rect.Move(context.sub_pixel_accumulation);
     background_rect.Intersect(paint_dirty_rect);
 
-    CalculateForegroundClipRectWithGeometryMapper(context, foreground_rect);
-    foreground_rect.Move(context.sub_pixel_accumulation);
-    foreground_rect.Intersect(paint_dirty_rect);
-  }
+    foreground_rect = background_rect;
 
-  LayoutPoint offset;
-  if (offset_from_root)
-    offset = *offset_from_root;
-  else
-    layer_.ConvertToLayerCoords(context.root_layer, offset);
-  layer_bounds = LayoutRect(offset, LayoutSize(layer_.size()));
+    LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
+    if (layout_object.HasClip()) {
+      LayoutRect new_pos_clip = ToLayoutBox(layout_object).ClipRect(offset);
+      foreground_rect.Intersect(new_pos_clip);
+    }
+    if (ShouldClipOverflow(context)) {
+      LayoutRect overflow_and_clip_rect =
+          ToLayoutBox(layout_object)
+              .OverflowClipRect(offset,
+                                context.overlay_scrollbar_clip_behavior);
+      foreground_rect.Intersect(overflow_and_clip_rect);
+      if (layout_object.StyleRef().HasBorderRadius())
+        foreground_rect.SetHasRadius(true);
+    }
+  }
 
 #ifdef CHECK_CLIP_RECTS
   ClipRect testBackgroundRect, testForegroundRect;
@@ -327,7 +340,7 @@ void PaintLayerClipper::CalculateRects(
 
   foreground_rect = background_rect;
 
-  LayoutPoint offset;
+  LayoutPoint offset(context.sub_pixel_accumulation);
   if (offset_from_root)
     offset = *offset_from_root;
   else
@@ -483,47 +496,6 @@ void PaintLayerClipper::InitializeCommonClipRectState(
            ancestor_properties->CssClip());
     destination_property_tree_state.SetClip(ancestor_css_clip->Parent());
   }
-}
-
-void PaintLayerClipper::CalculateForegroundClipRectWithGeometryMapper(
-    const ClipRectsContext& context,
-    ClipRect& output) const {
-  DCHECK(use_geometry_mapper_);
-  PropertyTreeState source_property_tree_state(nullptr, nullptr, nullptr);
-  PropertyTreeState destination_property_tree_state(nullptr, nullptr, nullptr);
-  InitializeCommonClipRectState(context, source_property_tree_state,
-                                destination_property_tree_state);
-  const auto* properties = layer_.GetLayoutObject().PaintProperties();
-
-  if (&layer_ == context.root_layer) {
-    // Set the overflow clip for |sourcePropertyTreeState| so that it differs
-    // from |destinationPropertyTreeState| in its clip.
-    if (context.respect_overflow_clip == kRespectOverflowClip && properties &&
-        properties->OverflowClip())
-      source_property_tree_state.SetClip(properties->OverflowClip());
-  } else {
-    const auto* ancestor_properties =
-        context.root_layer->GetLayoutObject().PaintProperties();
-
-    // Set the clip of |destinationPropertyTreeState| to be inside the
-    // ancestor's overflow clip, so that that clip is not applied.
-    if (context.respect_overflow_clip == kIgnoreOverflowClip &&
-        ancestor_properties && ancestor_properties->OverflowClip())
-      destination_property_tree_state.SetClip(
-          ancestor_properties->OverflowClip());
-
-    // Set the overflow clip for |sourcePropertyTreeState| so that it differs
-    // from destinationPropertyTreeState| in its clip.
-    if (properties && properties->OverflowClip())
-      source_property_tree_state.SetClip(properties->OverflowClip());
-  }
-
-  const FloatClipRect& clipped_rect_in_root_layer_space =
-      GeometryMapper::SourceToDestinationClipRect(
-          source_property_tree_state, destination_property_tree_state);
-  output.SetRect(clipped_rect_in_root_layer_space);
-
-  output.MoveBy(-context.root_layer->GetLayoutObject().PaintOffset());
 }
 
 LayoutRect PaintLayerClipper::LocalVisualRect() const {
