@@ -314,6 +314,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
         return mShouldHideEndToolbarButtons;
     }
 
+    @Override
+    protected void onHomeButtonUpdate(boolean homeButtonEnabled) {
+        // Intentionally does not call super. Chrome Home does not support a home button.
+    }
+
     /**
      * Sets the height and title text appearance of the provided toolbar so that its style is
      * consistent with BottomToolbarPhone.
