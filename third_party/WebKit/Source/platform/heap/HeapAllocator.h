@@ -148,8 +148,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static void DeleteArray(void* ptr) { NOTREACHED(); }
 
   static bool IsAllocationAllowed() {
-    return ThreadState::Current()->IsAllocationAllowed() &&
-           !ThreadState::Current()->IsObjectResurrectionForbidden();
+    return ThreadState::Current()->IsAllocationAllowed();
   }
 
   static bool IsObjectResurrectionForbidden() {
