@@ -989,6 +989,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.debuggerModel = target.model(SDK.DebuggerModel);
         InspectorTest.runtimeModel = target.model(SDK.RuntimeModel);
         InspectorTest.domModel = target.model(SDK.DOMModel);
+        InspectorTest.domDebuggerModel = target.model(SDK.DOMDebuggerModel);
         InspectorTest.cssModel = target.model(SDK.CSSModel);
         InspectorTest.cpuProfilerModel = target.model(SDK.CPUProfilerModel);
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);

@@ -52,17 +52,17 @@ function test()
 
         function testWindowEventListeners(next)
         {
-            windowObject.eventListeners().then(dumpListeners.bind(this, next));
+            InspectorTest.domDebuggerModel.eventListeners(windowObject).then(dumpListeners.bind(this, next));
         },
 
         function testDivEventListeners(next)
         {
-            divWithHandlers.eventListeners().then(dumpListeners.bind(this, next));
+            InspectorTest.domDebuggerModel.eventListeners(divWithHandlers).then(dumpListeners.bind(this, next));
         },
 
         function testDivWithoutEventListeners(next)
         {
-            divWithoutHandlers.eventListeners().then(dumpListeners.bind(this, next));
+            InspectorTest.domDebuggerModel.eventListeners(divWithoutHandlers).then(dumpListeners.bind(this, next));
         }
     ]);
 }
