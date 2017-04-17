@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
+#include "chrome/browser/devtools/devtools_eye_dropper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1243,6 +1244,29 @@ void DevToolsWindow::OpenInNewTab(const std::string& url) {
 void DevToolsWindow::SetWhitelistedShortcuts(
     const std::string& message) {
   event_forwarder_->SetWhitelistedShortcuts(message);
+}
+
+void DevToolsWindow::SetEyeDropperActive(bool active) {
+  WebContents* web_contents = GetInspectedWebContents();
+  if (!web_contents)
+    return;
+  if (active) {
+    eye_dropper_.reset(new DevToolsEyeDropper(
+        web_contents, base::Bind(&DevToolsWindow::ColorPickedInEyeDropper,
+                                 base::Unretained(this))));
+  } else {
+    eye_dropper_.reset();
+  }
+}
+
+void DevToolsWindow::ColorPickedInEyeDropper(int r, int g, int b, int a) {
+  base::DictionaryValue color;
+  color.SetInteger("r", r);
+  color.SetInteger("g", g);
+  color.SetInteger("b", b);
+  color.SetInteger("a", a);
+  bindings_->CallClientFunction("DevToolsAPI.eyeDropperPickedColor", &color,
+                                nullptr, nullptr);
 }
 
 void DevToolsWindow::InspectedContentsClosing() {

@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
-#include "content/browser/devtools/protocol/color_picker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -101,8 +100,6 @@ PageHandler::PageHandler()
       session_id_(0),
       frame_counter_(0),
       frames_in_flight_(0),
-      color_picker_(new ColorPicker(
-          base::Bind(&PageHandler::OnColorPicked, base::Unretained(this)))),
       navigation_throttle_enabled_(false),
       next_navigation_id_(0),
       host_(nullptr),
@@ -132,7 +129,6 @@ void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
 
   host_ = host;
   widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
-  color_picker_->SetRenderWidgetHost(widget_host);
 
   if (widget_host) {
     registrar_.Add(
@@ -154,7 +150,6 @@ void PageHandler::OnSwapCompositorFrame(
 
   if (screencast_enabled_)
     InnerSwapCompositorFrame();
-  color_picker_->OnSwapCompositorFrame();
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
@@ -171,7 +166,6 @@ void PageHandler::OnSynchronousSwapCompositorFrame(
 
   if (screencast_enabled_)
     InnerSwapCompositorFrame();
-  color_picker_->OnSwapCompositorFrame();
 }
 
 void PageHandler::Observe(int type,
@@ -207,7 +201,6 @@ Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
   SetControlNavigations(false);
-  color_picker_->SetEnabled(false);
   return Response::FallThrough();
 }
 
@@ -375,14 +368,6 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   }
 
   return Response::Error("Could not handle JavaScript dialog");
-}
-
-Response PageHandler::SetColorPickerEnabled(bool enabled) {
-  if (!host_)
-    return Response::InternalError();
-
-  color_picker_->SetEnabled(enabled);
-  return Response::OK();
 }
 
 Response PageHandler::RequestAppBanner() {
@@ -585,11 +570,6 @@ void PageHandler::ScreenshotCaptured(
   }
 
   callback->sendSuccess(EncodeImage(image, format, quality));
-}
-
-void PageHandler::OnColorPicked(int r, int g, int b, int a) {
-  frontend_->ColorPicked(
-      DOM::RGBA::Create().SetR(r).SetG(g).SetB(b).SetA(a).Build());
 }
 
 Response PageHandler::StopLoading() {

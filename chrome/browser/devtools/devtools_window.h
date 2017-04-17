@@ -16,6 +16,7 @@ class Browser;
 class BrowserWindow;
 class DevToolsWindowTesting;
 class DevToolsEventForwarder;
+class DevToolsEyeDropper;
 
 namespace content {
 class DevToolsAgentHost;
@@ -326,6 +327,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void SetIsDocked(bool is_docked) override;
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override;
+  void SetEyeDropperActive(bool active) override;
   void OpenNodeFrontend() override;
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override;
@@ -333,6 +335,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override;
 
+  void ColorPickedInEyeDropper(int r, int g, int b, int a);
   void CreateDevToolsBrowser();
   BrowserWindow* GetInspectedBrowserWindow();
   void ScheduleShow(const DevToolsToggleAction& action);
@@ -365,6 +368,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   base::TimeTicks inspect_element_start_time_;
   std::unique_ptr<DevToolsEventForwarder> event_forwarder_;
+  std::unique_ptr<DevToolsEyeDropper> eye_dropper_;
 
   friend class DevToolsEventForwarder;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);

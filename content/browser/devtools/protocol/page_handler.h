@@ -38,8 +38,6 @@ class WebContentsImpl;
 
 namespace protocol {
 
-class ColorPicker;
-
 class PageHandler : public DevToolsDomainHandler,
                     public Page::Backend,
                     public NotificationObserver {
@@ -91,7 +89,6 @@ class PageHandler : public DevToolsDomainHandler,
   Response HandleJavaScriptDialog(bool accept,
                                   Maybe<std::string> prompt_text) override;
 
-  Response SetColorPickerEnabled(bool enabled) override;
   Response RequestAppBanner() override;
 
   Response SetControlNavigations(bool enabled) override;
@@ -122,8 +119,6 @@ class PageHandler : public DevToolsDomainHandler,
                           int quality,
                           const gfx::Image& image);
 
-  void OnColorPicked(int r, int g, int b, int a);
-
   // NotificationObserver overrides.
   void Observe(int type,
                const NotificationSource& source,
@@ -144,8 +139,6 @@ class PageHandler : public DevToolsDomainHandler,
   int session_id_;
   int frame_counter_;
   int frames_in_flight_;
-
-  std::unique_ptr<ColorPicker> color_picker_;
 
   bool navigation_throttle_enabled_;
   int next_navigation_id_;

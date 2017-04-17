@@ -112,6 +112,8 @@ static_library("devtools") {
       "devtools_contents_resizing_strategy.h",
       "devtools_embedder_message_dispatcher.cc",
       "devtools_embedder_message_dispatcher.h",
+      "devtools_eye_dropper.cc",
+      "devtools_eye_dropper.h",
       "devtools_file_helper.cc",
       "devtools_file_helper.h",
       "devtools_file_system_indexer.cc",

@@ -209,6 +209,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void SetIsDocked(bool is_docked) override {}
   void OpenInNewTab(const std::string& url) override;
   void SetWhitelistedShortcuts(const std::string& message) override {}
+  void SetEyeDropperActive(bool active) override {}
   void OpenNodeFrontend() override {}
   using DispatchCallback =
       DevToolsEmbedderMessageDispatcher::Delegate::DispatchCallback;
@@ -850,6 +851,10 @@ void DevToolsUIBindings::SearchInPath(int search_request_id,
 
 void DevToolsUIBindings::SetWhitelistedShortcuts(const std::string& message) {
   delegate_->SetWhitelistedShortcuts(message);
+}
+
+void DevToolsUIBindings::SetEyeDropperActive(bool active) {
+  delegate_->SetEyeDropperActive(active);
 }
 
 void DevToolsUIBindings::ShowCertificateViewer(const std::string& cert_chain) {

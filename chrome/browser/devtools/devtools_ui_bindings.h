@@ -57,6 +57,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void SetIsDocked(bool is_docked) = 0;
     virtual void OpenInNewTab(const std::string& url) = 0;
     virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
+    virtual void SetEyeDropperActive(bool active) = 0;
     virtual void OpenNodeFrontend() = 0;
 
     virtual void InspectedContentsClosing() = 0;
@@ -123,6 +124,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                     const std::string& file_system_path,
                     const std::string& query) override;
   void SetWhitelistedShortcuts(const std::string& message) override;
+  void SetEyeDropperActive(bool active) override;
   void ShowCertificateViewer(const std::string& cert_chain) override;
   void ZoomIn() override;
   void ZoomOut() override;

@@ -2,116 +2,117 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/protocol/color_picker.h"
+#include "chrome/browser/devtools/devtools_eye_dropper.h"
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/common/cursors/webcursor.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/cursor_info.h"
 #include "content/public/common/screen_info.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace content {
-namespace protocol {
-
-ColorPicker::ColorPicker(ColorPickedCallback callback)
-    : callback_(callback),
-      enabled_(false),
+DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
+                                       EyeDropperCallback callback)
+    : content::WebContentsObserver(web_contents),
+      callback_(callback),
       last_cursor_x_(-1),
       last_cursor_y_(-1),
       host_(nullptr),
       weak_factory_(this) {
-  mouse_event_callback_ = base::Bind(
-      &ColorPicker::HandleMouseEvent,
-      base::Unretained(this));
-}
-
-ColorPicker::~ColorPicker() {
-}
-
-void ColorPicker::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
-  if (host_ == host)
-    return;
-
-  if (enabled_ && host_)
-    host_->RemoveMouseEventCallback(mouse_event_callback_);
-  ResetFrame();
-  host_ = host;
-  if (enabled_ && host)
-    host->AddMouseEventCallback(mouse_event_callback_);
-}
-
-void ColorPicker::SetEnabled(bool enabled) {
-  if (enabled_ == enabled)
-    return;
-
-  enabled_ = enabled;
-  if (!host_)
-    return;
-
-  if (enabled) {
-    host_->AddMouseEventCallback(mouse_event_callback_);
+  mouse_event_callback_ =
+      base::Bind(&DevToolsEyeDropper::HandleMouseEvent, base::Unretained(this));
+  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  if (rvh) {
+    AttachToHost(rvh->GetWidget());
     UpdateFrame();
-  } else {
-    host_->RemoveMouseEventCallback(mouse_event_callback_);
-    ResetFrame();
-
-    WebCursor pointer_cursor;
-    CursorInfo cursor_info;
-    cursor_info.type = blink::WebCursorInfo::kTypePointer;
-    pointer_cursor.InitFromCursorInfo(cursor_info);
-    host_->SetCursor(pointer_cursor);
   }
 }
 
-void ColorPicker::OnSwapCompositorFrame() {
-  if (enabled_)
-    UpdateFrame();
+DevToolsEyeDropper::~DevToolsEyeDropper() {
+  DetachFromHost();
 }
 
-void ColorPicker::UpdateFrame() {
+void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
+  host_ = host;
+  host_->AddMouseEventCallback(mouse_event_callback_);
+}
+
+void DevToolsEyeDropper::DetachFromHost() {
   if (!host_)
     return;
-  RenderWidgetHostViewBase* view =
-      static_cast<RenderWidgetHostViewBase*>(host_->GetView());
-  if (!view)
+  host_->RemoveMouseEventCallback(mouse_event_callback_);
+  content::CursorInfo cursor_info;
+  cursor_info.type = blink::WebCursorInfo::kTypePointer;
+  host_->SetCursor(cursor_info);
+  host_ = nullptr;
+}
+
+void DevToolsEyeDropper::RenderViewCreated(content::RenderViewHost* host) {
+  if (!host_) {
+    AttachToHost(host->GetWidget());
+    UpdateFrame();
+  }
+}
+
+void DevToolsEyeDropper::RenderViewDeleted(content::RenderViewHost* host) {
+  if (host->GetWidget() == host_) {
+    DetachFromHost();
+    ResetFrame();
+  }
+}
+
+void DevToolsEyeDropper::RenderViewHostChanged(
+    content::RenderViewHost* old_host,
+    content::RenderViewHost* new_host) {
+  if ((old_host && old_host->GetWidget() == host_) || (!old_host && !host_)) {
+    DetachFromHost();
+    AttachToHost(new_host->GetWidget());
+    UpdateFrame();
+  }
+}
+
+void DevToolsEyeDropper::DidReceiveCompositorFrame() {
+  UpdateFrame();
+}
+
+void DevToolsEyeDropper::UpdateFrame() {
+  if (!host_ || !host_->GetView())
     return;
 
   // TODO(miu): This is the wrong size. It's the size of the view on-screen, and
   // not the rendering size of the view. The latter is what is wanted here, so
   // that the resulting bitmap's pixel coordinates line-up with the
   // blink::WebMouseEvent coordinates. http://crbug.com/73362
-  gfx::Size should_be_rendering_size = view->GetViewBounds().size();
-  view->CopyFromSurface(
+  gfx::Size should_be_rendering_size = host_->GetView()->GetViewBounds().size();
+  host_->GetView()->CopyFromSurface(
       gfx::Rect(), should_be_rendering_size,
-      base::Bind(&ColorPicker::FrameUpdated, weak_factory_.GetWeakPtr()),
+      base::Bind(&DevToolsEyeDropper::FrameUpdated, weak_factory_.GetWeakPtr()),
       kN32_SkColorType);
 }
 
-void ColorPicker::ResetFrame() {
+void DevToolsEyeDropper::ResetFrame() {
   frame_.reset();
   last_cursor_x_ = -1;
   last_cursor_y_ = -1;
 }
 
-void ColorPicker::FrameUpdated(const SkBitmap& bitmap,
-                               ReadbackResponse response) {
-  if (!enabled_)
-    return;
-
-  if (response == READBACK_SUCCESS) {
+void DevToolsEyeDropper::FrameUpdated(const SkBitmap& bitmap,
+                                      content::ReadbackResponse response) {
+  if (response == content::READBACK_SUCCESS) {
     frame_ = bitmap;
     UpdateCursor();
   }
 }
 
-bool ColorPicker::HandleMouseEvent(const blink::WebMouseEvent& event) {
+bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
   last_cursor_x_ = event.PositionInWidget().x;
   last_cursor_y_ = event.PositionInWidget().y;
   if (frame_.drawsNothing())
@@ -134,7 +135,7 @@ bool ColorPicker::HandleMouseEvent(const blink::WebMouseEvent& event) {
   return true;
 }
 
-void ColorPicker::UpdateCursor() {
+void DevToolsEyeDropper::UpdateCursor() {
   if (!host_ || frame_.drawsNothing())
     return;
 
@@ -143,16 +144,11 @@ void ColorPicker::UpdateCursor() {
     return;
   }
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      host_->GetView());
-  if (!view)
-    return;
-
-  // Due to platform limitations, we are using two different cursors
-  // depending on the platform. Mac and Win have large cursors with two circles
-  // for original spot and its magnified projection; Linux gets smaller (64 px)
-  // magnified projection only with centered hotspot.
-  // Mac Retina requires cursor to be > 120px in order to render smoothly.
+// Due to platform limitations, we are using two different cursors
+// depending on the platform. Mac and Win have large cursors with two circles
+// for original spot and its magnified projection; Linux gets smaller (64 px)
+// magnified projection only with centered hotspot.
+// Mac Retina requires cursor to be > 120px in order to render smoothly.
 
 #if defined(OS_LINUX)
   const float kCursorSize = 63;
@@ -191,17 +187,13 @@ void ColorPicker::UpdateCursor() {
     paint.setStyle(SkPaint::kStroke_Style);
 
     canvas.drawLine(kHotspotOffset, kHotspotOffset - 2 * kHotspotRadius,
-                    kHotspotOffset, kHotspotOffset - kHotspotRadius,
-                    paint);
+                    kHotspotOffset, kHotspotOffset - kHotspotRadius, paint);
     canvas.drawLine(kHotspotOffset, kHotspotOffset + kHotspotRadius,
-                    kHotspotOffset, kHotspotOffset + 2 * kHotspotRadius,
-                    paint);
+                    kHotspotOffset, kHotspotOffset + 2 * kHotspotRadius, paint);
     canvas.drawLine(kHotspotOffset - 2 * kHotspotRadius, kHotspotOffset,
-                    kHotspotOffset - kHotspotRadius, kHotspotOffset,
-                    paint);
+                    kHotspotOffset - kHotspotRadius, kHotspotOffset, paint);
     canvas.drawLine(kHotspotOffset + kHotspotRadius, kHotspotOffset,
-                    kHotspotOffset + 2 * kHotspotRadius, kHotspotOffset,
-                    paint);
+                    kHotspotOffset + 2 * kHotspotRadius, kHotspotOffset, paint);
 
     paint.setStrokeWidth(2);
     paint.setAntiAlias(true);
@@ -228,16 +220,16 @@ void ColorPicker::UpdateCursor() {
   paint.setAntiAlias(false);
   paint.setColor(SK_ColorGRAY);
   for (int i = 0; i < pixel_count; ++i) {
-    canvas.drawLine(padding + i * kPixelSize, padding,
-                    padding + i * kPixelSize, kCursorSize - padding, paint);
-    canvas.drawLine(padding, padding + i * kPixelSize,
-                    kCursorSize - padding, padding + i * kPixelSize, paint);
+    canvas.drawLine(padding + i * kPixelSize, padding, padding + i * kPixelSize,
+                    kCursorSize - padding, paint);
+    canvas.drawLine(padding, padding + i * kPixelSize, kCursorSize - padding,
+                    padding + i * kPixelSize, paint);
   }
 
   // Paint central pixel in red.
-  SkRect pixel = SkRect::MakeXYWH((kCursorSize - kPixelSize) / 2,
-                                  (kCursorSize - kPixelSize) / 2,
-                                  kPixelSize, kPixelSize);
+  SkRect pixel =
+      SkRect::MakeXYWH((kCursorSize - kPixelSize) / 2,
+                       (kCursorSize - kPixelSize) / 2, kPixelSize, kPixelSize);
   paint.setColor(SK_ColorRED);
   paint.setStyle(SkPaint::kStroke_Style);
   canvas.drawRect(pixel, paint);
@@ -248,19 +240,11 @@ void ColorPicker::UpdateCursor() {
   paint.setAntiAlias(true);
   canvas.drawCircle(kCursorSize / 2, kCursorSize / 2, kDiameter / 2, paint);
 
-  WebCursor cursor;
-  CursorInfo cursor_info;
+  content::CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypeCustom;
   cursor_info.image_scale_factor = device_scale_factor;
   cursor_info.custom_image = result;
-  cursor_info.hotspot =
-      gfx::Point(kHotspotOffset * device_scale_factor,
-                 kHotspotOffset * device_scale_factor);
-
-  cursor.InitFromCursorInfo(cursor_info);
-  DCHECK(host_);
-  host_->SetCursor(cursor);
+  cursor_info.hotspot = gfx::Point(kHotspotOffset * device_scale_factor,
+                                   kHotspotOffset * device_scale_factor);
+  host_->SetCursor(cursor_info);
 }
-
-}  // namespace protocol
-}  // namespace content

@@ -62,6 +62,7 @@ class DevToolsEmbedderMessageDispatcher {
                               const std::string& file_system_path,
                               const std::string& query) = 0;
     virtual void SetWhitelistedShortcuts(const std::string& message) = 0;
+    virtual void SetEyeDropperActive(bool active) = 0;
     virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
     virtual void ZoomIn() = 0;
     virtual void ZoomOut() = 0;
