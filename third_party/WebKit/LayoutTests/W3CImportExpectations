@@ -84,7 +84,7 @@ external/wpt/css/CSS2/css21-errata [ Skip ]
 external/wpt/css/CSS2/csswg-issues [ Skip ]
 ## Owners: glebl@chromium.org
 # external/wpt/css/CSS2/floats [ Pass ]
-external/wpt/css/CSS2/floats-clear [ Skip ]
+# external/wpt/css/CSS2/floats-clear [ Pass ]
 external/wpt/css/CSS2/fonts [ Skip ]
 external/wpt/css/CSS2/generate [ Skip ]
 external/wpt/css/CSS2/generated-content [ Skip ]

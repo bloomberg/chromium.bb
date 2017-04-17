@@ -136,6 +136,35 @@ crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht 
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Skip ]
 crbug.com/711704 external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Skip ]
 
+#### external/wpt/css/CSS2/floats-clear
+#### Passed: 166
+#### Skipped: 25
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/clear-applies-to-008.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/clear-applies-to-012.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-applies-to-008.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-applies-to-012.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-007.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-008.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-009.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-010.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-011.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/float-non-replaced-width-012.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-005.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-007.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-028.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-036.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-108.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-109.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-110.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-126.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-127.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-128.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-129.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-130.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-131.xht [ Skip ]
+crbug.com/711709 external/wpt/css/CSS2/floats-clear/floats-137.xht [ Skip ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
