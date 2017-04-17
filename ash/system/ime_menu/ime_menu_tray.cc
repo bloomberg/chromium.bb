@@ -98,7 +98,12 @@ bool IsInPasswordInputContext() {
 
 class ImeMenuLabel : public views::Label {
  public:
-  ImeMenuLabel() {}
+  ImeMenuLabel() {
+    // Sometimes the label will be more than 2 characters, e.g. INTL and EXTD.
+    // This border makes sure we only leave room for ~2 and the others are
+    // truncated.
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 6)));
+  }
   ~ImeMenuLabel() override {}
 
   // views:Label:
@@ -281,6 +286,7 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       show_bubble_after_keyboard_hidden_(false) {
   SetInkDropMode(InkDropMode::ON);
   SetupLabelForTray(label_);
+  label_->SetElideBehavior(gfx::TRUNCATE);
   tray_container()->AddChildView(label_);
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddIMEObserver(this);
