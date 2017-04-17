@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/sync/sessions/browser_list_router_helper.h"
+#else
+#include "chrome/browser/android/tab_android.h"
 #endif  // !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -15,6 +17,22 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 
 namespace sync_sessions {
+
+namespace {
+
+SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
+    content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  return tab ? tab->GetSyncedTabDelegate() : nullptr;
+#else
+  SyncedTabDelegate* delegate =
+      TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+  return delegate;
+#endif
+}
+
+}  // namespace
 
 SyncSessionsWebContentsRouter::SyncSessionsWebContentsRouter(Profile* profile) {
   history::HistoryService* history_service =
@@ -37,7 +55,7 @@ void SyncSessionsWebContentsRouter::NotifyTabModified(
     content::WebContents* web_contents) {
   if (handler_ && web_contents) {
     SyncedTabDelegate* delegate =
-        TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+        GetSyncedTabDelegateFromWebContents(web_contents);
     if (delegate)
       handler_->OnLocalTabModified(delegate);
   }
