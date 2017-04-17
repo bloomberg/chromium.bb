@@ -16,7 +16,6 @@
   if ((self = [super initWithFrame:frameRect])) {
     ScopedCAActionDisabler disabler;
     base::scoped_nsobject<CALayer> layer([[CALayer alloc] init]);
-    [layer setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
     [self setLayer:layer];
     [self setWantsLayer:YES];
   }

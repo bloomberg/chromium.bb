@@ -251,17 +251,6 @@ class FullscreenObserver : public WebContentsObserver {
                                           NSViewHeightSizable];
 
   [contentsContainer setNeedsDisplay:YES];
-
-  // Push the background color down to the RenderWidgetHostView, so that if
-  // there is a flash between contents appearing, it will be the theme's color,
-  // not white.
-  SkColor skBackgroundColor = SK_ColorWHITE;
-  const ThemeProvider* theme = [[[self view] window] themeProvider];
-  if (theme)
-    skBackgroundColor = theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-  content::RenderWidgetHostView* rwhv = contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetBackgroundColor(skBackgroundColor);
 }
 
 - (void)updateFullscreenWidgetFrame {

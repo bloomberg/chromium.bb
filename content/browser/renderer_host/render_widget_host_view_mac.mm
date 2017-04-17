@@ -442,7 +442,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_guest_view_hack_(is_guest_view_hack),
       fullscreen_parent_host_view_(nullptr),
       needs_flush_input_(false),
-      background_color_(SK_ColorWHITE),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
@@ -450,12 +449,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
-  // Paint this view host with |background_color_| when there is no content
-  // ready to draw.
   background_layer_.reset([[CALayer alloc] init]);
-  // Set the default color to be white. This is the wrong thing to do, but many
-  // UI components expect this view to be opaque.
-  [background_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
@@ -1639,6 +1633,9 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
+  if (color == background_color_)
+    return;
+
   // The renderer will feed its color back to us with the first CompositorFrame.
   // We short-cut here to show a sensible color before that happens.
   UpdateBackgroundColorFromRenderer(color);
@@ -1655,7 +1652,7 @@ SkColor RenderWidgetHostViewMac::background_color() const {
 }
 
 void RenderWidgetHostViewMac::UpdateBackgroundColorFromRenderer(SkColor color) {
-  if (color == background_color())
+  if (color == background_color_)
     return;
   background_color_ = color;
 
@@ -1767,7 +1764,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
-    opaque_ = YES;
+    opaque_ = NO;
     pinchHasReachedZoomThreshold_ = false;
     isStylusEnteringProximity_ = false;
 

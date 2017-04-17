@@ -1271,14 +1271,14 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
       new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
-  EXPECT_NE(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
-  EXPECT_TRUE([view->cocoa_view() isOpaque]);
-
-  view->SetBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
             view->background_color());
   EXPECT_FALSE([view->cocoa_view() isOpaque]);
+
+  view->SetBackgroundColor(SK_ColorWHITE);
+  EXPECT_NE(static_cast<unsigned>(SK_ColorTRANSPARENT),
+            view->background_color());
+  EXPECT_TRUE([view->cocoa_view() isOpaque]);
 
   const IPC::Message* set_background;
   set_background = process_host->sink().GetUniqueMessageMatching(
@@ -1286,18 +1286,19 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   ASSERT_TRUE(set_background);
   std::tuple<bool> sent_background;
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_FALSE(std::get<0>(sent_background));
+  EXPECT_TRUE(std::get<0>(sent_background));
 
   // Try setting it back.
   process_host->sink().ClearMessages();
-  view->SetBackgroundColor(SK_ColorWHITE);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), view->background_color());
-  EXPECT_TRUE([view->cocoa_view() isOpaque]);
+  view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
+            view->background_color());
+  EXPECT_FALSE([view->cocoa_view() isOpaque]);
   set_background = process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
-  EXPECT_TRUE(std::get<0>(sent_background));
+  EXPECT_FALSE(std::get<0>(sent_background));
 
   host->ShutdownAndDestroyWidget(true);
 }
