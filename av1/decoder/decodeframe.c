@@ -28,6 +28,10 @@
 #include "aom_scale/aom_scale.h"
 #include "aom_util/aom_thread.h"
 
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
+
 #include "av1/common/alloccommon.h"
 #if CONFIG_CDEF
 #include "av1/common/cdef.h"
