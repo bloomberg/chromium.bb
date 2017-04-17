@@ -53,7 +53,6 @@ class BidirectionalStreamTestURLRequestContextGetter
       url::SchemeHostPort quic_hint_server("https", kTestServerHost, 443);
       server_properties_->SetAlternativeService(
           quic_hint_server, alternative_service, base::Time::Max());
-      params->quic_host_whitelist.insert(kTestServerHost);
 
       request_context_->set_cert_verifier(mock_cert_verifier_.get());
       request_context_->set_host_resolver(host_resolver_.get());

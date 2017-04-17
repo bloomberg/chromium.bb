@@ -319,7 +319,6 @@ void CronetEnvironment::InitializeOnNetworkThread() {
           [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 
-  std::unordered_set<std::string> quic_host_whitelist;
   std::unique_ptr<net::HttpServerProperties> http_server_properties(
       new net::HttpServerPropertiesImpl());
   for (const auto& quic_hint : quic_hints_) {
@@ -329,11 +328,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
                                          quic_hint.port());
     http_server_properties->SetAlternativeService(
         quic_hint_server, alternative_service, base::Time::Max());
-    quic_host_whitelist.insert(quic_hint.host());
   }
 
   context_builder.SetHttpServerProperties(std::move(http_server_properties));
-  context_builder.set_quic_host_whitelist(quic_host_whitelist);
 
   main_context_ = context_builder.Build();
 }

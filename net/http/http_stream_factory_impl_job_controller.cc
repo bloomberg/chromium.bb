@@ -915,20 +915,6 @@ GURL HttpStreamFactoryImpl::JobController::ApplyHostMappingRules(
   return url;
 }
 
-bool HttpStreamFactoryImpl::JobController::IsQuicWhitelistedForHost(
-    const std::string& host) {
-  bool whitelist_needed = false;
-  // The QUIC whitelist is not needed in QUIC versions after 30.
-  if (!whitelist_needed)
-    return true;
-
-  if (session_->params().transport_security_state->IsGooglePinnedHost(host))
-    return true;
-
-  return base::ContainsKey(session_->params().quic_host_whitelist,
-                           base::ToLowerASCII(host));
-}
-
 AlternativeService
 HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
     const HttpRequestInfo& request_info,
@@ -1026,9 +1012,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
 
     quic_all_broken = false;
     if (!session_->IsQuicEnabled())
-      continue;
-
-    if (!IsQuicWhitelistedForHost(origin.host()))
       continue;
 
     if (stream_type == HttpStreamRequest::BIDIRECTIONAL_STREAM &&

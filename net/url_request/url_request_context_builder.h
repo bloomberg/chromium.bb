@@ -97,7 +97,6 @@ class NET_EXPORT URLRequestContextBuilder {
     std::string quic_user_agent_id;
     int quic_max_server_configs_stored_in_properties;
     bool quic_delay_tcp_race;
-    std::unordered_set<std::string> quic_host_whitelist;
     bool quic_prefer_aes;
     int quic_idle_connection_timeout_seconds;
     QuicTagVector quic_connection_options;
@@ -239,11 +238,6 @@ class NET_EXPORT URLRequestContextBuilder {
       int quic_idle_connection_timeout_seconds) {
     http_network_session_params_.quic_idle_connection_timeout_seconds =
         quic_idle_connection_timeout_seconds;
-  }
-
-  void set_quic_host_whitelist(
-      const std::unordered_set<std::string>& quic_host_whitelist) {
-    http_network_session_params_.quic_host_whitelist = quic_host_whitelist;
   }
 
   void set_quic_close_sessions_on_ip_change(

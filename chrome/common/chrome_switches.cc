@@ -736,9 +736,6 @@ const char kProxyServer[]                   = "proxy-server";
 // the server.
 const char kQuicConnectionOptions[] = "quic-connection-options";
 
-// Specifies a comma separated list of hosts to whitelist QUIC for.
-const char kQuicHostWhitelist[] = "quic-host-whitelist";
-
 // Specifies the maximum length for a QUIC packet.
 const char kQuicMaxPacketLength[] = "quic-max-packet-length";
 

@@ -265,18 +265,6 @@ bool ShouldQuicDisablePreConnectIfZeroRtt(
       "true");
 }
 
-std::unordered_set<std::string> GetQuicHostWhitelist(
-    const VariationParameters& quic_trial_params) {
-  std::string whitelist =
-      GetVariationParam(quic_trial_params, "quic_host_whitelist");
-  std::unordered_set<std::string> hosts;
-  for (const std::string& host : base::SplitString(
-           whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    hosts.insert(host);
-  }
-  return hosts;
-}
-
 bool ShouldQuicMigrateSessionsOnNetworkChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -398,7 +386,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicEstimateInitialRtt(quic_trial_params);
     params->quic_disable_preconnect_if_0rtt =
         ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params);
-    params->quic_host_whitelist = GetQuicHostWhitelist(quic_trial_params);
     params->quic_migrate_sessions_on_network_change =
         ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params);
     params->quic_migrate_sessions_early =

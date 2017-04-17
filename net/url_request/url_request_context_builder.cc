@@ -429,8 +429,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_idle_connection_timeout_seconds;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
-  network_session_params.quic_host_whitelist =
-      http_network_session_params_.quic_host_whitelist;
   network_session_params.quic_close_sessions_on_ip_change =
       http_network_session_params_.quic_close_sessions_on_ip_change;
   network_session_params.quic_migrate_sessions_on_network_change =

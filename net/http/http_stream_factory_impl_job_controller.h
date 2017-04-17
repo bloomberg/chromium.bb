@@ -243,9 +243,6 @@ class HttpStreamFactoryImpl::JobController
   // Resumes the main job immediately.
   void ResumeMainJob();
 
-  // Returns true if QUIC is whitelisted for |host|.
-  bool IsQuicWhitelistedForHost(const std::string& host);
-
   AlternativeService GetAlternativeServiceFor(
       const HttpRequestInfo& request_info,
       HttpStreamRequest::Delegate* delegate,

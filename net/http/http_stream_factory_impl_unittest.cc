@@ -2246,7 +2246,6 @@ class HttpStreamFactoryBidirectionalQuicTest
   void Initialize() {
     params_.enable_quic = true;
     params_.http_server_properties = &http_server_properties_;
-    params_.quic_host_whitelist.insert("www.example.org");
     params_.quic_random = &random_generator_;
     params_.quic_clock = &clock_;
 

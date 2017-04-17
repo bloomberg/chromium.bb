@@ -178,8 +178,6 @@ class NET_EXPORT HttpNetworkSession
     int quic_packet_reader_yield_after_duration_milliseconds;
     // If true, disable preconnections if QUIC can do 0RTT.
     bool quic_disable_preconnect_if_0rtt;
-    // List of hosts for which QUIC is explicitly whitelisted.
-    std::unordered_set<std::string> quic_host_whitelist;
     // If true, active QUIC sessions may be migrated onto a new network when
     // the platform indicates that the default network is changing.
     bool quic_migrate_sessions_on_network_change;

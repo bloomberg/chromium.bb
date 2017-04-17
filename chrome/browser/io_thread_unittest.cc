@@ -275,7 +275,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, Default) {
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_TRUE(params_.origins_to_force_quic_on.empty());
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
   EXPECT_FALSE(params_.enable_user_alternate_protocol_ports);
   EXPECT_FALSE(params_.ignore_certificate_errors);
   EXPECT_EQ(0, params_.testing_fixed_http_port);
@@ -307,15 +306,12 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   command_line_.AppendSwitch("disable-quic");
-  command_line_.AppendSwitchASCII("quic-host-whitelist",
-                                  "www.example.org, www.example.com");
 
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_quic);
   EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
   EXPECT_TRUE(params_.quic_delay_tcp_race);
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
@@ -403,21 +399,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
   EXPECT_TRUE(
       base::ContainsKey(params_.origins_to_force_quic_on, net::HostPortPair()));
-}
-
-TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
-       QuicWhitelistFromCommandLinet) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("quic-host-whitelist",
-                                  "www.example.org, www.example.com");
-
-  ConfigureParamsFromFieldTrialsAndCommandLine();
-
-  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
-  EXPECT_TRUE(
-      base::ContainsKey(params_.quic_host_whitelist, "www.example.org"));
-  EXPECT_TRUE(
-      base::ContainsKey(params_.quic_host_whitelist, "www.example.com"));
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,

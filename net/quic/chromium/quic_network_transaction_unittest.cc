@@ -532,12 +532,6 @@ class QuicNetworkTransactionTest
     params_.http_server_properties = &http_server_properties_;
     params_.quic_supported_versions = SupportedVersions(version_);
     params_.net_log = net_log_.bound().net_log();
-    for (const char* host :
-         {kDefaultServerHostName, "www.example.org", "news.example.org",
-          "bar.example.org", "foo.example.org", "invalid.example.org",
-          "mail.example.com"}) {
-      params_.quic_host_whitelist.insert(host);
-    }
 
     session_.reset(new HttpNetworkSession(params_));
     session_->quic_stream_factory()->set_require_confirmation(false);
@@ -4244,9 +4238,6 @@ class QuicNetworkTransactionWithDestinationTest
     params.http_auth_handler_factory = auth_handler_factory_.get();
     params.http_server_properties = &http_server_properties_;
     params.quic_supported_versions = SupportedVersions(version_);
-    params.quic_host_whitelist.insert("news.example.org");
-    params.quic_host_whitelist.insert("mail.example.org");
-    params.quic_host_whitelist.insert("mail.example.com");
 
     session_.reset(new HttpNetworkSession(params));
     session_->quic_stream_factory()->set_require_confirmation(true);

@@ -976,16 +976,6 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
                   switches::kQuicConnectionOptions));
     }
 
-    if (command_line.HasSwitch(switches::kQuicHostWhitelist)) {
-      std::string whitelist =
-          command_line.GetSwitchValueASCII(switches::kQuicHostWhitelist);
-      params->quic_host_whitelist.clear();
-      for (const std::string& host : base::SplitString(
-               whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-        params->quic_host_whitelist.insert(host);
-      }
-    }
-
     if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
       unsigned value;
       if (base::StringToUint(

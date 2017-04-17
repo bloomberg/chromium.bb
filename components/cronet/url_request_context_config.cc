@@ -44,7 +44,6 @@ const char kQuicMaxServerConfigsStoredInProperties[] =
 const char kQuicDelayTcpRace[] = "delay_tcp_race";
 const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
-const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
 const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
@@ -172,17 +171,6 @@ std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
                                 &quic_idle_connection_timeout_seconds)) {
         context_builder->set_quic_idle_connection_timeout_seconds(
             quic_idle_connection_timeout_seconds);
-      }
-
-      std::string quic_host_whitelist;
-      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
-        std::unordered_set<std::string> hosts;
-        for (const std::string& host :
-             base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
-                               base::SPLIT_WANT_ALL)) {
-          hosts.insert(host);
-        }
-        context_builder->set_quic_host_whitelist(hosts);
       }
 
       bool quic_close_sessions_on_ip_change = false;
