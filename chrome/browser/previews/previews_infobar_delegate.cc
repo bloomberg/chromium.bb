@@ -49,6 +49,8 @@ void RecordPreviewsInfoBarAction(
 PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {
   if (!on_dismiss_callback_.is_null())
     on_dismiss_callback_.Run(false);
+
+  RecordPreviewsInfoBarAction(infobar_type_, infobar_dismissed_action_);
 }
 
 // static
@@ -93,6 +95,7 @@ PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
       infobar_type_(infobar_type),
+      infobar_dismissed_action_(INFOBAR_DISMISSED_BY_TAB_CLOSURE),
       message_text_(l10n_util::GetStringUTF16(
           is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
                              : IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE)),
@@ -113,14 +116,14 @@ int PreviewsInfoBarDelegate::GetIconId() const {
 
 bool PreviewsInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  RecordPreviewsInfoBarAction(
-      infobar_type_, details.is_reload ? INFOBAR_DISMISSED_BY_RELOAD
-                                       : INFOBAR_DISMISSED_BY_NAVIGATION);
+  infobar_dismissed_action_ = details.is_reload
+                                  ? INFOBAR_DISMISSED_BY_RELOAD
+                                  : INFOBAR_DISMISSED_BY_NAVIGATION;
   return InfoBarDelegate::ShouldExpire(details);
 }
 
 void PreviewsInfoBarDelegate::InfoBarDismissed() {
-  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_DISMISSED_BY_USER);
+  infobar_dismissed_action_ = INFOBAR_DISMISSED_BY_USER;
 }
 
 base::string16 PreviewsInfoBarDelegate::GetMessageText() const {
@@ -136,7 +139,7 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 }
 
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_LOAD_ORIGINAL_CLICKED);
+  infobar_dismissed_action_ = INFOBAR_LOAD_ORIGINAL_CLICKED;
   if (!on_dismiss_callback_.is_null())
     on_dismiss_callback_.Run(true);
   on_dismiss_callback_.Reset();

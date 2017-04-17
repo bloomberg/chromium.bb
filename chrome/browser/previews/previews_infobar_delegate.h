@@ -37,6 +37,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
     INFOBAR_DISMISSED_BY_USER = 2,
     INFOBAR_DISMISSED_BY_NAVIGATION = 3,
     INFOBAR_DISMISSED_BY_RELOAD = 4,
+    INFOBAR_DISMISSED_BY_TAB_CLOSURE = 5,
     INFOBAR_INDEX_BOUNDARY
   };
 
@@ -68,6 +69,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   PreviewsInfoBarType infobar_type_;
+  mutable PreviewsInfoBarAction infobar_dismissed_action_;
 
   const base::string16 message_text_;
 

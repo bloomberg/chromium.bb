@@ -223,6 +223,23 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
   EXPECT_FALSE(user_opt_out_.value());
 }
 
+TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestTabClosedDismissal) {
+  base::HistogramTester tester;
+
+  CreateInfoBar(PreviewsInfoBarDelegate::LOFI, true /* is_data_saver_user */);
+
+  // Delete the infobar without any other infobar actions.
+  infobar_service()->infobar_at(0)->RemoveSelf();
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  tester.ExpectBucketCount(
+      kUMAPreviewsInfoBarActionLoFi,
+      PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_TAB_CLOSURE, 1);
+  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
+                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
+  EXPECT_FALSE(user_opt_out_.value());
+}
+
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   base::HistogramTester tester;
 
