@@ -45,7 +45,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/KeyboardEvent.h"
@@ -3421,32 +3420,6 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
   IntPoint point_in_root_frame =
       view->ContentsToFrame(view->ViewportToContents(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);
-}
-
-void WebViewImpl::SpellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) {
-  Vector<unsigned> result;
-  for (Frame* frame = page_->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
-      continue;
-    const DocumentMarkerVector& document_markers =
-        ToLocalFrame(frame)->GetDocument()->Markers().Markers();
-    for (size_t i = 0; i < document_markers.size(); ++i)
-      result.push_back(document_markers[i]->StartOffset());
-  }
-  offsets->Assign(result);
-}
-
-void WebViewImpl::RemoveSpellingMarkersUnderWords(
-    const WebVector<WebString>& words) {
-  Vector<String> converted_words;
-  converted_words.Append(words.Data(), words.size());
-
-  for (Frame* frame = page_->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame())
-      ToLocalFrame(frame)->RemoveSpellingMarkersUnderWords(converted_words);
-  }
 }
 
 void WebViewImpl::SendResizeEventAndRepaint() {

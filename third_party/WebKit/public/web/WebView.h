@@ -365,11 +365,6 @@ class WebView : protected WebWidget {
   virtual WebHitTestResult HitTestResultForTap(const WebPoint& tap_point,
                                                const WebSize& tap_area) = 0;
 
-  // Retrieves a list of spelling markers.
-  virtual void SpellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) = 0;
-  virtual void RemoveSpellingMarkersUnderWords(
-      const WebVector<WebString>& words) = 0;
-
   // Support for resource loading initiated by plugins -------------------
 
   // Returns next unused request identifier which is unique within the

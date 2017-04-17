@@ -6584,7 +6584,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
         .ForceInvocationForTesting();
 
   WebVector<unsigned> offsets1;
-  web_view_helper.WebView()->SpellingMarkerOffsetsForTest(&offsets1);
+  web_frame->SpellingMarkerOffsetsForTest(&offsets1);
   EXPECT_EQ(1U, offsets1.size());
 
   Vector<String> words;
@@ -6592,7 +6592,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   frame->RemoveSpellingMarkersUnderWords(words);
 
   WebVector<unsigned> offsets2;
-  web_view_helper.WebView()->SpellingMarkerOffsetsForTest(&offsets2);
+  web_frame->SpellingMarkerOffsetsForTest(&offsets2);
   EXPECT_EQ(0U, offsets2.size());
 }
 
@@ -6669,7 +6669,7 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   textcheck.Kick();
 
   WebVector<unsigned> offsets;
-  web_view_helper.WebView()->SpellingMarkerOffsetsForTest(&offsets);
+  frame->SpellingMarkerOffsetsForTest(&offsets);
   EXPECT_EQ(0U, offsets.size());
 }
 

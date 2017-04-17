@@ -389,6 +389,11 @@ class WebLocalFrame : public WebFrame {
   virtual bool IsSpellCheckingEnabled() const = 0;
   virtual void RemoveSpellingMarkers() = 0;
 
+  // Retrieves a list of spelling markers.
+  virtual void SpellingMarkerOffsetsForTest(WebVector<unsigned>* offsets) = 0;
+  virtual void RemoveSpellingMarkersUnderWords(
+      const WebVector<WebString>& words) = 0;
+
   // Content Settings -------------------------------------------------------
 
   virtual void SetContentSettingsClient(WebContentSettingsClient*) = 0;

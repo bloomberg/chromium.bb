@@ -29,15 +29,13 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebVector;
 using blink::WebString;
@@ -65,11 +63,11 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
   return true;
 }
 
-class DocumentMarkersRemover : public content::RenderViewVisitor {
+class DocumentMarkersRemover : public content::RenderFrameVisitor {
  public:
   explicit DocumentMarkersRemover(const std::set<std::string>& words);
   ~DocumentMarkersRemover() override {}
-  bool Visit(content::RenderView* render_view) override;
+  bool Visit(content::RenderFrame* render_frame) override;
 
  private:
   WebVector<WebString> words_;
@@ -83,9 +81,10 @@ DocumentMarkersRemover::DocumentMarkersRemover(
                  [](const std::string& w) { return WebString::FromUTF8(w); });
 }
 
-bool DocumentMarkersRemover::Visit(content::RenderView* render_view) {
-  if (render_view && render_view->GetWebView())
-    render_view->GetWebView()->RemoveSpellingMarkersUnderWords(words_);
+bool DocumentMarkersRemover::Visit(content::RenderFrame* render_frame) {
+  // TODO(xiaochengh): Both nullptr checks seem unnecessary.
+  if (render_frame && render_frame->GetWebFrame())
+    render_frame->GetWebFrame()->RemoveSpellingMarkersUnderWords(words_);
   return true;
 }
 
@@ -220,7 +219,7 @@ void SpellCheck::OnCustomDictionaryChanged(
   if (words_added.empty())
     return;
   DocumentMarkersRemover markersRemover(words_added);
-  content::RenderView::ForEach(&markersRemover);
+  content::RenderFrame::ForEach(&markersRemover);
 }
 
 void SpellCheck::OnEnableSpellCheck(bool enable) {

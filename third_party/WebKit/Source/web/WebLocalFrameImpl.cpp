@@ -116,6 +116,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/FrameView.h"
@@ -1112,6 +1113,23 @@ void WebLocalFrameImpl::ReplaceMisspelledRange(const WebString& text) {
 
 void WebLocalFrameImpl::RemoveSpellingMarkers() {
   GetFrame()->GetSpellChecker().RemoveSpellingMarkers();
+}
+
+void WebLocalFrameImpl::SpellingMarkerOffsetsForTest(
+    WebVector<unsigned>* offsets) {
+  Vector<unsigned> result;
+  const DocumentMarkerVector& document_markers =
+      GetFrame()->GetDocument()->Markers().Markers();
+  for (size_t i = 0; i < document_markers.size(); ++i)
+    result.push_back(document_markers[i]->StartOffset());
+  offsets->Assign(result);
+}
+
+void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
+    const WebVector<WebString>& words) {
+  Vector<String> converted_words;
+  converted_words.Append(words.Data(), words.size());
+  GetFrame()->RemoveSpellingMarkersUnderWords(converted_words);
 }
 
 bool WebLocalFrameImpl::HasSelection() const {
