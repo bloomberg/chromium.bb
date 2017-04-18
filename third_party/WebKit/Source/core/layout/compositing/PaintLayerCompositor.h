@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/dom/DocumentLifecycle.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/wtf/HashMap.h"
@@ -35,7 +36,6 @@
 namespace blink {
 
 class PaintLayer;
-class DocumentLifecycle;
 class GraphicsLayer;
 class IntPoint;
 class JSONObject;
@@ -77,7 +77,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   explicit PaintLayerCompositor(LayoutView&);
   ~PaintLayerCompositor() override;
 
-  void UpdateIfNeededRecursive();
+  void UpdateIfNeededRecursive(DocumentLifecycle::LifecycleState target_state);
 
   // Return true if this LayoutView is in "compositing mode" (i.e. has one or
   // more composited Layers)
@@ -193,7 +193,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void AssertNoUnresolvedDirtyBits();
 #endif
 
-  void UpdateIfNeededRecursiveInternal();
+  void UpdateIfNeededRecursiveInternal(
+      DocumentLifecycle::LifecycleState target_state);
 
   // GraphicsLayerClient implementation
   bool NeedsRepaint(const GraphicsLayer&) const { return true; }
@@ -207,7 +208,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool IsTrackingRasterInvalidations() const override;
 
   void UpdateWithoutAcceleratedCompositing(CompositingUpdateType);
-  void UpdateIfNeeded();
+  void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state);
 
   void EnsureRootLayer();
   void DestroyRootLayer();

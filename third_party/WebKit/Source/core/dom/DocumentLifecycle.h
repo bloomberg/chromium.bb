@@ -67,6 +67,7 @@ class CORE_EXPORT DocumentLifecycle {
     kLayoutClean,
 
     kInCompositingUpdate,
+    kCompositingInputsClean,
     kCompositingClean,
 
     kInPaintInvalidation,
@@ -245,9 +246,9 @@ inline bool DocumentLifecycle::StateAllowsDetach() const {
   return state_ == kVisualUpdatePending || state_ == kInStyleRecalc ||
          state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kInPreLayout || state_ == kLayoutClean ||
-         state_ == kCompositingClean || state_ == kPaintInvalidationClean ||
-         state_ == kPrePaintClean || state_ == kPaintClean ||
-         state_ == kStopping;
+         state_ == kCompositingInputsClean || state_ == kCompositingClean ||
+         state_ == kPaintInvalidationClean || state_ == kPrePaintClean ||
+         state_ == kPaintClean || state_ == kStopping;
 }
 
 inline bool DocumentLifecycle::StateAllowsLayoutInvalidation() const {

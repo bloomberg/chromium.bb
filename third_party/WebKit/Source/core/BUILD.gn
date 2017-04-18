@@ -1314,6 +1314,7 @@ source_set("unit_tests") {
     "layout/api/SelectionStateTest.cpp",
     "layout/compositing/CompositedLayerMappingTest.cpp",
     "layout/compositing/CompositingReasonFinderTest.cpp",
+    "layout/compositing/PaintLayerCompositorTest.cpp",
     "layout/line/InlineBoxTest.cpp",
     "layout/line/InlineTextBoxTest.cpp",
     "layout/ng/geometry/ng_box_strut_test.cc",

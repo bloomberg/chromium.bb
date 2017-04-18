@@ -206,7 +206,22 @@ bool DocumentLifecycle::CanAdvanceTo(LifecycleState next_state) const {
       break;
     case kInCompositingUpdate:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-      return next_state == kCompositingClean;
+      // Once we are in the compositing update, we can either just clean the
+      // inputs or do the whole of compositing.
+      return next_state == kCompositingInputsClean ||
+             next_state == kCompositingClean;
+    case kCompositingInputsClean:
+      DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+      // We can return to style re-calc, layout, or the start of compositing.
+      if (next_state == kInStyleRecalc)
+        return true;
+      if (next_state == kInPreLayout)
+        return true;
+      if (next_state == kInCompositingUpdate)
+        return true;
+      // Otherwise, we can continue onwards.
+      if (next_state == kCompositingClean)
+        return true;
     case kCompositingClean:
       DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
       if (next_state == kInStyleRecalc)
@@ -287,10 +302,12 @@ bool DocumentLifecycle::CanRewindTo(LifecycleState next_state) const {
       state_ == g_deprecated_transition_stack->From() &&
       next_state == g_deprecated_transition_stack->To())
     return true;
+  // TODO(smcgruer): Not sure if this is correct.
   return state_ == kStyleClean || state_ == kLayoutSubtreeChangeClean ||
          state_ == kAfterPerformLayout || state_ == kLayoutClean ||
-         state_ == kCompositingClean || state_ == kPaintInvalidationClean ||
-         state_ == kPrePaintClean || state_ == kPaintClean;
+         state_ == kCompositingInputsClean || state_ == kCompositingClean ||
+         state_ == kPaintInvalidationClean || state_ == kPrePaintClean ||
+         state_ == kPaintClean;
 }
 
 #define DEBUG_STRING_CASE(StateName) \
@@ -312,6 +329,7 @@ static WTF::String StateAsDebugString(
     DEBUG_STRING_CASE(kAfterPerformLayout);
     DEBUG_STRING_CASE(kLayoutClean);
     DEBUG_STRING_CASE(kInCompositingUpdate);
+    DEBUG_STRING_CASE(kCompositingInputsClean);
     DEBUG_STRING_CASE(kCompositingClean);
     DEBUG_STRING_CASE(kInPaintInvalidation);
     DEBUG_STRING_CASE(kPaintInvalidationClean);

@@ -2926,6 +2926,14 @@ void FrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   }
 }
 
+void FrameView::UpdateLifecycleToCompositingInputsClean() {
+  // When SPv2 is enabled, the standard compositing lifecycle steps do not
+  // exist; compositing is done after paint instead.
+  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
+      DocumentLifecycle::kCompositingInputsClean);
+}
+
 void FrameView::UpdateAllLifecyclePhasesExceptPaint() {
   GetFrame().LocalFrameRoot()->View()->UpdateLifecyclePhasesInternal(
       DocumentLifecycle::kPrePaintClean);
@@ -3030,6 +3038,7 @@ void FrameView::UpdateLifecyclePhasesInternal(
 
   // Only the following target states are supported.
   DCHECK(target_state == DocumentLifecycle::kLayoutClean ||
+         target_state == DocumentLifecycle::kCompositingInputsClean ||
          target_state == DocumentLifecycle::kCompositingClean ||
          target_state == DocumentLifecycle::kPrePaintClean ||
          target_state == DocumentLifecycle::kPaintClean);
@@ -3079,12 +3088,18 @@ void FrameView::UpdateLifecyclePhasesInternal(
                    InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
 
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-        view.Compositor()->UpdateIfNeededRecursive();
+        view.Compositor()->UpdateIfNeededRecursive(target_state);
       } else {
         ForAllNonThrottledFrameViews([](FrameView& frame_view) {
           frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
           frame_view.GetLayoutView()->CommitPendingSelection();
         });
+      }
+
+      if (target_state == DocumentLifecycle::kCompositingInputsClean) {
+        DCHECK_EQ(Lifecycle().GetState(),
+                  DocumentLifecycle::kCompositingInputsClean);
+        return;
       }
 
       ScrollContentsIfNeededRecursive();

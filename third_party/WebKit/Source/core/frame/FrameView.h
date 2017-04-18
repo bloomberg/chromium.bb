@@ -293,6 +293,11 @@ class CORE_EXPORT FrameView final
   // throttling is allowed).
   void UpdateLifecycleToCompositingCleanPlusScrolling();
 
+  // Computes the style, layout, and compositing inputs lifecycle stages if
+  // needed. After calling this method, all frames will be in a lifecycle state
+  // >= CompositingInputsClean (unless throttling is allowed).
+  void UpdateLifecycleToCompositingInputsClean();
+
   // Computes only the style and layout lifecycle stages.
   // After calling this method, all frames will be in a lifecycle
   // state >= LayoutClean (unless throttling is allowed).
