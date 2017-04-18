@@ -82,11 +82,10 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   FetchResponseData* response =
       new FetchResponseData(kBasicType, status_, status_message_);
   response->SetURLList(url_list_);
-  for (size_t i = 0; i < header_list_->size(); ++i) {
-    const FetchHeaderList::Header* header = header_list_->List()[i].get();
-    if (FetchUtils::IsForbiddenResponseHeaderName(header->first))
+  for (const auto& header : header_list_->List()) {
+    if (FetchUtils::IsForbiddenResponseHeaderName(header.first))
       continue;
-    response->header_list_->Append(header->first, header->second);
+    response->header_list_->Append(header.first, header.second);
   }
   response->buffer_ = buffer_;
   response->mime_type_ = mime_type_;
@@ -118,16 +117,15 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   FetchResponseData* response =
       new FetchResponseData(kCORSType, status_, status_message_);
   response->SetURLList(url_list_);
-  for (size_t i = 0; i < header_list_->size(); ++i) {
-    const FetchHeaderList::Header* header = header_list_->List()[i].get();
-    const String& name = header->first;
+  for (const auto& header : header_list_->List()) {
+    const String& name = header.first;
     const bool explicitly_exposed = exposed_headers.Contains(name);
     if (IsOnAccessControlResponseHeaderWhitelist(name) ||
         (explicitly_exposed &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
       if (explicitly_exposed)
         response->cors_exposed_header_names_.insert(name);
-      response->header_list_->Append(name, header->second);
+      response->header_list_->Append(name, header.second);
     }
   }
   response->buffer_ = buffer_;
@@ -272,9 +270,8 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
   response.SetCacheStorageCacheName(CacheStorageCacheName());
   response.SetCorsExposedHeaderNames(
       HeaderSetToWebVector(cors_exposed_header_names_));
-  for (size_t i = 0; i < HeaderList()->size(); ++i) {
-    const FetchHeaderList::Header* header = HeaderList()->List()[i].get();
-    response.AppendHeader(header->first, header->second);
+  for (const auto& header : HeaderList()->List()) {
+    response.AppendHeader(header.first, header.second);
   }
 }
 

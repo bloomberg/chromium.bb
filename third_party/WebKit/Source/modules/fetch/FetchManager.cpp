@@ -716,11 +716,9 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   request.SetHTTPMethod(request_->Method());
   request.SetFetchRequestMode(request_->Mode());
   request.SetFetchCredentialsMode(request_->Credentials());
-  const Vector<std::unique_ptr<FetchHeaderList::Header>>& list =
-      request_->HeaderList()->List();
-  for (size_t i = 0; i < list.size(); ++i) {
-    request.AddHTTPHeaderField(AtomicString(list[i]->first),
-                               AtomicString(list[i]->second));
+  for (const auto& header : request_->HeaderList()->List()) {
+    request.AddHTTPHeaderField(AtomicString(header.first),
+                               AtomicString(header.second));
   }
 
   if (request_->Method() != HTTPNames::GET &&

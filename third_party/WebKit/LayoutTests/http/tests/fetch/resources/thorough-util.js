@@ -163,16 +163,16 @@ var checkJsonpError = checkJsonpResult.bind(this, 'error');
 var checkJsonpSuccess = checkJsonpResult.bind(this, 'success');
 var checkJsonpNoRedirect = checkJsonpResult.bind(this, 'noredirect');
 var hasCustomHeader =
-  checkJsonpHeader.bind(this, 'x-serviceworker-test', 'test');
+  checkJsonpHeader.bind(this, 'X-ServiceWorker-Test', 'test');
 var hasCustomHeader2 = function(url, data) {
-  checkJsonpHeader('x-serviceworker-s', 'test1', url, data);
-  checkJsonpHeader('x-serviceworker-test', 'test2,test3', url, data);
-  checkJsonpHeader('x-serviceworker-ua', 'test4', url, data);
-  checkJsonpHeader('x-serviceworker-u', 'test5', url, data);
-  checkJsonpHeader('x-serviceworker-v', 'test6', url, data);
+  checkJsonpHeader('X-ServiceWorker-s', 'test1', url, data);
+  checkJsonpHeader('X-ServiceWorker-Test', 'test2,test3', url, data);
+  checkJsonpHeader('X-ServiceWorker-ua', 'test4', url, data);
+  checkJsonpHeader('X-ServiceWorker-U', 'test5', url, data);
+  checkJsonpHeader('X-ServiceWorker-V', 'test6', url, data);
 };
 var noCustomHeader =
-  checkJsonpHeader.bind(this, 'x-serviceworker-test', undefined);
+  checkJsonpHeader.bind(this, 'X-ServiceWorker-Test', undefined);
 var methodIsGET = checkJsonpMethod.bind(this, 'GET');
 var methodIsPOST = checkJsonpMethod.bind(this, 'POST');
 var methodIsPUT = checkJsonpMethod.bind(this, 'PUT');

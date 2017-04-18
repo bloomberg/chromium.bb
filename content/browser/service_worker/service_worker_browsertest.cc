@@ -1229,8 +1229,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   EXPECT_EQ(301, response.status_code);
   EXPECT_EQ("Moved Permanently", response.status_text);
   ServiceWorkerHeaderMap expected_headers;
-  expected_headers["content-language"] = "fi";
-  expected_headers["content-type"] = "text/html; charset=UTF-8";
+  expected_headers["Content-Language"] = "fi";
+  expected_headers["Content-Type"] = "text/html; charset=UTF-8";
   EXPECT_EQ(expected_headers, response.headers);
 
   std::string body;

@@ -9,9 +9,6 @@
 #include "bindings/modules/v8/ByteStringSequenceSequenceOrByteStringByteStringRecordOrHeaders.h"
 #include "core/dom/Iterator.h"
 #include "platform/loader/fetch/FetchUtils.h"
-#include "platform/wtf/NotFound.h"
-#include "platform/wtf/PassRefPtr.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -22,9 +19,7 @@ class HeadersIterationSource final
     : public PairIterable<String, String>::IterationSource {
  public:
   explicit HeadersIterationSource(const FetchHeaderList* headers)
-      : headers_(headers->Clone()), current_(0) {
-    headers_->SortAndCombine();
-  }
+      : headers_(headers->SortAndCombine()), current_(0) {}
 
   bool Next(ScriptState* script_state,
             String& key,
@@ -33,22 +28,21 @@ class HeadersIterationSource final
     // This simply advances an index and returns the next value if any; the
     // iterated list is not exposed to script so it will never be mutated
     // during iteration.
-    if (current_ >= headers_->size())
+    if (current_ >= headers_.size())
       return false;
 
-    const FetchHeaderList::Header& header = headers_->Entry(current_++);
+    const FetchHeaderList::Header& header = headers_.at(current_++);
     key = header.first;
     value = header.second;
     return true;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->Trace(headers_);
     PairIterable<String, String>::IterationSource::Trace(visitor);
   }
 
  private:
-  const Member<FetchHeaderList> headers_;
+  Vector<std::pair<String, String>> headers_;
   size_t current_;
 };
 
@@ -242,9 +236,8 @@ void Headers::FillWith(const Headers* object, ExceptionState& exception_state) {
   // There used to be specific steps describing filling a Headers object with
   // another Headers object, but it has since been removed because it should be
   // handled like a sequence (http://crbug.com/690428).
-  for (size_t i = 0; i < object->header_list_->List().size(); ++i) {
-    append(object->header_list_->List()[i]->first,
-           object->header_list_->List()[i]->second, exception_state);
+  for (const auto& header : object->header_list_->List()) {
+    append(header.first, header.second, exception_state);
     if (exception_state.HadException())
       return;
   }

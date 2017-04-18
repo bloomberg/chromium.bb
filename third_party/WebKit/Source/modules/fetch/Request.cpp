@@ -732,8 +732,7 @@ void Request::PopulateWebServiceWorkerRequest(
   web_request.SetURL(url);
 
   const FetchHeaderList* header_list = headers_->HeaderList();
-  for (size_t i = 0, size = header_list->size(); i < size; ++i) {
-    const FetchHeaderList::Header& header = header_list->Entry(i);
+  for (const auto& header : header_list->List()) {
     web_request.AppendHeader(header.first, header.second);
   }
 

@@ -205,16 +205,13 @@ void RecordResponseTypeForAdd(const Member<Response>& response) {
 
 bool VaryHeaderContainsAsterisk(const Response* response) {
   const FetchHeaderList* headers = response->headers()->HeaderList();
-  for (size_t i = 0; i < headers->size(); ++i) {
-    const FetchHeaderList::Header& header = headers->Entry(i);
-    if (header.first == "vary") {
-      Vector<String> fields;
-      header.second.Split(',', fields);
-      for (size_t j = 0; j < fields.size(); ++j) {
-        if (fields[j].StripWhiteSpace() == "*")
-          return true;
-      }
-    }
+  String varyHeader;
+  if (headers->Get("vary", varyHeader)) {
+    Vector<String> fields;
+    varyHeader.Split(',', fields);
+    return std::any_of(fields.begin(), fields.end(), [](const String& field) {
+      return field.StripWhiteSpace() == "*";
+    });
   }
   return false;
 }
