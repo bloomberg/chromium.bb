@@ -401,19 +401,19 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
-            // after FRE is complete.
-            if (!mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()) {
-                // Only show promos on the second oppurtunity. This is because we show FRE on the
-                // first oppurtunity, and we don't want to show such content back to back.
-                if (preferenceManager.getPromosSkippedOnFirstStart()) {
-                    // Data reduction promo should be temporarily suppressed if the sign in promo is
-                    // shown to avoid nagging users too much.
-                    if (!SigninPromoUtil.launchSigninPromoIfNeeded(this)) {
-                        DataReductionPromoScreen.launchDataReductionPromo(this);
-                    }
-                } else {
-                    preferenceManager.setPromosSkippedOnFirstStart(true);
+            // after FRE is complete. Native initialization can finish before the FRE flow is
+            // complete, and this will only show promos on the second opportunity. This is because
+            // the FRE is shown on the first opportunity, and we don't want to show such content
+            // back to back.
+            if (!mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
+                    && preferenceManager.getPromosSkippedOnFirstStart()) {
+                // Data reduction promo should be temporarily suppressed if the sign in promo is
+                // shown to avoid nagging users too much.
+                if (!SigninPromoUtil.launchSigninPromoIfNeeded(this)) {
+                    DataReductionPromoScreen.launchDataReductionPromo(this);
                 }
+            } else {
+                preferenceManager.setPromosSkippedOnFirstStart(true);
             }
 
             initializeUI();
