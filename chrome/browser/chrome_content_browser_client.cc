@@ -485,8 +485,19 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 #endif
 
 enum AppLoadedInTabSource {
+  // A platform app page tried to load one of its own URLs in a tab.
   APP_LOADED_IN_TAB_SOURCE_APP = 0,
+
+  // A platform app background page tried to load one of its own URLs in a tab.
   APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE,
+
+  // An extension or app tried to load a resource of a different platform app in
+  // a tab.
+  APP_LOADED_IN_TAB_SOURCE_OTHER_EXTENSION,
+
+  // A non-app and non-extension page tried to load a platform app in a tab.
+  APP_LOADED_IN_TAB_SOURCE_OTHER,
+
   APP_LOADED_IN_TAB_SOURCE_MAX
 };
 
@@ -889,6 +900,28 @@ void GetGuestViewDefaultContentSettingRules(
                                   CONTENT_SETTING_ALLOW,
                                   std::string(),
                                   incognito));
+}
+
+AppLoadedInTabSource ClassifyAppLoadedInTabSource(
+    const GURL& opener_url,
+    const extensions::Extension* target_platform_app) {
+  if (opener_url.SchemeIs(extensions::kExtensionScheme)) {
+    if (opener_url.host_piece() == target_platform_app->id()) {
+      // This platform app was trying to window.open() one of its own URLs.
+      if (opener_url ==
+          extensions::BackgroundInfo::GetBackgroundURL(target_platform_app)) {
+        // Source was the background page.
+        return APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE;
+      } else {
+        // Source was a different page inside the app.
+        return APP_LOADED_IN_TAB_SOURCE_APP;
+      }
+    }
+    // The forbidden app URL was being opened by a different app or extension.
+    return APP_LOADED_IN_TAB_SOURCE_OTHER_EXTENSION;
+  }
+  // The forbidden app URL was being opened by a non-extension page (e.g. http).
+  return APP_LOADED_IN_TAB_SOURCE_OTHER;
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -2489,20 +2522,14 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     InfoMap* map = io_data->GetExtensionInfoMap();
     const Extension* extension =
-        map->extensions().GetExtensionOrAppByURL(opener_url);
+        map->extensions().GetExtensionOrAppByURL(target_url);
     if (extension && extension->is_platform_app()) {
-      AppLoadedInTabSource source =
-          opener_top_level_frame_url ==
-                  extensions::BackgroundInfo::GetBackgroundURL(extension)
-              ? APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE
-              : APP_LOADED_IN_TAB_SOURCE_APP;
-      // TODO(lazyboy): Remove this UMA once the change below to disallow apps
-      // in tabs has settled in stable branch.
-      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLoadedInTab", source,
-                                APP_LOADED_IN_TAB_SOURCE_MAX);
-      // Platform apps and their background pages should not be able to call
-      // window.open() to load v2 apps in regular tab.
-      // Simply disallow window.open() calls in this case.
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.AppLoadedInTab",
+          ClassifyAppLoadedInTabSource(opener_url, extension),
+          APP_LOADED_IN_TAB_SOURCE_MAX);
+
+      // window.open() may not be used to load v2 apps in a regular tab.
       return false;
     }
   }
