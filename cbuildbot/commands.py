@@ -488,7 +488,7 @@ def UpdateBinhostJson(buildroot):
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
           extra_env=None, chrome_root=None, noretry=False,
-          chroot_args=None, event_file=None, run_goma=False):
+          chroot_args=None, event_file=None):
   """Wrapper around build_packages.
 
   Args:
@@ -508,8 +508,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     noretry: Do not retry package failures.
     chroot_args: The args to the chroot.
     event_file: File name that events will be logged to.
-    run_goma: Set ./build_package --run_goma option, which starts and stops
-      goma server in chroot while building packages.
   """
   cmd = ['./build_packages', '--board=%s' % board,
          '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
@@ -531,9 +529,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if noretry:
     cmd.append('--nobuildretry')
-
-  if run_goma:
-    cmd.append('--run_goma')
 
   if not chroot_args:
     chroot_args = []
