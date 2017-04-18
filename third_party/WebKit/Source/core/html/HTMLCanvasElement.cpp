@@ -360,6 +360,10 @@ void HTMLCanvasElement::RestoreCanvasMatrixClipStack(
     context_->RestoreCanvasMatrixClipStack(canvas);
 }
 
+void HTMLCanvasElement::SetNeedsCompositingUpdate() {
+  Element::SetNeedsCompositingUpdate();
+}
+
 void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   DCHECK(!dirty_rect_.IsEmpty());
   if (Is2d()) {

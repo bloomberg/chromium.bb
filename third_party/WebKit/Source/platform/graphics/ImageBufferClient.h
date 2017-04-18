@@ -42,6 +42,7 @@ class PLATFORM_EXPORT ImageBufferClient {
   virtual void NotifySurfaceInvalid() = 0;
   virtual void DidDisableAcceleration() = 0;
   virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const = 0;
+  virtual void SetNeedsCompositingUpdate() = 0;
 };
 
 }  // namespace blink

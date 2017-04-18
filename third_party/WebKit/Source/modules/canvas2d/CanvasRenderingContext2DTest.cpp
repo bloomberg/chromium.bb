@@ -10,10 +10,13 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/ImageBitmap.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/ImageData.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
+#include "core/layout/LayoutBoxModelObject.h"
 #include "core/loader/EmptyClients.h"
+#include "core/paint/PaintLayer.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
@@ -26,7 +29,9 @@
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
@@ -166,6 +171,9 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   FakeImageSource opaque_bitmap_;
   FakeImageSource alpha_bitmap_;
 
+  // Set this to override frame settings.
+  FrameSettingOverrideFunction override_settings_function_ = nullptr;
+
   StringOrCanvasGradientOrCanvasPattern& OpaqueGradient() {
     return wrap_gradients_->opaque_gradient_;
   }
@@ -200,7 +208,8 @@ void CanvasRenderingContext2DTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   dummy_page_holder_ =
-      DummyPageHolder::Create(IntSize(800, 600), &page_clients);
+      DummyPageHolder::Create(IntSize(800, 600), &page_clients, nullptr,
+                              override_settings_function_, nullptr);
   document_ = &dummy_page_holder_->GetDocument();
   document_->documentElement()->setInnerHTML(
       "<body><canvas id='c'></canvas></body>");
@@ -1383,6 +1392,72 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
       color_correct_rendering_runtime_flag);
   RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(
       color_correct_rendering_default_mode_runtime_flag);
+}
+
+void OverrideScriptEnabled(Settings& settings) {
+  // Simulate that we allow scripts, so that HTMLCanvasElement uses
+  // LayoutHTMLCanvas.
+  settings.SetScriptEnabled(true);
+}
+
+class CanvasRenderingContext2DTestWithTestingPlatform
+    : public CanvasRenderingContext2DTest {
+ protected:
+  void SetUp() override {
+    override_settings_function_ = &OverrideScriptEnabled;
+    platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings.
+    CanvasRenderingContext2DTest::SetUp();
+    GetDocument().View()->UpdateLayout();
+  }
+
+  void RunUntilIdle() { platform_->RunUntilIdle(); }
+
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform_;
+};
+
+// https://crbug.com/708445: When the Canvas2DLayerBridge hibernates or wakes up
+// from hibernation, the compositing reasons for the canvas element may change.
+// In these cases, the element should request a compositing update.
+TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
+       ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
+  CreateContext(kNonOpaque);
+  FakeGLES2Interface gl;
+  std::unique_ptr<FakeWebGraphicsContext3DProvider> context_provider(
+      new FakeWebGraphicsContext3DProvider(&gl));
+  IntSize size(300, 300);
+  RefPtr<Canvas2DLayerBridge> bridge =
+      MakeBridge(std::move(context_provider), size,
+                 Canvas2DLayerBridge::kEnableAcceleration);
+  // Force hibernatation to occur in an immediate task.
+  bridge->DontUseIdleSchedulingForTesting();
+  std::unique_ptr<Canvas2DImageBufferSurface> surface(
+      new Canvas2DImageBufferSurface(bridge, size));
+  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
+
+  EXPECT_TRUE(CanvasElement().Buffer()->IsAccelerated());
+
+  EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
+  PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
+  EXPECT_TRUE(layer);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Hide element to trigger hibernation (if enabled).
+  GetDocument().GetPage()->SetVisibilityState(kPageVisibilityStateHidden,
+                                              false);
+  RunUntilIdle();  // Run hibernation task.
+  // If enabled, hibernation should cause compositing update.
+  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
+            layer->NeedsCompositingInputsUpdate());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
+
+  // Wake up again, which should request a compositing update synchronously.
+  GetDocument().GetPage()->SetVisibilityState(kPageVisibilityStateVisible,
+                                              false);
+  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
+            layer->NeedsCompositingInputsUpdate());
 }
 
 }  // namespace blink

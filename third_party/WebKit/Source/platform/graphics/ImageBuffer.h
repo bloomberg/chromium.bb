@@ -176,6 +176,8 @@ class PLATFORM_EXPORT ImageBuffer {
   void DisableAcceleration();
   void SetSurface(std::unique_ptr<ImageBufferSurface>);
 
+  void SetNeedsCompositingUpdate();
+
   WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
 
  protected:

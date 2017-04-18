@@ -599,6 +599,11 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   UpdateGPUMemoryUsage();
 }
 
+void ImageBuffer::SetNeedsCompositingUpdate() {
+  if (client_)
+    client_->SetNeedsCompositingUpdate();
+}
+
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {

@@ -528,6 +528,9 @@ void Canvas2DLayerBridge::Hibernate() {
 #if USE_IOSURFACE_FOR_2D_CANVAS
   ClearCHROMIUMImageCache();
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
+  // shouldBeDirectComposited() may have changed.
+  if (image_buffer_)
+    image_buffer_->SetNeedsCompositingUpdate();
   logger_->DidStartHibernating();
 }
 
@@ -607,11 +610,15 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
                                      &copy_paint);
     hibernation_image_.reset();
 
-    if (image_buffer_)
+    if (image_buffer_) {
       image_buffer_->UpdateGPUMemoryUsage();
 
-    if (image_buffer_ && !is_deferral_enabled_)
-      image_buffer_->ResetCanvas(surface_paint_canvas_.get());
+      if (!is_deferral_enabled_)
+        image_buffer_->ResetCanvas(surface_paint_canvas_.get());
+
+      // shouldBeDirectComposited() may have changed.
+      image_buffer_->SetNeedsCompositingUpdate();
+    }
   }
 
   return surface_.get();

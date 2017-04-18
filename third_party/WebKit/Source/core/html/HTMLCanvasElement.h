@@ -204,6 +204,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void NotifySurfaceInvalid() override;
   void DidDisableAcceleration() override;
   void RestoreCanvasMatrixClipStack(PaintCanvas*) const override;
+  void SetNeedsCompositingUpdate() override;
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override;
