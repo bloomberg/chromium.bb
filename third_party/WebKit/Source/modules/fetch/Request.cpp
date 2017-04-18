@@ -581,7 +581,7 @@ String Request::Context() const {
     case WebURLRequest::kRequestContextXSLT:
       return "xslt";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -613,7 +613,7 @@ String Request::getReferrerPolicy() const {
       DCHECK(RuntimeEnabledFeatures::reducedReferrerGranularityEnabled());
       return "no-referrer-when-downgrade-origin-when-cross-origin";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -631,7 +631,7 @@ String Request::mode() const {
     case WebURLRequest::kFetchRequestModeNavigate:
       return "navigate";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -649,7 +649,7 @@ String Request::credentials() const {
     case WebURLRequest::kFetchCredentialsModePassword:
       return "password";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
@@ -683,7 +683,7 @@ String Request::redirect() const {
     case WebURLRequest::kFetchRedirectModeManual:
       return "manual";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

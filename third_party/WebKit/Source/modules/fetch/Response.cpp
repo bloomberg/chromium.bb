@@ -335,7 +335,7 @@ String Response::type() const {
     case FetchResponseData::kOpaqueRedirectType:
       return "opaqueredirect";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 

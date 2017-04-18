@@ -321,7 +321,7 @@ class DataConsumerHandleTestUtil {
           BLINK_FROM_HERE,
           CrossThreadBind(&Self::SignalDone, WrapPassRefPtr(this)));
     }
-    void DidGetReadable() override { ASSERT_NOT_REACHED(); }
+    void DidGetReadable() override { NOTREACHED(); }
 
     std::unique_ptr<WebDataConsumerHandle> handle_;
   };

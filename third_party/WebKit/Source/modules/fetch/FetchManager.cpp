@@ -382,7 +382,7 @@ void FetchManager::Loader::DidReceiveResponse(
     // origin.
     switch (request_->Mode()) {
       case WebURLRequest::kFetchRequestModeSameOrigin:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
       case WebURLRequest::kFetchRequestModeNoCORS:
         tainting = FetchRequestData::kOpaqueTainting;
