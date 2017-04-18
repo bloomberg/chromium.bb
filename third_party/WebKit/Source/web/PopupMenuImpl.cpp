@@ -274,6 +274,8 @@ void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
   int min_height = static_cast<int>(roundf(24 * scale_factor));
   PagePopupClient::AddString(String::Format("option, optgroup {"
                                             "padding-top: %dpx;"
+                                            "}\n"
+                                            "option {"
                                             "padding-bottom: %dpx;"
                                             "min-height: %dpx;"
                                             "display: flex;"
