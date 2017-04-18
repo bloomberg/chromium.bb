@@ -1145,6 +1145,7 @@ if (!is_android) {
       "//third_party/webgl/src/sdk/tests/",
 
       # For resolve the imports in content/test/gpu/run_gpu_test.py
+      "//tools/perf/core/",
       "//tools/perf/chrome_telemetry_build/",
 
       # From telemetry_gpu_unittests.isolate

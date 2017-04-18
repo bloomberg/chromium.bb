@@ -16,9 +16,9 @@ import re
 import sys
 import sets
 
-from chrome_telemetry_build import chromium_config
+from core import path_util
+path_util.AddTelemetryToPath()
 
-sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.core import discover
