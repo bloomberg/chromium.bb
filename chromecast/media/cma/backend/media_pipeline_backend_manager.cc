@@ -91,5 +91,17 @@ void MediaPipelineBackendManager::RemoveAllowVolumeFeedbackObserver(
   allow_volume_feedback_observers_->RemoveObserver(observer);
 }
 
+void MediaPipelineBackendManager::LogicalPause(MediaPipelineBackend* backend) {
+  MediaPipelineBackendWrapper* wrapper =
+      static_cast<MediaPipelineBackendWrapper*>(backend);
+  wrapper->LogicalPause();
+}
+
+void MediaPipelineBackendManager::LogicalResume(MediaPipelineBackend* backend) {
+  MediaPipelineBackendWrapper* wrapper =
+      static_cast<MediaPipelineBackendWrapper*>(backend);
+  wrapper->LogicalResume();
+}
+
 }  // namespace media
 }  // namespace chromecast

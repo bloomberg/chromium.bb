@@ -26,6 +26,9 @@ class MediaPipelineBackendWrapper : public MediaPipelineBackend {
                               MediaPipelineBackendManager* backend_manager);
   ~MediaPipelineBackendWrapper() override;
 
+  void LogicalPause();
+  void LogicalResume();
+
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
   VideoDecoder* CreateVideoDecoder() override;

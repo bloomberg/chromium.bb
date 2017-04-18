@@ -44,6 +44,14 @@ MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
   }
 }
 
+void MediaPipelineBackendWrapper::LogicalPause() {
+  SetPlaying(false);
+}
+
+void MediaPipelineBackendWrapper::LogicalResume() {
+  SetPlaying(true);
+}
+
 MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendWrapper::CreateAudioDecoder() {
   DCHECK(!have_audio_decoder_);

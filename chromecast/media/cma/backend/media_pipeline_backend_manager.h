@@ -58,6 +58,13 @@ class MediaPipelineBackendManager {
   void AddAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
   void RemoveAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
 
+  // Logically pause/resume a backend instance, without actually pausing or
+  // resuming it. This is used by multiroom output to avoid playback stutter on
+  // resume. |backend| must have been created via a call to this instance's
+  // CreateMediaPipelineBackend().
+  void LogicalPause(MediaPipelineBackend* backend);
+  void LogicalResume(MediaPipelineBackend* backend);
+
  private:
   friend class MediaPipelineBackendWrapper;
 
