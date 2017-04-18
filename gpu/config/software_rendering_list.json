@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.2",
+  "version": "13.3",
   "entries": [
     {
       "id": 1,
@@ -1491,6 +1491,92 @@
       "description": "MSAA and depth texture buggy on Adreno 3xx, also disable WebGL2",
       "cr_bugs": [449116, 698197],
       "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 141,
+      "description": "Disable use of D3D11/WebGL2 on Windows Vista and lower",
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "<=",
+          "value": "6.0"
+        }
+      },
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 142,
+      "description": "Disable D3D11/WebGL2 on older nVidia drivers",
+      "cr_bugs": [349929],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "<=",
+        "value": "8.17.12.6973"
+      },
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 143,
+      "description": "Disable use of D3D11/WebGL2 on Matrox video cards",
+      "cr_bugs": [395861],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x102b",
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 144,
+      "description": "Disable use of D3D11/WebGL2 on older AMD drivers",
+      "cr_bugs": [402134],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_date": {
+        "op": "<",
+        "value": "2011.1"
+      },
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 145,
+      "description": "Old Intel drivers cannot reliably support D3D11/WebGL2",
+      "cr_bugs": [363721],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "8.16"
+      },
+      "features": [
+        "webgl2"
+      ]
+    },
+    {
+      "id": 146,
+      "description": "Disable D3D11/WebGL2 on AMD switchable graphics",
+      "cr_bugs": [451420],
+      "os": {
+        "type": "win"
+      },
+      "multi_gpu_style": "amd_switchable",
       "features": [
         "webgl2"
       ]
