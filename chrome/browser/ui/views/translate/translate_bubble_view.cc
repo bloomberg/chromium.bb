@@ -189,6 +189,10 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
   HandleButtonPressed(static_cast<ButtonID>(sender->id()));
 }
 
+views::View* TranslateBubbleView::GetInitiallyFocusedView() {
+  return GetCurrentView()->GetNextFocusableView();
+}
+
 bool TranslateBubbleView::ShouldShowCloseButton() const {
   return Use2016Q2UI();
 }

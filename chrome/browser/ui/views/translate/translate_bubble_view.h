@@ -87,6 +87,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetDelegate methods.
+  View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
 
