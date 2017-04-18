@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying information about a network
- * in a list or summary based on ONC state properties.
+ * in a list based on ONC state properties.
  */
 
 Polymer({
@@ -24,19 +24,6 @@ Polymer({
     networkState: {
       type: Object,
       observer: 'networkStateChanged_',
-    },
-
-    /**
-     * Determines how the list item will be displayed:
-     *  True - Displays the network icon (with strength) and name
-     *  False - The element is a stand-alone item (e.g. part of a summary)
-     *      and displays the name of the network type plus the network name
-     *      and connection state.
-     */
-    isListItem: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
     },
 
     /** Whether to show any buttons for network items. Defaults to false. */
@@ -61,7 +48,7 @@ Polymer({
       type: String,
       notify: true,
       reflectToAttribute: true,
-      computed: 'getItemName_(item, isListItem)',
+      computed: 'getItemName_(item)',
     },
   },
 
@@ -99,9 +86,7 @@ Polymer({
       return name;
     }
     var network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
-    if (this.isListItem)
-      return CrOnc.getNetworkName(network);
-    return CrOncStrings['OncType' + network.Type];
+    return CrOnc.getNetworkName(network);
   },
 
   /**
@@ -110,16 +95,8 @@ Polymer({
    */
   isStateTextVisible_: function() {
     return !!this.networkState &&
-        (!this.isListItem || (this.networkState.ConnectionState !=
-                              CrOnc.ConnectionState.NOT_CONNECTED));
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isStateTextConnected_: function() {
-    return this.isListItem && this.isConnected_();
+        (this.networkState.ConnectionState !=
+         CrOnc.ConnectionState.NOT_CONNECTED);
   },
 
   /**
@@ -130,41 +107,12 @@ Polymer({
   getNetworkStateText_: function() {
     if (!this.isStateTextVisible_())
       return '';
-    var network = this.networkState;
-    var state = network.ConnectionState;
-    var name = CrOnc.getNetworkName(network);
-    if (this.isListItem) {
-      if (state == CrOnc.ConnectionState.CONNECTED)
-        return CrOncStrings.networkListItemConnected;
-      if (state == CrOnc.ConnectionState.CONNECTING)
-        return CrOncStrings.networkListItemConnecting;
-      return '';
-    }
-    if (name && state)
-      return this.getConnectionStateText_(state, name);
-    return CrOncStrings.networkDisabled;
-  },
-
-  /**
-   * Returns the appropriate connection state text.
-   * @param {CrOnc.ConnectionState} state The connection state.
-   * @param {string} name The name of the network.
-   * @return {string}
-   * @private
-   */
-  getConnectionStateText_: function(state, name) {
-    switch (state) {
-      case CrOnc.ConnectionState.CONNECTED:
-        return name;
-      case CrOnc.ConnectionState.CONNECTING:
-        if (name)
-          return CrOncStrings.networkListItemConnectingTo.replace('$1', name);
-        return CrOncStrings.networkListItemConnecting;
-      case CrOnc.ConnectionState.NOT_CONNECTED:
-        return CrOncStrings.networkListItemNotConnected;
-    }
-    assertNotReached();
-    return state;
+    var state = this.networkState.ConnectionState;
+    if (state == CrOnc.ConnectionState.CONNECTED)
+      return CrOncStrings.networkListItemConnected;
+    if (state == CrOnc.ConnectionState.CONNECTING)
+      return CrOncStrings.networkListItemConnecting;
+    return '';
   },
 
   /**

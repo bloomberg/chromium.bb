@@ -25,7 +25,6 @@
  *   OncTypeVPN: string,
  *   OncTypeWiFi: string,
  *   OncTypeWiMAX: string,
- *   networkDisabled: string,
  *   networkListItemConnected: string,
  *   networkListItemConnecting: string,
  *   networkListItemConnectingTo: string,

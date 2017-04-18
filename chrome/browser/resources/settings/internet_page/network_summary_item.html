@@ -1,5 +1,5 @@
-<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
-<link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -12,6 +12,10 @@
 <dom-module id="network-summary-item">
   <template>
     <style include="settings-shared">
+      cr-network-icon {
+        -webkit-padding-end: var(--settings-box-row-padding);
+      }
+
       network-siminfo {
         padding: 0 var(--settings-box-row-padding);
       }
@@ -22,21 +26,40 @@
         flex: auto;
       }
 
-      #details[no-flex] {
-        flex: none;
+      #networkName {
+        color: #333;
+        font-weight: 500;
+      }
+
+      #networkState {
+        color: var(--paper-grey-600);
+        font-size: inherit;
+        font-weight: 400;
       }
     </style>
     <div actionable class="settings-box two-line" on-tap="onShowDetailsTap_">
       <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
-        <cr-network-list-item item="[[activeNetworkState]]" class="flex">
-        </cr-network-list-item>
+        <cr-network-icon network-state="[[activeNetworkState]]">
+        </cr-network-icon>
+        <div class="flex">
+          <div id="networkName">[[getNetworkName_(activeNetworkState)]]</div>
+          <div id="networkState">
+            [[getNetworkStateText_(activeNetworkState, deviceState)]]
+          </div>
+        </div>
       </div>
 
       <template is="dom-if" if="[[showSimInfo_(deviceState)]]">
-        <network-siminfo editable class="flex"
+        <network-siminfo editable
             network-properties="[[getCellularState_(deviceState)]]"
             networking-private="[[networkingPrivate]]">
         </network-siminfo>
+      </template>
+
+      <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
+        <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
+            activeNetworkState.Source)]]">
+        </cr-policy-indicator>
       </template>
 
       <template is="dom-if" if="[[showDetailsIsVisible_(deviceState)]]">

@@ -31,7 +31,6 @@ suite('Internet', function() {
       OncTypeVPN: 'OncTypeVPN',
       OncTypeWiFi: 'OncTypeWiFi',
       OncTypeWiMAX: 'OncTypeWiMAX',
-      networkDisabled: 'networkDisabled',
       networkListItemConnected: 'networkListItemConnected',
       networkListItemConnecting: 'networkListItemConnecting',
       networkListItemConnectingTo: 'networkListItemConnectingTo',

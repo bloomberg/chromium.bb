@@ -114,7 +114,6 @@ Polymer({
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
       OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
-      networkDisabled: loadTimeData.getString('networkDisabled'),
       networkListItemConnected:
           loadTimeData.getString('networkListItemConnected'),
       networkListItemConnecting:

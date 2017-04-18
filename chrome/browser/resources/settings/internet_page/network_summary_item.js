@@ -13,7 +13,7 @@ var DeviceStateProperties;
 Polymer({
   is: 'network-summary-item',
 
-  behaviors: [I18nBehavior],
+  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
 
   properties: {
     /**
@@ -44,6 +44,60 @@ Polymer({
      * @type {!NetworkingPrivate}
      */
     networkingPrivate: Object,
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getNetworkName_: function() {
+    return CrOncStrings['OncType' + this.activeNetworkState.Type];
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getNetworkStateText_: function() {
+    var network = this.activeNetworkState;
+    var state = network.ConnectionState;
+    var name = CrOnc.getNetworkName(network);
+    if (state)
+      return this.getConnectionStateText_(state, name);
+    if (this.deviceIsEnabled_(this.deviceState))
+      return CrOncStrings.networkListItemNotConnected;
+    return this.i18n('deviceOff');
+  },
+
+  /**
+   * @param {CrOnc.ConnectionState} state
+   * @param {string} name
+   * @return {string}
+   * @private
+   */
+  getConnectionStateText_: function(state, name) {
+    switch (state) {
+      case CrOnc.ConnectionState.CONNECTED:
+        return name;
+      case CrOnc.ConnectionState.CONNECTING:
+        if (name)
+          return CrOncStrings.networkListItemConnectingTo.replace('$1', name);
+        return CrOncStrings.networkListItemConnecting;
+      case CrOnc.ConnectionState.NOT_CONNECTED:
+        return CrOncStrings.networkListItemNotConnected;
+    }
+    assertNotReached();
+    return state;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showPolicyIndicator_: function() {
+    var network = this.activeNetworkState;
+    return network.ConnectionState == CrOnc.ConnectionState.CONNECTED ||
+        this.isPolicySource(network.Source);
   },
 
   /**

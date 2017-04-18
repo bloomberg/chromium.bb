@@ -34,11 +34,6 @@
         justify-content: center;
       }
 
-      #itemName:not([is-list-item]) {
-        font-weight: 500;
-        color: #333;
-      }
-
       #networkStateText {
         color: var(--paper-grey-600);
         font-size: inherit;
@@ -68,23 +63,20 @@
       }
     </style>
     <div id="divOuter"
-        class="layout horizontal center flex" actionable$="[[isListItem]]">
+        class="layout horizontal center flex" actionable>
       <template is="dom-if" if="[[networkState]]">
-        <cr-network-icon is-list-item="[[isListItem]]"
-            network-state="[[networkState]]">
+        <cr-network-icon is-list-item network-state="[[networkState]]">
         </cr-network-icon>
       </template>
       <template is="dom-if" if="[[item.polymerIcon]]">
         <iron-icon icon="[[item.polymerIcon]]"></iron-icon>
       </template>
       <div id="divText" class="layout horizontal flex">
-        <div id="itemName" is-list-item$="[[isListItem]]">
-          [[ariaLabel]]
-        </div>
+        <div>[[ariaLabel]]</div>
         <div id="networkStateText"
-            hidden$="[[!isStateTextVisible_(networkState, isListItem)]]"
-            connected$="[[isStateTextConnected_(networkState, isListItem)]]">
-          [[getNetworkStateText_(networkState, isListItem)]]
+            hidden$="[[!isStateTextVisible_(networkState)]]"
+            connected$="[[isConnected_(networkState)]]">
+          [[getNetworkStateText_(networkState)]]
         </div>
       </div>
       <template is="dom-if" if="[[isPolicySource(networkState.Source)]]">

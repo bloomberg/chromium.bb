@@ -135,6 +135,7 @@
       'target_name': 'network_summary_item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_network_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(INTERFACES_GYP):networking_private_interface',
