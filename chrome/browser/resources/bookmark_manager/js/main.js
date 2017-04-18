@@ -44,11 +44,6 @@ var performGlobalUndo;
 var linkController;
 
 /**
- * New Windows are not allowed in Windows 8 metro mode.
- */
-var canOpenNewWindows = true;
-
-/**
  * Incognito mode availability can take the following values: ,
  *   - 'enabled' for when both normal and incognito modes are available;
  *   - 'disabled' for when incognito mode is disabled;
@@ -577,7 +572,7 @@ function canExecuteShared(e, isSearch) {
       updateOpenCommand(e, command,
           'open_in_new_window', 'open_all_new_window',
           // Disabled when incognito is forced.
-          incognitoModeAvailability == 'forced' || !canOpenNewWindows);
+          incognitoModeAvailability == 'forced');
       break;
 
     case 'open-incognito-window-command':
@@ -1534,10 +1529,6 @@ function continueInitializeBookmarkManager(localizedStrings) {
     // TODO(rustema): propagate policy value to the bookmark manager when it
     // changes.
     incognitoModeAvailability = result;
-  });
-
-  chrome.bookmarkManagerPrivate.canOpenNewWindows(function(result) {
-    canOpenNewWindows = result;
   });
 
   cr.ui.FocusOutlineManager.forDocument(document);

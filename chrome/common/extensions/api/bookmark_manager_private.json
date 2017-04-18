@@ -209,16 +209,6 @@
         ]
       },
       {
-        "name": "canOpenNewWindows",
-        "type": "function",
-        "description": "Whether bookmarks can be opened in new windows.",
-        "parameters": [
-          {"type": "function", "name": "callback", "parameters": [
-            {"name": "result", "type": "boolean"}
-          ]}
-        ]
-      },
-      {
         "name": "removeTrees",
         "type": "function",
         "description": "Recursively removes list of bookmarks nodes.",

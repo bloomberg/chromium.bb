@@ -330,19 +330,6 @@ class BookmarkManagerPrivateUpdateMetaInfoFunction
   bool RunOnReady() override;
 };
 
-class BookmarkManagerPrivateCanOpenNewWindowsFunction
-    : public extensions::BookmarksFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.canOpenNewWindows",
-                             BOOKMARKMANAGERPRIVATE_CANOPENNEWWINDOWS)
-
- protected:
-  ~BookmarkManagerPrivateCanOpenNewWindowsFunction() override {}
-
-  // ExtensionFunction:
-  bool RunOnReady() override;
-};
-
 class BookmarkManagerPrivateRemoveTreesFunction
     : public extensions::BookmarksFunction {
  public:

@@ -796,12 +796,6 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
   return true;
 }
 
-bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunOnReady() {
-  bool can_open_new_windows = true;
-  SetResult(base::MakeUnique<base::Value>(can_open_new_windows));
-  return true;
-}
-
 bool BookmarkManagerPrivateRemoveTreesFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
