@@ -130,7 +130,11 @@ void EventEmitter::Dispatch(gin::Arguments* arguments) {
   v8::HandleScope handle_scope(arguments->isolate());
   v8::Local<v8::Context> context =
       arguments->isolate()->GetCurrentContext();
-  std::vector<v8::Local<v8::Value>> v8_args = arguments->GetAll();
+  std::vector<v8::Local<v8::Value>> v8_args;
+  if (arguments->Length() > 0) {
+    // Converting to v8::Values should never fail.
+    CHECK(arguments->GetRemaining(&v8_args));
+  }
   Fire(context, &v8_args, nullptr);
 }
 
