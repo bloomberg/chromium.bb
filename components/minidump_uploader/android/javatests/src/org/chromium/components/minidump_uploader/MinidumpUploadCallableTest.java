@@ -111,6 +111,28 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         }
     }
 
+    private static class ErrorCodeHttpUrlConnectionFactory implements HttpURLConnectionFactory {
+        private final int mErrorCode;
+
+        ErrorCodeHttpUrlConnectionFactory(int errorCode) {
+            mErrorCode = errorCode;
+        }
+
+        @Override
+        public HttpURLConnection createHttpURLConnection(String url) {
+            try {
+                return new TestHttpURLConnection(new URL(url)) {
+                    @Override
+                    public int getResponseCode() {
+                        return mErrorCode;
+                    }
+                };
+            } catch (IOException e) {
+                return null;
+            }
+        }
+    }
+
     private static class FailHttpURLConnectionFactory implements HttpURLConnectionFactory {
         @Override
         public HttpURLConnection createHttpURLConnection(String url) {
@@ -391,6 +413,33 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
             stream.flush();
         } finally {
             if (stream != null) stream.close();
+        }
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testReceivingErrorCodes() throws Exception {
+        CrashReportingPermissionManager testPermManager =
+                new MockCrashReportingPermissionManager() {
+                    {
+                        mIsInSample = true;
+                        mIsUserPermitted = true;
+                        mIsNetworkAvailable = true;
+                        mIsEnabledForTests = false;
+                    }
+                };
+
+        final int[] errorCodes = {400, 401, 403, 404, 500};
+
+        for (int n = 0; n < errorCodes.length; n++) {
+            HttpURLConnectionFactory httpURLConnectionFactory =
+                    new ErrorCodeHttpUrlConnectionFactory(errorCodes[n]);
+            MinidumpUploadCallable minidumpUploadCallable =
+                    new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
+            assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
+                    minidumpUploadCallable.call().intValue());
+            // Note that mTestUpload is not renamed on failure - so we can try to upload that file
+            // several times during the same test.
         }
     }
 
