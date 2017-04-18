@@ -499,9 +499,17 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, BadXhtml) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
+  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
+                                     1);
   histogram_tester_.ExpectBucketCount(
       page_load_metrics::internal::kErrorEvents,
       page_load_metrics::ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT, 1);
 }
 
 // Test code that aborts provisional navigations.

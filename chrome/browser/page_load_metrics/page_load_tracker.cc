@@ -60,6 +60,7 @@ const char kPageLoadCompletedAfterAppBackground[] =
 const char kPageLoadStartedInForeground[] =
     "PageLoad.Internal.NavigationStartedInForeground";
 const char kPageLoadPrerender[] = "PageLoad.Internal.Prerender";
+const char kPageLoadTimingStatus[] = "PageLoad.Internal.PageLoadTimingStatus";
 
 }  // namespace internal
 
@@ -126,14 +127,15 @@ bool EventsInOrder(const base::Optional<base::TimeDelta>& first,
   return first && first <= second;
 }
 
-bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
+internal::PageLoadTimingStatus IsValidPageLoadTiming(
+    const PageLoadTiming& timing) {
   if (timing.IsEmpty())
-    return false;
+    return internal::INVALID_EMPTY_TIMING;
 
   // If we have a non-empty timing, it should always have a navigation start.
   if (timing.navigation_start.is_null()) {
-    NOTREACHED() << "Received null navigation_start.";
-    return false;
+    LOG(ERROR) << "Received null navigation_start.";
+    return internal::INVALID_NULL_NAVIGATION_START;
   }
 
   // Verify proper ordering between the various timings.
@@ -141,16 +143,16 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
   if (!EventsInOrder(timing.response_start, timing.parse_timing.parse_start)) {
     // We sometimes get a zero response_start with a non-zero parse start. See
     // crbug.com/590212.
-    NOTREACHED() << "Invalid response_start " << timing.response_start
-                 << " for parse_start " << timing.parse_timing.parse_start;
-    return false;
+    LOG(ERROR) << "Invalid response_start " << timing.response_start
+               << " for parse_start " << timing.parse_timing.parse_start;
+    return internal::INVALID_ORDER_RESPONSE_START_PARSE_START;
   }
 
   if (!EventsInOrder(timing.parse_timing.parse_start,
                      timing.parse_timing.parse_stop)) {
-    NOTREACHED() << "Invalid parse_start " << timing.parse_timing.parse_start
-                 << " for parse_stop " << timing.parse_timing.parse_stop;
-    return false;
+    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing.parse_start
+               << " for parse_stop " << timing.parse_timing.parse_stop;
+    return internal::INVALID_ORDER_PARSE_START_PARSE_STOP;
   }
 
   if (timing.parse_timing.parse_stop) {
@@ -159,68 +161,68 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
         timing.parse_timing.parse_start.value();
     if (timing.parse_timing.parse_blocked_on_script_load_duration >
         parse_duration) {
-      NOTREACHED() << "Invalid parse_blocked_on_script_load_duration "
-                   << timing.parse_timing.parse_blocked_on_script_load_duration
-                   << " for parse duration " << parse_duration;
-      return false;
+      LOG(ERROR) << "Invalid parse_blocked_on_script_load_duration "
+                 << timing.parse_timing.parse_blocked_on_script_load_duration
+                 << " for parse duration " << parse_duration;
+      return internal::INVALID_SCRIPT_LOAD_LONGER_THAN_PARSE;
     }
     if (timing.parse_timing.parse_blocked_on_script_execution_duration >
         parse_duration) {
-      NOTREACHED()
+      LOG(ERROR)
           << "Invalid parse_blocked_on_script_execution_duration "
           << timing.parse_timing.parse_blocked_on_script_execution_duration
           << " for parse duration " << parse_duration;
-      return false;
+      return internal::INVALID_SCRIPT_EXEC_LONGER_THAN_PARSE;
     }
   }
 
   if (timing.parse_timing
           .parse_blocked_on_script_load_from_document_write_duration >
       timing.parse_timing.parse_blocked_on_script_load_duration) {
-    NOTREACHED()
+    LOG(ERROR)
         << "Invalid parse_blocked_on_script_load_from_document_write_duration "
         << timing.parse_timing
                .parse_blocked_on_script_load_from_document_write_duration
         << " for parse_blocked_on_script_load_duration "
         << timing.parse_timing.parse_blocked_on_script_load_duration;
-    return false;
+    return internal::INVALID_SCRIPT_LOAD_DOC_WRITE_LONGER_THAN_SCRIPT_LOAD;
   }
 
   if (timing.parse_timing
           .parse_blocked_on_script_execution_from_document_write_duration >
       timing.parse_timing.parse_blocked_on_script_execution_duration) {
-    NOTREACHED()
+    LOG(ERROR)
         << "Invalid "
            "parse_blocked_on_script_execution_from_document_write_duration "
         << timing.parse_timing
                .parse_blocked_on_script_execution_from_document_write_duration
         << " for parse_blocked_on_script_execution_duration "
         << timing.parse_timing.parse_blocked_on_script_execution_duration;
-    return false;
+    return internal::INVALID_SCRIPT_EXEC_DOC_WRITE_LONGER_THAN_SCRIPT_EXEC;
   }
 
   if (!EventsInOrder(timing.parse_timing.parse_stop,
                      timing.document_timing.dom_content_loaded_event_start)) {
-    NOTREACHED() << "Invalid parse_stop " << timing.parse_timing.parse_stop
-                 << " for dom_content_loaded_event_start "
-                 << timing.document_timing.dom_content_loaded_event_start;
-    return false;
+    LOG(ERROR) << "Invalid parse_stop " << timing.parse_timing.parse_stop
+               << " for dom_content_loaded_event_start "
+               << timing.document_timing.dom_content_loaded_event_start;
+    return internal::INVALID_ORDER_PARSE_STOP_DOM_CONTENT_LOADED;
   }
 
   if (!EventsInOrder(timing.document_timing.dom_content_loaded_event_start,
                      timing.document_timing.load_event_start)) {
-    NOTREACHED() << "Invalid dom_content_loaded_event_start "
-                 << timing.document_timing.dom_content_loaded_event_start
-                 << " for load_event_start "
-                 << timing.document_timing.load_event_start;
-    return false;
+    LOG(ERROR) << "Invalid dom_content_loaded_event_start "
+               << timing.document_timing.dom_content_loaded_event_start
+               << " for load_event_start "
+               << timing.document_timing.load_event_start;
+    return internal::INVALID_ORDER_DOM_CONTENT_LOADED_LOAD;
   }
 
   if (!EventsInOrder(timing.parse_timing.parse_start,
                      timing.document_timing.first_layout)) {
-    NOTREACHED() << "Invalid parse_start " << timing.parse_timing.parse_start
-                 << " for first_layout " << timing.document_timing.first_layout;
-    return false;
+    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing.parse_start
+               << " for first_layout " << timing.document_timing.first_layout;
+    return internal::INVALID_ORDER_PARSE_START_FIRST_LAYOUT;
   }
 
   if (!EventsInOrder(timing.document_timing.first_layout,
@@ -230,42 +232,42 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     DLOG(ERROR) << "Invalid first_layout "
                 << timing.document_timing.first_layout << " for first_paint "
                 << timing.paint_timing.first_paint;
-    return false;
+    return internal::INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing.first_paint,
                      timing.paint_timing.first_text_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
-                 << " for first_text_paint "
-                 << timing.paint_timing.first_text_paint;
-    return false;
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+               << " for first_text_paint "
+               << timing.paint_timing.first_text_paint;
+    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing.first_paint,
                      timing.paint_timing.first_image_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
-                 << " for first_image_paint "
-                 << timing.paint_timing.first_image_paint;
-    return false;
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+               << " for first_image_paint "
+               << timing.paint_timing.first_image_paint;
+    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing.first_paint,
                      timing.paint_timing.first_contentful_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
-                 << " for first_contentful_paint "
-                 << timing.paint_timing.first_contentful_paint;
-    return false;
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+               << " for first_contentful_paint "
+               << timing.paint_timing.first_contentful_paint;
+    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing.first_paint,
                      timing.paint_timing.first_meaningful_paint)) {
-    NOTREACHED() << "Invalid first_paint " << timing.paint_timing.first_paint
-                 << " for first_meaningful_paint "
-                 << timing.paint_timing.first_meaningful_paint;
-    return false;
+    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing.first_paint
+               << " for first_meaningful_paint "
+               << timing.paint_timing.first_meaningful_paint;
+    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT;
   }
 
-  return true;
+  return internal::VALID;
 }
 
 void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
@@ -589,7 +591,10 @@ void PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_BEHAVIOR_DESCENDENT);
     return;
   }
-  if (!IsValidPageLoadTiming(new_timing)) {
+  internal::PageLoadTimingStatus status = IsValidPageLoadTiming(new_timing);
+  UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingStatus, status,
+                            internal::LAST_PAGE_LOAD_TIMING_STATUS);
+  if (status != internal::VALID) {
     RecordInternalError(ERR_BAD_TIMING_IPC_INVALID_TIMING);
     return;
   }

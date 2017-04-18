@@ -17,6 +17,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -153,6 +154,11 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     AttachObserver();
+  }
+
+  void NavigateToUntrackedUrl() {
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL(url::kAboutBlankURL));
   }
 
   void SimulateTimingUpdate(const PageLoadTiming& timing) {
@@ -349,6 +355,81 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
+  PageLoadTiming timing;
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  NavigateToUntrackedUrl();
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(1, CountCompleteTimingReported());
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_EMPTY_TIMING, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
+  PageLoadTiming timing;
+  timing.parse_timing.parse_start = base::TimeDelta::FromMilliseconds(1);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  NavigateToUntrackedUrl();
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(1, CountCompleteTimingReported());
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_NULL_NAVIGATION_START, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing.parse_stop = base::TimeDelta::FromMilliseconds(1);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  NavigateToUntrackedUrl();
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(1, CountCompleteTimingReported());
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_ORDER_PARSE_START_PARSE_STOP, 1);
 }
 
 TEST_F(MetricsWebContentsObserverTest, NotInMainError) {

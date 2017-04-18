@@ -42,6 +42,49 @@ extern const char kAbortChainSizeNewNavigation[];
 extern const char kAbortChainSizeNoCommit[];
 extern const char kAbortChainSizeSameURL[];
 extern const char kPageLoadCompletedAfterAppBackground[];
+extern const char kPageLoadTimingStatus[];
+
+// Used to track the status of PageLoadTimings received from the render process.
+//
+// If you add elements to this enum, make sure you update the enum value in
+// histograms.xml. Only add elements to the end to prevent inconsistencies
+// between versions.
+enum PageLoadTimingStatus {
+  // The PageLoadTiming is valid (all data within the PageLoadTiming is
+  // consistent with expectations).
+  VALID,
+
+  // All remaining status codes are for invalid PageLoadTimings.
+
+  // The PageLoadTiming was empty.
+  INVALID_EMPTY_TIMING,
+
+  // The PageLoadTiming had a null navigation_start.
+  INVALID_NULL_NAVIGATION_START,
+
+  // Script load or execution durations in the PageLoadTiming were too long.
+  INVALID_SCRIPT_LOAD_LONGER_THAN_PARSE,
+  INVALID_SCRIPT_EXEC_LONGER_THAN_PARSE,
+  INVALID_SCRIPT_LOAD_DOC_WRITE_LONGER_THAN_SCRIPT_LOAD,
+  INVALID_SCRIPT_EXEC_DOC_WRITE_LONGER_THAN_SCRIPT_EXEC,
+
+  // The order of two events in the PageLoadTiming was invalid. Either the first
+  // wasn't present when the second was present, or the second was reported as
+  // happening before the first.
+  INVALID_ORDER_RESPONSE_START_PARSE_START,
+  INVALID_ORDER_PARSE_START_PARSE_STOP,
+  INVALID_ORDER_PARSE_STOP_DOM_CONTENT_LOADED,
+  INVALID_ORDER_DOM_CONTENT_LOADED_LOAD,
+  INVALID_ORDER_PARSE_START_FIRST_LAYOUT,
+  INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT,
+  INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT,
+  INVALID_ORDER_FIRST_PAINT_FIRST_IMAGE_PAINT,
+  INVALID_ORDER_FIRST_PAINT_FIRST_CONTENTFUL_PAINT,
+  INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
+
+  // New values should be added before this final entry.
+  LAST_PAGE_LOAD_TIMING_STATUS
+};
 
 }  // namespace internal
 
