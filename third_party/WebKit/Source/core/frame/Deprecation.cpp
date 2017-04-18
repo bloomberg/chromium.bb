@@ -385,13 +385,6 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
       return replacedBy("VREyeParameters.offset",
                         "view matrices provided by VRFrameData");
 
-    case UseCounter::
-        kServiceWorkerRespondToNavigationRequestWithRedirectedResponse:
-      return String::Format(
-          "The service worker responded to the navigation request with a "
-          "redirected response. This will result in an error in %s.",
-          milestoneString(M59));
-
     case UseCounter::kCSSSelectorInternalMediaControlsOverlayCastButton:
       return willBeRemoved(
           "-internal-media-controls-overlay-cast-button selector", M59,

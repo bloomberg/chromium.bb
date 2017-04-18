@@ -458,19 +458,6 @@ void DocumentLoader::FinishedLoading(double finish_time) {
   application_cache_host_->FinishedLoadingMainResource();
   EndWriting();
   ClearMainResourceHandle();
-
-  // Shows the deprecation message and measures the impact of the new security
-  // restriction which disallows responding to navigation requests with
-  // redirected responses in the service worker.
-  // TODO(horo): Remove this when we actually introduce the restriction in
-  // RespondWithObserver.
-  if (response_.WasFetchedViaServiceWorker() &&
-      response_.UrlListViaServiceWorker().size() > 1) {
-    Deprecation::CountDeprecation(
-        frame_,
-        UseCounter::
-            kServiceWorkerRespondToNavigationRequestWithRedirectedResponse);
-  }
 }
 
 bool DocumentLoader::RedirectReceived(
