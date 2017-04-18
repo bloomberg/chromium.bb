@@ -382,7 +382,7 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
 
     case UseCounter::kCSSSelectorInternalMediaControlsOverlayCastButton:
       return willBeRemoved(
-          "-internal-media-controls-overlay-cast-button selector", M59,
+          "-internal-media-controls-overlay-cast-button selector", M61,
           "5714245488476160");
 
     case UseCounter::kCSSZoomReset:
