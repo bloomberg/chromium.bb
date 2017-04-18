@@ -16,9 +16,8 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -128,6 +127,35 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
+}
+
+#pragma mark UICollectionViewDataSource
+
+- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
+                 cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
+  CollectionViewModel* model = self.collectionViewModel;
+
+  UICollectionViewCell* cell =
+      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+
+  NSInteger itemType = [model itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeHeader: {
+      if ([cell isKindOfClass:[PaymentsTextCell class]]) {
+        PaymentsTextCell* textCell =
+            base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
+        textCell.textLabel.textColor =
+            self.dataSource.state == PaymentRequestSelectorStateError
+                ? [[MDCPalette cr_redPalette] tint600]
+                : [[MDCPalette greyPalette] tint600];
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  return cell;
 }
 
 #pragma mark UICollectionViewDelegate

@@ -38,7 +38,8 @@ typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {
 // The selectable items to display in the collection.
 - (NSArray<CollectionViewItem<PaymentsHasAccessoryType>*>*)selectableItems;
 
-// The selectable item at |index| in the collection.
+// The selectable item at |index| in the collection. |index| should be smaller
+// than self.selectableItems.count.
 - (CollectionViewItem<PaymentsHasAccessoryType>*)selectableItemAtIndex:
     (NSUInteger)index;
 

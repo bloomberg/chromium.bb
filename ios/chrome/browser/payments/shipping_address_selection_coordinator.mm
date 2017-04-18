@@ -6,8 +6,11 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/payments/core/strings_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "ios/chrome/browser/payments/payment_request_selector_view_controller.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#include "ios/chrome/browser/payments/shipping_address_selection_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,12 +18,16 @@
 
 namespace {
 using ::payment_request_util::GetShippingAddressSelectorErrorMessage;
+using ::payments::GetShippingAddressSectionString;
+using ::payments::GetShippingAddressSelectorInfoMessage;
 }  // namespace
 
 @interface ShippingAddressSelectionCoordinator ()
 
 @property(nonatomic, strong)
-    ShippingAddressSelectionViewController* viewController;
+    PaymentRequestSelectorViewController* viewController;
+
+@property(nonatomic, strong) ShippingAddressSelectionMediator* mediator;
 
 // Called when the user selects a shipping address. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
@@ -36,71 +43,89 @@ using ::payment_request_util::GetShippingAddressSelectorErrorMessage;
 @synthesize paymentRequest = _paymentRequest;
 @synthesize delegate = _delegate;
 @synthesize viewController = _viewController;
+@synthesize mediator = _mediator;
 
 - (void)start {
-  _viewController = [[ShippingAddressSelectionViewController alloc]
-      initWithPaymentRequest:_paymentRequest];
-  [_viewController setDelegate:self];
-  [_viewController loadModel];
+  self.mediator = [[ShippingAddressSelectionMediator alloc]
+      initWithPaymentRequest:self.paymentRequest];
+  self.mediator.headerText =
+      self.paymentRequest->shipping_options().empty()
+          ? base::SysUTF16ToNSString(GetShippingAddressSelectorInfoMessage(
+                self.paymentRequest->shipping_type()))
+          : nil;
+
+  self.viewController = [[PaymentRequestSelectorViewController alloc] init];
+  self.viewController.title = base::SysUTF16ToNSString(
+      GetShippingAddressSectionString(self.paymentRequest->shipping_type()));
+  self.viewController.delegate = self;
+  self.viewController.dataSource = self.mediator;
+  [self.viewController loadModel];
 
   DCHECK(self.baseViewController.navigationController);
   [self.baseViewController.navigationController
-      pushViewController:_viewController
+      pushViewController:self.viewController
                 animated:YES];
 }
 
 - (void)stop {
   [self.baseViewController.navigationController popViewControllerAnimated:YES];
-  _viewController = nil;
+  self.viewController = nil;
+  self.mediator = nil;
 }
 
 - (void)stopSpinnerAndDisplayError {
   // Re-enable user interactions that were disabled earlier in
   // delayedNotifyDelegateOfSelection.
-  _viewController.view.userInteractionEnabled = YES;
+  self.viewController.view.userInteractionEnabled = YES;
 
-  [_viewController setPending:NO];
-  DCHECK(_paymentRequest);
-  [_viewController
-      setErrorMessage:GetShippingAddressSelectorErrorMessage(*_paymentRequest)];
-  [_viewController loadModel];
-  [[_viewController collectionView] reloadData];
+  DCHECK(self.paymentRequest);
+  self.mediator.headerText =
+      GetShippingAddressSelectorErrorMessage(*self.paymentRequest);
+  self.mediator.state = PaymentRequestSelectorStateError;
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
 }
 
-#pragma mark - ShippingAddressSelectionViewControllerDelegate
+#pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)shippingAddressSelectionViewController:
-            (ShippingAddressSelectionViewController*)controller
-                      didSelectShippingAddress:
-                          (autofill::AutofillProfile*)shippingAddress {
-  [self delayedNotifyDelegateOfSelection:shippingAddress];
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+                        didSelectItemAtIndex:(NSUInteger)index {
+  // Update the data source with the selection.
+  self.mediator.selectedItemIndex = index;
+
+  DCHECK(index < self.paymentRequest->shipping_profiles().size());
+  [self delayedNotifyDelegateOfSelection:self.paymentRequest
+                                             ->shipping_profiles()[index]];
 }
 
-- (void)shippingAddressSelectionViewControllerDidReturn:
-    (ShippingAddressSelectionViewController*)controller {
-  [_delegate shippingAddressSelectionCoordinatorDidReturn:self];
+- (void)paymentRequestSelectorViewControllerDidFinish:
+    (PaymentRequestSelectorViewController*)controller {
+  [self.delegate shippingAddressSelectionCoordinatorDidReturn:self];
 }
+
+- (void)paymentRequestSelectorViewControllerDidSelectAddItem:
+    (PaymentRequestSelectorViewController*)controller {
+  // TODO(crbug.com/602666): Present a shipping address addition UI.
+}
+
+#pragma mark - Helper methods
 
 - (void)delayedNotifyDelegateOfSelection:
     (autofill::AutofillProfile*)shippingAddress {
-  _viewController.view.userInteractionEnabled = NO;
+  self.viewController.view.userInteractionEnabled = NO;
   __weak ShippingAddressSelectionCoordinator* weakSelf = self;
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                               static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
-                 dispatch_get_main_queue(), ^{
-                   ShippingAddressSelectionCoordinator* strongSelf = weakSelf;
-                   // Early return if the coordinator has been deallocated.
-                   if (!strongSelf)
-                     return;
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW,
+                    static_cast<int64_t>(0.2 * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        [weakSelf.mediator setState:PaymentRequestSelectorStatePending];
+        [weakSelf.viewController loadModel];
+        [[weakSelf.viewController collectionView] reloadData];
 
-                   [strongSelf.viewController setPending:YES];
-                   [strongSelf.viewController loadModel];
-                   [[strongSelf.viewController collectionView] reloadData];
-
-                   [strongSelf.delegate
-                       shippingAddressSelectionCoordinator:strongSelf
-                                  didSelectShippingAddress:shippingAddress];
-                 });
+        [weakSelf.delegate shippingAddressSelectionCoordinator:weakSelf
+                                      didSelectShippingAddress:shippingAddress];
+      });
 }
 
 @end
