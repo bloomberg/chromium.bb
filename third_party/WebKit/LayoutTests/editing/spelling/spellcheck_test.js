@@ -359,7 +359,7 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
       });
     };
 
-    if (internals.idleTimeSpellCheckerState !== undefined) {
+    if (internals.runtimeFlags.idleTimeSpellCheckingEnabled) {
       if (internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested')
         internals.runIdleTimeSpellChecker(sample.document);
       if (testObject.properties[kNeedsFullCheck]) {

@@ -5,7 +5,7 @@
 <script src="spellcheck_test.js"></script>
 <script>
 function runIdleTimeSpellCheckerIfNeeded(document) {
-  if (!window.internals || !internals.idleTimeSpellCheckerState)
+  if (!window.internals || !internals.runtimeFlags.idleTimeSpellCheckingEnabled)
     return;
   internals.runIdleTimeSpellChecker(document);
 }
