@@ -92,6 +92,9 @@ id<GREYMatcher> OpenLinkInNewTabButton();
 // Matcher for the done button on the navigation bar.
 id<GREYMatcher> NavigationBarDoneButton();
 
+// Returns matcher for the account consistency setup signin button.
+id<GREYMatcher> AccountConsistencySetupSigninButton();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

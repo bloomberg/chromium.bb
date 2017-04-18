@@ -171,4 +171,9 @@ id<GREYMatcher> NavigationBarDoneButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
 }
 
+id<GREYMatcher> AccountConsistencySetupSigninButton() {
+  return ButtonWithAccessibilityLabelId(
+      IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SIGNIN_BUTTON);
+}
+
 }  // namespace chrome_test_util
