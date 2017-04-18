@@ -73,6 +73,13 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'grid',
+      'dependencies': [
+        'list',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'list',
       'dependencies': [
         'array_data_model',

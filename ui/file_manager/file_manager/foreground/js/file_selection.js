@@ -77,33 +77,25 @@ function FileSelection(indexes, entries) {
 
 FileSelection.prototype.computeAdditional = function(metadataModel) {
   if (!this.additionalPromise_) {
-    this.additionalPromise_ = metadataModel.get(
-      this.entries,
-      FileSelection.METADATA_PREFETCH_PROPERTY_NAMES)
-      .then(function(props) {
-        var present = props.filter(function(p) {
-          // If no availableOffline property, then assume it's available.
-          return !('availableOffline' in p)  || p.availableOffline;
-        });
-        this.allFilesPresent = present.length === props.length;
-        this.mimeTypes = props.map(function(value) {
-          return value.contentMimeType || '';
-        });
-        return true;
-      }.bind(this));
+    this.additionalPromise_ =
+        metadataModel
+            .get(
+                this.entries,
+                constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES)
+            .then(function(props) {
+              var present = props.filter(function(p) {
+                // If no availableOffline property, then assume it's available.
+                return !('availableOffline' in p) || p.availableOffline;
+              });
+              this.allFilesPresent = present.length === props.length;
+              this.mimeTypes = props.map(function(value) {
+                return value.contentMimeType || '';
+              });
+              return true;
+            }.bind(this));
   }
   return this.additionalPromise_;
 };
-
-/**
- * These metadata is expected to be cached to accelerate computeAdditional.
- * See: crbug.com/458915.
- * @const {!Array<string>}
- */
-FileSelection.METADATA_PREFETCH_PROPERTY_NAMES = [
-  'availableOffline',
-  'contentMimeType',
-];
 
 /**
  * This object encapsulates everything related to current selection.

@@ -549,14 +549,6 @@ ActionsModel.InternalActionId = {
 };
 
 /**
- * @const {!Array<string>}
- */
-ActionsModel.METADATA_PREFETCH_PROPERTY_NAMES = [
-  'hosted',
-  'pinned'
-];
-
-/**
  * @return {!Promise}
  */
 ActionsModel.prototype.initialize = function() {

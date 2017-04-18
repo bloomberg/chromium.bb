@@ -45,14 +45,35 @@
       'target_name': 'dialog_type',
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'directory_contents',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'directory_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'directory_contents',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:async_util',
+        '../../common/js/compiled_resources2.gyp:metrics',
+        '../../common/js/compiled_resources2.gyp:util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:array_data_model',
+        '<(EXTERNS_GYP):file_manager_private',
+        'constants',
+        'file_list_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'directory_model',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:importer_common',
+        '../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../common/js/compiled_resources2.gyp:metrics',
+        'directory_contents',
+        'file_watcher',
+        'ui/compiled_resources2.gyp:file_list_selection_model',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'directory_tree_naming_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -101,10 +122,17 @@
 #      'target_name': 'file_transfer_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_watcher',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_watcher',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:async_util',
+        '../../common/js/compiled_resources2.gyp:util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(EXTERNS_GYP):file_manager_private',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'folder_shortcuts_data_model',
       'dependencies': [
@@ -133,10 +161,18 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'list_thumbnail_loader',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'list_thumbnail_loader',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        'directory_model',
+        'file_list_model',
+        'metadata/compiled_resources2.gyp:thumbnail_model',
+        'thumbnail_loader',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'main',
 #      'includes': ['../../../compile_js2.gypi'],

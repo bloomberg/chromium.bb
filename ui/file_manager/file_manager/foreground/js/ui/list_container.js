@@ -134,21 +134,6 @@ ListContainer.ListType = {
   THUMBNAIL: 'thumb'
 };
 
-/**
- * Metadata property names used by FileTable and FileGrid.
- * These metadata is expected to be cached.
- * @const {!Array<string>}
- */
-ListContainer.METADATA_PREFETCH_PROPERTY_NAMES = [
-  'availableOffline',
-  'contentMimeType',
-  'customIconUrl',
-  'hosted',
-  'modificationTime',
-  'shared',
-  'size',
-];
-
 ListContainer.prototype = /** @struct */ {
   /**
    * @return {!FileTable|!FileGrid}

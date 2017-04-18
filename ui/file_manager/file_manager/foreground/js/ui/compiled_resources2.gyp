@@ -80,10 +80,21 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'file_grid',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_grid',
+      'dependencies': [
+        '../../../background/js/compiled_resources2.gyp:import_history',
+        '../../../common/js/compiled_resources2.gyp:async_util',
+        '../../../common/js/compiled_resources2.gyp:file_type',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../compiled_resources2.gyp:list_thumbnail_loader',
+        '../metadata/compiled_resources2.gyp:metadata_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:grid',
+        'drag_selector',
+        'file_table_list',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_list_selection_model',
       'dependencies': [
@@ -114,10 +125,20 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'file_table',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_table',
+      'dependencies': [
+        '../../../background/js/compiled_resources2.gyp:import_history',
+        '../compiled_resources2.gyp:file_list_model',
+        '../compiled_resources2.gyp:list_thumbnail_loader',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:table',
+        'drag_selector',
+        'file_metadata_formatter',
+        'file_table_list',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_table_list',
       'dependencies': [
@@ -162,10 +183,15 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'list_container',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'list_container',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:list_item',
+        'file_grid',
+        'file_table',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'location_line',
       'dependencies': [
