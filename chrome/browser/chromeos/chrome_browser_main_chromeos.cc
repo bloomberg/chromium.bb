@@ -242,8 +242,11 @@ class DBusServices {
         DBusThreadManager::Get()->GetPowerManagerClient());
 
     CrosDBusService::ServiceProviderList service_providers;
+    // TODO(derat): Remove this provider once all callers are using
+    // |proxy_resolution_service_| instead: http://crbug.com/703217
     service_providers.push_back(
         base::MakeUnique<ProxyResolutionServiceProvider>(
+            kLibCrosServiceInterface, kResolveNetworkProxy,
             base::MakeUnique<ChromeProxyResolutionServiceProviderDelegate>()));
     if (GetAshConfig() == ash::Config::CLASSIC) {
       // TODO(crbug.com/629707): revisit this with mustash dbus work.
@@ -259,12 +262,23 @@ class DBusServices {
       service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
           base::MakeUnique<MusConsoleServiceProviderDelegate>()));
     }
+    // TODO(teravest): Remove this provider once all callers are using
+    // |kiosk_info_service_| instead: http://crbug.com/703229
     service_providers.push_back(base::MakeUnique<KioskInfoService>(
         kLibCrosServiceInterface,
         kKioskAppServiceGetRequiredPlatformVersionMethod));
     cros_dbus_service_ = CrosDBusService::Create(
         kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
         std::move(service_providers));
+
+    proxy_resolution_service_ = CrosDBusService::Create(
+        kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            base::MakeUnique<ProxyResolutionServiceProvider>(
+                kNetworkProxyServiceInterface,
+                kNetworkProxyServiceResolveProxyMethod,
+                base::MakeUnique<
+                    ChromeProxyResolutionServiceProviderDelegate>())));
 
     kiosk_info_service_ = CrosDBusService::Create(
         kKioskAppServiceName, dbus::ObjectPath(kKioskAppServicePath),
@@ -322,6 +336,7 @@ class DBusServices {
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     cros_dbus_service_.reset();
+    proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
@@ -340,6 +355,7 @@ class DBusServices {
   // split between different processes: http://crbug.com/692246
   std::unique_ptr<CrosDBusService> cros_dbus_service_;
 
+  std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;

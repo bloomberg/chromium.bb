@@ -80,7 +80,9 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
   };
 
-  explicit ProxyResolutionServiceProvider(std::unique_ptr<Delegate> delegate);
+  ProxyResolutionServiceProvider(const std::string& dbus_interface,
+                                 const std::string& dbus_method_name,
+                                 std::unique_ptr<Delegate> delegate);
   ~ProxyResolutionServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface:
@@ -129,6 +131,8 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
   // information to the client over D-Bus.
   void NotifyProxyResolved(std::unique_ptr<Request> request);
 
+  const std::string dbus_interface_;
+  const std::string dbus_method_name_;
   std::unique_ptr<Delegate> delegate_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;

@@ -85,8 +85,12 @@ struct ProxyResolutionServiceProvider::Request {
 };
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
+    const std::string& dbus_interface,
+    const std::string& dbus_method_name,
     std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
+    : dbus_interface_(dbus_interface),
+      dbus_method_name_(dbus_method_name),
+      delegate_(std::move(delegate)),
       origin_thread_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
@@ -100,7 +104,7 @@ void ProxyResolutionServiceProvider::Start(
   exported_object_ = exported_object;
   VLOG(1) << "ProxyResolutionServiceProvider started";
   exported_object_->ExportMethod(
-      kLibCrosServiceInterface, kResolveNetworkProxy,
+      dbus_interface_, dbus_method_name_,
       base::Bind(&ProxyResolutionServiceProvider::ResolveProxy,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyResolutionServiceProvider::OnExported,
