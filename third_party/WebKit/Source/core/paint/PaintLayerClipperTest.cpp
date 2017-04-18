@@ -66,14 +66,8 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
 
   EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
             background_rect.Rect());
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 199.75, 299.66)),
-              foreground_rect.Rect());
-  } else {
-    // TODO(chrishtr): this is off by 0.25px because
-    // LayoutSVGRoot::OverflowClipRect incorrectly does pixel-snapping.
-    EXPECT_EQ(LayoutRect(FloatRect(8, 8, 200, 300)), foreground_rect.Rect());
-  }
+  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
+            foreground_rect.Rect());
   EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)), layer_bounds);
 }
 
