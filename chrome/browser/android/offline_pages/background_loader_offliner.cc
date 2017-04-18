@@ -9,6 +9,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -71,6 +72,7 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
     OfflinePageModel* offline_page_model)
     : browser_context_(browser_context),
       offline_page_model_(offline_page_model),
+      policy_(policy),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       save_state_(NONE),
       page_load_state_(SUCCESS),
@@ -196,13 +198,27 @@ void BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
 }
 
 bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
-  // TODO(romax): Decide if we want to also take a snapshot on the last timeout
-  // for the background loader offliner. crbug.com/705090
+  if (pending_request_) {
+    DCHECK(request.request_id() == pending_request_->request_id());
+    if (is_low_bar_met_ &&
+        (request.started_attempt_count() + 1 >= policy_->GetMaxStartedTries() ||
+         request.completed_attempt_count() + 1 >=
+             policy_->GetMaxCompletedTries())) {
+      // If we are already in the middle of a save operation, let it finish
+      // but do not return SAVED_ON_LAST_RETRY
+      if (save_state_ == NONE) {
+        did_snapshot_on_last_retry_ = true;
+        StartSnapshot();
+      }
+      return true;
+    }
+  }
   return false;
 }
 
 void BackgroundLoaderOffliner::DocumentAvailableInMainFrame() {
   snapshot_controller_->DocumentAvailableInMainFrame();
+  is_low_bar_met_ = true;
 }
 
 void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame() {
@@ -334,6 +350,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
     return;
 
   SavePageRequest request(*pending_request_.get());
+  bool did_snapshot_on_last_retry = did_snapshot_on_last_retry_;
   ResetState();
 
   if (save_state_ == DELETE_AFTER_SAVE) {
@@ -345,10 +362,14 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   save_state_ = NONE;
 
   Offliner::RequestStatus save_status;
-  if (save_result == SavePageResult::SUCCESS)
-    save_status = RequestStatus::SAVED;
-  else
+  if (save_result == SavePageResult::SUCCESS) {
+    if (did_snapshot_on_last_retry)
+      save_status = RequestStatus::SAVED_ON_LAST_RETRY;
+    else
+      save_status = RequestStatus::SAVED;
+  } else {
     save_status = RequestStatus::SAVE_FAILED;
+  }
 
   completion_callback_.Run(request, save_status);
 }
@@ -358,6 +379,8 @@ void BackgroundLoaderOffliner::ResetState() {
   snapshot_controller_.reset();
   page_load_state_ = SUCCESS;
   network_bytes_ = 0LL;
+  is_low_bar_met_ = false;
+  did_snapshot_on_last_retry_ = false;
   // TODO(chili): Remove after RequestCoordinator can handle multiple offliners.
   // We reset the loader and observer after completion so loaders
   // will not be re-used across different requests/tries. This is a temporary

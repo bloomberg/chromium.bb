@@ -61,7 +61,8 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
   histogram->Add(static_cast<int>(request_status));
 
   // For successful requests also record time from request to save.
-  if (request_status == Offliner::RequestStatus::SAVED) {
+  if (request_status == Offliner::RequestStatus::SAVED ||
+      request_status == Offliner::RequestStatus::SAVED_ON_LAST_RETRY) {
     // Using regular histogram (with dynamic suffix) rather than time-oriented
     // one to record samples in seconds rather than milliseconds.
     base::HistogramBase* histogram = base::Histogram::FactoryGet(
@@ -964,7 +965,8 @@ void RequestCoordinator::UpdateRequestForCompletedAttempt(
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
     UpdateRequestForAbortedAttempt(request);
-  } else if (status == Offliner::RequestStatus::SAVED) {
+  } else if (status == Offliner::RequestStatus::SAVED ||
+             status == Offliner::RequestStatus::SAVED_ON_LAST_RETRY) {
     // Remove the request from the queue if it succeeded.
     RemoveAttemptedRequest(request,
                            RequestNotifier::BackgroundSavePageResult::SUCCESS);
@@ -999,7 +1001,6 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::SAVED:
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
-    case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
     case Offliner::RequestStatus::LOADING_FAILED:
     case Offliner::RequestStatus::LOADING_FAILED_NO_RETRY:
       return true;
@@ -1008,6 +1009,10 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::LOADING_FAILED_NO_NEXT:
       // No further processing in this service window.
       return false;
+    case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
+    case Offliner::RequestStatus::SAVED_ON_LAST_RETRY:
+      // If we timed out, check to see that there is time budget.
+      return processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW;
     default:
       // Make explicit choice about new status codes that actually reach here.
       // Their default is no further processing in this service window.

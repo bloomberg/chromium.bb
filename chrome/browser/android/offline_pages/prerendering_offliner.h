@@ -99,6 +99,7 @@ class PrerenderingOffliner : public Offliner {
   CompletionCallback completion_callback_;
   ProgressCallback progress_callback_;
   bool is_low_end_device_;
+  bool saved_on_last_retry_;
   // ApplicationStatusListener to monitor if the Chrome moves to the foreground.
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
   base::WeakPtrFactory<PrerenderingOffliner> weak_ptr_factory_;

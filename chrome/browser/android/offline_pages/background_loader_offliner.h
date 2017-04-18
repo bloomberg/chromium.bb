@@ -84,6 +84,8 @@ class BackgroundLoaderOffliner : public Offliner,
   content::BrowserContext* browser_context_;
   // Not owned.
   OfflinePageModel* offline_page_model_;
+  // Not owned.
+  const OfflinerPolicy* policy_;
   // Tracks pending request, if any.
   std::unique_ptr<SavePageRequest> pending_request_;
   // Handles determining when a page should be snapshotted.
@@ -105,6 +107,10 @@ class BackgroundLoaderOffliner : public Offliner,
   long page_delay_ms_;
   // Network bytes loaded.
   int64_t network_bytes_;
+  // Whether the low bar of snapshot quality has been met.
+  bool is_low_bar_met_;
+  // Whether the snapshot is on the last retry.
+  bool did_snapshot_on_last_retry_;
 
   // Callback for cancel.
   CancelCallback cancel_callback_;

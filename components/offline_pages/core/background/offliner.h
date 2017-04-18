@@ -55,6 +55,8 @@ class Offliner {
     QUEUE_UPDATE_FAILED = 13,
     // Scheduler canceled processing of requests.
     BACKGROUND_SCHEDULER_CANCELED = 14,
+    // We saved a snapshot on the last retry, after timeout.
+    SAVED_ON_LAST_RETRY = 15,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

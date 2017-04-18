@@ -41,6 +41,8 @@ static std::string OfflinerRequestStatusToString(
       return "QUEUE_UPDATE_FAILED";
     case Offliner::BACKGROUND_SCHEDULER_CANCELED:
       return "BACKGROUND_SCHEDULER_CANCELED";
+    case Offliner::SAVED_ON_LAST_RETRY:
+      return "SAVED_ON_LAST_RETRY";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

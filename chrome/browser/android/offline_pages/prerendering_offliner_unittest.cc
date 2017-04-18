@@ -66,7 +66,15 @@ class MockPrerenderingLoader : public PrerenderingLoader {
   bool IsLoaded() override { return mock_loaded_; }
   bool IsLowbarMet() override { return mock_is_lowbar_met_; }
 
-  void StartSnapshot() override { start_snapshot_called_ = true; }
+  void StartSnapshot() override {
+    start_snapshot_called_ = true;
+    // Call start saving process.
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        new TestingProfile(), NULL);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(load_page_callback_,
+                              Offliner::RequestStatus::LOADED, web_contents_));
+  }
 
   void CompleteLoadingAsFailed() {
     DCHECK(mock_loading_);
@@ -472,6 +480,12 @@ TEST_F(PrerenderingOfflinerTest, HandleTimeoutWithLowbarAndCompletedTriesMet) {
   loader()->set_is_lowbar_met(true);
   EXPECT_TRUE(offliner()->HandleTimeout(request));
   EXPECT_TRUE(loader()->start_snapshot_called());
+  PumpLoop();
+  // EXPECT_TRUE(SaveInProgress());
+  model()->CompleteSavingAsSuccess();
+  PumpLoop();
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::SAVED_ON_LAST_RETRY, request_status());
 }
 
 TEST_F(PrerenderingOfflinerTest,
@@ -497,6 +511,20 @@ TEST_F(PrerenderingOfflinerTest,
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
   request.set_completed_attempt_count(policy()->GetMaxCompletedTries() - 1);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  loader()->set_is_lowbar_met(false);
+  EXPECT_FALSE(offliner()->HandleTimeout(request));
+  EXPECT_FALSE(loader()->start_snapshot_called());
+}
+
+TEST_F(PrerenderingOfflinerTest, HandleTimeoutStartedTriesMetWithoutLowbarMet) {
+  offliner()->SetLowEndDeviceForTesting(false);
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  request.set_started_attempt_count(policy()->GetMaxStartedTries() - 1);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
   loader()->set_is_lowbar_met(false);

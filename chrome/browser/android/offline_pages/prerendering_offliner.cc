@@ -38,6 +38,7 @@ PrerenderingOffliner::PrerenderingOffliner(
       offline_page_model_(offline_page_model),
       pending_request_(nullptr),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
+      saved_on_last_retry_(false),
       app_listener_(nullptr),
       weak_ptr_factory_(this) {}
 
@@ -158,12 +159,16 @@ void PrerenderingOffliner::OnSavePageDone(
   // Determine status and run the completion callback.
   Offliner::RequestStatus save_status;
   if (save_result == SavePageResult::SUCCESS) {
-    save_status = RequestStatus::SAVED;
+    if (saved_on_last_retry_)
+      save_status = RequestStatus::SAVED_ON_LAST_RETRY;
+    else
+      save_status = RequestStatus::SAVED;
   } else {
     // TODO(dougarnett): Consider reflecting some recommendation to retry the
     // request based on specific save error cases.
     save_status = RequestStatus::SAVE_FAILED;
   }
+  saved_on_last_retry_ = false;
   completion_callback_.Run(request, save_status);
 }
 
@@ -230,6 +235,7 @@ bool PrerenderingOffliner::LoadAndSave(
   pending_request_.reset(new SavePageRequest(request));
   completion_callback_ = completion_callback;
   progress_callback_ = progress_callback;
+  saved_on_last_retry_ = false;
 
   // Kick off load page attempt.
   bool accepted = GetOrCreateLoader()->LoadPage(
@@ -268,6 +274,7 @@ bool PrerenderingOffliner::HandleTimeout(const SavePageRequest& request) {
         (request.started_attempt_count() + 1 >= policy_->GetMaxStartedTries() ||
          request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries())) {
+      saved_on_last_retry_ = true;
       GetOrCreateLoader()->StartSnapshot();
       return true;
     }
