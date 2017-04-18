@@ -18,7 +18,23 @@
 #include "content/public/browser/download_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
+#include "base/files/file_path.h"
+#include "base/guid.h"
+#endif
+
 namespace content {
+
+#if defined(OS_ANDROID)
+namespace {
+
+// Prefix for files stored in the Chromium-internal download directory to
+// indicate files thta were fetched through Background Fetch.
+const char kBackgroundFetchFilePrefix[] = "BGFetch-";
+
+}  // namespace
+#endif  // defined(OS_ANDROID)
 
 // Internal functionality of the BackgroundFetchJobController that lives on the
 // UI thread, where all interaction with the download manager must happen.
@@ -59,7 +75,20 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     // TODO(peter): The |download_parameters| should be populated with all the
     // properties set in the |fetch_request| structure.
 
+    // TODO(peter): Background Fetch responses should not end up in the user's
+    // download folder on any platform. Find an appropriate solution for desktop
+    // too. The Android internal directory is not scoped to a profile.
+
     download_parameters->set_transient(true);
+
+#if defined(OS_ANDROID)
+    base::FilePath download_directory;
+    if (base::android::GetDownloadInternalDirectory(&download_directory)) {
+      download_parameters->set_file_path(download_directory.Append(
+          std::string(kBackgroundFetchFilePrefix) + base::GenerateGUID()));
+    }
+#endif  // defined(OS_ANDROID)
+
     download_parameters->set_callback(base::Bind(&Core::DidStartRequest,
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  std::move(request)));
