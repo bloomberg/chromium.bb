@@ -18,6 +18,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(favicon::WebFaviconDriver);
 
 // Callback for the download of favicon.
