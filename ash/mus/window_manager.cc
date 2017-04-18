@@ -401,8 +401,8 @@ void WindowManager::OnWmBuildDragImage(const gfx::Point& screen_location,
   // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
   // be passing ImageSkias once http://crbug.com/655874 is implemented.
 
-  WmWindow* root_window =
-      WmWindow::Get((*GetRootWindowControllers().begin())->GetRootWindow());
+  aura::Window* root_window =
+      (*GetRootWindowControllers().begin())->GetRootWindow();
 
   ui::DragDropTypes::DragEventSource ui_source =
       source == ui::mojom::PointerKind::MOUSE

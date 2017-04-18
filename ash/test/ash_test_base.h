@@ -92,6 +92,17 @@ class AshTestBase : public testing::Test {
       int container_id,
       const gfx::Rect& bounds);
 
+  // Creates a visible window in the appropriate container. If
+  // |bounds_in_screen| is empty the window is added to the primary root
+  // window, otherwise the window is added to the display matching
+  // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
+  // the new window.
+  // TODO(sky): convert existing CreateTestWindow() functions into this one.
+  std::unique_ptr<aura::Window> CreateTestWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
+      int shell_window_id = kShellWindowId_Invalid);
+
   // Versions of the functions in aura::test:: that go through our shell
   // StackingController instead of taking a parent.
   aura::Window* CreateTestWindowInShellWithId(int id);

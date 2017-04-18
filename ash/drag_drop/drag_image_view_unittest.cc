@@ -4,18 +4,19 @@
 
 #include "ash/drag_drop/drag_image_view.h"
 
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
+#include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace ash {
 namespace test {
 
-using DragDropImageTest = AshTest;
+using DragDropImageTest = AshTestBase;
 
 TEST_F(DragDropImageTest, SetBoundsConsidersDragHintForTouch) {
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow());
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
   DragImageView drag_image_view(
-      window_owner->window(),
+      window.get(),
       ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
 
   gfx::Size minimum_size = drag_image_view.GetMinimumSize();
@@ -45,9 +46,9 @@ TEST_F(DragDropImageTest, SetBoundsConsidersDragHintForTouch) {
 }
 
 TEST_F(DragDropImageTest, SetBoundsIgnoresDragHintForMouse) {
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow());
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
   DragImageView drag_image_view(
-      window_owner->window(),
+      window.get(),
       ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
 
   // Expect no drag hint image.

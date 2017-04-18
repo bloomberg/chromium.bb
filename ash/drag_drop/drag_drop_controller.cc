@@ -12,6 +12,7 @@
 #include "ash/shell_port.h"
 #include "ash/wm_window.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
@@ -203,8 +204,8 @@ int DragDropController::StartDragAndDrop(
   drag_image_final_bounds_for_cancel_animation_ =
       gfx::Rect(start_location - provider->GetDragImageOffset(),
                 provider->GetDragImage().size());
-  drag_image_.reset(
-      new DragImageView(WmWindow::Get(source_window->GetRootWindow()), source));
+  drag_image_ =
+      base::MakeUnique<DragImageView>(source_window->GetRootWindow(), source);
   drag_image_->SetImage(provider->GetDragImage());
   drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());

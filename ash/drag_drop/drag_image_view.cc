@@ -8,10 +8,11 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/wm_window.h"
 #include "skia/ext/image_operations.h"
+#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/widget/widget.h"
@@ -20,7 +21,7 @@ namespace ash {
 namespace {
 using views::Widget;
 
-std::unique_ptr<Widget> CreateDragWidget(WmWindow* root_window) {
+std::unique_ptr<Widget> CreateDragWidget(aura::Window* root_window) {
   std::unique_ptr<Widget> drag_widget(new Widget);
   Widget::InitParams params;
   params.type = Widget::InitParams::TYPE_TOOLTIP;
@@ -30,8 +31,10 @@ std::unique_ptr<Widget> CreateDragWidget(WmWindow* root_window) {
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
-      drag_widget.get(), kShellWindowId_DragImageAndTooltipContainer, &params);
+  RootWindowController::ForWindow(root_window)
+      ->ConfigureWidgetInitParamsForContainer(
+          drag_widget.get(), kShellWindowId_DragImageAndTooltipContainer,
+          &params);
   drag_widget->Init(params);
   drag_widget->SetOpacity(1.f);
   return drag_widget;
@@ -39,7 +42,7 @@ std::unique_ptr<Widget> CreateDragWidget(WmWindow* root_window) {
 
 }  // namespace
 
-DragImageView::DragImageView(WmWindow* root_window,
+DragImageView::DragImageView(aura::Window* root_window,
                              ui::DragDropTypes::DragEventSource event_source)
     : drag_event_source_(event_source),
       touch_drag_operation_(ui::DragDropTypes::DRAG_NONE) {
@@ -121,9 +124,10 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   if (GetImage().size() == drag_image_size_) {
     canvas->DrawImageInt(GetImage(), 0, 0);
   } else {
-    WmWindow* window = WmWindow::Get(widget_->GetNativeWindow());
-    const float device_scale =
-        window->GetDisplayNearestWindow().device_scale_factor();
+    aura::Window* window = widget_->GetNativeWindow();
+    const float device_scale = display::Screen::GetScreen()
+                                   ->GetDisplayNearestWindow(window)
+                                   .device_scale_factor();
     // The drag image already has device scale factor applied. But
     // |drag_image_size_| is in DIP units.
     gfx::Size drag_image_size_pixels =

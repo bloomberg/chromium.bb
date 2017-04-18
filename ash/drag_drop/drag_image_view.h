@@ -14,6 +14,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/image_view.h"
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Image;
 }
@@ -23,8 +27,6 @@ class Widget;
 }
 
 namespace ash {
-
-class WmWindow;
 
 // This class allows to show a (native) view always on top of everything. It
 // does this by creating a widget and setting the content as the given view. The
@@ -36,7 +38,7 @@ class ASH_EXPORT DragImageView : public views::ImageView {
   // |source| is the event source that started this drag drop operation (touch
   // or mouse). It is used to determine attributes of the drag image such as
   // whether to show drag operation hint on top of the image.
-  DragImageView(WmWindow* root_window,
+  DragImageView(aura::Window* root_window,
                 ui::DragDropTypes::DragEventSource source);
   ~DragImageView() override;
 

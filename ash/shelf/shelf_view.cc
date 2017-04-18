@@ -516,11 +516,10 @@ void ShelfView::CreateDragIconProxy(
     const gfx::Vector2d& cursor_offset_from_center,
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
-  WmWindow* root_window =
-      WmWindow::Get(drag_replaced_view_->GetWidget()->GetNativeWindow())
-          ->GetRootWindow();
-  drag_image_.reset(new DragImageView(
-      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
+  aura::Window* root_window =
+      drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
+  drag_image_ = base::MakeUnique<DragImageView>(
+      root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   drag_image_->SetImage(icon);
   gfx::Size size = drag_image_->GetPreferredSize();
   size.set_width(size.width() * scale_factor);

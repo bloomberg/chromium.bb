@@ -233,6 +233,15 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   return widget;
 }
 
+std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    ui::wm::WindowType type,
+    int shell_window_id) {
+  return base::WrapUnique<aura::Window>(
+      CreateTestWindowInShellWithDelegateAndType(nullptr, type, shell_window_id,
+                                                 bounds_in_screen));
+}
+
 aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
   return CreateTestWindowInShellWithDelegate(NULL, id, gfx::Rect());
 }
