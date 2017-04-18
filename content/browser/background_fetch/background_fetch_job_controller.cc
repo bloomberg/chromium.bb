@@ -59,6 +59,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     // TODO(peter): The |download_parameters| should be populated with all the
     // properties set in the |fetch_request| structure.
 
+    download_parameters->set_transient(true);
     download_parameters->set_callback(base::Bind(&Core::DidStartRequest,
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  std::move(request)));

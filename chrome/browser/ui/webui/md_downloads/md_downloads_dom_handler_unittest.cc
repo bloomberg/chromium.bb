@@ -94,6 +94,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
   // Safe, in-progress items should be passed over.
   testing::StrictMock<content::MockDownloadItem> in_progress;
   EXPECT_CALL(in_progress, IsDangerous()).WillOnce(testing::Return(false));
+  EXPECT_CALL(in_progress, IsTransient()).WillOnce(testing::Return(false));
   EXPECT_CALL(in_progress, GetState()).WillOnce(
       testing::Return(content::DownloadItem::IN_PROGRESS));
   downloads.push_back(&in_progress);
@@ -107,6 +108,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
   // Completed items should be marked as hidden from the shelf.
   testing::StrictMock<content::MockDownloadItem> completed;
   EXPECT_CALL(completed, IsDangerous()).WillOnce(testing::Return(false));
+  EXPECT_CALL(completed, IsTransient()).WillRepeatedly(testing::Return(false));
   EXPECT_CALL(completed, GetState()).WillOnce(
       testing::Return(content::DownloadItem::COMPLETE));
   EXPECT_CALL(completed, GetId()).WillOnce(testing::Return(1));

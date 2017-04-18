@@ -366,15 +366,24 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
 TEST_F(DownloadItemModelTest, ShouldShowInShelf) {
   SetupDownloadItemDefaults();
 
-  // By default the download item should be displayable on the shelf.
+  // By default the download item should be displayable on the shelf when it is
+  // not a transient download.
+  EXPECT_CALL(item(), IsTransient()).WillOnce(Return(false));
   EXPECT_TRUE(model().ShouldShowInShelf());
 
-  // Once explicitly set, ShouldShowInShelf() should return the explicit value.
-  model().SetShouldShowInShelf(false);
+  EXPECT_CALL(item(), IsTransient()).WillOnce(Return(true));
   EXPECT_FALSE(model().ShouldShowInShelf());
+
+  // Once explicitly set, ShouldShowInShelf() should return the explicit value
+  // regardless of whether it's a transient download, which should no longer
+  // be considered by the model after initializing it.
+  EXPECT_CALL(item(), IsTransient()).Times(1);
 
   model().SetShouldShowInShelf(true);
   EXPECT_TRUE(model().ShouldShowInShelf());
+
+  model().SetShouldShowInShelf(false);
+  EXPECT_FALSE(model().ShouldShowInShelf());
 }
 
 TEST_F(DownloadItemModelTest, DangerLevel) {

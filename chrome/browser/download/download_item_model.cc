@@ -93,6 +93,7 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
       static_cast<DownloadItemModelData*>(download->GetUserData(kKey));
   if (data == NULL) {
     data = new DownloadItemModelData();
+    data->should_show_in_shelf_ = !download->IsTransient();
     download->SetUserData(kKey, data);
   }
   return data;
@@ -592,7 +593,10 @@ bool DownloadItemModel::ShouldShowDownloadStartedAnimation() const {
 
 bool DownloadItemModel::ShouldShowInShelf() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return !data || data->should_show_in_shelf_;
+  if (data)
+    return data->should_show_in_shelf_;
+
+  return !download_->IsTransient();
 }
 
 void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
