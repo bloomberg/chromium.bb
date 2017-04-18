@@ -78,6 +78,8 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       page_load_state_(SUCCESS),
       page_delay_ms_(kOfflinePageDelayMs),
       network_bytes_(0LL),
+      is_low_bar_met_(false),
+      did_snapshot_on_last_retry_(false),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
