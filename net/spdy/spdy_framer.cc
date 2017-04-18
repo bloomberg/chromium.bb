@@ -1679,11 +1679,12 @@ SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
 
 SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
 
-SpdySerializedFrame SpdyFramer::SpdyHeaderFrameIterator::NextFrame() {
+bool SpdyFramer::SpdyHeaderFrameIterator::NextFrame(
+    ZeroCopyOutputBuffer* output) {
   if (!has_next_frame_) {
     SPDY_BUG << "SpdyFramer::SpdyHeaderFrameIterator::NextFrame called without "
              << "a next frame.";
-    return SpdySerializedFrame();
+    return false;
   }
 
   size_t size_without_block =
@@ -1712,12 +1713,13 @@ SpdySerializedFrame SpdyFramer::SpdyHeaderFrameIterator::NextFrame() {
   if (is_first_frame_) {
     is_first_frame_ = false;
     headers_ir_->set_end_headers(!has_next_frame_);
-    return framer_->SerializeHeadersGivenEncoding(*headers_ir_, *encoding);
+    return framer_->SerializeHeadersGivenEncoding(*headers_ir_, *encoding,
+                                                  output);
   } else {
     SpdyContinuationIR continuation_ir(headers_ir_->stream_id());
     continuation_ir.set_end_headers(!has_next_frame_);
     continuation_ir.take_encoding(std::move(encoding));
-    return framer_->SerializeContinuation(continuation_ir);
+    return framer_->SerializeContinuation(continuation_ir, output);
   }
 }
 
@@ -2086,35 +2088,42 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
   return builder.take();
 }
 
-SpdySerializedFrame SpdyFramer::SerializeHeadersGivenEncoding(
+bool SpdyFramer::SerializeHeadersGivenEncoding(
     const SpdyHeadersIR& headers,
-    const SpdyString& encoding) const {
+    const SpdyString& encoding,
+    ZeroCopyOutputBuffer* output) const {
   size_t frame_size = GetHeaderFrameSizeSansBlock(headers) + encoding.size();
-  SpdyFrameBuilder builder(frame_size);
-  builder.BeginNewFrame(*this, SpdyFrameType::HEADERS,
-                        SerializeHeaderFrameFlags(headers),
-                        headers.stream_id());
+  SpdyFrameBuilder builder(frame_size, output);
+  bool ret = builder.BeginNewFrame(
+      *this, SpdyFrameType::HEADERS, SerializeHeaderFrameFlags(headers),
+      headers.stream_id(), frame_size - GetFrameHeaderSize());
   DCHECK_EQ(GetFrameHeaderSize(), builder.length());
 
-  if (headers.padded()) {
-    builder.WriteUInt8(headers.padding_payload_len());
+  if (ret && headers.padded()) {
+    ret &= builder.WriteUInt8(headers.padding_payload_len());
   }
 
-  if (headers.has_priority()) {
+  if (ret && headers.has_priority()) {
     int weight = ClampHttp2Weight(headers.weight());
-    builder.WriteUInt32(PackStreamDependencyValues(headers.exclusive(),
-                                                   headers.parent_stream_id()));
+    ret &= builder.WriteUInt32(PackStreamDependencyValues(
+        headers.exclusive(), headers.parent_stream_id()));
     // Per RFC 7540 section 6.3, serialized weight value is actual value - 1.
-    builder.WriteUInt8(weight - 1);
+    ret &= builder.WriteUInt8(weight - 1);
   }
 
-  builder.WriteBytes(&encoding[0], encoding.size());
+  if (ret) {
+    ret &= builder.WriteBytes(encoding.data(), encoding.size());
+  }
 
-  if (headers.padding_payload_len() > 0) {
+  if (ret && headers.padding_payload_len() > 0) {
     SpdyString padding(headers.padding_payload_len(), 0);
-    builder.WriteBytes(padding.data(), padding.length());
+    ret &= builder.WriteBytes(padding.data(), padding.length());
   }
-  return builder.take();
+
+  if (!ret) {
+    DLOG(WARNING) << "Failed to build HEADERS. Not enough space in output";
+  }
+  return ret;
 }
 
 SpdySerializedFrame SpdyFramer::SerializeContinuation(

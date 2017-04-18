@@ -403,7 +403,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SpdyHeaderFrameIterator(const SpdyHeaderFrameIterator&) = delete;
     SpdyHeaderFrameIterator& operator=(const SpdyHeaderFrameIterator&) = delete;
 
-    SpdySerializedFrame NextFrame();
+    // Write the next frame to |output|. Return false if the write fails.
+    // |output| can't be nullptr.
+    bool NextFrame(ZeroCopyOutputBuffer* output);
     bool HasNextFrame() const { return has_next_frame_; }
 
    private:
@@ -731,9 +733,10 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Serializes a HEADERS frame from the given SpdyHeadersIR and encoded header
   // block. Does not need or use the SpdyHeaderBlock inside SpdyHeadersIR.
-  SpdySerializedFrame SerializeHeadersGivenEncoding(
-      const SpdyHeadersIR& headers,
-      const SpdyString& encoding) const;
+  // Return false if the serialization fails. |encoding| should not be empty.
+  bool SerializeHeadersGivenEncoding(const SpdyHeadersIR& headers,
+                                     const SpdyString& encoding,
+                                     ZeroCopyOutputBuffer* output) const;
 
   // Calculates the number of bytes required to serialize a SpdyHeadersIR, not
   // including the bytes to be used for the encoded header set.
