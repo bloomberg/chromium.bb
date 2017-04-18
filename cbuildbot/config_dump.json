@@ -12437,7 +12437,8 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "lakitu-gpu-payloads": {
         "_template": "payloads",
@@ -12607,7 +12608,8 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "lakitu-payloads": {
         "_template": "payloads",
@@ -12821,7 +12823,8 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "lakitu_next-payloads": {
         "_template": "payloads",

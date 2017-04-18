@@ -1129,6 +1129,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'lakitu_paladin_test_customizations',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      vm_tests_override=None,
       gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE)],
   )
 
