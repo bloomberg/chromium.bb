@@ -97,10 +97,15 @@ source_set("payments_ui") {
     "payment_request_picker_row.mm",
     "payment_request_picker_view_controller.h",
     "payment_request_picker_view_controller.mm",
+    "payment_request_selector_view_controller.h",
+    "payment_request_selector_view_controller.mm",
+    "payment_request_selector_view_controller_actions.h",
+    "payment_request_selector_view_controller_data_source.h",
   ]
   deps = [
     "//base",
     "//components/strings",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/payments/cells",
     "//ios/chrome/browser/ui",
@@ -108,6 +113,7 @@ source_set("payments_ui") {
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/icons",
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
@@ -127,6 +133,7 @@ source_set("unit_tests") {
     "payment_request_coordinator_unittest.mm",
     "payment_request_error_coordinator_unittest.mm",
     "payment_request_error_view_controller_unittest.mm",
+    "payment_request_selector_view_controller_unittest.mm",
     "payment_request_test_util.h",
     "payment_request_test_util.mm",
     "payment_request_unittest.mm",
