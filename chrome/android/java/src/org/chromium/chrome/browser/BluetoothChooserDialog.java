@@ -372,17 +372,12 @@ public class BluetoothChooserDialog
     }
 
     @VisibleForTesting
-    Drawable getConnectedIcon() {
-        return mConnectedIcon.getConstantState().newDrawable().mutate();
-    }
-
-    @VisibleForTesting
     @CalledByNative
     void addOrUpdateDevice(String deviceId, String deviceName, boolean isGATTConnected) {
         Drawable icon = null;
         String iconDescription = null;
         if (isGATTConnected) {
-            icon = getConnectedIcon();
+            icon = mConnectedIcon.getConstantState().newDrawable();
             iconDescription = mConnectedIconDescription;
         }
 

@@ -90,8 +90,13 @@ public class ItemChooserDialog {
                 @Nullable String iconDescription) {
             if (!TextUtils.equals(mKey, key)) return false;
             if (!TextUtils.equals(mDescription, description)) return false;
-            if (!ApiCompatibilityUtils.objectEquals(mIcon, icon)) return false;
             if (!TextUtils.equals(mIconDescription, iconDescription)) return false;
+
+            if (icon == null ^ mIcon == null) return false;
+            if (mIcon != null && !mIcon.getConstantState().equals(icon.getConstantState())) {
+                return false;
+            }
+
             return true;
         }
     }
@@ -575,7 +580,8 @@ public class ItemChooserDialog {
      *
      * @param key Unique identifier for that item.
      * @param description Text in the row.
-     * @param icon Drawable to show left of the description.
+     * @param icon Drawable to show left of the description. The drawable provided should
+     *        be stateful and handle the selected state to be rendered correctly.
      * @param iconDescription Description of the icon.
      */
     public void addOrUpdateItem(String key, String description, @Nullable Drawable icon,
