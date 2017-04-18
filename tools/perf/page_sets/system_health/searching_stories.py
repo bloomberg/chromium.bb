@@ -6,6 +6,8 @@ from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
 
+from telemetry import decorators
+
 from devil.android.sdk import keyevent # pylint: disable=import-error
 
 
@@ -67,6 +69,7 @@ class SearchOmniboxStory(system_health_story.SystemHealthStory):
     action_runner.ScrollPage(use_touch=True, distance=500)
 
 
+@decorators.Disabled('android')  # crbug.com/712590
 class MobileNewTabPageStory(system_health_story.SystemHealthStory):
   """Story that loads new tab page and performs searches.
 
