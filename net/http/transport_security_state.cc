@@ -56,6 +56,11 @@ const TransportSecurityStateSource* g_hsts_source = &kHSTSSource;
 //   1: Unless a delegate says otherwise, require CT.
 int g_ct_required_for_testing = 0;
 
+bool IsDynamicExpectCTEnabled() {
+  return base::FeatureList::IsEnabled(
+      TransportSecurityState::kDynamicExpectCTFeature);
+}
+
 // LessThan comparator for use with std::binary_search() in determining
 // whether a SHA-256 HashValue appears within a sorted array of
 // SHA256HashValues.
@@ -726,6 +731,10 @@ bool SerializeExpectStapleReport(const HostPortPair& host_port_pair,
 
 }  // namespace
 
+// static
+const base::Feature TransportSecurityState::kDynamicExpectCTFeature{
+    "DynamicExpectCT", base::FEATURE_DISABLED_BY_DEFAULT};
+
 void SetTransportSecurityStateSourceForTesting(
     const TransportSecurityStateSource* source) {
   g_hsts_source = source ? source : &kHSTSSource;
@@ -988,6 +997,23 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
   EnablePKPHost(host, pkp_state);
 }
 
+void TransportSecurityState::AddExpectCTInternal(
+    const std::string& host,
+    const base::Time& last_observed,
+    const base::Time& expiry,
+    bool enforce,
+    const GURL& report_uri) {
+  DCHECK(CalledOnValidThread());
+
+  ExpectCTState expect_ct_state;
+  expect_ct_state.last_observed = last_observed;
+  expect_ct_state.expiry = expiry;
+  expect_ct_state.enforce = enforce;
+  expect_ct_state.report_uri = report_uri;
+
+  EnableExpectCTHost(host, expect_ct_state);
+}
+
 void TransportSecurityState::
     SetEnablePublicKeyPinningBypassForLocalTrustAnchors(bool value) {
   enable_pkp_bypass_for_local_trust_anchors_ = value;
@@ -1038,6 +1064,33 @@ void TransportSecurityState::EnablePKPHost(const std::string& host,
   } else {
     const std::string hashed_host = HashHost(canonicalized_host);
     enabled_pkp_hosts_.erase(hashed_host);
+  }
+
+  DirtyNotify();
+}
+
+void TransportSecurityState::EnableExpectCTHost(const std::string& host,
+                                                const ExpectCTState& state) {
+  DCHECK(CalledOnValidThread());
+  if (!IsDynamicExpectCTEnabled())
+    return;
+
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  if (canonicalized_host.empty())
+    return;
+
+  // Only store new state when Expect-CT is explicitly enabled. If it is
+  // disabled, remove the state from the enabled hosts.
+  if (state.enforce || !state.report_uri.is_empty()) {
+    ExpectCTState expect_ct_state(state);
+    // No need to store this value since it is redundant. (|canonicalized_host|
+    // is the map key.)
+    expect_ct_state.domain.clear();
+
+    enabled_expect_ct_hosts_[HashHost(canonicalized_host)] = expect_ct_state;
+  } else {
+    const std::string hashed_host = HashHost(canonicalized_host);
+    enabled_expect_ct_hosts_.erase(hashed_host);
   }
 
   DirtyNotify();
@@ -1164,6 +1217,13 @@ bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
     deleted = true;
   }
 
+  ExpectCTStateMap::iterator expect_ct_iterator =
+      enabled_expect_ct_hosts_.find(hashed_host);
+  if (expect_ct_iterator != enabled_expect_ct_hosts_.end()) {
+    enabled_expect_ct_hosts_.erase(expect_ct_iterator);
+    deleted = true;
+  }
+
   if (deleted)
     DirtyNotify();
   return deleted;
@@ -1173,6 +1233,7 @@ void TransportSecurityState::ClearDynamicData() {
   DCHECK(CalledOnValidThread());
   enabled_sts_hosts_.clear();
   enabled_pkp_hosts_.clear();
+  enabled_expect_ct_hosts_.clear();
 }
 
 void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
@@ -1199,6 +1260,18 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
     }
 
     ++pkp_iterator;
+  }
+
+  ExpectCTStateMap::iterator expect_ct_iterator =
+      enabled_expect_ct_hosts_.begin();
+  while (expect_ct_iterator != enabled_expect_ct_hosts_.end()) {
+    if (expect_ct_iterator->second.last_observed >= time) {
+      dirtied = true;
+      enabled_expect_ct_hosts_.erase(expect_ct_iterator++);
+      continue;
+    }
+
+    ++expect_ct_iterator;
   }
 
   if (dirtied)
@@ -1277,6 +1350,14 @@ void TransportSecurityState::AddHPKP(const std::string& host,
   DCHECK(CalledOnValidThread());
   AddHPKPInternal(host, base::Time::Now(), expiry, include_subdomains, hashes,
                   report_uri);
+}
+
+void TransportSecurityState::AddExpectCT(const std::string& host,
+                                         const base::Time& expiry,
+                                         bool enforce,
+                                         const GURL& report_uri) {
+  DCHECK(CalledOnValidThread());
+  AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri);
 }
 
 bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
@@ -1571,6 +1652,30 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
   return false;
 }
 
+bool TransportSecurityState::GetDynamicExpectCTState(const std::string& host,
+                                                     ExpectCTState* result) {
+  DCHECK(CalledOnValidThread());
+
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  if (canonicalized_host.empty())
+    return false;
+
+  base::Time current_time(base::Time::Now());
+  ExpectCTStateMap::iterator j =
+      enabled_expect_ct_hosts_.find(HashHost(canonicalized_host));
+  if (j == enabled_expect_ct_hosts_.end())
+    return false;
+  // If the entry is invalid, drop it.
+  if (current_time > j->second.expiry) {
+    enabled_expect_ct_hosts_.erase(j);
+    DirtyNotify();
+    return false;
+  }
+
+  *result = j->second;
+  return true;
+}
+
 void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
     const std::string& hashed_host,
     const STSState& state) {
@@ -1585,6 +1690,14 @@ void TransportSecurityState::AddOrUpdateEnabledPKPHosts(
   DCHECK(CalledOnValidThread());
   DCHECK(state.HasPublicKeyPins());
   enabled_pkp_hosts_[hashed_host] = state;
+}
+
+void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
+    const std::string& hashed_host,
+    const ExpectCTState& state) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(state.enforce || !state.report_uri.is_empty());
+  enabled_expect_ct_hosts_[hashed_host] = state;
 }
 
 TransportSecurityState::STSState::STSState()
@@ -1615,9 +1728,18 @@ TransportSecurityState::PKPState::PKPState(const PKPState& other) = default;
 TransportSecurityState::PKPState::~PKPState() {
 }
 
-TransportSecurityState::ExpectCTState::ExpectCTState() {}
+TransportSecurityState::ExpectCTState::ExpectCTState() : enforce(false) {}
 
 TransportSecurityState::ExpectCTState::~ExpectCTState() {}
+
+TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
+    const TransportSecurityState& state)
+    : iterator_(state.enabled_expect_ct_hosts_.begin()),
+      end_(state.enabled_expect_ct_hosts_.end()) {
+  DCHECK(state.CalledOnValidThread());
+}
+
+TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() {}
 
 TransportSecurityState::ExpectStapleState::ExpectStapleState()
     : include_subdomains(false) {}
