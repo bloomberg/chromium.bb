@@ -25,7 +25,7 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
   views::View* GetHelpButtonView() const;
 
   TilesDefaultView* GetDefaultViewForTesting() const;
-  views::View* CreateDefaultViewForTesting(LoginStatus status);
+  views::View* CreateDefaultViewForTesting();
 
  private:
   friend class TrayTilesTest;

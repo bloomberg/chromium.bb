@@ -53,7 +53,7 @@ views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
 }
 
 views::View* TraySystemInfo::CreateDefaultView(LoginStatus status) {
-  default_view_ = new SystemInfoDefaultView(this, status);
+  default_view_ = new SystemInfoDefaultView(this);
 
   // Save the login status we created the view with.
   login_status_ = status;

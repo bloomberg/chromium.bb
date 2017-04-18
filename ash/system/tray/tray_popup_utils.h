@@ -200,9 +200,9 @@ class TrayPopupUtils {
   static views::Separator* CreateListSubHeaderSeparator();
 
   // Returns true if it is possible to open WebUI settings in a browser window,
-  // i.e., the user is logged in, not on the lock screen, and not in a secondary
-  // account flow.
-  static bool CanOpenWebUISettings(LoginStatus status);
+  // i.e. the user is logged in, not on the lock screen, not adding a secondary
+  // user, and not in the supervised user creation flow.
+  static bool CanOpenWebUISettings();
 
   // Initializes a row in the system menu as checkable and update the check mark
   // status of this row.

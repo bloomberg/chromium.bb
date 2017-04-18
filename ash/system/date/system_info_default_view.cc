@@ -25,8 +25,7 @@ const int kMinNumTileWidths = 2;
 // horizontally.
 const int kMaxNumTileWidths = 3;
 
-SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
-                                             LoginStatus login)
+SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner)
     : date_view_(nullptr),
       tri_view_(TrayPopupUtils::CreateMultiTargetRowView()) {
   tri_view_->SetMinHeight(kTrayPopupSystemInfoRowHeight);
@@ -54,7 +53,7 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
   }
   tri_view_->SetContainerVisible(TriView::Container::END, false);
 
-  if (TrayPopupUtils::CanOpenWebUISettings(login))
+  if (TrayPopupUtils::CanOpenWebUISettings())
     date_view_->SetAction(tray::DateView::DateAction::SHOW_DATE_SETTINGS);
 }
 

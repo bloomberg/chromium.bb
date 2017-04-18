@@ -482,13 +482,12 @@ class BluetoothDetailedView : public TrayDetailsView {
         TrayPopupUtils::CreateToggleButton(this, IDS_ASH_STATUS_TRAY_BLUETOOTH);
     tri_view()->AddView(TriView::Container::END, toggle_);
 
-    settings_ =
-        CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS);
+    settings_ = CreateSettingsButton(IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS);
     tri_view()->AddView(TriView::Container::END, settings_);
   }
 
   void ShowSettings() {
-    if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
+    if (TrayPopupUtils::CanOpenWebUISettings()) {
       Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
       owner()->system_tray()->CloseSystemBubble();
     }
@@ -573,6 +572,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     }
   }
 
+  // TODO(jamescook): Don't cache this.
   LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;

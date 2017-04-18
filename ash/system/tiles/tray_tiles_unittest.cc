@@ -4,28 +4,30 @@
 
 #include "ash/system/tiles/tray_tiles.h"
 
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell_port.h"
 #include "ash/system/tiles/tiles_default_view.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_session_controller_client.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/view.h"
 
+using views::Button;
+
 namespace ash {
 
-class TrayTilesTest : public test::AshTestBase {
+// Tests manually control their session state.
+class TrayTilesTest : public test::NoSessionAshTestBase {
  public:
   TrayTilesTest() {}
   ~TrayTilesTest() override {}
 
   void SetUp() override {
-    test::AshTestBase::SetUp();
+    test::NoSessionAshTestBase::SetUp();
     tray_tiles_.reset(new TrayTiles(GetPrimarySystemTray()));
   }
 
   void TearDown() override {
     tray_tiles_.reset();
-    test::AshTestBase::TearDown();
+    test::NoSessionAshTestBase::TearDown();
   }
 
   views::CustomButton* GetSettingsButton() {
@@ -52,41 +54,61 @@ class TrayTilesTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(TrayTilesTest);
 };
 
-TEST_F(TrayTilesTest, ButtonStatesWithAddingUser) {
+// Settings buttons are disabled before login.
+TEST_F(TrayTilesTest, ButtonStatesNotLoggedIn) {
+  std::unique_ptr<views::View> default_view(
+      tray_tiles()->CreateDefaultViewForTesting());
+  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
+}
+
+// All buttons are enabled after login.
+TEST_F(TrayTilesTest, ButtonStatesLoggedIn) {
+  SetSessionStarted(true);
+  std::unique_ptr<views::View> default_view(
+      tray_tiles()->CreateDefaultViewForTesting());
+  EXPECT_EQ(Button::STATE_NORMAL, GetSettingsButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetLockButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
+}
+
+// Settings buttons are disabled at the lock screen.
+TEST_F(TrayTilesTest, ButtonStatesLockScreen) {
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  std::unique_ptr<views::View> default_view(
+      tray_tiles()->CreateDefaultViewForTesting());
+  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
+}
+
+// Settings buttons are disabled when adding a second multiprofile user.
+TEST_F(TrayTilesTest, ButtonStatesAddingUser) {
   SetUserAddingScreenRunning(true);
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
-  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+      tray_tiles()->CreateDefaultViewForTesting());
+  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
 
-TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
+// Settings buttons are disabled when adding a supervised user.
+TEST_F(TrayTilesTest, ButtonStatesSupervisedUserFlow) {
+  // Simulate a supervised user session with disabled settings.
+  const bool enable_settings = false;
+  GetSessionControllerClient()->AddUserSession("foo@example.com",
+                                               enable_settings);
   std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::NOT_LOGGED_IN));
-  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-}
-
-TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
-  std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::LOCKED));
-  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
-  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-}
-
-TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusUser) {
-  std::unique_ptr<views::View> default_view(
-      tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
-  EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_NORMAL);
-  EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_NORMAL);
-  EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_NORMAL);
-  EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
+      tray_tiles()->CreateDefaultViewForTesting());
+  EXPECT_EQ(Button::STATE_DISABLED, GetSettingsButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetHelpButton()->state());
+  EXPECT_EQ(Button::STATE_DISABLED, GetLockButton()->state());
+  EXPECT_EQ(Button::STATE_NORMAL, GetPowerButton()->state());
 }
 
 }  // namespace ash

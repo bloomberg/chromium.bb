@@ -427,13 +427,8 @@ views::Separator* TrayPopupUtils::CreateListSubHeaderSeparator() {
   return separator;
 }
 
-bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
-  // TODO(tdanderson): Consider moving this into ShellPort, or introduce a
-  // CanShowSettings() method in each delegate type that has a
-  // ShowSettings() method.
-  return status != LoginStatus::NOT_LOGGED_IN &&
-         status != LoginStatus::LOCKED &&
-         !Shell::Get()->session_controller()->IsInSecondaryLoginScreen();
+bool TrayPopupUtils::CanOpenWebUISettings() {
+  return Shell::Get()->session_controller()->ShouldEnableSettings();
 }
 
 void TrayPopupUtils::InitializeAsCheckableRow(HoverHighlightView* container,

@@ -203,10 +203,8 @@ views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityDetailedView
 
-AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
-                                                     LoginStatus login)
-    : TrayDetailsView(owner),
-      login_(login) {
+AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner)
+    : TrayDetailsView(owner) {
   Reset();
   AppendAccessibilityList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);
@@ -415,22 +413,22 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 
   tri_view()->SetContainerVisible(TriView::Container::END, true);
 
-  help_view_ = CreateHelpButton(login_);
+  help_view_ = CreateHelpButton();
   settings_view_ =
-      CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS);
+      CreateSettingsButton(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS);
   tri_view()->AddView(TriView::Container::END, help_view_);
   tri_view()->AddView(TriView::Container::END, settings_view_);
 }
 
 void AccessibilityDetailedView::ShowSettings() {
-  if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
+  if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilitySettings();
     owner()->system_tray()->CloseSystemBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
-  if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
+  if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilityHelp();
     owner()->system_tray()->CloseSystemBubble();
   }
@@ -468,7 +466,7 @@ void TrayAccessibility::SetTrayIconVisible(bool visible) {
 }
 
 tray::AccessibilityDetailedView* TrayAccessibility::CreateDetailedMenu() {
-  return new tray::AccessibilityDetailedView(this, login_);
+  return new tray::AccessibilityDetailedView(this);
 }
 
 bool TrayAccessibility::GetInitialVisibility() {

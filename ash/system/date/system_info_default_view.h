@@ -6,7 +6,6 @@
 #define ASH_SYSTEM_DATE_SYSTEM_INFO_DEFAULT_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -24,8 +23,7 @@ class DateView;
 // power status.
 class ASH_EXPORT SystemInfoDefaultView : public views::View {
  public:
-  SystemInfoDefaultView(SystemTrayItem* owner, LoginStatus login);
-
+  explicit SystemInfoDefaultView(SystemTrayItem* owner);
   ~SystemInfoDefaultView() override;
 
   tray::DateView* GetDateView();

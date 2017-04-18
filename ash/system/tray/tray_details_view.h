@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/login_status.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
@@ -79,9 +78,8 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // Helper functions which create and return the settings and help buttons,
   // respectively, used in the material design top-most header row. The caller
   // assumes ownership of the returned buttons.
-  views::CustomButton* CreateSettingsButton(LoginStatus status,
-                                            int setting_accessible_name_id);
-  views::CustomButton* CreateHelpButton(LoginStatus status);
+  views::CustomButton* CreateSettingsButton(int setting_accessible_name_id);
+  views::CustomButton* CreateHelpButton();
 
   TriView* tri_view() { return tri_view_; }
 

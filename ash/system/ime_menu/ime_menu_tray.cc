@@ -9,7 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_state_delegate.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shelf/wm_shelf_util.h"
 #include "ash/shell.h"
@@ -27,6 +27,7 @@
 #include "ash/wm_window.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/session_manager/session_manager_types.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
@@ -85,9 +86,11 @@ void RecordButtonsClicked(const std::string& button_name) {
 
 // Returns true if the current screen is login or lock screen.
 bool IsInLoginOrLockScreen() {
-  LoginStatus login =
-      Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
-  return !TrayPopupUtils::CanOpenWebUISettings(login);
+  using session_manager::SessionState;
+  SessionState state = Shell::Get()->session_controller()->GetSessionState();
+  return state == SessionState::LOGIN_PRIMARY ||
+         state == SessionState::LOCKED ||
+         state == SessionState::LOGIN_SECONDARY;
 }
 
 // Returns true if the current input context type is password.
@@ -150,7 +153,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     if (show_settings_button) {
       settings_button_ = CreateImeMenuButton(
           this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
-      if (IsInLoginOrLockScreen())
+      if (!TrayPopupUtils::CanOpenWebUISettings())
         settings_button_->SetEnabled(false);
       AddChildView(settings_button_);
     }
@@ -243,6 +246,8 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     settings_button_ = CreateImeMenuButton(this, kSystemMenuSettingsIcon,
                                            IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
     AddChildView(settings_button_);
+    if (!TrayPopupUtils::CanOpenWebUISettings())
+      settings_button_->SetEnabled(false);
   }
 
   ImeMenuTray* ime_menu_tray_;

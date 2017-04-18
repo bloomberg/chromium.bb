@@ -63,7 +63,7 @@ class AccessibilityPopupView : public views::View {
 class AccessibilityDetailedView : public TrayDetailsView,
                                   public ShellObserver {
  public:
-  AccessibilityDetailedView(SystemTrayItem* owner, LoginStatus login);
+  explicit AccessibilityDetailedView(SystemTrayItem* owner);
   ~AccessibilityDetailedView() override {}
 
  private:

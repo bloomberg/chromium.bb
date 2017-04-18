@@ -75,8 +75,8 @@ class IMEDefaultView : public TrayItemMore {
 // enterprise-controlled icon).
 class IMEDetailedView : public ImeListView {
  public:
-  IMEDetailedView(SystemTrayItem* owner, LoginStatus login)
-      : ImeListView(owner), login_(login), settings_button_(nullptr) {}
+  explicit IMEDetailedView(SystemTrayItem* owner)
+      : ImeListView(owner), settings_button_(nullptr) {}
 
   ~IMEDetailedView() override {}
 
@@ -119,8 +119,7 @@ class IMEDetailedView : public ImeListView {
     }
 
     tri_view()->SetContainerVisible(TriView::Container::END, true);
-    settings_button_ =
-        CreateSettingsButton(login_, IDS_ASH_STATUS_TRAY_IME_SETTINGS);
+    settings_button_ = CreateSettingsButton(IDS_ASH_STATUS_TRAY_IME_SETTINGS);
     tri_view()->AddView(TriView::Container::END, settings_button_);
   }
 
@@ -131,8 +130,6 @@ class IMEDetailedView : public ImeListView {
     if (owner()->system_tray())
       owner()->system_tray()->CloseSystemBubble();
   }
-
-  LoginStatus login_;
 
   views::Button* settings_button_;
 
@@ -247,7 +244,7 @@ views::View* TrayIME::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayIME::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == NULL);
-  detailed_ = new tray::IMEDetailedView(this, status);
+  detailed_ = new tray::IMEDetailedView(this);
   detailed_->SetImeManagedMessage(ime_managed_message_);
   detailed_->Init(ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   return detailed_;

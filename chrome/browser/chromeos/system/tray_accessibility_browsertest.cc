@@ -1641,7 +1641,12 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
 
-  SetLoginStatus(ash::LoginStatus::USER);
+  // Simulate login.
+  session_manager::SessionManager::Get()->CreateSession(
+      AccountId::FromUserEmail("owner@invalid.domain"), "owner@invalid.domain");
+  session_manager::SessionManager::Get()->SessionStarted();
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -1659,7 +1664,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
 
-  SetLoginStatus(ash::LoginStatus::LOCKED);
+  // Simulate screen lock.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  // Flush to ensure the session state reaches ash and updates login status.
+  SessionControllerClient::FlushForTesting();
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -1677,11 +1686,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsTapDraggingMenuShownOnDetailMenu());
   CloseDetailMenu();
 
+  // Simulate adding multiprofile user.
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOGIN_SECONDARY);
   // Flush to ensure the session state reaches ash and updates login status.
   SessionControllerClient::FlushForTesting();
-  SetLoginStatus(ash::LoginStatus::USER);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());

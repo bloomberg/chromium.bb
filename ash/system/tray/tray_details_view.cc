@@ -326,21 +326,21 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
 }
 
 views::CustomButton* TrayDetailsView::CreateSettingsButton(
-    LoginStatus status,
     int setting_accessible_name_id) {
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuSettingsIcon, setting_accessible_name_id);
-  if (!TrayPopupUtils::CanOpenWebUISettings(status))
+  if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
   return button;
 }
 
-views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
+views::CustomButton* TrayDetailsView::CreateHelpButton() {
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
-  if (!TrayPopupUtils::CanOpenWebUISettings(status))
+  // Help opens a web page, so treat it like Web UI settings.
+  if (!TrayPopupUtils::CanOpenWebUISettings())
     button->SetEnabled(false);
   return button;
 }

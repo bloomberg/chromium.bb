@@ -37,15 +37,16 @@ const char kHebrewLocale[] = "he";
 
 namespace ash {
 
-TilesDefaultView::TilesDefaultView(SystemTrayItem* owner, LoginStatus login)
+TilesDefaultView::TilesDefaultView(SystemTrayItem* owner)
     : owner_(owner),
-      login_(login),
       settings_button_(nullptr),
       help_button_(nullptr),
       lock_button_(nullptr),
-      power_button_(nullptr) {}
+      power_button_(nullptr) {
+  DCHECK(owner_);
+}
 
-TilesDefaultView::~TilesDefaultView() {}
+TilesDefaultView::~TilesDefaultView() = default;
 
 void TilesDefaultView::Init() {
   views::BoxLayout* box_layout =
@@ -59,13 +60,12 @@ void TilesDefaultView::Init() {
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
   // |power_button_| which is always shown as enabled.
-  const bool disable_buttons = !TrayPopupUtils::CanOpenWebUISettings(login_);
+  const bool disable_buttons = !TrayPopupUtils::CanOpenWebUISettings();
 
   settings_button_ = new SystemMenuButton(
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
-  if (disable_buttons ||
-      !Shell::Get()->session_controller()->ShouldEnableSettings())
+  if (disable_buttons)
     settings_button_->SetEnabled(false);
   AddChildView(settings_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
