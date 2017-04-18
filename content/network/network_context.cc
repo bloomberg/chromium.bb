@@ -7,8 +7,10 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/log/net_log_util.h"
@@ -21,31 +23,37 @@
 namespace content {
 
 namespace {
-// Logs network information to the specified file.
-const char kLogNetLog[] = "log-net-log";
-
-// Applies the specified mapping rules when resolving hosts. Please see the
-// comment of net::MappedHostResolver::AddRulesFromString() for rule format.
-const char kHostResolverRules[] = "host-resolver-rules";
-
-// Ignores certificate-related errors.
-const char kIgnoreCertificateErrors[] = "ignore-certificate-errors";
 
 std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
   net::URLRequestContextBuilder builder;
   net::URLRequestContextBuilder::HttpNetworkSessionParams params;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(kIgnoreCertificateErrors))
+  if (command_line->HasSwitch(switches::kIgnoreCertificateErrors))
     params.ignore_certificate_errors = true;
+
+  if (command_line->HasSwitch(switches::kTestingFixedHttpPort)) {
+    int value;
+    base::StringToInt(
+        command_line->GetSwitchValueASCII(switches::kTestingFixedHttpPort),
+        &value);
+    params.testing_fixed_http_port = value;
+  }
+  if (command_line->HasSwitch(switches::kTestingFixedHttpsPort)) {
+    int value;
+    base::StringToInt(
+        command_line->GetSwitchValueASCII(switches::kTestingFixedHttpsPort),
+        &value);
+    params.testing_fixed_https_port = value;
+  }
   builder.set_http_network_session_params(params);
-  if (command_line->HasSwitch(kHostResolverRules)) {
+  if (command_line->HasSwitch(switches::kHostResolverRules)) {
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(nullptr));
     std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
         new net::MappedHostResolver(std::move(host_resolver)));
     remapped_host_resolver->SetRulesFromString(
-        command_line->GetSwitchValueASCII(kHostResolverRules));
+        command_line->GetSwitchValueASCII(switches::kHostResolverRules));
     builder.set_host_resolver(std::move(remapped_host_resolver));
   }
   builder.set_accept_language("en-us,en");
@@ -74,9 +82,10 @@ class NetworkContext::MojoNetLog : public net::NetLog {
   MojoNetLog() {
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(kLogNetLog))
+    if (!command_line->HasSwitch(switches::kLogNetLog))
       return;
-    base::FilePath log_path = command_line->GetSwitchValuePath(kLogNetLog);
+    base::FilePath log_path =
+        command_line->GetSwitchValuePath(switches::kLogNetLog);
     base::ScopedFILE file;
 #if defined(OS_WIN)
     file.reset(_wfopen(log_path.value().c_str(), L"w"));

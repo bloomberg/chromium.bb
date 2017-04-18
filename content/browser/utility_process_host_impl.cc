@@ -314,8 +314,13 @@ bool UtilityProcessHostImpl::StartProcess() {
     // Browser command-line switches to propagate to the utility process.
     static const char* const kSwitchNames[] = {
       switches::kEnableNetworkService,
+      switches::kHostResolverRules,
+      switches::kIgnoreCertificateErrors,
+      switches::kLogNetLog,
       switches::kNoSandbox,
       switches::kProfilerTiming,
+      switches::kTestingFixedHttpPort,
+      switches::kTestingFixedHttpsPort,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif

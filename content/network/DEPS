@@ -7,6 +7,7 @@ include_rules = [
   "+content/common/url_loader_factory.mojom.h",
   "+content/network",
   "+content/public/common/content_client.h",
+  "+content/public/common/content_switches.h",
   "+content/public/common/referrer.h",
   "+content/public/common/resource_response.h",
   "+services/service_manager/public",
