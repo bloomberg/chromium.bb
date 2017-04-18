@@ -95,16 +95,16 @@ bool FetchUtils::IsSimpleHeader(const AtomicString& name,
   // Treat inspector headers as a simple headers, since they are added by blink
   // when the inspector is open.
 
-  if (DeprecatedEqualIgnoringCase(name, "accept") ||
-      DeprecatedEqualIgnoringCase(name, "accept-language") ||
-      DeprecatedEqualIgnoringCase(name, "content-language") ||
-      DeprecatedEqualIgnoringCase(
+  if (EqualIgnoringASCIICase(name, "accept") ||
+      EqualIgnoringASCIICase(name, "accept-language") ||
+      EqualIgnoringASCIICase(name, "content-language") ||
+      EqualIgnoringASCIICase(
           name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id) ||
-      DeprecatedEqualIgnoringCase(name, HTTPNames::X_DevTools_Request_Id) ||
-      DeprecatedEqualIgnoringCase(name, "save-data"))
+      EqualIgnoringASCIICase(name, HTTPNames::X_DevTools_Request_Id) ||
+      EqualIgnoringASCIICase(name, "save-data"))
     return true;
 
-  if (DeprecatedEqualIgnoringCase(name, "content-type"))
+  if (EqualIgnoringASCIICase(name, "content-type"))
     return IsSimpleContentType(value);
 
   return false;
@@ -112,10 +112,10 @@ bool FetchUtils::IsSimpleHeader(const AtomicString& name,
 
 bool FetchUtils::IsSimpleContentType(const AtomicString& media_type) {
   AtomicString mime_type = ExtractMIMETypeFromMediaType(media_type);
-  return DeprecatedEqualIgnoringCase(mime_type,
-                                     "application/x-www-form-urlencoded") ||
-         DeprecatedEqualIgnoringCase(mime_type, "multipart/form-data") ||
-         DeprecatedEqualIgnoringCase(mime_type, "text/plain");
+  return EqualIgnoringASCIICase(mime_type,
+                                "application/x-www-form-urlencoded") ||
+         EqualIgnoringASCIICase(mime_type, "multipart/form-data") ||
+         EqualIgnoringASCIICase(mime_type, "text/plain");
 }
 
 bool FetchUtils::IsSimpleRequest(const String& method,
@@ -137,9 +137,9 @@ bool FetchUtils::IsForbiddenMethod(const String& method) {
   // http://fetch.spec.whatwg.org/#forbidden-method
   // "A forbidden method is a method that is a byte case-insensitive match"
   //  for one of `CONNECT`, `TRACE`, and `TRACK`."
-  return DeprecatedEqualIgnoringCase(method, "TRACE") ||
-         DeprecatedEqualIgnoringCase(method, "TRACK") ||
-         DeprecatedEqualIgnoringCase(method, "CONNECT");
+  return EqualIgnoringASCIICase(method, "TRACE") ||
+         EqualIgnoringASCIICase(method, "TRACK") ||
+         EqualIgnoringASCIICase(method, "CONNECT");
 }
 
 bool FetchUtils::IsForbiddenHeaderName(const String& name) {
@@ -161,8 +161,8 @@ bool FetchUtils::IsForbiddenResponseHeaderName(const String& name) {
   // "A forbidden response header name is a header name that is one of:
   // `Set-Cookie`, `Set-Cookie2`"
 
-  return DeprecatedEqualIgnoringCase(name, "set-cookie") ||
-         DeprecatedEqualIgnoringCase(name, "set-cookie2");
+  return EqualIgnoringASCIICase(name, "set-cookie") ||
+         EqualIgnoringASCIICase(name, "set-cookie2");
 }
 
 bool FetchUtils::IsSimpleOrForbiddenRequest(const String& method,
@@ -189,7 +189,7 @@ AtomicString FetchUtils::NormalizeMethod(const AtomicString& method) {
   };
 
   for (const auto& known : kMethods) {
-    if (DeprecatedEqualIgnoringCase(method, known)) {
+    if (EqualIgnoringASCIICase(method, known)) {
       // Don't bother allocating a new string if it's already all
       // uppercase.
       return method == known ? method : known;
