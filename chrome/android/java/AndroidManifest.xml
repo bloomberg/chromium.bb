@@ -30,8 +30,6 @@ by a child template that "extends" this file.
       permission on Android M and later without a prompt.
     -->
     {% if channel in ['default'] %}
-        <uses-permission android:name="android.permission.BLUETOOTH"/>
-        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
         <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     {% endif %}
     <uses-permission-sdk-m android:name="android.permission.BLUETOOTH"/>
