@@ -11,10 +11,21 @@
 #      ],
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'banners',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'banners',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:chrome_echo_private',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '../compiled_resources2.gyp:directory_model',
+        '../compiled_resources2.gyp:volume_manager_wrapper',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(EXTERNS_GYP):chrome_extensions',
+        '<(EXTERNS_GYP):file_manager_private',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'combobutton',
       'dependencies': [
@@ -53,10 +64,24 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'directory_tree',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'directory_tree',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:menu_item_update_event',
+        '../../../background/js/compiled_resources2.gyp:file_operation_manager',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '../compiled_resources2.gyp:directory_model',
+        '../compiled_resources2.gyp:navigation_list_model',
+        '../compiled_resources2.gyp:volume_manager_wrapper',
+        '../metadata/compiled_resources2.gyp:metadata_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_button',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_handler',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:tree',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'drag_selector',
       'dependencies': [
@@ -221,10 +246,18 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'providers_menu',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'providers_menu',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:menu_item_update_event',
+        '../compiled_resources2.gyp:providers_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:position_util',
+        'directory_tree',
+        'files_menu',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'search_box',
 #      'includes': ['../../../../compile_js2.gypi'],

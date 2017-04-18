@@ -104,6 +104,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'menu_item_update_event',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'metadata_parser_interface',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },

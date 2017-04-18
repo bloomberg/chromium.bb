@@ -988,7 +988,7 @@ MenuItem.prototype.selectByEntry = function(entry) {
  */
 MenuItem.prototype.activate = function() {
   // Dispatch an event to update the menu (if updatable).
-  var updateEvent = new Event('update');
+  var updateEvent = /** @type {MenuItemUpdateEvent} */ (new Event('update'));
   updateEvent.menuButton = this.menuButton_;
   this.menuButton_.menu.dispatchEvent(updateEvent);
 
@@ -1368,14 +1368,14 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
 
 /**
  * Invoked when a directory is changed.
- * @param {!Event} event Event.
+ * @param {!FileWatchEvent} event Event.
  * @private
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
   if (event.eventType !== 'changed' || !event.entry)
     return;
 
-  this.updateTreeByEntry_(event.entry);
+  this.updateTreeByEntry_(/** @type{!Entry} */ (event.entry));
 };
 
 /**

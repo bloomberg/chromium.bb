@@ -188,6 +188,7 @@
           '../../../externs/file_operation_progress_event.js',
           '../../../externs/html_menu_item_element.js',
           '../../../externs/launcher_search_provider.js',
+          '../../../externs/menu_item_update_event.js',
           '../../../externs/paper_elements.js',
           '../../../externs/platform.js',
           '../../../externs/volume_info.js',
