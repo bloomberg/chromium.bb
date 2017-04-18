@@ -38,6 +38,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
   void flush() override;
 
+  SkISize getBaseLayerSize() const override;
   bool writePixels(const SkImageInfo& info,
                    const void* pixels,
                    size_t row_bytes,

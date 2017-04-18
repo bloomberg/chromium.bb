@@ -34,6 +34,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   // both recording and gpu work.
   virtual void flush() = 0;
 
+  virtual SkISize getBaseLayerSize() const = 0;
   virtual bool writePixels(const SkImageInfo& info,
                            const void* pixels,
                            size_t row_bytes,

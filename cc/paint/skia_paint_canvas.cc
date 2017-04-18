@@ -38,6 +38,10 @@ void SkiaPaintCanvas::flush() {
   canvas_->flush();
 }
 
+SkISize SkiaPaintCanvas::getBaseLayerSize() const {
+  return canvas_->getBaseLayerSize();
+}
+
 bool SkiaPaintCanvas::writePixels(const SkImageInfo& info,
                                   const void* pixels,
                                   size_t row_bytes,
