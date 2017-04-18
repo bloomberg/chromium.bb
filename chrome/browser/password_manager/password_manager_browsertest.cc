@@ -1092,14 +1092,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // The only thing we check here is that there is no use-after-free reported.
 }
 
-// Disabled on Windows due to flakiness: http://crbug.com/346297
-#if defined(OS_WIN)
-#define MAYBE_PasswordValueAccessible DISABLED_PasswordValueAccessible
-#else
-#define MAYBE_PasswordValueAccessible PasswordValueAccessible
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       MAYBE_PasswordValueAccessible) {
+                       PasswordValueAccessible) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("admin");
+  signin_form.password_value = base::ASCIIToUTF16("12345");
+  password_store->AddLogin(signin_form);
+
+  // Steps from https://crbug.com/337429#c37.
+  // Navigate to the page, click a link that opens a second tab, reload the
+  // first tab and observe that the password is accessible.
   NavigateToFile("/password/form_and_link.html");
 
   // Click on a link to open a new tab, then switch back to the first one.
@@ -1110,36 +1121,23 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   browser()->tab_strip_model()->ActivateTabAt(0, false);
 
-  // Fill in the credentials, and make sure they are saved.
-  NavigationObserver form_submit_observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_submit =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random';"
-      "document.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  form_submit_observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
-
   // Reload the original page to have the saved credentials autofilled.
   NavigationObserver reload_observer(WebContents());
   NavigateToFile("/password/form_and_link.html");
   reload_observer.Wait();
 
   // Wait until the username is filled, to make sure autofill kicked in.
-  WaitForElementValue("username_field", "temp");
+  WaitForElementValue("username_field", "admin");
   // Now check that the password is not accessible yet.
   CheckElementValue("password_field", "");
   // Let the user interact with the page.
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   // Wait until that interaction causes the password value to be revealed.
-  WaitForElementValue("password_field", "random");
+  WaitForElementValue("password_field", "12345");
   // And check that after the side-effects of the interaction took place, the
   // username value stays the same.
-  CheckElementValue("username_field", "temp");
+  CheckElementValue("username_field", "admin");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
