@@ -35,7 +35,6 @@ class SiteEngagementMetrics {
   static void RecordTotalOriginsEngaged(int total_origins);
   static void RecordMeanEngagement(double mean_engagement);
   static void RecordMedianEngagement(double median_engagement);
-  static void RecordEngagementPercentageForHTTPS(double percentage);
   static void RecordEngagementScores(const std::map<GURL, double>& score_map);
   static void RecordOriginsWithMaxEngagement(int total_origins);
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
@@ -57,10 +56,7 @@ class SiteEngagementMetrics {
   static const char kTotalOriginsHistogram[];
   static const char kMeanEngagementHistogram[];
   static const char kMedianEngagementHistogram[];
-  static const char kEngagementPercentageForHTTPSHistogram[];
   static const char kEngagementScoreHistogram[];
-  static const char kEngagementScoreHistogramHTTP[];
-  static const char kEngagementScoreHistogramHTTPS[];
   static const char kEngagementScoreHistogramIsZero[];
   static const char kOriginsWithMaxEngagementHistogram[];
   static const char kOriginsWithMaxDailyEngagementHistogram[];
