@@ -4,20 +4,18 @@
  * found in the LICENSE file.
  */
 
-/* global PaymentRequest:false */
-
 /**
  * Launches the PaymentRequest UI twice.
  */
 function buy() {  // eslint-disable-line no-unused-vars
-  var payment1 = new PaymentRequest(
+  const payment1 = new PaymentRequest(
       [{supportedMethods: ['visa']}],
       {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-  var payment2 = new PaymentRequest(
+  const payment2 = new PaymentRequest(
       [{supportedMethods: ['visa']}],
       {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
   payment1.show();
   payment2.show().catch(function(error) {
-    print("Second request: " + error);
+    print('Second request: ' + error);
   });
 }

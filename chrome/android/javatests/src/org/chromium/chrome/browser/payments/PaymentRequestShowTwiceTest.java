@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -41,6 +42,16 @@ public class PaymentRequestShowTwiceTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         expectResultContains(new String[] {"Second request: AbortError: Request cancelled"});
+
+        // The web payments UI was not aborted.
+        assertOnlySpecificAbortMetricLogged(-1 /* none */);
+
+        // The UI was never shown due to another web payments UI already showing.
+        assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.CheckoutFunnel.NoShow",
+                        PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS));
+
         clickAndWait(R.id.close_button, mDismissed);
     }
 }

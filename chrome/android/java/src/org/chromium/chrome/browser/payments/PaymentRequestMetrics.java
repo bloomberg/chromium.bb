@@ -54,7 +54,11 @@ public final class PaymentRequestMetrics {
     @VisibleForTesting
     public static final int NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD = 1;
     @VisibleForTesting
-    public static final int NO_SHOW_REASON_MAX = 2;
+    public static final int NO_SHOW_CONCURRENT_REQUESTS = 2;
+    @VisibleForTesting
+    public static final int NO_SHOW_REASON_OTHER = 3;
+    @VisibleForTesting
+    public static final int NO_SHOW_REASON_MAX = 4;
 
     // PaymentRequestPaymentMethods defined in tools/metrics/histograms/histograms.xml.
     @VisibleForTesting

@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -42,6 +43,7 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -725,6 +727,21 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
                 return isSelected;
             }
         });
+    }
+
+    /**
+     * Asserts that only the specified reason for abort is logged.
+     *
+     * @param abortReason The only bucket in the abort histogram that should have a record.
+     */
+    protected void assertOnlySpecificAbortMetricLogged(int abortReason) {
+        for (int i = 0; i < PaymentRequestMetrics.ABORT_REASON_MAX; ++i) {
+            assertEquals(
+                    String.format(Locale.getDefault(), "Found %d instead of %d", i, abortReason),
+                    (i == abortReason ? 1 : 0),
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "PaymentRequest.CheckoutFunnel.Aborted", i));
+        }
     }
 
     @Override

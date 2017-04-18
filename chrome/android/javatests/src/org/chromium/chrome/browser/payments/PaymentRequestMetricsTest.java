@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
@@ -331,22 +330,6 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
         assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.CheckoutFunnel.Shown", 1));
-    }
-
-    /**
-     * Asserts that only the specified reason for abort is logged.
-     *
-     * @param abortReason The only bucket in the abort histogram that should have a record.
-     */
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("DefaultLocale")
-    private void assertOnlySpecificAbortMetricLogged(int abortReason) {
-        for (int i = 0; i < PaymentRequestMetrics.ABORT_REASON_MAX; ++i) {
-            assertEquals(String.format("Found %d instead of %d", i, abortReason),
-                    (i == abortReason ? 1 : 0),
-                    RecordHistogram.getHistogramValueCountForTesting(
-                            "PaymentRequest.CheckoutFunnel.Aborted", i));
-        }
     }
 
     /**

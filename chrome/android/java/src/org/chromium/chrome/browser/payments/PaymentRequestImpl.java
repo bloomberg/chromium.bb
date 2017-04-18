@@ -433,26 +433,26 @@ public class PaymentRequestImpl
         }
 
         if (mMethodData != null) {
-            disconnectFromClientWithDebugMessage("PaymentRequest.show() called more than once.");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Renderer should never call init() twice");
             return;
         }
 
         mMethodData = getValidatedMethodData(methodData, mCardEditor);
         if (mMethodData == null) {
-            disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Invalid payment methods or data");
             return;
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
         if (mRawTotal == null) {
-            disconnectFromClientWithDebugMessage("Missing total");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Missing total");
             return;
         }
 
@@ -578,10 +578,23 @@ public class PaymentRequestImpl
     public void show() {
         if (mClient == null) return;
 
-        if (getIsAnyPaymentRequestShowing()) {
-            disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
+        if (mUI != null) {
+            // Can be triggered only by a compromised renderer. In normal operation, calling show()
+            // twice on the same instance of PaymentRequest in JavaScript is rejected at the
+            // renderer level.
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Renderer should never invoke show() twice");
+            return;
+        }
+
+        if (getIsAnyPaymentRequestShowing()) {
+            // The renderer can create multiple instances of PaymentRequest and call show() on each
+            // one. Only the first one will be shown. This also prevents multiple tabs and windows
+            // from showing PaymentRequest UI at the same time.
+            recordNoShowReasonHistogram(PaymentRequestMetrics.NO_SHOW_CONCURRENT_REQUESTS);
+            disconnectFromClientWithDebugMessage("A PaymentRequest UI is already showing");
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
 
@@ -590,8 +603,9 @@ public class PaymentRequestImpl
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) {
+            recordNoShowReasonHistogram(PaymentRequestMetrics.NO_SHOW_REASON_OTHER);
             disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
-            recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_OTHER);
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return;
         }
 
@@ -719,10 +733,10 @@ public class PaymentRequestImpl
         if (mClient == null) return;
 
         if (mUI == null) {
-            disconnectFromClientWithDebugMessage(
-                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    "PaymentRequestUpdateEvent.updateWith() called without PaymentRequest.show()");
             return;
         }
 
@@ -753,9 +767,9 @@ public class PaymentRequestImpl
      */
     private boolean parseAndValidateDetailsOrDisconnectFromClient(PaymentDetails details) {
         if (!PaymentValidator.validatePaymentDetails(details)) {
-            disconnectFromClientWithDebugMessage("Invalid payment details");
             recordAbortReasonHistogram(
                     PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage("Invalid payment details");
             return false;
         }
 
@@ -1224,8 +1238,8 @@ public class PaymentRequestImpl
 
     @Override
     public void onDismiss() {
-        disconnectFromClientWithDebugMessage("Dialog dismissed");
         recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+        disconnectFromClientWithDebugMessage("Dialog dismissed");
     }
 
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
@@ -1283,16 +1297,16 @@ public class PaymentRequestImpl
     public void onCardAndAddressSettingsClicked() {
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (context == null) {
-            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_OTHER);
+            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
             return;
         }
 
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 context, AutofillAndPaymentsPreferences.class.getName());
         context.startActivity(intent);
-        disconnectFromClientWithDebugMessage("Card and address settings clicked");
         recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
+        disconnectFromClientWithDebugMessage("Card and address settings clicked");
     }
 
     /**
@@ -1484,12 +1498,12 @@ public class PaymentRequestImpl
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
-            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
-                    mIsIncognito ? PaymentErrorReason.USER_CANCEL
-                                 : PaymentErrorReason.NOT_SUPPORTED);
             recordNoShowReasonHistogram(mArePaymentMethodsSupported
                             ? PaymentRequestMetrics.NO_SHOW_NO_MATCHING_PAYMENT_METHOD
                             : PaymentRequestMetrics.NO_SHOW_NO_SUPPORTED_PAYMENT_METHOD);
+            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
+                    mIsIncognito ? PaymentErrorReason.USER_CANCEL
+                                 : PaymentErrorReason.NOT_SUPPORTED);
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
             return true;
         }
