@@ -40,6 +40,8 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_url_handlers.h"
+#include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
 
@@ -354,6 +356,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int file_access_not_allowed_count = 0;
   int eventless_event_pages_count = 0;
   int off_store_item_count = 0;
+  int web_request_blocking_count = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
   for (ExtensionSet::const_iterator iter = extensions.begin();
@@ -403,6 +406,11 @@ void InstalledLoader::RecordExtensionsMetrics() {
                                   EXTERNAL_ITEM_NONWEBSTORE_ENABLED,
                                   EXTERNAL_ITEM_MAX_ITEMS);
       }
+    }
+
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kWebRequestBlocking)) {
+      web_request_blocking_count++;
     }
 
     // From now on, don't count component extensions, since they are only
@@ -619,6 +627,8 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            eventless_event_pages_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadOffStoreItems",
                            off_store_item_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.WebRequestBlockingCount",
+                           web_request_blocking_count);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
