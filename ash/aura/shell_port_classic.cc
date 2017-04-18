@@ -11,6 +11,7 @@
 #include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
@@ -37,6 +38,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/types/native_display_delegate.h"
 
 #if defined(USE_X11)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
@@ -44,6 +46,8 @@
 
 #if defined(USE_OZONE)
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#include "ui/display/types/native_display_delegate.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace ash {
@@ -239,6 +243,12 @@ void ShellPortClassic::CreatePointerWatcherAdapter() {
   pointer_watcher_adapter_ = base::MakeUnique<PointerWatcherAdapter>();
 }
 
+std::unique_ptr<AshWindowTreeHost> ShellPortClassic::CreateAshWindowTreeHost(
+    const AshWindowTreeHostInitParams& init_params) {
+  // A return value of null results in falling back to the default.
+  return nullptr;
+}
+
 void ShellPortClassic::CreatePrimaryHost() {
   Shell::Get()->window_tree_host_manager()->Start();
   AshWindowTreeHostInitParams ash_init_params;
@@ -247,6 +257,15 @@ void ShellPortClassic::CreatePrimaryHost() {
 
 void ShellPortClassic::InitHosts(const ShellInitParams& init_params) {
   Shell::Get()->window_tree_host_manager()->InitHosts();
+}
+
+std::unique_ptr<display::NativeDisplayDelegate>
+ShellPortClassic::CreateNativeDisplayDelegate() {
+#if defined(USE_OZONE)
+  return ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
+#else
+  return nullptr;
+#endif
 }
 
 std::unique_ptr<AcceleratorController>

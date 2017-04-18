@@ -29,10 +29,9 @@ class RootWindowTransformer;
 class ASH_EXPORT AshWindowTreeHost {
  public:
   AshWindowTreeHost();
-  virtual ~AshWindowTreeHost() {}
+  virtual ~AshWindowTreeHost();
 
-  // Creates a new AshWindowTreeHost. The caller owns the returned value.
-  static AshWindowTreeHost* Create(
+  static std::unique_ptr<AshWindowTreeHost> Create(
       const AshWindowTreeHostInitParams& init_params);
 
   void set_input_method_handler(InputMethodEventHandler* input_method_handler) {

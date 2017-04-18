@@ -174,7 +174,7 @@ void MirrorWindowController::UpdateWindow(
       AshWindowTreeHostInitParams init_params;
       init_params.initial_bounds = display_info.bounds_in_native();
       MirroringHostInfo* host_info = new MirroringHostInfo;
-      host_info->ash_host.reset(AshWindowTreeHost::Create(init_params));
+      host_info->ash_host = AshWindowTreeHost::Create(init_params);
       mirroring_host_info_map_[display_info.id()] = host_info;
 
       aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();

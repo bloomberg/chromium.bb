@@ -104,8 +104,12 @@ class ShellPortMash : public ShellPort {
   void SetLaserPointerEnabled(bool enabled) override;
   void SetPartialMagnifierEnabled(bool enabled) override;
   void CreatePointerWatcherAdapter() override;
+  std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
+      const AshWindowTreeHostInitParams& init_params) override;
   void CreatePrimaryHost() override;
   void InitHosts(const ShellInitParams& init_params) override;
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:

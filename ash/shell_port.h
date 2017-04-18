@@ -23,6 +23,7 @@
 namespace display {
 class Display;
 class ManagedDisplayInfo;
+class NativeDisplayDelegate;
 }
 
 namespace gfx {
@@ -37,6 +38,8 @@ enum class PointerWatcherEventTypes;
 
 namespace ash {
 class AcceleratorController;
+class AshWindowTreeHost;
+struct AshWindowTreeHostInitParams;
 class ImmersiveFullscreenController;
 class KeyEventWatcher;
 class KeyboardUI;
@@ -204,6 +207,11 @@ class ASH_EXPORT ShellPort {
 
   virtual void CreatePointerWatcherAdapter() = 0;
 
+  // Creates an AshWindowTreeHost. A return value of null results in a platform
+  // specific AshWindowTreeHost being created.
+  virtual std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
+      const AshWindowTreeHostInitParams& init_params) = 0;
+
  protected:
   ShellPort();
 
@@ -211,6 +219,8 @@ class ASH_EXPORT ShellPort {
   // the corresponding RootWindowController.
   virtual void CreatePrimaryHost() = 0;
   virtual void InitHosts(const ShellInitParams& init_params) = 0;
+  virtual std::unique_ptr<display::NativeDisplayDelegate>
+  CreateNativeDisplayDelegate() = 0;
 
   // Called during startup to create the AcceleratorController.
   virtual std::unique_ptr<AcceleratorController>

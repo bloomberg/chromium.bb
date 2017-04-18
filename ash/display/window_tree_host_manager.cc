@@ -813,7 +813,10 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   params_with_bounds.initial_bounds = display_info.bounds_in_native();
   params_with_bounds.offscreen =
       display.id() == display::DisplayManager::kUnifiedDisplayId;
-  AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(params_with_bounds);
+  // The AshWindowTreeHost ends up owned by the RootWindowControllers created
+  // by this class.
+  AshWindowTreeHost* ash_host =
+      AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   if (!input_method_) {  // Singleton input method instance for Ash.
     input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());

@@ -10,6 +10,7 @@
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
+#include "ash/host/ash_window_tree_host.h"
 #include "ash/key_event_watcher.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -54,6 +55,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 
 namespace ash {
@@ -423,11 +425,21 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
   }
 }
 
+std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
+    const AshWindowTreeHostInitParams& init_params) {
+  return nullptr;
+}
+
 void ShellPortMash::CreatePrimaryHost() {}
 
 void ShellPortMash::InitHosts(const ShellInitParams& init_params) {
   window_manager_->CreatePrimaryRootWindowController(
       base::WrapUnique(init_params.primary_window_tree_host));
+}
+
+std::unique_ptr<display::NativeDisplayDelegate>
+ShellPortMash::CreateNativeDisplayDelegate() {
+  return nullptr;
 }
 
 std::unique_ptr<AcceleratorController>

@@ -6,3 +6,9 @@ include_rules = [
   "+ash/ash_switches.h",
   "+ui/ozone/public",  # For ozone interfaces
 ]
+
+specific_include_rules = {
+  "ash_window_tree_host.cc": [
+    "+ash/shell_port.h",
+  ],
+}
