@@ -53,7 +53,7 @@
             selection.document.execCommand('italic'); // disable italic
             selection.document.execCommand('insertText', false, 'mno');
         },
-        '<div contenteditable>abc<b>def</b><i><b>ghi</b>jkl</i>mno|</div>'),
+        '<div contenteditable>abc<b>def</b><i style><b>ghi</b>jkl</i>mno|</div>'),
         'Nested styles and disabling styles');
 
     test(() => assert_selection(

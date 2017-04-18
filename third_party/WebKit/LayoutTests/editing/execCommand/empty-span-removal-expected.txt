@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS one bold command converted <span><span style='font-weight: bold'>test</span></span> to <span>test</span>
 PASS one bold command converted <span style='font-weight: bold'><span>test</span></span> to test
 PASS one bold command converted <span style='font-weight: bold'><span style='font-weight: bold'>test</span></span> to test
-PASS one bold command converted <span foo="bar" style='font-weight: bold'>test</span> to <span foo="bar">test</span>
+PASS one bold command converted <span foo="bar" style='font-weight: bold'>test</span> to <span foo="bar" style="">test</span>
 PASS two bold commands converted <span>test</span> to <span>test</span>
 PASS successfullyParsed is true
 

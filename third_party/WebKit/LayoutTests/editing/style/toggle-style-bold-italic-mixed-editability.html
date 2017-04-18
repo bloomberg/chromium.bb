@@ -49,9 +49,9 @@ test(() => assert_selection(
     },
     [
         '<div contenteditable>',
-            '<i>^abc </i>',
+            '<i style>^abc </i>',
             '<span contenteditable="false">def</span>',
-            '<i> ghi|</i>',
+            '<i style> ghi|</i>',
         '</div>',
     ].join('')),
     'bold+italic+bold');

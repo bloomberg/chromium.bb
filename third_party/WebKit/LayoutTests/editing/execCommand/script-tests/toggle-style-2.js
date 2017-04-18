@@ -30,7 +30,7 @@ function testDoubleToggle(toggleCommand, initialContents, expectedContents)
 }
 
 testSingleToggle("underline", "test", "<u>test</u>");
-testSingleToggle("underline", "<u><b><strike>test</strike></b></u>", "<b><strike>test</strike></b>");
+testSingleToggle("underline", "<u><b><strike>test</strike></b></u>", "<b style=\"\"><strike style=\"\">test</strike></b>");
 testDoubleToggle("underline", "test", "test");
 testSingleToggle("strikethrough", "test", "<strike>test</strike>");
 testSingleToggle("strikethrough", "<u><b><strike>test</strike></b></u>", "<u><b>test</b></u>");

@@ -39,12 +39,12 @@ test(() => {
   assert_selection(
     '<div contenteditable dir="rtl">&#1498; &#1500;&#1499;</div>',
     selection => testClickLeft(selection, 2, 0),
-    '<div contenteditable dir="rtl">ך |לכ</div>');
+    '<div contenteditable dir="rtl" style>ך |לכ</div>');
 
   assert_selection(
     '<div contenteditable dir="rtl">&#1498; &#1500;&#1499;</div>',
     selection => testClickLeft(selection, 2, 1),
-    '<div contenteditable dir="rtl">ך לכ|</div>');
+    '<div contenteditable dir="rtl" style>ך לכ|</div>');
 
   assert_selection(
     [
@@ -54,7 +54,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 3, 0),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'ככ |ככככ כככ',
        '</div>'
     ].join(''));
@@ -67,7 +67,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 3, 1),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'ככ ככככ |כככ',
        '</div>'
     ].join(''));
@@ -80,7 +80,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 3, 2),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'ככ ככככ כככ|',
        '</div>'
     ].join(''));
@@ -93,7 +93,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 5, 0),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'גכ |יגכ יגכ יגכ יגכ',
        '</div>'
     ].join(''));
@@ -106,7 +106,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 5, 1),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'גכ יגכ |יגכ יגכ יגכ',
        '</div>'
     ].join(''));
@@ -119,7 +119,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 5, 2),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'גכ יגכ יגכ |יגכ יגכ',
        '</div>'
     ].join(''));
@@ -132,7 +132,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 5, 3),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'גכ יגכ יגכ יגכ |יגכ',
        '</div>'
     ].join(''));
@@ -145,7 +145,7 @@ test(() => {
     ].join(''),
     selection => testClickLeft(selection, 5, 4),
     [
-      '<div contenteditable dir="rtl">',
+      '<div contenteditable dir="rtl" style>',
         'גכ יגכ יגכ יגכ יגכ|',
        '</div>'
     ].join(''));

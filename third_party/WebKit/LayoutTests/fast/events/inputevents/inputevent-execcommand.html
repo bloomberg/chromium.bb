@@ -75,10 +75,10 @@ test(function() {
     selection.collapse(txt, 0);
     selection.extend(txt, 1);
     testExecCommandInputType('removeFormat', null, 'formatRemove');
-    assert_equals(txt.innerHTML, '<div>abc</div>');
+    assert_equals(txt.innerHTML, '<div style="">abc</div>');
     testExecCommandInputType('indent', null, 'formatIndent');
     testExecCommandInputType('outdent', null, 'formatOutdent');
-    assert_equals(txt.innerHTML, '<div>abc</div>');
+    assert_equals(txt.innerHTML, '<div style="">abc</div>');
 
     // Copy shouldn't fire 'input'.
     testExecCommandInputType('copy', null, NO_INPUT_EVENT_FIRED);

@@ -63,7 +63,7 @@ testRemoveFormat('<b><u>hello</u> world</b> <a href="http://webkit.org/"><em>Web
 testRemoveFormat('<b><u>hello</u> world</b> <a href="http://webkit.org/"><em>WebKit</em></a>',
     selectSecondWord, '<b><u>hello</u> </b>world <a href="http://webkit.org/"><em>WebKit</em></a>');
 testRemoveFormat('<sub><tt>hello world WebKit</tt></sub>', selectSecondWord, '<sub><tt>hello </tt></sub>world<sub><tt> WebKit</tt></sub>');
-testRemoveFormat('<q><ins><var>hello wor</var>ld</ins> WebKit</q>', selectSecondWord, '<q><ins><var>hello </var></ins></q>world<q> WebKit</q>');    
+testRemoveFormat('<q><ins><var>hello wor</var>ld</ins> WebKit</q>', selectSecondWord, '<q><ins><var>hello </var></ins></q>world<q> WebKit</q>');
 testRemoveFormat('<b>hello <dfn>world <kbd>WebKit</kbd></dfn></b>', selectLastWord, '<b>hello <dfn>world </dfn></b>WebKit');
 testRemoveFormat('<b>hello <dfn>world <kbd>WebKit</kbd></dfn></b>', selectSecondWord, '<b>hello </b>world<b><dfn> <kbd>WebKit</kbd></dfn></b>');
 testRemoveFormat('<code>hello <strong>world WebKit</storng></code>', selectFirstTwoWords, 'hello world<code><strong> WebKit</strong></code>');
@@ -80,7 +80,7 @@ testRemoveFormat('<font color="red"><b style="font-size: large;"><u>hello</u> wo
 testRemoveFormat('<font size="5"><i><u style="font-size: small;">hello</u> world</i><font size="3"> WebKit</font></font>',
     selectSecondWord, '<font size="5"><i><u style="font-size: small;">hello</u> </i></font>world<font size="5"><font size="3"> WebKit</font></font>');
 testRemoveFormat('<sup><div style="text-decoration-line: underline; font-size: large;">hello <dfn style="font-size: normal;">world</dfn></div> WebKit</sup>',
-    selectSecondWord, '<div><sup><font size="4"><u>hello </u></font></sup>world</div><sup> WebKit</sup>');
+    selectSecondWord, '<div style=""><sup><font size="4"><u>hello </u></font></sup>world</div><sup> WebKit</sup>');
 
 document.body.removeChild(testContainer);
 

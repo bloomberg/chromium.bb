@@ -4016,7 +4016,7 @@ void Element::SynchronizeStyleAttributeInternal() const {
   const StylePropertySet* inline_style = this->InlineStyle();
   const_cast<Element*>(this)->SetSynchronizedLazyAttribute(
       styleAttr,
-      inline_style ? AtomicString(inline_style->AsText()) : g_null_atom);
+      inline_style ? AtomicString(inline_style->AsText()) : g_empty_atom);
 }
 
 CSSStyleDeclaration* Element::style() {
