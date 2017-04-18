@@ -55,6 +55,15 @@ enum ArcNotificationExpandState {
   EXPANDED = 2,
 };
 
+// These values represent what shows in an ARC custom notification.
+[Extensible, MinVersion=11]
+enum ArcNotificationShownContents {
+  // The normal notification contents are shown.
+  CONTENTS_SHOWN = 0,
+  // The notification settings view is shown.
+  SETTINGS_SHOWN = 1,
+};
+
 struct ArcNotificationData {
   // Identifier of notification
   string key;
@@ -108,6 +117,9 @@ struct ArcNotificationData {
   // Flag if the notification is expandable
   [MinVersion=10]
   ArcNotificationExpandState expand_state;
+  // Flag for what shows in a notification.
+  [MinVersion=11]
+  ArcNotificationShownContents shown_contents;
 };
 
 [MinVersion=2]

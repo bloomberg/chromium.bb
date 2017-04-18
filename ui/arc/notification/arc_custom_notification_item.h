@@ -53,11 +53,16 @@ class ArcCustomNotificationItem : public ArcNotificationItem {
   mojom::ArcNotificationExpandState expand_state() const {
     return expand_state_;
   }
+  mojom::ArcNotificationShownContents shown_contents() const {
+    return shown_contents_;
+  }
 
  private:
   bool pinned_ = false;
   mojom::ArcNotificationExpandState expand_state_ =
       mojom::ArcNotificationExpandState::FIXED_SIZE;
+  mojom::ArcNotificationShownContents shown_contents_ =
+      mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
   gfx::ImageSkia snapshot_;
   int window_ref_count_ = 0;
 

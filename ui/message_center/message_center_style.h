@@ -96,6 +96,9 @@ const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 const SkColor kSmallImageMaskForegroundColor = SK_ColorWHITE;
 // Background of small icon image.
 const SkColor kSmallImageMaskBackgroundColor = SkColorSetRGB(0xa3, 0xa3, 0xa3);
+// Background of the close button and the settings button
+const SkColor kControlButtonBackgroundColor =
+    SkColorSetA(SK_ColorWHITE, 0.9 * 0xff);
 
 // Limits.
 

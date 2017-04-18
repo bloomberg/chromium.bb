@@ -13,12 +13,15 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/custom_notification_view.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/painter.h"
@@ -27,6 +30,22 @@
 #include "ui/wm/core/window_util.h"
 
 namespace arc {
+
+namespace {
+
+// This value should be the same as the duration of reveal animation of
+// the settings view of an Android notification.
+constexpr int kBackgroundColorChangeDuration = 360;
+
+SkColor GetControlButtonBackgroundColor(
+    const mojom::ArcNotificationShownContents& shown_contents) {
+  if (shown_contents == mojom::ArcNotificationShownContents::CONTENTS_SHOWN)
+    return message_center::kControlButtonBackgroundColor;
+  else
+    return SK_ColorTRANSPARENT;
+}
+
+}  // namespace
 
 class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
  public:
@@ -189,7 +208,12 @@ class ArcCustomNotificationView::ContentViewDelegate
 
 ArcCustomNotificationView::ControlButton::ControlButton(
     ArcCustomNotificationView* owner)
-    : message_center::PaddedButton(owner), owner_(owner) {}
+    : message_center::PaddedButton(owner), owner_(owner) {
+  if (!owner_->item_) {
+    set_background(views::Background::CreateSolidBackground(
+        GetControlButtonBackgroundColor(owner_->item_->shown_contents())));
+  }
+}
 
 void ArcCustomNotificationView::ControlButton::OnFocus() {
   message_center::PaddedButton::OnFocus();
@@ -240,6 +264,7 @@ ArcCustomNotificationView::CreateContentViewDelegate() {
 
 void ArcCustomNotificationView::CreateCloseButton() {
   DCHECK(control_buttons_view_);
+  DCHECK(item_);
 
   close_button_ = base::MakeUnique<ControlButton>(this);
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
@@ -254,6 +279,7 @@ void ArcCustomNotificationView::CreateCloseButton() {
 
 void ArcCustomNotificationView::CreateSettingsButton() {
   DCHECK(control_buttons_view_);
+  DCHECK(item_);
 
   settings_button_ = new ControlButton(this);
   settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
@@ -280,7 +306,8 @@ void ArcCustomNotificationView::CreateFloatingControlButtons() {
 
   if (item_ && item_->IsOpeningSettingsSupported())
     CreateSettingsButton();
-  CreateCloseButton();
+  if (item_ && !item_->pinned())
+    CreateCloseButton();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -411,6 +438,28 @@ void ArcCustomNotificationView::AttachSurface() {
   // after |surface_| is attached to a widget.
   if (item_)
     UpdatePinnedState();
+}
+
+void ArcCustomNotificationView::StartControlButtonsColorAnimation() {
+  if (control_button_color_animation_)
+    control_button_color_animation_->End();
+  control_button_color_animation_.reset(new gfx::LinearAnimation(this));
+  control_button_color_animation_->SetDuration(kBackgroundColorChangeDuration);
+  control_button_color_animation_->Start();
+}
+
+bool ArcCustomNotificationView::ShouldUpdateControlButtonsColor() const {
+  DCHECK(item_);
+
+  if (settings_button_ &&
+      settings_button_->background()->get_color() !=
+          GetControlButtonBackgroundColor(item_->shown_contents()))
+    return true;
+  if (close_button_ &&
+      close_button_->background()->get_color() !=
+          GetControlButtonBackgroundColor(item_->shown_contents()))
+    return true;
+  return false;
 }
 
 void ArcCustomNotificationView::ViewHierarchyChanged(
@@ -620,6 +669,8 @@ void ArcCustomNotificationView::OnItemDestroying() {
 void ArcCustomNotificationView::OnItemUpdated() {
   UpdatePinnedState();
   UpdateSnapshot();
+  if (ShouldUpdateControlButtonsColor())
+    StartControlButtonsColorAnimation();
 }
 
 void ArcCustomNotificationView::OnNotificationSurfaceAdded(
@@ -636,6 +687,38 @@ void ArcCustomNotificationView::OnNotificationSurfaceRemoved(
     return;
 
   SetSurface(nullptr);
+}
+
+void ArcCustomNotificationView::AnimationEnded(
+    const gfx::Animation* animation) {
+  DCHECK_EQ(animation, control_button_color_animation_.get());
+  control_button_color_animation_.reset();
+}
+
+void ArcCustomNotificationView::AnimationProgressed(
+    const gfx::Animation* animation) {
+  DCHECK_EQ(animation, control_button_color_animation_.get());
+
+  if (item_) {
+    const SkColor target =
+        GetControlButtonBackgroundColor(item_->shown_contents());
+    const SkColor start =
+        target == message_center::kControlButtonBackgroundColor
+            ? SK_ColorTRANSPARENT
+            : message_center::kControlButtonBackgroundColor;
+    const SkColor current_color = gfx::Tween::ColorValueBetween(
+        animation->GetCurrentValue(), start, target);
+    if (settings_button_) {
+      settings_button_->set_background(
+          views::Background::CreateSolidBackground(current_color));
+      settings_button_->SchedulePaint();
+    }
+    if (close_button_) {
+      close_button_->set_background(
+          views::Background::CreateSolidBackground(current_color));
+      close_button_->SchedulePaint();
+    }
+  }
 }
 
 }  // namespace arc

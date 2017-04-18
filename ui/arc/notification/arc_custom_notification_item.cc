@@ -102,6 +102,7 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
 
   pinned_ = rich_data.pinned;
   expand_state_ = data->expand_state;
+  shown_contents_ = data->shown_contents;
 
   if (!data->snapshot_image || data->snapshot_image->isNull()) {
     snapshot_ = gfx::ImageSkia();

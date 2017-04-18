@@ -12,6 +12,7 @@
 #include "ui/arc/notification/arc_custom_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/views/custom_notification_content_view_delegate.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/button.h"
@@ -19,6 +20,10 @@
 
 namespace exo {
 class NotificationSurface;
+}
+
+namespace gfx {
+class LinearAnimation;
 }
 
 namespace views {
@@ -33,7 +38,8 @@ class ArcCustomNotificationView
       public views::ButtonListener,
       public aura::WindowObserver,
       public ArcCustomNotificationItem::Observer,
-      public ArcNotificationSurfaceManager::Observer {
+      public ArcNotificationSurfaceManager::Observer,
+      public gfx::AnimationDelegate {
  public:
   explicit ArcCustomNotificationView(ArcCustomNotificationItem* item);
   ~ArcCustomNotificationView() override;
@@ -72,6 +78,8 @@ class ArcCustomNotificationView
   void UpdateSnapshot();
   void AttachSurface();
   void ActivateToast();
+  void StartControlButtonsColorAnimation();
+  bool ShouldUpdateControlButtonsColor() const;
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
@@ -104,6 +112,10 @@ class ArcCustomNotificationView
   void OnNotificationSurfaceAdded(exo::NotificationSurface* surface) override;
   void OnNotificationSurfaceRemoved(exo::NotificationSurface* surface) override;
 
+  // AnimationDelegate
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+
   ArcCustomNotificationItem* item_ = nullptr;
   exo::NotificationSurface* surface_ = nullptr;
 
@@ -132,6 +144,8 @@ class ArcCustomNotificationView
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;
+
+  std::unique_ptr<gfx::LinearAnimation> control_button_color_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCustomNotificationView);
 };
