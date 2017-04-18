@@ -171,23 +171,27 @@ void BackgroundFetchContext::DidCompleteJob(
       controller->registration_id();
 
   DCHECK_GT(active_fetches_.count(registration_id), 0u);
-
-  // TODO(peter): Fire `backgroundfetchabort` if the |controller|'s state is
-  // ABORTED, which does not require a sequence of the settled fetches.
-
-  // The `backgroundfetched` and/or `backgroundfetchfail` event will only be
-  // invoked for Background Fetch jobs which have been completed.
-  if (controller->state() != BackgroundFetchJobController::State::COMPLETED) {
-    DeleteRegistration(registration_id,
-                       std::vector<std::unique_ptr<BlobHandle>>());
-    return;
+  switch (controller->state()) {
+    case BackgroundFetchJobController::State::ABORTED:
+      event_dispatcher_->DispatchBackgroundFetchAbortEvent(
+          registration_id,
+          base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
+                     registration_id,
+                     std::vector<std::unique_ptr<BlobHandle>>()));
+      return;
+    case BackgroundFetchJobController::State::COMPLETED:
+      data_manager_->GetSettledFetchesForRegistration(
+          registration_id,
+          base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches, this,
+                         registration_id));
+      return;
+    case BackgroundFetchJobController::State::INITIALIZED:
+    case BackgroundFetchJobController::State::FETCHING:
+      // These cases should not happen. Fall through to the NOTREACHED() below.
+      break;
   }
 
-  // Get the sequence of settled fetches from the data manager.
-  data_manager_->GetSettledFetchesForRegistration(
-      registration_id,
-      base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches, this,
-                     registration_id));
+  NOTREACHED();
 }
 
 void BackgroundFetchContext::DidGetSettledFetches(

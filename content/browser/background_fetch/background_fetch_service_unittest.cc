@@ -577,6 +577,56 @@ TEST_F(BackgroundFetchServiceTest, AbortInvalidTag) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
+TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
+  // Tests that the `backgroundfetchabort` event will be fired when a Background
+  // Fetch registration has been aborted by either the user or developer.
+
+  BackgroundFetchRegistrationId registration_id;
+  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+
+  // base::RunLoop that we'll run until the event has been dispatched. If this
+  // test times out, it means that the event could not be dispatched.
+  base::RunLoop event_dispatched_loop;
+  embedded_worker_test_helper()->set_abort_event_closure(
+      event_dispatched_loop.QuitClosure());
+
+  constexpr int kResponseCode = 200;
+
+  std::vector<ServiceWorkerFetchRequest> requests;
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://example.com/funny_cat.txt",
+      TestResponseBuilder(kResponseCode)
+          .SetResponseData("Random data about a funny cat.")
+          .Build()));
+
+  // Create the registration with the given |requests|.
+  {
+    BackgroundFetchOptions options;
+
+    blink::mojom::BackgroundFetchError error;
+    BackgroundFetchRegistration registration;
+
+    // Create the first registration. This must succeed.
+    ASSERT_NO_FATAL_FAILURE(
+        Fetch(registration_id, requests, options, &error, &registration));
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Immediately abort the request created for the |registration_id|. Then wait
+  // for the `backgroundfetchabort` event to have been invoked.
+  {
+    blink::mojom::BackgroundFetchError error;
+
+    ASSERT_NO_FATAL_FAILURE(Abort(registration_id, &error));
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  event_dispatched_loop.Run();
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+}
+
 TEST_F(BackgroundFetchServiceTest, GetTags) {
   // This test verifies that the list of active tags can be retrieved from the
   // service for a given Service Worker, as extracted from a registration.
