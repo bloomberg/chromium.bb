@@ -49,6 +49,6 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
                int ydec, int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
                int *dirinit, int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
                int pli, dering_list *dlist, int dering_count, int level,
-               int clpf_strength, int clpf_damping, int coeff_shift,
-               int skip_dering, int hbd);
+               int clpf_strength, int clpf_damping, int dering_damping,
+               int coeff_shift, int skip_dering, int hbd);
 #endif

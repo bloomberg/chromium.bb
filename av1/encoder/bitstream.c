@@ -3521,6 +3521,8 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 #if CONFIG_CDEF
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   int i;
+  aom_wb_write_literal(wb, cm->cdef_dering_damping - 5, 1);
+  aom_wb_write_literal(wb, cm->cdef_clpf_damping - 3, 2);
   aom_wb_write_literal(wb, cm->cdef_bits, 2);
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
     aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);

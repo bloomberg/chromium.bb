@@ -276,7 +276,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         uint16_t dst[MAX_SB_SIZE * MAX_SB_SIZE];
         int coffset;
         int rend, cend;
-        int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
+        int clpf_damping = cm->cdef_clpf_damping;
+        int dering_damping = cm->cdef_dering_damping;
         int hsize = nhb << mi_wide_l2[pli];
         int vsize = nvb << mi_high_l2[pli];
 
@@ -405,7 +406,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
               xd->plane[pli].dst.stride, dst,
               &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
               xdec[pli], ydec[pli], dir, NULL, var, pli, dlist, dering_count,
-              level, clpf_strength, clpf_damping, coeff_shift, 0, 1);
+              level, clpf_strength, clpf_damping, dering_damping, coeff_shift,
+              0, 1);
         } else {
 #endif
           od_dering(&xd->plane[pli]
@@ -416,7 +418,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
                     xdec[pli], ydec[pli], dir, NULL, var, pli, dlist,
                     dering_count, level, clpf_strength, clpf_damping,
-                    coeff_shift, 0, 0);
+                    dering_damping, coeff_shift, 0, 0);
 
 #if CONFIG_HIGHBITDEPTH
         }

@@ -2605,6 +2605,8 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_CDEF
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   int i;
+  cm->cdef_dering_damping = aom_rb_read_literal(rb, 1) + 5;
+  cm->cdef_clpf_damping = aom_rb_read_literal(rb, 2) + 3;
   cm->cdef_bits = aom_rb_read_literal(rb, 2);
   cm->nb_cdef_strengths = 1 << cm->cdef_bits;
   for (i = 0; i < cm->nb_cdef_strengths; i++) {
