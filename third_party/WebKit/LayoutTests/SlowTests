@@ -393,6 +393,3 @@ crbug.com/660492 [ Linux ] storage/indexeddb/structured-clone.html [ Slow ]
 # which can be very slow.
 crbug.com/678498 external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Slow ]
 crbug.com/678496 external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Slow ]
-
-# Slow on Debug
-crbug.com/710864 [ Debug ] editing/execCommand/delete-non-editable-range-crash.html [ Slow ]
