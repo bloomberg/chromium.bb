@@ -209,7 +209,7 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
   // Horizontally flip the canvas if it is left vertical scrollbar.
   if (scrollbar.IsLeftSideVerticalScrollbar()) {
     canvas->save();
-    canvas->translate(canvas->getBaseLayerSize().width(), 0);
+    canvas->translate(rect.Width(), 0);
     canvas->scale(-1, 1);
   }
 
