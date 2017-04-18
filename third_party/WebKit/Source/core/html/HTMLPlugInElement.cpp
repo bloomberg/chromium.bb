@@ -104,7 +104,7 @@ void HTMLPlugInElement::SetPlugin(PluginView* plugin) {
   // Remove and dispose the old plugin if we had one.
   if (plugin_) {
     GetDocument().View()->RemovePlugin(plugin_);
-    DisposeWidgetSoon(plugin_);
+    DisposeFrameOrPluginSoon(plugin_);
   }
   plugin_ = plugin;
 
@@ -150,7 +150,7 @@ void HTMLPlugInElement::SetPersistedPlugin(PluginView* plugin) {
     return;
   if (persisted_plugin_) {
     persisted_plugin_->Hide();
-    DisposeWidgetSoon(persisted_plugin_.Release());
+    DisposeFrameOrPluginSoon(persisted_plugin_.Release());
   }
   persisted_plugin_ = plugin;
 }

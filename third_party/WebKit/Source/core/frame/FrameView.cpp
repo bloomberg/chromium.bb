@@ -1505,9 +1505,8 @@ void FrameView::UpdateGeometries() {
     if (GetLayoutViewItem().IsNull())
       break;
 
-    if (FrameViewBase* frame_view_base = part->PluginOrFrame()) {
-      if (frame_view_base->IsFrameView()) {
-        FrameView* frame_view = ToFrameView(frame_view_base);
+    if (part->GetFrameOrPlugin()) {
+      if (FrameView* frame_view = part->ChildFrameView()) {
         bool did_need_layout = frame_view->NeedsLayout();
         part->UpdateGeometry();
         if (!did_need_layout && !frame_view->ShouldThrottleRendering())
@@ -4767,8 +4766,6 @@ void FrameView::Show() {
         plugin->SetParentVisible(true);
     }
   }
-
-  FrameViewBase::Show();
 }
 
 void FrameView::Hide() {
@@ -4794,8 +4791,6 @@ void FrameView::Hide() {
       SetNeedsPaintPropertyUpdate();
     }
   }
-
-  FrameViewBase::Hide();
 }
 
 int FrameView::ViewportWidth() const {

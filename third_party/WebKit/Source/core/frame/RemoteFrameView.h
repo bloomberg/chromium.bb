@@ -5,15 +5,20 @@
 #ifndef RemoteFrameView_h
 #define RemoteFrameView_h
 
+#include "core/frame/FrameOrPlugin.h"
 #include "platform/FrameViewBase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class CullRect;
+class GraphicsContext;
 class RemoteFrame;
 
-class RemoteFrameView final : public FrameViewBase {
+class RemoteFrameView final : public FrameViewBase, public FrameOrPlugin {
+  USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
+
  public:
   static RemoteFrameView* Create(RemoteFrame*);
 
@@ -30,8 +35,12 @@ class RemoteFrameView final : public FrameViewBase {
   void Dispose() override;
   // Override to notify remote frame that its viewport size has changed.
   void FrameRectsChanged() override;
-  void InvalidateRect(const IntRect&) override;
+  void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
+  const IntRect& FrameRect() const override {
+    return FrameViewBase::FrameRect();
+  }
+  void Paint(GraphicsContext&, const CullRect&) const override {}
   void Hide() override;
   void Show() override;
   void SetParentVisible(bool) override;

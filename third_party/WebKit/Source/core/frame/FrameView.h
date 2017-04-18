@@ -29,6 +29,7 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "core/frame/FrameOrPlugin.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
@@ -71,6 +72,7 @@ class Element;
 class ElementVisibilityObserver;
 class Frame;
 class FloatSize;
+class IntRect;
 class JSONArray;
 class JSONObject;
 class LayoutItem;
@@ -101,6 +103,7 @@ typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final
     : public FrameViewBase,
+      public FrameOrPlugin,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
@@ -114,8 +117,12 @@ class CORE_EXPORT FrameView final
 
   ~FrameView() override;
 
-  void InvalidateRect(const IntRect&) override;
+  void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
+  void InvalidateRect(const IntRect&);
   void SetFrameRect(const IntRect&) override;
+  const IntRect& FrameRect() const override {
+    return FrameViewBase::FrameRect();
+  }
 
   LocalFrame& GetFrame() const {
     ASSERT(frame_);

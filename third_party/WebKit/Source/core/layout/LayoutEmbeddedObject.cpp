@@ -138,8 +138,7 @@ void LayoutEmbeddedObject::UpdateLayout() {
 
   UpdateLayerTransformAfterLayout();
 
-  FrameViewBase* frame_view_base = this->PluginOrFrame();
-  if (!frame_view_base && GetFrameView())
+  if (!GetFrameOrPlugin() && GetFrameView())
     GetFrameView()->AddPartToUpdate(*this);
 
   ClearNeedsLayout();

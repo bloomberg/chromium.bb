@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class CullRect;
 class GraphicsContext;
 class HostWindow;
 class IntRect;
@@ -129,7 +130,7 @@ class PLATFORM_EXPORT Scrollbar : public FrameViewBase,
   void SetProportion(int visible_size, int total_size);
   void SetPressedPos(int p) { pressed_pos_ = p; }
 
-  void Paint(GraphicsContext&, const CullRect&) const final;
+  void Paint(GraphicsContext&, const CullRect&) const;
 
   bool IsOverlayScrollbar() const override;
   bool ShouldParticipateInHitTesting();

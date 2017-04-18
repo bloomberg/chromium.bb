@@ -36,9 +36,7 @@
 
 namespace blink {
 
-class CullRect;
 class Event;
-class GraphicsContext;
 
 // The FrameViewBase class serves as a base class for FrameView, Scrollbar, and
 // PluginView.
@@ -63,17 +61,10 @@ class PLATFORM_EXPORT FrameViewBase
     frame_rect_ = frame_rect;
   }
   const IntRect& FrameRect() const { return frame_rect_; }
-  IntRect BoundsRect() const { return IntRect(0, 0, Width(), Height()); }
 
   void Resize(int w, int h) { SetFrameRect(IntRect(X(), Y(), w, h)); }
   void Resize(const IntSize& s) { SetFrameRect(IntRect(Location(), s)); }
 
-  virtual void Paint(GraphicsContext&, const CullRect&) const {}
-  void Invalidate() { InvalidateRect(BoundsRect()); }
-  virtual void InvalidateRect(const IntRect&) = 0;
-
-  virtual void Show() {}
-  virtual void Hide() {}
   bool IsSelfVisible() const {
     return self_visible_;
   }  // Whether or not we have been explicitly marked as visible or not.

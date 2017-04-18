@@ -115,15 +115,11 @@ void RemoteFrameView::FrameRectsChanged() {
 void RemoteFrameView::Hide() {
   SetSelfVisible(false);
 
-  FrameViewBase::Hide();
-
   remote_frame_->Client()->VisibilityChanged(false);
 }
 
 void RemoteFrameView::Show() {
   SetSelfVisible(true);
-
-  FrameViewBase::Show();
 
   remote_frame_->Client()->VisibilityChanged(true);
 }

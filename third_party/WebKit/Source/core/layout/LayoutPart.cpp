@@ -25,8 +25,10 @@
 #include "core/layout/LayoutPart.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/frame/FrameOrPlugin.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
@@ -108,14 +110,21 @@ PluginView* LayoutPart::Plugin() const {
                                            : nullptr;
 }
 
-FrameViewBase* LayoutPart::PluginOrFrame() const {
-  FrameViewBase* result = nullptr;
+FrameOrPlugin* LayoutPart::GetFrameOrPlugin() const {
   Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement())
-    result = ToHTMLFrameOwnerElement(node)->OwnedWidget();
-  if (!result)
-    result = Plugin();
-  return result;
+  if (node && node->IsFrameOwnerElement()) {
+    FrameViewBase* frame_view_base =
+        ToHTMLFrameOwnerElement(node)->OwnedWidget();
+    if (frame_view_base) {
+      if (frame_view_base->IsFrameView())
+        return ToFrameView(frame_view_base);
+      if (frame_view_base->IsRemoteFrameView())
+        return ToRemoteFrameView(frame_view_base);
+      // Must be either FrameView or RemoteFrameView.
+      NOTREACHED();
+    }
+  }
+  return Plugin();
 }
 
 PaintLayerType LayoutPart::LayerTypeRequired() const {
@@ -259,18 +268,18 @@ CompositingReasons LayoutPart::AdditionalCompositingReasons() const {
 void LayoutPart::StyleDidChange(StyleDifference diff,
                                 const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
-  FrameViewBase* frame_view_base = this->PluginOrFrame();
-  if (!frame_view_base)
+  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
+  if (!frame_or_plugin)
     return;
 
   // If the iframe has custom scrollbars, recalculate their style.
-  if (frame_view_base->IsFrameView())
-    ToFrameView(frame_view_base)->RecalculateCustomScrollbarStyle();
+  if (FrameView* frame_view = ChildFrameView())
+    frame_view->RecalculateCustomScrollbarStyle();
 
   if (Style()->Visibility() != EVisibility::kVisible) {
-    frame_view_base->Hide();
+    frame_or_plugin->Hide();
   } else {
-    frame_view_base->Show();
+    frame_or_plugin->Show();
   }
 }
 
@@ -312,20 +321,20 @@ LayoutRect LayoutPart::ReplacedContentRect() const {
 }
 
 void LayoutPart::UpdateOnWidgetChange() {
-  FrameViewBase* frame_view_base = this->PluginOrFrame();
-  if (!frame_view_base)
+  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
+  if (!frame_or_plugin)
     return;
 
   if (!Style())
     return;
 
   if (!NeedsLayout())
-    UpdateGeometryInternal(*frame_view_base);
+    UpdateGeometryInternal(*frame_or_plugin);
 
   if (Style()->Visibility() != EVisibility::kVisible) {
-    frame_view_base->Hide();
+    frame_or_plugin->Hide();
   } else {
-    frame_view_base->Show();
+    frame_or_plugin->Show();
     // FIXME: Why do we issue a full paint invalidation in this case, but not
     // the other?
     SetShouldDoFullPaintInvalidation();
@@ -333,40 +342,38 @@ void LayoutPart::UpdateOnWidgetChange() {
 }
 
 void LayoutPart::UpdateGeometry() {
-  FrameViewBase* frame_view_base = this->PluginOrFrame();
-  if (!frame_view_base ||
-      !GetNode())  // Check the node in case destroy() has been called.
+  FrameOrPlugin* frame_or_plugin = GetFrameOrPlugin();
+  if (!frame_or_plugin)
     return;
 
   LayoutRect new_frame = ReplacedContentRect();
   DCHECK(new_frame.Size() == RoundedIntSize(new_frame.Size()));
   bool bounds_will_change =
-      LayoutSize(frame_view_base->FrameRect().Size()) != new_frame.Size();
-
-  FrameView* frame_view =
-      frame_view_base->IsFrameView() ? ToFrameView(frame_view_base) : nullptr;
+      LayoutSize(frame_or_plugin->FrameRect().Size()) != new_frame.Size();
 
   // If frame bounds are changing mark the view for layout. Also check the
   // frame's page to make sure that the frame isn't in the process of being
   // destroyed. If iframe scrollbars needs reconstruction from native to custom
   // scrollbar, then also we need to layout the frameview.
+  FrameView* frame_view = ChildFrameView();
   if (frame_view && frame_view->GetFrame().GetPage() &&
       (bounds_will_change || frame_view->NeedsScrollbarReconstruction()))
     frame_view->SetNeedsLayout();
 
-  UpdateGeometryInternal(*frame_view_base);
+  UpdateGeometryInternal(*frame_or_plugin);
 
   // If view needs layout, either because bounds have changed or possibly
   // indicating content size is wrong, we have to do a layout to set the right
-  // FrameViewBase size.
+  // FrameView size.
   if (frame_view && frame_view->NeedsLayout() &&
       frame_view->GetFrame().GetPage())
     frame_view->UpdateLayout();
 
-  frame_view_base->GeometryMayHaveChanged();
+  if (PluginView* plugin = Plugin())
+    plugin->GeometryMayHaveChanged();
 }
 
-void LayoutPart::UpdateGeometryInternal(FrameViewBase& frame_view_base) {
+void LayoutPart::UpdateGeometryInternal(FrameOrPlugin& frame_or_plugin) {
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
@@ -378,7 +385,7 @@ void LayoutPart::UpdateGeometryInternal(FrameViewBase& frame_view_base) {
                      PixelSnappedIntRect(absolute_replaced_rect).Size());
   // Normally the location of the frame rect is ignored by the painter, but
   // currently it is still used by a family of coordinate conversion function in
-  // FrameViewBase/FrameView. This is incorrect because coordinate conversion
+  // FrameView. This is incorrect because coordinate conversion
   // needs to take transform and into account. A few callers still use the
   // family of conversion function, including but not exhaustive:
   // FrameView::updateViewportIntersectionIfNeeded()
@@ -391,7 +398,7 @@ void LayoutPart::UpdateGeometryInternal(FrameViewBase& frame_view_base) {
 
   // Why is the protector needed?
   RefPtr<LayoutPart> protector(this);
-  frame_view_base.SetFrameRect(frame_rect);
+  frame_or_plugin.SetFrameRect(frame_rect);
 }
 
 void LayoutPart::InvalidatePaintOfSubtreesIfNeeded(

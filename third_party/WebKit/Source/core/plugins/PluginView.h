@@ -29,24 +29,36 @@
 #define PluginView_h
 
 #include "core/CoreExport.h"
-#include "platform/FrameViewBase.h"
+#include "core/frame/FrameOrPlugin.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebFocusType.h"
 #include "v8/include/v8.h"
 
 namespace blink {
-class WebLayer;
-}
 
-namespace blink {
-
+class Event;
+class FrameView;
 class ResourceResponse;
+class WebLayer;
 
-class CORE_EXPORT PluginView : public FrameViewBase {
+// TODO(joelhockey): Remove this class.
+// The only implementation of this class is web/WebPluginContainerImpl.
+// It can be used directly.
+class CORE_EXPORT PluginView : public FrameOrPlugin {
  public:
-  bool IsPluginView() const final { return true; }
-  virtual void SetFocused(bool, WebFocusType) {}
+  virtual ~PluginView() {}
+
+  virtual void SetParent(FrameView*) = 0;
+  virtual FrameView* Parent() const = 0;
+  virtual void SetParentVisible(bool) = 0;
+  virtual void SetFocused(bool, WebFocusType) = 0;
+  virtual void FrameRectsChanged() = 0;
+  virtual void GeometryMayHaveChanged() = 0;
+  virtual void HandleEvent(Event*) = 0;
+  virtual void EventListenersRemoved() = 0;
+  virtual bool IsPluginContainer() const { return false; }
 
   virtual WebLayer* PlatformLayer() const { return 0; }
   virtual v8::Local<v8::Object> ScriptableObject(v8::Isolate*) {
@@ -62,16 +74,7 @@ class CORE_EXPORT PluginView : public FrameViewBase {
 
   virtual void UpdateAllLifecyclePhases() {}
   virtual void InvalidatePaintIfNeeded() {}
-
- protected:
-  PluginView() : FrameViewBase() {}
 };
-
-DEFINE_TYPE_CASTS(PluginView,
-                  FrameViewBase,
-                  frameViewBase,
-                  frameViewBase->IsPluginView(),
-                  frameViewBase.IsPluginView());
 
 }  // namespace blink
 

@@ -34,6 +34,7 @@ namespace blink {
 
 class ExceptionState;
 class Frame;
+class FrameOrPlugin;
 class FrameViewBase;
 class LayoutPart;
 
@@ -105,7 +106,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                               bool replace_current_item);
   bool IsKeyboardFocusable() const override;
 
-  void DisposeWidgetSoon(FrameViewBase*);
+  void DisposeFrameOrPluginSoon(FrameOrPlugin*);
   void FrameOwnerPropertiesChanged();
 
  private:

@@ -25,10 +25,11 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutReplaced.h"
-#include "core/plugins/PluginView.h"
-#include "platform/FrameViewBase.h"
 
 namespace blink {
+
+class FrameOrPlugin;
+class PluginView;
 
 // LayoutObject for frames via LayoutFrame and LayoutIFrame, and plugins via
 // LayoutEmbeddedObject.
@@ -55,7 +56,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   // the FrameView associated with the root Document Frame.
   FrameView* ChildFrameView() const;
   PluginView* Plugin() const;
-  FrameViewBase* PluginOrFrame() const;
+  FrameOrPlugin* GetFrameOrPlugin() const;
 
   LayoutRect ReplacedContentRect() const final;
 
@@ -80,7 +81,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
       const PaintInvalidationState&) override;
 
  private:
-  void UpdateGeometryInternal(FrameViewBase&);
+  void UpdateGeometryInternal(FrameOrPlugin&);
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void WillBeDestroyed() final;

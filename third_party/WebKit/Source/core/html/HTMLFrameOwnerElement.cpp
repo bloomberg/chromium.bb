@@ -34,6 +34,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
@@ -54,9 +55,10 @@ static FrameViewBaseSet& WidgetsPendingTemporaryRemovalFromParent() {
   return set;
 }
 
-static FrameViewBaseSet& WidgetsPendingDispose() {
-  DEFINE_STATIC_LOCAL(FrameViewBaseSet, set, (new FrameViewBaseSet));
-  return set;
+using FrameOrPluginList = HeapVector<Member<FrameOrPlugin>>;
+static FrameOrPluginList& FrameOrPluginsPendingDispose() {
+  DEFINE_STATIC_LOCAL(FrameOrPluginList, list, (new FrameOrPluginList));
+  return list;
 }
 
 SubframeLoadingDisabler::SubtreeRootSet&
@@ -100,10 +102,10 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
   }
 
   {
-    FrameViewBaseSet set;
-    WidgetsPendingDispose().Swap(set);
-    for (const auto& frame_view_base : set) {
-      frame_view_base->Dispose();
+    FrameOrPluginList list;
+    FrameOrPluginsPendingDispose().Swap(list);
+    for (const auto& frame_or_plugin : list) {
+      frame_or_plugin->Dispose();
     }
   }
 }
@@ -115,7 +117,7 @@ HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope() {
   --g_update_suspend_count;
 }
 
-// Unlike moveWidgetToParentSoon, this will not call dispose the Widget.
+// Unlike moveWidgetToParentSoon, this will not call dispose.
 void TemporarilyRemoveWidgetFromParentSoon(FrameViewBase* frame_view_base) {
   if (g_update_suspend_count) {
     WidgetsPendingTemporaryRemovalFromParent().insert(frame_view_base);
@@ -215,12 +217,13 @@ bool HTMLFrameOwnerElement::IsKeyboardFocusable() const {
   return content_frame_ && HTMLElement::IsKeyboardFocusable();
 }
 
-void HTMLFrameOwnerElement::DisposeWidgetSoon(FrameViewBase* frame_view_base) {
+void HTMLFrameOwnerElement::DisposeFrameOrPluginSoon(
+    FrameOrPlugin* frame_or_plugin) {
   if (g_update_suspend_count) {
-    WidgetsPendingDispose().insert(frame_view_base);
+    FrameOrPluginsPendingDispose().push_back(frame_or_plugin);
     return;
   }
-  frame_view_base->Dispose();
+  frame_or_plugin->Dispose();
 }
 
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {

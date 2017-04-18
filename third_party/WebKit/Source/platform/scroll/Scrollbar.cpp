@@ -158,8 +158,7 @@ void Scrollbar::Paint(GraphicsContext& context,
   if (!cull_rect.IntersectsCullRect(FrameRect()))
     return;
 
-  if (!GetTheme().Paint(*this, context, cull_rect))
-    FrameViewBase::Paint(context, cull_rect);
+  GetTheme().Paint(*this, context, cull_rect);
 }
 
 void Scrollbar::AutoscrollTimerFired(TimerBase*) {

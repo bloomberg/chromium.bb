@@ -4,6 +4,7 @@
 
 #include "core/paint/PartPainter.h"
 
+#include "core/frame/FrameOrPlugin.h"
 #include "core/layout/LayoutPart.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
@@ -69,7 +70,7 @@ void PartPainter::Paint(const PaintInfo& paint_info,
   if (paint_info.phase != kPaintPhaseForeground)
     return;
 
-  if (layout_part_.PluginOrFrame()) {
+  if (layout_part_.GetFrameOrPlugin()) {
     // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
     // the crashes we see in FrameViewBase painting are due to a destroyed
     // LayoutPart object.
@@ -119,25 +120,24 @@ void PartPainter::PaintContents(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
   LayoutPoint adjusted_paint_offset = paint_offset + layout_part_.Location();
 
-  FrameViewBase* frame_view_base = layout_part_.PluginOrFrame();
-  CHECK(frame_view_base);
+  FrameOrPlugin* frame_or_plugin = layout_part_.GetFrameOrPlugin();
+  CHECK(frame_or_plugin);
 
   IntPoint paint_location(RoundedIntPoint(
       adjusted_paint_offset + layout_part_.ReplacedContentRect().Location()));
 
-  // FrameViewBases don't support painting with a paint offset, but instead
-  // offset themselves using the frame rect location. To paint FrameViewBases at
+  // Views don't support painting with a paint offset, but instead
+  // offset themselves using the frame rect location. To paint Views at
   // our desired location, we need to apply paint offset as a transform, with
   // the frame rect neutralized.
-  IntSize frame_view_base_paint_offset =
-      paint_location - frame_view_base->FrameRect().Location();
+  IntSize view_paint_offset =
+      paint_location - frame_or_plugin->FrameRect().Location();
   TransformRecorder transform(
       paint_info.context, layout_part_,
-      AffineTransform::Translation(frame_view_base_paint_offset.Width(),
-                                   frame_view_base_paint_offset.Height()));
-  CullRect adjusted_cull_rect(paint_info.GetCullRect(),
-                              -frame_view_base_paint_offset);
-  frame_view_base->Paint(paint_info.context, adjusted_cull_rect);
+      AffineTransform::Translation(view_paint_offset.Width(),
+                                   view_paint_offset.Height()));
+  CullRect adjusted_cull_rect(paint_info.GetCullRect(), -view_paint_offset);
+  frame_or_plugin->Paint(paint_info.context, adjusted_cull_rect);
 }
 
 }  // namespace blink

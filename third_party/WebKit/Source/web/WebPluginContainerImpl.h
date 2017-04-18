@@ -34,7 +34,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/plugins/PluginView.h"
-#include "platform/FrameViewBase.h"
+#include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -59,7 +59,8 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 
 class WEB_EXPORT WebPluginContainerImpl final
-    : public PluginView,
+    : public GarbageCollectedFinalized<WebPluginContainerImpl>,
+      public PluginView,
       NON_EXPORTED_BASE(public WebPluginContainer),
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
@@ -70,8 +71,12 @@ class WEB_EXPORT WebPluginContainerImpl final
                                         WebPlugin* web_plugin) {
     return new WebPluginContainerImpl(element, web_plugin);
   }
+  ~WebPluginContainerImpl() override;
 
   // PluginView methods
+  void SetParent(FrameView*) override;
+  FrameView* Parent() const override { return parent_; };
+  void SetParentVisible(bool) override;
   WebLayer* PlatformLayer() const override;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*) override;
   bool SupportsKeyboardFocus() const override;
@@ -80,20 +85,22 @@ class WEB_EXPORT WebPluginContainerImpl final
   bool WantsWheelEvents() override;
   void UpdateAllLifecyclePhases() override;
   void InvalidatePaintIfNeeded() override { IssuePaintInvalidations(); }
-
-  // FrameViewBase methods
-  void SetFrameRect(const IntRect&) override;
-  void Paint(GraphicsContext&, const CullRect&) const override;
-  void InvalidateRect(const IntRect&) override;
+  void InvalidateRect(const IntRect&);
   void SetFocused(bool, WebFocusType) override;
-  void Show() override;
-  void Hide() override;
   void HandleEvent(Event*) override;
   void FrameRectsChanged() override;
-  void SetParentVisible(bool) override;
   void GeometryMayHaveChanged() override;
   bool IsPluginContainer() const override { return true; }
   void EventListenersRemoved() override;
+
+  // FrameOrPlugin methods
+  void SetFrameRect(const IntRect& frame_rect) override {
+    frame_rect_ = frame_rect;
+  }
+  const IntRect& FrameRect() const override { return frame_rect_; }
+  void Paint(GraphicsContext&, const CullRect&) const override;
+  void Show() override;
+  void Hide() override;
 
   // WebPluginContainer methods
   WebElement GetElement() override;
@@ -182,7 +189,6 @@ class WEB_EXPORT WebPluginContainerImpl final
       IntRect& unclipped_int_local_rect) const;
 
   WebPluginContainerImpl(HTMLPlugInElement*, WebPlugin*);
-  ~WebPluginContainerImpl() override;
 
   void HandleMouseEvent(MouseEvent*);
   void HandleDragEvent(MouseEvent*);
@@ -206,24 +212,24 @@ class WEB_EXPORT WebPluginContainerImpl final
 
   friend class WebPluginContainerTest;
 
+  Member<FrameView> parent_;
   Member<HTMLPlugInElement> element_;
   WebPlugin* web_plugin_;
-
   WebLayer* web_layer_;
-
+  IntRect frame_rect_;
   IntRect pending_invalidation_rect_;
-
   TouchEventRequestType touch_event_request_type_;
   bool wants_wheel_events_;
-
+  bool self_visible_;
+  bool parent_visible_;
   bool is_disposed_;
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
-                  FrameViewBase,
-                  frameViewBase,
-                  frameViewBase->IsPluginContainer(),
-                  frameViewBase.IsPluginContainer());
+                  PluginView,
+                  plugin,
+                  plugin->IsPluginContainer(),
+                  plugin.IsPluginContainer());
 // Unlike FrameViewBase, we need not worry about object type for container.
 // WebPluginContainerImpl is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerImpl,
