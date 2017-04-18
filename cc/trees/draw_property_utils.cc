@@ -1044,8 +1044,7 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
 }
 
 void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
-                                  RenderSurfaceImpl* render_surface,
-                                  const bool use_layer_lists) {
+                                  RenderSurfaceImpl* render_surface) {
   SetSurfaceIsClipped(property_trees->clip_tree, render_surface);
   SetSurfaceDrawOpacity(property_trees->effect_tree, render_surface);
   SetSurfaceDrawTransform(property_trees, render_surface);

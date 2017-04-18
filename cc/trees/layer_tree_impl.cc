@@ -1103,8 +1103,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        settings().use_layer_lists, &render_surface_layer_list_,
-        &property_trees_);
+        &render_surface_layer_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(

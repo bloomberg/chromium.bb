@@ -120,7 +120,6 @@ class BspTreePerfTest : public LayerTreeTest {
         active_tree->OverscrollElasticityLayer(), max_texture_size,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        false,  // don't use layer lists for perf tests
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }

@@ -65,8 +65,7 @@ void CC_EXPORT ComputeMaskDrawProperties(LayerImpl* mask_layer,
                                          const PropertyTrees* property_trees);
 
 void CC_EXPORT ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
-                                            RenderSurfaceImpl* render_surface,
-                                            const bool use_layer_lists);
+                                            RenderSurfaceImpl* render_surface);
 
 bool CC_EXPORT LayerShouldBeSkipped(LayerImpl* layer,
                                     const TransformTree& transform_tree,

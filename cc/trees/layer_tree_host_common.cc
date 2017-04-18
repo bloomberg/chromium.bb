@@ -79,7 +79,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     int max_texture_size,
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
-    bool use_layer_lists,
     LayerImplList* render_surface_layer_list,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
@@ -96,7 +95,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       max_texture_size(max_texture_size),
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
-      use_layer_lists(use_layer_lists),
       render_surface_layer_list(render_surface_layer_list),
       property_trees(property_trees) {}
 
@@ -118,7 +116,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               NULL,
                               std::numeric_limits<int>::max() / 2,
                               true,
-                              false,
                               false,
                               render_surface_layer_list,
                               GetPropertyTrees(root_layer)) {
@@ -284,8 +281,7 @@ static void ComputeInitialRenderSurfaceLayerList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
-    bool can_render_to_separate_surface,
-    bool use_layer_lists) {
+    bool can_render_to_separate_surface) {
   // Add all non-skipped surfaces to the initial render surface layer list. Add
   // all non-skipped layers to the layer list of their target surface, and
   // add their content rect to their target surface's accumulated content rect.
@@ -325,8 +321,8 @@ static void ComputeInitialRenderSurfaceLayerList(
             contributes_to_drawn_surface);
       }
 
-      draw_property_utils::ComputeSurfaceDrawProperties(
-          property_trees, render_surface, use_layer_lists);
+      draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
+                                                        render_surface);
 
       // Ignore occlusion from outside the surface when surface contents need to
       // be fully drawn. Layers with copy-request need to be complete.  We could
@@ -436,7 +432,6 @@ static void CalculateRenderSurfaceLayerList(
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     const bool can_render_to_separate_surface,
-    const bool use_layer_lists,
     const int max_texture_size) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
@@ -447,9 +442,9 @@ static void CalculateRenderSurfaceLayerList(
   // First compute an RSLL that might include surfaces that later turn out to
   // have an empty content rect. After surface content rects are computed,
   // produce a final RSLL that omits empty surfaces.
-  ComputeInitialRenderSurfaceLayerList(
-      layer_tree_impl, property_trees, &initial_render_surface_list,
-      can_render_to_separate_surface, use_layer_lists);
+  ComputeInitialRenderSurfaceLayerList(layer_tree_impl, property_trees,
+                                       &initial_render_surface_list,
+                                       can_render_to_separate_surface);
   ComputeSurfaceContentRects(layer_tree_impl, property_trees,
                              &initial_render_surface_list, max_texture_size);
   ComputeListOfNonEmptySurfaces(layer_tree_impl, property_trees,
@@ -556,7 +551,7 @@ void CalculateDrawPropertiesInternal(
   CalculateRenderSurfaceLayerList(
       inputs->root_layer->layer_tree_impl(), inputs->property_trees,
       inputs->render_surface_layer_list, inputs->can_render_to_separate_surface,
-      inputs->use_layer_lists, inputs->max_texture_size);
+      inputs->max_texture_size);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
