@@ -147,9 +147,6 @@ class GFX_EXPORT Canvas {
   // Canvas::TEXT_ALIGN_RIGHT.
   static int DefaultCanvasTextAlignment();
 
-  // Extracts an ImageSkiaRep from the contents of this canvas.
-  ImageSkiaRep ExtractImageRep() const;
-
   // Draws a dashed rectangle of the specified color.
   void DrawDashedRect(const RectF& rect, SkColor color);
 

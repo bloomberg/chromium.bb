@@ -103,17 +103,6 @@ int Canvas::DefaultCanvasTextAlignment() {
   return base::i18n::IsRTL() ? TEXT_ALIGN_RIGHT : TEXT_ALIGN_LEFT;
 }
 
-ImageSkiaRep Canvas::ExtractImageRep() const {
-  DCHECK(bitmap_);
-  SkBitmap bitmap_copy;
-  // copyTo() will perform a deep copy, which is what we want.
-  bool result = bitmap_->copyTo(&bitmap_copy);
-  // This should succeed since the destination bitmap is empty to begin with.
-  // The only failure is an allocation failure, which we want to DCHECK anyway.
-  DCHECK(result);
-  return ImageSkiaRep(bitmap_copy, image_scale_);
-}
-
 void Canvas::DrawDashedRect(const RectF& rect, SkColor color) {
   if (rect.IsEmpty())
     return;
