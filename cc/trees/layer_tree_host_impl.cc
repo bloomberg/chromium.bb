@@ -707,27 +707,6 @@ void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
       std::move(swap_promise));
 }
 
-void LayerTreeHostImpl::TrackDamageForAllSurfaces(
-    const LayerImplList& render_surface_layer_list) {
-  // For now, we use damage tracking to compute a global scissor. To do this, we
-  // must compute all damage tracking before drawing anything, so that we know
-  // the root damage rect. The root damage rect is then used to scissor each
-  // surface.
-  size_t render_surface_layer_list_size = render_surface_layer_list.size();
-  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
-    size_t surface_index = render_surface_layer_list_size - 1 - i;
-    LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
-    RenderSurfaceImpl* render_surface =
-        render_surface_layer->GetRenderSurface();
-    DCHECK(render_surface);
-    render_surface->damage_tracker()->UpdateDamageTrackingState(
-        render_surface->layer_list(), render_surface,
-        render_surface->SurfacePropertyChangedOnlyFromDescendant(),
-        render_surface->content_rect(), render_surface->MaskLayer(),
-        render_surface->Filters());
-  }
-}
-
 void LayerTreeHostImpl::FrameData::AsValueInto(
     base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_no_damage", has_no_damage);
@@ -807,7 +786,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK(!active_tree_->LayerListIsEmpty());
 
-  TrackDamageForAllSurfaces(*frame->render_surface_layer_list);
+  // For now, we use damage tracking to compute a global scissor. To do this, we
+  // must compute all damage tracking before drawing anything, so that we know
+  // the root damage rect. The root damage rect is then used to scissor each
+  // surface.
+  DamageTracker::UpdateDamageTracking(active_tree_.get(),
+                                      active_tree_->RenderSurfaceLayerList());
 
   // If the root render surface has no visible damage, then don't generate a
   // frame at all.

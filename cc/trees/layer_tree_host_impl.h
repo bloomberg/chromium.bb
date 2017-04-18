@@ -664,9 +664,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool AnimateScrollbars(base::TimeTicks monotonic_time);
   bool AnimateBrowserControls(base::TimeTicks monotonic_time);
 
-  void TrackDamageForAllSurfaces(
-      const LayerImplList& render_surface_layer_list);
-
   void UpdateTileManagerMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   // This function should only be called from PrepareToDraw, as DidDrawAllLayers

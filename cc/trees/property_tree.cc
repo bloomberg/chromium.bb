@@ -1012,6 +1012,20 @@ int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
     return EffectTree::kInvalidNodeId;
 }
 
+int EffectTree::LowestCommonAncestorWithRenderSurface(int id_1,
+                                                      int id_2) const {
+  DCHECK(GetRenderSurface(id_1));
+  DCHECK(GetRenderSurface(id_2));
+  while (id_1 != id_2) {
+    if (id_1 < id_2)
+      id_2 = Node(id_2)->target_id;
+    else
+      id_1 = Node(id_1)->target_id;
+  }
+
+  return id_1;
+}
+
 void EffectTree::AddMaskLayerId(int id) {
   mask_layer_ids_.push_back(id);
 }

@@ -43,20 +43,6 @@ EffectTreeLayerListIterator::EffectTreeLayerListIterator(
 
 EffectTreeLayerListIterator::~EffectTreeLayerListIterator() {}
 
-// Finds the lowest common ancestor that has a render surface.
-static int LowestCommonAncestor(int effect_id_1,
-                                int effect_id_2,
-                                const EffectTree* effect_tree) {
-  while (effect_id_1 != effect_id_2) {
-    if (effect_id_1 < effect_id_2)
-      effect_id_2 = effect_tree->Node(effect_id_2)->target_id;
-    else
-      effect_id_1 = effect_tree->Node(effect_id_1)->target_id;
-  }
-
-  return effect_id_1;
-}
-
 void EffectTreeLayerListIterator::operator++() {
   switch (state_) {
     case State::LAYER:
@@ -80,8 +66,9 @@ void EffectTreeLayerListIterator::operator++() {
       // If the next drawn layer has a different target effect tree index, check
       // for surfaces whose contributors have all been visited.
       if (next_effect_tree_index_ != current_effect_tree_index_) {
-        lowest_common_effect_tree_ancestor_index_ = LowestCommonAncestor(
-            current_effect_tree_index_, next_effect_tree_index_, effect_tree_);
+        lowest_common_effect_tree_ancestor_index_ =
+            effect_tree_->LowestCommonAncestorWithRenderSurface(
+                current_effect_tree_index_, next_effect_tree_index_);
         // If the current layer's target effect node is an ancestor of the next
         // layer's target effect node, then the current effect node still has
         // more contributors that need to be visited. Otherwise, all

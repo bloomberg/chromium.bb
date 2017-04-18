@@ -14,6 +14,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -29,18 +30,14 @@ DamageTracker::DamageTracker()
 
 DamageTracker::~DamageTracker() {}
 
-void DamageTracker::UpdateDamageTrackingState(
-    const LayerImplList& layer_list,
-    const RenderSurfaceImpl* target_surface,
-    bool target_surface_property_changed_only_from_descendant,
-    const gfx::Rect& target_surface_content_rect,
-    LayerImpl* target_surface_mask_layer,
-    const FilterOperations& filters) {
+void DamageTracker::UpdateDamageTracking(
+    LayerTreeImpl* layer_tree_impl,
+    const LayerImplList& render_surface_list) {
   //
-  // This function computes the "damage rect" of a target surface, and updates
-  // the state that is used to correctly track damage across frames. The damage
-  // rect is the region of the surface that may have changed and needs to be
-  // redrawn. This can be used to scissor what is actually drawn, to save GPU
+  // This function computes the "damage rect" of each target surface, and
+  // updates the state that is used to correctly track damage across frames. The
+  // damage rect is the region of the surface that may have changed and needs to
+  // be redrawn. This can be used to scissor what is actually drawn, to save GPU
   // computation and bandwidth.
   //
   // The surface's damage rect is computed as the union of all possible changes
@@ -52,25 +49,30 @@ void DamageTracker::UpdateDamageTrackingState(
   //
   // The basic algorithm for computing the damage region is as follows:
   //
-  //   1. compute damage caused by changes in active/new layers
-  //       for each layer in the layer_list:
-  //           if the layer is actually a render_surface:
-  //               add the surface's damage to our target surface.
-  //           else
-  //               add the layer's damage to the target surface.
+  //   1. compute damage caused by changes in contributing layers or surfaces
+  //       for each contributing layer or render surface:
+  //           add the layer's or surface's damage to the target surface.
   //
   //   2. compute damage caused by the target surface's mask, if it exists.
   //
   //   3. compute damage caused by old layers/surfaces that no longer exist
-  //       for each leftover layer:
+  //       for each leftover layer or render surface:
   //           add the old layer/surface bounds to the target surface damage.
   //
   //   4. combine all partial damage rects to get the full damage rect.
   //
   // Additional important points:
   //
-  // - This algorithm is implicitly recursive; it assumes that descendant
-  //   surfaces have already computed their damage.
+  // - This algorithm requires that descendant surfaces compute their damage
+  //   before ancestor surfaces. Further, since contributing surfaces with
+  //   background filters can expand the damage caused by contributors
+  //   underneath them (that is, before them in draw order), the exact damage
+  //   caused by these contributors must be computed before computing the damage
+  //   caused by the contributing surface. This is implemented by visiting
+  //   layers in draw order, computing the damage caused by each one to their
+  //   target; during this walk, as soon as all of a surface's contributors have
+  //   been visited, the surface's own damage is computed and then added to its
+  //   target's accumulated damage.
   //
   // - Changes to layers/surfaces indicate "damage" to the target surface; If a
   //   layer is not changed, it does NOT mean that the layer can skip drawing.
@@ -104,40 +106,98 @@ void DamageTracker::UpdateDamageTrackingState(
   //         erased from map.
   //
 
-  PrepareRectHistoryForUpdate();
+  for (LayerImpl* layer : render_surface_list) {
+    layer->GetRenderSurface()->damage_tracker()->PrepareForUpdate();
+  }
+
+  EffectTree& effect_tree = layer_tree_impl->property_trees()->effect_tree;
+  int current_target_effect_id = EffectTree::kContentsRootNodeId;
+  DCHECK(effect_tree.GetRenderSurface(current_target_effect_id));
+  for (LayerImpl* layer : *layer_tree_impl) {
+    if (!layer->is_drawn_render_surface_layer_list_member())
+      continue;
+
+    int next_target_effect_id = layer->render_target_effect_tree_index();
+    if (next_target_effect_id != current_target_effect_id) {
+      int lowest_common_ancestor_id =
+          effect_tree.LowestCommonAncestorWithRenderSurface(
+              current_target_effect_id, next_target_effect_id);
+      while (current_target_effect_id != lowest_common_ancestor_id) {
+        // Moving to a non-descendant target surface. This implies that the
+        // current target doesn't have any more contributors, since only
+        // descendants can contribute to a target, and the each's target's
+        // content (including content contributed by descendants) is contiguous
+        // in draw order.
+        RenderSurfaceImpl* current_target =
+            effect_tree.GetRenderSurface(current_target_effect_id);
+        current_target->damage_tracker()->ComputeSurfaceDamage(current_target);
+        RenderSurfaceImpl* parent_target = current_target->render_target();
+        parent_target->damage_tracker()->AccumulateDamageFromRenderSurface(
+            current_target);
+        current_target_effect_id =
+            effect_tree.Node(current_target_effect_id)->target_id;
+      }
+      current_target_effect_id = next_target_effect_id;
+    }
+
+    RenderSurfaceImpl* target_surface = layer->render_target();
+
+    // We skip damage from the HUD layer because (a) the HUD layer damages the
+    // whole frame and (b) we don't want HUD layer damage to be shown by the
+    // HUD damage rect visualization.
+    if (layer != layer_tree_impl->hud_layer()) {
+      target_surface->damage_tracker()->AccumulateDamageFromLayer(layer);
+    }
+  }
+
+  DCHECK_GE(current_target_effect_id, EffectTree::kContentsRootNodeId);
+  RenderSurfaceImpl* current_target =
+      effect_tree.GetRenderSurface(current_target_effect_id);
+  while (true) {
+    current_target->damage_tracker()->ComputeSurfaceDamage(current_target);
+    if (current_target->EffectTreeIndex() == EffectTree::kContentsRootNodeId)
+      break;
+    RenderSurfaceImpl* next_target = current_target->render_target();
+    next_target->damage_tracker()->AccumulateDamageFromRenderSurface(
+        current_target);
+    current_target = next_target;
+  }
+}
+
+void DamageTracker::ComputeSurfaceDamage(RenderSurfaceImpl* render_surface) {
+  // All damage from contributing layers and surfaces must already have been
+  // added to damage_for_this_update_ through calls to AccumulateDamageFromLayer
+  // and AccumulateDamageFromRenderSurface.
+
   // These functions cannot be bypassed with early-exits, even if we know what
   // the damage will be for this frame, because we need to update the damage
   // tracker state to correctly track the next frame.
-  DamageAccumulator damage_from_active_layers =
-      TrackDamageFromActiveLayers(layer_list, target_surface);
   DamageAccumulator damage_from_surface_mask =
-      TrackDamageFromSurfaceMask(target_surface_mask_layer);
+      TrackDamageFromSurfaceMask(render_surface->MaskLayer());
   DamageAccumulator damage_from_leftover_rects = TrackDamageFromLeftoverRects();
 
-  DamageAccumulator damage_for_this_update;
-
-  if (target_surface_property_changed_only_from_descendant) {
-    damage_for_this_update.Union(target_surface_content_rect);
+  if (render_surface->SurfacePropertyChangedOnlyFromDescendant()) {
+    damage_for_this_update_ = DamageAccumulator();
+    damage_for_this_update_.Union(render_surface->content_rect());
   } else {
     // TODO(shawnsingh): can we clamp this damage to the surface's content rect?
     // (affects performance, but not correctness)
-    damage_for_this_update.Union(damage_from_active_layers);
-    damage_for_this_update.Union(damage_from_surface_mask);
-    damage_for_this_update.Union(damage_from_leftover_rects);
+    damage_for_this_update_.Union(damage_from_surface_mask);
+    damage_for_this_update_.Union(damage_from_leftover_rects);
 
     gfx::Rect damage_rect;
-    bool is_rect_valid = damage_for_this_update.GetAsRect(&damage_rect);
+    bool is_rect_valid = damage_for_this_update_.GetAsRect(&damage_rect);
     if (is_rect_valid) {
-      damage_rect =
-          filters.MapRect(damage_rect, target_surface->SurfaceScale().matrix());
-      damage_for_this_update = DamageAccumulator();
-      damage_for_this_update.Union(damage_rect);
+      damage_rect = render_surface->Filters().MapRect(
+          damage_rect, render_surface->SurfaceScale().matrix());
+      damage_for_this_update_ = DamageAccumulator();
+      damage_for_this_update_.Union(damage_rect);
     }
   }
 
   // Damage accumulates until we are notified that we actually did draw on that
   // frame.
-  current_damage_.Union(damage_for_this_update);
+  current_damage_.Union(damage_for_this_update_);
 }
 
 bool DamageTracker::GetDamageRectIfValid(gfx::Rect* rect) {
@@ -177,31 +237,6 @@ DamageTracker::SurfaceRectMapData& DamageTracker::RectDataForSurface(
   return *it;
 }
 
-DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromActiveLayers(
-    const LayerImplList& layer_list,
-    const RenderSurfaceImpl* target_surface) {
-  DamageAccumulator damage;
-
-  for (size_t layer_index = 0; layer_index < layer_list.size(); ++layer_index) {
-    // Visit layers in back-to-front order.
-    LayerImpl* layer = layer_list[layer_index];
-
-    // We skip damage from the HUD layer because (a) the HUD layer damages the
-    // whole frame and (b) we don't want HUD layer damage to be shown by the
-    // HUD damage rect visualization.
-    if (layer == layer->layer_tree_impl()->hud_layer())
-      continue;
-
-    RenderSurfaceImpl* render_surface = layer->GetRenderSurface();
-    if (render_surface && render_surface != target_surface)
-      ExtendDamageForRenderSurface(render_surface, &damage);
-    else
-      ExtendDamageForLayer(layer, &damage);
-  }
-
-  return damage;
-}
-
 DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromSurfaceMask(
     LayerImpl* target_surface_mask_layer) {
   DamageAccumulator damage;
@@ -220,8 +255,9 @@ DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromSurfaceMask(
   return damage;
 }
 
-void DamageTracker::PrepareRectHistoryForUpdate() {
+void DamageTracker::PrepareForUpdate() {
   mailboxId_++;
+  damage_for_this_update_ = DamageAccumulator();
 }
 
 DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromLeftoverRects() {
@@ -292,12 +328,11 @@ DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromLeftoverRects() {
 
 void DamageTracker::ExpandDamageInsideRectWithFilters(
     const gfx::Rect& pre_filter_rect,
-    const FilterOperations& filters,
-    DamageAccumulator* damage) {
+    const FilterOperations& filters) {
   gfx::Rect damage_rect;
-  bool is_valid_rect = damage->GetAsRect(&damage_rect);
-  // If the input isn't a valid rect, then there is no point in trying to make
-  // it bigger.
+  bool is_valid_rect = damage_for_this_update_.GetAsRect(&damage_rect);
+  // If the damage accumulated so far isn't a valid rect, then there is no point
+  // in trying to make it bigger.
   if (!is_valid_rect)
     return;
 
@@ -308,11 +343,10 @@ void DamageTracker::ExpandDamageInsideRectWithFilters(
   // Restrict it to the rectangle in which the background filter is shown.
   expanded_damage_rect.Intersect(pre_filter_rect);
 
-  damage->Union(expanded_damage_rect);
+  damage_for_this_update_.Union(expanded_damage_rect);
 }
 
-void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
-                                         DamageAccumulator* target_damage) {
+void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
   // There are two ways that a layer can damage a region of the target surface:
   //   1. Property change (e.g. opacity, position, transforms):
   //        - the entire region of the layer itself damages the surface.
@@ -341,11 +375,11 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   if (layer_is_new || layer->LayerPropertyChanged()) {
     // If a layer is new or has changed, then its entire layer rect affects the
     // target surface.
-    target_damage->Union(rect_in_target_space);
+    damage_for_this_update_.Union(rect_in_target_space);
 
     // The layer's old region is now exposed on the target surface, too.
     // Note old_rect_in_target_space is already in target space.
-    target_damage->Union(old_rect_in_target_space);
+    damage_for_this_update_.Union(old_rect_in_target_space);
     return;
   }
 
@@ -357,13 +391,12 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   if (!damage_rect.IsEmpty()) {
     gfx::Rect damage_rect_in_target_space =
         MathUtil::MapEnclosingClippedRect(layer->DrawTransform(), damage_rect);
-    target_damage->Union(damage_rect_in_target_space);
+    damage_for_this_update_.Union(damage_rect_in_target_space);
   }
 }
 
-void DamageTracker::ExtendDamageForRenderSurface(
-    RenderSurfaceImpl* render_surface,
-    DamageAccumulator* target_damage) {
+void DamageTracker::AccumulateDamageFromRenderSurface(
+    RenderSurfaceImpl* render_surface) {
   // There are two ways a "descendant surface" can damage regions of the "target
   // surface":
   //   1. Property change:
@@ -390,10 +423,10 @@ void DamageTracker::ExtendDamageForRenderSurface(
 
   if (surface_is_new || render_surface->SurfacePropertyChanged()) {
     // The entire surface contributes damage.
-    target_damage->Union(surface_rect_in_target_space);
+    damage_for_this_update_.Union(surface_rect_in_target_space);
 
     // The surface's old region is now exposed on the target surface, too.
-    target_damage->Union(old_surface_rect);
+    damage_for_this_update_.Union(old_surface_rect);
   } else {
     // Only the surface's damage_rect will damage the target surface.
     gfx::Rect damage_rect_in_local_space;
@@ -405,9 +438,9 @@ void DamageTracker::ExtendDamageForRenderSurface(
       const gfx::Transform& draw_transform = render_surface->draw_transform();
       gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
           draw_transform, damage_rect_in_local_space);
-      target_damage->Union(damage_rect_in_target_space);
+      damage_for_this_update_.Union(damage_rect_in_target_space);
     } else if (!is_valid_rect) {
-      target_damage->Union(surface_rect_in_target_space);
+      damage_for_this_update_.Union(surface_rect_in_target_space);
     }
   }
 
@@ -421,7 +454,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
       render_surface->BackgroundFilters();
   if (background_filters.HasFilterThatMovesPixels()) {
     ExpandDamageInsideRectWithFilters(surface_rect_in_target_space,
-                                      background_filters, target_damage);
+                                      background_filters);
   }
 }
 

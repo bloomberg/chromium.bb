@@ -21,6 +21,7 @@ namespace cc {
 
 class FilterOperations;
 class LayerImpl;
+class LayerTreeImpl;
 class RenderSurfaceImpl;
 
 // Computes the region where pixels have actually changed on a
@@ -31,15 +32,11 @@ class CC_EXPORT DamageTracker {
   static std::unique_ptr<DamageTracker> Create();
   ~DamageTracker();
 
+  static void UpdateDamageTracking(LayerTreeImpl* layer_tree_impl,
+                                   const LayerImplList& render_surface_list);
+
   void DidDrawDamagedArea() { current_damage_ = DamageAccumulator(); }
   void AddDamageNextUpdate(const gfx::Rect& dmg) { current_damage_.Union(dmg); }
-  void UpdateDamageTrackingState(
-      const LayerImplList& layer_list,
-      const RenderSurfaceImpl* target_surface,
-      bool target_surface_property_changed_only_from_descendant,
-      const gfx::Rect& target_surface_content_rect,
-      LayerImpl* target_surface_mask_layer,
-      const FilterOperations& filters);
 
   bool GetDamageRectIfValid(gfx::Rect* rect);
 
@@ -84,21 +81,17 @@ class CC_EXPORT DamageTracker {
     int bottom_ = 0;
   };
 
-  DamageAccumulator TrackDamageFromActiveLayers(
-      const LayerImplList& layer_list,
-      const RenderSurfaceImpl* target_surface);
   DamageAccumulator TrackDamageFromSurfaceMask(
       LayerImpl* target_surface_mask_layer);
   DamageAccumulator TrackDamageFromLeftoverRects();
-  void PrepareRectHistoryForUpdate();
 
-  // These helper functions are used only in TrackDamageFromActiveLayers().
-  void ExtendDamageForLayer(LayerImpl* layer, DamageAccumulator* target_damage);
-  void ExtendDamageForRenderSurface(RenderSurfaceImpl* render_surface,
-                                    DamageAccumulator* target_damage);
+  // These helper functions are used only during UpdateDamageTracking().
+  void PrepareForUpdate();
+  void AccumulateDamageFromLayer(LayerImpl* layer);
+  void AccumulateDamageFromRenderSurface(RenderSurfaceImpl* render_surface);
+  void ComputeSurfaceDamage(RenderSurfaceImpl* render_surface);
   void ExpandDamageInsideRectWithFilters(const gfx::Rect& pre_filter_rect,
-                                         const FilterOperations& filters,
-                                         DamageAccumulator* damage);
+                                         const FilterOperations& filters);
 
   struct LayerRectMapData {
     LayerRectMapData() : layer_id_(0), mailboxId_(0) {}
@@ -146,6 +139,9 @@ class CC_EXPORT DamageTracker {
 
   unsigned int mailboxId_;
   DamageAccumulator current_damage_;
+
+  // Damage accumulated since the last call to PrepareForUpdate().
+  DamageAccumulator damage_for_this_update_;
 
   DISALLOW_COPY_AND_ASSIGN(DamageTracker);
 };

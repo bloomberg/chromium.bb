@@ -57,19 +57,8 @@ void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
   ExecuteCalculateDrawProperties(root, device_scale_factor,
                                  &render_surface_layer_list);
 
-  // Iterate back-to-front, so that damage correctly propagates from descendant
-  // surfaces to ancestors.
-  size_t render_surface_layer_list_size = render_surface_layer_list.size();
-  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
-    size_t index = render_surface_layer_list_size - 1 - i;
-    RenderSurfaceImpl* target_surface =
-        render_surface_layer_list[index]->GetRenderSurface();
-    target_surface->damage_tracker()->UpdateDamageTrackingState(
-        target_surface->layer_list(), target_surface,
-        target_surface->SurfacePropertyChangedOnlyFromDescendant(),
-        target_surface->content_rect(), target_surface->MaskLayer(),
-        target_surface->Filters());
-  }
+  DamageTracker::UpdateDamageTracking(root->layer_tree_impl(),
+                                      render_surface_layer_list);
 
   root->layer_tree_impl()->ResetAllChangeTracking();
 }
@@ -1344,10 +1333,7 @@ TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
   EXPECT_EQ(gfx::Rect(30, 31, 14, 15).ToString(), root_damage_rect.ToString());
 }
 
-TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
-  // Though it should never happen, its a good idea to verify that the damage
-  // tracker does not crash when it receives an empty layer_list.
-
+TEST_F(DamageTrackerTest, VerifyDamageWithNoContributingLayers) {
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl_.active_tree(), 1);
   root->test_properties()->force_render_surface = true;
@@ -1358,11 +1344,6 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
 
   DCHECK_EQ(root_ptr->GetRenderSurface(), root_ptr->render_target());
   RenderSurfaceImpl* target_surface = root_ptr->GetRenderSurface();
-
-  LayerImplList empty_list;
-  target_surface->damage_tracker()->UpdateDamageTrackingState(
-      empty_list, target_surface, false, gfx::Rect(), NULL, FilterOperations());
-
   gfx::Rect damage_rect;
   EXPECT_TRUE(
       target_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));
@@ -1530,15 +1511,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
                                  &render_surface_layer_list);
-
-  auto* surface = child1->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
-  surface = root->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
+  // Avoid the descendant-only property change path that skips unioning damage
+  // from descendant layers.
+  child1->GetRenderSurface()->NoteAncestorPropertyChanged();
+  DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
+                                      render_surface_layer_list);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1.
@@ -1568,14 +1545,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   render_surface_layer_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
                                  &render_surface_layer_list);
-  surface = child1->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
-  surface = root->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
+  DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
+                                      render_surface_layer_list);
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.
@@ -1624,15 +1595,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
                                  &render_surface_layer_list);
-
-  auto* surface = child1->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
-  surface = root->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
+  // Avoid the descendant-only property change path that skips unioning damage
+  // from descendant layers.
+  child1->GetRenderSurface()->NoteAncestorPropertyChanged();
+  DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
+                                      render_surface_layer_list);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1.
@@ -1662,14 +1629,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   render_surface_layer_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
                                  &render_surface_layer_list);
-  surface = child1->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
-  surface = root->GetRenderSurface();
-  surface->damage_tracker()->UpdateDamageTrackingState(
-      surface->layer_list(), surface, false, surface->content_rect(),
-      surface->MaskLayer(), surface->Filters());
+  DamageTracker::UpdateDamageTracking(host_impl_.active_tree(),
+                                      render_surface_layer_list);
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.

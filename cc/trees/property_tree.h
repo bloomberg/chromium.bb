@@ -380,6 +380,11 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   int ClosestAncestorWithCopyRequest(int id) const;
 
+  // Given the ids of two effect nodes that have render surfaces, returns the
+  // id of the lowest common ancestor effect node that also has a render
+  // surface.
+  int LowestCommonAncestorWithRenderSurface(int id_1, int id_2) const;
+
   void AddMaskLayerId(int id);
   const std::vector<int>& mask_layer_ids() const { return mask_layer_ids_; }
 
