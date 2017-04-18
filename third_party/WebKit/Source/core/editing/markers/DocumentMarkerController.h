@@ -152,6 +152,8 @@ class CORE_EXPORT DocumentMarkerController final
   using MarkerLists =
       HeapVector<Member<MarkerList>, DocumentMarker::kMarkerTypeIndexesCount>;
   using MarkerMap = HeapHashMap<WeakMember<const Node>, Member<MarkerLists>>;
+  static Member<MarkerList>& ListForType(MarkerLists*,
+                                         DocumentMarker::MarkerType);
   bool PossiblyHasMarkers(DocumentMarker::MarkerTypes);
   void RemoveMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
   void RemoveMarkers(TextIterator&, DocumentMarker::MarkerTypes);

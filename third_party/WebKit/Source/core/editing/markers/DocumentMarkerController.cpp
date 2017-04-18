@@ -77,6 +77,13 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
 
 }  // namespace
 
+Member<DocumentMarkerController::MarkerList>&
+DocumentMarkerController::ListForType(MarkerLists* marker_lists,
+                                      DocumentMarker::MarkerType type) {
+  const size_t marker_list_index = MarkerTypeToMarkerIndex(type);
+  return (*marker_lists)[marker_list_index];
+}
+
 inline bool DocumentMarkerController::PossiblyHasMarkers(
     DocumentMarker::MarkerTypes types) {
   return possibly_existing_marker_types_.Intersects(types);
@@ -227,13 +234,11 @@ void DocumentMarkerController::AddMarker(Node* node,
     markers->Grow(DocumentMarker::kMarkerTypeIndexesCount);
   }
 
-  DocumentMarker::MarkerTypeIndex marker_list_index =
-      MarkerTypeToMarkerIndex(new_marker.GetType());
-  if (!markers->at(marker_list_index)) {
-    markers->at(marker_list_index) = new MarkerList;
-  }
+  const DocumentMarker::MarkerType new_marker_type = new_marker.GetType();
+  if (!ListForType(markers, new_marker_type))
+    ListForType(markers, new_marker_type) = new MarkerList;
 
-  Member<MarkerList>& list = markers->at(marker_list_index);
+  Member<MarkerList>& list = ListForType(markers, new_marker_type);
   DocumentMarkerListEditor::AddMarker(list, &new_marker);
 
   // repaint the affected node
@@ -761,8 +766,7 @@ bool DocumentMarkerController::SetMarkersActive(Node* node,
     return false;
 
   bool doc_dirty = false;
-  Member<MarkerList>& list =
-      (*markers)[MarkerTypeToMarkerIndex(DocumentMarker::kTextMatch)];
+  Member<MarkerList>& list = ListForType(markers, DocumentMarker::kTextMatch);
   if (!list)
     return false;
   MarkerList::iterator start_pos =
