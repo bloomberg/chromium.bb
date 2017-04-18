@@ -120,6 +120,7 @@
       'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_bot',
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_bot',
+      'Chromium Mac Goma Canary LocalOutputCache': 'release_bot',
       'Chromium Win PGO Builder': {
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
         '2': 'official_optimize_chrome_pgo_phase_2_x86',
@@ -143,6 +144,7 @@
       'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
       'CrWinGoma': 'release_bot_x86',
       'CrWinGoma(dll)': 'shared_release_bot_x86',
+      'CrWinGoma(loc)': 'shared_release_bot_x86',
       'ClangToTAndroidASan': 'android_clang_tot_asan',
       'ClangToTAndroid (dbg)': 'android_clang_tot_dbg',
       'ClangToTAndroid': 'android_clang_tot_release',
