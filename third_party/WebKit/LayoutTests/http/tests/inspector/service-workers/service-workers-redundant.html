@@ -27,6 +27,7 @@ function test()
     var step = 0;
     var firstVersionId = -1;
     var secondVersionId = -1;
+    Resources.ServiceWorkersView._noThrottle = true;
 
     InspectorTest.evaluateInPage("frontendReopeningCount", function(result) {
         if (result._description == "0") {
@@ -68,11 +69,11 @@ function test()
                     InspectorTest.evaluateInPage("reopenFrontend()");
                 }
             }
-            UI.panels.resources.serviceWorkersTreeElement.select();
+            UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
             InspectorTest.registerServiceWorker(scriptURL, scope);
         } else {
             InspectorTest.addResult("DevTools frontend is reopened.");
-            UI.panels.resources.serviceWorkersTreeElement.select();
+            UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
             InspectorTest.addResult("==== ServiceWorkersView ====");
             InspectorTest.addResult(InspectorTest.dumpServiceWorkersView([scope]));
             InspectorTest.addResult("============================");

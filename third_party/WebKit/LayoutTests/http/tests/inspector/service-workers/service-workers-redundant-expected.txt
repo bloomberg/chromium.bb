@@ -8,9 +8,11 @@ Push
 Sync
 Unregister
 Source
+changing-worker.php
+Received
 Status
-#N installing
-12/31/1969, 4:00:00 PM
+#N activated and is running
+stop
 Clients
 Errors
 0
@@ -30,8 +32,9 @@ Received
 Status
 #N activated and is running
 stop
-#N installing
-12/31/1969, 4:00:00 PM
+#N waiting to activate
+skipWaiting
+Received
 Clients
 http://127.0.0.1:8000/inspector/service-workers/service-workers-redundant.html
 focus
@@ -61,13 +64,21 @@ clear
 ============================
 DevTools frontend is reopened.
 ==== ServiceWorkersView ====
+http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-redundant-scope/
 Update
 Push
 Sync
 Unregister
 Source
+changing-worker.php
+Received
 Status
+#N activated and is running
+stop
 Clients
 Errors
+0
+details
+clear
 ============================
 
