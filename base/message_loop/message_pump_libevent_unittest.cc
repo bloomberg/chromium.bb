@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -256,11 +257,12 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
 
   // Make the IO thread wait for |event| before writing to pipefds[1].
   const char buf = 0;
-  const WaitableEventWatcher::EventCallback write_fd_task =
-      Bind(&WriteFDWrapper, pipefds_[1], &buf, 1);
+  WaitableEventWatcher::EventCallback write_fd_task =
+      BindOnce(&WriteFDWrapper, pipefds_[1], &buf, 1);
   io_loop()->task_runner()->PostTask(
-      FROM_HERE, BindOnce(IgnoreResult(&WaitableEventWatcher::StartWatching),
-                          Unretained(watcher.get()), &event, write_fd_task));
+      FROM_HERE,
+      BindOnce(IgnoreResult(&WaitableEventWatcher::StartWatching),
+               Unretained(watcher.get()), &event, std::move(write_fd_task)));
 
   // Queue |event| to signal on |loop|.
   loop.task_runner()->PostTask(
