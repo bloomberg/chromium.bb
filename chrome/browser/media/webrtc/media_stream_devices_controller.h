@@ -85,7 +85,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   friend class test::MediaStreamDevicesControllerTestApi;
   friend class policy::MediaStreamDevicesControllerBrowserTest;
 
-  class MediaPermissionStatus;
   class PermissionPromptDelegateImpl;
 
   static void RequestPermissionsWithDelegate(
@@ -95,8 +94,7 @@ class MediaStreamDevicesController : public PermissionRequest {
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
-                               const content::MediaResponseCallback& callback,
-                               const MediaPermissionStatus& initial_permission);
+                               const content::MediaResponseCallback& callback);
 
   bool IsAllowedForAudio() const;
   bool IsAllowedForVideo() const;
@@ -127,8 +125,6 @@ class MediaStreamDevicesController : public PermissionRequest {
   ContentSetting GetContentSetting(
       ContentSettingsType content_type,
       const content::MediaStreamRequest& request,
-      bool was_requested,
-      bool was_initially_blocked,
       content::MediaStreamRequestResult* denial_reason) const;
 
   // Returns the content setting that should apply given an old content setting
