@@ -371,13 +371,10 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
         nullptr);
   }
   if (list_type_ != LIST_TYPE_VPN) {
-    bool scanning =
+    const bool scanning =
         NetworkHandler::Get()->network_state_handler()->GetScanningByType(
             NetworkTypePattern::WiFi());
     ShowProgress(-1, scanning);
-    info_button_->SetTooltipText(l10n_util::GetStringUTF16(
-        scanning ? IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE
-                 : IDS_ASH_STATUS_TRAY_NETWORK_INFO));
   }
 }
 
