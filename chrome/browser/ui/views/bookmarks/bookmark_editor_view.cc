@@ -388,6 +388,7 @@ void BookmarkEditorView::Init() {
     url_tf_->set_controller(this);
     url_tf_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
+    url_tf_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
 
     layout->AddPaddingRow(0, provider->GetDistanceMetric(
                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));

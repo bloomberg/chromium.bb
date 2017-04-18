@@ -174,6 +174,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       // URL entry
       url_entry_ = new views::Textfield();
       url_entry_->set_controller(this);
+      url_entry_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
       toolbar_column_set->AddColumn(views::GridLayout::FILL,
                                     views::GridLayout::FILL, 1,
                                     views::GridLayout::USE_PREF, 0, 0);
