@@ -253,7 +253,8 @@ void ChromeInternalLogSource::PopulateLocalStateSettings(
   // Extract the "settings" entry in the local state and serialize back to
   // a string.
   std::unique_ptr<base::DictionaryValue> local_state =
-      g_browser_process->local_state()->GetPreferenceValuesOmitDefaults();
+      g_browser_process->local_state()->GetPreferenceValues(
+          PrefService::EXCLUDE_DEFAULTS);
   const base::DictionaryValue* local_state_settings = nullptr;
   if (!local_state->GetDictionary(kSettingsKey, &local_state_settings)) {
     VLOG(1) << "Failed to extract the settings entry from Local State.";

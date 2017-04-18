@@ -62,7 +62,8 @@ void LocalStateUIHandler::RegisterMessages() {
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
   std::unique_ptr<base::DictionaryValue> local_state_values(
-      g_browser_process->local_state()->GetPreferenceValuesOmitDefaults());
+      g_browser_process->local_state()->GetPreferenceValues(
+          PrefService::EXCLUDE_DEFAULTS));
   if (ENABLE_FILTERING) {
     std::vector<std::string> whitelisted_prefixes = {
         "variations", "user_experience_metrics", "uninstall_metrics"};

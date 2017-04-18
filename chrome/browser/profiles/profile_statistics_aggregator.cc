@@ -26,6 +26,19 @@
 
 namespace {
 
+// Callback for each pref. Every one that should be counted as a changed
+// user pref will cause *count to be incremented.
+void AccumulatePrefStats(const PrefService* pref_service,
+                         int* count,
+                         const std::string& key,
+                         const base::Value& value) {
+  const PrefService::Preference* pref = pref_service->FindPreference(key);
+  // Skip all dictionaries, only want to count values.
+  if (!value.is_dict() && pref && pref->IsUserControlled() &&
+      !pref->IsDefaultValue())
+    ++(*count);
+}
+
 int CountBookmarksFromNode(const bookmarks::BookmarkNode* node) {
   int count = 0;
   if (node->is_url()) {
@@ -216,26 +229,9 @@ ProfileStatisticsAggregator::ProfileStatValue
 
   ProfileStatValue result;
   if (pref_service) {
-    std::unique_ptr<base::DictionaryValue> prefs =
-        pref_service->GetPreferenceValuesWithoutPathExpansion();
-
-    int count = 0;
-    for (base::DictionaryValue::Iterator it(*(prefs.get()));
-         !it.IsAtEnd(); it.Advance()) {
-      const PrefService::Preference* pref = pref_service->
-                                                FindPreference(it.key());
-      // Skip all dictionaries (which must be empty by the function call above).
-      if (it.value().GetType() != base::Value::Type::DICTIONARY &&
-        pref && pref->IsUserControlled() && !pref->IsDefaultValue()) {
-        ++count;
-      }
-    }
-
-    result.count = count;
+    pref_service->IteratePreferenceValues(base::BindRepeating(
+        &AccumulatePrefStats, pref_service, base::Unretained(&result.count)));
     result.success = true;
-  } else {
-    result.count = 0;
-    result.success = false;
   }
   return result;
 }

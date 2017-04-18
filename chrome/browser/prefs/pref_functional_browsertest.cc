@@ -237,5 +237,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestPrivacySecurityPrefs) {
 
 // Verify that we have some Local State prefs.
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestHaveLocalStatePrefs) {
-  EXPECT_TRUE(g_browser_process->local_state()->GetPreferenceValues().get());
+  EXPECT_TRUE(g_browser_process->local_state()
+                  ->GetPreferenceValues(PrefService::INCLUDE_DEFAULTS)
+                  .get());
 }

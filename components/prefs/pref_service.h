@@ -60,6 +60,11 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
     INITIALIZATION_STATUS_ERROR
   };
 
+  enum IncludeDefaults {
+    INCLUDE_DEFAULTS,
+    EXCLUDE_DEFAULTS,
+  };
+
   // A helper class to store all the information associated with a preference.
   class COMPONENTS_PREFS_EXPORT Preference {
    public:
@@ -250,23 +255,22 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // this checks if a value exists for the path.
   bool HasPrefPath(const std::string& path) const;
 
-  // Returns a dictionary with effective preference values.
-  std::unique_ptr<base::DictionaryValue> GetPreferenceValues() const;
+  // Issues a callback for every preference value. The preferences must not be
+  // mutated during iteration.
+  void IteratePreferenceValues(
+      base::RepeatingCallback<void(const std::string& key,
+                                   const base::Value& value)> callback) const;
 
-  // Returns a dictionary with effective preference values, omitting prefs that
-  // are at their default values.
-  std::unique_ptr<base::DictionaryValue> GetPreferenceValuesOmitDefaults()
-      const;
-
-  // Returns a dictionary with effective preference values. Contrary to
-  // GetPreferenceValues(), the paths of registered preferences are not split on
-  // '.' characters. If a registered preference stores a dictionary, however,
-  // the hierarchical structure inside the preference will be preserved.
-  // For example, if "foo.bar" is a registered preference, the result could look
-  // like this:
-  //   {"foo.bar": {"a": {"b": true}}}.
-  std::unique_ptr<base::DictionaryValue>
-  GetPreferenceValuesWithoutPathExpansion() const;
+  // Returns a dictionary with effective preference values. This is an expensive
+  // operation which does a deep copy. Use only if you really need the results
+  // in a base::Value (for example, for JSON serialization). Otherwise use
+  // IteratePreferenceValues above to avoid the copies.
+  //
+  // If INCLUDE_DEFAULTS is requested, preferences set to their default values
+  // will be included. Otherwise, these will be omitted from the returned
+  // dictionary.
+  std::unique_ptr<base::DictionaryValue> GetPreferenceValues(
+      IncludeDefaults include_defaults) const;
 
   bool ReadOnly() const;
 

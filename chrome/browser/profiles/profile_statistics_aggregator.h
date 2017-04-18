@@ -50,8 +50,8 @@ class ProfileStatisticsAggregator
   friend class base::RefCountedThreadSafe<ProfileStatisticsAggregator>;
 
   struct ProfileStatValue {
-    int count;
-    bool success;  // false means the statistics failed to load
+    int count = 0;
+    bool success = false;  // False means the statistics failed to load.
   };
 
   ~ProfileStatisticsAggregator();

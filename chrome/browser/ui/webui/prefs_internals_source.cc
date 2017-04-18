@@ -34,7 +34,7 @@ void PrefsInternalsSource::StartDataRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string json;
   std::unique_ptr<base::DictionaryValue> prefs =
-      profile_->GetPrefs()->GetPreferenceValues();
+      profile_->GetPrefs()->GetPreferenceValues(PrefService::INCLUDE_DEFAULTS);
   DCHECK(prefs);
   CHECK(base::JSONWriter::WriteWithOptions(
       *prefs, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json));
