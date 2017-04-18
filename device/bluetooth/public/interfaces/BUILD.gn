@@ -10,6 +10,12 @@ mojom("interfaces") {
   ]
 }
 
+mojom("fake_bluetooth_interfaces") {
+  sources = [
+    "test/fake_bluetooth.mojom",
+  ]
+}
+
 mojom("experimental_interfaces") {
   sources = [
     "adapter.mojom",

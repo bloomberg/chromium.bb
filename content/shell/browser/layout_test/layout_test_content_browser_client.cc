@@ -21,6 +21,7 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "device/bluetooth/test/fake_bluetooth.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -80,6 +81,9 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::Bind(&LayoutTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);
+
+  registry->AddInterface(base::Bind(&bluetooth::FakeBluetooth::Create),
+                         ui_task_runner);
 }
 
 void LayoutTestContentBrowserClient::OverrideWebkitPrefs(

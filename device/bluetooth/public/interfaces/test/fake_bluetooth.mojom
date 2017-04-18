@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module bluetooth.mojom;
+
+// FakeBluetooth and its related interfaces allow clients to control the global
+// Bluetooth State as well as simulate Bluetooth events including finding new
+// devices, simulating GATT attributes and its descendants, and simulating
+// success and error responses.
+
+// FakeBluetooth allows clients to control the global Bluetooth state.
+interface FakeBluetooth {
+  // Set it to indicate whether the platform supports BLE. For example, Windows
+  // 7 is a platform that doesn't support Low Energy. On the other hand Windows
+  // 10 is a platform that does support LE, even if there is no Bluetooth radio
+  // available.
+  SetLESupported(bool available) => ();
+};
