@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("colors") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "MDCPalette+CrAdditions.h",
     "MDCPalette+CrAdditions.mm",

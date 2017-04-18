@@ -6,6 +6,10 @@
 
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation MDCPalette (CrAdditions)
 
 namespace {
@@ -50,29 +54,25 @@ static MDCPalette* g_yellowPalette = nil;
 + (void)cr_setBluePalette:(MDCPalette*)palette {
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
-  [g_bluePalette autorelease];
-  g_bluePalette = [palette retain];
+  g_bluePalette = palette;
 }
 
 + (void)cr_setRedPalette:(MDCPalette*)palette {
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
-  [g_redPalette autorelease];
-  g_redPalette = [palette retain];
+  g_redPalette = palette;
 }
 
 + (void)cr_setGreenPalette:(MDCPalette*)palette {
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
-  [g_greenPalette autorelease];
-  g_greenPalette = [palette retain];
+  g_greenPalette = palette;
 }
 
 + (void)cr_setYellowPalette:(MDCPalette*)palette {
   DCHECK(!web::WebThread::IsThreadInitialized(web::WebThread::UI) ||
          web::WebThread::CurrentlyOn(web::WebThread::UI));
-  [g_yellowPalette autorelease];
-  g_yellowPalette = [palette retain];
+  g_yellowPalette = palette;
 }
 
 @end
