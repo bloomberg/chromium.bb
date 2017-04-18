@@ -263,7 +263,7 @@ void TouchEvent::preventDefault() {
         if (view() && view()->GetFrame()) {
           UseCounter::Count(
               view()->GetFrame(),
-              UseCounter::kUncancellableTouchEventPreventDefaulted);
+              UseCounter::kUncancelableTouchEventPreventDefaulted);
         }
 
         if (native_event_ &&
@@ -275,7 +275,7 @@ void TouchEvent::preventDefault() {
             UseCounter::Count(
                 view()->GetFrame(),
                 UseCounter::
-                    kUncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
+                    kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted);
           }
           message_source = kInterventionMessageSource;
           warning_message =

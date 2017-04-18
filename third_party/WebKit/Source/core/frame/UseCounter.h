@@ -1428,9 +1428,8 @@ class CORE_EXPORT UseCounter {
     kV8DeprecatedStorageQuota_QueryUsageAndQuota_Method = 1810,
     kV8DeprecatedStorageQuota_RequestQuota_Method = 1811,
     kV8FileReaderSync_Constructor = 1812,
-    kUncancellableTouchEventPreventDefaulted = 1813,
-    kUncancellableTouchEventDueToMainThreadResponsivenessPreventDefaulted =
-        1814,
+    kUncancelableTouchEventPreventDefaulted = 1813,
+    kUncancelableTouchEventDueToMainThreadResponsivenessPreventDefaulted = 1814,
     kV8HTMLVideoElement_Poster_AttributeGetter = 1815,
     kV8HTMLVideoElement_Poster_AttributeSetter = 1816,
     kNotificationPermissionRequestedIframe = 1817,
