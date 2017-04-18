@@ -1458,6 +1458,8 @@ class CORE_EXPORT UseCounter {
     kHTMLEmbedElementGetter = 1840,
     kHTMLEmbedElementSetter = 1841,
     kTransformUsesBoxSizeOnSVG = 1842,
+    // The above items are available in M58 branch.
+
     kScrollByKeyboardArrowKeys = 1843,
     kScrollByKeyboardPageUpDownKeys = 1844,
     kScrollByKeyboardHomeEndKeys = 1845,
@@ -1573,6 +1575,8 @@ class CORE_EXPORT UseCounter {
     kMediaStreamConstraintsGoogDAEchoCancellation = 1958,
     kMediaStreamConstraintsGoogNoiseReduction = 1959,
     kMediaStreamConstraintsGoogPowerLineFrequency = 1960,
+    // The above items are available in M59 branch.
+
     kViewportFixedPositionUnderFilter = 1961,
 
     // Add new features immediately above this line. Don't change assigned
