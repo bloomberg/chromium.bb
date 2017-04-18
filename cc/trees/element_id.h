@@ -24,16 +24,25 @@ class TracedValue;
 
 namespace cc {
 
-// An "element" is really an animation target. It retains the name element to be
-// symmetric with ElementAnimations and blink::ElementAnimations, but is not
-// in fact tied to the notion of a blink element. It is also not associated with
-// the notion of a Layer. Ultimately, these ids will be used to look up the
-// property tree node associated with the given animation.
+// Element ids are chosen by cc's clients and can be used as a stable identifier
+// across updates.
 //
-// These ids are chosen by cc's clients to permit the destruction and
-// restoration of cc entities (when visuals are hidden and shown) but maintain
-// stable identifiers. There will be a single layer for an ElementId, but
-// not every layer will have an id.
+// Historically, the layer tree stored all compositing data but this has been
+// refactored over time into auxilliary structures such as property trees.
+//
+// In composited scrolling, Layers directly reference scroll tree nodes
+// (Layer::scroll_tree_index) but scroll tree nodes are being refactored to
+// reference stable element ids instead of layers. Scroll property nodes have
+// unique element ids that blink creates from scrollable areas (though this is
+// opaque to the compositor). This refactoring of scroll nodes keeping a
+// scrolling element id instead of a scrolling layer id allows for more general
+// compositing where, for example, multiple layers scroll with one scroll node.
+//
+// The animation system (see: ElementAnimations and blink::ElementAnimations) is
+// another auxilliary structure to the layer tree and uses element ids as a
+// stable identifier for animation targets. A Layer's element id can change over
+// the Layer's lifetime because non-default ElementIds are only set during an
+// animation's lifetime.
 struct CC_EXPORT ElementId {
   ElementId(int primaryId, int secondaryId)
       : primaryId(primaryId), secondaryId(secondaryId) {}
