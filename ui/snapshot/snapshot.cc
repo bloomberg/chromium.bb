@@ -7,22 +7,40 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/task_runner_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_util.h"
 
 namespace ui {
 
 namespace {
 
-scoped_refptr<base::RefCountedMemory> EncodeImage(const gfx::Image& image) {
-  return image.As1xPNGBytes();
+scoped_refptr<base::RefCountedMemory> EncodeImageAsPNG(
+    const gfx::Image& image) {
+  std::vector<uint8_t> result;
+  DCHECK(!image.AsImageSkia().GetRepresentation(1.0f).is_null());
+  gfx::PNGCodec::FastEncodeBGRASkBitmap(image.AsBitmap(), true, &result);
+  return new base::RefCountedBytes(result);
 }
 
-void EncodeImageAndSchedulePNGCallback(
+scoped_refptr<base::RefCountedMemory> EncodeImageAsJPEG(
+    const gfx::Image& image) {
+  std::vector<uint8_t> result;
+  DCHECK(!image.AsImageSkia().GetRepresentation(1.0f).is_null());
+  gfx::JPEG1xEncodedDataFromImage(image, 100, &result);
+  return new base::RefCountedBytes(result);
+}
+
+void EncodeImageAndScheduleCallback(
+    scoped_refptr<base::RefCountedMemory> (*encode_func)(const gfx::Image&),
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncPNGCallback& callback,
+    const base::Callback<void(scoped_refptr<base::RefCountedMemory> data)>&
+        callback,
     const gfx::Image& image) {
   base::PostTaskAndReplyWithResult(background_task_runner.get(), FROM_HERE,
-                                   base::Bind(EncodeImage, image), callback);
+                                   base::Bind(encode_func, image), callback);
 }
 
 }  // namespace
@@ -34,7 +52,18 @@ void GrabWindowSnapshotAsyncPNG(
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
   GrabWindowSnapshotAsync(
       window, source_rect,
-      base::Bind(EncodeImageAndSchedulePNGCallback,
+      base::Bind(EncodeImageAndScheduleCallback, &EncodeImageAsPNG,
+                 std::move(background_task_runner), callback));
+}
+
+void GrabWindowSnapshotAsyncJPEG(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncJPEGCallback& callback) {
+  GrabWindowSnapshotAsync(
+      window, source_rect,
+      base::Bind(EncodeImageAndScheduleCallback, &EncodeImageAsJPEG,
                  std::move(background_task_runner), callback));
 }
 

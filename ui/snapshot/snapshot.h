@@ -61,13 +61,21 @@ SNAPSHOT_EXPORT void GrabViewSnapshotAsync(
     const gfx::Rect& source_rect,
     const GrabWindowSnapshotAsyncCallback& callback);
 
-typedef base::Callback<void(scoped_refptr<base::RefCountedMemory> png_data)>
-    GrabWindowSnapshotAsyncPNGCallback;
+using GrabWindowSnapshotAsyncPNGCallback =
+    base::Callback<void(scoped_refptr<base::RefCountedMemory> data)>;
 SNAPSHOT_EXPORT void GrabWindowSnapshotAsyncPNG(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback);
+
+using GrabWindowSnapshotAsyncJPEGCallback =
+    base::Callback<void(scoped_refptr<base::RefCountedMemory> data)>;
+SNAPSHOT_EXPORT void GrabWindowSnapshotAsyncJPEG(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncJPEGCallback& callback);
 
 }  // namespace ui
 
