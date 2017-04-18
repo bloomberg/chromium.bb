@@ -463,19 +463,27 @@ evdev_device_set_calibration(struct evdev_device *device)
 	float calibration[6];
 	enum libinput_config_status status;
 
-	if (!device->output)
+	if (!libinput_device_config_calibration_has_matrix(device->device))
 		return;
+
+	/* If LIBINPUT_CALIBRATION_MATRIX was set to non-identity, we will not
+	 * override it with WL_CALIBRATION. It also means we don't need an
+	 * output to load a calibration. */
+	if (libinput_device_config_calibration_get_default_matrix(
+							  device->device,
+							  calibration) != 0)
+		return;
+
+	if (!device->output) {
+		weston_log("input device %s has no enabled output associated "
+			   "(%s named), skipping calibration for now.\n",
+			   sysname, device->output_name ?: "none");
+		return;
+	}
 
 	width = device->output->width;
 	height = device->output->height;
 	if (width == 0 || height == 0)
-		return;
-
-	/* If libinput has a pre-set calibration matrix, don't override it */
-	if (!libinput_device_config_calibration_has_matrix(device->device) ||
-	    libinput_device_config_calibration_get_default_matrix(
-							  device->device,
-							  calibration) != 0)
 		return;
 
 	udev = udev_new();
