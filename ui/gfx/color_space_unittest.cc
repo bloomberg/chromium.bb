@@ -172,5 +172,33 @@ TEST(ColorSpace, ApproximateTransferFnBadMatch) {
   }
 }
 
+TEST(ColorSpace, ToSkColorSpace) {
+  const size_t kNumTests = 4;
+  ColorSpace color_spaces[kNumTests] = {
+      ColorSpace(ColorSpace::PrimaryID::BT709,
+                 ColorSpace::TransferID::IEC61966_2_1),
+      ColorSpace(ColorSpace::PrimaryID::ADOBE_RGB,
+                 ColorSpace::TransferID::IEC61966_2_1),
+      ColorSpace(ColorSpace::PrimaryID::SMPTEST432_1,
+                 ColorSpace::TransferID::LINEAR),
+      ColorSpace(ColorSpace::PrimaryID::BT2020,
+                 ColorSpace::TransferID::IEC61966_2_1),
+  };
+  sk_sp<SkColorSpace> sk_color_spaces[kNumTests] = {
+      SkColorSpace::MakeSRGB(),
+      SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
+                            SkColorSpace::kAdobeRGB_Gamut),
+      SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                            SkColorSpace::kDCIP3_D65_Gamut),
+      SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
+                            SkColorSpace::kRec2020_Gamut),
+  };
+  for (size_t i = 0; i < kNumTests; ++i) {
+    EXPECT_TRUE(SkColorSpace::Equals(color_spaces[i].ToSkColorSpace().get(),
+                                     sk_color_spaces[i].get()))
+        << " on iteration i = " << i;
+  }
+}
+
 }  // namespace
 }  // namespace gfx

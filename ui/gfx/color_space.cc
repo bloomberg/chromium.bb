@@ -427,25 +427,57 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       return SkColorSpace::MakeSRGBLinear();
   }
 
+  // Prefer to used the named gamma and gamut, if possible.
+  bool has_named_gamma = true;
+  SkColorSpace::RenderTargetGamma named_gamma =
+      SkColorSpace::kSRGB_RenderTargetGamma;
+  switch (transfer_) {
+    case TransferID::IEC61966_2_1:
+      break;
+    case TransferID::LINEAR:
+    case TransferID::LINEAR_HDR:
+      named_gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+    default:
+      has_named_gamma = false;
+      break;
+  }
+  bool has_named_gamut = true;
+  SkColorSpace::Gamut named_gamut = SkColorSpace::kSRGB_Gamut;
+  switch (primaries_) {
+    case PrimaryID::BT709:
+      break;
+    case PrimaryID::ADOBE_RGB:
+      named_gamut = SkColorSpace::kAdobeRGB_Gamut;
+      break;
+    case PrimaryID::SMPTEST432_1:
+      named_gamut = SkColorSpace::kDCIP3_D65_Gamut;
+      break;
+    case PrimaryID::BT2020:
+      named_gamut = SkColorSpace::kRec2020_Gamut;
+      break;
+    default:
+      has_named_gamut = false;
+      break;
+  }
+  if (has_named_gamut && has_named_gamma)
+    return SkColorSpace::MakeRGB(named_gamma, named_gamut);
+
+  // Use named gamma with custom primaries, if possible.
   SkMatrix44 to_xyz_d50;
   GetPrimaryMatrix(&to_xyz_d50);
+  if (has_named_gamma)
+    return SkColorSpace::MakeRGB(named_gamma, to_xyz_d50);
 
-  // Use the named sRGB and linear transfer functions.
-  if (transfer_ == TransferID::IEC61966_2_1) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                 to_xyz_d50);
-  }
-  if (transfer_ == TransferID::LINEAR || transfer_ == TransferID::LINEAR_HDR) {
-    return SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
-                                 to_xyz_d50);
-  }
-
-  // Use the parametric transfer function if no other option is available.
+  // Use the parametric transfer function if there is no named transfer
+  // function.
   SkColorSpaceTransferFn fn;
   if (!GetTransferFunction(&fn)) {
     DLOG(ERROR) << "Failed to parameterize transfer function for SkColorSpace";
     return nullptr;
   }
+  if (has_named_gamut)
+    return SkColorSpace::MakeRGB(fn, named_gamut);
   return SkColorSpace::MakeRGB(fn, to_xyz_d50);
 }
 
