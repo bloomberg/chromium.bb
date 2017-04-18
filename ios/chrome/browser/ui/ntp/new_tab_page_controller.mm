@@ -159,6 +159,16 @@ enum {
 - (NewTabPage::PanelIdentifier)selectedPanelID;
 
 @property(nonatomic, retain) NewTabPageView* ntpView;
+
+// To ease modernizing the NTP only the internal panels are being converted
+// to UIViewControllers.  This means all the plumbing between the
+// BrowserViewController and the internal NTP panels (WebController, NTP)
+// hierarchy is skipped.  While normally the logic to push and pop a view
+// controller would be owned by a coordinator, in this case the old NTP
+// controller adds and removes child view controllers itself when a load
+// is initiated, and when WebController calls -willBeDismissed.
+@property(nonatomic, assign) UIViewController* parentViewController;
+
 @end
 
 @implementation NewTabPageController
@@ -168,13 +178,14 @@ enum {
 @synthesize parentViewController = parentViewController_;
 
 - (id)initWithUrl:(const GURL&)url
-                loader:(id<UrlLoader>)loader
-               focuser:(id<OmniboxFocuser>)focuser
-           ntpObserver:(id<NewTabPageControllerObserver>)ntpObserver
-          browserState:(ios::ChromeBrowserState*)browserState
-            colorCache:(NSMutableDictionary*)colorCache
-    webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
-              tabModel:(TabModel*)tabModel {
+                  loader:(id<UrlLoader>)loader
+                 focuser:(id<OmniboxFocuser>)focuser
+             ntpObserver:(id<NewTabPageControllerObserver>)ntpObserver
+            browserState:(ios::ChromeBrowserState*)browserState
+              colorCache:(NSMutableDictionary*)colorCache
+      webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
+                tabModel:(TabModel*)tabModel
+    parentViewController:(UIViewController*)parentViewController {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
@@ -183,6 +194,7 @@ enum {
     browserState_ = browserState;
     loader_ = loader;
     newTabPageObserver_ = ntpObserver;
+    parentViewController_ = parentViewController;
     focuser_.reset(focuser);
     webToolbarDelegate_.reset(webToolbarDelegate);
     tabModel_.reset([tabModel retain]);
@@ -502,6 +514,7 @@ enum {
 }
 
 - (BOOL)loadPanel:(NewTabPageBarItem*)item {
+  DCHECK(self.parentViewController);
   UIView* view = nil;
   UIViewController* panelController = nil;
   BOOL created = NO;

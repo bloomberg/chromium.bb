@@ -86,6 +86,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
         ios::BookmarkModelFactory::GetForBrowserState(
             chrome_browser_state_.get()));
     GURL url(kChromeUINewTabURL);
+    parentViewController_ = [[UIViewController alloc] init];
     controller_ =
         [[NewTabPageController alloc] initWithUrl:url
                                            loader:nil
@@ -94,23 +95,26 @@ class NewTabPageControllerTest : public BlockCleanupTest {
                                      browserState:chrome_browser_state_.get()
                                        colorCache:nil
                                webToolbarDelegate:nil
-                                         tabModel:nil];
+                                         tabModel:nil
+                             parentViewController:parentViewController_];
 
     incognitoController_ = [[NewTabPageController alloc]
-               initWithUrl:url
-                    loader:nil
-                   focuser:nil
-               ntpObserver:nil
-              browserState:chrome_browser_state_
-                               ->GetOffTheRecordChromeBrowserState()
-                colorCache:nil
-        webToolbarDelegate:nil
-                  tabModel:nil];
+                 initWithUrl:url
+                      loader:nil
+                     focuser:nil
+                 ntpObserver:nil
+                browserState:chrome_browser_state_
+                                 ->GetOffTheRecordChromeBrowserState()
+                  colorCache:nil
+          webToolbarDelegate:nil
+                    tabModel:nil
+        parentViewController:parentViewController_];
   };
 
   void TearDown() override {
     incognitoController_ = nil;
     controller_ = nil;
+    parentViewController_ = nil;
 
     // There may be blocks released below that have weak references to |profile|
     // owned by chrome_browser_state_.  Ensure BlockCleanupTest::TearDown() is
@@ -122,6 +126,7 @@ class NewTabPageControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  UIViewController* parentViewController_;
   NewTabPageController* controller_;
   NewTabPageController* incognitoController_;
 };

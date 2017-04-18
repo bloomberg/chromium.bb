@@ -3028,9 +3028,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                                      browserState:_browserState
                                        colorCache:_dominantColorCache
                                webToolbarDelegate:self
-                                         tabModel:_model];
+                                         tabModel:_model
+                             parentViewController:self];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
-    pageController.parentViewController = self;
 
     // Panel is always NTP for iPhone.
     NewTabPage::PanelIdentifier panelType = NewTabPage::kMostVisitedPanel;
