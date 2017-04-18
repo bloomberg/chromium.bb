@@ -518,7 +518,6 @@ void WebFrameTestClient::DidFinishLoad(blink::WebLocalFrame* frame) {
 }
 
 void WebFrameTestClient::DidNavigateWithinPage(
-    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type,
     bool contentInitiated) {

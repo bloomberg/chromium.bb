@@ -418,8 +418,7 @@ class BLINK_EXPORT WebFrameClient {
   // The navigation resulted in no change to the documents within the page.
   // For example, the navigation may have just resulted in scrolling to a
   // named anchor or a PopState event may have been dispatched.
-  virtual void DidNavigateWithinPage(WebLocalFrame*,
-                                     const WebHistoryItem&,
+  virtual void DidNavigateWithinPage(const WebHistoryItem&,
                                      WebHistoryCommitType,
                                      bool content_initiated) {}
 

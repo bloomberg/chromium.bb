@@ -4089,21 +4089,19 @@ void RenderFrameImpl::DidFinishLoad(blink::WebLocalFrame* frame) {
 }
 
 void RenderFrameImpl::DidNavigateWithinPage(
-    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     bool content_initiated) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didNavigateWithinPage",
                "id", routing_id_);
-  DCHECK_EQ(frame_, frame);
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame->DataSource());
+      DocumentState::FromDataSource(frame_->DataSource());
   UpdateNavigationState(document_state, true /* was_within_same_page */,
                         content_initiated);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
 
-  DidCommitProvisionalLoad(frame, item, commit_type);
+  DidCommitProvisionalLoad(frame_, item, commit_type);
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {

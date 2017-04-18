@@ -7070,8 +7070,7 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect) {
 class TestNavigationPolicyWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void DidNavigateWithinPage(WebLocalFrame*,
-                             const WebHistoryItem&,
+  void DidNavigateWithinPage(const WebHistoryItem&,
                              WebHistoryCommitType,
                              bool) override {
     EXPECT_TRUE(false);
@@ -7536,8 +7535,7 @@ class TestDidNavigateCommitTypeWebFrameClient
   TestDidNavigateCommitTypeWebFrameClient()
       : last_commit_type_(kWebHistoryInertCommit) {}
 
-  void DidNavigateWithinPage(WebLocalFrame*,
-                             const WebHistoryItem&,
+  void DidNavigateWithinPage(const WebHistoryItem&,
                              WebHistoryCommitType type,
                              bool) override {
     last_commit_type_ = type;

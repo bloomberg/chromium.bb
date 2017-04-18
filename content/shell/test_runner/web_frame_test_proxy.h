@@ -160,13 +160,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     test_client()->DidFinishLoad(frame);
   }
 
-  void DidNavigateWithinPage(blink::WebLocalFrame* frame,
-                             const blink::WebHistoryItem& history_item,
+  void DidNavigateWithinPage(const blink::WebHistoryItem& history_item,
                              blink::WebHistoryCommitType commit_type,
                              bool content_initiated) override {
-    Base::DidNavigateWithinPage(frame, history_item, commit_type,
-                                content_initiated);
-    test_client()->DidNavigateWithinPage(frame, history_item, commit_type,
+    Base::DidNavigateWithinPage(history_item, commit_type, content_initiated);
+    test_client()->DidNavigateWithinPage(history_item, commit_type,
                                          content_initiated);
   }
 
