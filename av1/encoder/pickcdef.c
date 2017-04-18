@@ -312,7 +312,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       av1_ac_quant(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
   lambda = .12 * quantizer * quantizer / 256.;
 
-  av1_setup_dst_planes(xd->plane, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
   mse[0] = aom_malloc(sizeof(**mse) * nvsb * nhsb);
   mse[1] = aom_malloc(sizeof(**mse) * nvsb * nhsb);
   for (pli = 0; pli < nplanes; pli++) {

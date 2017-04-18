@@ -599,11 +599,21 @@ static INLINE int scaled_buffer_offset(int x_offset, int y_offset, int stride,
   return y * stride + x;
 }
 
-static INLINE void setup_pred_plane(struct buf_2d *dst, uint8_t *src, int width,
-                                    int height, int stride, int mi_row,
-                                    int mi_col,
+static INLINE void setup_pred_plane(struct buf_2d *dst, BLOCK_SIZE bsize,
+                                    uint8_t *src, int width, int height,
+                                    int stride, int mi_row, int mi_col,
                                     const struct scale_factors *scale,
                                     int subsampling_x, int subsampling_y) {
+#if CONFIG_CHROMA_SUB8X8
+  if (bsize < BLOCK_8X8) {
+    // Offset the buffer pointer
+    if (subsampling_y && (mi_row & 0x01)) mi_row -= 1;
+    if (subsampling_x && (mi_col & 0x01)) mi_col -= 1;
+  }
+#else
+  (void)bsize;
+#endif
+
   const int x = (MI_SIZE * mi_col) >> subsampling_x;
   const int y = (MI_SIZE * mi_row) >> subsampling_y;
   dst->buf = src + scaled_buffer_offset(x, y, stride, scale);
@@ -614,8 +624,8 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, uint8_t *src, int width,
 }
 
 void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
-                          const YV12_BUFFER_CONFIG *src, int mi_row,
-                          int mi_col);
+                          BLOCK_SIZE bsize, const YV12_BUFFER_CONFIG *src,
+                          int mi_row, int mi_col);
 
 void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,

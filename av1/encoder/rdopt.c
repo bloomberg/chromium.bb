@@ -5658,7 +5658,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
             get_upsampled_ref(cpi, refs[id]);
 
         // Set pred for Y plane
-        setup_pred_plane(&pd->pre[0], upsampled_ref->y_buffer,
+        setup_pred_plane(&pd->pre[0], bsize, upsampled_ref->y_buffer,
                          upsampled_ref->y_crop_width,
                          upsampled_ref->y_crop_height, upsampled_ref->y_stride,
                          (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
@@ -6102,7 +6102,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
 
               // Set pred for Y plane
               setup_pred_plane(
-                  &pd->pre[0], upsampled_ref->y_buffer,
+                  &pd->pre[0], bsize, upsampled_ref->y_buffer,
                   upsampled_ref->y_crop_width, upsampled_ref->y_crop_height,
                   upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3), NULL,
                   pd->subsampling_x, pd->subsampling_y);
@@ -7025,7 +7025,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
           // Set pred for Y plane
           setup_pred_plane(
-              &pd->pre[ref_idx], upsampled_ref->y_buffer,
+              &pd->pre[ref_idx], bsize, upsampled_ref->y_buffer,
               upsampled_ref->y_crop_width, upsampled_ref->y_crop_height,
               upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3), NULL,
               pd->subsampling_x, pd->subsampling_y);
@@ -9840,7 +9840,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
                                        args.left_pred_buf, dst_width2,
                                        dst_height2, args.left_pred_stride);
-    av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+    av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                         mi_col);
     x->mask_buf = mask2d_buf;
     x->wsrc_buf = weighted_src_buf;
     calc_target_weighted_pred(cm, x, xd, mi_row, mi_col, args.above_pred_buf[0],
@@ -12656,8 +12657,8 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
     av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                          &xd->block_refs[ref]->sf);
   }
-  av1_setup_dst_planes(x->e_mbd.plane, get_frame_new_buffer(&cpi->common),
-                       mi_row, mi_col);
+  av1_setup_dst_planes(x->e_mbd.plane, bsize,
+                       get_frame_new_buffer(&cpi->common), mi_row, mi_col);
 
   av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
 

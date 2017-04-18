@@ -2573,10 +2573,11 @@ int av1_find_best_masked_sub_pixel_tree_up(
   if (use_upsampled_ref) {
     int ref = xd->mi[0]->mbmi.ref_frame[is_second];
     const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
-    setup_pred_plane(&pd->pre[is_second], upsampled_ref->y_buffer,
-                     upsampled_ref->y_crop_width, upsampled_ref->y_crop_height,
-                     upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3),
-                     NULL, pd->subsampling_x, pd->subsampling_y);
+    setup_pred_plane(&pd->pre[is_second], mbmi->sb_type,
+                     upsampled_ref->y_buffer, upsampled_ref->y_crop_width,
+                     upsampled_ref->y_crop_height, upsampled_ref->y_stride,
+                     (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
+                     pd->subsampling_y);
   }
   y = pd->pre[is_second].buf;
   y_stride = pd->pre[is_second].stride;
@@ -3073,10 +3074,11 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   if (use_upsampled_ref) {
     int ref = xd->mi[0]->mbmi.ref_frame[is_second];
     const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
-    setup_pred_plane(&pd->pre[is_second], upsampled_ref->y_buffer,
-                     upsampled_ref->y_crop_width, upsampled_ref->y_crop_height,
-                     upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3),
-                     NULL, pd->subsampling_x, pd->subsampling_y);
+    setup_pred_plane(&pd->pre[is_second], mbmi->sb_type,
+                     upsampled_ref->y_buffer, upsampled_ref->y_crop_width,
+                     upsampled_ref->y_crop_height, upsampled_ref->y_stride,
+                     (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
+                     pd->subsampling_y);
   }
   y = pd->pre[is_second].buf;
   y_stride = pd->pre[is_second].stride;

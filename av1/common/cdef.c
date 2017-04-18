@@ -188,7 +188,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
-  av1_setup_dst_planes(xd->plane, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);
   row_dering = aom_malloc(sizeof(*row_dering) * (nhsb + 2) * 2);
   memset(row_dering, 1, sizeof(*row_dering) * (nhsb + 2) * 2);
   prev_row_dering = row_dering + 1;

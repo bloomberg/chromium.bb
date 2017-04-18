@@ -518,6 +518,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   aom_clear_system_state();
 
+  xd->mi = cm->mi_grid_visible;
+  xd->mi[0] = cm->mi;
+  x->e_mbd.mi[0]->mbmi.sb_type = BLOCK_16X16;
+
   intra_factor = 0.0;
   brightness_factor = 0.0;
   neutral_count = 0.0;
@@ -528,7 +532,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   av1_setup_block_planes(&x->e_mbd, cm->subsampling_x, cm->subsampling_y);
 
   av1_setup_src_planes(x, cpi->source, 0, 0);
-  av1_setup_dst_planes(xd->plane, new_yv12, 0, 0);
+  av1_setup_dst_planes(xd->plane, cm->sb_size, new_yv12, 0, 0);
 
   if (!frame_is_intra_only(cm)) {
     av1_setup_pre_planes(xd, 0, first_ref_buf, 0, 0, NULL);

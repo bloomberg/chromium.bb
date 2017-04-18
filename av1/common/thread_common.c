@@ -160,8 +160,8 @@ static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
       LOOP_FILTER_MASK lfm;
       int plane;
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->frame_buffer, mi_row,
-                           mi_col);
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+                           lf_data->frame_buffer, mi_row, mi_col);
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
 
@@ -206,8 +206,8 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
       // the outer loop to column-based and remove the synchronizations here.
       sync_read(lf_sync, r, c);
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->frame_buffer, mi_row,
-                           mi_col);
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+                           lf_data->frame_buffer, mi_row, mi_col);
       av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
                      lf_data->cm->mi_stride, &lfm);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -258,8 +258,8 @@ static int loop_filter_row_worker(AV1LfSync *const lf_sync,
 
       sync_read(lf_sync, r, c);
 
-      av1_setup_dst_planes(lf_data->planes, lf_data->frame_buffer, mi_row,
-                           mi_col);
+      av1_setup_dst_planes(lf_data->planes, lf_data->cm->sb_size,
+                           lf_data->frame_buffer, mi_row, mi_col);
 #if CONFIG_EXT_PARTITION_TYPES
       for (plane = 0; plane < num_planes; ++plane) {
         av1_filter_block_plane_non420_ver(lf_data->cm, &lf_data->planes[plane],

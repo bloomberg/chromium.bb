@@ -2198,7 +2198,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
       int plane;
 
-      av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
+      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
 
       for (plane = 0; plane < num_planes; ++plane) {
         av1_filter_block_plane_non420_ver(cm, &planes[plane], mi + mi_col,

@@ -799,7 +799,7 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
   dst[1].stride = dst[2].stride = src->uv_stride;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-    setup_pred_plane(dst + i, dst[i].buf,
+    setup_pred_plane(dst + i, xd->mi[0]->mbmi.sb_type, dst[i].buf,
                      i ? src->uv_crop_width : src->y_crop_width,
                      i ? src->uv_crop_height : src->y_crop_height,
                      dst[i].stride, mi_row, mi_col, i ? scale_uv : scale,

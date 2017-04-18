@@ -285,7 +285,8 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 #endif
 
   // Set up destination pointers.
-  av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+  av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                       mi_col);
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
@@ -1829,8 +1830,8 @@ void av1_setup_src_planes(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
   x->e_mbd.cur_buf = src;
 
   for (i = 0; i < MAX_MB_PLANE; i++)
-    setup_pred_plane(&x->plane[i].src, buffers[i], widths[i], heights[i],
-                     strides[i], mi_row, mi_col, NULL,
+    setup_pred_plane(&x->plane[i].src, x->e_mbd.mi[0]->mbmi.sb_type, buffers[i],
+                     widths[i], heights[i], strides[i], mi_row, mi_col, NULL,
                      x->e_mbd.plane[i].subsampling_x,
                      x->e_mbd.plane[i].subsampling_y);
 }
@@ -2473,8 +2474,8 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
   check_ncobmc = is_inter_block(mbmi) && motion_allowed >= OBMC_CAUSAL;
   if (!dry_run && check_ncobmc) {
     av1_check_ncobmc_rd(cpi, x, mi_row, mi_col);
-    av1_setup_dst_planes(x->e_mbd.plane, get_frame_new_buffer(&cpi->common),
-                         mi_row, mi_col);
+    av1_setup_dst_planes(x->e_mbd.plane, bsize,
+                         get_frame_new_buffer(&cpi->common), mi_row, mi_col);
   }
 #endif
   encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, ctx, rate);
@@ -2539,7 +2540,8 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
       update_state_sb_supertx(cpi, td, tile, mi_row, mi_col, bsize, dry_run,
                               pc_tree);
 
-      av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+      av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                           mi_col);
       for (i = 0; i < MAX_MB_PLANE; i++) {
         dst_buf[i] = xd->plane[i].dst.buf;
         dst_stride[i] = xd->plane[i].dst.stride;
@@ -7009,7 +7011,8 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   set_skip_context(xd, mi_row, mi_col);
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
   update_state_sb_supertx(cpi, td, tile, mi_row, mi_col, bsize, 1, pc_tree);
-  av1_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
+  av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
+                       mi_col);
   for (plane = 0; plane < MAX_MB_PLANE; plane++) {
     dst_buf[plane] = xd->plane[plane].dst.buf;
     dst_stride[plane] = xd->plane[plane].dst.stride;
