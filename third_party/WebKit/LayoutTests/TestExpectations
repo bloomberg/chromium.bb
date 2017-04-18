@@ -2878,7 +2878,6 @@ crbug.com/694338 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearan
 crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
 crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
 crbug.com/697342 virtual/sharedarraybuffer/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
-crbug.com/712107 [ Linux Win ] fast/forms/select-popup/popup-menu-appearance-coarse.html [ NeedsRebaseline ]
 
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
 
