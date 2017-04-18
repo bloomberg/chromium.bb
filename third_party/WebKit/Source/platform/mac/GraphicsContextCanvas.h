@@ -44,11 +44,6 @@ class PLATFORM_EXPORT GraphicsContextCanvas {
   SkIPoint bitmap_offset_;
   SkScalar bitmap_scale_factor_;
 
-  // True if we are drawing to |m_canvas|'s backing store directly.
-  // Otherwise, the bits in |bitmap_| are our allocation and need to
-  // be copied over to |m_canvas|.
-  bool use_device_bits_;
-
   // True if |bitmap_| is a dummy 1x1 bitmap allocated for the sake of creating
   // a non-null CGContext (it is invalid to use a null CGContext), and will not
   // be copied to |m_canvas|. This will happen if |m_canvas|'s clip region is
