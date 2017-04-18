@@ -21,6 +21,14 @@
 
 namespace content {
 
+// Returns whether the response contained in the Background Fetch |request| is
+// considered OK. See https://fetch.spec.whatwg.org/#ok-status aka a successful
+// 2xx status per https://tools.ietf.org/html/rfc7231#section-6.3.
+bool IsOK(const BackgroundFetchRequestInfo& request) {
+  int status = request.GetResponseCode();
+  return status >= 200 && status < 300;
+}
+
 // The Registration Data class encapsulates the data stored for a particular
 // Background Fetch registration. This roughly matches the on-disk format that
 // will be adhered to in the future.
@@ -198,6 +206,8 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   const std::vector<scoped_refptr<BackgroundFetchRequestInfo>>& requests =
       registration_data->GetCompletedRequests();
 
+  bool background_fetch_succeeded = true;
+
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   settled_fetches.reserve(requests.size());
 
@@ -238,16 +248,23 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
           blob_handles.push_back(std::move(blob_handle));
         }
       }
+    } else {
+      // TODO(crbug.com/711354): Consider Background Fetches as failed when the
+      // response cannot be relayed to the developer.
+      background_fetch_succeeded = false;
     }
 
     // TODO: settled_fetch.response.error
     settled_fetch.response.response_time = request->GetResponseTime();
     // TODO: settled_fetch.response.cors_exposed_header_names
 
+    background_fetch_succeeded = background_fetch_succeeded && IsOK(*request);
+
     settled_fetches.push_back(settled_fetch);
   }
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
+                          background_fetch_succeeded,
                           std::move(settled_fetches), std::move(blob_handles));
 }
 

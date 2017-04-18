@@ -41,6 +41,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
   using SettledFetchesCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              bool /* background_fetch_succeeded */,
                               std::vector<BackgroundFetchSettledFetch>,
                               std::vector<std::unique_ptr<BlobHandle>>)>;
 

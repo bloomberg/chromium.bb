@@ -333,6 +333,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
 
   constexpr int kFirstResponseCode = 200;
   constexpr int kSecondResponseCode = 201;
+  constexpr int kThirdResponseCode = 200;
 
   requests.push_back(CreateRequestWithProvidedResponse(
       "GET", "https://example.com/funny_cat.txt",
@@ -348,6 +349,14 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
       TestResponseBuilder(kSecondResponseCode)
           .SetResponseData(
               "This text describes another scenario that involves a crazy cat.")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .Build()));
+
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://chrome.com/accessible_cross_origin_cat.txt",
+      TestResponseBuilder(kThirdResponseCode)
+          .SetResponseData("This cat originates from another origin.")
+          .AddResponseHeader("Access-Control-Allow-Origin", "*")
           .AddResponseHeader("Content-Type", "text/plain")
           .Build()));
 
@@ -395,6 +404,11 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
         EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
         EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 0u);
         break;
+      case 2:
+        EXPECT_EQ(fetches[i].response.status_code, kThirdResponseCode);
+        EXPECT_EQ(fetches[i].response.headers.count("Content-Type"), 1u);
+        EXPECT_EQ(fetches[i].response.headers.count("X-Cat"), 0u);
+        break;
       default:
         NOTREACHED();
     }
@@ -410,6 +424,92 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     // their data here since the handles have already been released.
     ASSERT_FALSE(fetches[i].response.blob_uuid.empty());
     ASSERT_GT(fetches[i].response.blob_size, 0u);
+  }
+}
+
+TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
+  // This test verifies that the fail event will be fired when a response either
+  // has a non-OK status code, or the response cannot be accessed due to CORS.
+
+  BackgroundFetchRegistrationId registration_id;
+  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+
+  // base::RunLoop that we'll run until the event has been dispatched. If this
+  // test times out, it means that the event could not be dispatched.
+  base::RunLoop event_dispatched_loop;
+  embedded_worker_test_helper()->set_fetch_fail_event_closure(
+      event_dispatched_loop.QuitClosure());
+
+  std::vector<ServiceWorkerFetchRequest> requests;
+
+  constexpr int kFirstResponseCode = 404;
+  constexpr int kSecondResponseCode = 200;
+
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://example.com/not_existing_cat.txt",
+      TestResponseBuilder(kFirstResponseCode).Build()));
+
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://chrome.com/inaccessible_cross_origin_cat.txt",
+      TestResponseBuilder(kSecondResponseCode)
+          .SetResponseData(
+              "This is a cross-origin response not accessible to the reader.")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .Build()));
+
+  // Create the registration with the given |requests|.
+  {
+    BackgroundFetchOptions options;
+
+    blink::mojom::BackgroundFetchError error;
+    BackgroundFetchRegistration registration;
+
+    // Create the first registration. This must succeed.
+    ASSERT_NO_FATAL_FAILURE(
+        Fetch(registration_id, requests, options, &error, &registration));
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Spin the |event_dispatched_loop| to wait for the dispatched event.
+  event_dispatched_loop.Run();
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
+
+  std::vector<BackgroundFetchSettledFetch> fetches =
+      embedded_worker_test_helper()->last_fetches().value();
+  ASSERT_EQ(fetches.size(), requests.size());
+
+  for (size_t i = 0; i < fetches.size(); ++i) {
+    ASSERT_EQ(fetches[i].request.url, requests[i].url);
+    EXPECT_EQ(fetches[i].request.method, requests[i].method);
+
+    EXPECT_EQ(fetches[i].response.url_list[0], fetches[i].request.url);
+    EXPECT_EQ(fetches[i].response.response_type,
+              blink::kWebServiceWorkerResponseTypeDefault);
+
+    switch (i) {
+      case 0:
+        EXPECT_EQ(fetches[i].response.status_code, 404);
+        break;
+      case 1:
+        EXPECT_EQ(fetches[i].response.status_code, 0);
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    EXPECT_TRUE(fetches[i].response.headers.empty());
+    EXPECT_TRUE(fetches[i].response.blob_uuid.empty());
+    EXPECT_EQ(fetches[i].response.blob_size, 0u);
+    EXPECT_FALSE(fetches[i].response.response_time.is_null());
+
+    // TODO(peter): change-detector tests for unsupported properties.
+    EXPECT_EQ(fetches[i].response.error,
+              blink::kWebServiceWorkerResponseErrorUnknown);
+    EXPECT_TRUE(fetches[i].response.cors_exposed_header_names.empty());
   }
 }
 

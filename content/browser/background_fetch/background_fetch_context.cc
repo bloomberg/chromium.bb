@@ -193,6 +193,7 @@ void BackgroundFetchContext::DidCompleteJob(
 void BackgroundFetchContext::DidGetSettledFetches(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchError error,
+    bool background_fetch_succeeded,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
     std::vector<std::unique_ptr<BlobHandle>> blob_handles) {
   if (error != blink::mojom::BackgroundFetchError::NONE) {
@@ -200,14 +201,20 @@ void BackgroundFetchContext::DidGetSettledFetches(
     return;
   }
 
-  // TODO(peter): Distinguish between the `backgroundfetched` and
-  // `backgroundfetchfail` events based on the status code of all fetches. We
-  // don't populate that field yet, so always assume it's successful for now.
-
-  event_dispatcher_->DispatchBackgroundFetchedEvent(
-      registration_id, std::move(settled_fetches),
-      base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
-                 registration_id, std::move(blob_handles)));
+  // The `backgroundfetched` event will be invoked when all requests in the
+  // registration have completed successfully. In all other cases, the
+  // `backgroundfetchfail` event will be invoked instead.
+  if (background_fetch_succeeded) {
+    event_dispatcher_->DispatchBackgroundFetchedEvent(
+        registration_id, std::move(settled_fetches),
+        base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
+                   registration_id, std::move(blob_handles)));
+  } else {
+    event_dispatcher_->DispatchBackgroundFetchFailEvent(
+        registration_id, std::move(settled_fetches),
+        base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
+                   registration_id, std::move(blob_handles)));
+  }
 }
 
 void BackgroundFetchContext::DeleteRegistration(

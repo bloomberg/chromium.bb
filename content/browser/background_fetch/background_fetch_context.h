@@ -113,6 +113,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetSettledFetches(
       const BackgroundFetchRegistrationId& registration_id,
       blink::mojom::BackgroundFetchError error,
+      bool background_fetch_succeeded,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<BlobHandle>> blob_handles);
 
