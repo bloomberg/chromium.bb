@@ -1022,13 +1022,13 @@ static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
   return flags;
 }
 
-const size_t kMinCompressedSize = 8192;
 static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                       const aom_image_t *img,
                                       aom_codec_pts_t pts,
                                       unsigned long duration,
                                       aom_enc_frame_flags_t enc_flags,
                                       unsigned long deadline) {
+  const size_t kMinCompressedSize = 8192;
   volatile aom_codec_err_t res = AOM_CODEC_OK;
   volatile aom_enc_frame_flags_t flags = enc_flags;
   AV1_COMP *const cpi = ctx->cpi;
