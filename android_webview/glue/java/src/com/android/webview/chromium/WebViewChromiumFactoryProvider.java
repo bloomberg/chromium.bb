@@ -401,13 +401,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(PathService.DIR_MODULE, "/system/lib/");
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
-        final Context context = ContextUtils.getApplicationContext();
-        // Future calls to PlatformServiceBridge.getInstance() rely on it having been created here.
-        PlatformServiceBridge.getOrCreateInstance();
-
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
         final String webViewPackageName = webViewPackageInfo.packageName;
+        final Context context = ContextUtils.getApplicationContext();
         setUpResources(webViewPackageInfo, context);
         initPlatSupportLibrary();
         doNetworkInitializations(context);
