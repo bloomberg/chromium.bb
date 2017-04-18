@@ -86,6 +86,8 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       is_potentially_secure_plugin_context_(
           host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   ++g_num_instances;
   host_->AddInstanceObserver(instance_, this);
   if (!host->GetRenderFrameIDsForInstance(
@@ -122,6 +124,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
           host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
   DCHECK_NE(version, ppapi::TCP_SOCKET_VERSION_1_0);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ++g_num_instances;
   host_->AddInstanceObserver(instance_, this);
@@ -132,6 +135,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
 }
 
 PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (host_)
     host_->RemoveInstanceObserver(instance_, this);
   if (socket_)
@@ -203,6 +207,7 @@ void PepperTCPSocketMessageFilter::OnThrottleStateChanged(bool is_throttled) {
 }
 
 void PepperTCPSocketMessageFilter::OnHostDestroyed() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   host_->RemoveInstanceObserver(instance_, this);
   host_ = nullptr;
 }
