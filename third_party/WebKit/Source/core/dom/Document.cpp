@@ -5314,6 +5314,13 @@ DocumentNameCollection* Document::DocumentNamedItems(const AtomicString& name) {
                                                         name);
 }
 
+LocalDOMWindow* Document::defaultView() const {
+  // The HTML spec requires to return null if the document is detached from the
+  // DOM.  However, |dom_window_| is not cleared on the detachment.  So, we need
+  // to check |frame_| to tell whether the document is attached or not.
+  return frame_ ? dom_window_ : nullptr;
+}
+
 void Document::FinishedParsing() {
   DCHECK(!GetScriptableDocumentParser() || !parser_->IsParsing());
   DCHECK(!GetScriptableDocumentParser() || ready_state_ != kLoading);

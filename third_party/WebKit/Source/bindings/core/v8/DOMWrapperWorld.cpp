@@ -31,15 +31,9 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 
 #include <memory>
+
 #include "bindings/core/v8/DOMDataStore.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8DOMActivityLogger.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
-#include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "bindings/core/v8/WrapperTypeInfo.h"
-#include "core/dom/ExecutionContext.h"
+#include "bindings/core/v8/ScriptFunction.h"
 #include "platform/wtf/HashTraits.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -335,6 +329,17 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
   }
   NOTREACHED();
   return kInvalidWorldId;
+}
+
+void DOMWrapperWorld::DissociateDOMWindowWrappersInAllWorlds(
+    ScriptWrappable* script_wrappable) {
+  DCHECK(script_wrappable);
+  DCHECK(IsMainThread());
+
+  script_wrappable->UnsetWrapperIfAny();
+
+  for (auto& world : GetWorldMap().Values())
+    world->DomDataStore().UnsetWrapperIfAny(script_wrappable);
 }
 
 }  // namespace blink

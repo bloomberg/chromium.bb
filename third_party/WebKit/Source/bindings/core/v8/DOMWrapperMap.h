@@ -80,6 +80,11 @@ class DOMWrapperMap {
     return true;
   }
 
+  void RemoveIfAny(KeyType* key) {
+    if (ContainsKey(key))
+      map_.Remove(key);
+  }
+
   void Clear() { map_.Clear(); }
 
   void RemoveAndDispose(KeyType* key) {

@@ -180,8 +180,8 @@ struct WrapperTypeInfo {
   const WrapperTypeInfo* parent_class;
   const unsigned wrapper_type_prototype : 1;  // WrapperTypePrototype
   const unsigned wrapper_class_id : 2;        // WrapperClassId
-  const unsigned
-      active_script_wrappable_inheritance : 1;  // ActiveScriptWrappableInheritance
+  const unsigned  // ActiveScriptWrappableInheritance
+      active_script_wrappable_inheritance : 1;
   const unsigned lifetime : 1;                // Lifetime
 };
 
@@ -199,6 +199,8 @@ inline T* GetInternalField(v8::Local<v8::Object> wrapper) {
       wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
+// The return value can be null if |wrapper| is a global proxy, which points to
+// nothing while a navigation.
 inline ScriptWrappable* ToScriptWrappable(
     const v8::PersistentBase<v8::Object>& wrapper) {
   return GetInternalField<ScriptWrappable, kV8DOMWrapperObjectIndex>(wrapper);

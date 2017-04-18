@@ -133,7 +133,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   int GetWorldId() const { return world_id_; }
   DOMDataStore& DomDataStore() const { return *dom_data_store_; }
 
- public:
   template <typename T>
   void RegisterDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
 
@@ -151,6 +150,30 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   // WorldType::IsolatedWorld because an identifier for the world is given from
   // out of DOMWrapperWorld.
   static int GenerateWorldIdForType(WorldType);
+
+  // Dissociates all wrappers in all worlds associated with |script_wrappable|.
+  //
+  // Do not use this function except for DOMWindow.  Only DOMWindow needs to
+  // dissociate wrappers from the ScriptWrappable because of the following two
+  // reasons.
+  //
+  // Reason 1) Case of the main world
+  // A DOMWindow may be collected by Blink GC *before* V8 GC collects the
+  // wrapper because the wrapper object associated with a DOMWindow is a global
+  // proxy, which remains after navigations.  We don't want V8 GC to reset the
+  // weak persistent handle to a wrapper within the DOMWindow
+  // (ScriptWrappable::main_world_wrapper_) *after* Blink GC collects the
+  // DOMWindow because it's use-after-free.  Thus, we need to dissociate the
+  // wrapper in advance.
+  //
+  // Reason 2) Case of isolated worlds
+  // As same, a DOMWindow may be collected before the wrapper gets collected.
+  // A DOMWrapperMap supports mapping from ScriptWrappable* to v8::Global<T>,
+  // and we don't want to leave an entry of an already-dead DOMWindow* to the
+  // persistent handle for the global proxy object, especially considering that
+  // the address to the already-dead DOMWindow* may be re-used.
+  friend class DOMWindow;
+  static void DissociateDOMWindowWrappersInAllWorlds(ScriptWrappable*);
 
   const WorldType world_type_;
   const int world_id_;

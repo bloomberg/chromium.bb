@@ -76,7 +76,7 @@ class Frame;
 // security checks for same-origin/cross-origin access to the Window interface.
 // When the check passes (i.e. the access is same-origin), the access is
 // forwarded to the inner global object of the active Document in this
-// WindowProxy's Frame).
+// WindowProxy's Frame.
 //
 // When the security check fails, the access is delegated to the outer global
 // proxy's cross-origin interceptors. The cross-origin interceptors may choose

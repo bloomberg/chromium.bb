@@ -408,6 +408,9 @@ class CORE_EXPORT Document : public ContainerNode,
   HTMLCollection* WindowNamedItems(const AtomicString& name);
   DocumentNameCollection* DocumentNamedItems(const AtomicString& name);
 
+  // "defaultView" attribute defined in HTML spec.
+  LocalDOMWindow* defaultView() const;
+
   bool IsHTMLDocument() const { return document_classes_ & kHTMLDocumentClass; }
   bool IsXHTMLDocument() const {
     return document_classes_ & kXHTMLDocumentClass;

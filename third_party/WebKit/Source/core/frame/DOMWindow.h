@@ -109,8 +109,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   bool isSecureContext() const;
 
-  v8::Local<v8::Object> GlobalProxy(DOMWrapperWorld&);
-
   InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 
  protected:

@@ -472,7 +472,9 @@ void V8GCController::CollectAllGarbageForTesting(v8::Isolate* isolate) {
 
 class DOMWrapperTracer : public v8::PersistentHandleVisitor {
  public:
-  explicit DOMWrapperTracer(Visitor* visitor) : visitor_(visitor) {}
+  explicit DOMWrapperTracer(Visitor* visitor) : visitor_(visitor) {
+    DCHECK(visitor_);
+  }
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) override {
@@ -483,8 +485,8 @@ class DOMWrapperTracer : public v8::PersistentHandleVisitor {
     const v8::Persistent<v8::Object>& wrapper =
         v8::Persistent<v8::Object>::Cast(*value);
 
-    if (visitor_)
-      ToWrapperTypeInfo(wrapper)->Trace(visitor_, ToScriptWrappable(wrapper));
+    if (ScriptWrappable* script_wrappable = ToScriptWrappable(wrapper))
+      ToWrapperTypeInfo(wrapper)->Trace(visitor_, script_wrappable);
   }
 
  private:

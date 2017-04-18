@@ -136,6 +136,12 @@ class DOMDataStore {
     wrapper_map_->MarkWrapper(script_wrappable);
   }
 
+  // Dissociates a wrapper, if any, from |script_wrappable|.
+  void UnsetWrapperIfAny(ScriptWrappable* script_wrappable) {
+    DCHECK(!is_main_world_);
+    wrapper_map_->RemoveIfAny(script_wrappable);
+  }
+
   bool SetReturnValueFrom(v8::ReturnValue<v8::Value> return_value,
                           ScriptWrappable* object) {
     if (is_main_world_)

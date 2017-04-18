@@ -39,23 +39,31 @@ DOMWindow::DOMWindow(Frame& frame)
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
   DCHECK(!frame_);
+
+  // Because the wrapper object of a DOMWindow is the global proxy, which may
+  // live much longer than the DOMWindow, we need to dissociate all wrappers
+  // for this instance.
+  DOMWrapperWorld::DissociateDOMWindowWrappersInAllWorlds(this);
 }
 
-v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate*,
+v8::Local<v8::Object> DOMWindow::Wrap(v8::Isolate* isolate,
                                       v8::Local<v8::Object> creation_context) {
-  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
-                "wrappers must be created at WindowProxy::createContext() and "
-                "setupWindowPrototypeChain().";
-  return v8::Local<v8::Object>();
+  // Notice that we explicitly ignore |creation_context| because the DOMWindow
+  // has its own creation context.
+
+  // TODO(yukishiino): Make this function always return the non-empty handle
+  // even if the frame is detached because the global proxy must always exist
+  // per spec.
+  return window_proxy_manager_
+      ->GetWindowProxy(DOMWrapperWorld::Current(isolate))
+      ->GlobalProxyIfNotDetached();
 }
 
 v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
     v8::Isolate*,
     const WrapperTypeInfo*,
     v8::Local<v8::Object> wrapper) {
-  LOG(FATAL) << "DOMWindow must never be wrapped with wrap method.  The "
-                "wrappers must be created at WindowProxy::createContext() and "
-                "setupWindowPrototypeChain().";
+  NOTREACHED();
   return v8::Local<v8::Object>();
 }
 
@@ -435,14 +443,6 @@ void DOMWindow::focus(ExecutionContext* context) {
 
   page->GetFocusController().FocusDocumentView(GetFrame(),
                                                true /* notifyEmbedder */);
-}
-
-v8::Local<v8::Object> DOMWindow::GlobalProxy(DOMWrapperWorld& world) {
-  // TODO(yukishiino): Make this function always return the non-empty handle
-  // even if the frame is detached because the global proxy must always exist
-  // per spec.
-  return window_proxy_manager_->GetWindowProxy(world)
-      ->GlobalProxyIfNotDetached();
 }
 
 InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
