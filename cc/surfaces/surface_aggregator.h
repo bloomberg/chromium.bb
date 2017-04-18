@@ -5,10 +5,12 @@
 #ifndef CC_SURFACES_SURFACE_AGGREGATOR_H_
 #define CC_SURFACES_SURFACE_AGGREGATOR_H_
 
+#include <map>
 #include <memory>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/quads/draw_quad.h"
@@ -28,7 +30,7 @@ class SurfaceManager;
 
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
-  using SurfaceIndexMap = base::flat_map<SurfaceId, int>;
+  using SurfaceIndexMap = std::unordered_map<SurfaceId, int, SurfaceIdHash>;
 
   SurfaceAggregator(SurfaceManager* manager,
                     ResourceProvider* provider,
@@ -63,7 +65,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     ~PrewalkResult();
     // This is the set of Surfaces that were referenced by another Surface, but
     // not included in a SurfaceDrawQuad.
-    base::flat_set<SurfaceId> undrawn_surfaces;
+    std::set<SurfaceId> undrawn_surfaces;
     bool may_contain_video = false;
   };
 
@@ -143,8 +145,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
   // used in the aggregated frame. An entry is removed from the map if it's not
   // used for one output frame.
-  base::flat_map<std::pair<SurfaceId, int>, RenderPassInfo>
-      render_pass_allocator_map_;
+  using RenderPassIdAllocatorMap =
+      std::map<std::pair<SurfaceId, int>, RenderPassInfo>;
+  RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
@@ -159,7 +162,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // The id for the final color conversion render pass.
   int color_conversion_render_pass_id_ = 0;
 
-  base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
+  using SurfaceToResourceChildIdMap =
+      std::unordered_map<SurfaceId, int, SurfaceIdHash>;
+  SurfaceToResourceChildIdMap surface_id_to_resource_child_id_;
 
   // The following state is only valid for the duration of one Aggregate call
   // and is only stored on the class to avoid having to pass through every
@@ -167,7 +172,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // This is the set of surfaces referenced in the aggregation so far, used to
   // detect cycles.
-  base::flat_set<SurfaceId> referenced_surfaces_;
+  using SurfaceSet = std::set<SurfaceId>;
+  SurfaceSet referenced_surfaces_;
 
   // For each Surface used in the last aggregation, gives the frame_index at
   // that time.
@@ -175,22 +181,22 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceIndexMap contained_surfaces_;
 
   // After surface validation, every Surface in this set is valid.
-  base::flat_set<SurfaceId> valid_surfaces_;
+  std::unordered_set<SurfaceId, SurfaceIdHash> valid_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;
 
   // This is the set of aggregated pass ids that are affected by filters that
   // move pixels.
-  base::flat_set<int> moved_pixel_passes_;
+  std::unordered_set<int> moved_pixel_passes_;
 
   // This is the set of aggregated pass ids that are drawn by copy requests, so
   // should not have their damage rects clipped to the root damage rect.
-  base::flat_set<int> copy_request_passes_;
+  std::unordered_set<int> copy_request_passes_;
 
   // This maps each aggregated pass id to the set of (aggregated) pass ids
   // that its RenderPassDrawQuads depend on
-  base::flat_map<int, base::flat_set<int>> render_pass_dependencies_;
+  std::unordered_map<int, std::unordered_set<int>> render_pass_dependencies_;
 
   // The root damage rect of the currently-aggregating frame.
   gfx::Rect root_damage_rect_;

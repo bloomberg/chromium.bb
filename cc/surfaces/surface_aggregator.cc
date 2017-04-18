@@ -144,7 +144,8 @@ int SurfaceAggregator::RemapPassId(int surface_local_pass_id,
 }
 
 int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
-  auto it = surface_id_to_resource_child_id_.find(surface->surface_id());
+  SurfaceToResourceChildIdMap::iterator it =
+      surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
     int child_id =
         provider_->CreateChild(base::Bind(&UnrefHelper, surface->factory()));
@@ -238,7 +239,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     return;
   }
 
-  auto it = referenced_surfaces_.insert(surface_id).first;
+  SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
   ResourceProvider::ResourceIdMap empty_map;
@@ -567,7 +568,8 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
   for (const auto& surface : previous_contained_surfaces_) {
     if (!contained_surfaces_.count(surface.first)) {
       // Release resources of removed surface.
-      auto it = surface_id_to_resource_child_id_.find(surface.first);
+      SurfaceToResourceChildIdMap::iterator it =
+          surface_id_to_resource_child_id_.find(surface.first);
       if (it != surface_id_to_resource_child_id_.end()) {
         provider_->DestroyChild(it->second);
         surface_id_to_resource_child_id_.erase(it);
@@ -651,18 +653,13 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   };
   std::vector<SurfaceInfo> child_surfaces;
 
-  // This data is created once and typically small or empty. Collect all items
-  // and pass to a flat_vector to sort once.
-  std::vector<int> pixel_moving_background_filter_passes_data;
+  std::unordered_set<int> pixel_moving_background_filter_passes;
   for (const auto& render_pass : frame.render_pass_list) {
     if (render_pass->background_filters.HasFilterThatMovesPixels()) {
-      pixel_moving_background_filter_passes_data.push_back(
+      pixel_moving_background_filter_passes.insert(
           RemapPassId(render_pass->id, surface_id));
     }
   }
-  base::flat_set<int> pixel_moving_background_filter_passes(
-      std::move(pixel_moving_background_filter_passes_data),
-      base::KEEP_FIRST_OF_DUPES);
 
   for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
     int remapped_pass_id = RemapPassId(render_pass->id, surface_id);
@@ -731,7 +728,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
   // Avoid infinite recursion by adding current surface to
   // referenced_surfaces_.
-  referenced_surfaces_.insert(surface->surface_id());
+  SurfaceSet::iterator it =
+      referenced_surfaces_.insert(surface->surface_id()).first;
   for (const auto& surface_info : child_surfaces) {
     gfx::Rect surface_damage =
         PrewalkTree(surface_info.id, surface_info.has_moved_pixels,
@@ -771,7 +769,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
     }
   }
 
-  referenced_surfaces_.erase(referenced_surfaces_.find(surface->surface_id()));
+  referenced_surfaces_.erase(it);
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
   return damage_rect;
@@ -812,7 +810,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
         }
       }
     } else {
-      auto it = referenced_surfaces_.insert(surface_id).first;
+      SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
       CopyPasses(frame, surface);
       referenced_surfaces_.erase(it);
     }
@@ -862,7 +860,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
 
   CopyUndrawnSurfaces(&prewalk_result);
-  auto it = referenced_surfaces_.insert(surface_id).first;
+  SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
   CopyPasses(root_surface_frame, surface);
   referenced_surfaces_.erase(it);
   AddColorConversionPass();
@@ -916,7 +914,8 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
 }
 
 void SurfaceAggregator::ReleaseResources(const SurfaceId& surface_id) {
-  auto it = surface_id_to_resource_child_id_.find(surface_id);
+  SurfaceToResourceChildIdMap::iterator it =
+      surface_id_to_resource_child_id_.find(surface_id);
   if (it != surface_id_to_resource_child_id_.end()) {
     provider_->DestroyChild(it->second);
     surface_id_to_resource_child_id_.erase(it);
