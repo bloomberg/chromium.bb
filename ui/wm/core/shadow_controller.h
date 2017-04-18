@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/wm_export.h"
 
@@ -31,6 +32,9 @@ class Shadow;
 class WM_EXPORT ShadowController :
     public aura::client::ActivationChangeObserver {
  public:
+  static constexpr ShadowElevation kActiveNormalShadowElevation =
+      ShadowElevation::LARGE;
+
   // Returns the shadow for the |window|, or NULL if no shadow exists.
   static Shadow* GetShadowForWindow(aura::Window* window);
 

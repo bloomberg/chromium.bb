@@ -19,15 +19,6 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="common/multi_window_resize_horizontal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="common/multi_window_resize_vertical.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM" file="common/phantom_window_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_LEFT" file="common/phantom_window_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_RIGHT" file="common/phantom_window_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_CENTER" file="common/phantom_window_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_LEFT" file="common/phantom_window_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_RIGHT" file="common/phantom_window_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP" file="common/phantom_window_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_LEFT" file="common/phantom_window_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_RIGHT" file="common/phantom_window_top_right.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="cros/status/status_locale.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />

@@ -19,7 +19,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/shadow.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -32,7 +31,6 @@ namespace wm {
 
 namespace {
 
-constexpr ShadowElevation kActiveNormalShadowElevation = ShadowElevation::LARGE;
 constexpr ShadowElevation kInactiveNormalShadowElevation =
     ShadowElevation::MEDIUM;
 
@@ -67,7 +65,7 @@ ShadowElevation GetShadowElevationForActiveState(aura::Window* window) {
     return elevation;
 
   if (IsActiveWindow(window))
-    return kActiveNormalShadowElevation;
+    return ShadowController::kActiveNormalShadowElevation;
 
   return GetDefaultShadowElevationForWindow(window);
 }
@@ -84,7 +82,7 @@ ShadowElevation GetShadowElevationForWindowLosingActive(
                   GetTransientChildren(losing_active).end(),
                   gaining_active);
     if (it != GetTransientChildren(losing_active).end())
-      return kActiveNormalShadowElevation;
+      return ShadowController::kActiveNormalShadowElevation;
   }
   return kInactiveNormalShadowElevation;
 }

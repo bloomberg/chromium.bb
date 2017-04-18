@@ -7,16 +7,15 @@
 #include <math.h>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm_window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
-#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_controller.h"
 
 namespace ash {
 namespace {
@@ -28,46 +27,15 @@ const int kAnimationDurationMs = 200;
 // relation to the size of the phantom window at the end of the animation.
 const float kStartBoundsRatio = 0.85f;
 
-// The amount of pixels that the phantom window's shadow should extend past
-// the bounds passed into Show().
-const int kShadowThickness = 15;
+// The elevation of the shadow for the phantom window should match that of an
+// active window.
+constexpr ::wm::ShadowElevation kShadowElevation =
+    ::wm::ShadowController::kActiveNormalShadowElevation;
 
-// The minimum size of a phantom window including the shadow. The minimum size
-// is derived from the size of the IDR_AURA_PHANTOM_WINDOW image assets.
-const int kMinSizeWithShadow = 100;
-
-// Adjusts the phantom window's bounds so that the bounds:
-// - Include the size of the shadow.
-// - Have a size equal to or larger than the minimum phantom window size.
-gfx::Rect GetAdjustedBounds(const gfx::Rect& bounds) {
-  int x_inset = std::max(
-      static_cast<int>(ceil((kMinSizeWithShadow - bounds.width()) / 2.0f)),
-      kShadowThickness);
-  int y_inset = std::max(
-      static_cast<int>(ceil((kMinSizeWithShadow - bounds.height()) / 2.0f)),
-      kShadowThickness);
-
-  gfx::Rect adjusted_bounds(bounds);
-  adjusted_bounds.Inset(-x_inset, -y_inset);
-  return adjusted_bounds;
-}
-
-// Starts an animation of |widget| to |new_bounds_in_screen|. No-op if |widget|
-// is NULL.
-void AnimateToBounds(views::Widget* widget,
-                     const gfx::Rect& new_bounds_in_screen) {
-  if (!widget)
-    return;
-
-  ui::ScopedLayerAnimationSettings scoped_setter(
-      WmWindow::Get(widget->GetNativeWindow())->GetLayer()->GetAnimator());
-  scoped_setter.SetTweenType(gfx::Tween::EASE_IN);
-  scoped_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  scoped_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
-  widget->SetBounds(new_bounds_in_screen);
-}
+// The shadow ninebox requires a minimum size to work well. See
+// ui/wm/core/shadow.cc
+constexpr int kMinWidthWithShadow = 2 * static_cast<int>(kShadowElevation);
+constexpr int kMinHeightWithShadow = 4 * static_cast<int>(kShadowElevation);
 
 }  // namespace
 
@@ -79,17 +47,16 @@ PhantomWindowController::PhantomWindowController(WmWindow* window)
 PhantomWindowController::~PhantomWindowController() {}
 
 void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
-  gfx::Rect adjusted_bounds_in_screen = GetAdjustedBounds(bounds_in_screen);
-  if (adjusted_bounds_in_screen == target_bounds_in_screen_)
+  if (bounds_in_screen == target_bounds_in_screen_)
     return;
-  target_bounds_in_screen_ = adjusted_bounds_in_screen;
+  target_bounds_in_screen_ = bounds_in_screen;
 
   gfx::Rect start_bounds_in_screen = target_bounds_in_screen_;
   int start_width = std::max(
-      kMinSizeWithShadow,
+      kMinWidthWithShadow,
       static_cast<int>(start_bounds_in_screen.width() * kStartBoundsRatio));
   int start_height = std::max(
-      kMinSizeWithShadow,
+      kMinHeightWithShadow,
       static_cast<int>(start_bounds_in_screen.height() * kStartBoundsRatio));
   start_bounds_in_screen.Inset(
       floor((start_bounds_in_screen.width() - start_width) / 2.0f),
@@ -97,8 +64,6 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   phantom_widget_ =
       CreatePhantomWidget(wm::GetRootWindowMatching(target_bounds_in_screen_),
                           start_bounds_in_screen);
-
-  AnimateToBounds(phantom_widget_.get(), target_bounds_in_screen_);
 }
 
 std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
@@ -113,6 +78,9 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.keep_on_top = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PhantomWindow";
+  params.layer_type = ui::LAYER_SOLID_COLOR;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params.shadow_elevation = ::wm::ShadowElevation::LARGE;
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       phantom_widget.get(), kShellWindowId_ShelfContainer, &params);
   phantom_widget->set_focus_on_creation(false);
@@ -127,23 +95,21 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
     phantom_widget_window->GetParent()->StackChildAbove(phantom_widget_window,
                                                         window_);
   }
+  ui::Layer* widget_layer = phantom_widget_window->GetLayer();
+  widget_layer->SetColor(SkColorSetA(SK_ColorWHITE, 0.4 * 255));
 
-  const int kImages[] = IMAGE_GRID(IDR_AURA_PHANTOM_WINDOW);
-  views::View* content_view = new views::View;
-  content_view->set_background(views::Background::CreateBackgroundPainter(
-      views::Painter::CreateImageGridPainter(kImages)));
-  phantom_widget->SetContentsView(content_view);
-
-  // Show the widget after all the setups.
   phantom_widget->Show();
 
   // Fade the window in.
-  ui::Layer* widget_layer = phantom_widget_window->GetLayer();
   widget_layer->SetOpacity(0);
   ui::ScopedLayerAnimationSettings scoped_setter(widget_layer->GetAnimator());
   scoped_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  scoped_setter.SetTweenType(gfx::Tween::EASE_IN);
+  scoped_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   widget_layer->SetOpacity(1);
+  phantom_widget->SetBounds(target_bounds_in_screen_);
 
   return phantom_widget;
 }
