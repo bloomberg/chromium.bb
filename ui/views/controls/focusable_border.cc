@@ -54,7 +54,7 @@ void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
   flags.setStrokeWidth(SkIntToScalar(stroke_width_px));
 
   // Scale the rect and snap to pixel boundaries.
-  gfx::RectF rect(gfx::ScaleToEnclosingRect(view.GetLocalBounds(), dsf));
+  gfx::RectF rect(gfx::ScaleToEnclosedRect(view.GetLocalBounds(), dsf));
   rect.Inset(gfx::InsetsF(stroke_width_px / 2.0f));
 
   SkPath path;
