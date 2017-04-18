@@ -10,8 +10,6 @@ namespace content {
 
 uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
   uint32_t state = 0;
-  if (o.IsChecked())
-    state |= (1 << ui::AX_STATE_CHECKED);
 
   blink::WebAXExpanded expanded = o.IsExpanded();
   if (expanded) {
@@ -525,6 +523,20 @@ ui::AXInvalidState AXInvalidStateFromBlink(
   }
   NOTREACHED();
   return ui::AX_INVALID_STATE_NONE;
+}
+
+ui::AXCheckedState AXCheckedStateFromBlink(
+    blink::WebAXCheckedState checked_state) {
+  switch (checked_state) {
+    case blink::WebAXCheckedFalse:
+      return ui::AX_CHECKED_STATE_FALSE;
+    case blink::WebAXCheckedTrue:
+      return ui::AX_CHECKED_STATE_TRUE;
+    case blink::WebAXCheckedMixed:
+      return ui::AX_CHECKED_STATE_MIXED;
+  }
+  NOTREACHED();
+  return ui::AX_CHECKED_STATE_FALSE;
 }
 
 ui::AXSortDirection AXSortDirectionFromBlink(

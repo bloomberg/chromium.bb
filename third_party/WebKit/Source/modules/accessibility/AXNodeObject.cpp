@@ -1143,36 +1143,6 @@ bool AXNodeObject::IsNativeSlider() const {
   return toHTMLInputElement(node)->type() == InputTypeNames::range;
 }
 
-bool AXNodeObject::IsChecked() const {
-  Node* node = this->GetNode();
-  if (!node)
-    return false;
-
-  // First test for native checkedness semantics
-  if (isHTMLInputElement(*node))
-    return toHTMLInputElement(*node).ShouldAppearChecked();
-
-  // Else, if this is an ARIA role checkbox or radio or menuitemcheckbox
-  // or menuitemradio or switch, respect the aria-checked attribute
-  switch (AriaRoleAttribute()) {
-    case kCheckBoxRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kRadioButtonRole:
-    case kSwitchRole:
-      if (EqualIgnoringASCIICase(
-              GetAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked),
-              "true"))
-        return true;
-      return false;
-    default:
-      break;
-  }
-
-  // Otherwise it's not checked
-  return false;
-}
-
 bool AXNodeObject::IsClickable() const {
   if (GetNode()) {
     if (GetNode()->IsElementNode() &&
@@ -1607,16 +1577,6 @@ String AXNodeObject::GetText() const {
   return ToElement(node)->innerText();
 }
 
-AccessibilityButtonState AXNodeObject::CheckboxOrRadioValue() const {
-  if (IsNativeCheckboxInMixedState())
-    return kButtonStateMixed;
-
-  if (IsNativeCheckboxOrRadio())
-    return IsChecked() ? kButtonStateOn : kButtonStateOff;
-
-  return AXObject::CheckboxOrRadioValue();
-}
-
 RGBA32 AXNodeObject::ColorValue() const {
   if (!isHTMLInputElement(GetNode()) || !IsColorWell())
     return AXObject::ColorValue();
@@ -1854,15 +1814,6 @@ static bool IsInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2) {
   LayoutBlockFlow* b1 = NonInlineBlockFlow(r1);
   LayoutBlockFlow* b2 = NonInlineBlockFlow(r2);
   return b1 && b2 && b1 == b2;
-}
-
-bool AXNodeObject::IsNativeCheckboxInMixedState() const {
-  if (!isHTMLInputElement(node_))
-    return false;
-
-  HTMLInputElement* input = toHTMLInputElement(node_);
-  return input->type() == InputTypeNames::checkbox &&
-         input->ShouldAppearIndeterminate();
 }
 
 //

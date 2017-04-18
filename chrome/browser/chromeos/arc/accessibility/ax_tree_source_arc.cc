@@ -178,13 +178,20 @@ void PopulateAXState(arc::mojom::AccessibilityNodeInfoData* node,
   // sources.
   // The FOCUSABLE state is not mapped because Android places focusability on
   // many ancestor nodes.
-  MAP_STATE(AXBooleanProperty::CHECKED, ui::AX_STATE_CHECKED);
   MAP_STATE(AXBooleanProperty::EDITABLE, ui::AX_STATE_EDITABLE);
   MAP_STATE(AXBooleanProperty::MULTI_LINE, ui::AX_STATE_MULTILINE);
   MAP_STATE(AXBooleanProperty::PASSWORD, ui::AX_STATE_PROTECTED);
   MAP_STATE(AXBooleanProperty::SELECTED, ui::AX_STATE_SELECTED);
 
 #undef MAP_STATE
+
+  if (GetBooleanProperty(node, AXBooleanProperty::CHECKABLE)) {
+    const bool is_checked =
+        GetBooleanProperty(node, AXBooleanProperty::CHECKED);
+    const ui::AXCheckedState checked_state =
+        is_checked ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE;
+    out_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
+  }
 
   if (!GetBooleanProperty(node, AXBooleanProperty::ENABLED))
     out_data->AddStateFlag(ui::AX_STATE_DISABLED);

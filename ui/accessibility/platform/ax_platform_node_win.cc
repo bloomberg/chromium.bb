@@ -1053,11 +1053,10 @@ int AXPlatformNodeWin::MSAARole() {
 }
 
 int AXPlatformNodeWin::MSAAState() {
-  uint32_t state = GetData().state;
+  const AXNodeData& data = GetData();
+  const uint32_t state = data.state;
 
   int msaa_state = 0;
-  if (state & (1 << ui::AX_STATE_CHECKED))
-    msaa_state |= STATE_SYSTEM_CHECKED;
   if (state & (1 << ui::AX_STATE_COLLAPSED))
     msaa_state |= STATE_SYSTEM_COLLAPSED;
   if (state & (1 << ui::AX_STATE_DEFAULT))
@@ -1089,6 +1088,20 @@ int AXPlatformNodeWin::MSAAState() {
   if (state & (1 << ui::AX_STATE_DISABLED))
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
 
+  // Checked state
+  const auto checked_state = static_cast<ui::AXCheckedState>(
+      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  switch (checked_state) {
+    case ui::AX_CHECKED_STATE_TRUE:
+      msaa_state |= STATE_SYSTEM_CHECKED;
+      break;
+    case ui::AX_CHECKED_STATE_MIXED:
+      msaa_state |= STATE_SYSTEM_MIXED;
+      break;
+    default:
+      break;
+  }
+
   gfx::NativeViewAccessible focus = delegate_->GetFocus();
   if (focus == GetNativeViewAccessible())
     msaa_state |= STATE_SYSTEM_FOCUSED;
@@ -1099,7 +1112,7 @@ int AXPlatformNodeWin::MSAAState() {
   // TODO(dmazzoni): this should probably check if focus is actually inside
   // the menu bar, but we don't currently track focus inside menu pop-ups,
   // and Chrome only has one menu visible at a time so this works for now.
-  if (GetData().role == ui::AX_ROLE_MENU_BAR &&
+  if (data.role == ui::AX_ROLE_MENU_BAR &&
       !(state & (1 << ui::AX_STATE_INVISIBLE))) {
     msaa_state |= STATE_SYSTEM_FOCUSED;
   }

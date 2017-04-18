@@ -174,10 +174,12 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
       break;
     case CHECKBOX:
-    case RADIO:
-      if (GetDelegate()->IsItemChecked(GetCommand()))
-        node_data->AddStateFlag(ui::AX_STATE_CHECKED);
-      break;
+    case RADIO: {
+      const bool is_checked = GetDelegate()->IsItemChecked(GetCommand());
+      const ui::AXCheckedState checked_state =
+          is_checked ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE;
+      node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
+    } break;
     case NORMAL:
     case SEPARATOR:
     case EMPTY:

@@ -11,3 +11,6 @@ rootWebArea
 ++form
 ++++radioButton name='Radio3' radioGroupIds=radioButton,radioButton
 ++++radioButton name='Radio4' radioGroupIds=radioButton,radioButton
+++form
+++++radioButton name='Radio5' radioGroupIds=radioButton
+++++radioButton name='Radio6' radioGroupIds=radioButton

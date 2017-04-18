@@ -111,8 +111,9 @@ const char* Checkbox::GetClassName() const {
 void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   LabelButton::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_CHECK_BOX;
-  if (checked())
-    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
+  const ui::AXCheckedState checked_state =
+      checked() ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE;
+  node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
   if (enabled()) {
     if (checked()) {
       node_data->AddIntAttribute(ui::AX_ATTR_ACTION,

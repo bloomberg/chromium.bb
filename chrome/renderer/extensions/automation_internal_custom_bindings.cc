@@ -723,6 +723,16 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         std::string name_from_str = ui::ToString(name_from);
         result.Set(v8::String::NewFromUtf8(isolate, name_from_str.c_str()));
       });
+  RouteNodeIDFunction("GetChecked", [](v8::Isolate* isolate,
+                                       v8::ReturnValue<v8::Value> result,
+                                       TreeCache* cache, ui::AXNode* node) {
+    const ui::AXCheckedState checked_state = static_cast<ui::AXCheckedState>(
+        node->data().GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+    if (checked_state) {
+      const std::string checked_str = ui::ToString(checked_state);
+      result.Set(v8::String::NewFromUtf8(isolate, checked_str.c_str()));
+    }
+  });
 }
 
 AutomationInternalCustomBindings::~AutomationInternalCustomBindings() {}

@@ -1,4 +1,5 @@
-Check whether mixed value is reported properly
+    
+Check whether ARIA mixed state is reported properly
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -8,8 +9,20 @@ Mixed: true
 Role: AXRole: AXMenuItemCheckBox
 Mixed: true
 Role: AXRole: AXRadioButton
-Mixed: false
+Mixed: true
 Role: AXRole: AXMenuItemRadio
+Mixed: true
+Role: AXRole: AXSwitch
+Mixed: false
+Role: AXRole: AXCheckBox
+Mixed: true
+Role: AXRole: AXCheckBox
+Mixed: true
+Role: AXRole: AXRadioButton
+Mixed: true
+Role: AXRole: AXRadioButton
+Mixed: true
+Role: AXRole: AXButton
 Mixed: false
 PASS successfullyParsed is true
 

@@ -111,9 +111,9 @@ cvox.AriaUtil.ATTRIBUTE_VALUE_TO_STATUS = [
        'list' : 'aria_autocomplete_list',
        'both' : 'aria_autocomplete_both'} },
   { name: 'aria-checked', values:
-      {'true' : 'aria_checked_true',
-       'false' : 'aria_checked_false',
-       'mixed' : 'aria_checked_mixed'} },
+      {'true' : 'checked_true',
+       'false' : 'checked_false',
+       'mixed' : 'checked_mixed'} },
   { name: 'aria-disabled', values:
       {'true' : 'aria_disabled_true'} },
   { name: 'aria-expanded', values:

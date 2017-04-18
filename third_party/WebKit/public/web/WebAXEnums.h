@@ -257,6 +257,12 @@ enum WebAXSortDirection {
   kWebAXSortDirectionOther
 };
 
+enum WebAXCheckedState {
+  WebAXCheckedFalse = 0,
+  WebAXCheckedTrue,
+  WebAXCheckedMixed
+};
+
 // Expanded State.
 // These values must match blink::AccessibilityExpanded values.
 // Enforced in AssertMatchingEnums.cpp.

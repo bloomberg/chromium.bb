@@ -127,8 +127,8 @@ class WebAXObject {
 
   BLINK_EXPORT bool IsAnchor() const;
   BLINK_EXPORT bool IsAriaReadOnly() const;
-  BLINK_EXPORT bool IsButtonStateMixed() const;
-  BLINK_EXPORT bool IsChecked() const;
+  BLINK_EXPORT WebAXCheckedState CheckedState() const;
+  BLINK_EXPORT bool IsCheckable() const;
   BLINK_EXPORT bool IsClickable() const;
   BLINK_EXPORT bool IsCollapsed() const;
   BLINK_EXPORT bool IsControl() const;

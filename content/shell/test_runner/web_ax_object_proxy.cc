@@ -1020,7 +1020,7 @@ bool WebAXObjectProxy::IsExpanded() {
 
 bool WebAXObjectProxy::IsChecked() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsChecked();
+  return accessibility_object_.CheckedState() != blink::WebAXCheckedFalse;
 }
 
 bool WebAXObjectProxy::IsCollapsed() {
@@ -1233,7 +1233,7 @@ bool WebAXObjectProxy::IsClickable() {
 
 bool WebAXObjectProxy::IsButtonStateMixed() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.IsButtonStateMixed();
+  return accessibility_object_.CheckedState() == blink::WebAXCheckedMixed;
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(

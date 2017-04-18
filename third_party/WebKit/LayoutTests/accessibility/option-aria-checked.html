@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<select>
+<option id="element1" role="menuitemcheckbox">1</option>
+<option id="element2" role="menuitemcheckbox" aria-checked="true">2</option>
+<option id="element3" role="menuitemradio">3</option>
+<option id="element4" role="menuitemradio" aria-checked="true">4</option>
+<!-- Checked not supported -->
+<option id="element5" aria-checked="true">5</option>
+</select>
+
+<script>
+
+  function axElementById(id) {
+      return accessibilityController.accessibleElementById(id);
+  }
+
+  test(function(t) {
+    var ax = axElementById("element1");
+    assert_false(ax.isChecked);
+  }, "<option> of role menuitemcheckbox is not checked by default");
+
+  test(function(t) {
+    var ax = axElementById("element2");
+    assert_true(ax.isChecked);
+  }, "<option> of role menuitemcheckbox can be checked with aria-checked");
+
+  test(function(t) {
+    var ax = axElementById("element3");
+    assert_false(ax.isChecked);
+  }, "<option> of role menuitemradio is not checked by default");
+
+  test(function(t) {
+    var ax = axElementById("element4");
+    assert_true(ax.isChecked);
+  }, "<option> of role menuitemradio can be checked with aria-checked");
+
+  test(function(t) {
+    var ax = axElementById("element5");
+    assert_false(ax.isChecked);
+  }, "<option> of no role is not checked even with aria-checked set");
+
+</script>

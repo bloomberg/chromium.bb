@@ -5073,8 +5073,20 @@ void BrowserAccessibilityWin::InitRoleAndState() {
 
   if (HasState(ui::AX_STATE_BUSY))
     ia_state |= STATE_SYSTEM_BUSY;
-  if (HasState(ui::AX_STATE_CHECKED))
-    ia_state |= STATE_SYSTEM_CHECKED;
+
+  const auto checked_state = static_cast<ui::AXCheckedState>(
+      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  switch (checked_state) {
+    case ui::AX_CHECKED_STATE_TRUE:
+      ia_state |= STATE_SYSTEM_CHECKED;
+      break;
+    case ui::AX_CHECKED_STATE_MIXED:
+      ia_state |= STATE_SYSTEM_MIXED;
+      break;
+    default:
+      break;
+  }
+
   if (HasState(ui::AX_STATE_COLLAPSED))
     ia_state |= STATE_SYSTEM_COLLAPSED;
   if (HasState(ui::AX_STATE_EXPANDED))
@@ -5130,9 +5142,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
 
   if (HasState(ui::AX_STATE_EDITABLE))
     ia2_state |= IA2_STATE_EDITABLE;
-
-  if (GetBoolAttribute(ui::AX_ATTR_STATE_MIXED))
-    ia_state |= STATE_SYSTEM_MIXED;
 
   if (GetBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE))
     ia2_state |= IA2_STATE_EDITABLE;

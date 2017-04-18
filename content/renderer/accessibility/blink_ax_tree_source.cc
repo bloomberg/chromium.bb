@@ -427,9 +427,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.StringValue().Utf8());
   }
 
-  if (src.IsButtonStateMixed())
-    dst->AddBoolAttribute(ui::AX_ATTR_STATE_MIXED, true);
-
   if (src.CanSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
 
@@ -491,6 +488,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         src.AriaInvalidValue().length()) {
       dst->AddStringAttribute(ui::AX_ATTR_ARIA_INVALID_VALUE,
                               src.AriaInvalidValue().Utf8());
+    }
+
+    if (src.IsCheckable()) {
+      const blink::WebAXCheckedState checked_state = src.CheckedState();
+      dst->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                           AXCheckedStateFromBlink(checked_state));
     }
 
     if (src.GetTextDirection()) {

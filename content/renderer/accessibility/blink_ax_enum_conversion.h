@@ -40,6 +40,9 @@ ui::AXAriaCurrentState AXAriaCurrentStateFromBlink(
 ui::AXInvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state);
 
+ui::AXCheckedState AXCheckedStateFromBlink(
+    blink::WebAXCheckedState checked_state);
+
 ui::AXSortDirection AXSortDirectionFromBlink(
     blink::WebAXSortDirection sort_direction);
 

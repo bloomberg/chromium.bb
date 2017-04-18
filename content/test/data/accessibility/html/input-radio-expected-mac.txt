@@ -1,10 +1,13 @@
 AXWebArea
 ++AXGroup
-++++AXRadioButton AXValue='0' AXLinkedUIElements=["AXRadioButton 0"]
+++++AXRadioButton AXValue='2' AXLinkedUIElements=["AXRadioButton 2"]
 ++++AXStaticText AXValue='Radio1'
 ++++AXUnknown AXTitle='<newline>'
-++++AXRadioButton AXValue='0' AXLinkedUIElements=["AXRadioButton 0"]
+++++AXRadioButton AXValue='2' AXLinkedUIElements=["AXRadioButton 2"]
 ++++AXStaticText AXValue='Radio2'
 ++AXGroup
 ++++AXRadioButton AXTitle='Radio3' AXValue='0' AXLinkedUIElements=["AXRadioButton Radio3","AXRadioButton Radio4"]
 ++++AXRadioButton AXTitle='Radio4' AXValue='1' AXLinkedUIElements=["AXRadioButton Radio3","AXRadioButton Radio4"]
+++AXGroup
+++++AXRadioButton AXTitle='Radio5' AXValue='2' AXLinkedUIElements=["AXRadioButton Radio5"]
+++++AXRadioButton AXTitle='Radio6' AXValue='1' AXLinkedUIElements=["AXRadioButton Radio6"]

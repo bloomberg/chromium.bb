@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<!-- Will set indeterminate state via JS -->
+<input id="element1" type="checkbox" />
+<script>
+  // No way currently to do this via markup, must be via JS
+  document.getElementById('element1').indeterminate = true;
+</script>
+<!-- Control-->
+<input id="element2" type="checkbox"  />
+
+<div>
+  <!-- Will be ::indeterminate in CSS because no radio item selected yet -->
+  <input type="radio" name="radiogroup1" />
+  <input id="element3" type="radio" name="radiogroup1" />
+</div>
+
+<div>
+  <!-- NOT mixed/indeterminate because group has a selected radio button -->
+  <input id="element4" type="radio" name="radiogroup2" />
+  <input id="element5" type="radio" checked name="radiogroup2" />
+</div>
+
+<script>
+
+  function axElementById(id) {
+    return accessibilityController.accessibleElementById(id);
+  }
+
+  test(function(t) {
+    var ax = axElementById("element1");
+    assert_true(ax.isButtonStateMixed);
+  }, "A native indeterminate checkbox must have the mixed state");
+
+  test(function(t) {
+    var ax = axElementById("element2");
+    assert_false(ax.isButtonStateMixed);
+  }, "A native checkbox that is not indeterminate" +
+      " must NOT have the mixed state");
+
+  test(function(t) {
+    var ax = axElementById("element3");
+    assert_true(ax.isButtonStateMixed);
+  }, "A native radio that in a group with nothing checked" +
+      " must have the mixed state");
+
+  test(function(t) {
+    var ax = axElementById("element4");
+    assert_false(ax.isButtonStateMixed);
+  }, "A native radio that in a group with something checked" +
+      " must NOT have the mixed state");
+
+  test(function(t) {
+    var ax = axElementById("element4");
+    assert_false(ax.isButtonStateMixed);
+  }, "A checked native radio must NOT have the mixed state");
+</script>

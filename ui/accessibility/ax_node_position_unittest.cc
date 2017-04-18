@@ -130,7 +130,8 @@ void AXPositionTest::SetUp() {
   root_.child_ids.push_back(button_.id);
 
   check_box_.role = AX_ROLE_CHECK_BOX;
-  check_box_.state = 1 << AX_STATE_CHECKED;
+  check_box_.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                             ui::AX_CHECKED_STATE_TRUE);
   check_box_.SetName("Check box");
   check_box_.location = gfx::RectF(20, 50, 200, 30);
   check_box_.AddIntListAttribute(AX_ATTR_WORD_STARTS,

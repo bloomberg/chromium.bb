@@ -1381,13 +1381,13 @@
       <message desc="Shown on a braille display as a suffix to text fields and combo boxes when suggestions on how to complete the field are shown in a list and the currently selected value is shown as text after the caret in the input field. When translating, try to find a contracted form of the translation for 'autocomplete inline and list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH_BRL">
         autoinl+lst
       </message>
-      <message desc="Describes an element with the ARIA attribute aria-checked=true." name="IDS_CHROMEVOX_ARIA_CHECKED_TRUE">
+      <message desc="Describes an element that is checked." name="IDS_CHROMEVOX_CHECKED_TRUE">
         Checked
       </message>
-      <message desc="Describes an element with the ARIA attribute aria-checked=false." name="IDS_CHROMEVOX_ARIA_CHECKED_FALSE">
+      <message desc="Describes an element that is unchecked." name="IDS_CHROMEVOX_CHECKED_FALSE">
         Not checked
       </message>
-      <message desc="Describes an element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED">
+      <message desc="Describes an element where the checked state is mixed or indeterminate." name="IDS_CHROMEVOX_CHECKED_MIXED">
         Partially checked
       </message>
       <message desc="Describes an element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE">

@@ -627,7 +627,8 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   initial_state.nodes[0].id = 1;
   initial_state.nodes[0].role = AX_ROLE_BUTTON;
   initial_state.nodes[0].state = 0;
-  initial_state.nodes[0].AddStateFlag(AX_STATE_CHECKED);
+  initial_state.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                                         ui::AX_CHECKED_STATE_TRUE);
   initial_state.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
   AXTree tree(initial_state);
 
@@ -641,6 +642,8 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   update.nodes[0].id = 1;
   update.nodes[0].role = AX_ROLE_CHECK_BOX;
   update.nodes[0].state = 0;
+  update.nodes[0].AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                                  ui::AX_CHECKED_STATE_FALSE);
   update.nodes[0].AddStateFlag(AX_STATE_FOCUSABLE);
   update.nodes[0].AddStateFlag(AX_STATE_VISITED);
   EXPECT_TRUE(tree.Unserialize(update));
@@ -649,8 +652,8 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
       fake_delegate.attribute_change_log();
   ASSERT_EQ(3U, change_log.size());
   EXPECT_EQ("Role changed from button to checkBox", change_log[0]);
-  EXPECT_EQ("checked changed to false", change_log[1]);
-  EXPECT_EQ("visited changed to true", change_log[2]);
+  EXPECT_EQ("visited changed to true", change_log[1]);
+  EXPECT_EQ("checkedState changed from 2 to 1", change_log[2]);
 
   tree.SetDelegate(NULL);
 }

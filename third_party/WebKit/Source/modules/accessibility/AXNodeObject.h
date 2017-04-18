@@ -126,7 +126,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsNativeSlider() const override;
 
   // Check object state.
-  bool IsChecked() const final;
   bool IsClickable() const final;
   bool IsEnabled() const override;
   AccessibilityExpanded IsExpanded() const override;
@@ -155,7 +154,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetText() const override;
 
   // Properties of interactive elements.
-  AccessibilityButtonState CheckboxOrRadioValue() const final;
   AriaCurrentState GetAriaCurrentState() const final;
   InvalidState GetInvalidState() const final;
   // Only used when invalidState() returns InvalidStateOther.

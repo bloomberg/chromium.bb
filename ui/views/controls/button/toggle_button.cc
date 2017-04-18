@@ -233,8 +233,9 @@ void ToggleButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   CustomButton::GetAccessibleNodeData(node_data);
 
   node_data->role = ui::AX_ROLE_SWITCH;
-  if (is_on_)
-    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
+  const ui::AXCheckedState checked_state =
+      is_on_ ? ui::AX_CHECKED_STATE_TRUE : ui::AX_CHECKED_STATE_FALSE;
+  node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
 }
 
 void ToggleButton::NotifyClick(const ui::Event& event) {

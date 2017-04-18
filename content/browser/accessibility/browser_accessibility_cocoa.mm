@@ -1885,16 +1885,19 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
              [role isEqualToString:NSAccessibilityRadioButtonRole] ||
              [self internalRole] == ui::AX_ROLE_MENU_ITEM_CHECK_BOX ||
              [self internalRole] == ui::AX_ROLE_MENU_ITEM_RADIO) {
-    int value = 0;
-    value = GetState(
-        browserAccessibility_, ui::AX_STATE_CHECKED) ? 1 : 0;
-    value = GetState(
-        browserAccessibility_, ui::AX_STATE_SELECTED) ?
-            1 :
-            value;
-
-    if (browserAccessibility_->GetBoolAttribute(ui::AX_ATTR_STATE_MIXED)) {
-      value = 2;
+    int value;
+    const auto checkedState = static_cast<ui::AXCheckedState>(
+        browserAccessibility_->GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+    switch (checkedState) {
+      case ui::AX_CHECKED_STATE_TRUE:
+        value = 1;
+        break;
+      case ui::AX_CHECKED_STATE_MIXED:
+        value = 2;
+        break;
+      default:
+        value = GetState(browserAccessibility_, ui::AX_STATE_SELECTED) ? 1 : 0;
+        break;
     }
     return [NSNumber numberWithInt:value];
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||

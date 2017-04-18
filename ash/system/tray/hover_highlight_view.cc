@@ -213,13 +213,18 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
 void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
 
-  if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX ||
-      accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX) {
-    node_data->role = ui::AX_ROLE_CHECK_BOX;
-  }
+  ui::AXCheckedState checked_state;
 
   if (accessibility_state_ == AccessibilityState::CHECKED_CHECKBOX)
-    node_data->AddStateFlag(ui::AX_STATE_CHECKED);
+    checked_state = ui::AX_CHECKED_STATE_TRUE;
+  else if (accessibility_state_ == AccessibilityState::UNCHECKED_CHECKBOX)
+    checked_state = ui::AX_CHECKED_STATE_FALSE;
+  else
+    return;  // Not a checkbox
+
+  // Checkbox
+  node_data->role = ui::AX_ROLE_CHECK_BOX;
+  node_data->AddIntAttribute(ui::AX_ATTR_CHECKED_STATE, checked_state);
 }
 
 gfx::Size HoverHighlightView::GetPreferredSize() const {

@@ -10,10 +10,10 @@ rootWebArea name='Action verbs'
 ++++staticText name='Link' action=3
 ++++++inlineTextBox name='Link'
 ++textField
-++checkBox action=8
 ++checkBox action=2
+++checkBox action=8
 ++radioButton action=7
-++switch name='ARIA Switch' action=8
+++switch name='ARIA Switch' action=2
 ++popUpButton action=5
 ++++menuListPopup
 ++++++menuListOption name='Pop-up button' action=3

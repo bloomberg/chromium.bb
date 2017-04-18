@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXObject.h"
 
 #include "SkMatrix44.h"
+#include "core/InputTypeNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/DocumentUserGestureToken.h"
@@ -39,6 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -401,6 +403,71 @@ bool AXObject::IsButton() const {
 
   return role == kButtonRole || role == kPopUpButtonRole ||
          role == kToggleButtonRole;
+}
+
+bool AXObject::IsCheckable() const {
+  switch (RoleValue()) {
+    case kCheckBoxRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kRadioButtonRole:
+    case kSwitchRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Why this is here instead of AXNodeObject:
+// Because an AXMenuListOption (<option>) can
+// have an ARIA role of menuitemcheckbox/menuitemradio
+// yet does not inherit from AXNodeObject
+AccessibilityButtonState AXObject::CheckedState() const {
+  if (!IsCheckable())
+    return kButtonStateOff;
+
+  const AtomicString& checkedAttribute =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked);
+  if (checkedAttribute) {
+    if (EqualIgnoringASCIICase(checkedAttribute, "true"))
+      return kButtonStateOn;
+
+    if (EqualIgnoringASCIICase(checkedAttribute, "mixed")) {
+      // Only checkboxes and radios should support the mixed state.
+      const AccessibilityRole role = RoleValue();
+      if (role == kCheckBoxRole || role == kMenuItemCheckBoxRole ||
+          role == kRadioButtonRole || role == kMenuItemRadioRole)
+        return kButtonStateMixed;
+    }
+
+    return kButtonStateOff;
+  }
+
+  const Node* node = this->GetNode();
+  if (!node)
+    return kButtonStateOff;
+
+  if (IsNativeInputInMixedState(node))
+    return kButtonStateMixed;
+
+  if (isHTMLInputElement(*node) &&
+      toHTMLInputElement(*node).ShouldAppearChecked()) {
+    return kButtonStateOn;
+  }
+
+  return kButtonStateOff;
+}
+
+bool AXObject::IsNativeInputInMixedState(const Node* node) {
+  if (!isHTMLInputElement(node))
+    return false;
+
+  const HTMLInputElement* input = toHTMLInputElement(node);
+  const auto inputType = input->type();
+  if (inputType != InputTypeNames::checkbox &&
+      inputType != InputTypeNames::radio)
+    return false;
+  return input->ShouldAppearIndeterminate();
 }
 
 bool AXObject::IsLandmarkRelated() const {
@@ -946,8 +1013,8 @@ AXSupportedAction AXObject::Action() const {
       return AXSupportedAction::kSelect;
     case kCheckBoxRole:
     case kSwitchRole:
-      return IsChecked() ? AXSupportedAction::kCheck
-                         : AXSupportedAction::kUncheck;
+      return CheckedState() == kButtonStateOff ? AXSupportedAction::kCheck
+                                               : AXSupportedAction::kUncheck;
     case kLinkRole:
       return AXSupportedAction::kJump;
     case kPopUpButtonRole:
@@ -955,22 +1022,6 @@ AXSupportedAction AXObject::Action() const {
     default:
       return AXSupportedAction::kClick;
   }
-}
-
-AccessibilityButtonState AXObject::CheckboxOrRadioValue() const {
-  const AtomicString& checked_attribute =
-      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked);
-  if (EqualIgnoringASCIICase(checked_attribute, "true"))
-    return kButtonStateOn;
-
-  if (EqualIgnoringASCIICase(checked_attribute, "mixed")) {
-    // Only checkboxes should support the mixed state.
-    AccessibilityRole role = AriaRoleAttribute();
-    if (role == kCheckBoxRole || role == kMenuItemCheckBoxRole)
-      return kButtonStateMixed;
-  }
-
-  return kButtonStateOff;
 }
 
 bool AXObject::IsMultiline() const {

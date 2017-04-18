@@ -72,7 +72,9 @@ class ImeMenuTrayTest : public test::AshTestBase {
       ui::AXNodeData node_data;
       node_data.state = 0;
       ime.first->GetAccessibleNodeData(&node_data);
-      if (node_data.HasStateFlag(ui::AX_STATE_CHECKED)) {
+      const auto checked_state = static_cast<ui::AXCheckedState>(
+          node_data.GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+      if (checked_state == ui::AX_CHECKED_STATE_TRUE) {
         if (ime.second != expected_current_ime.id)
           return false;
       }

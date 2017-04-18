@@ -461,10 +461,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
 }
 
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
-  uint32_t state = GetData().state;
+  const uint32_t state = GetData().state;
 
-  if (state & (1 << ui::AX_STATE_CHECKED))
-    atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKED);
   if (state & (1 << ui::AX_STATE_DEFAULT))
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
   if (state & (1 << ui::AX_STATE_EDITABLE))
@@ -481,6 +479,20 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
   if (state & (1 << ui::AX_STATE_SELECTED))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);
+
+  // Checked state
+  const auto checked_state = static_cast<ui::AXCheckedState>(
+      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  switch (checked_state) {
+    case ui::AX_CHECKED_STATE_MIXED:
+      atk_state_set_add_state(atk_state_set, ATK_STATE_INDETERMINATE);
+      break;
+    case ui::AX_CHECKED_STATE_TRUE:
+      atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKED);
+      break;
+    default:
+      break;
+  }
 
   if (delegate_->GetFocus() == GetNativeViewAccessible())
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);

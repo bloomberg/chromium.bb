@@ -200,7 +200,6 @@
   // Describes characteristics of an $(ref:automation.AutomationNode).
   enum StateType {
     busy,
-    checked,
     collapsed,
     default,
     disabled,
@@ -638,8 +637,9 @@
     // The language code for this subtree.
     DOMString? language;
 
-    // If a checkbox or toggle button is in the mixed state.
-    boolean? buttonMixed;
+    // Tri-state describing checkbox or radio button:
+    // 'false' | 'true' | 'mixed'
+    DOMString? checked;
 
     // The RGBA foreground color of this subtree, as an integer.
     long? color;

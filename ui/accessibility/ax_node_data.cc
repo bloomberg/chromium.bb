@@ -107,6 +107,7 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     case AX_ATTR_BACKGROUND_COLOR:
     case AX_ATTR_COLOR:
     case AX_ATTR_INVALID_STATE:
+    case AX_ATTR_CHECKED_STATE:
     case AX_ATTR_TEXT_DIRECTION:
     case AX_ATTR_TEXT_STYLE:
     case AX_ATTR_ARIA_COL_COUNT:
@@ -437,8 +438,6 @@ std::string AXNodeData::ToString() const {
 
   if (state & (1 << AX_STATE_BUSY))
     result += " BUSY";
-  if (state & (1 << AX_STATE_CHECKED))
-    result += " CHECKED";
   if (state & (1 << AX_STATE_COLLAPSED))
     result += " COLLAPSED";
   if (state & (1 << AX_STATE_EDITABLE))
@@ -710,6 +709,19 @@ std::string AXNodeData::ToString() const {
             break;
         }
         break;
+      case AX_ATTR_CHECKED_STATE:
+        switch (int_attributes[i].second) {
+          case AX_CHECKED_STATE_FALSE:
+            result += " checked_state=false";
+            break;
+          case AX_CHECKED_STATE_TRUE:
+            result += " checked_state=true";
+            break;
+          case AX_CHECKED_STATE_MIXED:
+            result += " checked_state=mixed";
+            break;
+        }
+        break;
       case AX_INT_ATTRIBUTE_NONE:
         break;
     }
@@ -816,9 +828,6 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < bool_attributes.size(); ++i) {
     std::string value = bool_attributes[i].second ? "true" : "false";
     switch (bool_attributes[i].first) {
-      case AX_ATTR_STATE_MIXED:
-        result += " mixed=" + value;
-        break;
       case AX_ATTR_LIVE_ATOMIC:
         result += " atomic=" + value;
         break;

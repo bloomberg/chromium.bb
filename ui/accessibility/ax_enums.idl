@@ -213,7 +213,6 @@
 
   enum AXState {
     busy,
-    checked,
     collapsed,
     default,
     disabled,
@@ -434,6 +433,9 @@
     // if an element has an aria-invalid attribute.
     invalid_state,
 
+    // Of type AXCheckedState
+    checked_state,
+
     // Specifies the direction of the text, e.g., right-to-left.
     text_direction,
 
@@ -453,10 +455,6 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXBoolAttribute {
-    // True if an ARIA toggle button, a checkbox or
-    // a menu item checkbox is in the "mixed" state.
-    STATE_mixed,
-
     // Live region attributes.
     container_live_atomic,
     container_live_busy,
@@ -591,6 +589,12 @@
     spelling,
     grammar,
     other
+  };
+
+  enum AXCheckedState {
+    false,
+    true,
+    mixed
   };
 
   enum AXSortDirection {

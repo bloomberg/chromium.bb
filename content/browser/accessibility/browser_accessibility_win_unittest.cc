@@ -600,7 +600,9 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ui::AXNodeData check_box;
   check_box.id = 14;
   check_box.role = ui::AX_ROLE_CHECK_BOX;
-  check_box.state = 1 << ui::AX_STATE_CHECKED;
+  check_box.state = 0;
+  check_box.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                            ui::AX_CHECKED_STATE_TRUE);
   check_box.SetName(base::UTF16ToUTF8(check_box_name));
   check_box.SetValue(base::UTF16ToUTF8(check_box_value));
 
@@ -839,7 +841,9 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   checkbox.id = 3;
   checkbox.SetName("Checkbox");
   checkbox.role = ui::AX_ROLE_CHECK_BOX;
-  checkbox.state = 1 << ui::AX_STATE_CHECKED;
+  checkbox.state = 0;
+  checkbox.AddIntAttribute(ui::AX_ATTR_CHECKED_STATE,
+                           ui::AX_CHECKED_STATE_TRUE);
 
   ui::AXNodeData root;
   root.id = 1;

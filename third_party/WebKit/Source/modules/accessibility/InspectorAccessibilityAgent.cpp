@@ -253,7 +253,7 @@ void FillWidgetStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
   if (RoleAllowsChecked(role)) {
-    AccessibilityButtonState checked = ax_object.CheckboxOrRadioValue();
+    AccessibilityButtonState checked = ax_object.CheckedState();
     switch (checked) {
       case kButtonStateOff:
         properties.addItem(

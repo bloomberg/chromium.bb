@@ -280,18 +280,18 @@ WebAXAriaCurrentState WebAXObject::AriaCurrentState() const {
   return static_cast<WebAXAriaCurrentState>(private_->GetAriaCurrentState());
 }
 
-bool WebAXObject::IsButtonStateMixed() const {
+bool WebAXObject::IsCheckable() const {
   if (IsDetached())
     return false;
 
-  return private_->CheckboxOrRadioValue() == kButtonStateMixed;
+  return private_->IsCheckable();
 }
 
-bool WebAXObject::IsChecked() const {
+WebAXCheckedState WebAXObject::CheckedState() const {
   if (IsDetached())
-    return false;
+    return WebAXCheckedFalse;
 
-  return private_->IsChecked();
+  return static_cast<WebAXCheckedState>(private_->CheckedState());
 }
 
 bool WebAXObject::IsClickable() const {

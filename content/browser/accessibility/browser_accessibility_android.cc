@@ -145,13 +145,17 @@ bool BrowserAccessibilityAndroid::IsCheckable() const {
       is_aria_pressed_defined) {
     checkable = true;
   }
-  if (HasState(ui::AX_STATE_CHECKED))
+  // TODO(aleventhal) does this ever happen when checkable is not true yet?
+  if (HasIntAttribute(ui::AX_ATTR_CHECKED_STATE))
     checkable = true;
   return checkable;
 }
 
 bool BrowserAccessibilityAndroid::IsChecked() const {
-  return (HasState(ui::AX_STATE_CHECKED) || HasState(ui::AX_STATE_PRESSED));
+  const auto checked_state = static_cast<ui::AXCheckedState>(
+      GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
+  return (checked_state == ui::AX_CHECKED_STATE_TRUE ||
+          HasState(ui::AX_STATE_PRESSED));
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {

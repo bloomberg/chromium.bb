@@ -625,6 +625,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsAXTable() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
+  bool IsCheckable() const;
   bool IsCanvas() const { return RoleValue() == kCanvasRole; }
   bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
@@ -683,7 +684,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
 
   // Check object state.
-  virtual bool IsChecked() const { return false; }
   virtual bool IsClickable() const;
   virtual bool IsCollapsed() const { return false; }
   virtual bool IsEnabled() const { return false; }
@@ -858,7 +858,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Properties of interactive elements.
   AXSupportedAction Action() const;
-  virtual AccessibilityButtonState CheckboxOrRadioValue() const;
+  AccessibilityButtonState CheckedState() const;
   virtual AriaCurrentState GetAriaCurrentState() const {
     return kAriaCurrentStateUndefined;
   }
@@ -1120,6 +1120,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void UpdateCachedAttributeValuesIfNeeded() const;
 
  private:
+  static bool IsNativeInputInMixedState(const Node*);
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
 
