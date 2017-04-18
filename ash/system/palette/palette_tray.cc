@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/palette_tray.h"
 
-#include "ash/material_design/material_design_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -86,31 +85,12 @@ class TitleView : public views::View, public views::ButtonListener {
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
     style.SetupLabel(title_label);
     box_layout->SetFlexForView(title_label, 1);
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      help_button_ =
-          new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
-                               kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
-      settings_button_ = new SystemMenuButton(
-          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
-          IDS_ASH_PALETTE_SETTINGS);
-    } else {
-      gfx::ImageSkia help_icon =
-          gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
-      gfx::ImageSkia settings_icon =
-          gfx::CreateVectorIcon(kSystemMenuSettingsIcon, kMenuIconColor);
-
-      auto* help_button = new ash::TrayPopupHeaderButton(
-          this, help_icon, IDS_ASH_STATUS_TRAY_HELP);
-      help_button->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
-      help_button_ = help_button;
-
-      auto* settings_button = new ash::TrayPopupHeaderButton(
-          this, settings_icon, IDS_ASH_STATUS_TRAY_SETTINGS);
-      settings_button->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SETTINGS));
-      settings_button_ = settings_button;
-    }
+    help_button_ =
+        new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
+                             kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
+    settings_button_ =
+        new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
+                             kSystemMenuSettingsIcon, IDS_ASH_PALETTE_SETTINGS);
 
     AddChildView(help_button_);
     AddChildView(settings_button_);
@@ -153,9 +133,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
       weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  if (MaterialDesignController::IsShelfMaterial())
-    SetInkDropMode(InkDropMode::ON);
-
+  SetInkDropMode(InkDropMode::ON);
   SetLayoutManager(new views::FillLayout());
   icon_ = new views::ImageView();
   UpdateTrayIcon();

@@ -4,7 +4,6 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/material_design/material_design_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/wm_shelf.h"
@@ -172,9 +171,7 @@ void StatusAreaWidget::SchedulePaint() {
 }
 
 const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
-  return MaterialDesignController::IsShelfMaterial()
-             ? ui::NativeThemeDarkAura::instance()
-             : Widget::GetNativeTheme();
+  return ui::NativeThemeDarkAura::instance();
 }
 
 void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {

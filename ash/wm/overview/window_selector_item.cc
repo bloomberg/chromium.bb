@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/material_design/material_design_controller.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"

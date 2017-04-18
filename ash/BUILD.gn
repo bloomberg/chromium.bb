@@ -206,8 +206,6 @@ component("ash") {
     "magnifier/magnification_controller.h",
     "magnifier/partial_magnification_controller.cc",
     "magnifier/partial_magnification_controller.h",
-    "material_design/material_design_controller.cc",
-    "material_design/material_design_controller.h",
     "media_controller.cc",
     "media_controller.h",
     "metrics/desktop_task_switch_metric_recorder.cc",
