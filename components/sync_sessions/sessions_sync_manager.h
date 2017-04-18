@@ -119,7 +119,7 @@ class SessionsSyncManager : public syncer::SyncableService,
  private:
   friend class extensions::ExtensionSessionsTest;
   friend class SessionsSyncManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionHeader);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSyncedSession);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, ValidTabs);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SetSessionTabFromDelegate);
@@ -187,14 +187,15 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Used to populate a session header from the session specifics header
   // provided.
-  static void PopulateSessionHeaderFromSpecifics(
+  void PopulateSyncedSessionFromSpecifics(
+      const std::string& session_tag,
       const sync_pb::SessionHeader& header_specifics,
       base::Time mtime,
-      SyncedSession* session_header);
+      SyncedSession* synced_session);
 
-  // Builds |session_window| from the session specifics window
+  // Builds |synced_session_window| from the session specifics window
   // provided and updates the SessionTracker with foreign session data created.
-  void BuildSyncedSessionFromSpecifics(
+  void PopulateSyncedSessionWindowFromSpecifics(
       const std::string& session_tag,
       const sync_pb::SessionWindow& specifics,
       base::Time mtime,
@@ -245,6 +246,12 @@ class SessionsSyncManager : public syncer::SyncableService,
       SessionID::id_type new_tab_id,
       SessionID::id_type new_window_id,
       syncer::SyncChangeList* change_output);
+
+  // Appends an ACTION_UPDATE for a sync tab entity onto |change_output| to
+  // reflect the contents of |tab|, given the tab node id |sync_id|.
+  void AppendChangeForExistingTab(int sync_id,
+                                  const sessions::SessionTab& tab,
+                                  syncer::SyncChangeList* change_output);
 
   // Stops and re-starts syncing to rebuild association mappings. Returns true
   // when re-starting succeeds.

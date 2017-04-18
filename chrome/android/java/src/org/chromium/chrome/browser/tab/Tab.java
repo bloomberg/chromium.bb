@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.sync.SyncConstants;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -176,7 +177,7 @@ public class Tab
     private SwipeRefreshHandler mSwipeRefreshHandler;
 
     /** The sync id of the Tab if session sync is enabled. */
-    private int mSyncId;
+    private int mSyncId = SyncConstants.INVALID_TAB_NODE_ID;
 
     /** {@link ContentViewCore} showing the current page, or {@code null} if the tab is frozen. */
     private ContentViewCore mContentViewCore;

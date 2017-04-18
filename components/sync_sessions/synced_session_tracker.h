@@ -96,10 +96,15 @@ class SyncedSessionTracker {
   // tabs not owned.
   void ResetSessionTracking(const std::string& session_tag);
 
+  // Deletes those windows and tabs associated with |session_tag| that are no
+  // longer owned. See ResetSessionTracking(...)..
+  void CleanupSession(const std::string& session_tag);
+
   // Adds the window with id |window_id| to the session specified by
   // |session_tag|. If none existed for that session, creates one. Similarly, if
   // the session did not exist yet, creates it. Ownership of the SessionWindow
   // remains within the SyncedSessionTracker.
+  // Attempting to add a window to a session multiple times will have no effect.
   void PutWindowInSession(const std::string& session_tag,
                           SessionID::id_type window_id);
 
@@ -144,10 +149,6 @@ class SyncedSessionTracker {
   // Deletes the session associated with |session_tag| if it exists.
   // Returns true if the session existed and was deleted, false otherwise.
   bool DeleteForeignSession(const std::string& session_tag);
-
-  // Deletes those windows and tabs associated with |session_tag| that are no
-  // longer owned. See ResetSessionTracking(...)..
-  void CleanupForeignSession(const std::string& session_tag);
 
   // **** Methods specific to the local session. ****
 

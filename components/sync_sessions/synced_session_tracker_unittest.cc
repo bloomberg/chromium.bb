@@ -61,6 +61,10 @@ TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
   GetTracker()->PutWindowInSession(kTag, 0);
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
+
+  // Doing it again should have no effect.
+  GetTracker()->PutWindowInSession(kTag, 0);
+  ASSERT_EQ(1U, session->windows.size());
   // Should clean up memory on its own.
 }
 
@@ -324,7 +328,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   // Window 1 was closed, along with tab 5.
   GetTracker()->PutTabInWindow(kTag, 0, 6);  // No longer unmapped.
   // Session 2 should not be affected.
-  GetTracker()->CleanupForeignSession(kTag);
+  GetTracker()->CleanupSession(kTag);
 
   // Verify that only those parts of the session not owned have been removed.
   ASSERT_EQ(1U, session1->windows.size());
@@ -548,6 +552,40 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabUnmapped) {
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab2);
   GetTracker()->CleanupLocalTabs(&free_node_ids);
   EXPECT_TRUE(free_node_ids.empty());
+  EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab2));
+
+  // Now that it's been mapped, it should be accessible both via the
+  // GetSession as well as GetTab.
+  SyncedSession* session = GetTracker()->GetSession(kTag);
+  ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
+            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+  ASSERT_EQ(session->tab_node_ids.size(),
+            session->tab_node_ids.count(kTabNode));
+  ASSERT_EQ(1U, GetTabNodePool()->Capacity());
+}
+
+TEST_F(SyncedSessionTrackerTest, ReassociateTabMapMismatch) {
+  std::set<int> free_node_ids;
+
+  // First create the old tab in an unmapped state.
+  GetTracker()->SetLocalSessionTag(kTag);
+  EXPECT_FALSE(GetTracker()->IsLocalTabNodeAssociated(kTabNode));
+  GetTracker()->ReassociateLocalTab(kTabNode, kTab1);
+  EXPECT_TRUE(GetTracker()->IsLocalTabNodeAssociated(kTabNode));
+  EXPECT_TRUE(GetTracker()->IsTabUnmappedForTesting(kTab1));
+
+  // Map an unseen tab to a window, then reassociate the existing tab to the
+  // mapped tab id.
+  GetTracker()->ResetSessionTracking(kTag);
+  EXPECT_TRUE(GetTracker()->IsLocalTabNodeAssociated(kTabNode));
+  GetTracker()->PutWindowInSession(kTag, kWindow1);
+  GetTracker()->PutTabInWindow(kTag, kWindow1, kTab2);
+  GetTracker()->CleanupLocalTabs(&free_node_ids);
+  EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
+  EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab2));
+  GetTracker()->ReassociateLocalTab(kTabNode, kTab2);
+  EXPECT_TRUE(free_node_ids.empty());
+  EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab2));
 
   // Now that it's been mapped, it should be accessible both via the

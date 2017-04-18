@@ -13,6 +13,7 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
+#include "components/sync_sessions/tab_node_pool.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -48,7 +49,8 @@ NavigationEntry* GetPossiblyPendingEntryAtIndex(
 
 TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), sync_session_id_(0) {}
+    : web_contents_(web_contents),
+      sync_session_id_(sync_sessions::TabNodePool::kInvalidTabNodeID) {}
 
 TabContentsSyncedTabDelegate::~TabContentsSyncedTabDelegate() {}
 

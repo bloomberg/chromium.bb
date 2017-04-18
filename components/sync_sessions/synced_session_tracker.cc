@@ -221,6 +221,12 @@ bool SyncedSessionTracker::IsTabUnmappedForTesting(SessionID::id_type tab_id) {
 
 void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
                                               SessionID::id_type window_id) {
+  if (GetSession(session_tag)->windows.find(window_id) !=
+      GetSession(session_tag)->windows.end()) {
+    DVLOG(1) << "Window " << window_id << " already added to session "
+             << session_tag;
+    return;
+  }
   std::unique_ptr<SyncedSessionWindow> window;
 
   auto iter = unmapped_windows_[session_tag].find(window_id);
@@ -345,9 +351,7 @@ sessions::SessionTab* SyncedSessionTracker::GetTab(
   return tab_ptr;
 }
 
-void SyncedSessionTracker::CleanupForeignSession(
-    const std::string& session_tag) {
-  DCHECK_NE(local_session_tag_, session_tag);
+void SyncedSessionTracker::CleanupSession(const std::string& session_tag) {
   CleanupSessionImpl(session_tag);
 }
 
@@ -365,13 +369,11 @@ void SyncedSessionTracker::CleanupLocalTabs(std::set<int>* deleted_node_ids) {
 bool SyncedSessionTracker::GetTabNodeFromLocalTabId(SessionID::id_type tab_id,
                                                     int* tab_node_id) {
   DCHECK(!local_session_tag_.empty());
-  // Ensure a placeholder SessionTab is in place, if not already.
-  // Although we don't need a SessionTab to fulfill this request, this forces
-  // the
-  // creation of one if it doesn't already exist. This helps to make sure we're
-  // tracking this |tab_id| if |local_tab_pool_| is, and everyone's data
-  // structures
-  // are kept in sync and as consistent as possible.
+  // Ensure a placeholder SessionTab is in place, if not already. Although we
+  // don't need a SessionTab to fulfill this request, this forces the creation
+  // of one if it doesn't already exist. This helps to make sure we're tracking
+  // this |tab_id| if |local_tab_pool_| is, and everyone's data structures are
+  // kept in sync and as consistent as possible.
   GetTab(local_session_tag_, tab_id);  // Ignore result.
 
   bool reused_existing_tab =

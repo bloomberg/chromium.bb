@@ -9,6 +9,7 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
+#include "components/sync_sessions/tab_node_pool.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
@@ -36,7 +37,8 @@ NavigationItem* GetPossiblyPendingItemAtIndex(web::WebState* web_state, int i) {
 }  // namespace
 
 IOSChromeSyncedTabDelegate::IOSChromeSyncedTabDelegate(web::WebState* web_state)
-    : web_state_(web_state), sync_session_id_(0) {}
+    : web_state_(web_state),
+      sync_session_id_(sync_sessions::TabNodePool::kInvalidTabNodeID) {}
 
 IOSChromeSyncedTabDelegate::~IOSChromeSyncedTabDelegate() {}
 
