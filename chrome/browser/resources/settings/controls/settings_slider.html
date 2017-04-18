@@ -7,6 +7,10 @@
   <template>
     <style>
       :host {
+        --calculated-paper-slider-height: var(--paper-slider-height, 2px);
+        /* Counteract the margin on #sliderContainer in paper-slider.html. */
+        -webkit-margin-end:
+            calc(-15px - var(--calculated-paper-slider-height) / 2);
         display: inline-flex;
       }
 
