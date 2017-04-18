@@ -12,6 +12,7 @@ import android.util.JsonReader;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -178,8 +179,9 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         tab.removeObserver(observer);
     }
 
-    @LargeTest
-    @Feature({"History"})
+    // @LargeTest
+    // @Feature({"History"})
+    @DisabledTest
     public void testRemovingEntries() throws InterruptedException, TimeoutException {
         // Urls will be visited in reverse order to preserve the array ordering
         // in the history results.
