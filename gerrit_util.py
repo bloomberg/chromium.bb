@@ -323,13 +323,13 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   return conn
 
 
-def ReadHttpResponse(conn, accept_statuses=frozenset([200, 404])):
+def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
   """Reads an http response from a connection into a string buffer.
 
   Args:
     conn: An Http object created by CreateHttpConn above.
-    accept_statuses: Treat any of these statuses as success. Default: [200, 404]
-                     Common additions include 204 and 400.
+    accept_statuses: Treat any of these statuses as success. Default: [200]
+                     Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
   sleep_time = 0.5
@@ -371,7 +371,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200, 404])):
   return StringIO(contents)
 
 
-def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200, 404])):
+def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
   """Parses an https response as json."""
   fh = ReadHttpResponse(conn, accept_statuses)
   # The first line of the response should always be: )]}'
@@ -410,8 +410,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
     path = '%s&n=%d' % (path, limit)
   if o_params:
     path = '%s&%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
-  # Don't ignore 404; a query should always return a list, even if it's empty.
-  return ReadHttpJsonResponse(CreateHttpConn(host, path), accept_statuses=[200])
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
@@ -494,8 +493,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)
   try:
-    result = ReadHttpJsonResponse(
-        CreateHttpConn(host, path), accept_statuses=[200])
+    result = ReadHttpJsonResponse(CreateHttpConn(host, path))
   except GerritError as e:
     msg = '%s:\n%s' % (e.message, path)
     raise GerritError(e.http_status, msg)
@@ -523,13 +521,12 @@ def GetChange(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeDetail(host, change, o_params=None, accept_statuses=None):
+def GetChangeDetail(host, change, o_params=None):
   """Query a gerrit server for extended information about a single change."""
   path = 'changes/%s/detail' % change
   if o_params:
     path += '?%s' % '&'.join(['o=%s' % p for p in o_params])
-  return ReadHttpJsonResponse(
-      CreateHttpConn(host, path), accept_statuses=accept_statuses)
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetChangeCommit(host, change, revision='current'):
@@ -566,7 +563,7 @@ def AbandonChange(host, change, msg=''):
   path = 'changes/%s/abandon' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, accept_statuses=[200])
+  return ReadHttpJsonResponse(conn)
 
 
 def RestoreChange(host, change, msg=''):
@@ -574,7 +571,7 @@ def RestoreChange(host, change, msg=''):
   path = 'changes/%s/restore' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, accept_statuses=[200])
+  return ReadHttpJsonResponse(conn)
 
 
 def SubmitChange(host, change, wait_for_merge=True):
@@ -582,13 +579,13 @@ def SubmitChange(host, change, wait_for_merge=True):
   path = 'changes/%s/submit' % change
   body = {'wait_for_merge': wait_for_merge}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, accept_statuses=[200])
+  return ReadHttpJsonResponse(conn)
 
 
 def HasPendingChangeEdit(host, change):
   conn = CreateHttpConn(host, 'changes/%s/edit' % change)
   try:
-    ReadHttpResponse(conn, accept_statuses=[200])
+    ReadHttpResponse(conn)
   except GerritError as e:
     # 204 No Content means no pending change.
     if e.http_status == 204:
@@ -673,7 +670,7 @@ def AddReviewers(host, change, add=None, is_reviewer=True, notify=True):
     }
     try:
       conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-      _ = ReadHttpJsonResponse(conn, accept_statuses=[200])
+      _ = ReadHttpJsonResponse(conn)
     except GerritError as e:
       if e.http_status == 422:  # "Unprocessable Entity"
         LOGGER.warn('Note: "%s" not added as a %s' % (r, state.lower()))

@@ -2642,7 +2642,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     try:
       data = gerrit_util.GetChangeDetail(
-          self._GetGerritHost(), str(issue), options, accept_statuses=[200])
+          self._GetGerritHost(), str(issue), options)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
         raise GerritChangeNotExists(issue, self.GetCodereviewServer())
@@ -2654,9 +2654,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def _GetChangeCommit(self, issue=None):
     issue = issue or self.GetIssue()
     assert issue, 'issue is required to query Gerrit'
-    data = gerrit_util.GetChangeCommit(self._GetGerritHost(), str(issue))
-    if not data:
-      raise GerritChangeNotExists(issue, self.GetCodereviewServer())
+    try:
+      data = gerrit_util.GetChangeCommit(self._GetGerritHost(), str(issue))
+    except gerrit_util.GerritError as e:
+      if e.http_status == 404:
+        raise GerritChangeNotExists(issue, self.GetCodereviewServer())
+      raise
     return data
 
   def CMDLand(self, force, bypass_hooks, verbose):
