@@ -312,14 +312,6 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
   return index;
 }
 
-unsigned CSSStyleSheet::insertRule(const String& rule,
-                                   ExceptionState& exception_state) {
-  Deprecation::CountDeprecation(
-      CurrentExecutionContext(V8PerIsolateData::MainThreadIsolate()),
-      UseCounter::kCSSStyleSheetInsertRuleOptionalArg);
-  return insertRule(rule, 0, exception_state);
-}
-
 void CSSStyleSheet::deleteRule(unsigned index,
                                ExceptionState& exception_state) {
   DCHECK(child_rule_cssom_wrappers_.IsEmpty() ||

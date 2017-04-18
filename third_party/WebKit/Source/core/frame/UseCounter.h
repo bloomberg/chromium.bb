@@ -190,8 +190,6 @@ class CORE_EXPORT UseCounter {
     kInputTypePassword = 192,
     kInputTypePasswordMaxLength = 193,
     kPrefixedPageVisibility = 196,
-    // Inconsistent with the specification and other browsers.
-    kCSSStyleSheetInsertRuleOptionalArg = 198,
     kDocumentBeforeUnloadRegistered = 200,
     kDocumentBeforeUnloadFired = 201,
     kDocumentUnloadRegistered = 202,

@@ -205,11 +205,6 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
     case UseCounter::kConsoleMarkTimeline:
       return replacedBy("'console.markTimeline'", "'console.timeStamp'");
 
-    case UseCounter::kCSSStyleSheetInsertRuleOptionalArg:
-      return "Calling CSSStyleSheet.insertRule() with one argument is "
-             "deprecated. Please pass the index argument as well: "
-             "insertRule(x, 0).";
-
     case UseCounter::kPrefixedVideoSupportsFullscreen:
       return replacedBy("'HTMLVideoElement.webkitSupportsFullscreen'",
                         "'Document.fullscreenEnabled'");

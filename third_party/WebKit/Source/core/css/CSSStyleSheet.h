@@ -74,7 +74,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   CSSRuleList* cssRules();
   unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
-  unsigned insertRule(const String& rule, ExceptionState&);  // Deprecated.
   void deleteRule(unsigned index, ExceptionState&);
 
   // IE Extensions

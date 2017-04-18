@@ -25,8 +25,7 @@
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
     [SameObject] readonly attribute CSSRuleList cssRules;
-    // TODO(foolip): The index argument should not be optional. crbug.com/319695
-    [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index);
+    [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);
     [RaisesException] void deleteRule(unsigned long index);
 
     // Non-standard APIs
