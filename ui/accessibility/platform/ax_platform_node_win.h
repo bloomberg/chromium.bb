@@ -273,7 +273,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Dispose() override;
 
  private:
-  bool IsValidId(const VARIANT& child) const;
   int MSAARole();
   int MSAAState();
   int MSAAEvent(ui::AXEvent event);
@@ -302,6 +301,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
+
+  // Many MSAA methods take a var_id parameter indicating that the operation
+  // should be performed on a particular child ID, rather than this object.
+  // This method tries to figure out the target object from |var_id| and
+  // returns a pointer to the target object if it exists, otherwise nullptr.
+  // Does not return a new reference.
+  AXPlatformNodeWin* GetTargetFromChildID(const VARIANT& var_id);
 };
 
 }  // namespace ui
