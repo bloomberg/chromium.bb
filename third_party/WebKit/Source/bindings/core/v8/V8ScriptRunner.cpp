@@ -731,4 +731,21 @@ void V8ScriptRunner::ThrowException(v8::Isolate* isolate,
   CallInternalFunction(thrower, thrower, WTF_ARRAY_LENGTH(args), args, isolate);
 }
 
+v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
+    ScriptState* script_state,
+    const char* name,
+    size_t num_args,
+    v8::Local<v8::Value>* args) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::Local<v8::Value> function_value;
+  v8::Local<v8::Context> context = script_state->GetContext();
+  if (!context->GetExtrasBindingObject()
+           ->Get(context, V8AtomicString(isolate, name))
+           .ToLocal(&function_value))
+    return v8::MaybeLocal<v8::Value>();
+  v8::Local<v8::Function> function = function_value.As<v8::Function>();
+  return V8ScriptRunner::CallInternalFunction(function, v8::Undefined(isolate),
+                                              num_args, args, isolate);
+}
+
 }  // namespace blink

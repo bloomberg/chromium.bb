@@ -143,20 +143,10 @@ class CORE_EXPORT V8ScriptRunner final {
                              const v8::ScriptOrigin&);
 
  private:
-  static v8::MaybeLocal<v8::Value> CallExtraHelper(ScriptState* script_state,
+  static v8::MaybeLocal<v8::Value> CallExtraHelper(ScriptState*,
                                                    const char* name,
                                                    size_t num_args,
-                                                   v8::Local<v8::Value>* args) {
-    v8::Isolate* isolate = script_state->GetIsolate();
-    v8::Local<v8::Value> undefined = v8::Undefined(isolate);
-    v8::Local<v8::Value> function_value =
-        script_state->GetFromExtrasExports(name).V8Value();
-    if (function_value.IsEmpty())
-      return v8::MaybeLocal<v8::Value>();
-    v8::Local<v8::Function> function = function_value.As<v8::Function>();
-    return V8ScriptRunner::CallInternalFunction(function, undefined, num_args,
-                                                args, isolate);
-  }
+                                                   v8::Local<v8::Value>* args);
 };
 
 }  // namespace blink

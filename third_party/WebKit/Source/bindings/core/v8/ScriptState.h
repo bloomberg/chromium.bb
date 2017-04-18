@@ -149,8 +149,6 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   V8PerContextData* PerContextData() const { return per_context_data_.get(); }
   void DisposePerContextData();
 
-  ScriptValue GetFromExtrasExports(const char* name);
-
  protected:
   ScriptState(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 

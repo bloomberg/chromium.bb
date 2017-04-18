@@ -53,15 +53,4 @@ void ScriptState::DisposePerContextData() {
   per_context_data_ = nullptr;
 }
 
-ScriptValue ScriptState::GetFromExtrasExports(const char* name) {
-  v8::HandleScope handle_scope(isolate_);
-  v8::Local<v8::Value> v8_value;
-  if (!GetContext()
-           ->GetExtrasBindingObject()
-           ->Get(GetContext(), V8AtomicString(GetIsolate(), name))
-           .ToLocal(&v8_value))
-    return ScriptValue();
-  return ScriptValue(this, v8_value);
-}
-
 }  // namespace blink
