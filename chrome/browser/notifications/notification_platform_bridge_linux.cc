@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -174,6 +175,12 @@ struct NotificationPlatformBridgeLinux::NotificationData {
   // message_center::Notification.  Used to pass back to
   // NativeNotificationDisplayService.
   const GURL origin_url;
+
+  // Used to keep track of the IDs of the buttons currently displayed
+  // on this notification.  The valid range of action IDs is
+  // [action_start, action_end).
+  size_t action_start = 0;
+  size_t action_end = 0;
 
   // Temporary resource files associated with the notification that
   // should be cleaned up when the notification is closed or on
@@ -351,6 +358,15 @@ void NotificationPlatformBridgeLinux::NotifyNow(
   // Even-indexed elements in this array are action IDs passed back to
   // us in GSignalReceiver.  Odd-indexed ones contain the button text.
   g_variant_builder_init(&actions_builder, G_VARIANT_TYPE("as"));
+  data->action_start = data->action_end;
+  for (const auto& button_info : notification.buttons()) {
+    // FDO notification buttons can contain either an icon or a label,
+    // but not both, and the type of all buttons must be the same (all
+    // labels or all icons), so always use labels.
+    std::string id = base::SizeTToString(data->action_end++);
+    const std::string label = base::UTF16ToUTF8(button_info.title);
+    AddActionToNotification(&actions_builder, id.c_str(), label.c_str());
+  }
   if (notification.clickable()) {
     // Special case: the pair ("default", "") will not add a button,
     // but instead makes the entire notification clickable.
@@ -458,11 +474,22 @@ void NotificationPlatformBridgeLinux::GSignalReceiver(GDBusProxy* proxy,
     DCHECK(action);
 
     if (strcmp(action, "default") == 0) {
-      ForwardNotificationOperation(dbus_id, NotificationCommon::CLICK, 0);
+      ForwardNotificationOperation(dbus_id, NotificationCommon::CLICK, -1);
     } else if (strcmp(action, "settings") == 0) {
       ForwardNotificationOperation(dbus_id, NotificationCommon::SETTINGS, -1);
     } else {
-      NOTIMPLEMENTED() << "No custom buttons just yet!";
+      size_t id;
+      if (!base::StringToSizeT(action, &id))
+        return;
+      NotificationData* data = FindNotificationData(dbus_id);
+      if (!data)
+        return;
+      size_t n_buttons = data->action_end - data->action_start;
+      size_t id_zero_based = id - data->action_start;
+      if (id_zero_based >= n_buttons)
+        return;
+      ForwardNotificationOperation(dbus_id, NotificationCommon::CLICK,
+                                   id_zero_based);
     }
   }
 }
