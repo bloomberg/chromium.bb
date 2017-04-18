@@ -256,4 +256,77 @@ TEST(PaintOpBufferTest, SaveDrawRestoreFail_TooManyOps) {
   EXPECT_EQ(draw_flags.getAlpha(), canvas.paint_.getAlpha());
 }
 
+// Verify that the save draw restore code works with a single op
+// that's not a draw op, and the optimization does not kick in.
+TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpNotADrawOp) {
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+
+  buffer.push<NoopOp>();
+  buffer.push<RestoreOp>();
+
+  SaveCountingCanvas canvas;
+  buffer.playback(&canvas);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
+}
+
+// Test that the save/draw/restore optimization applies if the single op
+// is a DrawRecord that itself has a single draw op.
+TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleOp) {
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+
+  PaintFlags draw_flags;
+  draw_flags.setColor(SK_ColorMAGENTA);
+  draw_flags.setAlpha(50);
+  EXPECT_TRUE(draw_flags.SupportsFoldingAlpha());
+  SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
+  record->push<DrawRectOp>(rect, draw_flags);
+  EXPECT_EQ(record->approximateOpCount(), 1);
+
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  buffer.push<DrawRecordOp>(std::move(record));
+  buffer.push<RestoreOp>();
+
+  SaveCountingCanvas canvas;
+  buffer.playback(&canvas);
+
+  EXPECT_EQ(0, canvas.save_count_);
+  EXPECT_EQ(0, canvas.restore_count_);
+  EXPECT_EQ(rect, canvas.draw_rect_);
+
+  float expected_alpha = alpha * 50 / 255.f;
+  EXPECT_LE(std::abs(expected_alpha - canvas.paint_.getAlpha()), 1.f);
+}
+
+// The same as the above SingleOpRecord test, but the single op is not
+// a draw op.  So, there's no way to fold in the save layer optimization.
+// Verify that the optimization doesn't apply and that this doesn't crash.
+// See: http://crbug.com/712093.
+TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  record->push<NoopOp>();
+  EXPECT_EQ(record->approximateOpCount(), 1);
+  EXPECT_FALSE(record->GetFirstOp()->IsDrawOp());
+
+  PaintOpBuffer buffer;
+
+  uint8_t alpha = 100;
+  buffer.push<SaveLayerAlphaOp>(nullptr, alpha);
+  buffer.push<DrawRecordOp>(std::move(record));
+  buffer.push<RestoreOp>();
+
+  SaveCountingCanvas canvas;
+  buffer.playback(&canvas);
+
+  EXPECT_EQ(1, canvas.save_count_);
+  EXPECT_EQ(1, canvas.restore_count_);
+}
+
 }  // namespace cc

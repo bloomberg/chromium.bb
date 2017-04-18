@@ -120,8 +120,12 @@ struct Rasterizer<DrawRecordOp, false> {
     // in the PaintOpBuffer::Raster function as DisplayItemList calls
     // into RasterWithAlpha directly.
     if (op->record->approximateOpCount() == 1) {
-      op->record->GetFirstOp()->RasterWithAlpha(canvas, alpha);
-      return;
+      PaintOp* single_op = op->record->GetFirstOp();
+      // RasterWithAlpha only supported for draw ops.
+      if (single_op->IsDrawOp()) {
+        single_op->RasterWithAlpha(canvas, alpha);
+        return;
+      }
     }
 
     canvas->saveLayerAlpha(nullptr, alpha);
@@ -358,14 +362,6 @@ void PaintOp::RasterWithAlpha(SkCanvas* canvas, uint8_t alpha) const {
   g_raster_alpha_functions[type](this, canvas, alpha);
 }
 
-DrawDisplayItemListOp::DrawDisplayItemListOp(
-    scoped_refptr<DisplayItemList> list)
-    : list(list) {}
-
-size_t DrawDisplayItemListOp::AdditionalBytesUsed() const {
-  return list->ApproximateMemoryUsage();
-}
-
 int ClipPathOp::CountSlowPaths() const {
   return antialias && !path.isConvex() ? 1 : 0;
 }
@@ -411,6 +407,20 @@ AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
     : annotation_type(annotation_type), rect(rect), data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
+
+DrawDisplayItemListOp::DrawDisplayItemListOp(
+    scoped_refptr<DisplayItemList> list)
+    : list(list) {}
+
+size_t DrawDisplayItemListOp::AdditionalBytesUsed() const {
+  return list->ApproximateMemoryUsage();
+}
+
+DrawDisplayItemListOp::DrawDisplayItemListOp(const DrawDisplayItemListOp& op) =
+    default;
+
+DrawDisplayItemListOp& DrawDisplayItemListOp::operator=(
+    const DrawDisplayItemListOp& op) = default;
 
 DrawDisplayItemListOp::~DrawDisplayItemListOp() = default;
 
