@@ -542,7 +542,6 @@ struct UpdatedExtensionPermissionsInfo {
   enum Reason {
     ADDED,    // The permissions were added to the extension.
     REMOVED,  // The permissions were removed from the extension.
-    POLICY,   // The policy that affects permissions was updated.
   };
 
   Reason reason;

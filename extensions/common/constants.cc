@@ -112,8 +112,4 @@ const char* const kHangoutsExtensionIds[6] = {
     // Keep in sync with _api_features.json and _manifest_features.json.
 };
 
-// Error returned when scripting of a page is denied due to enterprise policy.
-const char kPolicyBlockedScripting[] =
-    "This page cannot be scripted due to an ExtensionsSettings policy.";
-
 }  // namespace extension_misc

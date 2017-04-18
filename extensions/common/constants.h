@@ -220,9 +220,6 @@ extern const char kProdHangoutsExtensionId[];
 // Extension ids used by Hangouts.
 extern const char* const kHangoutsExtensionIds[6];
 
-// Error message when enterprise policy blocks scripting of webpage.
-extern const char kPolicyBlockedScripting[];
-
 }  // namespace extension_misc
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

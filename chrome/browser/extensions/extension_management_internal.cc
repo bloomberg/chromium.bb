@@ -115,14 +115,6 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     // Get the list of URLPatterns.
     if (dict->GetListWithoutPathExpansion(key,
                                           &host_list_value)) {
-      if (host_list_value->GetSize() >
-          schema_constants::kMaxItemsURLPatternSet) {
-        LOG(WARNING) << "Exceeded maximum number of URL match patterns ("
-                     << schema_constants::kMaxItemsURLPatternSet
-                     << ") for attribute '" << key << "'";
-        return false;
-      }
-
       out_value->ClearPatterns();
       const int extension_scheme_mask =
           URLPattern::GetValidSchemeMaskForExtensions();
@@ -130,8 +122,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
         std::string unparsed_str;
         host_list_value->GetString(i, &unparsed_str);
         URLPattern pattern = URLPattern(extension_scheme_mask);
-        URLPattern::ParseResult parse_result = pattern.Parse(
-            unparsed_str, URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
+        URLPattern::ParseResult parse_result = pattern.Parse(unparsed_str);
         if (parse_result != URLPattern::PARSE_SUCCESS) {
           LOG(WARNING) << kMalformedPreferenceWarning;
           LOG(WARNING) << "Invalid URL pattern '" + unparsed_str +

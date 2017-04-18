@@ -1257,21 +1257,6 @@ void ExtensionService::CheckManagementPolicy() {
 
   extensions::ExtensionManagement* management =
       extensions::ExtensionManagementFactory::GetForBrowserContext(profile());
-  extensions::PermissionsUpdater(profile()).SetDefaultPolicyHostRestrictions(
-      management->GetDefaultRuntimeBlockedHosts(),
-      management->GetDefaultRuntimeAllowedHosts());
-  for (const auto& extension : registry_->enabled_extensions()) {
-    bool uses_default =
-        management->UsesDefaultRuntimeHostRestrictions(extension.get());
-    if (uses_default) {
-      extensions::PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(
-          extension.get());
-    } else {
-      extensions::PermissionsUpdater(profile()).SetPolicyHostRestrictions(
-          extension.get(), management->GetRuntimeBlockedHosts(extension.get()),
-          management->GetRuntimeAllowedHosts(extension.get()));
-    }
-  }
 
   // Loop through the disabled extension list, find extensions to re-enable
   // automatically. These extensions are exclusive from the |to_disable| and

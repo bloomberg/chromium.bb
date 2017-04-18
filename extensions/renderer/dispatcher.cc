@@ -922,8 +922,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_TransferBlobs, OnTransferBlobs)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateDefaultPolicyHostRestrictions,
-                      OnUpdateDefaultPolicyHostRestrictions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
                       OnUpdateTabSpecificPermissions)
   IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
@@ -1047,6 +1045,7 @@ void Dispatcher::OnLoaded(
       extension_load_errors_[param.id] = error;
       continue;
     }
+
     RendererExtensionRegistry* extension_registry =
         RendererExtensionRegistry::Get();
     // TODO(kalman): This test is deliberately not a CHECK (though I wish it
@@ -1063,18 +1062,12 @@ void Dispatcher::OnLoaded(
       // consider making this a release CHECK.
       NOTREACHED();
     }
-    if (param.uses_default_policy_blocked_allowed_hosts) {
-      extension->permissions_data()->SetUsesDefaultHostRestrictions();
-    } else {
-      extension->permissions_data()->SetPolicyHostRestrictions(
-          param.policy_blocked_hosts, param.policy_allowed_hosts);
-    }
   }
 
   // Update the available bindings for all contexts. These may have changed if
   // an externally_connectable extension was loaded that can connect to an
   // open webpage.
-  UpdateBindings(std::string());
+  UpdateBindings("");
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -1201,13 +1194,6 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // extension's URL just won't match anything anymore.
 }
 
-void Dispatcher::OnUpdateDefaultPolicyHostRestrictions(
-    const ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params& params) {
-  PermissionsData::SetDefaultPolicyHostRestrictions(
-      params.default_policy_blocked_hosts, params.default_policy_allowed_hosts);
-  UpdateBindings(std::string());
-}
-
 void Dispatcher::OnUpdatePermissions(
     const ExtensionMsg_UpdatePermissions_Params& params) {
   const Extension* extension =
@@ -1227,12 +1213,6 @@ void Dispatcher::OnUpdatePermissions(
 
   extension->permissions_data()->SetPermissions(std::move(active),
                                                 std::move(withheld));
-  if (params.uses_default_policy_host_restrictions) {
-    extension->permissions_data()->SetUsesDefaultHostRestrictions();
-  } else {
-    extension->permissions_data()->SetPolicyHostRestrictions(
-        params.policy_blocked_hosts, params.policy_allowed_hosts);
-  }
   UpdateBindings(extension->id());
 }
 

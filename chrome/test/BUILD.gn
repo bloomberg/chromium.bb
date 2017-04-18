@@ -2083,8 +2083,6 @@ test("browser_tests") {
         "../browser/extensions/extension_browsertest.h",
         "../browser/extensions/extension_function_test_utils.cc",
         "../browser/extensions/extension_function_test_utils.h",
-        "../browser/extensions/extension_with_management_policy_apitest.cc",
-        "../browser/extensions/extension_with_management_policy_apitest.h",
         "../browser/extensions/updater/extension_cache_fake.cc",
         "../browser/extensions/updater/extension_cache_fake.h",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model_browsertest_win.cc",

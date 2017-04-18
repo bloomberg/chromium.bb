@@ -27,7 +27,6 @@ extern const char kAllowedPermissions[];
 
 extern const char kRuntimeBlockedHosts[];
 extern const char kRuntimeAllowedHosts[];
-extern const size_t kMaxItemsURLPatternSet;
 
 extern const char kUpdateUrl[];
 extern const char kInstallSources[];

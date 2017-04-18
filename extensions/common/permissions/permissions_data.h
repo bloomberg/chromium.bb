@@ -82,10 +82,6 @@ class PermissionsData {
                               const Extension* extension,
                               std::string* error);
 
-  // Is this extension using the default scope for policy_blocked_hosts and
-  // policy_allowed_hosts of the ExtensionSettings policy.
-  bool UsesDefaultPolicyHostRestrictions() const;
-
   // Locks the permissions data to the current thread. We don't do this on
   // construction, since extensions are initialized across multiple threads.
   void BindToCurrentThread() const;
@@ -94,27 +90,6 @@ class PermissionsData {
   // |withheld|.
   void SetPermissions(std::unique_ptr<const PermissionSet> active,
                       std::unique_ptr<const PermissionSet> withheld) const;
-
-  // Applies restrictions from enterprise policy limiting which URLs this
-  // extension can interact with. The same policy can also define a default set
-  // of URL restrictions using SetDefaultPolicyHostRestrictions. This function
-  // overrides any default host restriction policy.
-  void SetPolicyHostRestrictions(
-      const URLPatternSet& runtime_blocked_hosts,
-      const URLPatternSet& runtime_allowed_hosts) const;
-
-  // Marks this extension as using default enterprise policy limiting
-  // which URLs extensions can interact with. A default policy can be set with
-  // SetDefaultPolicyHostRestrictions. A policy specific to this extension
-  // can be set with SetPolicyHostRestrictions.
-  void SetUsesDefaultHostRestrictions() const;
-
-  // Applies restrictions from enterprise policy limiting which URLs all
-  // extensions can interact with. This restriction can be overridden on a
-  // per-extension basis with SetPolicyHostRestrictions.
-  static void SetDefaultPolicyHostRestrictions(
-      const URLPatternSet& default_runtime_blocked_hosts,
-      const URLPatternSet& default_runtime_allowed_hosts);
 
   // Sets the active permissions, leaving withheld the same.
   void SetActivePermissions(std::unique_ptr<const PermissionSet> active) const;
@@ -226,41 +201,10 @@ class PermissionsData {
     return *withheld_permissions_unsafe_;
   }
 
-  // Returns list of hosts this extension may not interact with by policy.
-  // This should only be used for 1. Serialization when initializing renderers
-  // or 2. Called from utility methods above. For all other uses, call utility
-  // methods instead (e.g. CanAccessPage()).
-  static const URLPatternSet& default_policy_blocked_hosts();
-
-  // Returns list of hosts this extension may interact with regardless of
-  // what is defined by policy_blocked_hosts().
-  // This should only be used for 1. Serialization when initializing renderers
-  // or 2. Called from utility methods above. For all other uses, call utility
-  // methods instead (e.g. CanAccessPage()).
-  static const URLPatternSet& default_policy_allowed_hosts();
-
-  // Returns list of hosts this extension may not interact with by policy.
-  // This should only be used for 1. Serialization when initializing renderers
-  // or 2. Called from utility methods above. For all other uses, call utility
-  // methods instead (e.g. CanAccessPage()).
-  const URLPatternSet policy_blocked_hosts() const;
-
-  // Returns list of hosts this extension may interact with regardless of
-  // what is defined by policy_blocked_hosts().
-  // This should only be used for 1. Serialization when initializing renderers
-  // or 2. Called from utility methods above. For all other uses, call utility
-  // methods instead (e.g. CanAccessPage()).
-  const URLPatternSet policy_allowed_hosts() const;
-
 #if defined(UNIT_TEST)
   const PermissionSet* GetTabSpecificPermissionsForTesting(int tab_id) const {
     base::AutoLock auto_lock(runtime_lock_);
     return GetTabSpecificPermissions(tab_id);
-  }
-
-  bool IsRuntimeBlockedHostForTesting(const GURL& url) const {
-    base::AutoLock auto_lock(runtime_lock_);
-    return IsRuntimeBlockedHost(url);
   }
 #endif
 
@@ -289,17 +233,6 @@ class PermissionsData {
                           const URLPatternSet& withheld_url_patterns,
                           std::string* error) const;
 
-  // Check if a specific URL is blocked by policy from extension use at runtime.
-  bool IsRuntimeBlockedHost(const GURL& url) const;
-
-  // Same as policy_blocked_hosts but instead returns a reference.
-  // You must acquire runtime_lock_ before calling this.
-  const URLPatternSet& PolicyBlockedHostsUnsafe() const;
-
-  // Same as policy_allowed_hosts but instead returns a reference.
-  // You must acquire runtime_lock_ before calling this.
-  const URLPatternSet& PolicyAllowedHostsUnsafe() const;
-
   // The associated extension's id.
   std::string extension_id_;
 
@@ -321,20 +254,6 @@ class PermissionsData {
   // Unless you need to change |withheld_permissions_unsafe_|, use the (safe)
   // withheld_permissions() accessor.
   mutable std::unique_ptr<const PermissionSet> withheld_permissions_unsafe_;
-
-  // The list of hosts an extension may not interact with by policy.
-  // Unless you need to change |policy_blocked_hosts_unsafe_|, use the (safe)
-  // policy_blocked_hosts() accessor.
-  mutable URLPatternSet policy_blocked_hosts_unsafe_;
-
-  // The exclusive list of hosts an extension may interact with by policy.
-  // Unless you need to change |policy_allowed_hosts_unsafe_|, use the (safe)
-  // policy_allowed_hosts() accessor.
-  mutable URLPatternSet policy_allowed_hosts_unsafe_;
-
-  // If the ExtensionSettings policy is not being used, or no per-extension
-  // exception to the default policy was declared for this extension.
-  mutable bool uses_default_policy_host_restrictions = true;
 
   mutable TabPermissionsMap tab_specific_permissions_;
 

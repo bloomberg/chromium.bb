@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -30,17 +29,6 @@ namespace extensions {
 namespace {
 
 PermissionsData::PolicyDelegate* g_policy_delegate = nullptr;
-
-struct DefaultRuntimePolicy {
-  URLPatternSet blocked_hosts;
-  URLPatternSet allowed_hosts;
-};
-
-// URLs an extension can't interact with. An extension can override these
-// settings by declaring its own list of blocked and allowed hosts using
-// policy_blocked_hosts and policy_allowed_hosts.
-base::LazyInstance<DefaultRuntimePolicy>::Leaky default_runtime_policy =
-    LAZY_INSTANCE_INITIALIZER;
 
 class AutoLockOnValidThread {
  public:
@@ -139,45 +127,6 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
   return false;
 }
 
-bool PermissionsData::UsesDefaultPolicyHostRestrictions() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-  return uses_default_policy_host_restrictions;
-}
-
-const URLPatternSet& PermissionsData::default_policy_blocked_hosts() {
-  return default_runtime_policy.Get().blocked_hosts;
-}
-
-const URLPatternSet& PermissionsData::default_policy_allowed_hosts() {
-  return default_runtime_policy.Get().allowed_hosts;
-}
-
-const URLPatternSet PermissionsData::policy_blocked_hosts() const {
-  base::AutoLock auto_lock(runtime_lock_);
-  return PolicyBlockedHostsUnsafe();
-}
-
-const URLPatternSet& PermissionsData::PolicyBlockedHostsUnsafe() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-  if (uses_default_policy_host_restrictions)
-    return default_policy_blocked_hosts();
-  runtime_lock_.AssertAcquired();
-  return policy_blocked_hosts_unsafe_;
-}
-
-const URLPatternSet PermissionsData::policy_allowed_hosts() const {
-  base::AutoLock auto_lock(runtime_lock_);
-  return PolicyAllowedHostsUnsafe();
-}
-
-const URLPatternSet& PermissionsData::PolicyAllowedHostsUnsafe() const {
-  DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-  if (uses_default_policy_host_restrictions)
-    return default_policy_allowed_hosts();
-  runtime_lock_.AssertAcquired();
-  return policy_allowed_hosts_unsafe_;
-}
-
 void PermissionsData::BindToCurrentThread() const {
   DCHECK(!thread_checker_);
   thread_checker_.reset(new base::ThreadChecker());
@@ -189,28 +138,6 @@ void PermissionsData::SetPermissions(
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   active_permissions_unsafe_ = std::move(active);
   withheld_permissions_unsafe_ = std::move(withheld);
-}
-
-void PermissionsData::SetPolicyHostRestrictions(
-    const URLPatternSet& runtime_blocked_hosts,
-    const URLPatternSet& runtime_allowed_hosts) const {
-  AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  policy_blocked_hosts_unsafe_ = runtime_blocked_hosts;
-  policy_allowed_hosts_unsafe_ = runtime_allowed_hosts;
-  uses_default_policy_host_restrictions = false;
-}
-
-void PermissionsData::SetUsesDefaultHostRestrictions() const {
-  AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  uses_default_policy_host_restrictions = true;
-}
-
-// static
-void PermissionsData::SetDefaultPolicyHostRestrictions(
-    const URLPatternSet& default_runtime_blocked_hosts,
-    const URLPatternSet& default_runtime_allowed_hosts) {
-  default_runtime_policy.Get().blocked_hosts = default_runtime_blocked_hosts;
-  default_runtime_policy.Get().allowed_hosts = default_runtime_allowed_hosts;
 }
 
 void PermissionsData::SetActivePermissions(
@@ -281,8 +208,7 @@ URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
 
 bool PermissionsData::HasHostPermission(const GURL& url) const {
   base::AutoLock auto_lock(runtime_lock_);
-  return active_permissions_unsafe_->HasExplicitAccessToOrigin(url) &&
-         !IsRuntimeBlockedHost(url);
+  return active_permissions_unsafe_->HasExplicitAccessToOrigin(url);
 }
 
 bool PermissionsData::HasEffectiveAccessToAllHosts() const {
@@ -401,12 +327,6 @@ bool PermissionsData::HasTabSpecificPermissionToExecuteScript(
   return false;
 }
 
-bool PermissionsData::IsRuntimeBlockedHost(const GURL& url) const {
-  runtime_lock_.AssertAcquired();
-  return PolicyBlockedHostsUnsafe().MatchesURL(url) &&
-         !PolicyAllowedHostsUnsafe().MatchesURL(url);
-}
-
 PermissionsData::AccessType PermissionsData::CanRunOnPage(
     const Extension* extension,
     const GURL& document_url,
@@ -415,14 +335,9 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     const URLPatternSet& withheld_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
-  if (g_policy_delegate && !g_policy_delegate->CanExecuteScriptOnPage(
-                               extension, document_url, tab_id, error))
-    return ACCESS_DENIED;
-
-  if (extension->location() != Manifest::COMPONENT &&
-      extension->permissions_data()->IsRuntimeBlockedHost(document_url)) {
-    if (error)
-      *error = extension_misc::kPolicyBlockedScripting;
+  if (g_policy_delegate &&
+      !g_policy_delegate->CanExecuteScriptOnPage(extension, document_url,
+                                                 tab_id, error)) {
     return ACCESS_DENIED;
   }
 

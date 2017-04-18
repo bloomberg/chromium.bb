@@ -13,9 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -503,18 +501,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptApiTest,
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/permissions")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
-                       ContentScriptPolicy) {
-  // Set enterprise policy to block injection to policy specified host.
-  {
-    ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://example.com/*");
-  }
-  host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBypassPageCSP) {

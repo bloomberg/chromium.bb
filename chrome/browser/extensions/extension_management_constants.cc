@@ -22,7 +22,6 @@ const char kAllowedPermissions[] = "allowed_permissions";
 
 const char kRuntimeBlockedHosts[] = "runtime_blocked_hosts";
 const char kRuntimeAllowedHosts[] = "runtime_allowed_hosts";
-const size_t kMaxItemsURLPatternSet = 100;
 
 const char kUpdateUrl[] = "update_url";
 const char kInstallSources[] = "install_sources";
