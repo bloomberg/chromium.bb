@@ -8,6 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package authpolicy;
 
+// TODO(ljusten): Remove this file as soon as Chrome uses
+// active_directory_info.proto. crbug.com/712720.
+
 // Message sent to Chromium by authpolicy service as a response of successful
 // AuthenticateUser call. Contains information about authenticated user fetched
 // from Active Directory server.

@@ -12,6 +12,7 @@ const char kAuthPolicyServicePath[] = "/org/chromium/AuthPolicy";
 const char kAuthPolicyServiceName[] = "org.chromium.AuthPolicy";
 // Methods
 const char kAuthPolicyAuthenticateUser[] = "AuthenticateUser";
+const char kAuthPolicyGetUserStatus[] = "GetUserStatus";
 const char kAuthPolicyJoinADDomain[] = "JoinADDomain";
 const char kAuthPolicyRefreshUserPolicy[] = "RefreshUserPolicy";
 const char kAuthPolicyRefreshDevicePolicy[] = "RefreshDevicePolicy";

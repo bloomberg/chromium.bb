@@ -1,0 +1,46 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package authpolicy;
+
+// Message sent to Chromium by authpolicy service as a response of a successful
+// AuthenticateUser call. Contains information about authenticated user fetched
+// from Active Directory server with "net ads search ...".
+message ActiveDirectoryAccountInfo {
+  // Unique id of the user account. Taken from the objectGUID property of the
+  // Active Directory user account information.
+  optional string account_id = 1;
+  // Display name of the user. Taken from the displayName property of the Active
+  // account information.
+  optional string display_name = 2;
+  // Given name of the user. AKA first name. Taken from the givenName property
+  // of the Active Directory user account information.
+  optional string given_name = 3;
+  // Logon name of the user (without @realm). Taken from the sAMAccountName
+  // property of the Active Directory user account information.
+  optional string sam_account_name = 4;
+  // Next ID to use: 5
+}
+
+// Message sent to Chromium by authpolicy service as a response to a successful
+// GetUserStatus call.
+message ActiveDirectoryUserStatus {
+  // Ticket-granting-ticket status.
+  enum TgtStatus {
+    TGT_VALID = 0;      // Ticket is still valid.
+    TGT_EXPIRED = 1;    // Ticket expired.
+    TGT_NOT_FOUND = 2;  // Kerberos credentials cache not found.
+    // Next ID to use: 3
+  }
+
+  // User's account information, see above.
+  optional ActiveDirectoryAccountInfo account_info = 1;
+  // Status of the user's ticket-granting-ticket (TGT).
+  optional TgtStatus tgt_status = 2;
+  // Next ID to use: 3
+}
