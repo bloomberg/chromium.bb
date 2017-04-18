@@ -83,6 +83,10 @@
                    --primary-text-color);
       }
 
+      :host(:not([controlled_])) {
+        @apply(--settings-actionable);
+      }
+
       :host([controlled_]) {
         /* Disable pointer events for this whole element, as outer on-tap gets
          * triggered when clicking/tapping anywhere in :host. */
