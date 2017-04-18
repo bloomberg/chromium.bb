@@ -400,8 +400,8 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   // funneling the main resource bytes into m_image, so just create an
   // ImageResource to be populated later.
   if (loading_image_document_ && update_behavior != kUpdateForcedReload) {
-    ImageResource* image_resource =
-        ImageResource::Create(ImageSourceToKURL(element_->ImageSourceURL()));
+    ImageResource* image_resource = ImageResource::Create(
+        ResourceRequest(ImageSourceToKURL(element_->ImageSourceURL())));
     image_resource->SetStatus(ResourceStatus::kPending);
     image_resource_for_image_document_ = image_resource;
     SetImage(image_resource->GetContent());

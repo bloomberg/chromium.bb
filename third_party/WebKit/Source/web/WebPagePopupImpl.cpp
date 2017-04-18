@@ -332,7 +332,7 @@ bool WebPagePopupImpl::InitializePage() {
   popup_client_->WriteDocument(data.Get());
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
   frame->Loader().Load(
-      FrameLoadRequest(0, BlankURL(),
+      FrameLoadRequest(0, ResourceRequest(BlankURL()),
                        SubstituteData(data, "text/html", "UTF-8", KURL(),
                                       kForceSynchronousLoad)));
   return true;

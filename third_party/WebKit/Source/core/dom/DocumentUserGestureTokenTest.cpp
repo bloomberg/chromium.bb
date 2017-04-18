@@ -50,7 +50,8 @@ TEST_F(DocumentUserGestureTokenTest, Navigate) {
 
   // Navigate to a different Document. In the main frame, user gesture state
   // will get reset.
-  GetDocument().GetFrame()->Loader().Load(FrameLoadRequest(nullptr, KURL()));
+  GetDocument().GetFrame()->Loader().Load(
+      FrameLoadRequest(nullptr, ResourceRequest()));
   EXPECT_FALSE(GetDocument().GetFrame()->HasReceivedUserGesture());
 }
 

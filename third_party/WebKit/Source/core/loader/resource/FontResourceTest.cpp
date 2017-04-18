@@ -108,7 +108,8 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
 
-  FetchParameters fetch_params = FetchParameters(url, FetchInitiatorInfo());
+  FetchParameters fetch_params =
+      FetchParameters(ResourceRequest(url), FetchInitiatorInfo());
   fetch_params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
   FontResource* resource = FontResource::Fetch(fetch_params, fetcher);
   ASSERT_TRUE(resource);

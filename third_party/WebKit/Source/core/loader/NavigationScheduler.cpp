@@ -176,7 +176,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
   void Fire(LocalFrame* frame) override {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
-    FrameLoadRequest request(OriginDocument(), url_, "_self",
+    FrameLoadRequest request(OriginDocument(), ResourceRequest(url_), "_self",
                              should_check_main_world_content_security_policy_);
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
@@ -213,7 +213,7 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   void Fire(LocalFrame* frame) override {
     std::unique_ptr<UserGestureIndicator> gesture_indicator =
         CreateUserGestureIndicator();
-    FrameLoadRequest request(OriginDocument(), Url(), "_self");
+    FrameLoadRequest request(OriginDocument(), ResourceRequest(Url()), "_self");
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     if (EqualIgnoringFragmentIdentifier(frame->GetDocument()->Url(),
                                         request.GetResourceRequest().Url())) {
@@ -438,7 +438,7 @@ void NavigationScheduler::ScheduleLocationChange(Document* origin_document,
           frame_->GetDocument()->GetSecurityOrigin())) {
     if (url.HasFragmentIdentifier() &&
         EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
-      FrameLoadRequest request(origin_document, url, "_self");
+      FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
       request.SetReplacesCurrentItem(replaces_current_item);
       if (replaces_current_item)
         request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);

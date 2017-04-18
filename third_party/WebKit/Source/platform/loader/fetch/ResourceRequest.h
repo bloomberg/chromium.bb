@@ -75,8 +75,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   };
 
   ResourceRequest();
-  ResourceRequest(const String& url_string);
-  ResourceRequest(const KURL&);
+  explicit ResourceRequest(const String& url_string);
+  explicit ResourceRequest(const KURL&);
   explicit ResourceRequest(CrossThreadResourceRequestData*);
   ResourceRequest(const ResourceRequest&);
   ResourceRequest& operator=(const ResourceRequest&);

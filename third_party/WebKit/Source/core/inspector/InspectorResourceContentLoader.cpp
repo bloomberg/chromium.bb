@@ -117,7 +117,7 @@ void InspectorResourceContentLoader::Start() {
       resource_request = item->GenerateResourceRequest(
           WebCachePolicy::kReturnCacheDataDontLoad);
     } else {
-      resource_request = document->Url();
+      resource_request = ResourceRequest(document->Url());
       resource_request.SetCachePolicy(WebCachePolicy::kReturnCacheDataDontLoad);
     }
     resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);

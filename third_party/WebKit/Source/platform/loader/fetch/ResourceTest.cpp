@@ -77,7 +77,8 @@ TEST(ResourceTest, RevalidateWithFragment) {
   ResourceResponse response;
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
-  Resource* resource = RawResource::Create(url, Resource::kRaw);
+  Resource* resource =
+      RawResource::Create(ResourceRequest(url), Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
   resource->Finish();
 
@@ -98,7 +99,8 @@ TEST(ResourceTest, Vary) {
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
 
-  Resource* resource = RawResource::Create(url, Resource::kRaw);
+  Resource* resource =
+      RawResource::Create(ResourceRequest(url), Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
   resource->Finish();
 

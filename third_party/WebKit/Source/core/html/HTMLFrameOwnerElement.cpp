@@ -331,8 +331,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       Page::kMaxNumberOfFrames)
     return false;
 
-  FrameLoadRequest frame_load_request(&GetDocument(), url, "_self",
-                                      kCheckContentSecurityPolicy);
+  FrameLoadRequest frame_load_request(&GetDocument(), ResourceRequest(url),
+                                      "_self", kCheckContentSecurityPolicy);
 
   ReferrerPolicy policy = ReferrerPolicyAttribute();
   if (policy != kReferrerPolicyDefault)

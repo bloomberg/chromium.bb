@@ -684,7 +684,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
 
     TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
     loader.Load(FrameLoadRequest(
-        0, BlankURL(),
+        0, ResourceRequest(BlankURL()),
         SubstituteData(Data(), AtomicString("image/svg+xml"),
                        AtomicString("UTF-8"), KURL(), kForceSynchronousLoad)));
 

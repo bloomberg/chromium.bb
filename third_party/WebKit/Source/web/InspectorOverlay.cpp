@@ -561,7 +561,7 @@ Page* InspectorOverlay::OverlayPage() {
   const WebData& overlay_page_html_resource =
       Platform::Current()->LoadResource("InspectorOverlayPage.html");
   loader.Load(
-      FrameLoadRequest(0, BlankURL(),
+      FrameLoadRequest(0, ResourceRequest(BlankURL()),
                        SubstituteData(overlay_page_html_resource, "text/html",
                                       "UTF-8", KURL(), kForceSynchronousLoad)));
   v8::Isolate* isolate = ToIsolate(frame);

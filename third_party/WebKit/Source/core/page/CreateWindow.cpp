@@ -195,8 +195,8 @@ DOMWindow* CreateWindow(const String& url_string,
     return nullptr;
   }
 
-  FrameLoadRequest frame_request(calling_window.document(), completed_url,
-                                 frame_name);
+  FrameLoadRequest frame_request(calling_window.document(),
+                                 ResourceRequest(completed_url), frame_name);
   frame_request.SetShouldSetOpener(window_features.noopener ? kNeverSetOpener
                                                             : kMaybeSetOpener);
   frame_request.GetResourceRequest().SetFrameType(
@@ -243,7 +243,8 @@ DOMWindow* CreateWindow(const String& url_string,
   // causes the navigation to be flagged as a client redirect, which is
   // observable via the webNavigation extension api.
   if (created) {
-    FrameLoadRequest request(calling_window.document(), completed_url);
+    FrameLoadRequest request(calling_window.document(),
+                             ResourceRequest(completed_url));
     request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
     new_frame->Navigate(request);
   } else if (!url_string.IsEmpty()) {

@@ -48,7 +48,7 @@ class PingLoaderTest : public ::testing::Test {
 
   void SetDocumentURL(const KURL& url) {
     FrameLoadRequest request(
-        nullptr, url,
+        nullptr, ResourceRequest(url),
         SubstituteData(SharedBuffer::Create(), "text/html", "UTF-8", KURL()));
     page_holder_->GetFrame().Loader().Load(request);
     blink::testing::RunPendingTasks();
