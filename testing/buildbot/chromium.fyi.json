@@ -119,6 +119,12 @@
         "test": "ipc_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
+      },
+      {
         "args": [
           "--tool=asan"
         ],
@@ -578,6 +584,12 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "media_blink_unittests"
@@ -952,6 +964,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "jingle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "latency_unittests"
       },
       {
         "swarming": {

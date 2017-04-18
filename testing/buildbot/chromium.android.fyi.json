@@ -78,6 +78,9 @@
         "test": "ipc_tests"
       },
       {
+        "test": "latency_unittests"
+      },
+      {
         "test": "media_unittests"
       },
       {
@@ -175,6 +178,9 @@
       },
       {
         "test": "ipc_tests"
+      },
+      {
+        "test": "latency_unittests"
       },
       {
         "test": "media_unittests"
@@ -553,6 +559,21 @@
           "expiration": 14400
         },
         "test": "ipc_tests"
+      },
+      {
+        "override_isolate_target": "latency_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "device_os": "LMY47W",
+              "device_type": "sprout"
+            }
+          ],
+          "expiration": 14400
+        },
+        "test": "latency_unittests"
       },
       {
         "override_isolate_target": "media_unittests",
