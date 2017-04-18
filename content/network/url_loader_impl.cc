@@ -240,9 +240,14 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
 
-void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request) {
+void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
+                                      int net_error) {
   DCHECK(url_request == url_request_.get());
 
+  if (net_error != net::OK) {
+    NotifyCompleted(net_error);
+    return;
+  }
   // TODO: Add support for optional MIME sniffing.
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();

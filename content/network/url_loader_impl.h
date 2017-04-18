@@ -43,7 +43,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void OnReceivedRedirect(net::URLRequest* url_request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnResponseStarted(net::URLRequest* url_request) override;
+  void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
 
  private:
