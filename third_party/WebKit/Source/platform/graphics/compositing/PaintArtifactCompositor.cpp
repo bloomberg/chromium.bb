@@ -4,18 +4,10 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
-#include <algorithm>
-#include <memory>
-#include <utility>
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/paint/compositing_display_item.h"
 #include "cc/paint/display_item_list.h"
-#include "cc/paint/drawing_display_item.h"
-#include "cc/paint/filter_display_item.h"
-#include "cc/paint/float_clip_display_item.h"
-#include "cc/paint/transform_display_item.h"
 #include "cc/trees/layer_tree_host.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -23,7 +15,6 @@
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -31,20 +22,10 @@
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/skia_util.h"
 
 namespace blink {
 
