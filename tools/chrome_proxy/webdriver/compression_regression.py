@@ -11,7 +11,7 @@ import time
 import common
 from common import TestDriver
 from common import IntegrationTest
-from common import NotAndroid
+from decorators import NotAndroid
 
 # The maximum number of data points that will be saved.
 MAX_DATA_POINTS = 365
