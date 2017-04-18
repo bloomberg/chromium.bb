@@ -20,7 +20,7 @@ class TestExporter(object):
 
     def __init__(self, host, gh_user, gh_token, gerrit_user, gerrit_token, dry_run=False):
         self.host = host
-        self.wpt_github = WPTGitHub(host, gh_user, gh_token)
+        self.wpt_github = WPTGitHub(host, gh_user, gh_token, pr_history_window=PR_HISTORY_WINDOW)
 
         self.gerrit = Gerrit(self.host, gerrit_user, gerrit_token)
 
@@ -33,13 +33,12 @@ class TestExporter(object):
 
         The exporter will look in chronological order at every commit in Chromium.
         """
-        pull_requests = self.wpt_github.all_pull_requests(limit=PR_HISTORY_WINDOW)
         open_gerrit_cls = self.gerrit.query_open_cls()
-        self.process_gerrit_cls(open_gerrit_cls, pull_requests)
+        self.process_gerrit_cls(open_gerrit_cls)
 
         exportable_commits = self.get_exportable_commits(limit=COMMIT_HISTORY_WINDOW)
         for exportable_commit in exportable_commits:
-            pull_request = self.pr_with_position(exportable_commit.position, pull_requests)
+            pull_request = self.wpt_github.pr_with_position(exportable_commit.position)
             if pull_request:
                 if pull_request.state == 'open':
                     self.merge_pull_request(pull_request)
@@ -49,7 +48,7 @@ class TestExporter(object):
             else:
                 self.create_pull_request(exportable_commit)
 
-    def process_gerrit_cls(self, gerrit_cls, pull_requests):
+    def process_gerrit_cls(self, gerrit_cls):
         """Iterates through Gerrit CLs and prints their statuses.
 
         Right now this method does nothing. In the future it will create PRs for CLs and help
@@ -60,7 +59,7 @@ class TestExporter(object):
             _log.info('Found Gerrit in-flight CL: "%s" %s', cl['subject'], cl_url)
 
             # Check if CL already has a corresponding PR
-            pull_request = self.pr_with_change_id(cl['change_id'], pull_requests)
+            pull_request = self.wpt_github.pr_with_change_id(cl['change_id'])
 
             if pull_request:
                 pr_url = '{}pull/{}'.format(WPT_URL, pull_request.number)
@@ -68,25 +67,6 @@ class TestExporter(object):
             else:
                 _log.info('No in-flight PR found for CL.')
 
-    def pr_with_position(self, position, pull_requests):
-        for pull_request in pull_requests:
-            pr_commit_position = self._extract_metadata('Cr-Commit-Position: ', pull_request.body)
-            if position == pr_commit_position:
-                return pull_request
-        return None
-
-    def pr_with_change_id(self, target_change_id, pull_requests):
-        for pull_request in pull_requests:
-            change_id = self._extract_metadata('Change-Id: ', pull_request.body)
-            if change_id == target_change_id:
-                return pull_request
-        return None
-
-    def _extract_metadata(self, tag, commit_body):
-        for line in commit_body.splitlines():
-            if line.startswith(tag):
-                return line[len(tag):]
-        return None
 
     def get_exportable_commits(self, limit):
         return exportable_commits_over_last_n_commits(limit, self.host, self.local_wpt)

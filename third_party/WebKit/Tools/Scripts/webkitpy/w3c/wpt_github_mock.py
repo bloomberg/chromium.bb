@@ -49,3 +49,15 @@ class MockWPTGitHub(object):
     def get_pr_branch(self, number):
         self.calls.append('get_pr_branch')
         return 'fake branch for PR {}'.format(number)
+
+    def pr_with_position(self, position):
+        self.calls.append('pr_with_position')
+        for pr in self.pull_requests:
+            if position in pr.body:
+                return pr
+
+    def pr_with_change_id(self, change_id):
+        self.calls.append('pr_with_change_id')
+        for pr in self.pull_requests:
+            if change_id in pr.body:
+                return pr

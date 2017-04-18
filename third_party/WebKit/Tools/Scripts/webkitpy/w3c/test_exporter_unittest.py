@@ -36,7 +36,11 @@ class TestExporterTest(unittest.TestCase):
         ]
         test_exporter.run()
 
-        self.assertEqual(test_exporter.wpt_github.calls, ['all_pull_requests'])
+        self.assertEqual(test_exporter.wpt_github.calls, [
+            'pr_with_position',
+            'pr_with_position',
+            'pr_with_position',
+        ])
 
     def test_creates_pull_request_for_all_exportable_commits(self):
         host = MockHost()
@@ -71,9 +75,11 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'all_pull_requests',
+            'pr_with_position',
             'create_pr',
+            'pr_with_position',
             'create_pr',
+            'pr_with_position',
             'create_pr',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
@@ -122,10 +128,13 @@ class TestExporterTest(unittest.TestCase):
         ]
         test_exporter.run()
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'all_pull_requests',
+            'pr_with_position',
             'get_pr_branch',
             'merge_pull_request',
+            'pr_with_position',
             'create_pr',
+            'pr_with_position',
+            'pr_with_position',
             'get_pr_branch',
             'merge_pull_request',
             'delete_remote_branch',
