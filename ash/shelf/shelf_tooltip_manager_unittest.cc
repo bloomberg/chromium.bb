@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_shelf_item_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -88,9 +87,6 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   ShelfItem item;
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
-  const ShelfID id = model->items()[index].id;
-  model->SetShelfItemDelegate(id,
-                              base::MakeUnique<TestShelfItemDelegate>(nullptr));
   // Note: There's no easy way to correlate shelf a model index/id to its view.
   tooltip_manager_->ShowTooltipWithDelay(
       shelf_view_->child_at(shelf_view_->child_count() - 1));

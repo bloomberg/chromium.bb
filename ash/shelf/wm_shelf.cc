@@ -10,7 +10,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
-#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_locking_manager.h"
 #include "ash/shelf/shelf_model.h"

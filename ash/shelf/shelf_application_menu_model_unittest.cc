@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/test/test_shelf_item_delegate.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,9 +123,8 @@ TEST(ShelfApplicationMenuModelTest, VerifyHistogramOnExecute) {
 
   std::vector<mojom::MenuItemPtr> items;
   items.push_back(ash::mojom::MenuItem::New());
-  test::TestShelfItemDelegate test_delegate(nullptr);
   base::string16 title = base::ASCIIToUTF16("title");
-  ShelfApplicationMenuModel menu(title, std::move(items), &test_delegate);
+  ShelfApplicationMenuModel menu(title, std::move(items), nullptr);
   menu.ExecuteCommand(0, 0);
 
   histogram_tester.ExpectTotalCount(kNumItemsEnabledHistogramName, 1);

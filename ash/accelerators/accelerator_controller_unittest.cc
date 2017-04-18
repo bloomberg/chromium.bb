@@ -21,7 +21,6 @@
 #include "ash/test/lock_state_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_animator.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -254,14 +253,6 @@ class AcceleratorControllerTest : public test::AshTestBase {
   }
   static bool is_exiting(ExitWarningHandler* ewh) {
     return ewh->state_ == ExitWarningHandler::EXITING;
-  }
-  aura::Window* CreatePanel() {
-    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, ui::wm::WINDOW_TYPE_PANEL, 0, gfx::Rect(5, 5, 20, 20));
-    WmWindow* wm_window = WmWindow::Get(window);
-    test::TestShelfDelegate::instance()->AddShelfItem(wm_window);
-    PanelLayoutManager::Get(wm_window)->Relayout();
-    return window;
   }
 
   void SetBrightnessControlDelegate(

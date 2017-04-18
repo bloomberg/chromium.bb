@@ -17,7 +17,7 @@
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -42,7 +42,9 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
-    model_ = Shell::Get()->shelf_model();
+    shelf_view_test_.reset(new test::ShelfViewTestAPI(
+        GetPrimaryShelf()->GetShelfViewForTesting()));
+    shelf_view_test_->SetAnimationDuration(1);
   }
 
   void TearDown() override { AshTestBase::TearDown(); }
@@ -61,16 +63,14 @@ class PanelWindowResizerTest : public test::AshTestBase {
     gfx::Rect bounds(origin, gfx::Size(101, 101));
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, bounds);
-    test::TestShelfDelegate::instance()->AddShelfItem(WmWindow::Get(window));
+    shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }
 
   void DragStart(aura::Window* window) {
-    resizer_.reset(CreateWindowResizer(WmWindow::Get(window),
-                                       window->bounds().origin(), HTCAPTION,
-                                       aura::client::WINDOW_MOVE_SOURCE_MOUSE)
-                       .release());
-    ASSERT_TRUE(resizer_.get());
+    resizer_ =
+        CreateWindowResizer(WmWindow::Get(window), window->bounds().origin(),
+                            HTCAPTION, aura::client::WINDOW_MOVE_SOURCE_MOUSE);
   }
 
   void DragMove(int dx, int dy) {
@@ -87,7 +87,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     resizer_.reset();
   }
 
-  // Test dragging the panel slightly, then detaching, and then reattaching
+  // Test dragging the panel slightly, then detaching, and then reattaching,
   // dragging out by the vector (dx, dy).
   void DetachReattachTest(aura::Window* window, int dx, int dy) {
     EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
@@ -96,84 +96,81 @@ class PanelWindowResizerTest : public test::AshTestBase {
     DragStart(window);
     gfx::Rect initial_bounds = window->GetBoundsInScreen();
 
-    // Drag the panel slightly. The window should still be snapped to the
-    // launcher.
+    // Drag slightly, the panel window should remain attached to the shelf.
     DragMove(dx * 5, dy * 5);
     EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
     EXPECT_EQ(initial_bounds.y(), window->GetBoundsInScreen().y());
 
-    // Drag further out and the window should now move to the cursor.
+    // Drag further out, the panel window should detach and move to the cursor.
     DragMove(dx * 100, dy * 100);
     EXPECT_EQ(initial_bounds.x() + dx * 100, window->GetBoundsInScreen().x());
     EXPECT_EQ(initial_bounds.y() + dy * 100, window->GetBoundsInScreen().y());
-
-    // The panel should be detached when the drag completes.
     DragEnd();
 
     EXPECT_FALSE(window->GetProperty(kPanelAttachedKey));
     EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
     EXPECT_EQ(root_window, window->GetRootWindow());
 
+    // Drag back towards the shelf, the panel window should re-attach.
     DragStart(window);
-    // Drag the panel down.
     DragMove(dx * -95, dy * -95);
-    // Release the mouse and the panel should be reattached.
     DragEnd();
 
-    // The panel should be reattached and have snapped to the launcher.
     EXPECT_TRUE(window->GetProperty(kPanelAttachedKey));
     EXPECT_EQ(initial_bounds.x(), window->GetBoundsInScreen().x());
     EXPECT_EQ(initial_bounds.y(), window->GetBoundsInScreen().y());
     EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());
   }
 
-  void TestWindowOrder(const std::vector<aura::Window*>& window_order) {
-    int panel_index = model_->FirstPanelIndex();
-    EXPECT_EQ((int)(panel_index + window_order.size()), model_->item_count());
-    for (std::vector<aura::Window *>::const_iterator
-             iter = window_order.begin();
-         iter != window_order.end(); ++iter, ++panel_index) {
-      ShelfID id = (*iter)->GetProperty(kShelfIDKey);
-      EXPECT_EQ(id, model_->items()[panel_index].id);
+  // Ensure |first| and its shelf item come before those of |second|:
+  // - |first| should be left of |second| in an LTR bottom-aligned shelf.
+  // - |first| should be right of |second| in an RTL bottom-aligned shelf.
+  // - |first| should be above |second| in a left- or right-aligned shelf.
+  void CheckWindowAndItemPlacement(aura::Window* first, aura::Window* second) {
+    WmShelf* shelf = GetPrimaryShelf();
+    const gfx::Rect first_item_bounds =
+        shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(first));
+    const gfx::Rect second_item_bounds =
+        shelf->GetScreenBoundsOfItemIconForWindow(WmWindow::Get(second));
+    if (!base::i18n::IsRTL()) {
+      EXPECT_TRUE((first->bounds().x() < second->bounds().x()) ||
+                  (first->bounds().y() < second->bounds().y()));
+      EXPECT_TRUE((first_item_bounds.x() < second_item_bounds.x()) ||
+                  (first_item_bounds.y() < second_item_bounds.y()));
+    } else {
+      EXPECT_TRUE((first->bounds().x() > second->bounds().x()) ||
+                  (first->bounds().y() < second->bounds().y()));
+      EXPECT_TRUE((first_item_bounds.x() > second_item_bounds.x()) ||
+                  (first_item_bounds.y() < second_item_bounds.y()));
     }
   }
 
-  // Test dragging panel window along the shelf and verify that panel icons
-  // are reordered appropriately.
+  // Test dragging panel window along the shelf and verify that panel icons are
+  // reordered appropriately. New shelf items for panels are inserted before
+  // existing panel items (eg. to the left in an LTR bottom-aligned shelf).
   void DragAlongShelfReorder(int dx, int dy) {
-    gfx::Point origin(0, 0);
-    std::unique_ptr<aura::Window> w1(CreatePanelWindow(origin));
-    std::unique_ptr<aura::Window> w2(CreatePanelWindow(origin));
-    std::vector<aura::Window*> window_order_original;
-    std::vector<aura::Window*> window_order_swapped;
-    window_order_original.push_back(w1.get());
-    window_order_original.push_back(w2.get());
-    window_order_swapped.push_back(w2.get());
-    window_order_swapped.push_back(w1.get());
-    TestWindowOrder(window_order_original);
+    std::unique_ptr<aura::Window> w1(CreatePanelWindow(gfx::Point()));
+    std::unique_ptr<aura::Window> w2(CreatePanelWindow(gfx::Point()));
+    CheckWindowAndItemPlacement(w2.get(), w1.get());
 
-    // Drag window #2 to the beginning of the shelf.
-    DragStart(w2.get());
+    // Drag window #1 to the beginning of the shelf, the items should swap.
+    DragStart(w1.get());
     DragMove(400 * dx, 400 * dy);
-    TestWindowOrder(window_order_swapped);
+    CheckWindowAndItemPlacement(w1.get(), w2.get());
     DragEnd();
+    CheckWindowAndItemPlacement(w1.get(), w2.get());
 
-    // Expect swapped window order.
-    TestWindowOrder(window_order_swapped);
-
-    // Drag window #2 back to the end.
-    DragStart(w2.get());
+    // Drag window #1 back to the end, the items should swap back.
+    DragStart(w1.get());
     DragMove(-400 * dx, -400 * dy);
-    TestWindowOrder(window_order_original);
+    CheckWindowAndItemPlacement(w2.get(), w1.get());
     DragEnd();
-
-    // Expect original order.
-    TestWindowOrder(window_order_original);
+    CheckWindowAndItemPlacement(w2.get(), w1.get());
   }
 
  private:
   std::unique_ptr<WindowResizer> resizer_;
-  ShelfModel* model_;
+  std::unique_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);
 };
@@ -559,7 +556,6 @@ INSTANTIATE_TEST_CASE_P(LtrRtl,
 INSTANTIATE_TEST_CASE_P(NormalPanelPopup,
                         PanelWindowResizerTransientTest,
                         testing::Values(ui::wm::WINDOW_TYPE_NORMAL,
-                                        ui::wm::WINDOW_TYPE_PANEL,
                                         ui::wm::WINDOW_TYPE_POPUP));
 
 }  // namespace ash

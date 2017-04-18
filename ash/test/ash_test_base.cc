@@ -13,6 +13,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -284,6 +285,9 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
                       ui::mojom::kResizeBehaviorCanMaximize |
                           ui::mojom::kResizeBehaviorCanMinimize |
                           ui::mojom::kResizeBehaviorCanResize);
+  // Setting the item type triggers ShelfWindowWatcher to create a shelf item.
+  if (type == ui::wm::WINDOW_TYPE_PANEL)
+    window->SetProperty<int>(kShelfItemTypeKey, TYPE_APP_PANEL);
 
   return window;
 }

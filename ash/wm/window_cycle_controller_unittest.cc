@@ -19,7 +19,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/test/test_session_controller_client.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
@@ -102,7 +101,6 @@ class WindowCycleControllerTest : public test::AshTestBase {
     gfx::Rect rect(100, 100);
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
         NULL, ui::wm::WINDOW_TYPE_PANEL, 0, rect);
-    test::TestShelfDelegate::instance()->AddShelfItem(WmWindow::Get(window));
     shelf_view_test_->RunMessageLoopUntilAnimationsDone();
     return window;
   }

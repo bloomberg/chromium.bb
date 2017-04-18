@@ -12,12 +12,10 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/test/user_metrics_recorder_test_api.h"
 #include "ash/wm_window.h"
 #include "base/test/histogram_tester.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 namespace {
@@ -53,9 +51,6 @@ class UserMetricsRecorderTest : public test::AshTestBase {
   // Sets the current user session to be active or inactive in a desktop
   // environment.
   void SetUserInActiveDesktopEnvironment(bool is_active);
-
-  // Creates an aura::Window.
-  aura::Window* CreateTestWindow();
 
   test::UserMetricsRecorderTestAPI* user_metrics_recorder_test_api() {
     return user_metrics_recorder_test_api_.get();
@@ -107,12 +102,6 @@ void UserMetricsRecorderTest::SetUserInActiveDesktopEnvironment(
     ASSERT_FALSE(
         user_metrics_recorder_test_api()->IsUserInActiveDesktopEnvironment());
   }
-}
-
-aura::Window* UserMetricsRecorderTest::CreateTestWindow() {
-  aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-      nullptr, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect());
-  return window;
 }
 
 // Verifies the return value of IsUserInActiveDesktopEnvironment() for the
@@ -193,34 +182,27 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
-  test::TestShelfDelegate* test_shelf_delegate =
-      test::TestShelfDelegate::instance();
   SetUserInActiveDesktopEnvironment(true);
 
   // Make sure the shelf contains the app list launcher button.
-  const ShelfItems& shelf_items = Shell::Get()->shelf_model()->items();
-  ASSERT_EQ(1u, shelf_items.size());
-  ASSERT_EQ(TYPE_APP_LIST, shelf_items[0].type);
+  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  ASSERT_EQ(1u, shelf_model->items().size());
+  ASSERT_EQ(TYPE_APP_LIST, shelf_model->items()[0].type);
 
-  aura::Window* pinned_window_with_app_id_1 = CreateTestWindow();
-  test_shelf_delegate->AddShelfItem(WmWindow::Get(pinned_window_with_app_id_1),
-                                    "app_id_1");
-  test_shelf_delegate->PinAppWithID("app_id_1");
+  ShelfItem shelf_item;
+  shelf_item.type = ash::TYPE_PINNED_APP;
+  shelf_item.app_launch_id = AppLaunchId("app_id_1");
+  shelf_model->Add(shelf_item);
+  shelf_item.app_launch_id = AppLaunchId("app_id_2");
+  shelf_model->Add(shelf_item);
 
-  aura::Window* pinned_window_with_app_id_2 = CreateTestWindow();
-  test_shelf_delegate->AddShelfItem(WmWindow::Get(pinned_window_with_app_id_2),
-                                    "app_id_2");
-  test_shelf_delegate->PinAppWithID("app_id_2");
-
-  aura::Window* unpinned_window_with_app_id_3 = CreateTestWindow();
-  test_shelf_delegate->AddShelfItem(
-      WmWindow::Get(unpinned_window_with_app_id_3), "app_id_3");
-
-  aura::Window* unpinned_window_4 = CreateTestWindow();
-  test_shelf_delegate->AddShelfItem(WmWindow::Get(unpinned_window_4));
-
-  aura::Window* unpinned_window_5 = CreateTestWindow();
-  test_shelf_delegate->AddShelfItem(WmWindow::Get(unpinned_window_5));
+  shelf_item.type = ash::TYPE_APP;
+  shelf_item.app_launch_id = AppLaunchId("app_id_3");
+  shelf_model->Add(shelf_item);
+  shelf_item.app_launch_id = AppLaunchId("app_id_4");
+  shelf_model->Add(shelf_item);
+  shelf_item.app_launch_id = AppLaunchId("app_id_5");
+  shelf_model->Add(shelf_item);
 
   user_metrics_recorder_test_api()->RecordPeriodicMetrics();
   histograms().ExpectBucketCount(kAsh_Shelf_NumberOfItems, 5, 1);

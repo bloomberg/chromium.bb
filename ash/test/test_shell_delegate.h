@@ -19,6 +19,8 @@ class KeyboardUI;
 namespace ash {
 namespace test {
 
+class ShelfInitializer;
+
 class TestShellDelegate : public ShellDelegate {
  public:
   TestShellDelegate();
@@ -68,6 +70,7 @@ class TestShellDelegate : public ShellDelegate {
   bool multi_profiles_enabled_;
   bool force_maximize_on_first_run_;
   bool touchscreen_enabled_in_local_pref_;
+  std::unique_ptr<ShelfInitializer> shelf_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

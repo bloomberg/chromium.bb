@@ -11,7 +11,6 @@
 #include "ash/shelf/wm_shelf.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
-#include "ash/test/test_shelf_item_delegate.h"
 
 namespace ash {
 
@@ -71,10 +70,6 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
   item.type = TYPE_APP;
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
-
-  shelf_model()->SetShelfItemDelegate(
-      shelf_model()->items()[index].id,
-      base::MakeUnique<test::TestShelfItemDelegate>(nullptr));
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   ShelfButton* button = test_api()->GetButton(index);

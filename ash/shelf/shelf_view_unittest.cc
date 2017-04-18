@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
@@ -32,8 +33,6 @@
 #include "ash/test/overflow_button_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
-#include "ash/test/test_shelf_delegate.h"
-#include "ash/test/test_shelf_item_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm_window.h"
@@ -138,60 +137,46 @@ class WmShelfObserverIconTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WmShelfObserverIconTest);
 };
 
-// TestShelfItemDelegate which tracks whether it gets selected.
-class ShelfItemSelectionTracker : public TestShelfItemDelegate {
+// A ShelfItemDelegate that tracks selections and reports a custom action.
+class ShelfItemSelectionTracker : public ShelfItemDelegate {
  public:
-  ShelfItemSelectionTracker()
-      : TestShelfItemDelegate(NULL),
-        selected_(false),
-        item_selected_action_(SHELF_ACTION_NONE) {}
-
+  ShelfItemSelectionTracker() : ShelfItemDelegate(AppLaunchId()) {}
   ~ShelfItemSelectionTracker() override {}
 
-  // Resets to the initial state.
-  void Reset() { selected_ = false; }
-
+  size_t item_selected_count() const { return item_selected_count_; }
   void set_item_selected_action(ShelfAction item_selected_action) {
     item_selected_action_ = item_selected_action;
   }
 
-  // Returns true if the delegate was selected.
-  bool WasSelected() { return selected_; }
-
-  // TestShelfItemDelegate:
+  // ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
                     const ItemSelectedCallback& callback) override {
-    selected_ = true;
+    item_selected_count_++;
     callback.Run(item_selected_action_, base::nullopt);
   }
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
+  void Close() override {}
 
  private:
-  bool selected_;
-
-  // The action reported by ItemSelected.
-  ShelfAction item_selected_action_;
+  size_t item_selected_count_ = 0;
+  ShelfAction item_selected_action_ = SHELF_ACTION_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemSelectionTracker);
 };
 
 TEST_F(WmShelfObserverIconTest, AddRemove) {
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  views::Widget widget;
-  widget.Init(params);
-
-  TestShelfDelegate::instance()->AddShelfItem(
-      WmWindow::Get(widget.GetNativeWindow()));
+  ShelfItem item;
+  item.type = TYPE_APP;
+  EXPECT_FALSE(observer()->icon_positions_changed());
+  const int shelf_item_index = Shell::Get()->shelf_model()->Add(item);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 
-  widget.Show();
-  widget.GetNativeWindow()->parent()->RemoveChild(widget.GetNativeWindow());
+  EXPECT_FALSE(observer()->icon_positions_changed());
+  Shell::Get()->shelf_model()->RemoveItemAt(shelf_item_index);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
@@ -205,26 +190,26 @@ TEST_F(WmShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
     return;
 
   UpdateDisplay("400x400,400x400");
+  observer()->Reset();
+
   WmWindow* second_root = ShellPort::Get()->GetAllRootWindows()[1];
   WmShelf* second_shelf = second_root->GetRootWindowController()->GetShelf();
   TestWmShelfObserver second_observer(second_shelf);
 
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 200, 200);
-  params.context = CurrentContext();
-  views::Widget widget;
-  widget.Init(params);
-
-  TestShelfDelegate::instance()->AddShelfItem(
-      WmWindow::Get(widget.GetNativeWindow()));
+  ShelfItem item;
+  item.type = TYPE_APP;
+  EXPECT_FALSE(observer()->icon_positions_changed());
+  EXPECT_FALSE(second_observer.icon_positions_changed());
+  const int shelf_item_index = Shell::Get()->shelf_model()->Add(item);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
   observer()->Reset();
   second_observer.Reset();
 
-  widget.GetNativeWindow()->parent()->RemoveChild(widget.GetNativeWindow());
+  EXPECT_FALSE(observer()->icon_positions_changed());
+  EXPECT_FALSE(second_observer.icon_positions_changed());
+  Shell::Get()->shelf_model()->RemoveItemAt(shelf_item_index);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
@@ -248,49 +233,6 @@ TEST_F(WmShelfObserverIconTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
 
-// A ShelfDelegate test double that will always convert between ShelfIDs and app
-// ids. This does not support pinning and unpinning operations and the return
-// value of IsAppPinned(...) is configurable.
-class TestShelfDelegateForShelfView : public TestShelfDelegate {
- public:
-  TestShelfDelegateForShelfView() {}
-  ~TestShelfDelegateForShelfView() override {}
-
-  void set_is_app_pinned(bool is_pinned) { is_app_pinned_ = is_pinned; }
-
-  // ShelfDelegate overrides:
-  ShelfID GetShelfIDForAppID(const std::string& app_id) override {
-    unsigned id = kInvalidShelfID;
-    EXPECT_TRUE(base::StringToUint(app_id, &id));
-    return base::checked_cast<ShelfID>(id);
-  }
-
-  const std::string& GetAppIDForShelfID(ShelfID id) override {
-    // Use |app_id_| member variable because returning a reference to local
-    // variable is not allowed.
-    app_id_ = base::IntToString(id);
-    return app_id_;
-  }
-
-  void PinAppWithID(const std::string& app_id) override { NOTREACHED(); }
-
-  bool IsAppPinned(const std::string& app_id) override {
-    return is_app_pinned_;
-  }
-
-  void UnpinAppWithID(const std::string& app_id) override { NOTREACHED(); }
-
- private:
-  // Tracks whether apps are pinned or not.
-  bool is_app_pinned_ = false;
-
-  // Temp member variable for returning a value. See the comment in the
-  // GetAppIDForShelfID().
-  std::string app_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfDelegateForShelfView);
-};
-
 class ShelfViewTest : public AshTestBase {
  public:
   static const char*
@@ -312,82 +254,38 @@ class ShelfViewTest : public AshTestBase {
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
 
-    ReplaceShelfDelegate();
-
     // Add browser shortcut shelf item at index 0 for test.
-    AddBrowserShortcut();
+    AddItem(TYPE_BROWSER_SHORTCUT, true);
   }
 
   void TearDown() override {
     WebNotificationTray::DisableAnimationsForTest(false);  // Reenable animation
-
-    shelf_delegate_ = nullptr;
     test_api_.reset();
     AshTestBase::TearDown();
   }
 
  protected:
-  void CreateAndSetShelfItemDelegateForID(ShelfID id) {
-    model_->SetShelfItemDelegate(
-        id, base::MakeUnique<TestShelfItemDelegate>(nullptr));
-  }
-
-  ShelfID AddBrowserShortcut() {
-    ShelfItem browser_shortcut;
-    browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-
-    ShelfID id = model_->next_id();
-    model_->AddAt(browser_index_, browser_shortcut);
-    CreateAndSetShelfItemDelegateForID(id);
-    test_api_->RunMessageLoopUntilAnimationsDone();
-    return id;
-  }
-
-  ShelfID AddAppShortcut() {
+  // Add shelf items of various types, and optionally wait for animations.
+  ShelfID AddItem(ShelfItemType type, bool wait_for_animations) {
     ShelfItem item;
-    item.type = TYPE_PINNED_APP;
-    item.status = STATUS_CLOSED;
+    item.type = type;
+    if (type == TYPE_APP || type == TYPE_APP_PANEL)
+      item.status = STATUS_RUNNING;
 
     ShelfID id = model_->next_id();
+    item.app_launch_id = AppLaunchId(base::IntToString(id));
     model_->Add(item);
-    CreateAndSetShelfItemDelegateForID(id);
-    test_api_->RunMessageLoopUntilAnimationsDone();
+    // Set a delegate; some tests require one to select the item.
+    model_->SetShelfItemDelegate(id,
+                                 base::MakeUnique<ShelfItemSelectionTracker>());
+    if (wait_for_animations)
+      test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
-
-  ShelfID AddPanel() {
-    ShelfID id = AddPanelNoWait();
-    test_api_->RunMessageLoopUntilAnimationsDone();
-    return id;
-  }
-
-  ShelfID AddAppNoWait() {
-    ShelfItem item;
-    item.type = TYPE_APP;
-    item.status = STATUS_RUNNING;
-
-    ShelfID id = model_->next_id();
-    model_->Add(item);
-    CreateAndSetShelfItemDelegateForID(id);
-    return id;
-  }
-
-  ShelfID AddPanelNoWait() {
-    ShelfItem item;
-    item.type = TYPE_APP_PANEL;
-    item.status = STATUS_RUNNING;
-
-    ShelfID id = model_->next_id();
-    model_->Add(item);
-    CreateAndSetShelfItemDelegateForID(id);
-    return id;
-  }
-
-  ShelfID AddApp() {
-    ShelfID id = AddAppNoWait();
-    test_api_->RunMessageLoopUntilAnimationsDone();
-    return id;
-  }
+  ShelfID AddAppShortcut() { return AddItem(TYPE_PINNED_APP, true); }
+  ShelfID AddPanel() { return AddItem(TYPE_APP_PANEL, true); }
+  ShelfID AddAppNoWait() { return AddItem(TYPE_APP, false); }
+  ShelfID AddApp() { return AddItem(TYPE_APP, true); }
 
   void SetShelfItemTypeToAppShortcut(ShelfID id) {
     int index = model_->ItemIndexByID(id);
@@ -682,14 +580,6 @@ class ShelfViewTest : public AshTestBase {
     return model_->items()[index].id;
   }
 
-  void ReplaceShelfDelegate() {
-    // Clear the value first to avoid TestShelfDelegate's singleton check.
-    test::ShellTestApi().SetShelfDelegate(nullptr);
-    shelf_delegate_ = new TestShelfDelegateForShelfView();
-    test_api_->SetShelfDelegate(shelf_delegate_);
-    test::ShellTestApi().SetShelfDelegate(base::WrapUnique(shelf_delegate_));
-  }
-
   // Returns the center coordinates for a button. Helper function for an event
   // generator.
   gfx::Point GetButtonCenter(ShelfID button_id) {
@@ -704,9 +594,6 @@ class ShelfViewTest : public AshTestBase {
   ShelfModel* model_;
   ShelfView* shelf_view_;
   int browser_index_;
-
-  // Owned by ash::ShellPort.
-  TestShelfDelegateForShelfView* shelf_delegate_;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
@@ -1209,18 +1096,15 @@ TEST_F(ShelfViewTest, ClickingTwiceActivatesOnce) {
       browser_shelf_id,
       base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
 
-  // A single click selects the item.
+  // A single click selects the item, but a double-click does not.
+  EXPECT_EQ(0u, selection_tracker->item_selected_count());
   SimulateClick(browser_index_);
-  EXPECT_TRUE(selection_tracker->WasSelected());
-
-  // A double-click does not select the item.
-  selection_tracker->Reset();
+  EXPECT_EQ(1u, selection_tracker->item_selected_count());
   SimulateDoubleClick(browser_index_);
-  EXPECT_FALSE(selection_tracker->WasSelected());
+  EXPECT_EQ(1u, selection_tracker->item_selected_count());
 }
 
-// Check that clicking an item and jittering the mouse a bit still selects the
-// item.
+// Check that very small mouse drags do not prevent shelf item selection.
 TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
@@ -1228,8 +1112,7 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
   ShelfID shelf_id = (id_map.begin() + 1)->first;
   views::View* button = (id_map.begin() + 1)->second;
 
-  // Replace the ShelfItemDelegate for |shelf_id| with one which tracks whether
-  // the shelf item gets selected.
+  // Install a ShelfItemDelegate that tracks when the shelf item is selected.
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
   model_->SetShelfItemDelegate(
       shelf_id, base::WrapUnique<ShelfItemSelectionTracker>(selection_tracker));
@@ -1243,26 +1126,26 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
                              press_location_in_screen, ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMousePressed(click_event);
+  EXPECT_EQ(0u, selection_tracker->item_selected_count());
 
   ui::MouseEvent drag_event1(
       ui::ET_MOUSE_DRAGGED, press_location + gfx::Vector2d(0, 1),
       press_location_in_screen + gfx::Vector2d(0, 1), ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event1);
-
   ui::MouseEvent drag_event2(
       ui::ET_MOUSE_DRAGGED, press_location + gfx::Vector2d(-1, 0),
       press_location_in_screen + gfx::Vector2d(-1, 0), ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseDragged(drag_event2);
+  EXPECT_EQ(0u, selection_tracker->item_selected_count());
 
   ui::MouseEvent release_event(
       ui::ET_MOUSE_RELEASED, press_location + gfx::Vector2d(-1, 0),
       press_location_in_screen + gfx::Vector2d(-1, 0), ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, 0);
   button->OnMouseReleased(release_event);
-
-  EXPECT_TRUE(selection_tracker->WasSelected());
+  EXPECT_EQ(1u, selection_tracker->item_selected_count());
 }
 
 // Confirm that item status changes are reflected in the buttons.
@@ -1552,7 +1435,6 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
 TEST_F(ShelfViewTest, OverflowBubbleSize) {
-  shelf_delegate_->set_is_app_pinned(true);
   AddButtonsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/436131).
@@ -2012,23 +1894,25 @@ class InkDropSpy : public views::InkDrop {
 };
 
 // A ShelfItemDelegate that returns a menu for the shelf item.
-class ListMenuShelfItemDelegate : public TestShelfItemDelegate {
+class ListMenuShelfItemDelegate : public ShelfItemDelegate {
  public:
-  ListMenuShelfItemDelegate() : TestShelfItemDelegate(nullptr) {}
+  ListMenuShelfItemDelegate() : ShelfItemDelegate(AppLaunchId()) {}
   ~ListMenuShelfItemDelegate() override {}
 
  private:
-  // TestShelfItemDelegate:
+  // ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,
                     const ItemSelectedCallback& callback) override {
     // Two items are needed to show a menu; the data in the items is not tested.
     std::vector<mojom::MenuItemPtr> items;
-    items.push_back(ash::mojom::MenuItem::New());
-    items.push_back(ash::mojom::MenuItem::New());
-    callback.Run(ash::SHELF_ACTION_NONE, std::move(items));
+    items.push_back(mojom::MenuItem::New());
+    items.push_back(mojom::MenuItem::New());
+    callback.Run(SHELF_ACTION_NONE, std::move(items));
   }
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override {}
+  void Close() override {}
 
   DISALLOW_COPY_AND_ASSIGN(ListMenuShelfItemDelegate);
 };
