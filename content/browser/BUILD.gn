@@ -1832,6 +1832,8 @@ source_set("browser") {
       "android/load_url_params.h",
       "android/overscroll_controller_android.cc",
       "android/overscroll_controller_android.h",
+      "android/render_widget_host_connector.cc",
+      "android/render_widget_host_connector.h",
       "android/synchronous_compositor_browser_filter.cc",
       "android/synchronous_compositor_browser_filter.h",
       "android/synchronous_compositor_host.cc",

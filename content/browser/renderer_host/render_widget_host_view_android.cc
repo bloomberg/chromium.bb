@@ -496,8 +496,7 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   if (content_view_core_)
     content_view_core_->RemoveObserver(this);
   SetContentViewCore(NULL);
-  if (ime_adapter_android_)
-    ime_adapter_android_ = nullptr;
+  DCHECK(!ime_adapter_android_);
   DCHECK(ack_callbacks_.empty());
   DCHECK(!delegated_frame_host_);
 }
@@ -506,6 +505,16 @@ void RenderWidgetHostViewAndroid::Blur() {
   host_->Blur();
   if (overscroll_controller_)
     overscroll_controller_->Disable();
+}
+
+void RenderWidgetHostViewAndroid::AddDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.AddObserver(observer);
+}
+
+void RenderWidgetHostViewAndroid::RemoveDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.RemoveObserver(observer);
 }
 
 bool RenderWidgetHostViewAndroid::OnMessageReceived(
@@ -1020,6 +1029,10 @@ void RenderWidgetHostViewAndroid::Destroy() {
 
   if (GetTextInputManager() && GetTextInputManager()->HasObserver(this))
     GetTextInputManager()->RemoveObserver(this);
+
+  for (auto& observer : destruction_observers_)
+    observer.RenderWidgetHostViewDestroyed(this);
+  destruction_observers_.Clear();
 
   delete this;
 }

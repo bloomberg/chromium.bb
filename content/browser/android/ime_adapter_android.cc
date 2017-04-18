@@ -14,12 +14,10 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -115,7 +113,7 @@ void AppendUnderlineSpan(JNIEnv*,
 ImeAdapterAndroid::ImeAdapterAndroid(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj,
                                      WebContents* web_contents)
-    : WebContentsObserver(web_contents), rwhva_(nullptr) {
+    : RenderWidgetHostConnector(web_contents), rwhva_(nullptr) {
   java_ime_adapter_ = JavaObjectWeakGlobalRef(env, obj);
 }
 
@@ -124,68 +122,23 @@ ImeAdapterAndroid::~ImeAdapterAndroid() {
   ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null())
     Java_ImeAdapter_destroy(env, obj);
-
-  UpdateRenderProcessConnection(nullptr);
-}
-
-RenderWidgetHostViewAndroid* ImeAdapterAndroid::GetRenderWidgetHostViewAndroid()
-    const {
-  RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(web_contents());
-  if (web_contents_impl->ShowingInterstitialPage()) {
-    rwhv = web_contents_impl->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
-  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
-}
-
-void ImeAdapterAndroid::RenderViewReady() {
-  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
-  if (!obj.is_null())
-    Java_ImeAdapter_onConnectedToRenderProcess(env, obj);
-}
-
-void ImeAdapterAndroid::RenderViewHostChanged(RenderViewHost* old_host,
-                                              RenderViewHost* new_host) {
-  if (new_host) {
-    UpdateRenderProcessConnection(static_cast<RenderWidgetHostViewAndroid*>(
-        new_host->GetWidget()->GetView()));
-  } else {
-    UpdateRenderProcessConnection(nullptr);
-  }
-}
-
-void ImeAdapterAndroid::DidAttachInterstitialPage() {
-  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
-}
-
-void ImeAdapterAndroid::DidDetachInterstitialPage() {
-  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
-}
-
-void ImeAdapterAndroid::WebContentsDestroyed() {
-  delete this;
 }
 
 void ImeAdapterAndroid::UpdateRenderProcessConnection(
+    RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
-  if (rwhva_.get() == new_rwhva)
-    return;
-  if (rwhva_)
-    rwhva_->set_ime_adapter(nullptr);
+  if (old_rwhva)
+    old_rwhva->set_ime_adapter(nullptr);
   if (new_rwhva) {
     new_rwhva->set_ime_adapter(this);
-    rwhva_ = new_rwhva->GetWeakPtrAndroid();
-  } else {
-    rwhva_.reset();
+    if (!old_rwhva && new_rwhva) {
+      JNIEnv* env = AttachCurrentThread();
+      ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+      if (!obj.is_null())
+        Java_ImeAdapter_onConnectedToRenderProcess(env, obj);
+    }
   }
+  rwhva_ = new_rwhva;
 }
 
 void ImeAdapterAndroid::UpdateState(const TextInputState& state) {

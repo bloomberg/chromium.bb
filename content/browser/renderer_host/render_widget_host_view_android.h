@@ -78,6 +78,19 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void Blur();
 
+  // Interface used to observe the destruction of a RenderWidgetHostViewAndroid.
+  class DestructionObserver {
+   public:
+    virtual void RenderWidgetHostViewDestroyed(
+        RenderWidgetHostViewAndroid* rwhva) = 0;
+
+   protected:
+    virtual ~DestructionObserver() {}
+  };
+
+  void AddDestructionObserver(DestructionObserver* connector);
+  void RemoveDestructionObserver(DestructionObserver* connector);
+
   // RenderWidgetHostView implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -403,6 +416,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   cc::mojom::MojoCompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
+
+  base::ObserverList<DestructionObserver> destruction_observers_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

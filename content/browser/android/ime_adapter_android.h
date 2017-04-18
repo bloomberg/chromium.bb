@@ -10,9 +10,8 @@
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/memory/weak_ptr.h"
+#include "content/browser/android/render_widget_host_connector.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
@@ -31,9 +30,7 @@ struct TextInputState;
 // This class is in charge of dispatching key events from the java side
 // and forward to renderer along with input method results via
 // corresponding host view.
-// Ownership of these objects remains on the native side (see
-// RenderWidgetHostViewAndroid).
-class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
+class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
  public:
   ImeAdapterAndroid(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
@@ -88,6 +85,11 @@ class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
   bool RequestTextInputStateUpdate(JNIEnv*,
                                    const base::android::JavaParamRef<jobject>&);
 
+  // RendetWidgetHostConnector implementation.
+  void UpdateRenderProcessConnection(
+      RenderWidgetHostViewAndroid* old_rwhva,
+      RenderWidgetHostViewAndroid* new_rhwva) override;
+
   // Called from native -> java
   void CancelComposition();
   void FocusedNodeChanged(bool is_editable_node);
@@ -97,14 +99,6 @@ class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
       JNIEnv* env) {
     return java_ime_adapter_.get(env);
   }
-
-  // WebContentsObserver implementation.
-  void RenderViewReady() override;
-  void RenderViewHostChanged(RenderViewHost* old_host,
-                             RenderViewHost* new_host) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
-  void WebContentsDestroyed() override;
 
   void UpdateState(const TextInputState& state);
 
@@ -116,10 +110,9 @@ class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& text,
       const base::string16& text16);
-  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
-  void UpdateRenderProcessConnection(RenderWidgetHostViewAndroid* new_rwhva);
 
-  base::WeakPtr<RenderWidgetHostViewAndroid> rwhva_;
+  // Current RenderWidgetHostView connected to this instance. Can be null.
+  RenderWidgetHostViewAndroid* rwhva_;
   JavaObjectWeakGlobalRef java_ime_adapter_;
 };
 
