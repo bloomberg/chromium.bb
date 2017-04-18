@@ -64,8 +64,8 @@ void FindTabHelper::ContinueFinding(FindDirection direction,
 }
 
 void FindTabHelper::StopFinding(ProceduralBlock completion) {
-  [controller_ disableFindInPageWithCompletionHandler:completion];
   SetFindUIActive(false);
+  [controller_ disableFindInPageWithCompletionHandler:completion];
 }
 
 FindInPageModel* FindTabHelper::GetFindResult() const {
