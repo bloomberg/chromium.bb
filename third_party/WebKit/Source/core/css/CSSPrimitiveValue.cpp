@@ -265,6 +265,12 @@ double CSSPrimitiveValue::ComputeDegrees() const {
   }
 }
 
+double CSSPrimitiveValue::ComputeDotsPerPixel() const {
+  UnitType current_type = TypeWithCalcResolved();
+  DCHECK(IsResolution(current_type));
+  return GetDoubleValue() * ConversionToCanonicalUnitsScaleFactor(current_type);
+}
+
 template <>
 int CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {

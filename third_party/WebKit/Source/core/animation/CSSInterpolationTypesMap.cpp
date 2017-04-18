@@ -25,6 +25,7 @@
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/CSSPositionInterpolationType.h"
+#include "core/animation/CSSResolutionInterpolationType.h"
 #include "core/animation/CSSRotateInterpolationType.h"
 #include "core/animation/CSSScaleInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
@@ -356,13 +357,16 @@ CSSInterpolationTypesMap::CreateCSSInterpolationTypesForSyntax(
       case CSSSyntaxType::kNumber:
         result.push_back(WTF::MakeUnique<CSSNumberInterpolationType>(property));
         break;
+      case CSSSyntaxType::kResolution:
+        result.push_back(
+            WTF::MakeUnique<CSSResolutionInterpolationType>(property));
+        break;
       case CSSSyntaxType::kTime:
         result.push_back(WTF::MakeUnique<CSSTimeInterpolationType>(property));
         break;
       case CSSSyntaxType::kImage:
       case CSSSyntaxType::kUrl:
       case CSSSyntaxType::kInteger:
-      case CSSSyntaxType::kResolution:
       case CSSSyntaxType::kTransformFunction:
         // TODO(alancutter): Support smooth interpolation of these types.
         break;
