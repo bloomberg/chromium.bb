@@ -5,7 +5,6 @@ include_rules = [
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
     "+v8",
-    "+wtf",
 ]
 
 skip_child_includes = [

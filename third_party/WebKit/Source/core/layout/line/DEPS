@@ -4,7 +4,6 @@ include_rules = [
     "+core/layout/api",
     "+core/layout/line",
     "+platform",
-    "+wtf",
 
     "!core/layout/BidiRun.h",
     "!core/layout/HitTestLocation.h",

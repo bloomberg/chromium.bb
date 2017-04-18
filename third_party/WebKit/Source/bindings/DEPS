@@ -6,7 +6,4 @@ include_rules = [
     "+platform",
     "+public/platform",
     "+web/api",
-
-    # Use platform/wtf/ now (see crbug.com/691465).
-    "-wtf/",
 ]
