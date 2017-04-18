@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
@@ -218,25 +217,12 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         // Called on the main thread to notify that the child service did not disconnect gracefully.
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            synchronized (mLock) {
-                // Ensure that the disconnection logic runs only once (instead of once per each
-                // ChildServiceConnection).
-                if (mServiceDisconnected) {
-                    return;
+            LauncherThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    ChildProcessConnectionImpl.this.onServiceDisconnectedOnLauncherThread();
                 }
-                // Stash the status of the oom bindings, since stop() will release all bindings.
-                mWasOomProtected = isCurrentlyOomProtected();
-                mServiceDisconnected = true;
-                Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
-                stop();  // We don't want to auto-restart on crash. Let the browser do that.
-                mDeathCallback.onChildProcessDied(ChildProcessConnectionImpl.this);
-                // If we have a pending connection callback, we need to communicate the failure to
-                // the caller.
-                if (mConnectionCallback != null) {
-                    mConnectionCallback.onConnected(0);
-                }
-                mConnectionCallback = null;
-            }
+            });
         }
     }
 
@@ -329,8 +315,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     public void start(ChildProcessConnection.StartCallback startCallback) {
         try {
             TraceEvent.begin("ChildProcessConnectionImpl.start");
+            assert LauncherThread.runningOnLauncherThread();
             synchronized (mLock) {
-                assert !ThreadUtils.runningOnUiThread();
                 assert mConnectionParams == null :
                         "setupConnection() called before start() in ChildProcessConnectionImpl.";
 
@@ -387,6 +373,29 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 mService = null;
             }
             mConnectionParams = null;
+        }
+    }
+
+    private void onServiceDisconnectedOnLauncherThread() {
+        assert LauncherThread.runningOnLauncherThread();
+        synchronized (mLock) {
+            // Ensure that the disconnection logic runs only once (instead of once per each
+            // ChildServiceConnection).
+            if (mServiceDisconnected) {
+                return;
+            }
+            // Stash the status of the oom bindings, since stop() will release all bindings.
+            mWasOomProtected = isCurrentlyOomProtected();
+            mServiceDisconnected = true;
+            Log.w(TAG, "onServiceDisconnected (crash or killed by oom): pid=%d", mPid);
+            stop(); // We don't want to auto-restart on crash. Let the browser do that.
+            mDeathCallback.onChildProcessDied(ChildProcessConnectionImpl.this);
+            // If we have a pending connection callback, we need to communicate the failure to
+            // the caller.
+            if (mConnectionCallback != null) {
+                mConnectionCallback.onConnected(0);
+            }
+            mConnectionCallback = null;
         }
     }
 

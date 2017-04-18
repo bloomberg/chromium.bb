@@ -26,6 +26,10 @@ public final class LauncherThread {
         sHandler.post(r);
     }
 
+    public static void postDelayed(Runnable r, long delayMillis) {
+        sHandler.postDelayed(r, delayMillis);
+    }
+
     public static boolean runningOnLauncherThread() {
         return sHandler.getLooper() == Looper.myLooper();
     }

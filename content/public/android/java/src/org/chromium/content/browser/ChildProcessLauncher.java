@@ -43,10 +43,12 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     static ChildProcessConnection allocateConnection(
             ChildSpawnData spawnData, Bundle childProcessCommonParams, boolean forWarmUp) {
+        assert LauncherThread.runningOnLauncherThread();
         ChildProcessConnection.DeathCallback deathCallback =
                 new ChildProcessConnection.DeathCallback() {
                     @Override
                     public void onChildProcessDied(ChildProcessConnection connection) {
+                        assert LauncherThread.runningOnLauncherThread();
                         if (connection.getPid() != 0) {
                             stop(connection.getPid());
                         } else {
@@ -133,6 +135,7 @@ public class ChildProcessLauncher {
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
     private static void freeConnection(ChildProcessConnection connection) {
+        assert LauncherThread.runningOnLauncherThread();
         synchronized (sSpareConnectionLock) {
             if (connection.equals(sSpareSandboxedConnection)) sSpareSandboxedConnection = null;
         }
@@ -143,10 +146,19 @@ public class ChildProcessLauncher {
         // is bound at that point, the process is reused and bad things happen (mostly static
         // variables are set when we don't expect them to).
         final ChildProcessConnection conn = connection;
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+        LauncherThread.postDelayed(new Runnable() {
             @Override
             public void run() {
-                final ChildSpawnData pendingSpawn = freeConnectionAndDequeuePending(conn);
+                // TODO(jcivelli): it should be safe to pass a null Context here as it is used to
+                // initialize the ChildConnectionAllocator object and if we are freeing a
+                // connection, we must have allocated one previously guaranteeing it is already
+                // initialized. When we consolidate ChildProcessLauncher and
+                // ChildProcessLauncherHelper, we'll have a context around that we can pass in
+                // there.
+                ChildConnectionAllocator allocator = ChildConnectionAllocator.getAllocator(
+                        null /* context */, conn.getPackageName(), conn.isInSandbox());
+                assert allocator != null;
+                final ChildSpawnData pendingSpawn = allocator.free(conn);
                 if (pendingSpawn != null) {
                     LauncherThread.post(new Runnable() {
                         @Override
@@ -163,18 +175,6 @@ public class ChildProcessLauncher {
                 }
             }
         }, FREE_CONNECTION_DELAY_MILLIS);
-    }
-
-    private static ChildSpawnData freeConnectionAndDequeuePending(ChildProcessConnection conn) {
-        // TODO(jcivelli): it should be safe to pass a null Context here as it is used to initialize
-        // the ChildConnectionAllocator object and if we are freeing a connection, we must have
-        // allocated one previously guaranteeing it is already initialized.
-        // When we consolidate ChildProcessLauncher and ChildProcessLauncherHelper, we'll have a
-        // context around that we can pass in there.
-        ChildConnectionAllocator allocator = ChildConnectionAllocator.getAllocator(
-                null /* context */, conn.getPackageName(), conn.isInSandbox());
-        assert allocator != null;
-        return allocator.free(conn);
     }
 
     // Represents an invalid process handle; same as base/process/process.h kNullProcessHandle.
@@ -485,6 +485,7 @@ public class ChildProcessLauncher {
      * @param pid The pid (process handle) of the service connection obtained from {@link #start}.
      */
     static void stop(int pid) {
+        assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "stopping child connection: pid=%d", pid);
         ChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {

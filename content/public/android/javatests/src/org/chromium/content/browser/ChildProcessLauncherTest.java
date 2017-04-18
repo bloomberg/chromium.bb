@@ -562,48 +562,82 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      * but doesn't really start the connection to bind a service. It is for testing whether the
      * connection is allocated properly for different application packages.
      */
-    private ChildProcessConnectionImpl allocateConnection(String packageName) {
-        // Allocate a new connection.
-        Context context = getInstrumentation().getTargetContext();
-        ChildProcessCreationParams creationParams =
-                getDefaultChildProcessCreationParams(packageName);
-        return (ChildProcessConnectionImpl) ChildProcessLauncher.allocateConnection(
-                new ChildSpawnData(context, null /* commandLine */, 0 /* childProcessId */,
-                        null /* filesToBeMapped */, null /* launchCallback */,
-                        null /* childProcessCallback */, true /* inSandbox */,
-                        false /* alwaysInForeground */, creationParams),
-                ChildProcessLauncher.createCommonParamsBundle(creationParams),
-                false /* forWarmUp */);
+    private ChildProcessConnectionImpl allocateConnection(final String packageName) {
+        return ChildProcessLauncherTestHelperService.runOnLauncherAndGetResult(
+                new Callable<ChildProcessConnectionImpl>() {
+                    @Override
+                    public ChildProcessConnectionImpl call() {
+                        // Allocate a new connection.
+                        Context context = getInstrumentation().getTargetContext();
+                        ChildProcessCreationParams creationParams =
+                                getDefaultChildProcessCreationParams(packageName);
+                        return (ChildProcessConnectionImpl) ChildProcessLauncher.allocateConnection(
+                                new ChildSpawnData(context, null /* commandLine */,
+                                        0 /* childProcessId */, null /* filesToBeMapped */,
+                                        null /* launchCallback */, null /* childProcessCallback */,
+                                        true /* inSandbox */, false /* alwaysInForeground */,
+                                        creationParams),
+                                ChildProcessLauncher.createCommonParamsBundle(creationParams),
+                                false /* forWarmUp */);
+                    }
+                });
     }
 
-    private static void enqueuePendingSpawnForTesting(Context context, String[] commandLine,
-            ChildProcessCreationParams creationParams, boolean inSandbox) {
-        String packageName =
-                creationParams != null ? creationParams.getPackageName() : context.getPackageName();
-        ChildConnectionAllocator allocator =
-                ChildConnectionAllocator.getAllocator(context, packageName, inSandbox);
-        allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
-                1 /* childProcessId */, new FileDescriptorInfo[0], null /* launchCallback */,
-                null /* childProcessCallback */, true /* inSandbox */,
-                false /* alwaysInForeground */, creationParams));
+    private static void enqueuePendingSpawnForTesting(final Context context,
+            final String[] commandLine, final ChildProcessCreationParams creationParams,
+            final boolean inSandbox) {
+        ChildProcessLauncherTestHelperService.runOnLauncherThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                String packageName = creationParams != null ? creationParams.getPackageName()
+                                                            : context.getPackageName();
+                ChildConnectionAllocator allocator =
+                        ChildConnectionAllocator.getAllocator(context, packageName, inSandbox);
+                allocator.enqueuePendingQueueForTesting(new ChildSpawnData(context, commandLine,
+                        1 /* childProcessId */, new FileDescriptorInfo[0],
+                        null /* launchCallback */, null /* childProcessCallback */,
+                        true /* inSandbox */, false /* alwaysInForeground */, creationParams));
+            }
+        });
     }
 
     private static int allocatedSandboxedConnectionsCountForTesting(
-            Context context, String packageName) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
-                .allocatedConnectionsCountForTesting();
+            final Context context, final String packageName) {
+        return ChildProcessLauncherTestHelperService.runOnLauncherAndGetResult(
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return ChildConnectionAllocator
+                                .getAllocator(context, packageName, true /*isSandboxed */)
+                                .allocatedConnectionsCountForTesting();
+                    }
+                });
     }
 
     private static ChildProcessConnection[] getSandboxedConnectionArrayForTesting(
-            Context context, String packageName) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, true /*isSandboxed */)
-                .connectionArrayForTesting();
+            final Context context, final String packageName) {
+        return ChildProcessLauncherTestHelperService.runOnLauncherAndGetResult(
+                new Callable<ChildProcessConnection[]>() {
+                    @Override
+                    public ChildProcessConnection[] call() {
+                        return ChildConnectionAllocator
+                                .getAllocator(context, packageName, true /*isSandboxed */)
+                                .connectionArrayForTesting();
+                    }
+                });
     }
 
     private static int pendingSpawnsCountForTesting(
-            Context context, String packageName, boolean inSandbox) {
-        return ChildConnectionAllocator.getAllocator(context, packageName, inSandbox)
-                .pendingSpawnsCountForTesting();
+            final Context context, final String packageName, final boolean inSandbox) {
+        return ChildProcessLauncherTestHelperService.runOnLauncherAndGetResult(
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return ChildConnectionAllocator
+                                .getAllocator(context, packageName, inSandbox)
+                                .pendingSpawnsCountForTesting();
+                    }
+                });
     }
 
     /**

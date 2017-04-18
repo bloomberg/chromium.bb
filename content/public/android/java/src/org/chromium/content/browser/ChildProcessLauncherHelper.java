@@ -88,9 +88,9 @@ class ChildProcessLauncherHelper {
         ChildProcessLauncher.getBindingManager().setInForeground(mPid, inForeground);
     }
 
-    // Called on client (UI or IO) thread and launcher thread.
     @CalledByNative
     private static void stop(int pid) {
+        assert LauncherThread.runningOnLauncherThread();
         ChildProcessLauncher.stop(pid);
     }
 

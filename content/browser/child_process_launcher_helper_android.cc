@@ -34,6 +34,7 @@ namespace {
 
 // Stops a child process based on the handle returned from StartChildProcess.
 void StopChildProcess(base::ProcessHandle handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_ChildProcessLauncherHelper_stop(env, static_cast<jint>(handle));
@@ -159,7 +160,8 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
 // static
 bool ChildProcessLauncherHelper::TerminateProcess(
     const base::Process& process, int exit_code, bool wait) {
-  StopChildProcess(process.Handle());
+  BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+                          base::Bind(&StopChildProcess, process.Handle()));
   return true;
 }
 

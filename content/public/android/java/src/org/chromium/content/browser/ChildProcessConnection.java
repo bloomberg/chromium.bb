@@ -25,6 +25,7 @@ public interface ChildProcessConnection {
      * fully set up.
      */
     interface DeathCallback {
+        // Called on Launcher thread.
         void onChildProcessDied(ChildProcessConnection connection);
     }
 
