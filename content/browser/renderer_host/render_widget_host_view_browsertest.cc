@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -21,6 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -30,10 +32,12 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/layout.h"
@@ -201,6 +205,73 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   int callback_invoke_count_;
   int frames_captured_;
 };
+
+// Helps to ensure that a navigation is committed after a compositor frame was
+// submitted by the renderer, but before corresponding ACK is sent back.
+class CommitBeforeSwapAckSentHelper : public WebContentsObserver {
+ public:
+  explicit CommitBeforeSwapAckSentHelper(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+ private:
+  void WaitForSwapCompositorFrame() {
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    FrameWatcher(web_contents()).WaitFrames(1);
+  }
+
+  bool OnMessageReceived(const IPC::Message& message,
+                         RenderFrameHost* rfh) override {
+    IPC_BEGIN_MESSAGE_MAP(CommitBeforeSwapAckSentHelper, message)
+      IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
+                                  WaitForSwapCompositorFrame())
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(CommitBeforeSwapAckSentHelper);
+};
+
+using RenderWidgetHostViewBrowserTestBase = ContentBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
+                       CompositorWorksWhenReusingRenderer) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto* web_contents = shell()->web_contents();
+  // Load a page that draws new frames infinitely.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/page_with_animation.html"));
+
+  // Open a new page in the same renderer to keep it alive.
+  WebContents::CreateParams new_contents_params(
+      web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+  std::unique_ptr<WebContents> new_web_contents(
+      WebContents::Create(new_contents_params));
+
+  new_web_contents->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(GURL(url::kAboutBlankURL)));
+  EXPECT_TRUE(WaitForLoadStop(new_web_contents.get()));
+
+  // Start a cross-process navigation.
+  shell()->LoadURL(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+
+  // When the navigation is about to commit, wait for the next frame to be
+  // submitted by the renderer before proceeding with page load.
+  {
+    CommitBeforeSwapAckSentHelper commit_helper(web_contents);
+    EXPECT_TRUE(WaitForLoadStop(web_contents));
+    EXPECT_NE(web_contents->GetRenderProcessHost(),
+              new_web_contents->GetRenderProcessHost());
+  }
+
+  // Go back and verify that the renderer continues to draw new frames.
+  shell()->GoBackOrForward(-1);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  EXPECT_EQ(web_contents->GetRenderProcessHost(),
+            new_web_contents->GetRenderProcessHost());
+  FrameWatcher(web_contents).WaitFrames(5);
+}
 
 enum CompositingMode {
   GL_COMPOSITING,
