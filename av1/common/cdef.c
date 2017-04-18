@@ -107,7 +107,6 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
 void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
                                 int sstride, int v, int h) {
   int i, j;
-  OD_ASSERT((h & 0x7) == 0);
   for (i = 0; i < v; i++) {
     for (j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
@@ -119,7 +118,6 @@ void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
                                  const uint16_t *src, int sstride, int v,
                                  int h) {
   int i, j;
-  OD_ASSERT((h & 0x7) == 0);
   for (i = 0; i < v; i++) {
     for (j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
@@ -147,18 +145,9 @@ void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
                              uint16_t x) {
   int i, j;
-  OD_ASSERT((h & 0x7) == 0);
   for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j += 8) {
-      int k = i * dstride + j;
-      dst[k + 0] = x;
-      dst[k + 1] = x;
-      dst[k + 2] = x;
-      dst[k + 3] = x;
-      dst[k + 4] = x;
-      dst[k + 5] = x;
-      dst[k + 6] = x;
-      dst[k + 7] = x;
+    for (j = 0; j < h; j++) {
+      dst[i * dstride + j] = x;
     }
   }
 }
@@ -166,19 +155,9 @@ static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
 static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
                              int sstride, int v, int h) {
   int i, j;
-  OD_ASSERT((h & 0x7) == 0);
   for (i = 0; i < v; i++) {
-    for (j = 0; j < h; j += 8) {
-      int k = i * dstride + j;
-      int l = i * sstride + j;
-      dst[k + 0] = src[l + 0];
-      dst[k + 1] = src[l + 1];
-      dst[k + 2] = src[l + 2];
-      dst[k + 3] = src[l + 3];
-      dst[k + 4] = src[l + 4];
-      dst[k + 5] = src[l + 5];
-      dst[k + 6] = src[l + 6];
-      dst[k + 7] = src[l + 7];
+    for (j = 0; j < h; j++) {
+      dst[i * dstride + j] = src[i * sstride + j];
     }
   }
 }
