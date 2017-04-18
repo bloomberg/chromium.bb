@@ -549,6 +549,9 @@ void
 evdev_device_set_output(struct evdev_device *device,
 			struct weston_output *output)
 {
+	if (device->output == output)
+		return;
+
 	if (device->output_destroy_listener.notify) {
 		wl_list_remove(&device->output_destroy_listener.link);
 		device->output_destroy_listener.notify = NULL;
