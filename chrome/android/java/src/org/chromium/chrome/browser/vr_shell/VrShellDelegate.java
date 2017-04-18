@@ -78,11 +78,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     @IntDef({VR_NOT_AVAILABLE, VR_CARDBOARD, VR_DAYDREAM})
     private @interface VrSupportLevel {}
 
-    // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
-    // in SDK and we don't want add dependency to SDK just to get these strings.
-    private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
-    private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
-
     // Linter and formatter disagree on how the line below should be formatted.
     /* package */
     static final String VR_ENTRY_RESULT_ACTION =
@@ -204,14 +199,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (instance.enterVrInternal() == ENTER_VR_CANCELLED && created_delegate) {
             instance.destroy();
         }
-    }
-
-    /**
-     * Whether or not the intent is a Daydream VR Intent.
-     */
-    public static boolean isDaydreamVrIntent(Intent intent) {
-        if (intent == null || intent.getCategories() == null) return false;
-        return intent.getCategories().contains(DAYDREAM_CATEGORY);
     }
 
     /**
