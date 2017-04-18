@@ -687,7 +687,7 @@ inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
 
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::Swap(LinkedHashSet& other) {
-  impl_.Swap(other.impl_);
+  impl_.swap(other.impl_);
   SwapAnchor(anchor_, other.anchor_);
 }
 

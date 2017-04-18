@@ -32,7 +32,7 @@ namespace blink {
 
 void DistributedNodes::Swap(DistributedNodes& other) {
   nodes_.Swap(other.nodes_);
-  indices_.Swap(other.indices_);
+  indices_.swap(other.indices_);
 }
 
 void DistributedNodes::Append(Node* node) {

@@ -126,7 +126,7 @@ void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
   DCHECK(IsGraphOwner());
 
   HashSet<AudioNodeOutput*> dirty_outputs;
-  dirty_audio_node_outputs_.Swap(dirty_outputs);
+  dirty_audio_node_outputs_.swap(dirty_outputs);
 
   // Note: the updating of rendering state may cause output nodes
   // further down the chain to be marked as dirty. These will not

@@ -76,7 +76,7 @@ HTMLFrameOwnerElement::UpdateSuspendScope::UpdateSuspendScope() {
 void HTMLFrameOwnerElement::UpdateSuspendScope::
     PerformDeferredWidgetTreeOperations() {
   FrameViewBaseToParentMap map;
-  WidgetNewParentMap().Swap(map);
+  WidgetNewParentMap().swap(map);
   for (const auto& frame_view_base : map) {
     FrameViewBase* child = frame_view_base.key.Get();
     FrameView* current_parent = ToFrameView(child->Parent());
@@ -93,7 +93,7 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::
 
   {
     FrameViewBaseSet set;
-    WidgetsPendingTemporaryRemovalFromParent().Swap(set);
+    WidgetsPendingTemporaryRemovalFromParent().swap(set);
     for (const auto& frame_view_base : set) {
       FrameView* current_parent = ToFrameView(frame_view_base->Parent());
       if (current_parent)

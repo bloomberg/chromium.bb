@@ -206,7 +206,7 @@ void InspectorResourceContentLoader::Dispose() {
 
 void InspectorResourceContentLoader::Stop() {
   HeapHashSet<Member<ResourceClient>> pending_resource_clients;
-  pending_resource_clients_.Swap(pending_resource_clients);
+  pending_resource_clients_.swap(pending_resource_clients);
   for (const auto& client : pending_resource_clients)
     client->loader_ = nullptr;
   resources_.Clear();
@@ -224,7 +224,7 @@ void InspectorResourceContentLoader::CheckDone() {
   if (!HasFinished())
     return;
   HashMap<int, Callbacks> callbacks;
-  callbacks.Swap(callbacks_);
+  callbacks.swap(callbacks_);
   for (const auto& key_value : callbacks) {
     for (const auto& callback : key_value.value)
       (*callback)();

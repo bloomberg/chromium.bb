@@ -2422,7 +2422,7 @@ void Document::UpdateUseShadowTreesIfNeeded() {
     return;
 
   HeapHashSet<Member<SVGUseElement>> elements;
-  use_elements_needing_update_.Swap(elements);
+  use_elements_needing_update_.swap(elements);
   for (SVGUseElement* element : elements)
     element->BuildPendingResource();
 }

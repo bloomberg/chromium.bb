@@ -437,7 +437,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   if (pending_update_.IsEmpty())
     return;
 
-  previous_active_interpolations_for_animations_.Swap(
+  previous_active_interpolations_for_animations_.swap(
       pending_update_.ActiveInterpolationsForAnimations());
 
   // FIXME: cancelling, pausing, unpausing animations all query

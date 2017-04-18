@@ -796,7 +796,7 @@ ListHashSet<T, inlineCapacity, U, V>::operator=(ListHashSet&& other) {
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline void ListHashSet<T, inlineCapacity, U, V>::Swap(ListHashSet& other) {
-  impl_.Swap(other.impl_);
+  impl_.swap(other.impl_);
   std::swap(head_, other.head_);
   std::swap(tail_, other.tail_);
   allocator_provider_.Swap(other.allocator_provider_);

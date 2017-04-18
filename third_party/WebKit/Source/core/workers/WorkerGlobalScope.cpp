@@ -93,13 +93,13 @@ void WorkerGlobalScope::Dispose() {
   // is destroyed.
   closing_ = true;
   HeapHashSet<Member<V8AbstractEventListener>> listeners;
-  listeners.Swap(event_listeners_);
+  listeners.swap(event_listeners_);
   while (!listeners.IsEmpty()) {
     for (const auto& listener : listeners)
       listener->ClearListenerObject();
     listeners.Clear();
     // Pick up any additions made while iterating.
-    listeners.Swap(event_listeners_);
+    listeners.swap(event_listeners_);
   }
   RemoveAllEventListeners();
 

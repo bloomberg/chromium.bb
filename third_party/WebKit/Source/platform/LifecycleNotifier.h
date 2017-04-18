@@ -134,7 +134,7 @@ inline void LifecycleNotifier<T, Observer>::NotifyContextDestroyed() {
   // Observer unregistration is allowed, but effectively a no-op.
   AutoReset<IterationState> scope(&iteration_state_, kAllowingRemoval);
   ObserverSet observers;
-  observers_.Swap(observers);
+  observers_.swap(observers);
   for (Observer* observer : observers) {
     DCHECK(observer->LifecycleContext() == Context());
     ContextDestroyedNotifier<Observer, T>::Call(observer, Context());

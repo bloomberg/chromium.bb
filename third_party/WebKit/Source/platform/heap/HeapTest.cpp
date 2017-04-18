@@ -2676,11 +2676,11 @@ TEST(HeapTest, HeapCollectionTypes) {
       // Swap set and set2 in a roundabout way.
       MemberSet& cset1 = container->set;
       MemberSet& cset2 = container->set2;
-      set->Swap(cset1);
-      set2->Swap(cset2);
-      set->Swap(cset2);
-      cset1.Swap(cset2);
-      cset2.Swap(*set2);
+      set->swap(cset1);
+      set2->swap(cset2);
+      set->swap(cset2);
+      cset1.swap(cset2);
+      cset2.swap(*set2);
 
       MemberCountedSet& c_counted_set = container->set3;
       set3->swap(c_counted_set);
@@ -2688,10 +2688,10 @@ TEST(HeapTest, HeapCollectionTypes) {
       set3->swap(c_counted_set);
 
       // Triple swap.
-      container->map.Swap(*member_member2);
+      container->map.swap(*member_member2);
       MemberMember& contained_map = container->map;
-      member_member3->Swap(contained_map);
-      member_member3->Swap(*member_member);
+      member_member3->swap(contained_map);
+      member_member3->swap(*member_member);
 
       EXPECT_TRUE(member_member->at(one) == two);
       EXPECT_TRUE(member_member->at(two) == three);
@@ -2978,7 +2978,7 @@ TEST(HeapTest, PersistentSet) {
 
     set1.insert(one);
     set2.insert(two);
-    set1.Swap(set2);
+    set1.swap(set2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(set1.Contains(two));
     EXPECT_TRUE(set2.Contains(one));
@@ -3029,7 +3029,7 @@ TEST(HeapTest, CrossThreadPersistentSet) {
 
     set1.insert(one);
     set2.insert(two);
-    set1.Swap(set2);
+    set1.swap(set2);
     ConservativelyCollectGarbage();
     EXPECT_TRUE(set1.Contains(two));
     EXPECT_TRUE(set2.Contains(one));

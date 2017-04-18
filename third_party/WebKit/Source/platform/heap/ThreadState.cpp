@@ -1233,7 +1233,7 @@ void ThreadState::RegisterStaticPersistentNode(
 void ThreadState::ReleaseStaticPersistentNodes() {
   HashMap<PersistentNode*, ThreadState::PersistentClearCallback>
       static_persistents;
-  static_persistents.Swap(static_persistents_);
+  static_persistents.swap(static_persistents_);
 
   PersistentRegion* persistent_region = GetPersistentRegion();
   for (const auto& it : static_persistents)

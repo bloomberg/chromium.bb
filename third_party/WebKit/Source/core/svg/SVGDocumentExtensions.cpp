@@ -62,7 +62,7 @@ void SVGDocumentExtensions::ServiceAnimations() {
   }
 
   SVGElementSet web_animations_pending_svg_elements;
-  web_animations_pending_svg_elements.Swap(
+  web_animations_pending_svg_elements.swap(
       web_animations_pending_svg_elements_);
 
   // TODO(alancutter): Make SVG animation effect application a separate document

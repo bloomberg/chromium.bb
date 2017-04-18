@@ -707,7 +707,7 @@ void InspectorCSSAgent::FlushPendingProtocolNotifications() {
   if (!invalidated_documents_.size())
     return;
   HeapHashSet<Member<Document>> invalidated_documents;
-  invalidated_documents_.Swap(invalidated_documents);
+  invalidated_documents_.swap(invalidated_documents);
   for (Document* document : invalidated_documents)
     UpdateActiveStyleSheets(document);
 }

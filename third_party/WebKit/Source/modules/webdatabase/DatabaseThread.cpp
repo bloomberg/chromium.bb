@@ -106,7 +106,7 @@ void DatabaseThread::CleanupDatabaseThread() {
     // As the call to close will modify the original set, we must take a copy to
     // iterate over.
     HashSet<CrossThreadPersistent<Database>> open_set_copy;
-    open_set_copy.Swap(open_database_set_);
+    open_set_copy.swap(open_database_set_);
     HashSet<CrossThreadPersistent<Database>>::iterator end =
         open_set_copy.end();
     for (HashSet<CrossThreadPersistent<Database>>::iterator it =

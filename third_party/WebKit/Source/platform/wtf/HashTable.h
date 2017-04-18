@@ -696,7 +696,7 @@ class HashTable final
 
   HashTable(const HashTable&);
   HashTable(HashTable&&);
-  void Swap(HashTable&);
+  void swap(HashTable&);
   HashTable& operator=(const HashTable&);
   HashTable& operator=(HashTable&&);
 
@@ -1863,7 +1863,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       m_stats(HashTableStatsPtr<Allocator>::copy(other.m_stats))
 #endif
 {
-  Swap(other);
+  swap(other);
 }
 
 template <typename Key,
@@ -1879,7 +1879,7 @@ void HashTable<Key,
                HashFunctions,
                Traits,
                KeyTraits,
-               Allocator>::Swap(HashTable& other) {
+               Allocator>::swap(HashTable& other) {
   DCHECK(!AccessForbidden());
   std::swap(table_, other.table_);
   std::swap(table_size_, other.table_size_);
@@ -1911,7 +1911,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 operator=(const HashTable& other) {
   HashTable tmp(other);
-  Swap(tmp);
+  swap(tmp);
   return *this;
 }
 
@@ -1925,7 +1925,7 @@ template <typename Key,
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 operator=(HashTable&& other) {
-  Swap(other);
+  swap(other);
   return *this;
 }
 

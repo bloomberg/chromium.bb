@@ -238,15 +238,15 @@ class CSSAnimationUpdate final {
 
   void AdoptActiveInterpolationsForAnimations(
       ActiveInterpolationsMap& new_map) {
-    new_map.Swap(active_interpolations_for_animations_);
+    new_map.swap(active_interpolations_for_animations_);
   }
   void AdoptActiveInterpolationsForCustomTransitions(
       ActiveInterpolationsMap& new_map) {
-    new_map.Swap(active_interpolations_for_custom_transitions_);
+    new_map.swap(active_interpolations_for_custom_transitions_);
   }
   void AdoptActiveInterpolationsForStandardTransitions(
       ActiveInterpolationsMap& new_map) {
-    new_map.Swap(active_interpolations_for_standard_transitions_);
+    new_map.swap(active_interpolations_for_standard_transitions_);
   }
   const ActiveInterpolationsMap& ActiveInterpolationsForAnimations() const {
     return active_interpolations_for_animations_;

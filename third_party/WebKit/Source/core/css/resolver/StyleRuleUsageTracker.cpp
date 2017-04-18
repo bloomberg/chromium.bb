@@ -11,7 +11,7 @@ namespace blink {
 
 StyleRuleUsageTracker::RuleListByStyleSheet StyleRuleUsageTracker::TakeDelta() {
   RuleListByStyleSheet result;
-  result.Swap(used_rules_delta_);
+  result.swap(used_rules_delta_);
   return result;
 }
 

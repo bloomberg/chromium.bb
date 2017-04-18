@@ -392,7 +392,7 @@ void NetworkResourcesData::Clear(const String& preserved_loader_id) {
         resource_data->LoaderId() == preserved_loader_id)
       preserved_map.Set(resource.key, resource.value);
   }
-  request_id_to_resource_data_map_.Swap(preserved_map);
+  request_id_to_resource_data_map_.swap(preserved_map);
 
   reused_xhr_replay_data_request_ids_.Clear();
 }

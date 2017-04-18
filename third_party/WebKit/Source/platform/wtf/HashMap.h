@@ -105,7 +105,7 @@ class HashMap {
       const_iterator;
   typedef typename HashTableType::AddResult AddResult;
 
-  void Swap(HashMap& ref) { impl_.Swap(ref.impl_); }
+  void swap(HashMap& ref) { impl_.swap(ref.impl_); }
 
   unsigned size() const;
   unsigned Capacity() const;

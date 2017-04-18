@@ -540,7 +540,7 @@ void PaintController::CommitNewDisplayItems(
   current_cache_generation_ =
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
 
-  new_cached_subsequences_.Swap(current_cached_subsequences_);
+  new_cached_subsequences_.swap(current_cached_subsequences_);
   new_cached_subsequences_.Clear();
   last_cached_subsequence_end_ = 0;
   for (auto& item : current_cached_subsequences_) {

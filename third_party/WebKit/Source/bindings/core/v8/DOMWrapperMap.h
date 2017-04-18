@@ -106,7 +106,7 @@ class DOMWrapperMap {
     typedef typename Impl::iterator Iterator;
     static size_t Size(const Impl* impl) { return impl->size(); }
     static bool Empty(Impl* impl) { return impl->IsEmpty(); }
-    static void Swap(Impl& impl, Impl& other) { impl.Swap(other); }
+    static void Swap(Impl& impl, Impl& other) { impl.swap(other); }
     static Iterator Begin(Impl* impl) { return impl->begin(); }
     static Iterator End(Impl* impl) { return impl->end(); }
     static v8::PersistentContainerValue Value(Iterator& iter) {

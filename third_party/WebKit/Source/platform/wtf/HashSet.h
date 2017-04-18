@@ -78,7 +78,7 @@ class HashSet {
   HashSet(std::initializer_list<ValueType> elements);
   HashSet& operator=(std::initializer_list<ValueType> elements);
 
-  void Swap(HashSet& ref) { impl_.Swap(ref.impl_); }
+  void swap(HashSet& ref) { impl_.swap(ref.impl_); }
 
   unsigned size() const;
   unsigned Capacity() const;

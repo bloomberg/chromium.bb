@@ -66,7 +66,7 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
     return;
   }
   HeapHashSet<Member<IntersectionObserver>> observers;
-  pending_intersection_observers_.Swap(observers);
+  pending_intersection_observers_.swap(observers);
   for (auto& observer : observers)
     observer->Deliver();
 }

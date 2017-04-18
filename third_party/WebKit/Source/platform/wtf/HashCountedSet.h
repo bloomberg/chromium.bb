@@ -63,7 +63,7 @@ class HashCountedSet {
                   "HeapHashCountedSet<Member<T>> instead.");
   }
 
-  void swap(HashCountedSet& other) { impl_.Swap(other.impl_); }
+  void swap(HashCountedSet& other) { impl_.swap(other.impl_); }
 
   unsigned size() const { return impl_.size(); }
   unsigned capacity() const { return impl_.capacity(); }

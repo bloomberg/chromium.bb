@@ -2463,7 +2463,7 @@ bool FrameView::UpdatePlugins() {
   // Need to swap because script will run inside the below loop and invalidate
   // the iterator.
   EmbeddedObjectSet objects;
-  objects.Swap(part_update_set_);
+  objects.swap(part_update_set_);
 
   for (const auto& embedded_object : objects) {
     LayoutEmbeddedObject& object = *embedded_object;
