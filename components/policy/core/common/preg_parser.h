@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/policy_export.h"
 
 namespace base {
@@ -22,7 +23,6 @@ class FilePath;
 
 namespace policy {
 
-class PolicyLoadStatusSample;
 class RegistryDict;
 
 namespace preg_parser {
@@ -31,12 +31,24 @@ namespace preg_parser {
 POLICY_EXPORT extern const char kPRegFileHeader[8];
 
 // Reads the PReg file at |file_path| and writes the registry data to |dict|.
-// |root| specifies the registry subtree the caller is interested in,
-// everything else gets ignored.
+// |root| specifies the registry subtree the caller is interested in, everything
+// else gets ignored.
 POLICY_EXPORT bool ReadFile(const base::FilePath& file_path,
                             const base::string16& root,
                             RegistryDict* dict,
-                            PolicyLoadStatusSample* status);
+                            PolicyLoadStatusSample* status_sample);
+
+// Similar to ReadFile, but reads from |data| of length |data_size| instead of
+// a file, and writes status to the enum PolicyLoadStatus, which does not record
+// UMA stats, unlike |PolicyLoadStatusSample|. |debug_name| is printed out along
+// with error messages. Used internally and for testing only. All other callers
+// should use ReadFile instead.
+POLICY_EXPORT bool ReadDataInternal(const uint8_t* data,
+                                    size_t data_size,
+                                    const base::string16& root,
+                                    RegistryDict* dict,
+                                    PolicyLoadStatus* status,
+                                    const std::string& debug_name);
 
 }  // namespace preg_parser
 }  // namespace policy
