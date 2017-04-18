@@ -336,4 +336,26 @@ TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
     EXPECT_EQ(75, grandchild->VisualRect().Height());
 }
 
+TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  #target {"
+      "    position: absolute;"
+      "    z-index: 0;"
+      "    overflow: hidden;"
+      "    width: 50px;"
+      "    height: 50px;"
+      "  }"
+      "</style>"
+      "<div id='target'></div>");
+
+  auto* target = GetDocument().GetElementById("target");
+  auto* target_object = ToLayoutBoxModelObject(target->GetLayoutObject());
+  target->setAttribute(HTMLNames::styleAttr, "border-radius: 5px");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(target_object->Layer()->NeedsRepaint());
+  // And should not trigger any assert failure.
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink
