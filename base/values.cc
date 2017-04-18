@@ -1076,14 +1076,10 @@ bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
   if (!in_value)
     return false;
 
-  if (index >= list_->size()) {
-    // Pad out any intermediate indexes with null settings
-    while (index > list_->size())
-      Append(MakeUnique<Value>());
-    Append(std::move(in_value));
-  } else {
-    (*list_)[index] = std::move(*in_value);
-  }
+  if (index >= list_->size())
+    list_->resize(index + 1);
+
+  (*list_)[index] = std::move(*in_value);
   return true;
 }
 
@@ -1234,37 +1230,35 @@ void ListValue::Append(std::unique_ptr<Value> in_value) {
 }
 
 void ListValue::AppendBoolean(bool in_value) {
-  Append(MakeUnique<Value>(in_value));
+  list_->emplace_back(in_value);
 }
 
 void ListValue::AppendInteger(int in_value) {
-  Append(MakeUnique<Value>(in_value));
+  list_->emplace_back(in_value);
 }
 
 void ListValue::AppendDouble(double in_value) {
-  Append(MakeUnique<Value>(in_value));
+  list_->emplace_back(in_value);
 }
 
 void ListValue::AppendString(StringPiece in_value) {
-  Append(MakeUnique<Value>(in_value));
+  list_->emplace_back(in_value);
 }
 
 void ListValue::AppendString(const string16& in_value) {
-  Append(MakeUnique<Value>(in_value));
+  list_->emplace_back(in_value);
 }
 
 void ListValue::AppendStrings(const std::vector<std::string>& in_values) {
-  for (std::vector<std::string>::const_iterator it = in_values.begin();
-       it != in_values.end(); ++it) {
-    AppendString(*it);
-  }
+  list_->reserve(list_->size() + in_values.size());
+  for (const auto& in_value : in_values)
+    list_->emplace_back(in_value);
 }
 
 void ListValue::AppendStrings(const std::vector<string16>& in_values) {
-  for (std::vector<string16>::const_iterator it = in_values.begin();
-       it != in_values.end(); ++it) {
-    AppendString(*it);
-  }
+  list_->reserve(list_->size() + in_values.size());
+  for (const auto& in_value : in_values)
+    list_->emplace_back(in_value);
 }
 
 bool ListValue::AppendIfNotPresent(std::unique_ptr<Value> in_value) {
