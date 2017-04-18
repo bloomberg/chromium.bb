@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 
 namespace media {
@@ -124,7 +123,10 @@ class AudioInputController::AudioCallback
     received_callback_ = true;
 
     DeliverDataToSyncWriter(source, hardware_delay_bytes, volume);
-    PerformOptionalDebugRecording(source);
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+    controller_->debug_recording_helper_.OnData(source);
+#endif
   }
 
   void OnError(AudioInputStream* stream) override {
@@ -132,28 +134,6 @@ class AudioInputController::AudioCallback
     controller_->task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&AudioInputController::DoReportError, weak_controller_));
-  }
-
-  void PerformOptionalDebugRecording(const AudioBus* source) {
-    // Called on the hw callback thread while recording is enabled.
-    if (!controller_->debug_writer_ || !controller_->debug_writer_->WillWrite())
-      return;
-
-    // TODO(tommi): This is costly. AudioBus heap allocs and we create a new
-    // one for every callback. We could instead have a pool of bus objects
-    // that get returned to us somehow.
-    // We should also avoid calling PostTask here since the implementation
-    // of the debug writer will basically do a PostTask straight away anyway.
-    // Might require some modifications to AudioDebugFileWriter though since
-    // there are some threading concerns there and AudioDebugFileWriter's
-    // lifetime guarantees need to be longer than that of associated active
-    // audio streams.
-    std::unique_ptr<AudioBus> source_copy =
-        AudioBus::Create(source->channels(), source->frames());
-    source->CopyTo(source_copy.get());
-    controller_->task_runner_->PostTask(
-        FROM_HERE, base::Bind(&AudioInputController::WriteInputDataForDebugging,
-                              weak_controller_, base::Passed(&source_copy)));
   }
 
   void DeliverDataToSyncWriter(const AudioBus* source,
@@ -209,9 +189,10 @@ AudioInputController::AudioInputController(
       type_(type),
       user_input_monitor_(user_input_monitor),
 #if BUILDFLAG(ENABLE_WEBRTC)
-      debug_writer_(
-          base::MakeUnique<AudioDebugFileWriter>(params,
-                                                 std::move(file_task_runner))),
+      debug_recording_helper_(params,
+                              task_runner_,
+                              std::move(file_task_runner),
+                              base::OnceClosure()),
 #endif
       weak_ptr_factory_(this) {
   DCHECK(creator_task_runner_.get());
@@ -456,8 +437,9 @@ void AudioInputController::DoClose() {
     LogSilenceState(silence_state_);
 #endif
 
-  if (debug_writer_)
-    debug_writer_->Stop();
+#if BUILDFLAG(ENABLE_WEBRTC)
+  debug_recording_helper_.DisableDebugRecording();
+#endif
 
   max_volume_ = 0.0;
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -531,17 +513,21 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
 
 void AudioInputController::EnableDebugRecording(
     const base::FilePath& file_name) {
+#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&AudioInputController::DoEnableDebugRecording, this,
                             file_name));
+#endif
 }
 
 void AudioInputController::DisableDebugRecording() {
+#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(creator_task_runner_->BelongsToCurrentThread());
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AudioInputController::DoDisableDebugRecording, this));
+#endif
 }
 
 #if defined(AUDIO_POWER_MONITORING)
@@ -614,25 +600,18 @@ void AudioInputController::LogCallbackError() {
   }
 }
 
+#if BUILDFLAG(ENABLE_WEBRTC)
 void AudioInputController::DoEnableDebugRecording(
     const base::FilePath& file_name) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (debug_writer_)
-    debug_writer_->Start(file_name);
+  debug_recording_helper_.EnableDebugRecording(file_name);
 }
 
 void AudioInputController::DoDisableDebugRecording() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (debug_writer_)
-    debug_writer_->Stop();
+  debug_recording_helper_.DisableDebugRecording();
 }
-
-void AudioInputController::WriteInputDataForDebugging(
-    std::unique_ptr<AudioBus> data) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (debug_writer_)
-    debug_writer_->Write(std::move(data));
-}
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 void AudioInputController::LogMessage(const std::string& message) {
   DCHECK(task_runner_->BelongsToCurrentThread());

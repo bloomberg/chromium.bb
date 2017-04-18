@@ -39,8 +39,6 @@ namespace {
 #if BUILDFLAG(ENABLE_WEBRTC)
 const base::FilePath::CharType kDebugRecordingFileNameAddition[] =
     FILE_PATH_LITERAL("source_input");
-const base::FilePath::CharType kDebugRecordingFileNameExtension[] =
-    FILE_PATH_LITERAL("wav");
 #endif
 
 void LogMessage(int stream_id, const std::string& msg, bool add_prefix) {
@@ -589,8 +587,7 @@ void AudioInputRendererHost::EnableDebugRecordingForId(
   if (!entry)
     return;
   entry->controller->EnableDebugRecording(
-      file_name.AddExtension(IntToStringType(stream_id))
-          .AddExtension(kDebugRecordingFileNameExtension));
+      file_name.AddExtension(IntToStringType(stream_id)));
 }
 
 #undef IntToStringType

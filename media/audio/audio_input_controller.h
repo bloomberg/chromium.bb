@@ -18,6 +18,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/media_switches.h"
 
 // An AudioInputController controls an AudioInputStream and records data
 // from this input stream. The two main methods are Record() and Close() and
@@ -301,13 +302,12 @@ class MEDIA_EXPORT AudioInputController
   // Logs whether an error was encountered suring the stream.
   void LogCallbackError();
 
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Enable and disable debug recording of audio input. Called on the audio
   // thread.
   void DoEnableDebugRecording(const base::FilePath& file_name);
   void DoDisableDebugRecording();
-
-  // Called on the audio thread.
-  void WriteInputDataForDebugging(std::unique_ptr<AudioBus> data);
+#endif
 
   // Called by the stream with log messages.
   void LogMessage(const std::string& message);
@@ -371,8 +371,10 @@ class MEDIA_EXPORT AudioInputController
   // Time when the stream started recording.
   base::TimeTicks stream_create_time_;
 
+#if BUILDFLAG(ENABLE_WEBRTC)
   // Used for audio debug recordings. Accessed on audio thread.
-  const std::unique_ptr<AudioDebugFileWriter> debug_writer_;
+  AudioDebugRecordingHelper debug_recording_helper_;
+#endif
 
   class AudioCallback;
   // Holds a pointer to the callback object that receives audio data from

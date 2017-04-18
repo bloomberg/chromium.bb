@@ -66,9 +66,14 @@ void AudioDebugRecordingHelper::OnData(const AudioBus* source) {
   if (!recording_enabled)
     return;
 
-  // TODO(grunell) Don't create a new AudioBus each time. Maybe a pool of
-  // AudioBuses. See also comment in
-  // AudioInputController::AudioCallback::PerformOptionalDebugRecording.
+  // TODO(tommi): This is costly. AudioBus heap allocs and we create a new one
+  // for every callback. We could instead have a pool of bus objects that get
+  // returned to us somehow.
+  // We should also avoid calling PostTask here since the implementation of the
+  // debug writer will basically do a PostTask straight away anyway. Might
+  // require some modifications to AudioDebugFileWriter though since there are
+  // some threading concerns there and AudioDebugFileWriter's lifetime
+  // guarantees need to be longer than that of associated active audio streams.
   std::unique_ptr<AudioBus> audio_bus_copy =
       AudioBus::Create(source->channels(), source->frames());
   source->CopyTo(audio_bus_copy.get());
