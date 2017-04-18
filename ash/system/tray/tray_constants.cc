@@ -63,7 +63,7 @@ const int kTrayRoundedBorderRadius = 2;
 
 const int kTrayToggleButtonWidth = 68;
 
-const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
+const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kPublicAccountUserCardTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
 
