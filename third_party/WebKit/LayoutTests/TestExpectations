@@ -1464,6 +1464,7 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/662010 [ Win7 ] csspaint/invalidation-background-image.html [ Skip ]
 
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
+crbug.com/712629 [ Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Crash ]
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
