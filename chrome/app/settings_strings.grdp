@@ -164,8 +164,8 @@
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LABEL" desc="Label for a slider which changes the size of large mouse cursor.">
       Adjust cursor size
     </message>
-    <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_SMALL_LABEL" desc="Label in the slider which indicates that this side makes the cursor small.">
-      Small
+    <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_DEFAULT_LABEL" desc="Label in the slider which indicates that this side makes the cursor to its default size.">
+      Default
     </message>
     <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LARGE_LABEL" desc="Label in the slider which indicates that this side makes the cursor large.">
       Large
