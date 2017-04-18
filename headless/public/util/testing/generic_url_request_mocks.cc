@@ -4,6 +4,8 @@
 
 #include "headless/public/util/testing/generic_url_request_mocks.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -29,7 +31,7 @@ void MockGenericURLRequestJobDelegate::OnPendingRequest(
 }
 
 void MockGenericURLRequestJobDelegate::SetPolicy(Policy policy) {
-  policy_ = policy;
+  policy_ = std::move(policy);
 }
 
 void MockGenericURLRequestJobDelegate::ApplyPolicy(

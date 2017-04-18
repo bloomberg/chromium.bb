@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/public/util/url_request_dispatcher.h"
@@ -34,6 +35,8 @@ const char kDevtoolsRequestId[] = "X-DevTools-Request-Id";
 
 }  // namespace
 
+uint64_t GenericURLRequestJob::next_request_id_ = 0;
+
 GenericURLRequestJob::GenericURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
@@ -48,6 +51,7 @@ GenericURLRequestJob::GenericURLRequestJob(
       delegate_(delegate),
       request_resource_info_(
           content::ResourceRequestInfo::ForRequest(request_)),
+      request_id_(next_request_id_++),
       weak_factory_(this) {}
 
 GenericURLRequestJob::~GenericURLRequestJob() {
@@ -110,12 +114,14 @@ void GenericURLRequestJob::OnCookiesAvailable(
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   // TODO(alexclarke): Set user agent.
   // Pass cookies, the referrer and any extra headers into the fetch request.
-  extra_request_headers_.SetHeader(
-      net::HttpRequestHeaders::kCookie,
-      net::CookieStore::BuildCookieLine(cookie_list));
+  std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
+  if (!cookie.empty())
+    extra_request_headers_.SetHeader(net::HttpRequestHeaders::kCookie, cookie);
 
-  extra_request_headers_.SetHeader(net::HttpRequestHeaders::kReferer,
-                                   request_->referrer());
+  if (!request_->referrer().empty()) {
+    extra_request_headers_.SetHeader(net::HttpRequestHeaders::kReferer,
+                                     request_->referrer());
+  }
 
   done_callback.Run();
 }
@@ -179,12 +185,33 @@ void GenericURLRequestJob::GetLoadTimingInfo(
   load_timing_info->receive_headers_end = response_time_;
 }
 
+uint64_t GenericURLRequestJob::GenericURLRequestJob::GetRequestId() const {
+  return request_id_;
+}
+
 const net::URLRequest* GenericURLRequestJob::GetURLRequest() const {
   return request_;
 }
 
 int GenericURLRequestJob::GetFrameTreeNodeId() const {
-  return request_resource_info_->GetFrameTreeNodeId();
+  // URLRequestUserData will be set for all renderer initiated resource
+  // requests, but not for browser side navigations.
+  int render_process_id;
+  int render_frame_id;
+  if (content::ResourceRequestInfo::GetRenderFrameForRequest(
+          request_, &render_process_id, &render_frame_id)) {
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    DCHECK(render_frame_host);
+    return render_frame_host->GetFrameTreeNodeId();
+  }
+  // ResourceRequestInfo::GetFrameTreeNodeId is only set for browser side
+  // navigations.
+  if (request_resource_info_)
+    return request_resource_info_->GetFrameTreeNodeId();
+
+  // This should only happen in tests.
+  return -1;
 }
 
 std::string GenericURLRequestJob::GetDevToolsAgentHostId() const {
@@ -194,6 +221,10 @@ std::string GenericURLRequestJob::GetDevToolsAgentHostId() const {
 }
 
 Request::ResourceType GenericURLRequestJob::GetResourceType() const {
+  // This should only happen in some tests.
+  if (!request_resource_info_)
+    return Request::ResourceType::MAIN_FRAME;
+
   switch (request_resource_info_->GetResourceType()) {
     case content::RESOURCE_TYPE_MAIN_FRAME:
       return Request::ResourceType::MAIN_FRAME;
@@ -237,12 +268,11 @@ Request::ResourceType GenericURLRequestJob::GetResourceType() const {
   }
 }
 
-namespace {
-std::string GetUploadData(net::URLRequest* request) {
-  if (!request->has_upload())
+std::string GenericURLRequestJob::GetPostData() const {
+  if (!request_->has_upload())
     return "";
 
-  const net::UploadDataStream* stream = request->get_upload();
+  const net::UploadDataStream* stream = request_->get_upload();
   if (!stream->GetElementReaders())
     return "";
 
@@ -251,7 +281,6 @@ std::string GetUploadData(net::URLRequest* request) {
       (*stream->GetElementReaders())[0]->AsBytesReader();
   return std::string(reader->bytes(), reader->length());
 }
-}  // namespace
 
 const Request* GenericURLRequestJob::GetRequest() const {
   return this;
@@ -265,9 +294,8 @@ void GenericURLRequestJob::AllowRequest() {
     return;
   }
 
-  url_fetcher_->StartFetch(request_->url(), request_->method(),
-                           GetUploadData(request_), extra_request_headers_,
-                           this);
+  url_fetcher_->StartFetch(request_->url(), request_->method(), GetPostData(),
+                           extra_request_headers_, this);
 }
 
 void GenericURLRequestJob::BlockRequest(net::Error error) {

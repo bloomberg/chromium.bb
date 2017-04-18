@@ -36,6 +36,8 @@ class URLRequestDispatcher;
 // Wrapper around net::URLRequest with helpers to access select metadata.
 class Request {
  public:
+  virtual uint64_t GetRequestId() const = 0;
+
   virtual const net::URLRequest* GetURLRequest() const = 0;
 
   // The frame from which the request came from.
@@ -43,6 +45,9 @@ class Request {
 
   // The devtools agent host id for the page where the request came from.
   virtual std::string GetDevToolsAgentHostId() const = 0;
+
+  // Gets the POST data, if any, from the net::URLRequest.
+  virtual std::string GetPostData() const = 0;
 
   enum class ResourceType {
     MAIN_FRAME = 0,
@@ -174,9 +179,11 @@ class HEADLESS_EXPORT GenericURLRequestJob
 
  protected:
   // Request implementation:
+  uint64_t GetRequestId() const override;
   const net::URLRequest* GetURLRequest() const override;
   int GetFrameTreeNodeId() const override;
   std::string GetDevToolsAgentHostId() const override;
+  std::string GetPostData() const override;
   ResourceType GetResourceType() const override;
 
   // PendingRequest implementation:
@@ -210,6 +217,8 @@ class HEADLESS_EXPORT GenericURLRequestJob
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
   base::TimeTicks response_time_;
+  const uint64_t request_id_;
+  static uint64_t next_request_id_;
 
   base::WeakPtrFactory<GenericURLRequestJob> weak_factory_;
 

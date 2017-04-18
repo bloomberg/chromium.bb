@@ -171,6 +171,24 @@ class GenericURLRequestJobTest : public testing::Test {
     return request;
   }
 
+  std::unique_ptr<net::URLRequest> CreateAndCompletePostJob(
+      const GURL& url,
+      const std::string& post_data,
+      const std::string& json_reply) {
+    json_fetch_reply_map_[url.spec()] = json_reply;
+
+    std::unique_ptr<net::URLRequest> request(url_request_context_.CreateRequest(
+        url, net::DEFAULT_PRIORITY, &request_delegate_));
+    request->set_method("POST");
+    request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
+        base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+                                                        post_data.size()),
+        0));
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+    return request;
+  }
+
  protected:
   base::MessageLoop message_loop_;
   ExpeditedDispatcher dispatcher_;
@@ -211,7 +229,6 @@ TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
         "method": "GET",
         "headers": {
           "Accept": "text/plain",
-          "Cookie": "",
           "Extra-Header": "Value",
           "Referer": "https://referrer.example.com/",
           "User-Agent": "TestBrowser"
@@ -254,7 +271,6 @@ TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
         "post_data": "lorem ipsom",
         "headers": {
           "Accept": "text/plain",
-          "Cookie": "",
           "Extra-Header": "Value",
           "Referer": "https://referrer.example.com/",
           "User-Agent": "TestBrowser"
@@ -422,8 +438,7 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
         "url": "https://example.com/",
         "method": "GET",
         "headers": {
-          "Cookie": "basic_cookie=1; secure_cookie=2; http_only_cookie=3",
-          "Referer": ""
+          "Cookie": "basic_cookie=1; secure_cookie=2; http_only_cookie=3"
         }
       })";
 
@@ -590,6 +605,57 @@ TEST_F(GenericURLRequestJobTest, OnResourceLoadFailed) {
       &request_delegate_));
   request->Start();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(GenericURLRequestJobTest, RequestsHaveDistinctIds) {
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::set<uint64_t> ids;
+  job_delegate_.SetPolicy(base::Bind(
+      [](std::set<uint64_t>* ids, PendingRequest* pending_request) {
+        ids->insert(pending_request->GetRequest()->GetRequestId());
+        pending_request->AllowRequest();
+      },
+      &ids));
+
+  CreateAndCompleteGetJob(GURL("https://example.com"), reply);
+  CreateAndCompleteGetJob(GURL("https://example.com"), reply);
+  CreateAndCompleteGetJob(GURL("https://example.com"), reply);
+
+  // We expect three distinct ids.
+  EXPECT_EQ(3u, ids.size());
+}
+
+TEST_F(GenericURLRequestJobTest, GetPostData) {
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "http_response_code": 200,
+        "data": "Reply",
+        "headers": {
+          "Content-Type": "text/html; charset=UTF-8"
+        }
+      })";
+
+  std::string post_data;
+  job_delegate_.SetPolicy(base::Bind(
+      [](std::string* post_data, PendingRequest* pending_request) {
+        *post_data = pending_request->GetRequest()->GetPostData();
+        pending_request->AllowRequest();
+      },
+      &post_data));
+
+  CreateAndCompletePostJob(GURL("https://example.com"), "payload", reply);
+
+  EXPECT_EQ("payload", post_data);
 }
 
 }  // namespace headless
