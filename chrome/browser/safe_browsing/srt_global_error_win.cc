@@ -29,6 +29,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/install_util.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
@@ -52,26 +53,11 @@ const char kSRTDownloadURL[] =
 // downloaded.
 const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
-// Switches to add to the command line when executing the SRT.
-const char kChromePromptSwitch[] = "chrome-prompt";
-const char kChromeExePathSwitch[] = "chrome-exe-path";
-const char kChromeSystemInstallSwitch[] = "chrome-system-install";
-const char kUmaUserSwitch[] = "uma-user";
-
-// Values to be passed to the kChromePromptSwitch of the Chrome Cleanup Tool to
-// indicate how the user interacted with the accept button.
-enum class ChromePromptValue {
-  // The user accepted the prompt when the prompt was first shown.
-  kPrompted = 3,
-  // The user accepted the prompt after navigating to it from the menu.
-  kShownFromMenu = 4
-};
-
 void MaybeExecuteSRTFromBlockingPool(
     const base::FilePath& downloaded_path,
     bool metrics_enabled,
     bool sber_enabled,
-    ChromePromptValue prompt_value,
+    chrome_cleaner::ChromePromptValue prompt_value,
     const scoped_refptr<SingleThreadTaskRunner>& task_runner,
     const base::Closure& success_callback,
     const base::Closure& failure_callback) {
@@ -83,26 +69,30 @@ void MaybeExecuteSRTFromBlockingPool(
     if (base::ReplaceFile(downloaded_path, executable_path, nullptr)) {
       base::CommandLine srt_command_line(executable_path);
       srt_command_line.AppendSwitchASCII(
-          kChromePromptSwitch,
+          chrome_cleaner::kChromePromptSwitch,
           base::IntToString(static_cast<int>(prompt_value)));
-      srt_command_line.AppendSwitchASCII(kChromeVersionSwitch,
+      srt_command_line.AppendSwitchASCII(chrome_cleaner::kChromeVersionSwitch,
                                          version_info::GetVersionNumber());
-      srt_command_line.AppendSwitchASCII(kChromeChannelSwitch,
+      srt_command_line.AppendSwitchASCII(chrome_cleaner::kChromeChannelSwitch,
                                          base::IntToString(ChannelAsInt()));
 
       base::FilePath chrome_exe_path;
       PathService::Get(base::FILE_EXE, &chrome_exe_path);
-      srt_command_line.AppendSwitchPath(kChromeExePathSwitch, chrome_exe_path);
+      srt_command_line.AppendSwitchPath(chrome_cleaner::kChromeExePathSwitch,
+                                        chrome_exe_path);
       if (!InstallUtil::IsPerUserInstall())
-        srt_command_line.AppendSwitch(kChromeSystemInstallSwitch);
+        srt_command_line.AppendSwitch(
+            chrome_cleaner::kChromeSystemInstallSwitch);
 
       if (metrics_enabled) {
-        srt_command_line.AppendSwitch(kUmaUserSwitch);
-        srt_command_line.AppendSwitch(kEnableCrashReporting);
+        srt_command_line.AppendSwitch(chrome_cleaner::kUmaUserSwitch);
+        srt_command_line.AppendSwitch(
+            chrome_cleaner::kEnableCrashReportingSwitch);
       }
 
       if (sber_enabled)
-        srt_command_line.AppendSwitch(kExtendedSafeBrowsingEnabledSwitch);
+        srt_command_line.AppendSwitch(
+            chrome_cleaner::kExtendedSafeBrowsingEnabledSwitch);
 
       base::Process srt_process(
           base::LaunchProcess(srt_command_line, base::LaunchOptions()));
@@ -233,14 +223,16 @@ void SRTGlobalError::MaybeExecuteSRT() {
   // from the global_error_service_ in the call to OnUserInteractionStarted.
   // This means that it is safe to use base::Unretained here.
   base::PostTaskWithTraits(
-      FROM_HERE, base::TaskTraits().MayBlock().WithPriority(
-                     base::TaskPriority::BACKGROUND),
+      FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::BACKGROUND),
       base::Bind(
           &MaybeExecuteSRTFromBlockingPool, downloaded_path_,
           ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
           SafeBrowsingExtendedReportingEnabled(),
-          bubble_shown_from_menu_ ? ChromePromptValue::kShownFromMenu
-                                  : ChromePromptValue::kPrompted,
+          bubble_shown_from_menu_
+              ? chrome_cleaner::ChromePromptValue::kShownFromMenu
+              : chrome_cleaner::ChromePromptValue::kPrompted,
           base::ThreadTaskRunnerHandle::Get(),
           base::Bind(&SRTGlobalError::OnUserinteractionDone,
                      base::Unretained(this)),

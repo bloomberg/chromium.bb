@@ -27,17 +27,6 @@ class Browser;
 
 namespace safe_browsing {
 
-// SRT registry keys and value names.
-extern const wchar_t kSoftwareRemovalToolRegistryKey[];
-extern const wchar_t kEndTimeValueName[];
-extern const wchar_t kStartTimeValueName[];
-
-// Reporter exit codes.
-const int kSwReporterCleanupNeeded = 0;
-const int kSwReporterNothingFound = 2;
-const int kSwReporterPostRebootCleanupNeeded = 4;
-const int kSwReporterDelayedPostRebootCleanupNeeded = 15;
-
 // A special exit code identifying a failure to run the reporter.
 const int kReporterFailureExitCode = INT_MAX;
 
@@ -50,11 +39,6 @@ const int kDaysBetweenReporterLogsSent = 7;
 // When enabled, moves all user interaction with the Software Reporter and the
 // Chrome Cleanup tool to Chrome.
 extern const base::Feature kInBrowserCleanerUIFeature;
-
-// The switch to be passed to the Software Reporter process with the Mojo pipe
-// token for the IPC communication with Chrome.
-// TODO(crbug/709035) Move this to //components/chrome_cleaner.
-extern const char kChromeMojoPipeTokenSwitch[];
 
 // Parameters used to invoke the sw_reporter component.
 struct SwReporterInvocation {

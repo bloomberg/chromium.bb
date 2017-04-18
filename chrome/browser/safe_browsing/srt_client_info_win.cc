@@ -24,12 +24,6 @@ bool SafeBrowsingExtendedEnabledForBrowser(const Browser* browser) {
 
 }  // namespace
 
-const char kChromeChannelSwitch[] = "chrome-channel";
-const char kChromeVersionSwitch[] = "chrome-version";
-const char kEnableCrashReporting[] = "enable-crash-reporting";
-const char kExtendedSafeBrowsingEnabledSwitch[] =
-    "extended-safebrowsing-enabled";
-
 int ChannelAsInt() {
   switch (chrome::GetChannel()) {
     case version_info::Channel::UNKNOWN:

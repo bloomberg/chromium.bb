@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/component_updater/pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -65,20 +66,8 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
-// TODO(b/647763) Change the registry key to properly handle cases when the user
-// runs Google Chrome stable alongside Google Chrome SxS.
-const wchar_t kSoftwareRemovalToolRegistryKey[] =
-    L"Software\\Google\\Software Removal Tool";
-
-const wchar_t kCleanerSubKey[] = L"Cleaner";
-
-const wchar_t kEndTimeValueName[] = L"EndTime";
-const wchar_t kStartTimeValueName[] = L"StartTime";
-
 const base::Feature kInBrowserCleanerUIFeature{
     "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const char kChromeMojoPipeTokenSwitch[] = "chrome-mojo-pipe-token";
 
 namespace {
 
@@ -148,13 +137,6 @@ const char kRunningTimeErrorMetricName[] =
 
 SwReporterTestingDelegate* g_testing_delegate_ = nullptr;
 
-const wchar_t kScanTimesSubKey[] = L"ScanTimes";
-const wchar_t kFoundUwsValueName[] = L"FoundUws";
-const wchar_t kMemoryUsedValueName[] = L"MemoryUsed";
-const wchar_t kLogsUploadResultValueName[] = L"LogsUploadResult";
-const wchar_t kExitCodeValueName[] = L"ExitCode";
-const wchar_t kEngineErrorCodeValueName[] = L"EngineErrorCode";
-
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
     "SoftwareReporter.FoundUwSReadError";
@@ -182,12 +164,12 @@ class UMAHistogramReporter {
 
   explicit UMAHistogramReporter(const std::string& suffix)
       : suffix_(suffix),
-        registry_key_(suffix.empty() ? kSoftwareRemovalToolRegistryKey
-                                     : base::StringPrintf(
-                                           L"%ls\\%ls",
-                                           kSoftwareRemovalToolRegistryKey,
-                                           base::UTF8ToUTF16(suffix).c_str())) {
-  }
+        registry_key_(suffix.empty()
+                          ? chrome_cleaner::kSoftwareRemovalToolRegistryKey
+                          : base::StringPrintf(
+                                L"%ls\\%ls",
+                                chrome_cleaner::kSoftwareRemovalToolRegistryKey,
+                                base::UTF8ToUTF16(suffix).c_str())) {}
 
   // Reports the software reporter tool's version via UMA.
   void ReportVersion(const base::Version& version) const {
@@ -225,13 +207,13 @@ class UMAHistogramReporter {
     DWORD exit_code_in_registry;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                           KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
-        reporter_key.ReadValueDW(kExitCodeValueName, &exit_code_in_registry) !=
-            ERROR_SUCCESS) {
+        reporter_key.ReadValueDW(chrome_cleaner::kExitCodeValueName,
+                                 &exit_code_in_registry) != ERROR_SUCCESS) {
       return;
     }
 
     RecordSparseHistogram(kExitCodeMetricName, exit_code_in_registry);
-    reporter_key.DeleteValue(kExitCodeValueName);
+    reporter_key.DeleteValue(chrome_cleaner::kExitCodeValueName);
   }
 
   void ReportEngineErrorCode() const {
@@ -239,13 +221,13 @@ class UMAHistogramReporter {
     DWORD engine_error_code;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                           KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
-        reporter_key.ReadValueDW(kEngineErrorCodeValueName,
+        reporter_key.ReadValueDW(chrome_cleaner::kEngineErrorCodeValueName,
                                  &engine_error_code) != ERROR_SUCCESS) {
       return;
     }
 
     RecordSparseHistogram(kEngineErrorCodeMetricName, engine_error_code);
-    reporter_key.DeleteValue(kEngineErrorCodeValueName);
+    reporter_key.DeleteValue(chrome_cleaner::kEngineErrorCodeValueName);
   }
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
@@ -254,8 +236,8 @@ class UMAHistogramReporter {
     std::vector<base::string16> found_uws_strings;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                           KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
-        reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) !=
-            ERROR_SUCCESS) {
+        reporter_key.ReadValues(chrome_cleaner::kFoundUwsValueName,
+                                &found_uws_strings) != ERROR_SUCCESS) {
       return;
     }
 
@@ -271,7 +253,7 @@ class UMAHistogramReporter {
     }
 
     // Clean up the old value.
-    reporter_key.DeleteValue(kFoundUwsValueName);
+    reporter_key.DeleteValue(chrome_cleaner::kFoundUwsValueName);
     RecordBooleanHistogram(kFoundUwsReadErrorMetricName, parse_error);
   }
 
@@ -282,12 +264,12 @@ class UMAHistogramReporter {
     DWORD memory_used = 0;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                           KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
-        reporter_key.ReadValueDW(kMemoryUsedValueName, &memory_used) !=
-            ERROR_SUCCESS) {
+        reporter_key.ReadValueDW(chrome_cleaner::kMemoryUsedValueName,
+                                 &memory_used) != ERROR_SUCCESS) {
       return;
     }
     RecordMemoryKBHistogram(kMemoryUsedMetricName, memory_used);
-    reporter_key.DeleteValue(kMemoryUsedValueName);
+    reporter_key.DeleteValue(chrome_cleaner::kMemoryUsedValueName);
   }
 
   // Reports the SwReporter run time with UMA both as reported by the tool via
@@ -309,20 +291,20 @@ class UMAHistogramReporter {
 
     bool has_start_time = false;
     int64_t start_time_value = 0;
-    if (reporter_key.HasValue(kStartTimeValueName) &&
-        reporter_key.ReadInt64(kStartTimeValueName, &start_time_value) ==
-            ERROR_SUCCESS) {
+    if (reporter_key.HasValue(chrome_cleaner::kStartTimeValueName) &&
+        reporter_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
+                               &start_time_value) == ERROR_SUCCESS) {
       has_start_time = true;
-      reporter_key.DeleteValue(kStartTimeValueName);
+      reporter_key.DeleteValue(chrome_cleaner::kStartTimeValueName);
     }
 
     bool has_end_time = false;
     int64_t end_time_value = 0;
-    if (reporter_key.HasValue(kEndTimeValueName) &&
-        reporter_key.ReadInt64(kEndTimeValueName, &end_time_value) ==
-            ERROR_SUCCESS) {
+    if (reporter_key.HasValue(chrome_cleaner::kEndTimeValueName) &&
+        reporter_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
+                               &end_time_value) == ERROR_SUCCESS) {
       has_end_time = true;
-      reporter_key.DeleteValue(kEndTimeValueName);
+      reporter_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
     }
 
     if (has_start_time && has_end_time) {
@@ -353,7 +335,7 @@ class UMAHistogramReporter {
   // Reports the UwS scan times of the software reporter tool via UMA.
   void ReportScanTimes() const {
     base::string16 scan_times_key_path = base::StringPrintf(
-        L"%ls\\%ls", registry_key_.c_str(), kScanTimesSubKey);
+        L"%ls\\%ls", registry_key_.c_str(), chrome_cleaner::kScanTimesSubKey);
     // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
     base::win::RegKey scan_times_key;
     if (scan_times_key.Open(HKEY_CURRENT_USER, scan_times_key_path.c_str(),
@@ -385,7 +367,7 @@ class UMAHistogramReporter {
     base::win::RegKey reporter_key;
     if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                           KEY_ENUMERATE_SUB_KEYS) == ERROR_SUCCESS) {
-      reporter_key.DeleteKey(kScanTimesSubKey);
+      reporter_key.DeleteKey(chrome_cleaner::kScanTimesSubKey);
     }
   }
 
@@ -410,7 +392,7 @@ class UMAHistogramReporter {
       return;
     }
 
-    if (reporter_key.ReadValueDW(kLogsUploadResultValueName,
+    if (reporter_key.ReadValueDW(chrome_cleaner::kLogsUploadResultValueName,
                                  &logs_upload_result) != ERROR_SUCCESS) {
       RecordEnumerationHistogram(
           kLogsUploadResultRegistryErrorMetricName,
@@ -430,7 +412,7 @@ class UMAHistogramReporter {
     RecordEnumerationHistogram(kLogsUploadResultMetricName,
                                static_cast<Sample>(logs_upload_result),
                                kSwReporterLogsUploadResultMax);
-    reporter_key.DeleteValue(kLogsUploadResultValueName);
+    reporter_key.DeleteValue(chrome_cleaner::kLogsUploadResultValueName);
     RecordEnumerationHistogram(kLogsUploadResultRegistryErrorMetricName,
                                REPORTER_LOGS_UPLOAD_RESULT_ERROR_NO_ERROR,
                                REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
@@ -666,8 +648,8 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
   std::string mojo_pipe_token;
   mojo::ScopedMessagePipeHandle mojo_pipe =
       pending_process_connection.CreateMessagePipe(&mojo_pipe_token);
-  invocation_.command_line.AppendSwitchASCII(kChromeMojoPipeTokenSwitch,
-                                             mojo_pipe_token);
+  invocation_.command_line.AppendSwitchASCII(
+      chrome_cleaner::kChromeMojoPipeTokenSwitch, mojo_pipe_token);
 
   mojo::edk::PlatformChannelPair channel;
   base::HandlesToInheritVector handles_to_inherit;
@@ -1005,8 +987,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
       return;
     }
 
-    if (exit_code != kSwReporterPostRebootCleanupNeeded &&
-        exit_code != kSwReporterCleanupNeeded) {
+    if (exit_code != chrome_cleaner::kSwReporterPostRebootCleanupNeeded &&
+        exit_code != chrome_cleaner::kSwReporterCleanupNeeded) {
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_NEEDED);
       return;
     }
@@ -1127,17 +1109,20 @@ class ReporterRunner : public chrome::BrowserListObserver {
     }
 
     if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
-      next_invocation->command_line.AppendSwitch(kEnableCrashReporting);
+      next_invocation->command_line.AppendSwitch(
+          chrome_cleaner::kEnableCrashReportingSwitch);
   }
 
   // Adds switches to be sent to the Software Reporter when the user opted into
   // extended Safe Browsing reporting and is not incognito.
   void AddSwitchesForExtendedReportingUser(SwReporterInvocation* invocation) {
-    invocation->command_line.AppendSwitch(kExtendedSafeBrowsingEnabledSwitch);
+    invocation->command_line.AppendSwitch(
+        chrome_cleaner::kExtendedSafeBrowsingEnabledSwitch);
     invocation->command_line.AppendSwitchASCII(
-        kChromeVersionSwitch, version_info::GetVersionNumber());
+        chrome_cleaner::kChromeVersionSwitch, version_info::GetVersionNumber());
     invocation->command_line.AppendSwitchNative(
-        kChromeChannelSwitch, base::IntToString16(ChannelAsInt()));
+        chrome_cleaner::kChromeChannelSwitch,
+        base::IntToString16(ChannelAsInt()));
   }
 
   bool first_run_ = true;
@@ -1220,12 +1205,13 @@ bool ReporterFoundUws() {
   if (!local_state)
     return false;
   int exit_code = local_state->GetInteger(prefs::kSwReporterLastExitCode);
-  return exit_code == kSwReporterCleanupNeeded;
+  return exit_code == chrome_cleaner::kSwReporterCleanupNeeded;
 }
 
 bool UserHasRunCleaner() {
-  base::string16 cleaner_key_path(kSoftwareRemovalToolRegistryKey);
-  cleaner_key_path.append(L"\\").append(kCleanerSubKey);
+  base::string16 cleaner_key_path(
+      chrome_cleaner::kSoftwareRemovalToolRegistryKey);
+  cleaner_key_path.append(L"\\").append(chrome_cleaner::kCleanerSubKey);
 
   base::win::RegKey srt_cleaner_key;
   return srt_cleaner_key.Open(HKEY_CURRENT_USER, cleaner_key_path.c_str(),

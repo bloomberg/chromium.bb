@@ -36,6 +36,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
+#include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/pref_names.h"
@@ -71,14 +72,6 @@ const uint8_t kSha256Hash[] = {0x6a, 0xc6, 0x0e, 0xe8, 0xf3, 0x97, 0xc0, 0xd6,
 
 const base::FilePath::CharType kSwReporterExeName[] =
     FILE_PATH_LITERAL("software_reporter_tool.exe");
-
-constexpr char kSessionIdSwitch[] = "session-id";
-
-// SRT registry keys and value names.
-const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
-const wchar_t kExitCodeValueName[] = L"ExitCode";
-const wchar_t kUploadResultsValueName[] = L"UploadResults";
-const wchar_t kVersionValueName[] = L"Version";
 
 constexpr base::Feature kExperimentalEngineFeature{
     "ExperimentalSwReporterEngine", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -251,7 +244,8 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     base::CommandLine command_line(argv);
 
     // Add a random session id to link experimental reporter runs together.
-    command_line.AppendSwitchASCII(kSessionIdSwitch, session_id);
+    command_line.AppendSwitchASCII(chrome_cleaner::kSessionIdSwitch,
+                                   session_id);
 
     const std::string experiment_group =
         variations::GetVariationParamValueByFeature(
@@ -330,7 +324,8 @@ void SwReporterInstallerTraits::ComponentReady(
                               reporter_runner_);
   } else {
     base::CommandLine command_line(exe_path);
-    command_line.AppendSwitchASCII(kSessionIdSwitch, GenerateSessionId());
+    command_line.AppendSwitchASCII(chrome_cleaner::kSessionIdSwitch,
+                                   GenerateSessionId());
     auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.supported_behaviours =
         SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
@@ -397,34 +392,34 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 
   // Check if we have information from Cleaner and record UMA statistics.
   base::string16 cleaner_key_name(
-      safe_browsing::kSoftwareRemovalToolRegistryKey);
-  cleaner_key_name.append(1, L'\\').append(kCleanerSuffixRegistryKey);
+      chrome_cleaner::kSoftwareRemovalToolRegistryKey);
+  cleaner_key_name.append(1, L'\\').append(chrome_cleaner::kCleanerSubKey);
   base::win::RegKey cleaner_key(
       HKEY_CURRENT_USER, cleaner_key_name.c_str(), KEY_ALL_ACCESS);
   // Cleaner is assumed to have run if we have a start time.
   if (cleaner_key.Valid()) {
-    if (cleaner_key.HasValue(safe_browsing::kStartTimeValueName)) {
+    if (cleaner_key.HasValue(chrome_cleaner::kStartTimeValueName)) {
       // Get version number.
-      if (cleaner_key.HasValue(kVersionValueName)) {
+      if (cleaner_key.HasValue(chrome_cleaner::kVersionValueName)) {
         DWORD version;
-        cleaner_key.ReadValueDW(kVersionValueName, &version);
+        cleaner_key.ReadValueDW(chrome_cleaner::kVersionValueName, &version);
         UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.Version",
                                     version);
-        cleaner_key.DeleteValue(kVersionValueName);
+        cleaner_key.DeleteValue(chrome_cleaner::kVersionValueName);
       }
       // Get start & end time. If we don't have an end time, we can assume the
       // cleaner has not completed.
       int64_t start_time_value;
-      cleaner_key.ReadInt64(safe_browsing::kStartTimeValueName,
+      cleaner_key.ReadInt64(chrome_cleaner::kStartTimeValueName,
                             &start_time_value);
 
-      bool completed = cleaner_key.HasValue(safe_browsing::kEndTimeValueName);
+      bool completed = cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName);
       SRTHasCompleted(completed ? SRT_COMPLETED_YES : SRT_COMPLETED_NOT_YET);
       if (completed) {
         int64_t end_time_value;
-        cleaner_key.ReadInt64(safe_browsing::kEndTimeValueName,
+        cleaner_key.ReadInt64(chrome_cleaner::kEndTimeValueName,
                               &end_time_value);
-        cleaner_key.DeleteValue(safe_browsing::kEndTimeValueName);
+        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
         base::TimeDelta run_time(
             base::Time::FromInternalValue(end_time_value) -
             base::Time::FromInternalValue(start_time_value));
@@ -432,18 +427,18 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
                                  run_time);
       }
       // Get exit code. Assume nothing was found if we can't read the exit code.
-      DWORD exit_code = safe_browsing::kSwReporterNothingFound;
-      if (cleaner_key.HasValue(kExitCodeValueName)) {
-        cleaner_key.ReadValueDW(kExitCodeValueName, &exit_code);
+      DWORD exit_code = chrome_cleaner::kSwReporterNothingFound;
+      if (cleaner_key.HasValue(chrome_cleaner::kExitCodeValueName)) {
+        cleaner_key.ReadValueDW(chrome_cleaner::kExitCodeValueName, &exit_code);
         UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
                                     exit_code);
-        cleaner_key.DeleteValue(kExitCodeValueName);
+        cleaner_key.DeleteValue(chrome_cleaner::kExitCodeValueName);
       }
-      cleaner_key.DeleteValue(safe_browsing::kStartTimeValueName);
+      cleaner_key.DeleteValue(chrome_cleaner::kStartTimeValueName);
 
-      if (exit_code == safe_browsing::kSwReporterPostRebootCleanupNeeded ||
+      if (exit_code == chrome_cleaner::kSwReporterPostRebootCleanupNeeded ||
           exit_code ==
-              safe_browsing::kSwReporterDelayedPostRebootCleanupNeeded) {
+              chrome_cleaner::kSwReporterDelayedPostRebootCleanupNeeded) {
         // Check if we are running after the user has rebooted.
         base::TimeDelta elapsed(
             base::Time::Now() -
@@ -454,15 +449,16 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
             static_cast<uint64_t>(elapsed.InMilliseconds()) > ::GetTickCount());
       }
 
-      if (cleaner_key.HasValue(kUploadResultsValueName)) {
+      if (cleaner_key.HasValue(chrome_cleaner::kUploadResultsValueName)) {
         base::string16 upload_results;
-        cleaner_key.ReadValue(kUploadResultsValueName, &upload_results);
+        cleaner_key.ReadValue(chrome_cleaner::kUploadResultsValueName,
+                              &upload_results);
         ReportUploadsWithUma(upload_results);
       }
     } else {
-      if (cleaner_key.HasValue(safe_browsing::kEndTimeValueName)) {
+      if (cleaner_key.HasValue(chrome_cleaner::kEndTimeValueName)) {
         SRTHasCompleted(SRT_COMPLETED_LATER);
-        cleaner_key.DeleteValue(safe_browsing::kEndTimeValueName);
+        cleaner_key.DeleteValue(chrome_cleaner::kEndTimeValueName);
       }
     }
   }

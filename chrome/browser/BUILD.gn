@@ -1453,6 +1453,7 @@ split_static_library("browser") {
     "//components/captive_portal",
     "//components/certificate_reporting",
     "//components/certificate_transparency",
+    "//components/chrome_cleaner/public/constants",
     "//components/chrome_cleaner/public/interfaces",
     "//components/cloud_devices/common",
     "//components/component_updater",
