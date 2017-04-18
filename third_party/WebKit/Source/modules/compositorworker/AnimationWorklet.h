@@ -5,7 +5,7 @@
 #ifndef AnimationWorklet_h
 #define AnimationWorklet_h
 
-#include "core/workers/Worklet.h"
+#include "core/workers/ThreadedWorklet.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
@@ -15,7 +15,7 @@ class LocalFrame;
 class ThreadedWorkletMessagingProxy;
 class WorkletGlobalScopeProxy;
 
-class MODULES_EXPORT AnimationWorklet final : public Worklet {
+class MODULES_EXPORT AnimationWorklet final : public ThreadedWorklet {
   WTF_MAKE_NONCOPYABLE(AnimationWorklet);
 
  public:

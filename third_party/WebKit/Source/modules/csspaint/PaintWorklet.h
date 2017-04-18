@@ -5,7 +5,7 @@
 #ifndef PaintWorklet_h
 #define PaintWorklet_h
 
-#include "core/workers/Worklet.h"
+#include "core/workers/MainThreadWorklet.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
@@ -15,7 +15,7 @@ namespace blink {
 class CSSPaintDefinition;
 class CSSPaintImageGeneratorImpl;
 
-class MODULES_EXPORT PaintWorklet final : public Worklet {
+class MODULES_EXPORT PaintWorklet final : public MainThreadWorklet {
   WTF_MAKE_NONCOPYABLE(PaintWorklet);
 
  public:

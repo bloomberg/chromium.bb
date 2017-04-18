@@ -20,7 +20,7 @@ AnimationWorklet* AnimationWorklet::Create(LocalFrame* frame) {
 }
 
 AnimationWorklet::AnimationWorklet(LocalFrame* frame)
-    : Worklet(frame), worklet_messaging_proxy_(nullptr) {}
+    : ThreadedWorklet(frame), worklet_messaging_proxy_(nullptr) {}
 
 AnimationWorklet::~AnimationWorklet() {
   if (worklet_messaging_proxy_)
@@ -52,7 +52,7 @@ WorkletGlobalScopeProxy* AnimationWorklet::GetWorkletGlobalScopeProxy() const {
 }
 
 DEFINE_TRACE(AnimationWorklet) {
-  Worklet::Trace(visitor);
+  ThreadedWorklet::Trace(visitor);
 }
 
 }  // namespace blink
