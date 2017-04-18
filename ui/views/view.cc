@@ -1552,19 +1552,15 @@ void View::OnPaint(gfx::Canvas* canvas) {
 }
 
 void View::OnPaintBackground(gfx::Canvas* canvas) {
-  if (background_.get()) {
-    TRACE_EVENT2("views", "View::OnPaintBackground",
-                 "width", canvas->sk_canvas()->getBaseLayerSize().width(),
-                 "height", canvas->sk_canvas()->getBaseLayerSize().height());
+  if (background_) {
+    TRACE_EVENT0("views", "View::OnPaintBackground");
     background_->Paint(canvas, this);
   }
 }
 
 void View::OnPaintBorder(gfx::Canvas* canvas) {
-  if (border_.get()) {
-    TRACE_EVENT2("views", "View::OnPaintBorder",
-                 "width", canvas->sk_canvas()->getBaseLayerSize().width(),
-                 "height", canvas->sk_canvas()->getBaseLayerSize().height());
+  if (border_) {
+    TRACE_EVENT0("views", "View::OnPaintBorder");
     border_->Paint(*this, canvas);
   }
 }
