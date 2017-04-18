@@ -309,8 +309,8 @@ TEST_P(DecodedImageOrientationHistogramTest, ImageOrientation) {
   RunTest("Blink.DecodedImage.Orientation");
 }
 
-DecodedImageOrientationHistogramTest::ParamType
-    g_k_decoded_image_orientation_histogram_test_params[] = {
+const DecodedImageOrientationHistogramTest::ParamType
+    kDecodedImageOrientationHistogramTestParams[] = {
         {"/LayoutTests/images/resources/exif-orientation-1-ul.jpg",
          kOriginTopLeft},
         {"/LayoutTests/images/resources/exif-orientation-2-ur.jpg",
@@ -331,6 +331,6 @@ DecodedImageOrientationHistogramTest::ParamType
 INSTANTIATE_TEST_CASE_P(
     DecodedImageOrientationHistogramTest,
     DecodedImageOrientationHistogramTest,
-    ::testing::ValuesIn(g_k_decoded_image_orientation_histogram_test_params));
+    ::testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
 }  // namespace blink

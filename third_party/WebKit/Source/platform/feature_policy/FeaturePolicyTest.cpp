@@ -26,7 +26,7 @@ const char* const kValidPolicies[] = {
     "{\"fullscreen\": [\"" ORIGIN_A "\"], \"payment\": [\"self\"]}",
     "{\"fullscreen\": [\"" ORIGIN_A "\"]}, {\"payment\": [\"self\"]}"};
 
-const char* g_k_invalid_policies[] = {
+const char* const kInvalidPolicies[] = {
     "Not A JSON literal",
     "\"Not a JSON object\"",
     "[\"Also\", \"Not a JSON object\"]",
@@ -59,7 +59,7 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
 
 TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
-  for (const char* policy_string : g_k_invalid_policies) {
+  for (const char* policy_string : kInvalidPolicies) {
     messages.Clear();
     ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_NE(0UL, messages.size());
