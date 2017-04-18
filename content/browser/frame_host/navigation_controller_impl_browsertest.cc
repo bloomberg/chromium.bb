@@ -6656,34 +6656,6 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
                   testing::Key("X-ExtraHeadersVsSubresources"))));
 }
 
-class NavigationHandleCommitObserver : public WebContentsObserver {
- public:
-  NavigationHandleCommitObserver(WebContents* web_contents, const GURL& url)
-      : WebContentsObserver(web_contents),
-        url_(url),
-        has_committed_(false),
-        was_same_page_(false),
-        was_renderer_initiated_(false) {}
-
-  bool has_committed() const { return has_committed_; }
-  bool was_same_page() const { return was_same_page_; }
-  bool was_renderer_initiated() const { return was_renderer_initiated_; }
-
- private:
-  void DidFinishNavigation(NavigationHandle* handle) override {
-    if (handle->GetURL() != url_)
-      return;
-    has_committed_ = true;
-    was_same_page_ = handle->IsSameDocument();
-    was_renderer_initiated_ = handle->IsRendererInitiated();
-  }
-
-  const GURL url_;
-  bool has_committed_;
-  bool was_same_page_;
-  bool was_renderer_initiated_;
-};
-
 // Test that a same document navigation does not lead to the deletion of the
 // NavigationHandle for an ongoing different document navigation.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
@@ -6732,7 +6704,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(kPushStateURL, last_committed->GetURL());
 
   EXPECT_TRUE(push_state_observer.has_committed());
-  EXPECT_TRUE(push_state_observer.was_same_page());
+  EXPECT_TRUE(push_state_observer.was_same_document());
   EXPECT_TRUE(push_state_observer.was_renderer_initiated());
 
   // This shouldn't affect the ongoing navigation.
@@ -6752,7 +6724,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(kURL2, last_committed->GetURL());
 
   EXPECT_TRUE(navigation_observer.has_committed());
-  EXPECT_FALSE(navigation_observer.was_same_page());
+  EXPECT_FALSE(navigation_observer.was_same_document());
   EXPECT_FALSE(navigation_observer.was_renderer_initiated());
 
 }
@@ -6774,7 +6746,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), kFragmentURL));
 
   EXPECT_TRUE(handle_observer.has_committed());
-  EXPECT_TRUE(handle_observer.was_same_page());
+  EXPECT_TRUE(handle_observer.was_same_document());
   EXPECT_FALSE(handle_observer.was_renderer_initiated());
 }
 

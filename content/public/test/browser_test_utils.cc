@@ -1914,6 +1914,24 @@ bool TestNavigationManager::ShouldMonitorNavigation(NavigationHandle* handle) {
   return true;
 }
 
+NavigationHandleCommitObserver::NavigationHandleCommitObserver(
+    content::WebContents* web_contents,
+    const GURL& url)
+    : content::WebContentsObserver(web_contents),
+      url_(url),
+      has_committed_(false),
+      was_same_document_(false),
+      was_renderer_initiated_(false) {}
+
+void NavigationHandleCommitObserver::DidFinishNavigation(
+    content::NavigationHandle* handle) {
+  if (handle->GetURL() != url_)
+    return;
+  has_committed_ = true;
+  was_same_document_ = handle->IsSameDocument();
+  was_renderer_initiated_ = handle->IsRendererInitiated();
+}
+
 ConsoleObserverDelegate::ConsoleObserverDelegate(WebContents* web_contents,
                                                  const std::string& filter)
     : web_contents_(web_contents),

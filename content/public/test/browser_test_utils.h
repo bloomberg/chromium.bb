@@ -748,6 +748,24 @@ class TestNavigationManager : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNavigationManager);
 };
 
+class NavigationHandleCommitObserver : public content::WebContentsObserver {
+ public:
+  NavigationHandleCommitObserver(content::WebContents* web_contents,
+                                 const GURL& url);
+
+  bool has_committed() const { return has_committed_; }
+  bool was_same_document() const { return was_same_document_; }
+  bool was_renderer_initiated() const { return was_renderer_initiated_; }
+
+ private:
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
+
+  const GURL url_;
+  bool has_committed_;
+  bool was_same_document_;
+  bool was_renderer_initiated_;
+};
+
 // A WebContentsDelegate that catches messages sent to the console.
 class ConsoleObserverDelegate : public WebContentsDelegate {
  public:

@@ -257,3 +257,57 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   // prepended and one less ":" character after the host.
   EXPECT_EQ(GURL(), new_web_contents->GetLastCommittedURL());
 }
+
+// A test performing two simultaneous navigations, to ensure code in chrome/,
+// such as tab helpers, can handle those cases.
+// This test starts a browser-initiated cross-process navigation, which is
+// delayed. At the same time, the renderer does a synchronous navigation
+// through pushState, which will create a separate navigation and associated
+// NavigationHandle. Afterwards, the original cross-process navigation is
+// resumed and confirmed to properly commit.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       SlowCrossProcessNavigationWithPushState) {
+  const GURL kURL1 = embedded_test_server()->GetURL("/title1.html");
+  const GURL kPushStateURL =
+      embedded_test_server()->GetURL("/title1.html#fragment");
+  const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to the initial page.
+  ui_test_utils::NavigateToURL(browser(), kURL1);
+
+  // Start navigating to the second page.
+  content::TestNavigationManager manager(web_contents, kURL2);
+  content::NavigationHandleCommitObserver navigation_observer(web_contents,
+                                                              kURL2);
+  web_contents->GetController().LoadURL(
+      kURL2, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // The current page does a PushState.
+  content::NavigationHandleCommitObserver push_state_observer(web_contents,
+                                                              kPushStateURL);
+  std::string push_state =
+      "history.pushState({}, \"title 1\", \"" + kPushStateURL.spec() + "\");";
+  EXPECT_TRUE(ExecuteScript(web_contents, push_state));
+  content::NavigationEntry* last_committed =
+      web_contents->GetController().GetLastCommittedEntry();
+  EXPECT_TRUE(last_committed);
+  EXPECT_EQ(kPushStateURL, last_committed->GetURL());
+
+  EXPECT_TRUE(push_state_observer.has_committed());
+  EXPECT_TRUE(push_state_observer.was_same_document());
+  EXPECT_TRUE(push_state_observer.was_renderer_initiated());
+
+  // Let the navigation finish. It should commit successfully.
+  manager.WaitForNavigationFinished();
+  last_committed = web_contents->GetController().GetLastCommittedEntry();
+  EXPECT_TRUE(last_committed);
+  EXPECT_EQ(kURL2, last_committed->GetURL());
+
+  EXPECT_TRUE(navigation_observer.has_committed());
+  EXPECT_FALSE(navigation_observer.was_same_document());
+  EXPECT_FALSE(navigation_observer.was_renderer_initiated());
+}
