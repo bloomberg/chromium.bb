@@ -283,9 +283,9 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(extra_args)
     self.cmd_mock.inst.Run()
 
-    assert_fn = self.assertNotIn if inverted else self.assertIn
+    expect = 'use_goma = ' + ('false' if inverted else 'true')
     gn_args_str = self.cmd_mock.env['GN_ARGS']
-    assert_fn('use_goma', gn_args_str)
+    self.assertIn(expect, gn_args_str)
 
   def testNoGoma(self):
     """Verify that we do not add Goma to the PATH."""

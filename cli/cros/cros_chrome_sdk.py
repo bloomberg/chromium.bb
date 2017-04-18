@@ -502,7 +502,8 @@ class ChromeSDKCommand(command.CliCommand):
              'pull toolchain components from.')
     parser.add_argument(
         '--nogoma', action='store_false', default=True, dest='goma',
-        help='Disables Goma in the shell by removing it from the PATH.')
+        help='Disables Goma in the shell by removing it from the PATH and '
+             'set use_goma=false to GN_ARGS.')
     parser.add_argument(
         '--nostart-goma', action='store_false', default=True, dest='start_goma',
         help='Skip starting goma and hope somebody else starts goma later.')
@@ -742,6 +743,10 @@ class ChromeSDKCommand(command.CliCommand):
     if goma_dir:
       gn_args['use_goma'] = True
       gn_args['goma_dir'] = goma_dir
+    elif not options.goma:
+      # If --nogoma option is explicitly set, disable goma, even if it is
+      # used in the original GN_ARGS.
+      gn_args['use_goma'] = False
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
