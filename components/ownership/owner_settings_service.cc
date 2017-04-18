@@ -32,7 +32,9 @@ using ScopedSGNContext = std::unique_ptr<
 
 std::unique_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
     std::unique_ptr<em::PolicyData> policy,
-    SECKEYPrivateKey* private_key) {
+    scoped_refptr<ownership::PrivateKey> private_key) {
+  DCHECK(private_key->key());
+
   // Assemble the policy.
   std::unique_ptr<em::PolicyFetchResponse> policy_response(
       new em::PolicyFetchResponse());
@@ -41,8 +43,8 @@ std::unique_ptr<em::PolicyFetchResponse> AssembleAndSignPolicy(
     return nullptr;
   }
 
-  ScopedSGNContext sign_context(
-      SGN_NewContext(SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION, private_key));
+  ScopedSGNContext sign_context(SGN_NewContext(
+      SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION, private_key->key()));
   if (!sign_context) {
     NOTREACHED();
     return nullptr;
@@ -109,10 +111,8 @@ bool OwnerSettingsService::AssembleAndSignPolicyAsync(
   if (!task_runner || !IsOwner())
     return false;
   return base::PostTaskAndReplyWithResult(
-      task_runner,
-      FROM_HERE,
-      base::Bind(
-          &AssembleAndSignPolicy, base::Passed(&policy), private_key_->key()),
+      task_runner, FROM_HERE,
+      base::Bind(&AssembleAndSignPolicy, base::Passed(&policy), private_key_),
       callback);
 }
 
