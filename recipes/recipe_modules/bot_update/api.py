@@ -36,7 +36,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     env = self.m.step.get_from_context('env', {})
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
-        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+      str(self._module.PACKAGE_REPO_ROOT), env['PATH']])
     # These are to prevent git from hanging.  If the git connection is slower
     # than 1KB/s for more than 5 minutes then git will kill the connection
     # and die with an error "error: RPC failed; curl 28 Operation too slow"
