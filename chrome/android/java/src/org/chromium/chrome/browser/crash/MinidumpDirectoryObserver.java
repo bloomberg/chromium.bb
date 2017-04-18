@@ -38,7 +38,8 @@ public class MinidumpDirectoryObserver extends FileObserver {
     @Override
     public void onEvent(int event, String path) {
         // This is executed on a thread dedicated to FileObserver.
-        if (CrashFileManager.isMinidumpMIMEFirstTry(path)) {
+        // Note: It's possible for |path| to be null: http://crbug.com/711404
+        if (path != null && CrashFileManager.isMinidumpMIMEFirstTry(path)) {
             // Note that the logcat extraction might fail. This is ok; in that case, the minidump
             // will be found and uploaded upon the next browser launch.
             File minidump = mFileManager.getCrashFile(path);
