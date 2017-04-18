@@ -202,10 +202,10 @@
     {
       'target_name': 'progress_center',
       'dependencies': [
-        '../../../externs/compiled_resources2.gyp:progress_center_panel',
         '../../common/js/compiled_resources2.gyp:async_util',
         '../../common/js/compiled_resources2.gyp:progress_center_common',
         '../../common/js/compiled_resources2.gyp:util',
+        '../../foreground/js/ui/compiled_resources2.gyp:progress_center_panel',
         '<(EXTERNS_GYP):chrome_extensions',
       ],
       'includes': ['../../../compile_js2.gypi'],

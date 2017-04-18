@@ -14,17 +14,21 @@
 #      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'actions_model',
-#      'dependencies': [
-#        '../../background/js/compiled_resources2.gyp:drive_sync_handler',
-#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-#        '<(EXTERNS_GYP):file_manager_private',
-#        'folder_shortcuts_data_model',
-#        'metadata/compiled_resources2.gyp:metadata_model',
-#      ],
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'actions_model',
+      'dependencies': [
+        '../../background/js/compiled_resources2.gyp:drive_sync_handler',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):file_manager_private',
+        'folder_shortcuts_data_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'ui/compiled_resources2.gyp:error_dialog',
+        'ui/compiled_resources2.gyp:files_alert_dialog',
+        'ui/compiled_resources2.gyp:list_container',
+        'ui/compiled_resources2.gyp:share_dialog',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'app_state_controller',
 #      'includes': ['../../../compile_js2.gypi'],

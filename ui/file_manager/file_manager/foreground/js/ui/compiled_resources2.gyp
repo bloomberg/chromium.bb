@@ -3,14 +3,16 @@
 # found in the LICENSE file.
 {
   'targets': [
-#    {
-#      'target_name': 'actions_submenu',
-#      'dependencies': [
-#        '../compiled_resources2.gyp:actions_model',
-#        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
-#      ],
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'actions_submenu',
+      'dependencies': [
+        '../compiled_resources2.gyp:actions_model',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu_item',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'banners',
       'dependencies': [
@@ -138,10 +140,43 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'file_manager_ui',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_manager_ui',
+      'dependencies': [
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../../elements/compiled_resources2.gyp:files_toggle_ripple',
+        '../../elements/compiled_resources2.gyp:files_tooltip',
+        '../compiled_resources2.gyp:launch_param',
+        '../compiled_resources2.gyp:providers_model',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_template_no_process',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_button',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:dialogs',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:menu',
+        'actions_submenu',
+        'banners',
+        'combobutton',
+        'default_task_dialog',
+        'dialog_footer',
+        'directory_tree',
+        'empty_folder',
+        'error_dialog',
+        'file_grid',
+        'file_table',
+        'files_alert_dialog',
+        'files_confirm_dialog',
+        'gear_menu',
+        'list_container',
+        'location_line',
+        'multi_profile_share_dialog',
+        'progress_center_panel',
+        'providers_menu',
+        'search_box',
+        'share_dialog',
+        'suggest_apps_dialog',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_metadata_formatter',
       'dependencies': [
