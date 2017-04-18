@@ -61,6 +61,8 @@ extern "C" {
 #define SGRPROJ_PRJ_MAX1 (SGRPROJ_PRJ_MIN1 + (1 << SGRPROJ_PRJ_BITS) - 1)
 #endif  // USE_HIGHPASS_IN_SGRPROJ
 
+#define SGRPROJ_PRJ_SUBEXP_K 4
+
 #define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
 
 #define MAX_RADIUS 3  // Only 1, 2, 3 allowed
@@ -104,6 +106,10 @@ extern "C" {
   (WIENER_FILT_TAP1_MIDV - 1 + (1 << WIENER_FILT_TAP1_BITS) / 2)
 #define WIENER_FILT_TAP2_MAXV \
   (WIENER_FILT_TAP2_MIDV - 1 + (1 << WIENER_FILT_TAP2_BITS) / 2)
+
+#define WIENER_FILT_TAP0_SUBEXP_K 1
+#define WIENER_FILT_TAP1_SUBEXP_K 2
+#define WIENER_FILT_TAP2_SUBEXP_K 3
 
 // Max of SGRPROJ_TMPBUF_SIZE, DOMAINTXFMRF_TMPBUF_SIZE, WIENER_TMPBUF_SIZE
 #define RESTORATION_TMPBUF_SIZE (SGRPROJ_TMPBUF_SIZE)
@@ -158,6 +164,23 @@ typedef struct {
   int nhtiles, nvtiles;
   int32_t *tmpbuf;
 } RestorationInternal;
+
+static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
+  sgrproj_info->xqd[0] = (SGRPROJ_PRJ_MIN0 + SGRPROJ_PRJ_MAX0) / 2;
+  sgrproj_info->xqd[1] = (SGRPROJ_PRJ_MIN1 + SGRPROJ_PRJ_MAX1) / 2;
+}
+
+static INLINE void set_default_wiener(WienerInfo *wiener_info) {
+  wiener_info->vfilter[0] = wiener_info->hfilter[0] = WIENER_FILT_TAP0_MIDV;
+  wiener_info->vfilter[1] = wiener_info->hfilter[1] = WIENER_FILT_TAP1_MIDV;
+  wiener_info->vfilter[2] = wiener_info->hfilter[2] = WIENER_FILT_TAP2_MIDV;
+  wiener_info->vfilter[WIENER_HALFWIN] = wiener_info->hfilter[WIENER_HALFWIN] =
+      -2 *
+      (WIENER_FILT_TAP2_MIDV + WIENER_FILT_TAP1_MIDV + WIENER_FILT_TAP0_MIDV);
+  wiener_info->vfilter[4] = wiener_info->hfilter[4] = WIENER_FILT_TAP2_MIDV;
+  wiener_info->vfilter[5] = wiener_info->hfilter[5] = WIENER_FILT_TAP1_MIDV;
+  wiener_info->vfilter[6] = wiener_info->hfilter[6] = WIENER_FILT_TAP0_MIDV;
+}
 
 static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
                                       int *tile_width, int *tile_height,

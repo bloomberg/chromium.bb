@@ -2508,15 +2508,25 @@ static void decode_restoration_mode(AV1_COMMON *cm,
   }
 }
 
-static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
+static void read_wiener_filter(WienerInfo *wiener_info,
+                               WienerInfo *ref_wiener_info, aom_reader *rb) {
   wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] =
-      aom_read_literal(rb, WIENER_FILT_TAP0_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
+          WIENER_FILT_TAP0_SUBEXP_K,
+          ref_wiener_info->vfilter[0] - WIENER_FILT_TAP0_MINV) +
       WIENER_FILT_TAP0_MINV;
   wiener_info->vfilter[1] = wiener_info->vfilter[WIENER_WIN - 2] =
-      aom_read_literal(rb, WIENER_FILT_TAP1_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
+          WIENER_FILT_TAP1_SUBEXP_K,
+          ref_wiener_info->vfilter[1] - WIENER_FILT_TAP1_MINV) +
       WIENER_FILT_TAP1_MINV;
   wiener_info->vfilter[2] = wiener_info->vfilter[WIENER_WIN - 3] =
-      aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP2_MAXV - WIENER_FILT_TAP2_MINV + 1,
+          WIENER_FILT_TAP2_SUBEXP_K,
+          ref_wiener_info->vfilter[2] - WIENER_FILT_TAP2_MINV) +
       WIENER_FILT_TAP2_MINV;
   // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->vfilter[WIENER_HALFWIN] =
@@ -2524,30 +2534,52 @@ static void read_wiener_filter(WienerInfo *wiener_info, aom_reader *rb) {
             wiener_info->vfilter[2]);
 
   wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] =
-      aom_read_literal(rb, WIENER_FILT_TAP0_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
+          WIENER_FILT_TAP0_SUBEXP_K,
+          ref_wiener_info->hfilter[0] - WIENER_FILT_TAP0_MINV) +
       WIENER_FILT_TAP0_MINV;
   wiener_info->hfilter[1] = wiener_info->hfilter[WIENER_WIN - 2] =
-      aom_read_literal(rb, WIENER_FILT_TAP1_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
+          WIENER_FILT_TAP1_SUBEXP_K,
+          ref_wiener_info->hfilter[1] - WIENER_FILT_TAP1_MINV) +
       WIENER_FILT_TAP1_MINV;
   wiener_info->hfilter[2] = wiener_info->hfilter[WIENER_WIN - 3] =
-      aom_read_literal(rb, WIENER_FILT_TAP2_BITS, ACCT_STR) +
+      aom_read_primitive_refsubexpfin(
+          rb, WIENER_FILT_TAP2_MAXV - WIENER_FILT_TAP2_MINV + 1,
+          WIENER_FILT_TAP2_SUBEXP_K,
+          ref_wiener_info->hfilter[2] - WIENER_FILT_TAP2_MINV) +
       WIENER_FILT_TAP2_MINV;
   // The central element has an implicit +WIENER_FILT_STEP
   wiener_info->hfilter[WIENER_HALFWIN] =
       -2 * (wiener_info->hfilter[0] + wiener_info->hfilter[1] +
             wiener_info->hfilter[2]);
+  memcpy(ref_wiener_info, wiener_info, sizeof(*wiener_info));
 }
 
-static void read_sgrproj_filter(SgrprojInfo *sgrproj_info, aom_reader *rb) {
+static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
+                                SgrprojInfo *ref_sgrproj_info, aom_reader *rb) {
   sgrproj_info->ep = aom_read_literal(rb, SGRPROJ_PARAMS_BITS, ACCT_STR);
   sgrproj_info->xqd[0] =
-      aom_read_literal(rb, SGRPROJ_PRJ_BITS, ACCT_STR) + SGRPROJ_PRJ_MIN0;
+      aom_read_primitive_refsubexpfin(
+          rb, SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
+          ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0) +
+      SGRPROJ_PRJ_MIN0;
   sgrproj_info->xqd[1] =
-      aom_read_literal(rb, SGRPROJ_PRJ_BITS, ACCT_STR) + SGRPROJ_PRJ_MIN1;
+      aom_read_primitive_refsubexpfin(
+          rb, SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
+          ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1) +
+      SGRPROJ_PRJ_MIN1;
+  memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
 
 static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   int i, p;
+  SgrprojInfo ref_sgrproj_info;
+  WienerInfo ref_wiener_info;
+  set_default_wiener(&ref_wiener_info);
+  set_default_sgrproj(&ref_sgrproj_info);
   const int ntiles = av1_get_rest_ntiles(cm->width, cm->height,
                                          cm->rst_info[0].restoration_tilesize,
                                          NULL, NULL, NULL, NULL);
@@ -2563,16 +2595,16 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
             aom_read_tree(rb, av1_switchable_restore_tree,
                           cm->fc->switchable_restore_prob, ACCT_STR);
         if (rsi->restoration_type[i] == RESTORE_WIENER) {
-          read_wiener_filter(&rsi->wiener_info[i], rb);
+          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
-          read_sgrproj_filter(&rsi->sgrproj_info[i], rb);
+          read_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, rb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_WIENER;
-          read_wiener_filter(&rsi->wiener_info[i], rb);
+          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
         } else {
           rsi->restoration_type[i] = RESTORE_NONE;
         }
@@ -2581,7 +2613,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_SGRPROJ;
-          read_sgrproj_filter(&rsi->sgrproj_info[i], rb);
+          read_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, rb);
         } else {
           rsi->restoration_type[i] = RESTORE_NONE;
         }
@@ -2589,6 +2621,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
     }
   }
   for (p = 1; p < MAX_MB_PLANE; ++p) {
+    set_default_wiener(&ref_wiener_info);
     rsi = &cm->rst_info[p];
     if (rsi->frame_restoration_type == RESTORE_WIENER) {
       for (i = 0; i < ntiles_uv; ++i) {
@@ -2599,7 +2632,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         else
           rsi->restoration_type[i] = RESTORE_WIENER;
         if (rsi->restoration_type[i] == RESTORE_WIENER) {
-          read_wiener_filter(&rsi->wiener_info[i], rb);
+          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
         }
       }
     }
