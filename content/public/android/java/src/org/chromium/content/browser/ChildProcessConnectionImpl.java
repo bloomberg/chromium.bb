@@ -159,60 +159,14 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         }
 
         @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            synchronized (mLock) {
-                // A flag from the parent class ensures we run the post-connection logic only once
-                // (instead of once per each ChildServiceConnection).
-                if (mDidOnServiceConnected) {
-                    return;
+        public void onServiceConnected(ComponentName className, final IBinder service) {
+            LauncherThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    ChildProcessConnectionImpl.this.onServiceConnectedOnLauncherThread(service);
                 }
-                try {
-                    TraceEvent.begin(
-                            "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
-                    mDidOnServiceConnected = true;
-                    mService = IChildProcessService.Stub.asInterface(service);
-
-                    StartCallback startCallback = mStartCallback;
-                    mStartCallback = null;
-
-                    final boolean bindCheck =
-                            mCreationParams != null && mCreationParams.getBindToCallerCheck();
-                    boolean boundToUs = false;
-                    try {
-                        boundToUs = bindCheck ? mService.bindToCaller() : true;
-                    } catch (RemoteException ex) {
-                        // Do not trigger the StartCallback here, since the service is already
-                        // dead and the DeathCallback will run from onServiceDisconnected().
-                        Log.e(TAG, "Failed to bind service to connection.", ex);
-                        return;
-                    }
-
-                    if (startCallback != null) {
-                        if (boundToUs) {
-                            startCallback.onChildStarted();
-                        } else {
-                            startCallback.onChildStartFailed();
-                        }
-                    }
-
-                    if (!boundToUs) {
-                        return;
-                    }
-
-                    mServiceConnectComplete = true;
-
-                    // Run the setup if the connection parameters have already been provided. If
-                    // not, doConnectionSetupLocked() will be called from setupConnection().
-                    if (mConnectionParams != null) {
-                        doConnectionSetupLocked();
-                    }
-                } finally {
-                    TraceEvent.end(
-                            "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
-                }
-            }
+            });
         }
-
 
         // Called on the main thread to notify that the child service did not disconnect gracefully.
         @Override
@@ -339,6 +293,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     @Override
     public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
             @Nullable IBinder callback, ConnectionCallback connectionCallback) {
+        assert LauncherThread.runningOnLauncherThread();
         synchronized (mLock) {
             assert mConnectionParams == null;
             if (mServiceDisconnected) {
@@ -373,6 +328,61 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 mService = null;
             }
             mConnectionParams = null;
+        }
+    }
+
+    private void onServiceConnectedOnLauncherThread(IBinder service) {
+        assert LauncherThread.runningOnLauncherThread();
+        synchronized (mLock) {
+            // A flag from the parent class ensures we run the post-connection logic only once
+            // (instead of once per each ChildServiceConnection).
+            if (mDidOnServiceConnected) {
+                return;
+            }
+            try {
+                TraceEvent.begin(
+                        "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
+                mDidOnServiceConnected = true;
+                mService = IChildProcessService.Stub.asInterface(service);
+
+                StartCallback startCallback = mStartCallback;
+                mStartCallback = null;
+
+                final boolean bindCheck =
+                        mCreationParams != null && mCreationParams.getBindToCallerCheck();
+                boolean boundToUs = false;
+                try {
+                    boundToUs = bindCheck ? mService.bindToCaller() : true;
+                } catch (RemoteException ex) {
+                    // Do not trigger the StartCallback here, since the service is already
+                    // dead and the DeathCallback will run from onServiceDisconnected().
+                    Log.e(TAG, "Failed to bind service to connection.", ex);
+                    return;
+                }
+
+                if (startCallback != null) {
+                    if (boundToUs) {
+                        startCallback.onChildStarted();
+                    } else {
+                        startCallback.onChildStartFailed();
+                    }
+                }
+
+                if (!boundToUs) {
+                    return;
+                }
+
+                mServiceConnectComplete = true;
+
+                // Run the setup if the connection parameters have already been provided. If
+                // not, doConnectionSetupLocked() will be called from setupConnection().
+                if (mConnectionParams != null) {
+                    doConnectionSetupLocked();
+                }
+            } finally {
+                TraceEvent.end(
+                        "ChildProcessConnectionImpl.ChildServiceConnection.onServiceConnected");
+            }
         }
     }
 
