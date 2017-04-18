@@ -323,18 +323,15 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   return conn
 
 
-def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
+def ReadHttpResponse(conn, accept_statuses=frozenset([200, 404])):
   """Reads an http response from a connection into a string buffer.
 
   Args:
     conn: An Http object created by CreateHttpConn above.
-    expect_status: Success is indicated by this status in the response.
-    ignore_404: For many requests, gerrit-on-borg will return 404 if the request
-                doesn't match the database contents.  In most such cases, we
-                want the API to return None rather than raise an Exception.
+    accept_statuses: Treat any of these statuses as success. Default: [200, 404]
+                     Common additions include 204 and 400.
   Returns: A string buffer containing the connection's reply.
   """
-
   sleep_time = 0.5
   for idx in range(TRY_LIMIT):
     response, contents = conn.request(**conn.req_params)
@@ -345,7 +342,7 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
         www_authenticate):
       auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
       host = auth_match.group(1) if auth_match else conn.req_host
-      reason = ('Authentication failed. Please make sure your .netrc file '
+      reason = ('Authentication failed. Please make sure your .gitcookies file '
                 'has credentials for %s' % host)
       raise GerritAuthenticationError(response.status, reason)
 
@@ -365,9 +362,7 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
       LOGGER.warn('... will retry %d more times.', TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
-  if ignore_404 and response.status == 404:
-    return StringIO()
-  if response.status != expect_status:
+  if response.status not in accept_statuses:
     if response.status in (401, 403):
       print('Your Gerrit credentials might be misconfigured. Try: \n'
             '  git cl creds-check')
@@ -376,10 +371,9 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
   return StringIO(contents)
 
 
-def ReadHttpJsonResponse(conn, expect_status=200, ignore_404=True):
+def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200, 404])):
   """Parses an https response as json."""
-  fh = ReadHttpResponse(
-      conn, expect_status=expect_status, ignore_404=ignore_404)
+  fh = ReadHttpResponse(conn, accept_statuses)
   # The first line of the response should always be: )]}'
   s = fh.readline()
   if s and s.rstrip() != ")]}'":
@@ -417,7 +411,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   if o_params:
     path = '%s&%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
   # Don't ignore 404; a query should always return a list, even if it's empty.
-  return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+  return ReadHttpJsonResponse(CreateHttpConn(host, path), accept_statuses=[200])
 
 
 def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
@@ -500,7 +494,8 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)
   try:
-    result = ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+    result = ReadHttpJsonResponse(
+        CreateHttpConn(host, path), accept_statuses=[200])
   except GerritError as e:
     msg = '%s:\n%s' % (e.message, path)
     raise GerritError(e.http_status, msg)
@@ -528,13 +523,13 @@ def GetChange(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeDetail(host, change, o_params=None, ignore_404=True):
+def GetChangeDetail(host, change, o_params=None, accept_statuses=None):
   """Query a gerrit server for extended information about a single change."""
-  # TODO(tandrii): cahnge ignore_404 to False by default.
   path = 'changes/%s/detail' % change
   if o_params:
     path += '?%s' % '&'.join(['o=%s' % p for p in o_params])
-  return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=ignore_404)
+  return ReadHttpJsonResponse(
+      CreateHttpConn(host, path), accept_statuses=accept_statuses)
 
 
 def GetChangeCommit(host, change, revision='current'):
@@ -571,7 +566,7 @@ def AbandonChange(host, change, msg=''):
   path = 'changes/%s/abandon' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def RestoreChange(host, change, msg=''):
@@ -579,7 +574,7 @@ def RestoreChange(host, change, msg=''):
   path = 'changes/%s/restore' % change
   body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def SubmitChange(host, change, wait_for_merge=True):
@@ -587,31 +582,26 @@ def SubmitChange(host, change, wait_for_merge=True):
   path = 'changes/%s/submit' % change
   body = {'wait_for_merge': wait_for_merge}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def HasPendingChangeEdit(host, change):
   conn = CreateHttpConn(host, 'changes/%s/edit' % change)
   try:
-    ReadHttpResponse(conn, ignore_404=False)
+    ReadHttpResponse(conn, accept_statuses=[200])
   except GerritError as e:
-    # On success, gerrit returns status 204; anything else is an error.
-    if e.http_status != 204:
-      raise
-    return False
-  else:
-    return True
+    # 204 No Content means no pending change.
+    if e.http_status == 204:
+      return False
+    raise
+  return True
 
 
 def DeletePendingChangeEdit(host, change):
   conn = CreateHttpConn(host, 'changes/%s/edit' % change, reqtype='DELETE')
-  try:
-    ReadHttpResponse(conn, ignore_404=False)
-  except GerritError as e:
-    # On success, gerrit returns status 204; if the edit was already deleted it
-    # returns 404.  Anything else is an error.
-    if e.http_status not in (204, 404):
-      raise
+  # On success, gerrit returns status 204; if the edit was already deleted it
+  # returns 404.  Anything else is an error.
+  ReadHttpResponse(conn, accept_statuses=[204, 404])
 
 
 def SetCommitMessage(host, change, description, notify='ALL'):
@@ -623,29 +613,24 @@ def SetCommitMessage(host, change, description, notify='ALL'):
     body = {'message': description}
     conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
     try:
-      ReadHttpResponse(conn, ignore_404=False)
+      ReadHttpResponse(conn, accept_statuses=[204])
     except GerritError as e:
-      # On success, gerrit returns status 204; anything else is an error.
-      if e.http_status != 204:
-        raise
-    else:
       raise GerritError(
-          'Unexpectedly received a 200 http status while editing message in '
-          'change %s' % change)
+          e.http_status,
+          'Received unexpected http status while editing message '
+          'in change %s' % change)
 
     # And then publish it.
     path = 'changes/%s/edit:publish' % change
     conn = CreateHttpConn(host, path, reqtype='POST', body={'notify': notify})
     try:
-      ReadHttpResponse(conn, ignore_404=False)
+      ReadHttpResponse(conn, accept_statuses=[204])
     except GerritError as e:
-      # On success, gerrit returns status 204; anything else is an error.
-      if e.http_status != 204:
-        raise
-    else:
       raise GerritError(
-          'Unexpectedly received a 200 http status while publishing message '
-          'change in %s' % change)
+          e.http_status,
+          'Received unexpected http status while publishing message '
+          'in change %s' % change)
+
   except (GerritError, KeyboardInterrupt) as e:
     # Something went wrong with one of the two calls, so we want to clean up
     # after ourselves before returning.
@@ -688,7 +673,7 @@ def AddReviewers(host, change, add=None, is_reviewer=True, notify=True):
     }
     try:
       conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-      _ = ReadHttpJsonResponse(conn, ignore_404=False)
+      _ = ReadHttpJsonResponse(conn, accept_statuses=[200])
     except GerritError as e:
       if e.http_status == 422:  # "Unprocessable Entity"
         LOGGER.warn('Note: "%s" not added as a %s' % (r, state.lower()))
@@ -708,15 +693,12 @@ def RemoveReviewers(host, change, remove=None):
     path = 'changes/%s/reviewers/%s' % (change, r)
     conn = CreateHttpConn(host, path, reqtype='DELETE')
     try:
-      ReadHttpResponse(conn, ignore_404=False)
+      ReadHttpResponse(conn, accept_statuses=[204])
     except GerritError as e:
-      # On success, gerrit returns status 204; anything else is an error.
-      if e.http_status != 204:
-        raise
-    else:
       raise GerritError(
-          'Unexpectedly received a 200 http status while deleting reviewer "%s"'
-          ' from change %s' % (r, change))
+          e.http_status,
+          'Received unexpected http status while deleting reviewer "%s" '
+          'from change %s' % (r, change))
 
 
 def SetReview(host, change, msg=None, labels=None, notify=None):

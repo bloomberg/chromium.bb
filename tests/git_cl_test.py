@@ -2200,7 +2200,7 @@ class TestGitCl(TestCase):
 
   def test_patch_gerrit_not_exists(self):
     def notExists(_issue, *_, **kwargs):
-      self.assertFalse(kwargs['ignore_404'])
+      self.assertNotIn(404, kwargs['accept_statuses'])
       raise git_cl.gerrit_util.GerritError(404, '')
     self.mock(git_cl.gerrit_util, 'GetChangeDetail', notExists)
 
