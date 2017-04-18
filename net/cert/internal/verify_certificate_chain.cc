@@ -64,14 +64,15 @@ DEFINE_CERT_ERROR_ID(kEkuLacksClientAuth,
 bool IsHandledCriticalExtensionOid(const der::Input& oid) {
   if (oid == BasicConstraintsOid())
     return true;
+  // Key Usage is NOT processed for end-entity certificates (this is the
+  // responsibility of callers), however it is considered "handled" here in
+  // order to allow being marked as critical.
   if (oid == KeyUsageOid())
     return true;
   if (oid == ExtKeyUsageOid())
     return true;
   if (oid == NameConstraintsOid())
     return true;
-  // TODO(eroman): SubjectAltName isn't actually used here, but rather is being
-  // checked by a higher layer.
   if (oid == SubjectAltNameOid())
     return true;
 
@@ -607,8 +608,6 @@ void VerifyCertificateChainNoReturnValue(
                                 &name_constraints_list, cert_errors);
     } else {
       WrapUp(cert, cert_errors);
-      // TODO(eroman): Verify the Key Usage on target is consistent with
-      //               key_purpose.
     }
   }
 

@@ -101,6 +101,16 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetNotEndEntity) {
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyUsage) {
   this->RunTest("intermediate-lacks-signing-key-usage.pem");
   this->RunTest("target-has-keycertsign-but-not-ca.pem");
+
+  this->RunTest("serverauth-ec-ku-decipheronly.pem");
+  this->RunTest("serverauth-ec-ku-digitalsignature.pem");
+  this->RunTest("serverauth-ec-ku-keyagreement.pem");
+  this->RunTest("serverauth-ec-ku-keyencipherment.pem");
+
+  this->RunTest("serverauth-rsa-ku-decipheronly.pem");
+  this->RunTest("serverauth-rsa-ku-digitalsignature.pem");
+  this->RunTest("serverauth-rsa-ku-keyagreement.pem");
+  this->RunTest("serverauth-rsa-ku-keyencipherment.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExtendedKeyUsage) {
