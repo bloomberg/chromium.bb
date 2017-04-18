@@ -544,6 +544,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config;
 // Sets the value of the webView property, and performs its basic setup.
 - (void)setWebView:(WKWebView*)webView;
+// Wraps the web view in a CRWWebViewContentView and adds it to the container
+// view.
+- (void)displayWebView;
 // Removes webView, optionally tracking the URL of the evicted
 // page for later cache-based reconstruction.
 - (void)removeWebViewAllowingCachedReconstruction:(BOOL)allowCache;
@@ -4052,13 +4055,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
     _URLOnStartLoading = _defaultURL;
 
-    // Add the web toolbars.
-    [_containerView addToolbars:_webViewToolbars];
+    // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
+    // resize the view to match the container view upon creation.
+    [_webView setFrame:[_containerView bounds]];
 
-    base::scoped_nsobject<CRWWebViewContentView> webViewContentView(
-        [[CRWWebViewContentView alloc] initWithWebView:_webView
-                                            scrollView:self.webScrollView]);
-    [_containerView displayWebViewContentView:webViewContentView];
+    // If the visible NavigationItem should be loaded in this web view, display
+    // it immediately.  Otherwise, it will be displayed when the pending load is
+    // committed.
+    web::NavigationItem* visibleItem =
+        self.navigationManagerImpl->GetVisibleItem();
+    const GURL& visibleURL =
+        visibleItem ? visibleItem->GetURL() : GURL::EmptyGURL();
+    if (![self shouldLoadURLInNativeView:visibleURL])
+      [self displayWebView];
   }
 }
 
@@ -4109,6 +4118,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
   [self setDocumentURL:_defaultURL];
+}
+
+- (void)displayWebView {
+  if (!self.webView || [_containerView webViewContentView])
+    return;
+
+  // Add the web toolbars.
+  [_containerView addToolbars:_webViewToolbars];
+
+  base::scoped_nsobject<CRWWebViewContentView> webViewContentView(
+      [[CRWWebViewContentView alloc] initWithWebView:_webView
+                                          scrollView:self.webScrollView]);
+  [_containerView displayWebViewContentView:webViewContentView];
 }
 
 - (void)removeWebViewAllowingCachedReconstruction:(BOOL)allowCache {
@@ -4523,6 +4545,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
+  [self displayWebView];
+
+  // Record the navigation state.
   [_navigationStates setState:web::WKNavigationState::COMMITTED
                 forNavigation:navigation];
 
@@ -4930,7 +4955,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequestForCurrentNavigationItem {
-  DCHECK(_webView && !self.nativeController);
+  DCHECK(_webView);
   DCHECK(self.currentNavItem);
   // If a load is kicked off on a WKWebView with a frame whose size is {0, 0} or
   // that has a negative dimension for a size, rendering issues occur that
