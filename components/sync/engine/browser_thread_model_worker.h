@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/base/scoped_event_signal.h"
-#include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -28,16 +26,11 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
   ModelSafeGroup GetModelSafeGroup() override;
   bool IsOnModelThread() override;
 
- protected:
+ private:
   ~BrowserThreadModelWorker() override;
 
-  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
+  void ScheduleWork(base::OnceClosure work) override;
 
-  void CallDoWorkAndSignalTask(const WorkCallback& work,
-                               syncer::ScopedEventSignal scoped_event_signal,
-                               SyncerError* error);
-
- private:
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
   ModelSafeGroup group_;
 

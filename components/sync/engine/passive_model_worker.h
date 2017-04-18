@@ -6,7 +6,6 @@
 #define COMPONENTS_SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
 
 #include "base/macros.h"
-#include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -22,11 +21,10 @@ class PassiveModelWorker : public ModelSafeWorker {
   ModelSafeGroup GetModelSafeGroup() override;
   bool IsOnModelThread() override;
 
- protected:
-  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
-
  private:
   ~PassiveModelWorker() override;
+
+  void ScheduleWork(base::OnceClosure work) override;
 
   DISALLOW_COPY_AND_ASSIGN(PassiveModelWorker);
 };

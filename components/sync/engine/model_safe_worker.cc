@@ -4,6 +4,9 @@
 
 #include "components/sync/engine/model_safe_worker.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
@@ -69,24 +72,86 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
   }
 }
 
-ModelSafeWorker::ModelSafeWorker() {}
+ModelSafeWorker::ModelSafeWorker()
+    : work_done_or_abandoned_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED) {
+}
 ModelSafeWorker::~ModelSafeWorker() {}
 
 void ModelSafeWorker::RequestStop() {
-  // Set stop flag. This prevents any *further* tasks from being posted to
-  // worker threads (see DoWorkAndWaitUntilDone below), but note that one may
-  // already be posted.
-  stopped_.Set();
+  base::AutoLock auto_lock(lock_);
+
+  // Set stop flag to prevent any *further* WorkCallback from starting to run
+  // (note that one may alreay be running).
+  stopped_ = true;
+
+  // If no work is running, unblock DoWorkAndWaitUntilDone(). If work is
+  // running, it is unsafe to return from DoWorkAndWaitUntilDone().
+  // ScopedSignalWorkDoneOrAbandoned will take care of signaling the event when
+  // the work is done.
+  if (!is_work_running_)
+    work_done_or_abandoned_.Signal();
 }
 
-SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(const WorkCallback& work) {
-  if (stopped_.IsSet())
-    return CANNOT_DO_WORK;
-  return DoWorkAndWaitUntilDoneImpl(work);
+SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(WorkCallback work) {
+  {
+    // It is important to check |stopped_| and reset |work_done_or_abandoned_|
+    // atomically to prevent this race:
+    //
+    // Thread  Action
+    // Sync    Sees that |stopped_| is false.
+    // UI      Calls RequestStop(). Signals |work_done_or_abandoned_|.
+    // Sync    Resets |work_done_or_abandoned_|.
+    //         Waits on |work_done_or_abandoned_| forever since the task may not
+    //         run after RequestStop() is called.
+    base::AutoLock auto_lock(lock_);
+    if (stopped_)
+      return CANNOT_DO_WORK;
+    DCHECK(!is_work_running_);
+    work_done_or_abandoned_.Reset();
+  }
+
+  SyncerError error = UNSET;
+  bool did_run = false;
+  ScheduleWork(base::BindOnce(
+      &ModelSafeWorker::DoWork, this, base::Passed(std::move(work)),
+      base::Passed(base::ScopedClosureRunner(base::Bind(
+          [](scoped_refptr<ModelSafeWorker> worker) {
+            worker->work_done_or_abandoned_.Signal();
+          },
+          make_scoped_refptr(this)))),
+      base::Unretained(&error), base::Unretained(&did_run)));
+
+  // Unblocked when the task runs or is deleted or when RequestStop() is called
+  // before the task starts running.
+  work_done_or_abandoned_.Wait();
+
+  return did_run ? error : CANNOT_DO_WORK;
 }
 
-bool ModelSafeWorker::IsStopped() {
-  return stopped_.IsSet();
+void ModelSafeWorker::DoWork(WorkCallback work,
+                             base::ScopedClosureRunner scoped_closure_runner,
+                             SyncerError* error,
+                             bool* did_run) {
+  {
+    base::AutoLock auto_lock(lock_);
+    if (stopped_)
+      return;
+
+    // Set |is_work_running_| to make sure that DoWorkAndWaitUntilDone() doesn't
+    // return while |work| is running.
+    DCHECK(!is_work_running_);
+    is_work_running_ = true;
+  }
+
+  *error = std::move(work).Run();
+  *did_run = true;
+
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(is_work_running_);
+    is_work_running_ = false;
+  }
 }
 
 }  // namespace syncer

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -127,7 +128,7 @@ void DirectoryUpdateHandler::ApplyUpdates(StatusController* status) {
                    // We wait until the callback is executed.  We can safely use
                    // Unretained.
                    base::Unretained(this), base::Unretained(status));
-    worker_->DoWorkAndWaitUntilDone(c);
+    worker_->DoWorkAndWaitUntilDone(std::move(c));
 
     debug_info_emitter_->EmitUpdateCountersUpdate();
     debug_info_emitter_->EmitStatusCountersUpdate();
