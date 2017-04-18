@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/wm/session_state_animator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -50,7 +50,7 @@ class LockStateControllerTestApi;
 // OnLockStateChanged is called. It leads to
 // StartUnlockAnimationAfterUIDestroyed.
 class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
-                                       public ShellObserver {
+                                       public SessionObserver {
  public:
   // Amount of time to wait for our lock requests to be honored before giving
   // up.
@@ -121,8 +121,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // aura::WindowTreeHostObserver override:
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
-  // ShellObserver overrides:
-  void OnAppTerminating() override;
+  // SessionObserver overrides:
+  void OnChromeTerminating() override;
   void OnLockStateChanged(bool locked) override;
 
   void set_animator_for_test(SessionStateAnimator* animator) {
@@ -241,6 +241,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   base::OneShotTimer real_shutdown_timer_;
 
   base::Closure lock_screen_displayed_callback_;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   base::WeakPtrFactory<LockStateController> weak_ptr_factory_;
 

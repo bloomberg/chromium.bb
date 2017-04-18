@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
@@ -141,13 +141,11 @@ void SessionController::CycleActiveUser(CycleUserDirection direction) {
     client_->CycleActiveUser(direction);
 }
 
-void SessionController::AddSessionStateObserver(
-    SessionStateObserver* observer) {
+void SessionController::AddObserver(SessionObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void SessionController::RemoveSessionStateObserver(
-    SessionStateObserver* observer) {
+void SessionController::RemoveObserver(SessionObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

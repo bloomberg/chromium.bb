@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/touch_view.mojom.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm_display_observer.h"
 #include "base/compiler_specific.h"
@@ -45,12 +46,13 @@ class VirtualKeyboardControllerTest;
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
 // angle and rotates the display to match the device when in maximize mode.
-class ASH_EXPORT MaximizeModeController :
-    public chromeos::AccelerometerReader::Observer,
-    public chromeos::PowerManagerClient::Observer,
-    NON_EXPORTED_BASE(public mojom::TouchViewManager),
-    public ShellObserver,
-    public WmDisplayObserver {
+class ASH_EXPORT MaximizeModeController
+    : public chromeos::AccelerometerReader::Observer,
+      public chromeos::PowerManagerClient::Observer,
+      NON_EXPORTED_BASE(public mojom::TouchViewManager),
+      public ShellObserver,
+      public WmDisplayObserver,
+      public SessionObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/touchview regardless of hardware orientation.
@@ -88,13 +90,15 @@ class ASH_EXPORT MaximizeModeController :
   void BindRequest(mojom::TouchViewManagerRequest request);
 
   // ShellObserver:
-  void OnAppTerminating() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
   void OnShellInitialized() override;
 
   // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
+
+  // SessionObserver:
+  void OnChromeTerminating() override;
 
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
@@ -209,6 +213,8 @@ class ASH_EXPORT MaximizeModeController :
 
   // Tracks whether a flag is used to force maximize mode.
   ForceTabletMode force_tablet_mode_ = ForceTabletMode::NONE;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   base::WeakPtrFactory<MaximizeModeController> weak_factory_;
 

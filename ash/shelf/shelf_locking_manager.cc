@@ -12,21 +12,19 @@
 namespace ash {
 
 ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
-    : shelf_(shelf), stored_alignment_(shelf->GetAlignment()) {
+    : shelf_(shelf),
+      stored_alignment_(shelf->GetAlignment()),
+      scoped_session_observer_(this) {
   DCHECK(shelf_);
   ShellPort::Get()->AddLockStateObserver(this);
   SessionController* controller = Shell::Get()->session_controller();
   session_locked_ =
       controller->GetSessionState() != session_manager::SessionState::ACTIVE;
   screen_locked_ = controller->IsScreenLocked();
-  controller->AddSessionStateObserver(this);
-  Shell::Get()->AddShellObserver(this);
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
   ShellPort::Get()->RemoveLockStateObserver(this);
-  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
 }
 
 void ShelfLockingManager::OnLockStateChanged(bool locked) {

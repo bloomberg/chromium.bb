@@ -155,13 +155,13 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
       chromevox_panel_height_(0),
       duration_override_in_ms_(0),
       shelf_background_type_(SHELF_BACKGROUND_OVERLAP),
-      keyboard_observer_(this) {
+      keyboard_observer_(this),
+      scoped_session_observer_(this) {
   DCHECK(shelf_widget_);
   DCHECK(wm_shelf_);
   Shell::Get()->AddShellObserver(this);
   ShellPort::Get()->AddLockStateObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
-  Shell::Get()->session_controller()->AddSessionStateObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
 }
 
@@ -173,7 +173,6 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     observer.WillDeleteShelfLayoutManager();
   Shell::Get()->RemoveShellObserver(this);
   ShellPort::Get()->RemoveLockStateObserver(this);
-  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {

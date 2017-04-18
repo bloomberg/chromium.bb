@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/palette_delegate.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -36,7 +36,7 @@ class PaletteToolManager;
 // class also controls the lifetime for all of the tools available in the
 // palette.
 class ASH_EXPORT PaletteTray : public TrayBackgroundView,
-                               public SessionStateObserver,
+                               public SessionObserver,
                                public ShellObserver,
                                public PaletteToolManager::Delegate,
                                public ui::InputDeviceEventObserver,
@@ -48,7 +48,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
 
-  // SessionStateObserver:
+  // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // ShellObserver:
@@ -133,6 +133,8 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // Number of actions in pen palette bubble.
   int num_actions_in_bubble_ = 0;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   base::WeakPtrFactory<PaletteTray> weak_factory_;
 

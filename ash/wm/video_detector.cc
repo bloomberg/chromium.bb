@@ -81,6 +81,7 @@ VideoDetector::VideoDetector()
     : state_(State::NOT_PLAYING),
       video_is_playing_(false),
       window_observer_manager_(this),
+      scoped_session_observer_(this),
       is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
@@ -140,7 +141,7 @@ void VideoDetector::OnWindowDestroyed(aura::Window* window) {
   window_observer_manager_.Remove(window);
 }
 
-void VideoDetector::OnAppTerminating() {
+void VideoDetector::OnChromeTerminating() {
   // Stop checking video activity once the shutdown
   // process starts. crbug.com/231696.
   is_shutting_down_ = true;

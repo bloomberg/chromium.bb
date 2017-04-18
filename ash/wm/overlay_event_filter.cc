@@ -11,10 +11,10 @@
 
 namespace ash {
 
-OverlayEventFilter::OverlayEventFilter() : delegate_(NULL) {}
+OverlayEventFilter::OverlayEventFilter() : scoped_session_observer_(this) {}
 
 OverlayEventFilter::~OverlayEventFilter() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
 }
 
 void OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
@@ -32,11 +32,11 @@ void OverlayEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
-void OverlayEventFilter::OnLoginStateChanged(LoginStatus status) {
+void OverlayEventFilter::OnLoginStatusChanged(LoginStatus status) {
   Cancel();
 }
 
-void OverlayEventFilter::OnAppTerminating() {
+void OverlayEventFilter::OnChromeTerminating() {
   Cancel();
 }
 

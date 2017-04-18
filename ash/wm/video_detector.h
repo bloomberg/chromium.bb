@@ -10,6 +10,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -35,6 +36,7 @@ namespace ash {
 // continuous scrolling of a page.
 class ASH_EXPORT VideoDetector : public aura::EnvObserver,
                                  public aura::WindowObserver,
+                                 public SessionObserver,
                                  public ShellObserver {
  public:
   // State of detected video activity.
@@ -97,8 +99,10 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  // SessionStateController overrides.
+  void OnChromeTerminating() override;
+
   // ShellObserver overrides.
-  void OnAppTerminating() override;
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 WmWindow* root_window) override;
 
@@ -137,6 +141,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   base::TimeTicks now_for_test_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_;
+  ScopedSessionObserver scoped_session_observer_;
 
   bool is_shutting_down_;
 

@@ -5,7 +5,7 @@
 #ifndef ASH_DISPLAY_SHUTDOWN_OBSERVER_CHROMEOS_H_
 #define ASH_DISPLAY_SHUTDOWN_OBSERVER_CHROMEOS_H_
 
-#include "ash/shell_observer.h"
+#include "ash/session/session_observer.h"
 #include "base/macros.h"
 
 namespace display {
@@ -14,18 +14,19 @@ class DisplayConfigurator;
 
 namespace ash {
 
-// Adds self as ShellObserver and listens for OnAppTerminating() on behalf of
-// |display_configurator_|.
-class ShutdownObserver : public ShellObserver {
+// Adds self as SessionObserver and listens for OnChromeTerminating() on
+// behalf of |display_configurator_|.
+class ShutdownObserver : public SessionObserver {
  public:
   explicit ShutdownObserver(display::DisplayConfigurator* display_configurator);
   ~ShutdownObserver() override;
 
  private:
-  // ShellObserver:
-  void OnAppTerminating() override;
+  // SessionObserver:
+  void OnChromeTerminating() override;
 
-  display::DisplayConfigurator* display_configurator_;
+  display::DisplayConfigurator* const display_configurator_;
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownObserver);
 };

@@ -576,7 +576,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 
   PowerStatus::Initialize();
 
-  session_controller_->AddSessionStateObserver(this);
+  session_controller_->AddObserver(this);
 }
 
 Shell::~Shell() {
@@ -609,6 +609,8 @@ Shell::~Shell() {
   speech_feedback_handler_.reset();
 
   RemovePreTargetHandler(overlay_filter_.get());
+  overlay_filter_.reset();
+
   RemovePreTargetHandler(accelerator_filter_.get());
   RemovePreTargetHandler(event_transformation_handler_.get());
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
@@ -650,8 +652,8 @@ Shell::~Shell() {
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
 
-// Controllers who have WindowObserver added must be deleted
-// before |window_tree_host_manager_| is deleted.
+  // Controllers who have WindowObserver added must be deleted
+  // before |window_tree_host_manager_| is deleted.
 
   // VideoActivityNotifier must be deleted before |video_detector_| is
   // deleted because it's observing video activity through
@@ -755,7 +757,7 @@ Shell::~Shell() {
 
   // Needs to happen right before |instance_| is reset.
   shell_port_.reset();
-  session_controller_->RemoveSessionStateObserver(this);
+  session_controller_->RemoveObserver(this);
   wallpaper_delegate_.reset();
   pref_service_ = nullptr;
   shell_delegate_.reset();
@@ -939,7 +941,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   overlay_filter_.reset(new OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());
-  AddShellObserver(overlay_filter_.get());
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
       std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
@@ -969,8 +970,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
       display_configurator_->cached_displays());
-
-  AddShellObserver(lock_state_controller_.get());
 
   // The connector is unavailable in some tests.
   if (config == Config::MASH && shell_delegate_->GetShellConnector()) {
@@ -1228,17 +1227,9 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {
   UpdateAfterLoginStatusChange(login_status);
-
-  // TODO(xiyuan): Update OnLoginStateChanged -> OnLoginStatusChanged.
-  for (auto& observer : shell_observers_)
-    observer.OnLoginStateChanged(login_status);
 }
 
 void Shell::OnLockStateChanged(bool locked) {
-  // TODO(xiyuan): Convert OnLockStateChanged() ShellObservers to
-  // SessionStateObservers.
-  for (auto& observer : shell_observers_)
-    observer.OnLockStateChanged(locked);
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
@@ -1248,13 +1239,6 @@ void Shell::OnLockStateChanged(bool locked) {
       DCHECK(container->children().empty());
   }
 #endif
-}
-
-void Shell::OnChromeTerminating() {
-  // This will be removed when moving session related observers out of
-  // ShellObserver. See http://crbug.com/711740.
-  for (auto& observer : shell_observers_)
-    observer.OnAppTerminating();
 }
 
 void Shell::OnPrefServiceInitialized(

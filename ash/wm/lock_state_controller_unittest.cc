@@ -335,11 +335,9 @@ class LockStateControllerTest : public AshTestBase {
   void Initialize(bool legacy_button, LoginStatus status) {
     power_button_controller_->set_has_legacy_power_button_for_test(
         legacy_button);
-    lock_state_controller_->OnLoginStateChanged(status);
     SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
     if (status == LoginStatus::GUEST)
       SetCanLockScreen(false);
-    lock_state_controller_->OnLockStateChanged(false);
   }
 
   PowerButtonController* power_button_controller_;  // not owned
@@ -805,7 +803,7 @@ TEST_F(LockStateControllerTest, LockWithoutButton) {
 // display an animation, we should just blank the screen.
 TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
   Initialize(false, LoginStatus::USER);
-  lock_state_controller_->OnAppTerminating();
+  lock_state_controller_->OnChromeTerminating();
 
   EXPECT_TRUE(test_animator_->AreContainersAnimated(
       SessionStateAnimator::kAllNonRootContainersMask,

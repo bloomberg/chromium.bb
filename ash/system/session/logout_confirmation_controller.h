@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/session/last_window_closed_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -34,7 +34,7 @@ class LogoutConfirmationDialog;
 // In public sessions, asks the user to end the session when the last window is
 // closed.
 class ASH_EXPORT LogoutConfirmationController
-    : public ShellObserver,
+    : public SessionObserver,
       public LastWindowClosedObserver {
  public:
   // The |logout_closure| must be safe to call as long as |this| is alive.
@@ -50,7 +50,7 @@ class ASH_EXPORT LogoutConfirmationController
 
   void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
 
-  // ShellObserver:
+  // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
   // Called by the |dialog_| when the user confirms logout.
@@ -71,6 +71,8 @@ class ASH_EXPORT LogoutConfirmationController
   base::TimeTicks logout_time_;
   LogoutConfirmationDialog* dialog_;  // Owned by the Views hierarchy.
   base::Timer logout_timer_;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationController);
 };

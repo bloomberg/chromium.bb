@@ -14,16 +14,6 @@ class WmWindow;
 
 class ASH_EXPORT ShellObserver {
  public:
-  // Invoked when the user logs in.
-  virtual void OnLoginStateChanged(LoginStatus status) {}
-
-  // Invoked when the application is exiting.
-  virtual void OnAppTerminating() {}
-
-  // Invoked when the screen is locked (after the lock window is visible) or
-  // unlocked.
-  virtual void OnLockStateChanged(bool locked) {}
-
   // Called when a casting session is started or stopped.
   virtual void OnCastingSessionStartedOrStopped(bool started) {}
 

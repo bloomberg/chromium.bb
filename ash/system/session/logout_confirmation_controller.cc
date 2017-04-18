@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/login_status.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_dialog.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -26,18 +27,16 @@ LogoutConfirmationController::LogoutConfirmationController(
     : clock_(new base::DefaultTickClock),
       logout_closure_(logout_closure),
       dialog_(NULL),
-      logout_timer_(false, false) {
-  if (Shell::HasInstance()) {
-    Shell::Get()->AddShellObserver(this);
+      logout_timer_(false, false),
+      scoped_session_observer_(this) {
+  if (Shell::HasInstance())
     Shell::Get()->system_tray_notifier()->AddLastWindowClosedObserver(this);
-  }
 }
 
 LogoutConfirmationController::~LogoutConfirmationController() {
-  if (Shell::HasInstance()) {
-    Shell::Get()->RemoveShellObserver(this);
+  if (Shell::HasInstance())
     Shell::Get()->system_tray_notifier()->RemoveLastWindowClosedObserver(this);
-  }
+
   if (dialog_)
     dialog_->ControllerGone();
 }

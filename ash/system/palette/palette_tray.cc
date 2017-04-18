@@ -130,6 +130,7 @@ class TitleView : public views::View, public views::ButtonListener {
 PaletteTray::PaletteTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf, true),
       palette_tool_manager_(new PaletteToolManager(this)),
+      scoped_session_observer_(this),
       weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
@@ -142,7 +143,6 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->session_controller()->AddSessionStateObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
@@ -152,7 +152,6 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

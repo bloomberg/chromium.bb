@@ -22,7 +22,9 @@
 namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
-    : TrayBackgroundView(wm_shelf, true), icon_(new views::ImageView()) {
+    : TrayBackgroundView(wm_shelf, true),
+      icon_(new views::ImageView()),
+      scoped_session_observer_(this) {
   SetInkDropMode(InkDropMode::ON);
 
   icon_->SetImage(CreateVectorIcon(kShelfOverviewIcon, kShelfIconColor));
@@ -34,12 +36,10 @@ OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
   set_separator_visibility(false);
 
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {

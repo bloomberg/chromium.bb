@@ -72,6 +72,7 @@ LockStateController::LockStateController(
       animating_lock_(false),
       can_cancel_lock_animation_(false),
       shutdown_controller_(shutdown_controller),
+      scoped_session_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(shutdown_controller_);
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
@@ -189,7 +190,7 @@ void LockStateController::OnHostCloseRequested(
   Shell::Get()->shell_delegate()->Exit();
 }
 
-void LockStateController::OnAppTerminating() {
+void LockStateController::OnChromeTerminating() {
   // If we hear that Chrome is exiting but didn't request it ourselves, all we
   // can really hope for is that we'll have time to clear the screen.
   // This is also the case when the user signs off.

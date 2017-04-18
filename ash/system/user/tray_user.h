@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session_types.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 
@@ -27,7 +27,7 @@ class RoundedImageView;
 class UserView;
 }
 
-class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionStateObserver {
+class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionObserver {
  public:
   // The given |index| is the user index in a multi profile scenario. Index #0
   // is the active user, the other indices are other logged in users (if there
@@ -69,7 +69,7 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionStateObserver {
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
-  // Overridden from SessionStateObserver.
+  // Overridden from SessionObserver.
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnUserSessionAdded(const AccountId& account_id) override;
   void OnUserSessionUpdated(const AccountId& account_id) override;
@@ -79,7 +79,7 @@ class ASH_EXPORT TrayUser : public SystemTrayItem, public SessionStateObserver {
   // Updates the layout of this item.
   void UpdateLayoutOfItem();
 
-  ScopedSessionStateObserver scoped_session_observer_;
+  ScopedSessionObserver scoped_session_observer_;
 
   // The user index to use.
   const UserIndex user_index_;

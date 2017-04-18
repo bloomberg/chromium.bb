@@ -22,16 +22,15 @@ const int kNotifyIntervalSec = 5;
 VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
     : detector_(detector),
       video_state_(detector->state()),
-      screen_is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
+      screen_is_locked_(Shell::Get()->session_controller()->IsScreenLocked()),
+      scoped_session_observer_(this) {
   detector_->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
 
   MaybeNotifyPowerManager();
   UpdateTimer();
 }
 
 VideoActivityNotifier::~VideoActivityNotifier() {
-  Shell::Get()->RemoveShellObserver(this);
   detector_->RemoveObserver(this);
 }
 
@@ -44,11 +43,12 @@ void VideoActivityNotifier::OnVideoStateChanged(VideoDetector::State state) {
 }
 
 void VideoActivityNotifier::OnLockStateChanged(bool locked) {
-  if (screen_is_locked_ != locked) {
-    screen_is_locked_ = locked;
-    MaybeNotifyPowerManager();
-    UpdateTimer();
-  }
+  if (screen_is_locked_ == locked)
+    return;
+
+  screen_is_locked_ = locked;
+  MaybeNotifyPowerManager();
+  UpdateTimer();
 }
 
 bool VideoActivityNotifier::TriggerTimeoutForTest() {

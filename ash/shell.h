@@ -12,7 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
@@ -189,7 +189,7 @@ class SmsObserverTest;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : public SessionStateObserver,
+class ASH_EXPORT Shell : public SessionObserver,
                          public SystemModalContainerEventFilterDelegate,
                          public ui::EventTarget,
                          public aura::client::ActivationChangeObserver {
@@ -628,11 +628,10 @@ class ASH_EXPORT Shell : public SessionStateObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // SessionStateObserver:
+  // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
-  void OnChromeTerminating() override;
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/wm/video_detector.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -15,7 +16,7 @@ namespace ash {
 
 // Notifies the power manager when a video is playing.
 class ASH_EXPORT VideoActivityNotifier : public VideoDetector::Observer,
-                                         public ShellObserver {
+                                         public SessionObserver {
  public:
   explicit VideoActivityNotifier(VideoDetector* detector);
   ~VideoActivityNotifier() override;
@@ -23,7 +24,7 @@ class ASH_EXPORT VideoActivityNotifier : public VideoDetector::Observer,
   // VideoDetector::Observer implementation.
   void OnVideoStateChanged(VideoDetector::State state) override;
 
-  // ShellObserver implementation.
+  // SessionObserver implementation.
   void OnLockStateChanged(bool locked) override;
 
   // If |notify_timer_| is running, calls MaybeNotifyPowerManager() and returns
@@ -54,6 +55,8 @@ class ASH_EXPORT VideoActivityNotifier : public VideoDetector::Observer,
   // Periodically calls MaybeNotifyPowerManager() while
   // should_notify_power_manager() is true.
   base::RepeatingTimer notify_timer_;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoActivityNotifier);
 };

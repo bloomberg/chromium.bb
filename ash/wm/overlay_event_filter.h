@@ -6,7 +6,7 @@
 #define ASH_WM_OVERLAY_EVENT_FILTER_H_
 
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
+#include "ash/session/session_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -21,7 +21,7 @@ namespace ash {
 // of any key events during activation, and also signal cancellation when keys
 // for canceling are pressed.
 class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
-                                      public ShellObserver {
+                                      public SessionObserver {
  public:
   // Windows that need to receive events from OverlayEventFilter implement this.
   class ASH_EXPORT Delegate {
@@ -58,13 +58,14 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   // ui::EventHandler overrides:
   void OnKeyEvent(ui::KeyEvent* event) override;
 
-  // ShellObserver overrides:
-  void OnLoginStateChanged(LoginStatus status) override;
-  void OnAppTerminating() override;
+  // SessionObserver overrides:
+  void OnLoginStatusChanged(LoginStatus status) override;
+  void OnChromeTerminating() override;
   void OnLockStateChanged(bool locked) override;
 
  private:
-  Delegate* delegate_;
+  Delegate* delegate_ = nullptr;
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayEventFilter);
 };

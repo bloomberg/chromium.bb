@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm_display_observer.h"
 #include "base/compiler_specific.h"
@@ -43,7 +43,7 @@ class ASH_EXPORT WallpaperController
       public ShellObserver,
       public wallpaper::WallpaperResizerObserver,
       public wallpaper::WallpaperColorCalculatorObserver,
-      public SessionStateObserver {
+      public SessionObserver {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
 
@@ -97,7 +97,7 @@ class ASH_EXPORT WallpaperController
   // ShellObserver:
   void OnRootWindowAdded(WmWindow* root_window) override;
 
-  // SessionStateObserver:
+  // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   // Returns the maximum size of all displays combined in native
@@ -193,6 +193,8 @@ class ASH_EXPORT WallpaperController
   int wallpaper_reload_delay_;
 
   scoped_refptr<base::TaskRunner> task_runner_;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperController);
 };

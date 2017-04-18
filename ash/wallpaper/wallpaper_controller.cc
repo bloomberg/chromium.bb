@@ -92,10 +92,10 @@ WallpaperController::WallpaperController(
       wallpaper_mode_(WALLPAPER_NONE),
       prominent_color_(kInvalidColor),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      scoped_session_observer_(this) {
   ShellPort::Get()->AddDisplayObserver(this);
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
 WallpaperController::~WallpaperController() {
@@ -105,7 +105,6 @@ WallpaperController::~WallpaperController() {
     color_calculator_->RemoveObserver(this);
   ShellPort::Get()->RemoveDisplayObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void WallpaperController::BindRequest(

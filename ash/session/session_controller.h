@@ -21,7 +21,7 @@ class AccountId;
 
 namespace ash {
 
-class SessionStateObserver;
+class SessionObserver;
 
 // Implements mojom::SessionController to cache session related info such as
 // session state, meta data about user sessions to support synchronous
@@ -96,8 +96,8 @@ class ASH_EXPORT SessionController
   // ordering as user sessions are created.
   void CycleActiveUser(CycleUserDirection direction);
 
-  void AddSessionStateObserver(SessionStateObserver* observer);
-  void RemoveSessionStateObserver(SessionStateObserver* observer);
+  void AddObserver(SessionObserver* observer);
+  void RemoveObserver(SessionObserver* observer);
 
   // Returns the ash notion of login status.
   // NOTE: Prefer GetSessionState() in new code because the concept of
@@ -160,7 +160,7 @@ class ASH_EXPORT SessionController
   // animation starts and reset when session state is no longer LOCKED.
   bool is_unlocking_ = false;
 
-  base::ObserverList<ash::SessionStateObserver> observers_;
+  base::ObserverList<ash::SessionObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionController);
 };

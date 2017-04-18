@@ -99,9 +99,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   void Initialize(LoginStatus status) {
-    lock_state_controller_->OnLoginStateChanged(status);
     SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
-    lock_state_controller_->OnLockStateChanged(false);
   }
 
   void EnableMaximizeMode(bool enabled) {

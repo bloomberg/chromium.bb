@@ -121,7 +121,7 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // The active user has been changed. This will be called when the UI is ready
   // to be switched to the new user.
-  // Note: This will happen after SessionStateObserver::ActiveUserChanged fires.
+  // Note: This will happen after SessionObserver::ActiveUserChanged fires.
   virtual void ActiveUserWasChanged();
 
   // Returns true when the Search key is configured to be treated as Caps Lock.

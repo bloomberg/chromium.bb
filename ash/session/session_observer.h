@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SESSION_SESSION_STATE_OBSERVER_H_
-#define ASH_SESSION_SESSION_STATE_OBSERVER_H_
+#ifndef ASH_SESSION_SESSION_OBSERVER_H_
+#define ASH_SESSION_SESSION_OBSERVER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -15,7 +15,7 @@ namespace ash {
 
 enum class LoginStatus;
 
-class ASH_EXPORT SessionStateObserver {
+class ASH_EXPORT SessionObserver {
  public:
   // Called when the active user session has changed.
   virtual void OnActiveUserSessionChanged(const AccountId& account_id) {}
@@ -39,21 +39,21 @@ class ASH_EXPORT SessionStateObserver {
   virtual void OnChromeTerminating() {}
 
  protected:
-  virtual ~SessionStateObserver() {}
+  virtual ~SessionObserver() {}
 };
 
 // A class to attach / detach an object as a session state observer.
-class ASH_EXPORT ScopedSessionStateObserver {
+class ASH_EXPORT ScopedSessionObserver {
  public:
-  explicit ScopedSessionStateObserver(SessionStateObserver* observer);
-  virtual ~ScopedSessionStateObserver();
+  explicit ScopedSessionObserver(SessionObserver* observer);
+  virtual ~ScopedSessionObserver();
 
  private:
-  ash::SessionStateObserver* observer_;
+  SessionObserver* const observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedSessionStateObserver);
+  DISALLOW_COPY_AND_ASSIGN(ScopedSessionObserver);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SESSION_SESSION_STATE_OBSERVER_H_
+#endif  // ASH_SESSION_SESSION_OBSERVER_H_

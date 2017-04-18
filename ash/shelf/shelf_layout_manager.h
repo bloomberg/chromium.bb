@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/session/session_state_observer.h"
+#include "ash/session/session_observer.h"
 #include "ash/shelf/wm_shelf.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/lock_state_observer.h"
@@ -55,7 +55,7 @@ class ASH_EXPORT ShelfLayoutManager
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
-      public SessionStateObserver {
+      public SessionObserver {
  public:
   ShelfLayoutManager(ShelfWidget* shelf_widget, WmShelf* wm_shelf);
   ~ShelfLayoutManager() override;
@@ -150,7 +150,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
 
-  // Overridden from SessionStateObserver:
+  // Overridden from SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus loing_status) override;
 
@@ -360,6 +360,7 @@ class ASH_EXPORT ShelfLayoutManager
   ScopedObserver<keyboard::KeyboardController,
                  keyboard::KeyboardControllerObserver>
       keyboard_observer_;
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
