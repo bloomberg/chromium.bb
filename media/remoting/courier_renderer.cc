@@ -79,9 +79,6 @@ CourierRenderer::CourierRenderer(
   // Note: The constructor is running on the main thread, but will be destroyed
   // on the media thread. Therefore, all weak pointers must be dereferenced on
   // the media thread.
-  controller_->SetShowInterstitialCallback(
-      base::Bind(&CourierRenderer::RenderInterstitialAndShow,
-                 media_task_runner_, weak_factory_.GetWeakPtr()));
   const RpcBroker::ReceiveMessageCallback receive_callback =
       base::Bind(&CourierRenderer::OnMessageReceivedOnMainThread,
                  media_task_runner_, weak_factory_.GetWeakPtr());
@@ -92,23 +89,14 @@ CourierRenderer::~CourierRenderer() {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // Post task on main thread to unset the interstial callback.
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&RendererController::SetShowInterstitialCallback, controller_,
-                 RendererController::ShowInterstitialCallback()));
-
   // Post task on main thread to unregister message receiver.
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RpcBroker::UnregisterMessageReceiverCallback,
                             rpc_broker_, rpc_handle_));
 
-  // If the "between sessions" interstitial is not the one currently showing,
-  // paint a blank black frame to clear remoting messaging.
-  if (interstitial_type_ != InterstitialType::BETWEEN_SESSIONS) {
-    scoped_refptr<VideoFrame> frame =
-        VideoFrame::CreateBlackFrame(gfx::Size(1280, 720));
-    PaintInterstitial(frame, InterstitialType::BETWEEN_SESSIONS);
+  if (video_renderer_sink_) {
+    video_renderer_sink_->PaintSingleFrame(
+        VideoFrame::CreateBlackFrame(gfx::Size(1280, 720)));
   }
 }
 
@@ -695,35 +683,6 @@ void CourierRenderer::OnFatalError(StopTrigger stop_trigger) {
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
-}
-
-// static
-void CourierRenderer::RenderInterstitialAndShow(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-    base::WeakPtr<CourierRenderer> self,
-    const SkBitmap& background,
-    const gfx::Size& natural_size,
-    InterstitialType type) {
-  // Note: This is running on the main thread. |self| must only be dereferenced
-  // on the media thread.
-  scoped_refptr<VideoFrame> frame =
-      RenderInterstitialFrame(background, natural_size, type);
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-  media_task_runner->PostTask(
-      FROM_HERE, base::Bind(&CourierRenderer::PaintInterstitial, self,
-                            std::move(frame), type));
-}
-
-void CourierRenderer::PaintInterstitial(scoped_refptr<VideoFrame> frame,
-                                        InterstitialType type) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  interstitial_type_ = type;
-  if (!video_renderer_sink_)
-    return;
-  video_renderer_sink_->PaintSingleFrame(frame);
 }
 
 void CourierRenderer::OnMediaTimeUpdated() {

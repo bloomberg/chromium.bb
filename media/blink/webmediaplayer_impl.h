@@ -191,8 +191,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void BecameDominantVisibleContent(bool isDominant) override;
   void SetIsEffectivelyFullscreen(bool isEffectivelyFullscreen) override;
 
-  void SetPoster(const blink::WebURL& poster) override;
-
   // WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
   void OnFrameClosed() override;
@@ -220,6 +218,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   gfx::Size GetCanvasSize() const;
   void SetDeviceScaleFactor(float scale_factor);
   void SetUseFallbackPath(bool use_fallback_path);
+  void SetPoster(const blink::WebURL& poster) override;
 #endif
 
   // MediaObserverClient implementation.

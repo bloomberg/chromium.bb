@@ -12361,14 +12361,6 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
     </if>
 
-    <!-- Media Remoting strings. -->
-    <message name="IDS_MEDIA_REMOTING_CASTING_VIDEO_TEXT" desc="The text shown on the media player when the video is currently being streamed remotely.">
-      Casting Video...
-    </message>
-    <message name="IDS_MEDIA_REMOTING_CAST_ERROR_TEXT" desc="The text shown on the media player when there is an error when trying to stream the video remotely.">
-      Cast Error
-    </message>
-
     <!-- Consistent omnibox geolocation -->
     <if expr="is_android">
         <message name="IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_CONTROL_TEXT" desc="Text to put in the infobar disclosing Google Search's usage of location. The message contains a link to a settings page. The link text is a separate string in the translation console and appears here as a placeholder text. This version of the text is old but is being kept to allow us to compare performance of the new text.">

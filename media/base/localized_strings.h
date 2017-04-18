@@ -28,10 +28,6 @@ enum MessageId {
   BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
   BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
 #endif
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  MEDIA_REMOTING_CAST_ERROR_TEXT,
-  MEDIA_REMOTING_CASTING_VIDEO_TEXT,
-#endif
 };
 
 // Implementations are expected to convert MessageIds to generated_resources.grd

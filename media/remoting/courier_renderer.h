@@ -19,7 +19,6 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/remoting/interstitial.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -37,10 +36,6 @@ class RendererController;
 // A media::Renderer implementation that proxies all operations to a remote
 // renderer via RPCs. The CourierRenderer is instantiated by
 // AdaptiveRendererFactory when media remoting is meant to take place.
-//
-// While the media content is rendered remotely, the CourierRenderer emits
-// interstitial frames locally, to the VideoRendererSink, to indicate to the
-// user that remoting is taking place.
 class CourierRenderer : public Renderer {
  public:
   // The whole class except for constructor and GetMediaTime() runs on
@@ -71,16 +66,6 @@ class CourierRenderer : public Renderer {
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       base::WeakPtr<CourierRenderer> self,
       std::unique_ptr<pb::RpcMessage> message);
-
-  // Called to render the interstitial on the main thread. Then, trampoline to
-  // the media thread to have the CourierRenderer pass the resulting VideoFrame
-  // to the VideoRendererSink.
-  static void RenderInterstitialAndShow(
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      base::WeakPtr<CourierRenderer> self,
-      const SkBitmap& background,
-      const gfx::Size& natural_size,
-      InterstitialType type);
 
  public:
   // media::Renderer implementation.
@@ -133,11 +118,6 @@ class CourierRenderer : public Renderer {
   void OnVideoOpacityChange(std::unique_ptr<pb::RpcMessage> message);
   void OnStatisticsUpdate(std::unique_ptr<pb::RpcMessage> message);
   void OnDurationChange(std::unique_ptr<pb::RpcMessage> message);
-
-  // Called to pass the newly-rendered interstitial VideoFrame to the
-  // VideoRendererSink.
-  void PaintInterstitial(scoped_refptr<VideoFrame> frame,
-                         InterstitialType type);
 
   // Called when |current_media_time_| is updated.
   void OnMediaTimeUpdated();
@@ -225,9 +205,6 @@ class CourierRenderer : public Renderer {
   // A timer that polls the DemuxerStreamAdapters periodically to measure
   // the data flow rates for metrics.
   base::RepeatingTimer data_flow_poll_timer_;
-
-  // Current type of the interstitial frame.
-  InterstitialType interstitial_type_ = InterstitialType::BETWEEN_SESSIONS;
 
   base::WeakPtrFactory<CourierRenderer> weak_factory_;
 

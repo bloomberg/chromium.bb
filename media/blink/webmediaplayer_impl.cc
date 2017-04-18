@@ -1617,16 +1617,11 @@ void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
 void WebMediaPlayerImpl::SetUseFallbackPath(bool use_fallback_path) {
   use_fallback_path_ = use_fallback_path;
 }
-#endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::SetPoster(const blink::WebURL& poster) {
-#if defined(OS_ANDROID)
   cast_impl_.setPoster(poster);
-#endif
-
-  if (observer_)
-    observer_->OnSetPoster(poster);
 }
+#endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __func__;

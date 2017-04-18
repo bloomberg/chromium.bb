@@ -279,7 +279,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-#include "content/renderer/image_downloader/single_image_downloader.h"  // nogncheck
 #include "media/remoting/adaptive_renderer_factory.h"     // nogncheck
 #include "media/remoting/remoting_cdm_controller.h"       // nogncheck
 #include "media/remoting/remoting_cdm_factory.h"          // nogncheck
@@ -2947,7 +2946,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  auto* const remoting_controller_ptr = remoting_controller.get();
   media_renderer_factory =
       base::MakeUnique<media::remoting::AdaptiveRendererFactory>(
           std::move(media_renderer_factory), std::move(remoting_controller));
@@ -2966,10 +2964,6 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
   media_player->SetUseFallbackPath(use_fallback_path);
 #endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  remoting_controller_ptr->SetDownloadPosterCallback(base::Bind(
-      &SingleImageDownloader::DownloadImage, weak_factory_.GetWeakPtr()));
-#endif
   return media_player;
 }
 

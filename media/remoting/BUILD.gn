@@ -42,8 +42,6 @@ source_set("remoting") {
     "courier_renderer.h",
     "demuxer_stream_adapter.cc",
     "demuxer_stream_adapter.h",
-    "interstitial.cc",
-    "interstitial.h",
     "metrics.cc",
     "metrics.h",
     "remoting_cdm.cc",
@@ -69,9 +67,7 @@ source_set("remoting") {
     "//media",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
-    "//skia",
     "//ui/gfx",
-    "//ui/vector_icons",
   ]
 }
 

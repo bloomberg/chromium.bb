@@ -9,10 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/base/media_observer.h"
-#include "media/remoting/interstitial.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/shared_session.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace media {
 namespace remoting {
@@ -43,19 +41,7 @@ class RendererController final : public SharedSession::Client,
   void OnRemotePlaybackDisabled(bool disabled) override;
   void OnPlaying() override;
   void OnPaused() override;
-  void OnSetPoster(const GURL& poster) override;
   void SetClient(MediaObserverClient* client) override;
-
-  using ShowInterstitialCallback = base::Callback<
-      void(const SkBitmap&, const gfx::Size&, InterstitialType type)>;
-  // Called by the CourierRenderer constructor to set the callback to draw and
-  // show remoting interstial.
-  void SetShowInterstitialCallback(const ShowInterstitialCallback& cb);
-  using DownloadPosterCallback =
-      base::Callback<void(const GURL&,
-                          const base::Callback<void(const SkBitmap&)>&)>;
-  // Set the callback to download poster image.
-  void SetDownloadPosterCallback(const DownloadPosterCallback& cb);
 
   base::WeakPtr<RendererController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -113,29 +99,6 @@ class RendererController final : public SharedSession::Client,
   void UpdateAndMaybeSwitch(StartTrigger start_trigger,
                             StopTrigger stop_trigger);
 
-  // Called to download the poster image. Called when:
-  // 1. Poster URL changes.
-  // 2. ShowInterstitialCallback is set.
-  // 3. DownloadPosterCallback is set.
-  void DownloadPosterImage();
-
-  // Called when poster image is downloaded.
-  void OnPosterImageDownloaded(const GURL& download_url,
-                               base::TimeTicks download_start_time,
-                               const SkBitmap& image);
-
-  // Update remoting interstitial with |image|. When |image| is not set,
-  // interstitial will be drawn on previously downloaded poster image (in
-  // CourierRenderer) or black background if none was downloaded before.
-  // Call this when:
-  // 1. SetShowInterstitialCallback() is called (CourierRenderer is created).
-  // 2. The remoting session is shut down (to update the status message in the
-  //    interstitial).
-  // 3. The size of the canvas is changed (to update the background image and
-  //    the position of the status message).
-  // 4. Poster image is downloaded (to update the background image).
-  void UpdateInterstitial(const base::Optional<SkBitmap>& image);
-
   // Indicates whether this media element is in full screen.
   bool is_fullscreen_ = false;
 
@@ -179,27 +142,6 @@ class RendererController final : public SharedSession::Client,
 
   // Current pipeline metadata.
   PipelineMetadata pipeline_metadata_;
-
-  // The callback to show the remoting interstitial. It is set shortly after
-  // remoting is started (when CourierRenderer is constructed, it calls
-  // SetShowInterstitialCallback()), and is reset shortly after remoting has
-  // ended.
-  ShowInterstitialCallback show_interstitial_cb_;
-
-  // The arguments passed in the last call to the interstitial callback. On each
-  // call to UpdateInterstitial(), one or more of these may be changed. If any
-  // change, the callback will be run.
-  SkBitmap interstitial_background_;
-  gfx::Size interstitial_natural_size_;
-  InterstitialType interstitial_type_ = InterstitialType::BETWEEN_SESSIONS;
-
-  // Current poster URL, whose image will feed into the local UI.
-  GURL poster_url_;
-
-  // The callback to download the poster image. Called when |poster_url_|
-  // changes during a remoting session or the show interstial callback is set.
-  // OnPosterImageDownloaded() will be called when download completes.
-  DownloadPosterCallback download_poster_cb_;
 
   // Records session events of interest.
   SessionMetricsRecorder metrics_recorder_;

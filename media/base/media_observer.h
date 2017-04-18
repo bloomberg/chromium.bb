@@ -56,10 +56,6 @@ class MEDIA_EXPORT MediaObserver {
   virtual void OnPlaying() = 0;
   virtual void OnPaused() = 0;
 
-  // Called when a poster image URL is set, which happens when media is loaded
-  // or the poster attribute is changed.
-  virtual void OnSetPoster(const GURL& poster) = 0;
-
   // Set the MediaObserverClient.
   virtual void SetClient(MediaObserverClient* client) = 0;
 };
