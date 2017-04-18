@@ -32,6 +32,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/ChildProcessAllocatorSettings.java",
     "javatests/src/org/chromium/content/browser/test/ChildProcessAllocatorSettingsHook.java",
     "javatests/src/org/chromium/content/browser/test/ContentInstrumentationTestRunner.java",
+    "javatests/src/org/chromium/content/browser/test/ContentJUnit4ClassRunner.java",
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestBase.java",
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestCommon.java",
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestRule.java",

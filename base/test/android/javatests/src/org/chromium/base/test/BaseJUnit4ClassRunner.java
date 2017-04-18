@@ -84,7 +84,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
                 new AndroidRunnerParams(InstrumentationRegistry.getInstrumentation(),
                         InstrumentationRegistry.getArguments(), false, 0L, false));
         mSkipChecks = mergeList(checks, defaultSkipChecks());
-        mPreTestHooks = defaultPreTestHooks();
+        mPreTestHooks = mergeList(hooks, defaultPreTestHooks());
     }
 
     /**

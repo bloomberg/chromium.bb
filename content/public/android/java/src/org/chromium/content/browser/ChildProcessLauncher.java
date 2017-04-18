@@ -126,7 +126,7 @@ public class ChildProcessLauncher {
                 // Proactively releases all the moderate bindings once all the sandboxed services
                 // are allocated, which will be very likely to have some of them killed by OOM
                 // killer.
-                sBindingManager.releaseAllModerateBindings();
+                getBindingManager().releaseAllModerateBindings();
             }
         }
         return connection;
@@ -182,6 +182,9 @@ public class ChildProcessLauncher {
     private static Map<Integer, ChildProcessConnection> sServiceMap =
             new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
+    // Lock for getBindingManager()
+    private static final Object sBindingManagerLock = new Object();
+
     // These variables are used for the warm up sandboxed connection.
     // |sSpareSandboxedConnection| is non-null when there is a pending connection. Note it's cleared
     // to null again after the connection is used for a real child process.
@@ -193,15 +196,21 @@ public class ChildProcessLauncher {
     private static boolean sSpareConnectionStarting;
     private static ChildProcessConnection.StartCallback sSpareConnectionStartCallback;
 
-    // Manages oom bindings used to bind chind services.
-    private static BindingManager sBindingManager = BindingManagerImpl.createBindingManager();
+    // Manages oom bindings used to bind chind services. Lazily initialized by getBindingManager()
+    private static BindingManager sBindingManager;
 
     // Whether the main application is currently brought to the foreground.
     private static boolean sApplicationInForeground = true;
 
+    // Lazy initialize sBindingManager
     // TODO(boliu): This should be internal to content.
     public static BindingManager getBindingManager() {
-        return sBindingManager;
+        synchronized (sBindingManagerLock) {
+            if (sBindingManager == null) {
+                sBindingManager = BindingManagerImpl.createBindingManager();
+            }
+            return sBindingManager;
+        }
     }
 
     @VisibleForTesting
@@ -214,7 +223,7 @@ public class ChildProcessLauncher {
      * rely on renderer visibility signalled through setInForeground. See http://crbug.com/421041.
      */
     public static void determinedVisibility(int pid) {
-        sBindingManager.determinedVisibility(pid);
+        getBindingManager().determinedVisibility(pid);
     }
 
     /**
@@ -222,7 +231,7 @@ public class ChildProcessLauncher {
      */
     public static void onSentToBackground() {
         sApplicationInForeground = false;
-        sBindingManager.onSentToBackground();
+        getBindingManager().onSentToBackground();
     }
 
     /**
@@ -236,7 +245,7 @@ public class ChildProcessLauncher {
      * sent to the background.
      */
     public static void startModerateBindingManagement(Context context) {
-        sBindingManager.startModerateBindingManagement(context,
+        getBindingManager().startModerateBindingManagement(context,
                 ChildConnectionAllocator.getNumberOfServices(
                         context, true, context.getPackageName()));
     }
@@ -246,7 +255,7 @@ public class ChildProcessLauncher {
      */
     public static void onBroughtToForeground() {
         sApplicationInForeground = true;
-        sBindingManager.onBroughtToForeground();
+        getBindingManager().onBroughtToForeground();
     }
 
     /**
@@ -466,7 +475,7 @@ public class ChildProcessLauncher {
                     public void onConnected(int pid) {
                         Log.d(TAG, "on connect callback, pid=%d", pid);
                         if (pid != NULL_PROCESS_HANDLE) {
-                            sBindingManager.addNewConnection(pid, connection);
+                            getBindingManager().addNewConnection(pid, connection);
                             sServiceMap.put(pid, connection);
                         }
                         // If the connection fails and pid == 0, the Java-side cleanup was already
@@ -495,7 +504,7 @@ public class ChildProcessLauncher {
             // Can happen for single process.
             return;
         }
-        sBindingManager.clearConnection(pid);
+        getBindingManager().clearConnection(pid);
         connection.stop();
         freeConnection(connection);
     }

@@ -145,7 +145,7 @@ public class ChildConnectionAllocator {
                             -1);
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                throw new RuntimeException("Could not get application info");
+                throw new RuntimeException("Could not get application info", e);
             }
         }
         if (numServices < 0) {
@@ -155,7 +155,7 @@ public class ChildConnectionAllocator {
     }
 
     @VisibleForTesting
-    public static void setSanboxServicesSettingsForTesting(int serviceCount, String serviceName) {
+    public static void setSandboxServicesSettingsForTesting(int serviceCount, String serviceName) {
         sSandboxedServicesCountForTesting = serviceCount;
         sSandboxedServicesNameForTesting = serviceName;
     }
