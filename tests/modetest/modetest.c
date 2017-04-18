@@ -174,6 +174,15 @@ static const char *mode_flag_names[] = {
 
 static bit_name_fn(mode_flag)
 
+static void dump_fourcc(uint32_t fourcc)
+{
+	printf(" %c%c%c%c",
+		fourcc,
+		fourcc >> 8,
+		fourcc >> 16,
+		fourcc >> 24);
+}
+
 static void dump_encoders(struct device *dev)
 {
 	drmModeEncoder *encoder;
@@ -443,7 +452,7 @@ static void dump_planes(struct device *dev)
 
 		printf("  formats:");
 		for (j = 0; j < ovr->count_formats; j++)
-			printf(" %4.4s", (char *)&ovr->formats[j]);
+			dump_fourcc(ovr->formats[j]);
 		printf("\n");
 
 		if (plane->props) {
