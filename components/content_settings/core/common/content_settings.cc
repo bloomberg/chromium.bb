@@ -16,50 +16,46 @@ ContentSetting IntToContentSetting(int content_setting) {
       CONTENT_SETTING_DEFAULT : static_cast<ContentSetting>(content_setting);
 }
 
-// WARNING: This array should not be reordered or removed as it is used for
-// histogram values. If a ContentSettingsType value has been removed, the entry
-// must be replaced by a placeholder. It should correspond directly to the
-// ContentType enum in histograms.xml.
+struct HistogramValue {
+  ContentSettingsType type;
+  int value;
+};
+
+// WARNING: The value specified here for a type should match exactly the value
+// specified in the ContentType enum in histograms.xml. Since these values are
+// used for histograms, please do not reuse the same value for a different
+// content setting. Always append to the end and increment.
 // TODO(raymes): We should use a sparse histogram here on the hash of the
 // content settings type name instead.
-ContentSettingsType kHistogramOrder[] = {
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTINGS_TYPE_IMAGES,
-    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PLUGINS,
-    CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-    CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // FULLSCREEN (removed).
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // MOUSELOCK (removed).
-    CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // MEDIASTREAM (removed).
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-    CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
-    CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // PUSH_MESSAGING (removed).
-    CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // METRO_SWITCH_TO_DESKTOP (removed).
+HistogramValue kHistogramValue[] = {
+    {CONTENT_SETTINGS_TYPE_COOKIES, 0},
+    {CONTENT_SETTINGS_TYPE_IMAGES, 1},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, 2},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, 3},
+    {CONTENT_SETTINGS_TYPE_POPUPS, 4},
+    {CONTENT_SETTINGS_TYPE_GEOLOCATION, 5},
+    {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, 6},
+    {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, 7},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, 10},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, 12},
+    {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, 13},
+    {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, 14},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, 15},
+    {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, 16},
+    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, 17},
+    {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, 19},
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-#else
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // PROTECTED_MEDIA_IDENTIFIER (mobile only).
+    {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, 21},
 #endif
-    CONTENT_SETTINGS_TYPE_APP_BANNER,
-    CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-    CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // KEYGEN (removed).
-    CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
-    CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-    CONTENT_SETTINGS_TYPE_AUTOPLAY,
-    CONTENT_SETTINGS_TYPE_DEFAULT,  // PROMPT_NO_DECISION_COUNT (migrated).
-    CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
-    CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
-    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+    {CONTENT_SETTINGS_TYPE_APP_BANNER, 22},
+    {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, 23},
+    {CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, 24},
+    {CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD, 26},
+    {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, 27},
+    {CONTENT_SETTINGS_TYPE_AUTOPLAY, 28},
+    {CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO, 30},
+    {CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA, 31},
+    {CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, 32},
 };
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
@@ -68,14 +64,12 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
   typedef base::hash_map<int, int> Map;
   CR_DEFINE_STATIC_LOCAL(Map, kMap, ());
   if (kMap.empty()) {
-    for (size_t i = 0; i < arraysize(kHistogramOrder); ++i) {
-      if (kHistogramOrder[i] != CONTENT_SETTINGS_TYPE_DEFAULT)
-        kMap[kHistogramOrder[i]] = static_cast<int>(i);
-    }
+    for (const HistogramValue& histogram_value : kHistogramValue)
+      kMap[histogram_value.type] = histogram_value.value;
   }
 
   DCHECK(base::ContainsKey(kMap, content_setting));
-  *num_values = arraysize(kHistogramOrder);
+  *num_values = arraysize(kHistogramValue);
   return kMap[content_setting];
 }
 
