@@ -12,14 +12,6 @@
 
 namespace proximity_auth {
 
-namespace {
-
-// The time to wait after the device wakes up before beginning to connect to the
-// remote device.
-const int kWakeUpTimeoutSeconds = 2;
-
-}  // namespace
-
 ProximityAuthSystem::ProximityAuthSystem(
     ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client)
@@ -99,22 +91,6 @@ void ProximityAuthSystem::OnSuspend() {
 void ProximityAuthSystem::OnSuspendDone() {
   PA_LOG(INFO) << "Device resumed from suspension.";
   DCHECK(suspended_);
-
-  // TODO(tengs): On ChromeOS, the system's Bluetooth adapter is invalidated
-  // when the system suspends. However, Chrome does not receive this
-  // notification until a second or so after the system wakes up. That means
-  // using the adapter during this time will be problematic, so we wait instead.
-  // See crbug.com/537057.
-  proximity_auth_client_->UpdateScreenlockState(
-      ScreenlockState::BLUETOOTH_CONNECTING);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ProximityAuthSystem::ResumeAfterWakeUpTimeout,
-                            weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kWakeUpTimeoutSeconds));
-}
-
-void ProximityAuthSystem::ResumeAfterWakeUpTimeout() {
-  PA_LOG(INFO) << "Resume after suspend";
   suspended_ = false;
 
   if (!ScreenlockBridge::Get()->IsLocked()) {
