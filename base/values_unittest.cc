@@ -206,6 +206,14 @@ TEST(ValuesTest, CopyDictionary) {
   EXPECT_EQ(value.type(), copied_value.type());
   EXPECT_EQ(123, copy);
 
+  copied_value.Clear();
+  copied_value = value;
+
+  copied_value.GetInteger("Int", &copy);
+
+  EXPECT_EQ(value.type(), copied_value.type());
+  EXPECT_EQ(123, copy);
+
   auto blank = MakeUnique<Value>();
 
   *blank = value;

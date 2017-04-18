@@ -553,7 +553,7 @@ void Value::InternalCopyAssignFromSameType(const Value& that) {
     // directly.
     case Type::DICTIONARY: {
       Value copy = that;
-      dict_ = std::move(copy.dict_);
+      *dict_ = std::move(*copy.dict_);
       return;
     }
     case Type::LIST:
