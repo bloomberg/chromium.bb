@@ -191,6 +191,7 @@
           '../../../externs/menu_item_update_event.js',
           '../../../externs/paper_elements.js',
           '../../../externs/platform.js',
+          '../../../externs/search_item.js',
           '../../../externs/volume_info.js',
           '../../../externs/volume_info_list.js',
           '../../../externs/volume_manager.js',

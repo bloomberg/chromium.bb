@@ -20,6 +20,15 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'autocomplete_list',
+      'dependencies': [
+        'list',
+        'list_single_selection_model',
+        'position_util',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'command',
       'dependencies': [
         '../../compiled_resources2.gyp:cr',

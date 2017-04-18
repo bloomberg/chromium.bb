@@ -124,7 +124,8 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
   }
 
   // Add header item.
-  var headerItem = {isHeaderItem: true, searchQuery: searchString};
+  var headerItem = /** @type {SearchItem} */ (
+      {isHeaderItem: true, searchQuery: searchString});
   if (!this.searchBox_.autocompleteList.dataModel ||
       this.searchBox_.autocompleteList.dataModel.length == 0) {
     this.searchBox_.autocompleteList.suggestions = [headerItem];

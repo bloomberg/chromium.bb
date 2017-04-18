@@ -258,10 +258,21 @@
       ],
       'includes': ['../../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'search_box',
-#      'includes': ['../../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'search_box',
+      'dependencies': [
+        '../../../../externs/compiled_resources2.gyp:search_item',
+        '../../../common/js/compiled_resources2.gyp:file_type',
+        '../../../common/js/compiled_resources2.gyp:util',
+        '../../elements/compiled_resources2.gyp:files_toggle_ripple',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:autocomplete_list',
+      ],
+      'includes': ['../../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'share_dialog',
       'dependencies': [

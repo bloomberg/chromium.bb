@@ -132,6 +132,10 @@
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
+      'target_name': 'search_item',
+      'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'video_player_foreground',
       'includes': ['../../../third_party/closure_compiler/include_js.gypi'],
     },
