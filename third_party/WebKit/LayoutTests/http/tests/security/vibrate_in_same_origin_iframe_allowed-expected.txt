@@ -1,9 +1,0 @@
-
-
---------
-Frame: '<!--framePath //<!--frame0-->-->'
---------
-This is a testharness.js-based test.
-PASS A same-origin iframe may call navigator.vibrate. 
-Harness: the test ran to completion.
-

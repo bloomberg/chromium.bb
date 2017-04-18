@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Initial value 
-PASS hyphens: auto 
-PASS hyphens: manual 
-PASS hyphens: none 
-PASS hyphens should inherit 
-Harness: the test ran to completion.
-
