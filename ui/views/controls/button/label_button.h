@@ -107,6 +107,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
  protected:
   ImageView* image() const { return image_; }
   Label* label() const { return label_; }
+  InkDropContainerView* ink_drop_container() const {
+    return ink_drop_container_;
+  }
 
   bool explicitly_set_normal_color() const {
     return explicitly_set_colors_[STATE_NORMAL];

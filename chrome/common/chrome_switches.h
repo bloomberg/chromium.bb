@@ -356,6 +356,14 @@ extern const char kDisableInputImeAPI[];
 extern const char kEnableInputImeAPI[];
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
+extern const char kAppMenuIcon[];
+extern const char kAppMenuIconOldBehavior[];
+extern const char kAppMenuIconPersistentOpenedState[];
+extern const char kAppMenuIconPersistentClosedState[];
+#endif
+
 bool ExtensionsDisabled(const base::CommandLine& command_line);
 bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();

@@ -2800,6 +2800,12 @@ const char kPauseBackgroundTabsName[] = "Pause background tabs";
 const char kPauseBackgroundTabsDescription[] =
     "Pause timers in background tabs after 5 minutes on desktop.";
 
+const char kAppMenuIconName[] = "App Menu Icon";
+const char kAppMenuIconDescription[] = "Changes the icon in the app menu.";
+const char kAppMenuIconOldBehavior[] = "Old Behavior";
+const char kAppMenuIconPersistentOpenedState[] = "Persistent Opened State";
+const char kAppMenuIconPersistentClosedState[] = "Persistent Closed State";
+
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 

@@ -4,21 +4,27 @@
 
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 
+#include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/views/toolbar/app_menu_animation.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -28,6 +34,10 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
+
+namespace {
+const float kIconSize = 16;
+}  // namespace
 
 // static
 bool AppMenuButton::g_open_app_immediately_for_testing = false;
@@ -41,6 +51,19 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       weak_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAppMenuIcon)) {
+    std::string flag =
+        command_line->GetSwitchValueASCII(switches::kAppMenuIcon);
+    if (flag == switches::kAppMenuIconPersistentClosedState) {
+      Browser* browser = toolbar_view_->browser();
+      browser->tab_strip_model()->AddObserver(this);
+      animation_ = base::MakeUnique<AppMenuAnimation>(this, true);
+    } else if (flag == switches::kAppMenuIconPersistentOpenedState) {
+      animation_ = base::MakeUnique<AppMenuAnimation>(this, false);
+    }
+  }
 }
 
 AppMenuButton::~AppMenuButton() {}
@@ -50,7 +73,7 @@ void AppMenuButton::SetSeverity(AppMenuIconController::IconType type,
                                 bool animate) {
   type_ = type;
   severity_ = severity;
-  UpdateIcon();
+  UpdateIcon(animate);
 }
 
 void AppMenuButton::ShowMenu(bool for_drop) {
@@ -85,6 +108,9 @@ void AppMenuButton::ShowMenu(bool for_drop) {
     UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
                         base::TimeTicks::Now() - menu_open_time);
   }
+
+  if (severity_ != AppMenuIconController::Severity::NONE)
+    animation_->StartAnimation();
 }
 
 void AppMenuButton::CloseMenu() {
@@ -106,31 +132,68 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 }
 
 gfx::Size AppMenuButton::GetPreferredSize() const {
-  gfx::Rect rect(image()->GetPreferredSize());
+  gfx::Rect rect(gfx::Size(kIconSize, kIconSize));
   rect.Inset(gfx::Insets(-ToolbarButton::kInteriorPadding));
   return rect.size();
 }
 
-void AppMenuButton::UpdateIcon() {
-  SkColor color = gfx::kPlaceholderColor;
+void AppMenuButton::Layout() {
+  if (animation_) {
+    ink_drop_container()->SetBoundsRect(GetLocalBounds());
+    image()->SetBoundsRect(GetLocalBounds());
+    return;
+  }
+
+  views::MenuButton::Layout();
+}
+
+void AppMenuButton::OnPaint(gfx::Canvas* canvas) {
+  if (!animation_) {
+    views::MenuButton::OnPaint(canvas);
+    return;
+  }
+
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(gfx::Insets(ToolbarButton::kInteriorPadding));
+  animation_->PaintAppMenu(canvas, bounds);
+}
+
+void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
+                                  content::WebContents* contents,
+                                  int index,
+                                  bool foreground) {
+  if (severity_ != AppMenuIconController::Severity::NONE)
+    animation_->StartAnimation();
+}
+
+void AppMenuButton::UpdateIcon(bool should_animate) {
+  SkColor severity_color = gfx::kPlaceholderColor;
+  SkColor toolbar_icon_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (severity_) {
     case AppMenuIconController::Severity::NONE:
-      color = GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      severity_color = toolbar_icon_color;
       break;
     case AppMenuIconController::Severity::LOW:
-      color = native_theme->GetSystemColor(
+      severity_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_AlertSeverityLow);
       break;
     case AppMenuIconController::Severity::MEDIUM:
-      color = native_theme->GetSystemColor(
+      severity_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_AlertSeverityMedium);
       break;
     case AppMenuIconController::Severity::HIGH:
-      color = native_theme->GetSystemColor(
+      severity_color = native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_AlertSeverityHigh);
       break;
+  }
+
+  if (animation_) {
+    animation_->SetIconColors(toolbar_icon_color, severity_color);
+    if (should_animate)
+      animation_->StartAnimation();
+    return;
   }
 
   const gfx::VectorIcon* icon_id = nullptr;
@@ -148,13 +211,23 @@ void AppMenuButton::UpdateIcon() {
       break;
   }
 
-  SetImage(views::Button::STATE_NORMAL, gfx::CreateVectorIcon(*icon_id, color));
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(*icon_id, severity_color));
 }
 
 void AppMenuButton::SetTrailingMargin(int margin) {
   margin_trailing_ = margin;
   UpdateThemedBorder();
   InvalidateLayout();
+}
+
+void AppMenuButton::AppMenuAnimationStarted() {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+}
+
+void AppMenuButton::AppMenuAnimationEnded() {
+  DestroyLayer();
 }
 
 const char* AppMenuButton::GetClassName() const {

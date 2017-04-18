@@ -1891,6 +1891,8 @@ split_static_library("ui") {
         "views/theme_copying_widget.h",
         "views/toolbar/app_menu.cc",
         "views/toolbar/app_menu.h",
+        "views/toolbar/app_menu_animation.cc",
+        "views/toolbar/app_menu_animation.h",
         "views/toolbar/app_menu_button.cc",
         "views/toolbar/app_menu_button.h",
         "views/toolbar/app_menu_observer.h",

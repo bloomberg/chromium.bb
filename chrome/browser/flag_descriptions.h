@@ -3027,6 +3027,21 @@ extern const char kOmniboxEntitySuggestionsDescription[];
 extern const char kPauseBackgroundTabsName[];
 extern const char kPauseBackgroundTabsDescription[];
 
+// Name of the flag to change the app menu icon.
+extern const char kAppMenuIconName[];
+
+// Description of the flag to change the app menu icon.
+extern const char kAppMenuIconDescription[];
+
+// Description of the app menu icon's old appearance.
+extern const char kAppMenuIconOldBehavior[];
+
+// Description of the app menu animated icon's persistent opened state.
+extern const char kAppMenuIconPersistentOpenedState[];
+
+// Description of the app menu animated icon's persistent closed state.
+extern const char kAppMenuIconPersistentClosedState[];
+
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) ||
         // defined(OS_WIN)
 

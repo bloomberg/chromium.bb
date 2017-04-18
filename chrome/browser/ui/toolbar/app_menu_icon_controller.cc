@@ -40,14 +40,7 @@ AppMenuIconController::Severity SeverityFromUpgradeLevel(
 // Checks if the app menu icon should be animated for the given upgrade level.
 bool ShouldAnimateUpgradeLevel(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
-  bool should_animate = true;
-  if (level == UpgradeDetector::UPGRADE_ANNOYANCE_LOW) {
-    // Only animate low severity upgrades once.
-    static bool should_animate_low_severity = true;
-    should_animate = should_animate_low_severity;
-    should_animate_low_severity = false;
-  }
-  return should_animate;
+  return level != UpgradeDetector::UPGRADE_ANNOYANCE_NONE;
 }
 
 // Returns true if we should show the upgrade recommended icon.
@@ -121,8 +114,7 @@ void AppMenuIconController::UpdateDelegate() {
     return;
   }
 
-  delegate_->UpdateSeverity(IconType::NONE,
-                            Severity::NONE, true);
+  delegate_->UpdateSeverity(IconType::NONE, Severity::NONE, false);
 }
 
 #if defined(OS_WIN)

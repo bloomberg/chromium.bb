@@ -744,7 +744,7 @@ void ToolbarView::LoadImages() {
       gfx::CreateVectorIcon(ui::kForwardArrowIcon, disabled_color));
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(kNavigateHomeIcon, normal_color));
-  app_menu_button_->UpdateIcon();
+  app_menu_button_->UpdateIcon(false);
 
   back_->set_ink_drop_base_color(normal_color);
   forward_->set_ink_drop_base_color(normal_color);

@@ -1146,6 +1146,16 @@ extern const char kDisableInputImeAPI[] = "disable-input-ime-api";
 extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
 #endif
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
+extern const char kAppMenuIcon[] = "app-menu-icon";
+extern const char kAppMenuIconOldBehavior[] = "old-behavior";
+extern const char kAppMenuIconPersistentOpenedState[] =
+    "persistent-opened-state";
+extern const char kAppMenuIconPersistentClosedState[] =
+    "persistent-closed-state";
+#endif
+
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kDisableExtensions) ||
          command_line.HasSwitch(switches::kDisableExtensionsExcept);
