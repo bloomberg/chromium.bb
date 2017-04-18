@@ -10,6 +10,7 @@ var tests = [
   },
   function testCurrentWindow() {
     var currentWindow = chrome.app.window.current();
+    chrome.test.assertTrue(currentWindow.contentWindow == window);
     // Current window is pretty funny and has a ton of custom JS bindings, also
     // utilizing an internal API (currentWindowInternal). Test a bunch of stuff.
     chrome.test.assertTrue(!!currentWindow, 'currentWindow');

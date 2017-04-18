@@ -59,7 +59,16 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleEndToEndTest) {
 
 // A simplistic app test for app-specific APIs.
 IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, SimpleAppTest) {
+  ExtensionTestMessageListener ready_listener("ready", true);
   ASSERT_TRUE(RunPlatformAppTest("native_bindings/platform_app")) << message_;
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // On reply, the extension will try to close the app window and send a
+  // message.
+  ExtensionTestMessageListener close_listener(false);
+  ready_listener.Reply(std::string());
+  ASSERT_TRUE(close_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", close_listener.message());
 }
 
 // Tests the declarativeContent API and declarative events.

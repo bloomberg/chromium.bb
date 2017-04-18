@@ -23,6 +23,7 @@
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/source_map.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "gin/converter.h"
 #include "gin/modules/module_registry.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
@@ -551,8 +552,22 @@ void ModuleSystem::OnNativeBindingCreated(
   DCHECK(!get_internal_api_.IsEmpty());
   v8::HandleScope scope(GetIsolate());
   if (source_map_->Contains(api_name)) {
+    // We need to load the custom bindings and store them in our modules.
+    // Storing them is important so that calls through CallModuleMethod() route
+    // to the proper objects, if they share the same name as an API.
+    v8::Local<v8::Value> modules;
+    if (!GetPrivate(context()->v8_context()->Global(), kModulesField,
+                    &modules) ||
+        !modules->IsObject()) {
+      NOTREACHED();
+      return;
+    }
+
     NativesEnabledScope enabled(this);
-    LoadModuleWithNativeAPIBridge(api_name, api_bridge_value);
+    v8::Local<v8::Value> exports =
+        LoadModuleWithNativeAPIBridge(api_name, api_bridge_value);
+    SetPrivateProperty(context()->v8_context(), modules.As<v8::Object>(),
+                       gin::StringToSymbol(GetIsolate(), api_name), exports);
   }
 }
 
