@@ -94,12 +94,10 @@ void PrerenderingLoader::MarkLoadStartTime() {
 }
 
 void PrerenderingLoader::AddLoadingSignal(const char* signal_name) {
-  std::string signal(signal_name);
-  signal += ": ";
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta delay_so_far = current_time - load_start_time_;
-  signal += std::to_string(delay_so_far.InMilliseconds());
-  signal_data_.push_back(signal);
+  double delay = delay_so_far.InMilliseconds();
+  signal_data_.SetDouble(signal_name, delay);
 }
 
 bool PrerenderingLoader::LoadPage(const GURL& url,

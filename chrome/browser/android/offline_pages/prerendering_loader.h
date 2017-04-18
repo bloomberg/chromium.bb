@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/values.h"
 #include "chrome/browser/android/offline_pages/prerender_adapter.h"
 #include "components/offline_pages/core/background/offliner.h"
 #include "components/offline_pages/core/snapshot_controller.h"
@@ -84,10 +85,8 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   // Returns true if the lowbar of snapshotting a page is met.
   virtual bool IsLowbarMet();
 
-  // Returns a vector of strings for analysis of loading progress.
-  const std::vector<std::string>& GetLoadingSignalData() {
-    return signal_data_;
-  }
+  // Returns a JSON dictionary value for analysis of loading progress.
+  const base::DictionaryValue& GetLoadingSignalData() { return signal_data_; }
 
  private:
   // State of the loader (only one request may be active at a time).
@@ -134,7 +133,7 @@ class PrerenderingLoader : public PrerenderAdapter::Observer,
   std::unique_ptr<content::WebContents> session_contents_;
 
   // Signal data collected for this rendering attempt
-  std::vector<std::string> signal_data_;
+  base::DictionaryValue signal_data_;
 
   // Callback to call when the active load request completes, fails, or is
   // canceled.

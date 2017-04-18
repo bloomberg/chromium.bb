@@ -5,6 +5,7 @@
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -125,13 +126,10 @@ void PrerenderingOffliner::OnLoadPageDone(
 std::string PrerenderingOffliner::SerializeLoadingSignalData() {
   // Write the signal data into a single string.
   std::string signal_string;
-  const std::vector<std::string>& signals = loader_->GetLoadingSignalData();
+  const base::DictionaryValue& signals = loader_->GetLoadingSignalData();
 
-  // TODO(petewil): Convert this to JSON, use json_writer.h
-  for (std::string signal : signals) {
-    signal_string += signal;
-    signal_string += "\n";
-  }
+  base::JSONWriter::Write(signals, &signal_string);
+
   return signal_string;
 }
 
