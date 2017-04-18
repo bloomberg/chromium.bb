@@ -2211,7 +2211,6 @@ Bug(none) virtual/disable-spinvalidation/paint/invalidation/window-resize-vertic
 Bug(none) virtual/disable-spinvalidation/paint/invalidation/window-resize-viewport-percent.html [ Failure ]
 Bug(none) virtual/gpu-rasterization/images/color-profile-group.html [ Failure ]
 Bug(none) virtual/gpu-rasterization/images/color-profile-iframe.html [ Failure ]
-Bug(none) virtual/layout_ng/css2.1/20110323/margin-applies-to-013.htm [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/misc/acid3.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/navigation/anchor-frames-same-origin.html [ Failure ]
