@@ -4,24 +4,27 @@
 
 #include "ui/base/accelerators/accelerator_history.h"
 
-#include "ui/events/event_constants.h"
-
 namespace ui {
 
-// ----------------------------------------------------------------------
-// Public Methods
-// ----------------------------------------------------------------------
+AcceleratorHistory::AcceleratorHistory() {}
 
-AcceleratorHistory::AcceleratorHistory()
-  : current_accelerator_(),
-    previous_accelerator_() {
-}
-
-AcceleratorHistory::~AcceleratorHistory() {
-}
+AcceleratorHistory::~AcceleratorHistory() {}
 
 void AcceleratorHistory::StoreCurrentAccelerator(
-                            const Accelerator& accelerator) {
+    const Accelerator& accelerator) {
+  // Track the currently pressed keys so that we don't mistakenly store an
+  // already pressed key as a new keypress after another key has been released.
+  // As an example, when the user presses and holds Alt+Search, then releases
+  // Alt but keeps holding the Search key down, at this point no new Search
+  // presses should be stored in the history after the Alt release, since Search
+  // was never released in the first place. crbug.com/704280.
+  if (accelerator.key_state() == Accelerator::KeyState::PRESSED) {
+    if (!currently_pressed_keys_.emplace(accelerator.key_code()).second)
+      return;
+  } else {
+    currently_pressed_keys_.erase(accelerator.key_code());
+  }
+
   if (accelerator != current_accelerator_) {
     previous_accelerator_ = current_accelerator_;
     current_accelerator_ = accelerator;

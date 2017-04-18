@@ -5,12 +5,11 @@
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_HISTORY_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_HISTORY_H_
 
+#include <set>
+
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/events/event.h"
-#include "ui/events/event_handler.h"
 
 namespace ui {
 
@@ -39,6 +38,8 @@ class UI_BASE_EXPORT AcceleratorHistory {
  private:
   Accelerator current_accelerator_;
   Accelerator previous_accelerator_;
+
+  std::set<KeyboardCode> currently_pressed_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorHistory);
 };
