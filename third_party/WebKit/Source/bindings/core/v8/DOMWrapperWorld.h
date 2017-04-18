@@ -134,9 +134,50 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   DOMDataStore& DomDataStore() const { return *dom_data_store_; }
 
   template <typename T>
-  void RegisterDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
+  void RegisterDOMObjectHolder(v8::Isolate* isolate,
+                               T* object,
+                               v8::Local<v8::Value> wrapper) {
+    RegisterDOMObjectHolderInternal(
+        DOMObjectHolder<T>::Create(isolate, object, wrapper));
+  }
 
  private:
+  class DOMObjectHolderBase {
+    USING_FAST_MALLOC(DOMObjectHolderBase);
+
+   public:
+    DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
+        : wrapper_(isolate, wrapper), world_(nullptr) {}
+    virtual ~DOMObjectHolderBase() {}
+
+    DOMWrapperWorld* World() const { return world_; }
+    void SetWorld(DOMWrapperWorld* world) { world_ = world; }
+    void SetWeak(v8::WeakCallbackInfo<DOMObjectHolderBase>::Callback callback) {
+      wrapper_.SetWeak(this, callback);
+    }
+
+   private:
+    ScopedPersistent<v8::Value> wrapper_;
+    DOMWrapperWorld* world_;
+  };
+
+  template <typename T>
+  class DOMObjectHolder : public DOMObjectHolderBase {
+   public:
+    static std::unique_ptr<DOMObjectHolder<T>>
+    Create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper) {
+      return WTF::WrapUnique(new DOMObjectHolder(isolate, object, wrapper));
+    }
+
+   private:
+    DOMObjectHolder(v8::Isolate* isolate,
+                    T* object,
+                    v8::Local<v8::Value> wrapper)
+        : DOMObjectHolderBase(isolate, wrapper), object_(object) {}
+
+    Persistent<T> object_;
+  };
+
   DOMWrapperWorld(v8::Isolate*, WorldType, int world_id);
 
   static void WeakCallbackForDOMObjectHolder(

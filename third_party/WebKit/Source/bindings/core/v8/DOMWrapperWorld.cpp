@@ -40,41 +40,6 @@
 
 namespace blink {
 
-class DOMObjectHolderBase {
-  USING_FAST_MALLOC(DOMObjectHolderBase);
-
- public:
-  DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
-      : wrapper_(isolate, wrapper), world_(nullptr) {}
-  virtual ~DOMObjectHolderBase() {}
-
-  DOMWrapperWorld* World() const { return world_; }
-  void SetWorld(DOMWrapperWorld* world) { world_ = world; }
-  void SetWeak(
-      void (*callback)(const v8::WeakCallbackInfo<DOMObjectHolderBase>&)) {
-    wrapper_.SetWeak(this, callback);
-  }
-
- private:
-  ScopedPersistent<v8::Value> wrapper_;
-  DOMWrapperWorld* world_;
-};
-
-template <typename T>
-class DOMObjectHolder : public DOMObjectHolderBase {
- public:
-  static std::unique_ptr<DOMObjectHolder<T>>
-  Create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper) {
-    return WTF::WrapUnique(new DOMObjectHolder(isolate, object, wrapper));
-  }
-
- private:
-  DOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
-      : DOMObjectHolderBase(isolate, wrapper), object_(object) {}
-
-  Persistent<T> object_;
-};
-
 unsigned DOMWrapperWorld::number_of_non_main_worlds_in_main_thread_ = 0;
 
 // This does not contain the main world because the WorldMap needs
@@ -272,18 +237,6 @@ void DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(
   else
     IsolatedWorldContentSecurityPolicies().erase(world_id);
 }
-
-template <typename T>
-void DOMWrapperWorld::RegisterDOMObjectHolder(v8::Isolate* isolate,
-                                              T* object,
-                                              v8::Local<v8::Value> wrapper) {
-  RegisterDOMObjectHolderInternal(
-      DOMObjectHolder<T>::Create(isolate, object, wrapper));
-}
-
-template void DOMWrapperWorld::RegisterDOMObjectHolder(v8::Isolate*,
-                                                       ScriptFunction*,
-                                                       v8::Local<v8::Value>);
 
 void DOMWrapperWorld::RegisterDOMObjectHolderInternal(
     std::unique_ptr<DOMObjectHolderBase> holder_base) {
