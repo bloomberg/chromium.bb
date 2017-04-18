@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class OriginTrialsTest;
 class ScriptState;
 
@@ -22,8 +23,8 @@ class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
   virtual ~WorkerInternals();
 
   OriginTrialsTest* originTrialsTest() const;
-  void countFeature(ScriptState*, uint32_t feature);
-  void countDeprecation(ScriptState*, uint32_t feature);
+  void countFeature(ScriptState*, uint32_t feature, ExceptionState&);
+  void countDeprecation(ScriptState*, uint32_t feature, ExceptionState&);
 
   void collectGarbage(ScriptState*);
 
