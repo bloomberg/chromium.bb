@@ -76,11 +76,6 @@ CGContextRef GraphicsContextCanvas::CgContext() {
   // remember the top/left, in case we need to compose this later
   bitmap_offset_.set(clip_bounds.x(), clip_bounds.y());
 
-  // Now make clip_bounds be relative to the current layer/device
-  if (!bitmap_is_dummy_) {
-    canvas_->temporary_internal_describeTopLayer(nullptr, &clip_bounds);
-  }
-
   SkPixmap device_pixels;
   ToPixmap(canvas_, &device_pixels);
 

@@ -267,12 +267,6 @@ const SkMatrix& SkiaPaintCanvas::getTotalMatrix() const {
   return canvas_->getTotalMatrix();
 }
 
-void SkiaPaintCanvas::temporary_internal_describeTopLayer(
-    SkMatrix* matrix,
-    SkIRect* clip_bounds) {
-  return canvas_->temporary_internal_describeTopLayer(matrix, clip_bounds);
-}
-
 void SkiaPaintCanvas::PlaybackPaintRecord(sk_sp<const PaintRecord> record) {
   record->playback(canvas_);
 }

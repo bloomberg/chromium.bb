@@ -134,9 +134,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   bool isClipRect() const override;
   const SkMatrix& getTotalMatrix() const override;
 
-  void temporary_internal_describeTopLayer(SkMatrix* matrix,
-                                           SkIRect* clip_bounds) override;
-
   bool ToPixmap(SkPixmap* output) override;
   void Annotate(AnnotationType type,
                 const SkRect& rect,
