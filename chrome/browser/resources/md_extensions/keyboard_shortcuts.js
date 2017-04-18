@@ -47,6 +47,16 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Determines whether to disable the dropdown menu for the command's scope.
+     * @param {!chrome.developerPrivate.Command} command
+     * @return {boolean}
+     * @private
+     */
+    computeScopeDisabled_: function(command) {
+      return command.isExtensionAction || !command.isActive;
+    },
+
+    /**
      * Returns the scope index in the dropdown menu for the command's scope.
      * @param {chrome.developerPrivate.Command} command
      * @return {number}

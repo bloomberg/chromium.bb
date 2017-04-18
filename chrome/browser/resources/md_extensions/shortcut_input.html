@@ -12,11 +12,38 @@
       [hidden] {
         display: none !important;
       }
+
+      #main {
+        position: relative;
+        width: 200px;
+      }
+
+      #input {
+        --paper-input-container: {
+          margin-bottom: 12px;
+          padding: 0;
+        };
+        --paper-input-container-color: var(--paper-grey-400);
+        --paper-input-container-focus-color: var(--google-blue-500);
+        --paper-input-container-input: {
+          font-size: 13px;
+        };
+      }
+
+      #clear {
+        bottom: 6px;
+        height: 16px;
+        padding: 0;
+        position: absolute;
+        right: 0;
+        width: 16px;
+      }
+
     </style>
     <div id="main">
-      <span id="input" tabindex="0">
-        [[computeText_(capturing_, shortcut, pendingShortcut_)]]
-      </span>
+      <paper-input id="input" placeholder="$i18n{shortcutTypeAShortcut}"
+        value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]">
+      </paper-input>
       <paper-icon-button id="clear" icon="clear" on-tap="onClearTap_"
           hidden$="[[computeClearHidden_(capturing_, shortcut)]]">
       </paper-icon-button>

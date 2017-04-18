@@ -20,17 +20,22 @@
         @apply(--shadow-elevation-2dp);
         background-color: white;
         color: var(--paper-grey-600);
-        margin-bottom: 10px;
-        padding: 20px;
+        margin: 0 auto 16px auto;
+        max-width: 928px;
+        min-width: 600px;
+        padding-bottom: 8px;
         width: 90%;
       }
 
       .command-entry {
-        align-items: flex-end;
+        align-items: center;
         display: flex;
+        font-size: 13px;
+        height: 48px;
       }
 
       .command-name {
+        color: var(--paper-grey-900);
         flex: 1;
       }
 
@@ -40,20 +45,46 @@
 
       .card-title {
         align-items: center;
+        border-bottom: 1px solid var(--paper-grey-400);
         display: flex;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 9px;
+        padding: 16px 20px;
       }
 
       .icon {
         -webkit-margin-end: 20px;
-        height: 24px;
-        width: 24px;
+        height: 16px;
+        width: 16px;
       }
 
       .card-controls {
         /* We line up the controls with the name, which is after the
-           24px icon + 20px margin on the icon. */
-        -webkit-margin-start: 44px;
+           20px left padding + 16px icon + 20px margin on the icon. */
+        -webkit-margin-end: 20px;
+        -webkit-margin-start: 56px;
       }
+
+      #main {
+        margin-top: 24px;
+      }
+
+      #main paper-dropdown-menu {
+        --paper-input-container: {
+          margin-bottom: 14px;
+          padding: 0;
+        };
+        --paper-input-container-color: var(--paper-grey-400);
+        --paper-input-container-focus-color: var(--google-blue-500);
+        --paper-input-container-input: {
+          font-size: 13px;
+        };
+        --paper-input-container-underline-disabled: {
+          border-bottom: 1px solid;
+        };
+      }
+
     </style>
     <div id="main">
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
@@ -70,7 +101,8 @@
                     shortcut="[[command.keybinding]]"
                     command-name="[[command.name]]">
                 </extensions-shortcut-input>
-                <paper-dropdown-menu label="$i18n{shortcutScopeLabel}">
+                <paper-dropdown-menu
+                    disabled$="[[computeScopeDisabled_(command)]]">
                   <paper-listbox class="dropdown-content"
                       selected="[[computeSelectedScope_(command)]]">
                     <paper-item>$i18n{shortcutScopeInChrome}</paper-item>

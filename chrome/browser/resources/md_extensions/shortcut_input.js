@@ -142,8 +142,8 @@ cr.define('extensions', function() {
      */
     computeText_: function() {
       if (this.capturing_)
-        return this.pendingShortcut_ || this.i18n('shortcutTypeAShortcut');
-      return this.shortcut || this.i18n('shortcutNotSet');
+        return this.pendingShortcut_;
+      return this.shortcut;
     },
 
     /**
