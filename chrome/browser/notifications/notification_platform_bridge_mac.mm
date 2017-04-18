@@ -36,6 +36,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/url_formatter/elide_url.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -127,6 +128,25 @@ base::string16 CreateNotificationTitle(const Notification& notification) {
   return title;
 }
 
+base::string16 CreateNotificationContext(const Notification& notification,
+                                         bool requires_attribution) {
+  if (!requires_attribution)
+    return notification.context_message();
+
+  base::string16 context =
+      base::UTF8ToUTF16(net::registry_controlled_domains::GetDomainAndRegistry(
+          notification.origin_url(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
+  // localhost, raw IPs etc. are not handled by GetDomainAndRegistry.
+  if (context.empty()) {
+    context = url_formatter::FormatOriginForSecurityDisplay(
+        url::Origin(notification.origin_url()),
+        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  }
+
+  return context;
+}
 }  // namespace
 
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
@@ -195,15 +215,9 @@ void NotificationPlatformBridgeMac::Display(
   bool requires_attribution =
       notification.context_message().empty() &&
       notification_type != NotificationCommon::EXTENSION;
+  [builder setSubTitle:base::SysUTF16ToNSString(CreateNotificationContext(
+                           notification, requires_attribution))];
 
-  base::string16 subtitle =
-      requires_attribution
-          ? url_formatter::FormatOriginForSecurityDisplay(
-                url::Origin(notification.origin_url()),
-                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)
-          : notification.context_message();
-
-  [builder setSubTitle:base::SysUTF16ToNSString(subtitle)];
   if (!notification.icon().IsEmpty()) {
     [builder setIcon:notification.icon().ToNSImage()];
   }
