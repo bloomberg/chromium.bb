@@ -34,6 +34,9 @@ class MediaRouterBase : public MediaRouter {
 
   std::vector<MediaRoute> GetCurrentRoutes() const override;
 
+  scoped_refptr<MediaRouteController> GetRouteController(
+      const MediaRoute::Id& route_id) override;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallback);
@@ -58,6 +61,9 @@ class MediaRouterBase : public MediaRouter {
   // Returns true when there is at least one MediaRoute that can be returned by
   // JoinRoute().
   bool HasJoinableRoute() const;
+
+  // Returns true if there is a route with the ID in the current list of routes.
+  bool IsRouteKnown(const std::string& route_id) const;
 
   using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
       const content::PresentationConnectionStateChangeInfo&)>;
@@ -84,6 +90,10 @@ class MediaRouterBase : public MediaRouter {
 
   // KeyedService
   void Shutdown() override;
+
+  // MediaRouter
+  void DetachRouteController(const MediaRoute::Id& route_id,
+                             MediaRouteController* controller) override;
 
   std::unique_ptr<InternalMediaRoutesObserver> internal_routes_observer_;
   bool initialized_;

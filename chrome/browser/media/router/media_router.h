@@ -33,6 +33,7 @@ class Origin;
 namespace media_router {
 
 class IssuesObserver;
+class MediaRouteController;
 class MediaRoutesObserver;
 class MediaSinksObserver;
 class PresentationConnectionStateObserver;
@@ -196,9 +197,15 @@ class MediaRouter : public KeyedService {
   // there is a change to the media routes, subclass MediaRoutesObserver.
   virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
 
+  // Returns a controller for sending media commands to a route. Returns a
+  // nullptr if no MediaRoute exists for the given |route_id|.
+  virtual scoped_refptr<MediaRouteController> GetRouteController(
+      const MediaRoute::Id& route_id) = 0;
+
  private:
   friend class IssuesObserver;
   friend class MediaSinksObserver;
+  friend class MediaRouteController;
   friend class MediaRoutesObserver;
   friend class PresentationConnectionStateObserver;
   friend class RouteMessageObserver;
@@ -254,6 +261,12 @@ class MediaRouter : public KeyedService {
   // stop receiving further updates.
   virtual void UnregisterRouteMessageObserver(
       RouteMessageObserver* observer) = 0;
+
+  // Removes the MediaRouteController for |route_id| from the list of
+  // controllers held by |this|. Called by MediaRouteController when it is
+  // invalidated.
+  virtual void DetachRouteController(const MediaRoute::Id& route_id,
+                                     MediaRouteController* controller) = 0;
 };
 
 }  // namespace media_router

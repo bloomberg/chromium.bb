@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
@@ -91,6 +92,9 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_CONST_METHOD0(GetCurrentRoutes, std::vector<MediaRoute>());
 
   MOCK_METHOD0(OnIncognitoProfileShutdown, void());
+  MOCK_METHOD1(
+      GetRouteController,
+      scoped_refptr<MediaRouteController>(const MediaRoute::Id& route_id));
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&
                         callback));
@@ -107,6 +111,9 @@ class MockMediaRouter : public MediaRouterBase {
                void(RouteMessageObserver* observer));
   MOCK_METHOD1(UnregisterRouteMessageObserver,
                void(RouteMessageObserver* observer));
+  MOCK_METHOD2(DetachRouteController,
+               void(const MediaRoute::Id& route_id,
+                    MediaRouteController* controller));
 
  private:
   base::CallbackList<void(

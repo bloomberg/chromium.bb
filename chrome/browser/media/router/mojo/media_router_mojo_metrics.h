@@ -44,9 +44,10 @@ enum class MediaRouteProviderWakeReason {
   UPDATE_MEDIA_SINKS = 16,
   SEARCH_SINKS = 17,
   PROVIDE_SINKS = 18,
+  CREATE_MEDIA_ROUTE_CONTROLLER = 19,
 
   // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 19
+  TOTAL_COUNT = 20
 };
 
 // The install status of the Media Router component extension.

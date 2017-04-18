@@ -4,6 +4,8 @@
 
 module media_router.mojom;
 
+import "chrome/browser/media/router/mojo/media_controller.mojom";
+import "chrome/browser/media/router/mojo/media_status.mojom";
 import "mojo/common/time.mojom";
 import "net/interfaces/ip_address.mojom";
 import "url/mojo/origin.mojom";
@@ -80,8 +82,7 @@ struct MediaRoute {
   string? media_source;
   // The ID of sink that is rendering the media content.
   string media_sink_id;
-  // Human readable description of this route, e.g.
-  // "Tab casting".
+  // Human readable description of this route, e.g. "Tab casting".
   string description;
   // Specifies that the route is requested locally.
   bool is_local;
@@ -369,6 +370,23 @@ interface MediaRouteProvider {
   // updated. The sinks are supplied to the MediaRouteProvider so that they can
   // be used for other operations, such as route creation.
   ProvideSinks(string provider_name, array<MediaSink> sinks);
+
+  // Creates a controller for the media route with given |route_id| and binds it
+  // to |media_controller| for receiving media commands. This method returns
+  // false if such a media route doesn't exist, a controller already exists
+  // for it, or there was an error while creating a controller. This method must
+  // close |media_controller| in case of such a failure. |media_controller|
+  // becomes invalid when the media route is terminated. The created controller
+  // is destroyed when |media_controller| becomes invalid, after which this
+  // method can be called again with the same |route_id|. This method also sets
+  // |observer| to be notified whenever there is a change in the status of the
+  // media route.
+  // TODO(takumif): Consider returning an enum instead of a bool to distinguish
+  // between error conditions for metrics/debugging.
+  CreateMediaRouteController(string route_id,
+                             MediaController& media_controller,
+                             MediaStatusObserver observer) =>
+                                 (bool success);
 };
 
 // Interface for a service which observes state changes across media

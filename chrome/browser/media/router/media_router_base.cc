@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -76,6 +77,11 @@ std::vector<MediaRoute> MediaRouterBase::GetCurrentRoutes() const {
   return internal_routes_observer_->current_routes;
 }
 
+scoped_refptr<MediaRouteController> MediaRouterBase::GetRouteController(
+    const MediaRoute::Id& route_id) {
+  return nullptr;
+}
+
 MediaRouterBase::MediaRouterBase() : initialized_(false) {}
 
 // static
@@ -115,6 +121,14 @@ bool MediaRouterBase::HasJoinableRoute() const {
   return internal_routes_observer_->has_route;
 }
 
+bool MediaRouterBase::IsRouteKnown(const std::string& route_id) const {
+  const auto& routes = internal_routes_observer_->current_routes;
+  return std::find_if(routes.begin(), routes.end(),
+                      [&route_id](const MediaRoute& route) {
+                        return route.media_route_id() == route_id;
+                      }) != routes.end();
+}
+
 void MediaRouterBase::Initialize() {
   DCHECK(!initialized_);
   // The observer calls virtual methods on MediaRouter; it must be created
@@ -137,5 +151,8 @@ void MediaRouterBase::Shutdown() {
   // outside of the dtor
   internal_routes_observer_.reset();
 }
+
+void MediaRouterBase::DetachRouteController(const MediaRoute::Id& route_id,
+                                            MediaRouteController* controller) {}
 
 }  // namespace media_router

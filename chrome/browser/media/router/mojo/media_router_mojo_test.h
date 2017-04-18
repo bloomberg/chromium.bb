@@ -90,15 +90,28 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
       const std::string& media_source,
       mojom::SinkSearchCriteriaPtr search_criteria,
       const SearchSinksCallback& callback) override {
-    SearchSinks_(sink_id, media_source, search_criteria, callback);
+    SearchSinksInternal(sink_id, media_source, search_criteria, callback);
   }
-  MOCK_METHOD4(SearchSinks_,
+  MOCK_METHOD4(SearchSinksInternal,
                void(const std::string& sink_id,
                     const std::string& media_source,
                     mojom::SinkSearchCriteriaPtr& search_criteria,
                     const SearchSinksCallback& callback));
   MOCK_METHOD2(ProvideSinks,
                void(const std::string&, const std::vector<MediaSinkInternal>&));
+  void CreateMediaRouteController(
+      const std::string& route_id,
+      mojom::MediaControllerRequest media_controller,
+      mojom::MediaStatusObserverPtr observer,
+      const CreateMediaRouteControllerCallback& callback) override {
+    CreateMediaRouteControllerInternal(route_id, media_controller, observer,
+                                       callback);
+  }
+  MOCK_METHOD4(CreateMediaRouteControllerInternal,
+               void(const std::string& route_id,
+                    mojom::MediaControllerRequest& media_controller,
+                    mojom::MediaStatusObserverPtr& observer,
+                    const CreateMediaRouteControllerCallback& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
@@ -113,6 +126,35 @@ class MockEventPageTracker : public extensions::EventPageTracker {
   MOCK_METHOD2(WakeEventPage,
                bool(const std::string& extension_id,
                     const base::Callback<void(bool)>& callback));
+};
+
+class MockMediaController : public mojom::MediaController {
+ public:
+  MockMediaController();
+  ~MockMediaController();
+
+  void Bind(mojom::MediaControllerRequest request);
+  mojom::MediaControllerPtr BindInterfacePtr();
+  void CloseBinding();
+
+  MOCK_METHOD0(Play, void());
+  MOCK_METHOD0(Pause, void());
+  MOCK_METHOD1(SetMute, void(bool mute));
+  MOCK_METHOD1(SetVolume, void(float volume));
+  MOCK_METHOD1(Seek, void(base::TimeDelta time));
+
+ private:
+  mojo::Binding<mojom::MediaController> binding_;
+};
+
+class MockMediaRouteControllerObserver : public MediaRouteController::Observer {
+ public:
+  MockMediaRouteControllerObserver(
+      scoped_refptr<MediaRouteController> controller);
+  ~MockMediaRouteControllerObserver() override;
+
+  MOCK_METHOD1(OnMediaStatusUpdated, void(const MediaStatus& status));
+  MOCK_METHOD0(OnControllerInvalidated, void());
 };
 
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router

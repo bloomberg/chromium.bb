@@ -15,6 +15,8 @@
 
 namespace media_router {
 
+class MediaRouter;
+
 // A controller for a MediaRoute. Forwards commands for controlling the route to
 // an out-of-process controller. Notifies its observers whenever there is a
 // change in the route's MediaStatus.
@@ -26,9 +28,9 @@ namespace media_router {
 //
 // A MediaRouteController instance is destroyed when all its observers dispose
 // their references to it. When the Mojo connection with the out-of-process
-// controller is terminated or has an error, OnControllerInvalidated() will be
-// called by the MediaRouter or a Mojo error handler to make observers dispose
-// their refptrs.
+// controller is terminated or has an error, Invalidate() will be called by the
+// MediaRouter or OnMojoConnectionError() to make observers dispose their
+// refptrs.
 class MediaRouteController : public mojom::MediaStatusObserver,
                              public base::RefCounted<MediaRouteController> {
  public:
@@ -66,12 +68,14 @@ class MediaRouteController : public mojom::MediaStatusObserver,
   };
 
   // Constructs a MediaRouteController that forwards media commands to
-  // |media_controller|. |media_controller| must be bound to a message pipe.
+  // |mojo_media_controller|. |media_router| will be notified when the
+  // MediaRouteController is destroyed via DetachRouteController().
   MediaRouteController(const MediaRoute::Id& route_id,
-                       mojom::MediaControllerPtr media_controller);
+                       mojom::MediaControllerPtr mojo_media_controller,
+                       MediaRouter* media_router);
 
   // Media controller methods for forwarding commands to a
-  // mojom::MediaControllerPtr held in |media_controller_|.
+  // mojom::MediaControllerPtr held in |mojo_media_controller_|.
   void Play();
   void Pause();
   void Seek(base::TimeDelta time);
@@ -82,10 +86,13 @@ class MediaRouteController : public mojom::MediaStatusObserver,
   // Notifies |observers_| of a status update.
   void OnMediaStatusUpdated(const MediaStatus& status) override;
 
-  // Called when the connection between |this| and |media_controller_| is no
-  // longer valid. Notifies |observers_| to dispose their references to |this|.
-  // |this| gets destroyed when all the references are disposed.
+  // Notifies |observers_| to dispose their references to the controller. The
+  // controller gets destroyed when all the references are disposed.
   void Invalidate();
+
+  // Returns a mojo pointer bound to |this| by |binding_|. This must only be
+  // called at most once in the lifetime of the controller.
+  mojom::MediaStatusObserverPtr BindObserverPtr();
 
   MediaRoute::Id route_id() const { return route_id_; }
 
@@ -97,15 +104,29 @@ class MediaRouteController : public mojom::MediaStatusObserver,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Called when the connection between |this| and the MediaControllerPtr or
+  // the MediaStatusObserver binding is no longer valid. Notifies
+  // |media_router_| and |observers_| to dispose their references to |this|.
+  void OnMojoConnectionError();
+
   // The ID of the Media Route that |this| controls.
   const MediaRoute::Id route_id_;
 
   // Handle to the mojom::MediaController that receives media commands.
-  mojom::MediaControllerPtr media_controller_;
+  mojom::MediaControllerPtr mojo_media_controller_;
 
-  // Observers that |this| notifies of status updates. The observers share the
-  // ownership of |this| through scoped_refptr.
+  // |media_router_| will be notified when the controller is destroyed.
+  MediaRouter* const media_router_;
+
+  // The binding to observe the out-of-process provider of status updates.
+  mojo::Binding<mojom::MediaStatusObserver> binding_;
+
+  // Observers that are notified of status updates. The observers share the
+  // ownership of the controller through scoped_refptr.
   base::ObserverList<Observer> observers_;
+
+  // This becomes false when the controller is invalidated.
+  bool is_valid_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouteController);
 };
