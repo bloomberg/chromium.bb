@@ -5,6 +5,7 @@
 #include "base/process/process.h"
 
 #include <errno.h>
+#include <signal.h>
 #include <stdint.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
