@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -610,6 +611,12 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
 
   // If the request was canceled by the user do not show an error page.
   if (net_error == net::ERR_ABORTED) {
+    // TODO(clamy): Remove this once we understand the root cause of
+    // crbug.com/709771.
+    std::string path = common_params_.url.path();
+    if (path.length() >= 4 && path.substr(path.length() - 4) == ".pdf")
+      base::debug::DumpWithoutCrashing();
+
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
