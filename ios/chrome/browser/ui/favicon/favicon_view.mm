@@ -56,10 +56,8 @@ const CGFloat kDefaultWhitePercentage = 0.47;
     [_faviconFallbackLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     // Both image and fallback label are centered and match the size of favicon.
-    AddSameCenterConstraints(_faviconImageView, self);
-    AddSameCenterConstraints(_faviconFallbackLabel, self);
-    AddSameSizeConstraint(_faviconFallbackLabel, self);
-    AddSameSizeConstraint(_faviconImageView, self);
+    AddSameConstraints(_faviconFallbackLabel, self);
+    AddSameConstraints(_faviconImageView, self);
   }
   return self;
 }

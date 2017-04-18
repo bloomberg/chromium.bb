@@ -196,8 +196,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
   FaviconView* faviconView = self.faviconViewProvider.faviconView;
   [cell.faviconViewContainer addSubview:faviconView];
   [faviconView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  AddSameSizeConstraint(faviconView, cell.faviconViewContainer);
-  AddSameCenterConstraints(faviconView, cell.faviconViewContainer);
+  AddSameConstraints(faviconView, cell.faviconViewContainer);
 
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;

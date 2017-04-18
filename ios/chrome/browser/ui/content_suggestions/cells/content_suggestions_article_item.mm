@@ -283,7 +283,7 @@ const CGFloat kAnimationDuration = 0.3;
     [_noImageIcon.heightAnchor constraintEqualToAnchor:_noImageIcon.widthAnchor]
   ]];
 
-  AddSameSizeConstraint(_contentImageView, _imageContainer);
+  AddSameConstraints(_contentImageView, _imageContainer);
 
   ApplyVisualConstraintsWithMetrics(
       @[

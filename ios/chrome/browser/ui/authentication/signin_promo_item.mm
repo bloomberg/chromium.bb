@@ -48,7 +48,7 @@
     _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
-    AddSameSizeConstraint(_signinPromoView, contentView);
+    AddSameConstraints(_signinPromoView, contentView);
   }
   return self;
 }

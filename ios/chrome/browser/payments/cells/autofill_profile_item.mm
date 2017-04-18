@@ -131,7 +131,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
 // Set constraints on subviews.
 - (void)setViewConstraints {
-  AddSameSizeConstraint(self.contentView, _stackView);
+  AddSameConstraints(self.contentView, _stackView);
 }
 
 #pragma mark - UIView

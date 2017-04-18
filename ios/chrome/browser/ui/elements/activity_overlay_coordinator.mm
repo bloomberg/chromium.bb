@@ -42,10 +42,8 @@
       addSubview:self.activityOverlayViewController.view];
   [self.activityOverlayViewController
       didMoveToParentViewController:self.baseViewController];
-  AddSameCenterConstraints(self.baseViewController.view,
-                           self.activityOverlayViewController.view);
-  AddSameSizeConstraint(self.baseViewController.view,
-                        self.activityOverlayViewController.view);
+  AddSameConstraints(self.baseViewController.view,
+                     self.activityOverlayViewController.view);
 }
 
 - (void)stop {

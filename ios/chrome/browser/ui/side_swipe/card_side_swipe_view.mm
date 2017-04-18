@@ -167,8 +167,8 @@ const CGFloat kResizeFactor = 4;
     [leftCard_ setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:rightCard_];
     [self addSubview:leftCard_];
-    AddSameSizeConstraint(rightCard_, self);
-    AddSameSizeConstraint(leftCard_, self);
+    AddSameConstraints(rightCard_, self);
+    AddSameConstraints(leftCard_, self);
   }
   return self;
 }

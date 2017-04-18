@@ -48,10 +48,8 @@ const CGFloat kDefaultCornerRadius = 3;
 
     [_faviconImage setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_faviconFallbackLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-    AddSameCenterConstraints(_faviconImage, self);
-    AddSameSizeConstraint(_faviconImage, self);
-    AddSameCenterConstraints(_faviconFallbackLabel, self);
-    AddSameSizeConstraint(_faviconFallbackLabel, self);
+    AddSameConstraints(_faviconImage, self);
+    AddSameConstraints(_faviconFallbackLabel, self);
     _faviconSizeConstraints = @[
       [self.widthAnchor constraintEqualToConstant:0],
       [self.heightAnchor constraintEqualToConstant:0],

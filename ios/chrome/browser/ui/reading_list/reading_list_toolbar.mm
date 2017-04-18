@@ -190,7 +190,7 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameSizeConstraint(_stackView, self);
+    AddSameConstraints(_stackView, self);
     _stackView.layoutMargins =
         UIEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
     _stackView.layoutMarginsRelativeArrangement = YES;
