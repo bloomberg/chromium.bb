@@ -24,6 +24,15 @@ device::mojom::VRFieldOfViewPtr openVRFovToWebVRFov(vr::IVRSystem* vr_system,
   return out;
 }
 
+std::vector<float> HmdVector3ToWebVR(const vr::HmdVector3_t& vec) {
+  std::vector<float> out;
+  out.resize(3);
+  out[0] = vec.v[0];
+  out[1] = vec.v[1];
+  out[2] = vec.v[2];
+  return out;
+}
+
 }  // namespace
 
 namespace device {
@@ -164,6 +173,9 @@ device::mojom::VRPosePtr OpenVRDevice::OpenVRRenderLoop::getPose() {
     pose->position.value()[0] = m[0][3];
     pose->position.value()[1] = m[1][3];
     pose->position.value()[2] = m[2][3];
+
+    pose->linearVelocity = HmdVector3ToWebVR(hmdPose.vVelocity);
+    pose->angularVelocity = HmdVector3ToWebVR(hmdPose.vAngularVelocity);
   }
 
   return std::move(pose);
