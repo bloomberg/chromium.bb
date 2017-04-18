@@ -17,8 +17,7 @@ namespace gpu {
 
 const char kGpuControlListTestingVersion[] = "1.0";
 
-const size_t kGpuControlListTestingEntryCount = 58;
-const GpuControlList::Entry kGpuControlListTestingEntries[58] = {
+const GpuControlList::Entry kGpuControlListTestingEntries[] = {
     {
         1,  // id
         "GpuControlListEntryTest.DetailedEntry",
@@ -1530,4 +1529,5 @@ const GpuControlList::Entry kGpuControlListTestingEntries[58] = {
         nullptr,  // exceptions
     },
 };
+const size_t kGpuControlListTestingEntryCount = 58;
 }  // namespace gpu
