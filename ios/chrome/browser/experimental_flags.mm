@@ -44,9 +44,6 @@ NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 
-const base::Feature kIOSDownloadImageRenaming{
-    "IOSDownloadImageRenaming", base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace
 
 namespace experimental_flags {
@@ -92,19 +89,6 @@ bool IsAutoReloadEnabled() {
     return false;
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-bool IsDownloadRenamingEnabled() {
-  // Check if the experimental flag is forced on or off.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDownloadImageRenaming)) {
-    return true;
-  } else if (command_line->HasSwitch(switches::kDisableDownloadImageRenaming)) {
-    return false;
-  }
-
-  // Check if the finch experiment is turned on.
-  return base::FeatureList::IsEnabled(kIOSDownloadImageRenaming);
 }
 
 bool IsExternalApplicationPromptEnabled() {

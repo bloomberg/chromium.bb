@@ -191,16 +191,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisablePaymentRequest);
   }
 
-  // Populate command line flag for the Rename "Save Image" to "Download Image"
-  // experiment.
-  NSString* enableDownloadRenaming =
-      [defaults stringForKey:@"EnableDownloadRenaming"];
-  if ([enableDownloadRenaming isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableDownloadImageRenaming);
-  } else if ([enableDownloadRenaming isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableDownloadImageRenaming);
-  }
-
   // Populate command line flag for Suggestions UI display.
   NSString* enableSuggestions = [defaults stringForKey:@"EnableSuggestions"];
   if ([enableSuggestions isEqualToString:@"Enabled"]) {

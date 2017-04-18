@@ -2595,13 +2595,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   if (isImage) {
     web::Referrer referrer([_model currentTab].url, params.referrer_policy);
     // Save Image.
-    if (experimental_flags::IsDownloadRenamingEnabled()) {
-      title = l10n_util::GetNSStringWithFixup(
-          IDS_IOS_CONTENT_CONTEXT_DOWNLOADIMAGE);
-    } else {
-      title =
-          l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
-    }
+    title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_SAVEIMAGE);
     action = ^{
       Record(ACTION_SAVE_IMAGE, isImage, isLink);
       [weakSelf saveImageAtURL:imageUrl referrer:referrer];

@@ -47,9 +47,6 @@ const char kDisableTabStripAutoScrollNewTabs[] =
 // Disables Physical Web scanning for nearby URLs.
 const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 
-// Disables the string change from "Save Image" to "Download Image".
-const char kDisableDownloadImageRenaming[] = "disable-download-image-renaming";
-
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 
@@ -89,9 +86,6 @@ const char kEnableSpotlightActions[] = "enable-spotlight-actions";
 
 // Enables Physical Web scanning for nearby URLs.
 const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
-
-// Enables the string change from "Save Image" to "Download Image".
-const char kEnableDownloadImageRenaming[] = "enable-download-image-renaming";
 
 // Enables the Suggestions UI
 const char kEnableSuggestionsUI[] = "enable-suggestions-ui";

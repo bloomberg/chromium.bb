@@ -20,7 +20,6 @@ extern const char kDisableOfflineAutoReload[];
 extern const char kDisablePaymentRequest[];
 extern const char kDisableTabStripAutoScrollNewTabs[];
 extern const char kDisableIOSPhysicalWeb[];
-extern const char kDisableDownloadImageRenaming[];
 extern const char kDisableSuggestionsUI[];
 
 extern const char kEnableContextualSearch[];
@@ -35,7 +34,6 @@ extern const char kEnablePaymentRequest[];
 extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableSpotlightActions[];
 extern const char kEnableIOSPhysicalWeb[];
-extern const char kEnableDownloadImageRenaming[];
 extern const char kEnableSuggestionsUI[];
 
 extern const char kIOSForceVariationIds[];

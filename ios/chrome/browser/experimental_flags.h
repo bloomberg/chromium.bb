@@ -46,9 +46,6 @@ bool IsAlertOnBackgroundUploadEnabled();
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 
-// Whether "Save Image" should be renamed as "Download Image".
-bool IsDownloadRenamingEnabled();
-
 // Whether the external applicaiton prompt is enabled.
 bool IsExternalApplicationPromptEnabled();
 
