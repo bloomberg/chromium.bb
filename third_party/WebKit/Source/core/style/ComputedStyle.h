@@ -2829,41 +2829,35 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin utility functions.
-  bool HasMargin() const { return surround_->margin_.NonZero(); }
+  bool HasMargin() const { return Margin().NonZero(); }
   bool HasMarginBeforeQuirk() const { return MarginBefore().Quirk(); }
   bool HasMarginAfterQuirk() const { return MarginAfter().Quirk(); }
   const LengthBox& Margin() const { return surround_->margin_; }
   const Length& MarginBefore() const {
-    return surround_->margin_.Before(GetWritingMode());
+    return Margin().Before(GetWritingMode());
   }
-  const Length& MarginAfter() const {
-    return surround_->margin_.After(GetWritingMode());
-  }
+  const Length& MarginAfter() const { return Margin().After(GetWritingMode()); }
   const Length& MarginStart() const {
-    return surround_->margin_.Start(GetWritingMode(), Direction());
+    return Margin().Start(GetWritingMode(), Direction());
   }
   const Length& MarginEnd() const {
-    return surround_->margin_.end(GetWritingMode(), Direction());
+    return Margin().end(GetWritingMode(), Direction());
   }
-  const Length& MarginOver() const {
-    return surround_->margin_.Over(GetWritingMode());
-  }
-  const Length& MarginUnder() const {
-    return surround_->margin_.Under(GetWritingMode());
-  }
+  const Length& MarginOver() const { return Margin().Over(GetWritingMode()); }
+  const Length& MarginUnder() const { return Margin().Under(GetWritingMode()); }
   const Length& MarginStartUsing(const ComputedStyle* other_style) const {
-    return surround_->margin_.Start(other_style->GetWritingMode(),
-                                    other_style->Direction());
+    return Margin().Start(other_style->GetWritingMode(),
+                          other_style->Direction());
   }
   const Length& MarginEndUsing(const ComputedStyle* other_style) const {
-    return surround_->margin_.end(other_style->GetWritingMode(),
-                                  other_style->Direction());
+    return Margin().end(other_style->GetWritingMode(),
+                        other_style->Direction());
   }
   const Length& MarginBeforeUsing(const ComputedStyle* other_style) const {
-    return surround_->margin_.Before(other_style->GetWritingMode());
+    return Margin().Before(other_style->GetWritingMode());
   }
   const Length& MarginAfterUsing(const ComputedStyle* other_style) const {
-    return surround_->margin_.After(other_style->GetWritingMode());
+    return Margin().After(other_style->GetWritingMode());
   }
   void SetMarginStart(const Length&);
   void SetMarginEnd(const Length&);
@@ -2871,24 +2865,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Padding utility functions.
   const LengthBox& Padding() const { return surround_->padding_; }
   const Length& PaddingBefore() const {
-    return surround_->padding_.Before(GetWritingMode());
+    return Padding().Before(GetWritingMode());
   }
   const Length& PaddingAfter() const {
-    return surround_->padding_.After(GetWritingMode());
+    return Padding().After(GetWritingMode());
   }
   const Length& PaddingStart() const {
-    return surround_->padding_.Start(GetWritingMode(), Direction());
+    return Padding().Start(GetWritingMode(), Direction());
   }
   const Length& PaddingEnd() const {
-    return surround_->padding_.end(GetWritingMode(), Direction());
+    return Padding().end(GetWritingMode(), Direction());
   }
-  const Length& PaddingOver() const {
-    return surround_->padding_.Over(GetWritingMode());
-  }
+  const Length& PaddingOver() const { return Padding().Over(GetWritingMode()); }
   const Length& PaddingUnder() const {
-    return surround_->padding_.Under(GetWritingMode());
+    return Padding().Under(GetWritingMode());
   }
-  bool HasPadding() const { return surround_->padding_.NonZero(); }
+  bool HasPadding() const { return Padding().NonZero(); }
   void ResetPadding() { SET_VAR(surround_, padding_, LengthBox(kFixed)); }
   void SetPadding(const LengthBox& b) { SET_VAR(surround_, padding_, b); }
 
@@ -2900,9 +2892,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   LayoutRectOutsets BorderImageOutsets() const {
     return ImageOutsets(BorderImage());
   }
-  bool BorderImageSlicesFill() const {
-    return surround_->border_.GetImage().Fill();
-  }
+  bool BorderImageSlicesFill() const { return Border().GetImage().Fill(); }
 
   void SetBorderImageSlicesFill(bool);
   const BorderData& Border() const { return surround_->border_; }
@@ -2923,10 +2913,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   float BorderOverWidth() const;
   float BorderUnderWidth() const;
 
-  bool HasBorderFill() const { return surround_->border_.HasBorderFill(); }
-  bool HasBorder() const { return surround_->border_.HasBorder(); }
+  bool HasBorderFill() const { return Border().HasBorderFill(); }
+  bool HasBorder() const { return Border().HasBorder(); }
   bool HasBorderDecoration() const { return HasBorder() || HasBorderFill(); }
-  bool HasBorderRadius() const { return surround_->border_.HasBorderRadius(); }
+  bool HasBorderRadius() const { return Border().HasBorderRadius(); }
 
   void ResetBorder() {
     ResetBorderImage();

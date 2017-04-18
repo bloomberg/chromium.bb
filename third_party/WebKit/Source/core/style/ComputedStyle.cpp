@@ -527,8 +527,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (!diff.NeedsFullLayout() && DiffNeedsFullLayout(other))
     diff.SetNeedsFullLayout();
 
-  if (!diff.NeedsFullLayout() &&
-      surround_->margin_ != other.surround_->margin_) {
+  if (!diff.NeedsFullLayout() && Margin() != other.Margin()) {
     // Relative-positioned elements collapse their margins so need a full
     // layout.
     if (HasOutOfFlowPosition())
@@ -590,8 +589,8 @@ bool ComputedStyle::ScrollAnchorDisablingPropertyChanged(
   }
 
   if (surround_.Get() != other.surround_.Get()) {
-    if (surround_->margin_ != other.surround_->margin_ || !OffsetEqual(other) ||
-        surround_->padding_ != other.surround_->padding_)
+    if (Margin() != other.Margin() || !OffsetEqual(other) ||
+        Padding() != other.Padding())
       return true;
   }
 
@@ -619,7 +618,7 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         BorderRightWidth() != other.BorderRightWidth())
       return true;
 
-    if (surround_->padding_ != other.surround_->padding_)
+    if (Padding() != other.Padding())
       return true;
   }
 
@@ -906,7 +905,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
   if (Visibility() != other.Visibility() ||
       PrintColorAdjust() != other.PrintColorAdjust() ||
       InsideLink() != other.InsideLink() ||
-      !surround_->border_.VisuallyEqual(other.surround_->border_) ||
+      !Border().VisuallyEqual(other.Border()) ||
       *background_ != *other.background_)
     return true;
 
@@ -1054,7 +1053,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       diff.SetNeedsRecomputeOverflow();
   }
 
-  if (!surround_->border_.VisualOverflowEqual(other.surround_->border_))
+  if (!Border().VisualOverflowEqual(other.Border()))
     diff.SetNeedsRecomputeOverflow();
 
   if (!diff.NeedsFullPaintInvalidation()) {
@@ -1465,8 +1464,7 @@ FloatRoundedRect ComputedStyle::GetRoundedBorderFor(
     bool include_logical_right_edge) const {
   FloatRoundedRect rounded_rect(PixelSnappedIntRect(border_rect));
   if (HasBorderRadius()) {
-    FloatRoundedRect::Radii radii =
-        CalcRadiiFor(surround_->border_, border_rect.Size());
+    FloatRoundedRect::Radii radii = CalcRadiiFor(Border(), border_rect.Size());
     rounded_rect.IncludeLogicalEdges(radii, IsHorizontalWritingMode(),
                                      include_logical_left_edge,
                                      include_logical_right_edge);
@@ -2390,31 +2388,31 @@ LayoutRectOutsets ComputedStyle::ImageOutsets(
 }
 
 void ComputedStyle::SetBorderImageSource(StyleImage* image) {
-  if (surround_->border_.image_.GetImage() == image)
+  if (Border().image_.GetImage() == image)
     return;
   surround_.Access()->border_.image_.SetImage(image);
 }
 
 void ComputedStyle::SetBorderImageSlices(const LengthBox& slices) {
-  if (surround_->border_.image_.ImageSlices() == slices)
+  if (Border().image_.ImageSlices() == slices)
     return;
   surround_.Access()->border_.image_.SetImageSlices(slices);
 }
 
 void ComputedStyle::SetBorderImageSlicesFill(bool fill) {
-  if (surround_->border_.image_.Fill() == fill)
+  if (Border().image_.Fill() == fill)
     return;
   surround_.Access()->border_.image_.SetFill(fill);
 }
 
 void ComputedStyle::SetBorderImageWidth(const BorderImageLengthBox& slices) {
-  if (surround_->border_.image_.BorderSlices() == slices)
+  if (Border().image_.BorderSlices() == slices)
     return;
   surround_.Access()->border_.image_.SetBorderSlices(slices);
 }
 
 void ComputedStyle::SetBorderImageOutset(const BorderImageLengthBox& outset) {
-  if (surround_->border_.image_.Outset() == outset)
+  if (Border().image_.Outset() == outset)
     return;
   surround_.Access()->border_.image_.SetOutset(outset);
 }
