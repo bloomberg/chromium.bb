@@ -296,18 +296,30 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
     return;
   DCHECK(!markers_.IsEmpty());
 
-  MarkerLists* markers = markers_.at(src_node);
-  if (!markers)
+  MarkerLists* src_markers = markers_.at(src_node);
+  if (!src_markers)
     return;
 
+  if (!markers_.Contains(dst_node)) {
+    markers_.insert(dst_node,
+                    new MarkerLists(DocumentMarker::kMarkerTypeIndexesCount));
+  }
+  MarkerLists* dst_markers = markers_.at(dst_node);
+
   bool doc_dirty = false;
-  for (Member<MarkerList> list : *markers) {
-    if (!list)
+  for (size_t marker_list_index = 0; marker_list_index < src_markers->size();
+       ++marker_list_index) {
+    MarkerList* src_list = src_markers->at(marker_list_index);
+    if (!src_list)
       continue;
+
+    if (!dst_markers->at(marker_list_index))
+      dst_markers->at(marker_list_index) = new MarkerList;
+    MarkerList* dst_list = dst_markers->at(marker_list_index);
 
     unsigned end_offset = length - 1;
     MarkerList::iterator it;
-    for (it = list->begin(); it != list->end(); ++it) {
+    for (it = src_list->begin(); it != src_list->end(); ++it) {
       DocumentMarker* marker = it->Get();
 
       // stop if we are now past the specified range
@@ -319,11 +331,11 @@ void DocumentMarkerController::MoveMarkers(Node* src_node,
       if (marker->EndOffset() > end_offset)
         marker->SetEndOffset(end_offset);
 
-      AddMarker(dst_node, *marker);
+      DocumentMarkerListEditor::AddMarker(dst_list, marker);
     }
 
-    // Remove the range of markers that were moved to dstNode
-    list->erase(0, it - list->begin());
+    // Remove the range of markers that were moved to dst_node
+    src_list->erase(0, it - src_list->begin());
   }
 
   // repaint the affected node
