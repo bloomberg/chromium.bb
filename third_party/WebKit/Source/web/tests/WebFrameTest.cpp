@@ -3777,6 +3777,7 @@ TEST_P(ParameterizedWebFrameTest, BlockBoundTest) {
   web_view_helper.InitializeAndLoad(base_url_ + "block_bound.html", false,
                                     nullptr, nullptr, nullptr,
                                     ConfigureAndroid);
+  web_view_helper.Resize(WebSize(300, 300));
 
   IntRect rect_back = IntRect(0, 0, 200, 200);
   IntRect rect_left_top = IntRect(10, 10, 80, 80);
