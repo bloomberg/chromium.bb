@@ -14,7 +14,6 @@
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -66,7 +65,7 @@ void TilesDefaultView::Init() {
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
   if (disable_buttons ||
-      !Shell::Get()->system_tray_delegate()->ShouldShowSettings())
+      !Shell::Get()->session_controller()->ShouldEnableSettings())
     settings_button_->SetEnabled(false);
   AddChildView(settings_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());

@@ -26,12 +26,4 @@ bool DefaultSystemTrayDelegate::IsUserSupervised() const {
   return GetUserLoginStatus() == LoginStatus::SUPERVISED;
 }
 
-bool DefaultSystemTrayDelegate::ShouldShowSettings() const {
-  return true;
-}
-
-bool DefaultSystemTrayDelegate::ShouldShowNotificationTray() const {
-  return true;
-}
-
 }  // namespace ash

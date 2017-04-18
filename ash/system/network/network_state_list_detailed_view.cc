@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -339,8 +340,8 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     // Allow the user to access settings only if user is logged in
     // and showing settings is allowed. There are situations (supervised user
     // creation flow) when session is started but UI flow continues within
-    // login UI, i.e., no browser window is yet avaialable.
-    if (!Shell::Get()->system_tray_delegate()->ShouldShowSettings())
+    // login UI, i.e., no browser window is yet available.
+    if (!Shell::Get()->session_controller()->ShouldEnableSettings())
       settings_button_->SetEnabled(false);
 
     tri_view()->AddView(TriView::Container::END, settings_button_);

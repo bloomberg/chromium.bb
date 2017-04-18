@@ -86,12 +86,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // crbug.com/443119
   virtual bool IsUserChild() const;
 
-  // Returns true if settings menu item should appear.
-  virtual bool ShouldShowSettings() const;
-
-  // Returns true if notification tray should appear.
-  virtual bool ShouldShowNotificationTray() const;
-
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
 

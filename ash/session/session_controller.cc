@@ -96,6 +96,23 @@ SessionState SessionController::GetSessionState() const {
   return state_;
 }
 
+bool SessionController::ShouldEnableSettings() const {
+  // Settings opens a web UI window, so it is not available at the lock screen.
+  if (!IsActiveUserSessionStarted() || IsScreenLocked() ||
+      IsInSecondaryLoginScreen()) {
+    return false;
+  }
+
+  return user_sessions_[0]->should_enable_settings;
+}
+
+bool SessionController::ShouldShowNotificationTray() const {
+  if (!IsActiveUserSessionStarted() || IsInSecondaryLoginScreen())
+    return false;
+
+  return user_sessions_[0]->should_show_notification_tray;
+}
+
 const std::vector<mojom::UserSessionPtr>& SessionController::GetUserSessions()
     const {
   return user_sessions_;

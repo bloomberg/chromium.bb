@@ -20,8 +20,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   LoginStatus GetUserLoginStatus() const override;
   std::string GetSupervisedUserManager() const override;
   bool IsUserSupervised() const override;
-  bool ShouldShowSettings() const override;
-  bool ShouldShowNotificationTray() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultSystemTrayDelegate);

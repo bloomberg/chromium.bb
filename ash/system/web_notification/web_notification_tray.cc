@@ -395,8 +395,9 @@ void WebNotificationTray::HidePopups() {
 
 // Private methods.
 
-bool WebNotificationTray::ShouldShowMessageCenter() {
-  return Shell::Get()->system_tray_delegate()->ShouldShowNotificationTray();
+bool WebNotificationTray::ShouldShowMessageCenter() const {
+  // Hidden at login screen, during supervised user creation, etc.
+  return Shell::Get()->session_controller()->ShouldShowNotificationTray();
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
@@ -496,7 +497,7 @@ bool WebNotificationTray::ShowNotifierSettings() {
 }
 
 bool WebNotificationTray::IsContextMenuEnabled() const {
-  return IsLoggedIn();
+  return ShouldShowMessageCenter();
 }
 
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
@@ -592,11 +593,11 @@ void WebNotificationTray::UpdateTrayContent() {
     counter_->SetVisible(false);
   }
 
-  SetVisible(IsLoggedIn() && ShouldShowMessageCenter());
+  SetVisible(ShouldShowMessageCenter());
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
-  if (IsLoggedIn())
+  if (ShouldShowMessageCenter())
     system_tray_->SetNextFocusableView(this);
 }
 
@@ -610,12 +611,6 @@ void WebNotificationTray::ClickedOutsideBubble() {
 
 message_center::MessageCenter* WebNotificationTray::message_center() const {
   return message_center_tray_->message_center();
-}
-
-bool WebNotificationTray::IsLoggedIn() const {
-  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
-             LoginStatus::NOT_LOGGED_IN &&
-         !Shell::Get()->session_controller()->IsInSecondaryLoginScreen();
 }
 
 // Methods for testing

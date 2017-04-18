@@ -39,8 +39,6 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -248,22 +246,6 @@ bool SystemTrayDelegateChromeOS::IsUserSupervised() const {
 
 bool SystemTrayDelegateChromeOS::IsUserChild() const {
   return user_manager::UserManager::Get()->IsLoggedInAsChildUser();
-}
-
-bool SystemTrayDelegateChromeOS::ShouldShowSettings() const {
-  // Show setting button only when the user flow allows and it's not in the
-  // multi-profile login screen.
-  return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
-         !IsSessionInSecondaryLoginScreen();
-}
-
-bool SystemTrayDelegateChromeOS::ShouldShowNotificationTray() const {
-  // Show notification tray only when the user flow allows and it's not in the
-  // multi-profile login screen.
-  return ChromeUserManager::Get()
-             ->GetCurrentUserFlow()
-             ->ShouldShowNotificationTray() &&
-         !IsSessionInSecondaryLoginScreen();
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {

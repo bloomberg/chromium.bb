@@ -69,6 +69,12 @@ class ASH_EXPORT SessionController
   // Convenience function that returns true if session state is LOGIN_SECONDARY.
   bool IsInSecondaryLoginScreen() const;
 
+  // Returns true if the settings icon should be enabled in the system tray.
+  bool ShouldEnableSettings() const;
+
+  // Returns true if the notification tray should appear.
+  bool ShouldShowNotificationTray() const;
+
   // Gets the ash session state.
   session_manager::SessionState GetSessionState() const;
 

@@ -46,7 +46,7 @@ bool SupervisedUserCreationFlow::CanStartArc() {
   return false;
 }
 
-bool SupervisedUserCreationFlow::ShouldShowSettings() {
+bool SupervisedUserCreationFlow::ShouldEnableSettings() {
   return false;
 }
 

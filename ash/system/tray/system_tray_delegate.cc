@@ -51,14 +51,6 @@ bool SystemTrayDelegate::IsUserChild() const {
   return false;
 }
 
-bool SystemTrayDelegate::ShouldShowSettings() const {
-  return false;
-}
-
-bool SystemTrayDelegate::ShouldShowNotificationTray() const {
-  return false;
-}
-
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}

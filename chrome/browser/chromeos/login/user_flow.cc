@@ -34,7 +34,7 @@ bool DefaultUserFlow::CanStartArc() {
   return true;
 }
 
-bool DefaultUserFlow::ShouldShowSettings() {
+bool DefaultUserFlow::ShouldEnableSettings() {
   return true;
 }
 
@@ -80,7 +80,7 @@ ExtendedUserFlow::~ExtendedUserFlow() {
 void ExtendedUserFlow::AppendAdditionalCommandLineSwitches() {
 }
 
-bool ExtendedUserFlow::ShouldShowSettings() {
+bool ExtendedUserFlow::ShouldEnableSettings() {
   return true;
 }
 

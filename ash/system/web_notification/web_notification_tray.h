@@ -134,7 +134,7 @@ class ASH_EXPORT WebNotificationTray
 
   // Queries login status and the status area widget to determine visibility of
   // the message center.
-  bool ShouldShowMessageCenter();
+  bool ShouldShowMessageCenter() const;
 
   // Returns true if it should show the quiet mode menu.
   bool ShouldShowQuietModeMenu(const ui::Event& event);
@@ -148,10 +148,6 @@ class ASH_EXPORT WebNotificationTray
   WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();
   }
-
-  // Returns true if any user is logged in and the system is not at the screen
-  // for adding a secondary user.
-  bool IsLoggedIn() const;
 
   // Testing accessors.
   bool IsPopupVisible() const;

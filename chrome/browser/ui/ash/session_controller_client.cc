@@ -12,6 +12,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +69,12 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
     session->avatar = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_PROFILE_PICTURE_LOADING);
   }
+
+  chromeos::UserFlow* const user_flow =
+      chromeos::ChromeUserManager::Get()->GetUserFlow(user.GetAccountId());
+  session->should_enable_settings = user_flow->ShouldEnableSettings();
+  session->should_show_notification_tray =
+      user_flow->ShouldShowNotificationTray();
 
   return session;
 }

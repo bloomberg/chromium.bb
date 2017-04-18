@@ -104,6 +104,8 @@ void TestSessionControllerClient::AddUserSession(
       AccountId::FromUserEmail(GetUserIdFromEmail(display_email));
   session->display_name = "Über tray Über tray Über tray Über tray";
   session->display_email = display_email;
+  session->should_enable_settings = true;
+  session->should_show_notification_tray = true;
   controller_->UpdateUserSession(std::move(session));
 }
 
