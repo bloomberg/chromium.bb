@@ -460,9 +460,10 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
 SuppressibleDiagnosticBuilder
 FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
     SourceLocation loc,
+    const Decl* record,
     unsigned diagnostic_id) {
-  LocationType type =
-      ClassifyLocation(instance().getSourceManager().getSpellingLoc(loc));
+  LocationType type = ClassifyLocation(
+      instance().getSourceManager().getSpellingLoc(loc), record);
   bool ignored =
       type == LocationType::kThirdParty || type == LocationType::kBlink;
   return SuppressibleDiagnosticBuilder(&diagnostic(), loc, diagnostic_id,
@@ -534,7 +535,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Note this is just an educated guess: the assumption here is that any
     // macro for declaring methods will probably be at the start of the method's
     // source range.
-    ReportIfSpellingLocNotIgnored(method->getLocStart(),
+    ReportIfSpellingLocNotIgnored(method->getLocStart(), method,
                                   diag_redundant_virtual_specifier_)
         << "'virtual'"
         << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
@@ -585,23 +586,23 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Again, only emit the warning if it doesn't originate from a macro in
     // a system header.
     if (loc.isValid()) {
-      ReportIfSpellingLocNotIgnored(loc, diag_method_requires_override_)
+      ReportIfSpellingLocNotIgnored(loc, method, diag_method_requires_override_)
           << FixItHint::CreateInsertion(loc, " override");
     } else {
-      ReportIfSpellingLocNotIgnored(range.getBegin(),
+      ReportIfSpellingLocNotIgnored(range.getBegin(), method,
                                     diag_method_requires_override_);
     }
   }
 
   if (final_attr && override_attr) {
-    ReportIfSpellingLocNotIgnored(override_attr->getLocation(),
+    ReportIfSpellingLocNotIgnored(override_attr->getLocation(), method,
                                   diag_redundant_virtual_specifier_)
         << override_attr << final_attr
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
   if (final_attr && !is_override) {
-    ReportIfSpellingLocNotIgnored(method->getLocStart(),
+    ReportIfSpellingLocNotIgnored(method->getLocStart(), method,
                                   diag_base_method_virtual_and_final_)
         << FixItRemovalForVirtual(manager, lang_opts, method)
         << FixItHint::CreateRemoval(final_attr->getRange());
@@ -622,7 +623,8 @@ void FindBadConstructsConsumer::CheckVirtualBodies(
         bool emit = true;
         if (loc.isMacroID()) {
           SourceManager& manager = instance().getSourceManager();
-          LocationType type = ClassifyLocation(manager.getSpellingLoc(loc));
+          LocationType type =
+              ClassifyLocation(manager.getSpellingLoc(loc), method);
           if (type == LocationType::kThirdParty || type == LocationType::kBlink)
             emit = false;
           else {
@@ -1013,7 +1015,7 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
           // should be fewer auto types than banned namespace/directory types,
           // so check this last.
           LocationType location_type =
-              ClassifyLocation(var_decl->getLocStart());
+              ClassifyLocation(var_decl->getLocStart(), var_decl);
           if (!InBannedNamespace(var_decl) &&
               location_type != LocationType::kThirdParty) {
             // The range starts from |var_decl|'s loc start, which is the
@@ -1026,7 +1028,7 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
             clang::SourceRange range(
                 var_decl->getLocStart(),
                 var_decl->getTypeSourceInfo()->getTypeLoc().getLocEnd());
-            ReportIfSpellingLocNotIgnored(range.getBegin(),
+            ReportIfSpellingLocNotIgnored(range.getBegin(), var_decl,
                                           diag_auto_deduced_to_a_pointer_type_)
                 << FixItHint::CreateReplacement(
                        range,

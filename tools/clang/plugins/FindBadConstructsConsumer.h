@@ -80,6 +80,7 @@ class FindBadConstructsConsumer
   // generally can't be easily updated.
   SuppressibleDiagnosticBuilder ReportIfSpellingLocNotIgnored(
       clang::SourceLocation loc,
+      const clang::Decl* record,
       unsigned diagnostic_id);
 
   void CheckVirtualMethods(clang::SourceLocation record_location,

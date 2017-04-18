@@ -52,7 +52,7 @@ void ChromeClassTester::CheckTag(TagDecl* tag) {
     return;
 
   SourceLocation location = tag->getInnerLocStart();
-  LocationType location_type = ClassifyLocation(location);
+  LocationType location_type = ClassifyLocation(location, tag);
   if (location_type == LocationType::kThirdParty)
     return;
 
@@ -96,7 +96,12 @@ void ChromeClassTester::emitWarning(SourceLocation loc,
 }
 
 ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
-    SourceLocation loc) {
+    SourceLocation loc,
+    const Decl* record) {
+  std::string ns = GetNamespace(record);
+  if (ns == "blink" || ns == "WTF")
+    return LocationType::kBlink;
+
   if (instance().getSourceManager().isInSystemHeader(loc))
     return LocationType::kThirdParty;
 
@@ -156,16 +161,6 @@ ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
 
   std::replace(filename.begin(), filename.end(), '\\', '/');
 #endif
-
-  for (const std::string& blink_dir : blink_directories_) {
-    // If any of the allowed directories occur as a component in filename,
-    // this file is allowed.
-    assert(blink_dir.front() == '/' && "Allowed dir must start with '/'");
-    assert(blink_dir.back() == '/' && "Allowed dir must end with '/'");
-
-    if (filename.find(blink_dir) != std::string::npos)
-      return LocationType::kBlink;
-  }
 
   for (const std::string& banned_dir : banned_directories_) {
     // If any of the banned directories occur as a component in filename,
@@ -232,8 +227,6 @@ bool ChromeClassTester::InImplementationFile(SourceLocation record_location) {
 void ChromeClassTester::BuildBannedLists() {
   banned_namespaces_.emplace("std");
   banned_namespaces_.emplace("__gnu_cxx");
-
-  blink_directories_.emplace("/third_party/WebKit/");
 
   banned_directories_.emplace("/third_party/");
   banned_directories_.emplace("/native_client/");

@@ -52,7 +52,8 @@ class ChromeClassTester {
     // it doesn't make sense to enforce Chrome's custom diagnostics.
     kThirdParty,
   };
-  LocationType ClassifyLocation(clang::SourceLocation loc);
+  LocationType ClassifyLocation(clang::SourceLocation loc,
+                                const clang::Decl* record);
 
   // Utility method for subclasses to determine the namespace of the
   // specified record, if any. Unnamed namespaces will be identified as
@@ -100,9 +101,6 @@ class ChromeClassTester {
 
   // List of banned namespaces.
   std::set<std::string> banned_namespaces_;
-
-  // List of Blink directories.
-  std::set<std::string> blink_directories_;
 
   // List of banned directories.
   std::set<std::string> banned_directories_;
