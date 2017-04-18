@@ -278,9 +278,20 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   //
   // Do not check settings for Clear Key.
   if (key_system != "org.w3.clearkey") {
-    // For other key systems, check settings.
-    if (!document->GetSettings() ||
-        !document->GetSettings()->GetEncryptedMediaEnabled()) {
+    // For other key systems, check settings and report UMA.
+    bool encypted_media_enabled =
+        document->GetSettings() &&
+        document->GetSettings()->GetEncryptedMediaEnabled();
+
+    static bool has_reported_uma = false;
+    if (!has_reported_uma) {
+      has_reported_uma = true;
+      DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
+                          ("Media.EME.EncryptedMediaEnabled"));
+      histogram.Count(encypted_media_enabled);
+    }
+
+    if (!encypted_media_enabled) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kNotSupportedError, "Unsupported keySystem"));
