@@ -174,31 +174,31 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
   render_pass_bypass_quads_.clear();
 
-  std::unordered_map<int, gfx::Size> render_passes_in_frame;
-  RenderPass* root_render_pass = render_passes_in_draw_order.back().get();
-  for (size_t i = 0; i < render_passes_in_draw_order.size(); ++i) {
-    RenderPass* pass = render_passes_in_draw_order[i].get();
+  auto& root_render_pass = render_passes_in_draw_order.back();
+
+  base::flat_map<int, gfx::Size> render_passes_in_frame;
+  for (const auto& pass : render_passes_in_draw_order) {
     if (pass != root_render_pass) {
-      if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass)) {
+      if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass.get())) {
+        // If the render pass is drawn directly, it will not be drawn from as
+        // a render pass so it's not added to the map.
         render_pass_bypass_quads_[pass->id] = *tile_quad;
         continue;
       }
     }
-    render_passes_in_frame.insert(
-        std::pair<int, gfx::Size>(pass->id, RenderPassTextureSize(pass)));
+    render_passes_in_frame[pass->id] = RenderPassTextureSize(pass.get());
   }
 
   std::vector<int> passes_to_delete;
-  for (auto pass_iter = render_pass_textures_.begin();
-       pass_iter != render_pass_textures_.end(); ++pass_iter) {
-    auto it = render_passes_in_frame.find(pass_iter->first);
+  for (const auto& pair : render_pass_textures_) {
+    auto it = render_passes_in_frame.find(pair.first);
     if (it == render_passes_in_frame.end()) {
-      passes_to_delete.push_back(pass_iter->first);
+      passes_to_delete.push_back(pair.first);
       continue;
     }
 
     gfx::Size required_size = it->second;
-    ScopedResource* texture = pass_iter->second.get();
+    ScopedResource* texture = pair.second.get();
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
