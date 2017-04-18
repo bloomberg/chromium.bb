@@ -27,6 +27,7 @@
 #define V8StringResource_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/StringResource.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Threading.h"
@@ -34,130 +35,6 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-
-// WebCoreStringResource is a helper class for v8ExternalString. It is used
-// to manage the life-cycle of the underlying buffer of the external string.
-class WebCoreStringResourceBase {
-  USING_FAST_MALLOC(WebCoreStringResourceBase);
-  WTF_MAKE_NONCOPYABLE(WebCoreStringResourceBase);
-
- public:
-  explicit WebCoreStringResourceBase(const String& string)
-      : plain_string_(string) {
-#if DCHECK_IS_ON()
-    thread_id_ = WTF::CurrentThread();
-#endif
-    DCHECK(!string.IsNull());
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        string.CharactersSizeInBytes());
-  }
-
-  explicit WebCoreStringResourceBase(const AtomicString& string)
-      : plain_string_(string.GetString()), atomic_string_(string) {
-#if DCHECK_IS_ON()
-    thread_id_ = WTF::CurrentThread();
-#endif
-    DCHECK(!string.IsNull());
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        string.CharactersSizeInBytes());
-  }
-
-  virtual ~WebCoreStringResourceBase() {
-#if DCHECK_IS_ON()
-    DCHECK_EQ(thread_id_, WTF::CurrentThread());
-#endif
-    int64_t reduced_external_memory = plain_string_.CharactersSizeInBytes();
-    if (plain_string_.Impl() != atomic_string_.Impl() &&
-        !atomic_string_.IsNull())
-      reduced_external_memory += atomic_string_.CharactersSizeInBytes();
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        -reduced_external_memory);
-  }
-
-  const String& WebcoreString() { return plain_string_; }
-
-  const AtomicString& GetAtomicString() {
-#if DCHECK_IS_ON()
-    DCHECK_EQ(thread_id_, WTF::CurrentThread());
-#endif
-    if (atomic_string_.IsNull()) {
-      atomic_string_ = AtomicString(plain_string_);
-      DCHECK(!atomic_string_.IsNull());
-      if (plain_string_.Impl() != atomic_string_.Impl())
-        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-            atomic_string_.CharactersSizeInBytes());
-    }
-    return atomic_string_;
-  }
-
- protected:
-  // A shallow copy of the string. Keeps the string buffer alive until the V8
-  // engine garbage collects it.
-  String plain_string_;
-  // If this string is atomic or has been made atomic earlier the
-  // atomic string is held here. In the case where the string starts
-  // off non-atomic and becomes atomic later it is necessary to keep
-  // the original string alive because v8 may keep derived pointers
-  // into that string.
-  AtomicString atomic_string_;
-
- private:
-#if DCHECK_IS_ON()
-  WTF::ThreadIdentifier thread_id_;
-#endif
-};
-
-class WebCoreStringResource16 final
-    : public WebCoreStringResourceBase,
-      public v8::String::ExternalStringResource {
-  WTF_MAKE_NONCOPYABLE(WebCoreStringResource16);
-
- public:
-  explicit WebCoreStringResource16(const String& string)
-      : WebCoreStringResourceBase(string) {
-    DCHECK(!string.Is8Bit());
-  }
-
-  explicit WebCoreStringResource16(const AtomicString& string)
-      : WebCoreStringResourceBase(string) {
-    DCHECK(!string.Is8Bit());
-  }
-
-  size_t length() const override { return plain_string_.Impl()->length(); }
-  const uint16_t* data() const override {
-    return reinterpret_cast<const uint16_t*>(
-        plain_string_.Impl()->Characters16());
-  }
-};
-
-class WebCoreStringResource8 final
-    : public WebCoreStringResourceBase,
-      public v8::String::ExternalOneByteStringResource {
-  WTF_MAKE_NONCOPYABLE(WebCoreStringResource8);
-
- public:
-  explicit WebCoreStringResource8(const String& string)
-      : WebCoreStringResourceBase(string) {
-    DCHECK(string.Is8Bit());
-  }
-
-  explicit WebCoreStringResource8(const AtomicString& string)
-      : WebCoreStringResourceBase(string) {
-    DCHECK(string.Is8Bit());
-  }
-
-  size_t length() const override { return plain_string_.Impl()->length(); }
-  const char* data() const override {
-    return reinterpret_cast<const char*>(plain_string_.Impl()->Characters8());
-  }
-};
-
-enum ExternalMode { kExternalize, kDoNotExternalize };
-
-template <typename StringType>
-CORE_EXPORT StringType V8StringToWebCoreString(v8::Local<v8::String>,
-                                               ExternalMode);
-CORE_EXPORT String Int32ToWebCoreString(int value);
 
 // V8StringResource is an adapter class that converts V8 values to Strings
 // or AtomicStrings as appropriate, using multiple typecast operators.

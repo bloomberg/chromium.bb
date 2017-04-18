@@ -1,29 +1,8 @@
-/*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
- * THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include "bindings/core/v8/V8StringResource.h"
+#include "bindings/core/v8/StringResource.h"
 
 #include "bindings/core/v8/V8Binding.h"
 
@@ -31,14 +10,14 @@ namespace blink {
 
 template <class StringClass>
 struct StringTraits {
-  static const StringClass& FromStringResource(WebCoreStringResourceBase*);
+  static const StringClass& FromStringResource(StringResourceBase*);
   template <typename V8StringTrait>
   static StringClass FromV8String(v8::Local<v8::String>, int);
 };
 
 template <>
 struct StringTraits<String> {
-  static const String& FromStringResource(WebCoreStringResourceBase* resource) {
+  static const String& FromStringResource(StringResourceBase* resource) {
     return resource->WebcoreString();
   }
   template <typename V8StringTrait>
@@ -47,8 +26,7 @@ struct StringTraits<String> {
 
 template <>
 struct StringTraits<AtomicString> {
-  static const AtomicString& FromStringResource(
-      WebCoreStringResourceBase* resource) {
+  static const AtomicString& FromStringResource(StringResourceBase* resource) {
     return resource->GetAtomicString();
   }
   template <typename V8StringTrait>
@@ -76,7 +54,7 @@ struct V8StringOneByteTrait {
 template <typename V8StringTrait>
 String StringTraits<String>::FromV8String(v8::Local<v8::String> v8_string,
                                           int length) {
-  DCHECK_EQ(v8_string->Length(), length);
+  DCHECK(v8_string->Length() == length);
   typename V8StringTrait::CharType* buffer;
   String result = String::CreateUninitialized(length, buffer);
   V8StringTrait::Write(v8_string, buffer, length);
@@ -87,7 +65,7 @@ template <typename V8StringTrait>
 AtomicString StringTraits<AtomicString>::FromV8String(
     v8::Local<v8::String> v8_string,
     int length) {
-  DCHECK_EQ(v8_string->Length(), length);
+  DCHECK(v8_string->Length() == length);
   static const int kInlineBufferSize =
       32 / sizeof(typename V8StringTrait::CharType);
   if (length <= kInlineBufferSize) {
@@ -110,11 +88,11 @@ StringType V8StringToWebCoreString(v8::Local<v8::String> v8_string,
     v8::String::ExternalStringResourceBase* resource =
         v8_string->GetExternalStringResourceBase(&encoding);
     if (LIKELY(!!resource)) {
-      WebCoreStringResourceBase* base;
+      StringResourceBase* base;
       if (encoding == v8::String::ONE_BYTE_ENCODING)
-        base = static_cast<WebCoreStringResource8*>(resource);
+        base = static_cast<StringResource8*>(resource);
       else
-        base = static_cast<WebCoreStringResource16*>(resource);
+        base = static_cast<StringResource16*>(resource);
       return StringTraits<StringType>::FromStringResource(base);
     }
   }
@@ -133,13 +111,11 @@ StringType V8StringToWebCoreString(v8::Local<v8::String> v8_string,
     return result;
 
   if (result.Is8Bit()) {
-    WebCoreStringResource8* string_resource =
-        new WebCoreStringResource8(result);
+    StringResource8* string_resource = new StringResource8(result);
     if (UNLIKELY(!v8_string->MakeExternal(string_resource)))
       delete string_resource;
   } else {
-    WebCoreStringResource16* string_resource =
-        new WebCoreStringResource16(result);
+    StringResource16* string_resource = new StringResource16(result);
     if (UNLIKELY(!v8_string->MakeExternal(string_resource)))
       delete string_resource;
   }

@@ -70,8 +70,7 @@ void StringCache::Dispose() {
 static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
                                                 const String& string) {
   if (string.Is8Bit()) {
-    WebCoreStringResource8* string_resource =
-        new WebCoreStringResource8(string);
+    StringResource8* string_resource = new StringResource8(string);
     v8::Local<v8::String> new_string;
     if (!v8::String::NewExternalOneByte(isolate, string_resource)
              .ToLocal(&new_string)) {
@@ -81,8 +80,7 @@ static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
     return new_string;
   }
 
-  WebCoreStringResource16* string_resource =
-      new WebCoreStringResource16(string);
+  StringResource16* string_resource = new StringResource16(string);
   v8::Local<v8::String> new_string;
   if (!v8::String::NewExternalTwoByte(isolate, string_resource)
            .ToLocal(&new_string)) {
