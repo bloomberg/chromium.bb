@@ -1577,6 +1577,8 @@ class CORE_EXPORT UseCounter {
     // The above items are available in M59 branch.
 
     kViewportFixedPositionUnderFilter = 1961,
+    kRequestMIDIAccessWithSysExOption = 1962,
+    kRequestMIDIAccessIframeWithSysExOption = 1963,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

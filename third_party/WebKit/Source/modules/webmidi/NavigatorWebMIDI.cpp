@@ -79,9 +79,14 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
         DOMException::Create(kAbortError, "The frame is not working."));
   }
 
-  UseCounter::CountCrossOriginIframe(
-      *ToDocument(ExecutionContext::From(script_state)),
-      UseCounter::kRequestMIDIAccessIframe);
+  Document& document = *ToDocument(ExecutionContext::From(script_state));
+  if (options.hasSysex() && options.sysex()) {
+    UseCounter::Count(document, UseCounter::kRequestMIDIAccessWithSysExOption);
+    UseCounter::CountCrossOriginIframe(
+        document, UseCounter::kRequestMIDIAccessIframeWithSysExOption);
+  }
+  UseCounter::CountCrossOriginIframe(document,
+                                     UseCounter::kRequestMIDIAccessIframe);
   return MIDIAccessInitializer::Start(script_state, options);
 }
 
