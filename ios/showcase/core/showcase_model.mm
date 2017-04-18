@@ -42,6 +42,11 @@
       showcase::kUseCaseKey : @"Payment request picker view",
     },
     @{
+      showcase::kClassForDisplayKey : @"PaymentRequestSelectorViewController",
+      showcase::kClassForInstantiationKey : @"SCPaymentsSelectorCoordinator",
+      showcase::kUseCaseKey : @"Payment request selector view",
+    },
+    @{
       showcase::kClassForDisplayKey : @"RootContainerViewController",
       showcase::kClassForInstantiationKey : @"SCRootCoordinator",
       showcase::kUseCaseKey : @"Root container",
