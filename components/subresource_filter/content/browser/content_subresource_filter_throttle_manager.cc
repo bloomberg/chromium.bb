@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "content/public/browser/navigation_handle.h"
@@ -126,6 +127,15 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     ongoing_activation_throttles_.erase(throttle);
   }
 
+  if (navigation_handle->IsInMainFrame()) {
+    current_committed_load_has_notified_disallowed_load_ = false;
+    statistics_.reset();
+    if (filter) {
+      statistics_ =
+          base::MakeUnique<PageLoadStatistics>(filter->activation_state());
+    }
+  }
+
   // Make sure |activated_frame_hosts_| is updated or cleaned up depending on
   // this navigation's activation state.
   content::RenderFrameHost* frame_host =
@@ -138,10 +148,15 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
   } else {
     activated_frame_hosts_.erase(frame_host);
   }
-
-  if (navigation_handle->IsInMainFrame())
-    current_committed_load_has_notified_disallowed_load_ = false;
   DestroyRulesetHandleIfNoLongerUsed();
+}
+
+void ContentSubresourceFilterThrottleManager::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  if (!statistics_ || render_frame_host->GetParent())
+    return;
+  statistics_->OnDidFinishLoad();
 }
 
 bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
@@ -151,6 +166,8 @@ bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterThrottleManager, message)
     IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
                         MaybeCallFirstDisallowedLoad)
+    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
+                        OnDocumentLoadStatistics)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -243,6 +260,12 @@ void ContentSubresourceFilterThrottleManager::
       0u) {
     ruleset_handle_.reset();
   }
+}
+
+void ContentSubresourceFilterThrottleManager::OnDocumentLoadStatistics(
+    const DocumentLoadStatistics& statistics) {
+  if (statistics_)
+    statistics_->OnDocumentLoadStatistics(statistics);
 }
 
 }  // namespace subresource_filter

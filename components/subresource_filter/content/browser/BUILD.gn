@@ -16,6 +16,8 @@ static_library("browser") {
     "content_subresource_filter_driver_factory.h",
     "content_subresource_filter_throttle_manager.cc",
     "content_subresource_filter_throttle_manager.h",
+    "page_load_statistics.cc",
+    "page_load_statistics.h",
     "subframe_navigation_filtering_throttle.cc",
     "subframe_navigation_filtering_throttle.h",
     "subresource_filter_client.h",

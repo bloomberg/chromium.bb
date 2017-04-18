@@ -18,14 +18,12 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
 class WebContents;
-class RenderFrameHost;
 }  // namespace content
 
 namespace safe_browsing {
@@ -142,8 +140,6 @@ class ContentSubresourceFilterDriverFactory
 
   void ResetActivationState();
 
-  void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
-
   bool IsWhitelisted(const GURL& url) const;
 
   // content::WebContentsObserver:
@@ -151,10 +147,6 @@ class ContentSubresourceFilterDriverFactory
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
 
   // Checks base on the value of |url| and current activation scope if
   // activation signal should be sent.
@@ -190,10 +182,6 @@ class ContentSubresourceFilterDriverFactory
   std::vector<GURL> navigation_chain_;
 
   URLToActivationListsMap activation_list_matches_;
-
-  // Statistics about subresource loads, aggregated across all frames of the
-  // current page.
-  DocumentLoadStatistics aggregated_document_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };

@@ -10,16 +10,12 @@
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
-#include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_state.h"
-#include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
@@ -103,23 +99,6 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
 
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
-
-void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
-    const DocumentLoadStatistics& statistics) {
-  // Note: Chances of overflow are negligible.
-  aggregated_document_statistics_.num_loads_total += statistics.num_loads_total;
-  aggregated_document_statistics_.num_loads_evaluated +=
-      statistics.num_loads_evaluated;
-  aggregated_document_statistics_.num_loads_matching_rules +=
-      statistics.num_loads_matching_rules;
-  aggregated_document_statistics_.num_loads_disallowed +=
-      statistics.num_loads_disallowed;
-
-  aggregated_document_statistics_.evaluation_total_wall_duration +=
-      statistics.evaluation_total_wall_duration;
-  aggregated_document_statistics_.evaluation_total_cpu_duration +=
-      statistics.evaluation_total_cpu_duration;
-}
 
 bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
     const GURL& url) const {
@@ -255,7 +234,6 @@ void ContentSubresourceFilterDriverFactory::ResetActivationState() {
   activation_list_matches_.clear();
   activation_level_ = ActivationLevel::DISABLED;
   measure_performance_ = false;
-  aggregated_document_statistics_ = DocumentLoadStatistics();
 }
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
@@ -274,59 +252,6 @@ void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
   DCHECK(!navigation_handle->IsSameDocument());
   if (navigation_handle->IsInMainFrame())
     navigation_chain_.push_back(navigation_handle->GetURL());
-}
-
-void ContentSubresourceFilterDriverFactory::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  if (render_frame_host->GetParent())
-    return;
-
-  if (activation_level_ != ActivationLevel::DISABLED) {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
-        aggregated_document_statistics_.num_loads_total);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "SubresourceFilter.PageLoad.NumSubresourceLoads.Evaluated",
-        aggregated_document_statistics_.num_loads_evaluated);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "SubresourceFilter.PageLoad.NumSubresourceLoads.MatchedRules",
-        aggregated_document_statistics_.num_loads_matching_rules);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "SubresourceFilter.PageLoad.NumSubresourceLoads.Disallowed",
-        aggregated_document_statistics_.num_loads_disallowed);
-  }
-
-  if (measure_performance_) {
-    DCHECK(activation_level_ != ActivationLevel::DISABLED);
-    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
-        "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration",
-        aggregated_document_statistics_.evaluation_total_wall_duration,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
-        50);
-    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
-        "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration",
-        aggregated_document_statistics_.evaluation_total_cpu_duration,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
-        50);
-  } else {
-    DCHECK(aggregated_document_statistics_.evaluation_total_wall_duration
-               .is_zero());
-    DCHECK(aggregated_document_statistics_.evaluation_total_cpu_duration
-               .is_zero());
-  }
-}
-
-bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterDriverFactory, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
-                        OnDocumentLoadStatistics)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 bool ContentSubresourceFilterDriverFactory::DidURLMatchActivationList(

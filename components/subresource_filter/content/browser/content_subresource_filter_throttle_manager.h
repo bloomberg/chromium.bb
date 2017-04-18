@@ -30,6 +30,8 @@ namespace subresource_filter {
 class AsyncDocumentSubresourceFilter;
 class ActivationStateComputingNavigationThrottle;
 class SubframeNavigationFilteringThrottle;
+class PageLoadStatistics;
+struct DocumentLoadStatistics;
 
 // The ContentSubresourceFilterThrottleManager manages NavigationThrottles in
 // order to calculate frame activation states and subframe navigation filtering,
@@ -102,6 +104,8 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
@@ -127,6 +131,8 @@ class ContentSubresourceFilterThrottleManager
   VerifiedRuleset::Handle* EnsureRulesetHandle();
   void DestroyRulesetHandleIfNoLongerUsed();
 
+  void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
+
   // For each RenderFrameHost where the last committed load has subresource
   // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
   std::unordered_map<content::RenderFrameHost*,
@@ -144,6 +150,8 @@ class ContentSubresourceFilterThrottleManager
   // activation is triggered. Will go away when there are no more activated
   // RenderFrameHosts (i.e. activated_frame_hosts_ is empty).
   std::unique_ptr<VerifiedRuleset::Handle> ruleset_handle_;
+
+  std::unique_ptr<PageLoadStatistics> statistics_;
 
   // True if the current committed main frame load in this WebContents has
   // notified the delegate that a subresource was disallowed. The callback
