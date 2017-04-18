@@ -49,11 +49,11 @@ class FileSurface : public SurfaceOzoneCanvas {
     if (location_.empty())
       return;
     SkBitmap bitmap;
-    bitmap.setInfo(surface_->getCanvas()->imageInfo());
+    bitmap.allocPixels(surface_->getCanvas()->imageInfo());
 
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
-    if (surface_->getCanvas()->readPixels(&bitmap, 0, 0)) {
+    if (surface_->getCanvas()->readPixels(bitmap, 0, 0)) {
       base::PostTaskWithTraits(
           FROM_HERE, base::TaskTraits()
                          .WithShutdownBehavior(

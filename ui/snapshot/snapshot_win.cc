@@ -58,7 +58,10 @@ bool GrabHwndSnapshot(HWND window_handle,
   }
 
   SkBitmap bitmap;
-  canvas->readPixels(gfx::RectToSkIRect(snapshot_bounds_in_window), &bitmap);
+  bitmap.allocN32Pixels(snapshot_bounds_in_window.width(),
+                        snapshot_bounds_in_window.height());
+  canvas->readPixels(bitmap, snapshot_bounds_in_window.x(),
+                     snapshot_bounds_in_window.y());
 
   // Clear the region of the bitmap outside the clip rect to white.
   SkCanvas image_canvas(bitmap);

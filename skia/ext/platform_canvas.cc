@@ -14,8 +14,9 @@ namespace skia {
 
 SkBitmap ReadPixels(SkCanvas* canvas) {
   SkBitmap bitmap;
-  bitmap.setInfo(canvas->imageInfo());
-  canvas->readPixels(&bitmap, 0, 0);
+  bitmap.allocPixels(canvas->imageInfo());
+  if (!canvas->readPixels(bitmap, 0, 0))
+    bitmap.reset();
   return bitmap;
 }
 

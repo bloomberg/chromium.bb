@@ -127,8 +127,8 @@ TEST_F(DrmWindowTest, SetCursorImage) {
   EXPECT_EQ(2u, cursor_buffers.size());
 
   // Buffers 1 is the cursor backbuffer we just drew in.
-  cursor.setInfo(cursor_buffers[1]->getCanvas()->imageInfo());
-  EXPECT_TRUE(cursor_buffers[1]->getCanvas()->readPixels(&cursor, 0, 0));
+  cursor.allocPixels(cursor_buffers[1]->getCanvas()->imageInfo());
+  EXPECT_TRUE(cursor_buffers[1]->getCanvas()->readPixels(cursor, 0, 0));
 
   // Check that the frontbuffer is displaying the right image as set above.
   for (int i = 0; i < cursor.height(); ++i) {

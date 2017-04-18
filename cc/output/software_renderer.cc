@@ -576,10 +576,11 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
 
   std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setInfo(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
-                                             window_copy_rect.height()));
-  current_canvas_->readPixels(
-      bitmap.get(), window_copy_rect.x(), window_copy_rect.y());
+  bitmap->allocPixels(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
+                                                 window_copy_rect.height()));
+  if (!current_canvas_->readPixels(*bitmap, window_copy_rect.x(),
+                                   window_copy_rect.y()))
+    bitmap->reset();
 
   request->SendBitmapResult(std::move(bitmap));
 }
@@ -654,9 +655,11 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
 SkBitmap SoftwareRenderer::GetBackdropBitmap(
     const gfx::Rect& bounding_rect) const {
   SkBitmap bitmap;
-  bitmap.setInfo(SkImageInfo::MakeN32Premul(bounding_rect.width(),
-                                            bounding_rect.height()));
-  current_canvas_->readPixels(&bitmap, bounding_rect.x(), bounding_rect.y());
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounding_rect.width(),
+                                                bounding_rect.height()));
+  if (!current_canvas_->readPixels(bitmap, bounding_rect.x(),
+                                   bounding_rect.y()))
+    bitmap.reset();
   return bitmap;
 }
 
