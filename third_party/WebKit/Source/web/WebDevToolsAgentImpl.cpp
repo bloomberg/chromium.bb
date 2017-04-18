@@ -84,7 +84,8 @@
 #include "public/web/WebSettings.h"
 #include "web/DevToolsEmulator.h"
 #include "web/InspectorEmulationAgent.h"
-#include "web/InspectorOverlayAgent.h"
+#include "web/InspectorOverlay.h"
+#include "web/InspectorRenderingAgent.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -232,9 +233,11 @@ ClientMessageLoopAdapter* ClientMessageLoopAdapter::instance_ = nullptr;
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
     WebLocalFrameImpl* frame,
     WebDevToolsAgentClient* client) {
+  InspectorOverlay* overlay = new InspectorOverlay(frame);
+
   if (!IsMainFrame(frame)) {
     WebDevToolsAgentImpl* agent =
-        new WebDevToolsAgentImpl(frame, client, false);
+        new WebDevToolsAgentImpl(frame, client, overlay, false);
     if (frame->FrameWidget())
       agent->LayerTreeViewChanged(
           ToWebFrameWidgetImpl(frame->FrameWidget())->LayerTreeView());
@@ -242,7 +245,8 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
   }
 
   WebViewImpl* view = frame->ViewImpl();
-  WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, true);
+  WebDevToolsAgentImpl* agent =
+      new WebDevToolsAgentImpl(frame, client, overlay, true);
   agent->LayerTreeViewChanged(view->LayerTreeView());
   return agent;
 }
@@ -250,6 +254,7 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* web_local_frame_impl,
     WebDevToolsAgentClient* client,
+    InspectorOverlay* overlay,
     bool include_view_agents)
     : client_(client),
       web_local_frame_impl_(web_local_frame_impl),
@@ -257,15 +262,16 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
           web_local_frame_impl_->GetFrame()->InstrumentingAgents()),
       resource_content_loader_(InspectorResourceContentLoader::Create(
           web_local_frame_impl_->GetFrame())),
+      overlay_(overlay),
       inspected_frames_(
           InspectedFrames::Create(web_local_frame_impl_->GetFrame())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
+      dom_agent_(nullptr),
       page_agent_(nullptr),
       network_agent_(nullptr),
       layer_tree_agent_(nullptr),
       tracing_agent_(nullptr),
       trace_events_agent_(new InspectorTraceEvents()),
-      overlay_agent_(nullptr),
       include_view_agents_(include_view_agents),
       layer_tree_id_(0) {
   DCHECK(IsMainThread());
@@ -281,14 +287,15 @@ DEFINE_TRACE(WebDevToolsAgentImpl) {
   visitor->Trace(web_local_frame_impl_);
   visitor->Trace(instrumenting_agents_);
   visitor->Trace(resource_content_loader_);
+  visitor->Trace(overlay_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
+  visitor->Trace(dom_agent_);
   visitor->Trace(page_agent_);
   visitor->Trace(network_agent_);
   visitor->Trace(layer_tree_agent_);
   visitor->Trace(tracing_agent_);
   visitor->Trace(trace_events_agent_);
-  visitor->Trace(overlay_agent_);
   visitor->Trace(session_);
 }
 
@@ -316,7 +323,8 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
       main_thread_debugger->ContextGroupId(inspected_frames_->Root()), state);
 
   InspectorDOMAgent* dom_agent = new InspectorDOMAgent(
-      isolate, inspected_frames_.Get(), session_->V8Session());
+      isolate, inspected_frames_.Get(), session_->V8Session(), overlay_.Get());
+  dom_agent_ = dom_agent;
   session_->Append(dom_agent);
 
   InspectorLayerTreeAgent* layer_tree_agent =
@@ -330,7 +338,7 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
   session_->Append(network_agent);
 
   InspectorCSSAgent* css_agent = InspectorCSSAgent::Create(
-      dom_agent, inspected_frames_.Get(), network_agent_,
+      dom_agent_, inspected_frames_.Get(), network_agent_,
       resource_content_loader_.Get(), resource_container_.Get());
   session_->Append(css_agent);
 
@@ -354,8 +362,8 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
   tracing_agent_ = tracing_agent;
   session_->Append(tracing_agent);
 
-  session_->Append(
-      new InspectorDOMDebuggerAgent(isolate, dom_agent, session_->V8Session()));
+  session_->Append(new InspectorDOMDebuggerAgent(isolate, dom_agent_,
+                                                 session_->V8Session()));
 
   session_->Append(InspectorInputAgent::Create(inspected_frames_.Get()));
 
@@ -372,12 +380,6 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
   session_->Append(
       new DeviceOrientationInspectorAgent(inspected_frames_.Get()));
 
-  InspectorOverlayAgent* overlay_agent =
-      new InspectorOverlayAgent(web_local_frame_impl_, inspected_frames_.Get(),
-                                session_->V8Session(), dom_agent);
-  overlay_agent_ = overlay_agent;
-  session_->Append(overlay_agent);
-
   tracing_agent_->SetLayerTreeId(layer_tree_id_);
   network_agent_->SetHostId(host_id);
 
@@ -386,25 +388,33 @@ void WebDevToolsAgentImpl::InitializeSession(int session_id,
     // during remote->local transition we cannot access mainFrameImpl() yet, so
     // we have to store the frame which will become the main frame later.
     session_->Append(
+        InspectorRenderingAgent::Create(web_local_frame_impl_, overlay_.Get()));
+    session_->Append(
         InspectorEmulationAgent::Create(web_local_frame_impl_, this));
     // TODO(dgozman): migrate each of the following agents to frame once module
     // is ready.
     Page* page = web_local_frame_impl_->ViewImpl()->GetPage();
     session_->Append(InspectorDatabaseAgent::Create(page));
-    session_->Append(new InspectorAccessibilityAgent(page, dom_agent));
+    session_->Append(new InspectorAccessibilityAgent(page, dom_agent_));
     session_->Append(InspectorDOMStorageAgent::Create(page));
     session_->Append(InspectorCacheStorageAgent::Create());
   }
+
+  if (overlay_)
+    overlay_->Init(session_->V8Session(), dom_agent_);
 
   Platform::Current()->CurrentThread()->AddTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::DestroySession() {
-  overlay_agent_.Clear();
+  if (overlay_)
+    overlay_->Clear();
+
   tracing_agent_.Clear();
   layer_tree_agent_.Clear();
   network_agent_.Clear();
   page_agent_.Clear();
+  dom_agent_.Clear();
 
   session_->Dispose();
   session_.Clear();
@@ -487,13 +497,13 @@ void WebDevToolsAgentImpl::DisableTracing() {
 }
 
 void WebDevToolsAgentImpl::ShowReloadingBlanket() {
-  if (overlay_agent_)
-    overlay_agent_->ShowReloadingBlanket();
+  if (overlay_)
+    overlay_->ShowReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::HideReloadingBlanket() {
-  if (overlay_agent_)
-    overlay_agent_->HideReloadingBlanket();
+  if (overlay_)
+    overlay_->HideReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::SetCPUThrottlingRate(double rate) {
@@ -527,7 +537,7 @@ void WebDevToolsAgentImpl::DispatchMessageFromFrontend(int session_id,
 void WebDevToolsAgentImpl::InspectElementAt(
     int session_id,
     const WebPoint& point_in_root_frame) {
-  if (!overlay_agent_ || !session_ || session_->SessionId() != session_id)
+  if (!dom_agent_ || !session_ || session_->SessionId() != session_id)
     return;
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |
@@ -547,7 +557,7 @@ void WebDevToolsAgentImpl::InspectElementAt(
   Node* node = result.InnerNode();
   if (!node && web_local_frame_impl_->GetFrame()->GetDocument())
     node = web_local_frame_impl_->GetFrame()->GetDocument()->documentElement();
-  overlay_agent_->Inspect(node);
+  dom_agent_->Inspect(node);
 }
 
 void WebDevToolsAgentImpl::FailedToRequestDevTools() {
@@ -564,8 +574,19 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
 }
 
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
-  if (overlay_agent_)
-    overlay_agent_->PageLayoutInvalidated(resized);
+  if (overlay_)
+    overlay_->PageLayoutInvalidated(resized);
+}
+
+void WebDevToolsAgentImpl::ConfigureOverlay(bool suspended,
+                                            const String& message) {
+  if (!overlay_)
+    return;
+  overlay_->SetPausedInDebuggerMessage(message);
+  if (suspended)
+    overlay_->Suspend();
+  else
+    overlay_->Resume();
 }
 
 void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
@@ -578,10 +599,10 @@ void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
 
 WebString WebDevToolsAgentImpl::EvaluateInWebInspectorOverlay(
     const WebString& script) {
-  if (!overlay_agent_)
+  if (!overlay_)
     return WebString();
 
-  return overlay_agent_->EvaluateInOverlayForTest(script);
+  return overlay_->EvaluateInOverlayForTest(script);
 }
 
 bool WebDevToolsAgentImpl::CacheDisabled() {
