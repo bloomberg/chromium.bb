@@ -539,6 +539,7 @@ size_t drv_num_planes_from_format(uint32_t format)
 	case DRM_FORMAT_YVYU:
 		return 1;
 	case DRM_FORMAT_NV12:
+	case DRM_FORMAT_NV21:
 		return 2;
 	case DRM_FORMAT_YVU420:
 	case DRM_FORMAT_YVU420_ANDROID:

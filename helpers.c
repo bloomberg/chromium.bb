@@ -47,6 +47,7 @@ static uint32_t bpp_from_format(uint32_t format, size_t plane)
 		return 8;
 
 	case DRM_FORMAT_NV12:
+	case DRM_FORMAT_NV21:
 		return (plane == 0) ? 8 : 4;
 
 	case DRM_FORMAT_ABGR1555:
