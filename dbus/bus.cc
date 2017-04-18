@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -42,14 +44,13 @@ const char kServiceNameOwnerChangeMatchRule[] =
 
 // The class is used for watching the file descriptor used for D-Bus
 // communication.
-class Watch : public base::MessagePumpLibevent::Watcher {
+class Watch {
  public:
-  explicit Watch(DBusWatch* watch)
-      : raw_watch_(watch), file_descriptor_watcher_(FROM_HERE) {
+  explicit Watch(DBusWatch* watch) : raw_watch_(watch) {
     dbus_watch_set_data(raw_watch_, this, NULL);
   }
 
-  ~Watch() override { dbus_watch_set_data(raw_watch_, NULL, NULL); }
+  ~Watch() { dbus_watch_set_data(raw_watch_, NULL, NULL); }
 
   // Returns true if the underlying file descriptor is ready to be watched.
   bool IsReadyToBeWatched() {
@@ -59,44 +60,38 @@ class Watch : public base::MessagePumpLibevent::Watcher {
   // Starts watching the underlying file descriptor.
   void StartWatching() {
     const int file_descriptor = dbus_watch_get_unix_fd(raw_watch_);
-    const int flags = dbus_watch_get_flags(raw_watch_);
+    const unsigned int flags = dbus_watch_get_flags(raw_watch_);
 
-    base::MessageLoopForIO::Mode mode = base::MessageLoopForIO::WATCH_READ;
-    if ((flags & DBUS_WATCH_READABLE) && (flags & DBUS_WATCH_WRITABLE))
-      mode = base::MessageLoopForIO::WATCH_READ_WRITE;
-    else if (flags & DBUS_WATCH_READABLE)
-      mode = base::MessageLoopForIO::WATCH_READ;
-    else if (flags & DBUS_WATCH_WRITABLE)
-      mode = base::MessageLoopForIO::WATCH_WRITE;
-    else
-      NOTREACHED();
-
-    const bool persistent = true;  // Watch persistently.
-    const bool success = base::MessageLoopForIO::current()->WatchFileDescriptor(
-        file_descriptor, persistent, mode, &file_descriptor_watcher_, this);
-    CHECK(success) << "Unable to allocate memory";
+    // Using base::Unretained(this) is safe because watches are automatically
+    // canceled when |read_watcher_| and |write_watcher_| are destroyed.
+    if (flags & DBUS_WATCH_READABLE) {
+      read_watcher_ = base::FileDescriptorWatcher::WatchReadable(
+          file_descriptor,
+          base::Bind(&Watch::OnFileReady, base::Unretained(this),
+                     DBUS_WATCH_READABLE));
+    }
+    if (flags & DBUS_WATCH_WRITABLE) {
+      write_watcher_ = base::FileDescriptorWatcher::WatchWritable(
+          file_descriptor,
+          base::Bind(&Watch::OnFileReady, base::Unretained(this),
+                     DBUS_WATCH_WRITABLE));
+    }
   }
 
   // Stops watching the underlying file descriptor.
   void StopWatching() {
-    file_descriptor_watcher_.StopWatchingFileDescriptor();
+    read_watcher_.reset();
+    write_watcher_.reset();
   }
 
  private:
-  // Implement MessagePumpLibevent::Watcher.
-  void OnFileCanReadWithoutBlocking(int file_descriptor) override {
-    const bool success = dbus_watch_handle(raw_watch_, DBUS_WATCH_READABLE);
-    CHECK(success) << "Unable to allocate memory";
-  }
-
-  // Implement MessagePumpLibevent::Watcher.
-  void OnFileCanWriteWithoutBlocking(int file_descriptor) override {
-    const bool success = dbus_watch_handle(raw_watch_, DBUS_WATCH_WRITABLE);
-    CHECK(success) << "Unable to allocate memory";
+  void OnFileReady(unsigned int flags) {
+    CHECK(dbus_watch_handle(raw_watch_, flags)) << "Unable to allocate memory";
   }
 
   DBusWatch* raw_watch_;
-  base::MessagePumpLibevent::FileDescriptorWatcher file_descriptor_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> read_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> write_watcher_;
 };
 
 // The class is used for monitoring the timeout used for D-Bus method
@@ -1048,13 +1043,10 @@ void Bus::OnToggleWatch(DBusWatch* raw_watch) {
   AssertOnDBusThread();
 
   Watch* watch = static_cast<Watch*>(dbus_watch_get_data(raw_watch));
-  if (watch->IsReadyToBeWatched()) {
+  if (watch->IsReadyToBeWatched())
     watch->StartWatching();
-  } else {
-    // It's safe to call this if StartWatching() wasn't called, per
-    // message_pump_libevent.h.
+  else
     watch->StopWatching();
-  }
 }
 
 dbus_bool_t Bus::OnAddTimeout(DBusTimeout* raw_timeout) {

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "dbus/object_proxy.h"
 #include "base/bind.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "dbus/bus.h"
-#include "dbus/object_proxy.h"
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,6 +16,8 @@ namespace {
 
 class ObjectProxyTest : public testing::Test {
  protected:
+  ObjectProxyTest() : file_descriptor_watcher_(&message_loop_) {}
+
   void SetUp() override {
     Bus::Options bus_options;
     bus_options.bus_type = Bus::SESSION;
@@ -25,6 +28,10 @@ class ObjectProxyTest : public testing::Test {
   void TearDown() override { bus_->ShutdownAndBlock(); }
 
   base::MessageLoopForIO message_loop_;
+
+  // This enables FileDescriptorWatcher, which is required by dbus::Watch.
+  base::FileDescriptorWatcher file_descriptor_watcher_;
+
   scoped_refptr<Bus> bus_;
 };
 

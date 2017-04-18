@@ -5,6 +5,7 @@
 #include "dbus/bus.h"
 
 #include "base/bind.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -318,9 +319,11 @@ TEST(BusTest, DoubleAddAndRemoveMatch) {
 }
 
 TEST(BusTest, ListenForServiceOwnerChange) {
-  // Setup the current thread's MessageLoop. Must be of TYPE_IO for the
-  // listeners to work.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
+
+  // This enables FileDescriptorWatcher, which is required by dbus::Watch.
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
+
   RunLoopWithExpectedCount run_loop_state;
 
   // Create the bus.
