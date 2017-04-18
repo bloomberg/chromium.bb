@@ -134,10 +134,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const GlobalRequestID& id,
       const base::Closure& on_transfer_complete_callback);
 
-  // Cancels a request previously marked as being transferred, for use when a
-  // navigation was cancelled.
-  void CancelTransferringNavigation(const GlobalRequestID& id);
-
   // Resumes the request without transferring it to a new process.
   void ResumeDeferredNavigation(const GlobalRequestID& id);
 
