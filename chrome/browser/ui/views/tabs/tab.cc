@@ -14,7 +14,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "cc/paint/paint_shader.h"
+#include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_recorder.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -93,93 +94,7 @@ const double kSelectedTabOpacity = 0.3;
 // Inactive selected tabs have their throb value scaled by this.
 const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 
-// Max number of images to cache. This has to be at least two since rounding
-// errors may lead to tabs in the same tabstrip having different sizes.
-// 8 = normal/incognito, active/inactive, 2 sizes within tabstrip.
-const size_t kMaxImageCacheSize = 8;
-
 const char kTabCloseButtonName[] = "TabCloseButton";
-
-////////////////////////////////////////////////////////////////////////////////
-// ImageCacheEntryMetadata
-//
-// All metadata necessary to uniquely identify a cached image.
-struct ImageCacheEntryMetadata {
-  ImageCacheEntryMetadata(SkColor fill_color,
-                          SkColor stroke_color,
-                          bool use_fill_and_stroke_images,
-                          float scale_factor,
-                          const gfx::Size& size);
-
-  ~ImageCacheEntryMetadata();
-
-  bool operator==(const ImageCacheEntryMetadata& rhs) const;
-
-  SkColor fill_color;
-  SkColor stroke_color;
-  bool use_fill_and_stroke_images;
-  float scale_factor;
-  gfx::Size size;
-};
-
-ImageCacheEntryMetadata::ImageCacheEntryMetadata(
-    SkColor fill_color,
-    SkColor stroke_color,
-    bool use_fill_and_stroke_images,
-    float scale_factor,
-    const gfx::Size& size)
-    : fill_color(fill_color),
-      stroke_color(stroke_color),
-      use_fill_and_stroke_images(use_fill_and_stroke_images),
-      scale_factor(scale_factor),
-      size(size) {}
-
-ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
-
-bool ImageCacheEntryMetadata::operator==(
-    const ImageCacheEntryMetadata& rhs) const {
-  return fill_color == rhs.fill_color && stroke_color == rhs.stroke_color &&
-         use_fill_and_stroke_images == rhs.use_fill_and_stroke_images &&
-         scale_factor == rhs.scale_factor && size == rhs.size;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ImageCacheEntry and cache management
-//
-// A cached image and the metadata used to generate it.
-struct ImageCacheEntry {
-  ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                  const gfx::ImageSkia& fill_image,
-                  const gfx::ImageSkia& stroke_image);
-  ~ImageCacheEntry();
-
-  ImageCacheEntryMetadata metadata;
-  gfx::ImageSkia fill_image;
-  gfx::ImageSkia stroke_image;
-};
-
-ImageCacheEntry::ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                                 const gfx::ImageSkia& fill_image,
-                                 const gfx::ImageSkia& stroke_image)
-    : metadata(metadata), fill_image(fill_image), stroke_image(stroke_image) {}
-
-ImageCacheEntry::~ImageCacheEntry() {}
-
-typedef std::list<ImageCacheEntry> ImageCache;
-
-// As the majority of the tabs are inactive, and painting tabs is slowish,
-// we cache a handful of the inactive tab backgrounds here.
-static ImageCache* g_image_cache = nullptr;
-
-// Performs a one-time initialization of static resources such as tab images.
-void InitTabResources() {
-  static bool initialized = false;
-  if (initialized)
-    return;
-
-  initialized = true;
-  g_image_cache = new ImageCache();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
@@ -534,7 +449,6 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       showing_close_button_(false),
       button_color_(SK_ColorTRANSPARENT) {
   DCHECK(controller);
-  InitTabResources();
 
   // So we get don't get enter/exit on children and don't prematurely stop the
   // hover.
@@ -1118,13 +1032,16 @@ void Tab::DataChanged(const TabRendererData& old) {
 }
 
 void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
-  const int kActiveTabFillId =
-      GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR) ? IDR_THEME_TOOLBAR
-                                                            : 0;
-  const int y_offset = -GetLayoutInsets(TAB).top();
+  int active_tab_fill_id = 0;
+  int active_tab_y_offset = 0;
+  if (GetThemeProvider()->HasCustomImage(IDR_THEME_TOOLBAR)) {
+    active_tab_fill_id = IDR_THEME_TOOLBAR;
+    active_tab_y_offset = -GetLayoutInsets(TAB).top();
+  }
+
   if (IsActive()) {
-    PaintTabBackgroundUsingFillId(canvas, canvas, true, kActiveTabFillId,
-                                  y_offset);
+    PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                       active_tab_y_offset, nullptr /* clip */);
   } else {
     PaintInactiveTabBackground(canvas, clip);
 
@@ -1132,8 +1049,8 @@ void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
     if (throb_value > 0) {
       canvas->SaveLayerAlpha(gfx::ToRoundedInt(throb_value * 0xff),
                              GetLocalBounds());
-      PaintTabBackgroundUsingFillId(canvas, canvas, true, kActiveTabFillId,
-                                    y_offset);
+      PaintTabBackground(canvas, true /* active */, active_tab_fill_id,
+                         active_tab_y_offset, nullptr /* clip */);
       canvas->Restore();
     }
   }
@@ -1146,130 +1063,152 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
                                      const gfx::Path& clip) {
   bool has_custom_image;
   int fill_id = controller_->GetBackgroundResourceId(&has_custom_image);
-  const ui::ThemeProvider* tp = GetThemeProvider();
 
-  // We only cache the image when it's the default image and we're not hovered,
-  // to avoid caching a background image that isn't the same for all tabs.
-  if (has_custom_image) {
-    // If the theme is providing a custom background image, then its top edge
-    // should be at the top of the tab. Otherwise, we assume that the background
-    // image is a composited foreground + frame image.  Note that if the theme
-    // is only providing a custom frame image, |has_custom_image| will be true,
-    // but we should use the |background_offset_| here.
-    const int y_offset =
-        tp->HasCustomImage(fill_id) ? 0 : background_offset_.y();
-    PaintTabBackgroundUsingFillId(canvas, canvas, false, fill_id, y_offset);
-    return;
-  }
-  if (hover_controller_.ShouldDraw()) {
-    PaintTabBackgroundUsingFillId(canvas, canvas, false, 0, 0);
-    return;
+  // The offset used to read from the image specified by |fill_id|.
+  int y_offset = 0;
+
+  if (!has_custom_image) {
+    fill_id = 0;
+  } else if (!GetThemeProvider()->HasCustomImage(fill_id)) {
+    // If there's a custom frame image but no custom image for the tab itself,
+    // then the tab's background will be the frame's image, so we need to
+    // provide an offset into the image to read from.
+    y_offset = background_offset_.y();
   }
 
-  // For efficiency, we don't use separate fill and stroke images unless we
-  // really need to clip the stroke and not the fill (for stacked tabs).  This
-  // saves memory and avoids an extra image draw at the cost of recalculating
-  // the images when MaySetClip() toggles.
-  const bool use_fill_and_stroke_images = controller_->MaySetClip();
-
-  const ImageCacheEntryMetadata metadata(
-      tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB),
-      controller_->GetToolbarTopSeparatorColor(), use_fill_and_stroke_images,
-      canvas->image_scale(), size());
-  auto it = std::find_if(
-      g_image_cache->begin(), g_image_cache->end(),
-      [&metadata](const ImageCacheEntry& e) { return e.metadata == metadata; });
-  if (it == g_image_cache->end()) {
-    gfx::Canvas tmp_canvas(size(), canvas->image_scale(), false);
-    if (use_fill_and_stroke_images) {
-      gfx::Canvas tmp_fill_canvas(size(), canvas->image_scale(), false);
-      PaintTabBackgroundUsingFillId(&tmp_fill_canvas, &tmp_canvas, false, 0, 0);
-      g_image_cache->emplace_front(
-          metadata, gfx::ImageSkia(tmp_fill_canvas.ExtractImageRep()),
-          gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
-    } else {
-      PaintTabBackgroundUsingFillId(&tmp_canvas, &tmp_canvas, false, 0, 0);
-      g_image_cache->emplace_front(
-          metadata, gfx::ImageSkia(),
-          gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
-    }
-    if (g_image_cache->size() > kMaxImageCacheSize)
-      g_image_cache->pop_back();
-    it = g_image_cache->begin();
-  }
-
-  gfx::ScopedCanvas scoped_canvas(
-      use_fill_and_stroke_images ? canvas : nullptr);
-  if (use_fill_and_stroke_images) {
-    canvas->DrawImageInt(it->fill_image, 0, 0);
-    canvas->sk_canvas()->clipPath(clip, SkClipOp::kDifference, true);
-  }
-  canvas->DrawImageInt(it->stroke_image, 0, 0);
+  PaintTabBackground(canvas, false /* active */, fill_id, y_offset,
+                     controller_->MaySetClip() ? &clip : nullptr);
 }
 
-void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
-                                        gfx::Canvas* stroke_canvas,
-                                        bool is_active,
-                                        int fill_id,
-                                        int y_offset) {
-  gfx::Path fill;
+void Tab::PaintTabBackground(gfx::Canvas* canvas,
+                             bool active,
+                             int fill_id,
+                             int y_offset,
+                             const gfx::Path* clip) {
+  // |y_offset| is only set when |fill_id| is being used.
+  DCHECK(!y_offset || fill_id);
+
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  const SkColor active_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor inactive_color =
+      tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
+  const SkColor stroke_color = controller_->GetToolbarTopSeparatorColor();
+  const bool paint_hover_effect = !active && hover_controller_.ShouldDraw();
+
+  // If there is a |fill_id| we don't try to cache. This could be improved
+  // but would require knowing then the image from the ThemeProvider had been
+  // changed, and invalidating when the tab's x-coordinate or background_offset_
+  // changed.
+  // Similarly, if |paint_hover_effect|, we don't try to cache since hover
+  // effects change on every invalidation and we would need to invalidate the
+  // cache based on the hover states.
+  if (fill_id || paint_hover_effect) {
+    gfx::Path fill_path = GetFillPath(canvas->image_scale(), size());
+    gfx::Path stroke_path =
+        GetBorderPath(canvas->image_scale(), false, false, size());
+    PaintTabBackgroundFill(canvas, fill_path, active, paint_hover_effect,
+                           active_color, inactive_color, fill_id, y_offset);
+    gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+    if (clip)
+      canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+    PaintTabBackgroundStroke(canvas, fill_path, stroke_path, active,
+                             stroke_color);
+    return;
+  }
+
+  BackgroundCache& cache =
+      active ? background_active_cache_ : background_inactive_cache_;
+  if (!cache.CacheKeyMatches(canvas->image_scale(), size(), active_color,
+                             inactive_color, stroke_color)) {
+    gfx::Path fill_path = GetFillPath(canvas->image_scale(), size());
+    gfx::Path stroke_path =
+        GetBorderPath(canvas->image_scale(), false, false, size());
+    cc::PaintRecorder recorder;
+
+    {
+      gfx::Canvas cache_canvas(
+          recorder.beginRecording(size().width(), size().height()),
+          canvas->image_scale());
+      PaintTabBackgroundFill(&cache_canvas, fill_path, active,
+                             paint_hover_effect, active_color, inactive_color,
+                             fill_id, y_offset);
+      cache.fill_record = recorder.finishRecordingAsPicture();
+    }
+    {
+      gfx::Canvas cache_canvas(
+          recorder.beginRecording(size().width(), size().height()),
+          canvas->image_scale());
+      PaintTabBackgroundStroke(&cache_canvas, fill_path, stroke_path, active,
+                               stroke_color);
+      cache.stroke_record = recorder.finishRecordingAsPicture();
+    }
+
+    cache.SetCacheKey(canvas->image_scale(), size(), active_color,
+                      inactive_color, stroke_color);
+  }
+
+  canvas->sk_canvas()->PlaybackPaintRecord(cache.fill_record);
+  gfx::ScopedCanvas scoped_canvas(clip ? canvas : nullptr);
+  if (clip)
+    canvas->sk_canvas()->clipPath(*clip, SkClipOp::kDifference, true);
+  canvas->sk_canvas()->PlaybackPaintRecord(cache.stroke_record);
+}
+
+void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
+                                 const gfx::Path& fill_path,
+                                 bool active,
+                                 bool paint_hover_effect,
+                                 SkColor active_color,
+                                 SkColor inactive_color,
+                                 int fill_id,
+                                 int y_offset) {
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+
+  canvas->ClipPath(fill_path, true);
+  if (fill_id) {
+    gfx::ScopedCanvas scale_scoper(canvas);
+    canvas->sk_canvas()->scale(scale, scale);
+    canvas->TileImageInt(*GetThemeProvider()->GetImageSkiaNamed(fill_id),
+                         GetMirroredX() + background_offset_.x(), y_offset, 0,
+                         0, width(), height());
+  } else {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(active ? active_color : inactive_color);
+    canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), flags);
+  }
+
+  if (paint_hover_effect) {
+    SkPoint hover_location(gfx::PointToSkPoint(hover_controller_.location()));
+    hover_location.scale(SkFloatToScalar(scale));
+    const SkScalar kMinHoverRadius = 16;
+    const SkScalar radius =
+        std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
+    DrawHighlight(canvas, hover_location, radius * scale,
+                  SkColorSetA(active_color, hover_controller_.GetAlpha()));
+  }
+}
+
+void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
+                                   const gfx::Path& fill_path,
+                                   const gfx::Path& stroke_path,
+                                   bool active,
+                                   SkColor color) {
+  gfx::ScopedCanvas scoped_canvas(canvas);
+  const float scale = canvas->UndoDeviceScaleFactor();
+
+  if (!active) {
+    // Clip out the bottom line; this will be drawn for us by
+    // TabStrip::PaintChildren().
+    canvas->ClipRect(gfx::RectF(width() * scale, height() * scale - 1));
+  }
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-
-  // Draw the fill.
-  {
-    gfx::ScopedCanvas scoped_canvas(fill_canvas);
-    const float scale = fill_canvas->UndoDeviceScaleFactor();
-    const ui::ThemeProvider* tp = GetThemeProvider();
-    const SkColor toolbar_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
-
-    fill = GetFillPath(scale, size());
-    {
-      gfx::ScopedCanvas clip_scoper(fill_canvas);
-      fill_canvas->ClipPath(fill, true);
-      if (fill_id) {
-        gfx::ScopedCanvas scale_scoper(fill_canvas);
-        fill_canvas->sk_canvas()->scale(scale, scale);
-        fill_canvas->TileImageInt(*tp->GetImageSkiaNamed(fill_id),
-                                  GetMirroredX() + background_offset_.x(),
-                                  y_offset, 0, 0, width(), height());
-      } else {
-        flags.setColor(
-            is_active ? toolbar_color
-                      : tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
-        fill_canvas->DrawRect(
-            gfx::ScaleToEnclosingRect(GetLocalBounds(), scale), flags);
-      }
-
-      if (!is_active && hover_controller_.ShouldDraw()) {
-        SkPoint hover_location(
-            gfx::PointToSkPoint(hover_controller_.location()));
-        hover_location.scale(SkFloatToScalar(scale));
-        const SkScalar kMinHoverRadius = 16;
-        const SkScalar radius =
-            std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
-        DrawHighlight(fill_canvas, hover_location, radius * scale,
-                      SkColorSetA(toolbar_color, hover_controller_.GetAlpha()));
-      }
-    }
-  }
-
-  // Draw the stroke.
-  {
-    gfx::ScopedCanvas scoped_canvas(stroke_canvas);
-    const float scale = stroke_canvas->UndoDeviceScaleFactor();
-
-    gfx::Path stroke = GetBorderPath(scale, false, false, size());
-    Op(stroke, fill, kDifference_SkPathOp, &stroke);
-    if (!is_active) {
-      // Clip out the bottom line; this will be drawn for us by
-      // TabStrip::PaintChildren().
-      stroke_canvas->ClipRect(
-          gfx::RectF(width() * scale, height() * scale - 1));
-    }
-    flags.setColor(controller_->GetToolbarTopSeparatorColor());
-    stroke_canvas->DrawPath(stroke, flags);
-  }
+  flags.setColor(color);
+  SkPath path;
+  Op(stroke_path, fill_path, kDifference_SkPathOp, &path);
+  canvas->DrawPath(path, flags);
 }
 
 void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
@@ -1493,3 +1432,6 @@ void Tab::ScheduleIconPaint() {
   bounds.set_x(GetMirroredXForRect(bounds));
   SchedulePaintInRect(bounds);
 }
+
+Tab::BackgroundCache::BackgroundCache() = default;
+Tab::BackgroundCache::~BackgroundCache() = default;

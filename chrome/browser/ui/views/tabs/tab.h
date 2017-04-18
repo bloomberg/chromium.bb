@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/paint/paint_record.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -235,11 +236,26 @@ class Tab : public gfx::AnimationDelegate,
   // Paints a tab background using the image defined by |fill_id| at the
   // provided offset. If |fill_id| is 0, it will fall back to using the solid
   // color defined by the theme provider and ignore the offset.
-  void PaintTabBackgroundUsingFillId(gfx::Canvas* fill_canvas,
-                                     gfx::Canvas* stroke_canvas,
-                                     bool is_active,
-                                     int fill_id,
-                                     int y_offset);
+  void PaintTabBackground(gfx::Canvas* canvas,
+                          bool active,
+                          int fill_id,
+                          int y_offset,
+                          const gfx::Path* clip);
+
+  // Helper methods for PaintTabBackground.
+  void PaintTabBackgroundFill(gfx::Canvas* canvas,
+                              const gfx::Path& fill_path,
+                              bool active,
+                              bool hover,
+                              SkColor active_color,
+                              SkColor inactive_color,
+                              int fill_id,
+                              int y_offset);
+  void PaintTabBackgroundStroke(gfx::Canvas* canvas,
+                                const gfx::Path& fill_path,
+                                const gfx::Path& stroke_path,
+                                bool active,
+                                SkColor color);
 
   // Paints the pinned tab title changed indicator and |favicon_|. |favicon_|
   // may be null. |favicon_draw_bounds| is |favicon_bounds_| adjusted for rtl
@@ -354,6 +370,50 @@ class Tab : public gfx::AnimationDelegate,
   // data().favicon and may be modified for theming. It is created on demand
   // and thus may be null.
   gfx::ImageSkia favicon_;
+
+  class BackgroundCache {
+   public:
+    BackgroundCache();
+    ~BackgroundCache();
+
+    bool CacheKeyMatches(float scale,
+                         const gfx::Size& size,
+                         SkColor active_color,
+                         SkColor inactive_color,
+                         SkColor stroke_color) {
+      return scale_ == scale && size_ == size &&
+             active_color_ == active_color &&
+             inactive_color_ == inactive_color && stroke_color_ == stroke_color;
+    }
+
+    void SetCacheKey(float scale,
+                     const gfx::Size& size,
+                     SkColor active_color,
+                     SkColor inactive_color,
+                     SkColor stroke_color) {
+      scale_ = scale;
+      size_ = size;
+      active_color_ = active_color;
+      inactive_color_ = inactive_color;
+      stroke_color_ = stroke_color;
+    }
+
+    // The PaintRecords being cached based on the input parameters.
+    sk_sp<cc::PaintRecord> fill_record;
+    sk_sp<cc::PaintRecord> stroke_record;
+
+   private:
+    // Parameters used to construct the PaintRecords.
+    float scale_ = 0.f;
+    gfx::Size size_;
+    SkColor active_color_ = 0;
+    SkColor inactive_color_ = 0;
+    SkColor stroke_color_ = 0;
+  };
+
+  // Cache of the paint output for tab backgrounds.
+  BackgroundCache background_active_cache_;
+  BackgroundCache background_inactive_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };
