@@ -18,7 +18,7 @@ var independent_properties = [
     ["whiteSpace", ["normal", "pre", "pre-wrap", "pre-line", "nowrap"]],
     ["borderCollapse", ["separate", "collapse"]],
     ["emptyCells", ["show", "hide"]],
-    ["captionSide", ["top", "bottom", "left", "right"]],
+    ["captionSide", ["top", "bottom"]],
     ["listStylePosition", ["outside", "inside"]],
     ["webkitBoxDirection", ["normal", "reverse"]],
     ["webkitPrintColorAdjust", ["economy", "exact"]],
@@ -36,7 +36,7 @@ independent_properties.forEach(function(test_data)
     // style recalc.
     for (i = 0; i < num_keywords; i++) {
         var value1 = keywords[i];
-        // Use the next keyword in the list, or if it is the last one, wrap around and 
+        // Use the next keyword in the list, or if it is the last one, wrap around and
         // use the first.
         var value2 = keywords[(i + 1) % num_keywords];
 

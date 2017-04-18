@@ -536,8 +536,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueAuto || value_id == CSSValueDynamic ||
              value_id == CSSValueStatic;
     case CSSPropertyCaptionSide:
-      return value_id == CSSValueLeft || value_id == CSSValueRight ||
-             value_id == CSSValueTop || value_id == CSSValueBottom;
+      return value_id == CSSValueTop || value_id == CSSValueBottom;
     case CSSPropertyClear:
       return value_id == CSSValueNone || value_id == CSSValueLeft ||
              value_id == CSSValueRight || value_id == CSSValueBoth;

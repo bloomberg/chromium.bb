@@ -843,7 +843,7 @@
       inherited: true,
       default_value: "top",
       field_template: "keyword",
-      keywords: ["top", "bottom", "left", "right"],
+      keywords: ["top", "bottom"],
     },
     {
       name: "caret-color",
