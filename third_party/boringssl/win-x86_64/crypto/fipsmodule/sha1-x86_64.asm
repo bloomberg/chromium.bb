@@ -4,7 +4,7 @@ default	rel
 %define ZMMWORD
 section	.text code align=64
 
-EXTERN	OPENSSL_ia32cap_P
+EXTERN	OPENSSL_ia32cap_addr
 
 global	sha1_block_data_order
 
@@ -19,9 +19,11 @@ $L$SEH_begin_sha1_block_data_order:
 	mov	rdx,r8
 
 
-	mov	r9d,DWORD[((OPENSSL_ia32cap_P+0))]
-	mov	r8d,DWORD[((OPENSSL_ia32cap_P+4))]
-	mov	r10d,DWORD[((OPENSSL_ia32cap_P+8))]
+	lea	r10,[OPENSSL_ia32cap_addr]
+	mov	r10,QWORD[r10]
+	mov	r9d,DWORD[r10]
+	mov	r8d,DWORD[4+r10]
+	mov	r10d,DWORD[8+r10]
 	test	r8d,512
 	jz	NEAR $L$ialu
 	and	r8d,268435456

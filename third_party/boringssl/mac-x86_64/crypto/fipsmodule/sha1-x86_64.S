@@ -7,9 +7,11 @@
 
 .p2align	4
 _sha1_block_data_order:
-	movl	_OPENSSL_ia32cap_P+0(%rip),%r9d
-	movl	_OPENSSL_ia32cap_P+4(%rip),%r8d
-	movl	_OPENSSL_ia32cap_P+8(%rip),%r10d
+	leaq	_OPENSSL_ia32cap_addr(%rip),%r10
+	movq	(%r10),%r10
+	movl	0(%r10),%r9d
+	movl	4(%r10),%r8d
+	movl	8(%r10),%r10d
 	testl	$512,%r8d
 	jz	L$ialu
 	andl	$268435456,%r8d

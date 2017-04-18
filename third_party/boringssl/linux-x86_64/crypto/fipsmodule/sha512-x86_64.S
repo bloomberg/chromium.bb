@@ -1,23 +1,25 @@
 #if defined(__x86_64__) && !defined(OPENSSL_NO_ASM)
 .text	
 
-
-.globl	_sha512_block_data_order
-.private_extern _sha512_block_data_order
-
-.p2align	4
-_sha512_block_data_order:
-	leaq	_OPENSSL_ia32cap_P(%rip),%r11
+.extern	OPENSSL_ia32cap_addr
+.hidden OPENSSL_ia32cap_addr
+.globl	sha512_block_data_order
+.hidden sha512_block_data_order
+.type	sha512_block_data_order,@function
+.align	16
+sha512_block_data_order:
+	leaq	OPENSSL_ia32cap_addr(%rip),%r11
+	movq	(%r11),%r11
 	movl	0(%r11),%r9d
 	movl	4(%r11),%r10d
 	movl	8(%r11),%r11d
 	testl	$2048,%r10d
-	jnz	L$xop_shortcut
+	jnz	.Lxop_shortcut
 	andl	$1073741824,%r9d
 	andl	$268435968,%r10d
 	orl	%r9d,%r10d
 	cmpl	$1342177792,%r10d
-	je	L$avx_shortcut
+	je	.Lavx_shortcut
 	movq	%rsp,%rax
 	pushq	%rbx
 	pushq	%rbp
@@ -33,7 +35,7 @@ _sha512_block_data_order:
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
 	movq	%rax,128+24(%rsp)
-L$prologue:
+.Lprologue:
 
 	movq	0(%rdi),%rax
 	movq	8(%rdi),%rbx
@@ -43,10 +45,11 @@ L$prologue:
 	movq	40(%rdi),%r9
 	movq	48(%rdi),%r10
 	movq	56(%rdi),%r11
-	jmp	L$loop
 
-.p2align	4
-L$loop:
+	jmp	.Lloop
+
+.align	16
+.Lloop:
 	movq	%rbx,%rdi
 	leaq	K512(%rip),%rbp
 	xorq	%rcx,%rdi
@@ -705,9 +708,9 @@ L$loop:
 	addq	%r12,%rax
 
 	leaq	24(%rbp),%rbp
-	jmp	L$rounds_16_xx
-.p2align	4
-L$rounds_16_xx:
+	jmp	.Lrounds_16_xx
+.align	16
+.Lrounds_16_xx:
 	movq	8(%rsp),%r13
 	movq	112(%rsp),%r15
 
@@ -1669,7 +1672,7 @@ L$rounds_16_xx:
 
 	leaq	24(%rbp),%rbp
 	cmpb	$0,7(%rbp)
-	jnz	L$rounds_16_xx
+	jnz	.Lrounds_16_xx
 
 	movq	128+0(%rsp),%rdi
 	addq	%r14,%rax
@@ -1694,7 +1697,7 @@ L$rounds_16_xx:
 	movq	%r9,40(%rdi)
 	movq	%r10,48(%rdi)
 	movq	%r11,56(%rdi)
-	jb	L$loop
+	jb	.Lloop
 
 	movq	128+24(%rsp),%rsi
 	movq	-48(%rsi),%r15
@@ -1704,11 +1707,11 @@ L$rounds_16_xx:
 	movq	-16(%rsi),%rbp
 	movq	-8(%rsi),%rbx
 	leaq	(%rsi),%rsp
-L$epilogue:
+.Lepilogue:
 	.byte	0xf3,0xc3
-
-.p2align	6
-
+.size	sha512_block_data_order,.-sha512_block_data_order
+.align	64
+.type	K512,@object
 K512:
 .quad	0x428a2f98d728ae22,0x7137449123ef65cd
 .quad	0x428a2f98d728ae22,0x7137449123ef65cd
@@ -1794,10 +1797,10 @@ K512:
 .quad	0x0001020304050607,0x08090a0b0c0d0e0f
 .quad	0x0001020304050607,0x08090a0b0c0d0e0f
 .byte	83,72,65,53,49,50,32,98,108,111,99,107,32,116,114,97,110,115,102,111,114,109,32,102,111,114,32,120,56,54,95,54,52,44,32,67,82,89,80,84,79,71,65,77,83,32,98,121,32,60,97,112,112,114,111,64,111,112,101,110,115,115,108,46,111,114,103,62,0
-
-.p2align	6
+.type	sha512_block_data_order_xop,@function
+.align	64
 sha512_block_data_order_xop:
-L$xop_shortcut:
+.Lxop_shortcut:
 	movq	%rsp,%rax
 	pushq	%rbx
 	pushq	%rbp
@@ -1813,7 +1816,7 @@ L$xop_shortcut:
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
 	movq	%rax,128+24(%rsp)
-L$prologue_xop:
+.Lprologue_xop:
 
 	vzeroupper
 	movq	0(%rdi),%rax
@@ -1824,9 +1827,9 @@ L$prologue_xop:
 	movq	40(%rdi),%r9
 	movq	48(%rdi),%r10
 	movq	56(%rdi),%r11
-	jmp	L$loop_xop
-.p2align	4
-L$loop_xop:
+	jmp	.Lloop_xop
+.align	16
+.Lloop_xop:
 	vmovdqa	K512+1280(%rip),%xmm11
 	vmovdqu	0(%rsi),%xmm0
 	leaq	K512+128(%rip),%rbp
@@ -1865,10 +1868,10 @@ L$loop_xop:
 	xorq	%rcx,%rdi
 	vmovdqa	%xmm11,112(%rsp)
 	movq	%r8,%r13
-	jmp	L$xop_00_47
+	jmp	.Lxop_00_47
 
-.p2align	4
-L$xop_00_47:
+.align	16
+.Lxop_00_47:
 	addq	$256,%rbp
 	vpalignr	$8,%xmm0,%xmm1,%xmm8
 	rorq	$23,%r13
@@ -2423,7 +2426,7 @@ L$xop_00_47:
 	addq	%rax,%r14
 	vmovdqa	%xmm10,112(%rsp)
 	cmpb	$0,135(%rbp)
-	jne	L$xop_00_47
+	jne	.Lxop_00_47
 	rorq	$23,%r13
 	movq	%r14,%rax
 	movq	%r9,%r12
@@ -2863,7 +2866,7 @@ L$xop_00_47:
 	movq	%r9,40(%rdi)
 	movq	%r10,48(%rdi)
 	movq	%r11,56(%rdi)
-	jb	L$loop_xop
+	jb	.Lloop_xop
 
 	movq	128+24(%rsp),%rsi
 	vzeroupper
@@ -2874,13 +2877,13 @@ L$xop_00_47:
 	movq	-16(%rsi),%rbp
 	movq	-8(%rsi),%rbx
 	leaq	(%rsi),%rsp
-L$epilogue_xop:
+.Lepilogue_xop:
 	.byte	0xf3,0xc3
-
-
-.p2align	6
+.size	sha512_block_data_order_xop,.-sha512_block_data_order_xop
+.type	sha512_block_data_order_avx,@function
+.align	64
 sha512_block_data_order_avx:
-L$avx_shortcut:
+.Lavx_shortcut:
 	movq	%rsp,%rax
 	pushq	%rbx
 	pushq	%rbp
@@ -2896,7 +2899,7 @@ L$avx_shortcut:
 	movq	%rsi,128+8(%rsp)
 	movq	%rdx,128+16(%rsp)
 	movq	%rax,128+24(%rsp)
-L$prologue_avx:
+.Lprologue_avx:
 
 	vzeroupper
 	movq	0(%rdi),%rax
@@ -2907,9 +2910,9 @@ L$prologue_avx:
 	movq	40(%rdi),%r9
 	movq	48(%rdi),%r10
 	movq	56(%rdi),%r11
-	jmp	L$loop_avx
-.p2align	4
-L$loop_avx:
+	jmp	.Lloop_avx
+.align	16
+.Lloop_avx:
 	vmovdqa	K512+1280(%rip),%xmm11
 	vmovdqu	0(%rsi),%xmm0
 	leaq	K512+128(%rip),%rbp
@@ -2948,10 +2951,10 @@ L$loop_avx:
 	xorq	%rcx,%rdi
 	vmovdqa	%xmm11,112(%rsp)
 	movq	%r8,%r13
-	jmp	L$avx_00_47
+	jmp	.Lavx_00_47
 
-.p2align	4
-L$avx_00_47:
+.align	16
+.Lavx_00_47:
 	addq	$256,%rbp
 	vpalignr	$8,%xmm0,%xmm1,%xmm8
 	shrdq	$23,%r13,%r13
@@ -3570,7 +3573,7 @@ L$avx_00_47:
 	addq	%rax,%r14
 	vmovdqa	%xmm10,112(%rsp)
 	cmpb	$0,135(%rbp)
-	jne	L$avx_00_47
+	jne	.Lavx_00_47
 	shrdq	$23,%r13,%r13
 	movq	%r14,%rax
 	movq	%r9,%r12
@@ -4010,7 +4013,7 @@ L$avx_00_47:
 	movq	%r9,40(%rdi)
 	movq	%r10,48(%rdi)
 	movq	%r11,56(%rdi)
-	jb	L$loop_avx
+	jb	.Lloop_avx
 
 	movq	128+24(%rsp),%rsi
 	vzeroupper
@@ -4021,7 +4024,7 @@ L$avx_00_47:
 	movq	-16(%rsi),%rbp
 	movq	-8(%rsi),%rbx
 	leaq	(%rsi),%rsp
-L$epilogue_avx:
+.Lepilogue_avx:
 	.byte	0xf3,0xc3
-
+.size	sha512_block_data_order_avx,.-sha512_block_data_order_avx
 #endif

@@ -1,16 +1,18 @@
 #if defined(__x86_64__) && !defined(OPENSSL_NO_ASM)
 .text	
-.extern	OPENSSL_ia32cap_P
-.hidden OPENSSL_ia32cap_P
+.extern	OPENSSL_ia32cap_addr
+.hidden OPENSSL_ia32cap_addr
 
 .globl	sha1_block_data_order
 .hidden sha1_block_data_order
 .type	sha1_block_data_order,@function
 .align	16
 sha1_block_data_order:
-	movl	OPENSSL_ia32cap_P+0(%rip),%r9d
-	movl	OPENSSL_ia32cap_P+4(%rip),%r8d
-	movl	OPENSSL_ia32cap_P+8(%rip),%r10d
+	leaq	OPENSSL_ia32cap_addr(%rip),%r10
+	movq	(%r10),%r10
+	movl	0(%r10),%r9d
+	movl	4(%r10),%r8d
+	movl	8(%r10),%r10d
 	testl	$512,%r8d
 	jz	.Lialu
 	andl	$268435456,%r8d

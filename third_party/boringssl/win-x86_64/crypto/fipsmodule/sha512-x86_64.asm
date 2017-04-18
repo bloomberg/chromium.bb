@@ -5,7 +5,7 @@ default	rel
 section	.text code align=64
 
 
-EXTERN	OPENSSL_ia32cap_P
+EXTERN	OPENSSL_ia32cap_addr
 global	sha512_block_data_order
 
 ALIGN	16
@@ -19,7 +19,8 @@ $L$SEH_begin_sha512_block_data_order:
 	mov	rdx,r8
 
 
-	lea	r11,[OPENSSL_ia32cap_P]
+	lea	r11,[OPENSSL_ia32cap_addr]
+	mov	r11,QWORD[r11]
 	mov	r9d,DWORD[r11]
 	mov	r10d,DWORD[4+r11]
 	mov	r11d,DWORD[8+r11]
@@ -55,6 +56,7 @@ $L$prologue:
 	mov	r9,QWORD[40+rdi]
 	mov	r10,QWORD[48+rdi]
 	mov	r11,QWORD[56+rdi]
+
 	jmp	NEAR $L$loop
 
 ALIGN	16
