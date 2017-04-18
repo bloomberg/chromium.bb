@@ -899,7 +899,6 @@ class CORE_EXPORT UseCounter {
     kDocumentCreateEventTransitionEvent = 1183,
     kDocumentCreateEventWheelEvent = 1184,
     kDocumentCreateEventTrackEvent = 1186,
-    kDocumentCreateEventWebKitAnimationEvent = 1187,
     kDocumentCreateEventMutationEvents = 1188,
     kDocumentCreateEventSVGEvents = 1190,
     kDocumentCreateEventWebKitTransitionEvent = 1191,
