@@ -209,6 +209,15 @@ void StatusUploader::OnStatusReceived(
     ScheduleNextStatusUpload();
     return;
   }
+  if (!client_->is_registered()) {
+    // This can happen when the DM Token is missing (crbug.com/705607).
+    VLOG(1) << "Skipping status upload because the client is not registered";
+    // Reset the timer to avoid log spamming.
+    last_upload_ = base::Time::NowFromSystemTime();
+    status_upload_in_progress_ = false;
+    ScheduleNextStatusUpload();
+    return;
+  }
 
   SYSLOG(INFO) << "Starting status upload: have_device_status = "
                << have_device_status;

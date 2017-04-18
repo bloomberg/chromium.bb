@@ -107,7 +107,7 @@ class DeviceStatusCollector {
 
   // Called after the status information has successfully been submitted to
   // the server.
-  void OnSubmittedSuccessfully();
+  virtual void OnSubmittedSuccessfully();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
