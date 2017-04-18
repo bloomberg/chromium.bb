@@ -701,7 +701,10 @@ by a child template that "extends" this file.
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="org.chromium.chrome.browser.searchwidget.START_SEARCH_ACTIVITY" />
+                <action android:name="org.chromium.chrome.browser.searchwidget.START_TEXT_QUERY" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.searchwidget.START_VOICE_QUERY" />
             </intent-filter>
             <intent-filter>
                 <action android:name="org.chromium.chrome.browser.searchwidget.UPDATE_ALL_WIDGETS" />

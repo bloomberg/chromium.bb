@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -36,6 +37,8 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 public class SearchActivity extends AsyncInitializationActivity
         implements SnackbarManageable, SearchActivityLocationBarLayout.Delegate,
                    View.OnLayoutChangeListener {
+    /** Setting this field causes the Activity to finish itself immediately for tests. */
+    private static boolean sIsDisabledForTest;
 
     /** Main content view. */
     private ViewGroup mContentView;
@@ -52,6 +55,12 @@ public class SearchActivity extends AsyncInitializationActivity
     private SnackbarManager mSnackbarManager;
     private SearchBoxDataProvider mSearchBoxDataProvider;
     private Tab mTab;
+
+    @Override
+    protected boolean isStartedUpCorrectly(Intent intent) {
+        if (sIsDisabledForTest) return false;
+        return true;
+    }
 
     @Override
     public void backKeyPressed() {
@@ -218,5 +227,11 @@ public class SearchActivity extends AsyncInitializationActivity
     private void cancelSearch() {
         finish();
         overridePendingTransition(0, R.anim.activity_close_exit);
+    }
+
+    /** See {@link #sIsDisabledForTest}. */
+    @VisibleForTesting
+    static void disableForTests() {
+        sIsDisabledForTest = true;
     }
 }

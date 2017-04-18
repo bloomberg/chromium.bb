@@ -21,20 +21,57 @@ import android.widget.RemoteViews;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * Widget that lets the user search using their default search engine.
  *
  * Because this is a BroadcastReceiver, it dies immediately after it runs.  A new one is created
  * for each new broadcast.
+ *
+ * This class avoids loading the native library because it can be triggered at regular intervals by
+ * Android when it tells widgets that they need updates.
  */
 public class SearchWidgetProvider extends AppWidgetProvider {
+    /** Wraps up all things that a {@link SearchWidgetProvider} can request things from. */
+    static class SearchWidgetProviderDelegate {
+        private final Context mContext;
+        private final AppWidgetManager mManager;
+
+        public SearchWidgetProviderDelegate(Context context) {
+            mContext = context == null ? ContextUtils.getApplicationContext() : context;
+            mManager = AppWidgetManager.getInstance(mContext);
+        }
+
+        /** Returns the Context to pull resources from. */
+        protected Context getContext() {
+            return mContext;
+        }
+
+        /** See {@link ContextUtils#getAppSharedPreferences}. */
+        protected SharedPreferences getSharedPreferences() {
+            return ContextUtils.getAppSharedPreferences();
+        }
+
+        /** Returns IDs for all search widgets that exist. */
+        protected int[] getAllSearchWidgetIds() {
+            return mManager.getAppWidgetIds(
+                    new ComponentName(getContext(), SearchWidgetProvider.class.getName()));
+        }
+
+        /** See {@link AppWidgetManager#updateAppWidget}. */
+        protected void updateAppWidget(int id, RemoteViews views) {
+            mManager.updateAppWidget(id, views);
+        }
+    }
+
     /** Monitors the TemplateUrlService for changes, updating the widget when necessary. */
     private static final class SearchWidgetTemplateUrlServiceObserver
             implements LoadListener, TemplateUrlServiceObserver {
@@ -48,13 +85,24 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         public void onTemplateURLServiceChanged() {
             updateCachedEngineName();
         }
+
+        private void updateCachedEngineName() {
+            assert LibraryLoader.isInitialized();
+
+            // Getting an instance of the TemplateUrlService requires that the native library be
+            // loaded, but the TemplateUrlService also itself needs to be initialized.
+            TemplateUrlService service = TemplateUrlService.getInstance();
+            assert service.isLoaded();
+            SearchWidgetProvider.updateCachedEngineName(
+                    service.getDefaultSearchEngineTemplateUrl().getShortName());
+        }
     }
 
-    private static final String ACTION_START_TEXT_QUERY =
+    static final String ACTION_START_TEXT_QUERY =
             "org.chromium.chrome.browser.searchwidget.START_TEXT_QUERY";
-    private static final String ACTION_START_VOICE_QUERY =
+    static final String ACTION_START_VOICE_QUERY =
             "org.chromium.chrome.browser.searchwidget.START_VOICE_QUERY";
-    private static final String ACTION_UPDATE_ALL_WIDGETS =
+    static final String ACTION_UPDATE_ALL_WIDGETS =
             "org.chromium.chrome.browser.searchwidget.UPDATE_ALL_WIDGETS";
 
     static final String EXTRA_START_VOICE_SEARCH =
@@ -66,9 +114,11 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
 
     private static final String TAG = "searchwidget";
+    private static final Object DELEGATE_LOCK = new Object();
     private static final Object OBSERVER_LOCK = new Object();
 
     private static SearchWidgetTemplateUrlServiceObserver sObserver;
+    private static SearchWidgetProviderDelegate sDelegate;
 
     /**
      * Creates the singleton instance of the observer that will monitor for search engine changes.
@@ -92,30 +142,45 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Nukes all cached information and forces all widgets to start with a blank slate. */
     public static void reset() {
-        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        SharedPreferences.Editor editor = getDelegate().getSharedPreferences().edit();
         editor.remove(PREF_IS_VOICE_SEARCH_AVAILABLE);
         editor.remove(PREF_SEARCH_ENGINE_SHORTNAME);
         editor.apply();
-        updateAllWidgets();
+
+        performUpdate(null);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if (IntentHandler.isIntentChromeOrFirstParty(intent)) {
-            if (ACTION_START_TEXT_QUERY.equals(intent.getAction())) {
-                startSearchActivity(context, false);
-            } else if (ACTION_START_VOICE_QUERY.equals(intent.getAction())) {
-                startSearchActivity(context, true);
-            } else if (ACTION_UPDATE_ALL_WIDGETS.equals(intent.getAction())) {
-                performUpdate(context);
-            }
-            return;
+            handleAction(intent.getAction());
+        } else {
+            super.onReceive(context, intent);
         }
-        super.onReceive(context, intent);
     }
 
-    private void startSearchActivity(Context context, boolean startVoiceSearch) {
+    @Override
+    public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
+        performUpdate(ids);
+    }
+
+    /** Handles the intent actions to the widget. */
+    @VisibleForTesting
+    static void handleAction(String action) {
+        if (ACTION_START_TEXT_QUERY.equals(action)) {
+            startSearchActivity(false);
+        } else if (ACTION_START_VOICE_QUERY.equals(action)) {
+            startSearchActivity(true);
+        } else if (ACTION_UPDATE_ALL_WIDGETS.equals(action)) {
+            performUpdate(null);
+        } else {
+            assert false;
+        }
+    }
+
+    private static void startSearchActivity(boolean startVoiceSearch) {
         Log.d(TAG, "Launching SearchActivity: VOICE=" + startVoiceSearch);
+        Context context = getDelegate().getContext();
 
         // Launch the SearchActivity.
         Intent searchIntent = new Intent();
@@ -127,30 +192,23 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         Bundle optionsBundle =
                 ActivityOptionsCompat.makeCustomAnimation(context, R.anim.activity_open_enter, 0)
                         .toBundle();
-        context.startActivity(searchIntent, optionsBundle);
+        IntentUtils.safeStartActivity(context, searchIntent, optionsBundle);
     }
 
-    @Override
-    public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
-        performUpdate(context, ids);
-    }
+    private static void performUpdate(int[] ids) {
+        SearchWidgetProviderDelegate delegate = getDelegate();
 
-    private static void performUpdate(Context context) {
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        performUpdate(context, getAllSearchWidgetIds(manager));
-    }
-
-    private static void performUpdate(Context context, int[] ids) {
+        if (ids == null) ids = delegate.getAllSearchWidgetIds();
         if (ids.length == 0) return;
 
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        boolean isVoiceSearchAvailable = prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true);
-        String engineName = prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null);
+        SharedPreferences prefs = delegate.getSharedPreferences();
+        boolean isVoiceSearchAvailable = getCachedVoiceSearchAvailability(prefs);
+        String engineName = getCachedEngineName(prefs);
 
         for (int id : ids) {
-            RemoteViews views = createWidgetViews(context, id, engineName, isVoiceSearchAvailable);
-            manager.updateAppWidget(id, views);
+            RemoteViews views = createWidgetViews(
+                    delegate.getContext(), id, engineName, isVoiceSearchAvailable);
+            delegate.updateAppWidget(id, views);
         }
     }
 
@@ -188,10 +246,10 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Caches whether or not a voice search is possible. */
     static void updateCachedVoiceSearchAvailability(boolean isVoiceSearchAvailable) {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true) != isVoiceSearchAvailable) {
+        SharedPreferences prefs = getDelegate().getSharedPreferences();
+        if (getCachedVoiceSearchAvailability(prefs) != isVoiceSearchAvailable) {
             prefs.edit().putBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, isVoiceSearchAvailable).apply();
-            updateAllWidgets();
+            performUpdate(null);
         }
     }
 
@@ -200,26 +258,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
      * Caching it in SharedPreferences prevents us from having to load the native library and the
      * TemplateUrlService whenever the widget is updated.
      */
-    private static void updateCachedEngineName() {
-        assert LibraryLoader.isInitialized();
-
-        // Getting an instance of the TemplateUrlService requires that the native library be
-        // loaded, but the TemplateUrlService itself needs to be initialized.
-        TemplateUrlService service = TemplateUrlService.getInstance();
-        assert service.isLoaded();
-        String engineName = service.getDefaultSearchEngineTemplateUrl().getShortName();
-
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (!TextUtils.equals(prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null), engineName)) {
+    static void updateCachedEngineName(String engineName) {
+        SharedPreferences prefs = getDelegate().getSharedPreferences();
+        if (!TextUtils.equals(getCachedEngineName(prefs), engineName)) {
             prefs.edit().putString(PREF_SEARCH_ENGINE_SHORTNAME, engineName).apply();
-            updateAllWidgets();
+            performUpdate(null);
         }
-    }
-
-    /** Get the IDs of all existing search widgets. */
-    private static int[] getAllSearchWidgetIds(AppWidgetManager manager) {
-        return manager.getAppWidgetIds(new ComponentName(
-                ContextUtils.getApplicationContext(), SearchWidgetProvider.class.getName()));
     }
 
     /** Creates a trusted Intent that lets the user begin performing queries. */
@@ -230,8 +274,25 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         return intent;
     }
 
-    /** Immediately updates all widgets. */
-    private static void updateAllWidgets() {
-        performUpdate(ContextUtils.getApplicationContext());
+    /** Sets an {@link SearchWidgetProviderDelegate} to interact with. */
+    @VisibleForTesting
+    static void setDelegateForTest(SearchWidgetProviderDelegate delegate) {
+        assert sDelegate == null;
+        sDelegate = delegate;
+    }
+
+    private static boolean getCachedVoiceSearchAvailability(SharedPreferences prefs) {
+        return prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true);
+    }
+
+    private static String getCachedEngineName(SharedPreferences prefs) {
+        return prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null);
+    }
+
+    private static SearchWidgetProviderDelegate getDelegate() {
+        synchronized (DELEGATE_LOCK) {
+            if (sDelegate == null) sDelegate = new SearchWidgetProviderDelegate(null);
+        }
+        return sDelegate;
     }
 }
