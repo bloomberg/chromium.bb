@@ -15,7 +15,7 @@ namespace content {
 class OffscreenCanvasProviderImpl
     : public blink::mojom::OffscreenCanvasProvider {
  public:
-  OffscreenCanvasProviderImpl();
+  explicit OffscreenCanvasProviderImpl(uint32_t renderer_client_id);
   ~OffscreenCanvasProviderImpl() override;
 
   void Add(blink::mojom::OffscreenCanvasProviderRequest request);
@@ -32,6 +32,9 @@ class OffscreenCanvasProviderImpl
       cc::mojom::MojoCompositorFrameSinkRequest request) override;
 
  private:
+  // FrameSinkIds for offscreen canvas must use the renderer client id.
+  const uint32_t renderer_client_id_;
+
   mojo::BindingSet<blink::mojom::OffscreenCanvasProvider> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasProviderImpl);

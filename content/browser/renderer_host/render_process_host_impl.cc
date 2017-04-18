@@ -1363,8 +1363,10 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
     blink::mojom::OffscreenCanvasProviderRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!offscreen_canvas_provider_) {
+    // The client id gets converted to a uint32_t in FrameSinkId.
+    uint32_t renderer_client_id = base::checked_cast<uint32_t>(id_);
     offscreen_canvas_provider_ =
-        base::MakeUnique<OffscreenCanvasProviderImpl>();
+        base::MakeUnique<OffscreenCanvasProviderImpl>(renderer_client_id);
   }
   offscreen_canvas_provider_->Add(std::move(request));
 }
