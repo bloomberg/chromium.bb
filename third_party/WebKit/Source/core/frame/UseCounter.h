@@ -901,7 +901,6 @@ class CORE_EXPORT UseCounter {
     kDocumentCreateEventTrackEvent = 1186,
     kDocumentCreateEventMutationEvents = 1188,
     kDocumentCreateEventSVGEvents = 1190,
-    kDocumentCreateEventWebKitTransitionEvent = 1191,
     kDocumentCreateEventDeviceMotionEvent = 1195,
     kDocumentCreateEventDeviceOrientationEvent = 1196,
     kDocumentCreateEventIDBVersionChangeEvent = 1201,

@@ -92,7 +92,6 @@ def create_event_measure_whitelist(name):
             or name == 'TrackEvent'
             or name == 'TransitionEvent'
             or name == 'WebGLContextEvent'
-            or name == 'WebKitTransitionEvent'
             or name == 'WheelEvent')
 
 

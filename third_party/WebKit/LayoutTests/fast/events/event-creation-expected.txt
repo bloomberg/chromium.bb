@@ -91,9 +91,6 @@ PASS document.createEvent('UIEvENts').constructor === window.UIEvent is true
 PASS document.createEvent('TransitionEvent') instanceof window.TransitionEvent is true
 PASS document.createEvent('TransitionEvent') instanceof window.Event is true
 PASS document.createEvent('TransitionEvent').constructor === window.TransitionEvent is true
-PASS document.createEvent('WebKitTransitionEvent') instanceof window.WebKitTransitionEvent is true
-PASS document.createEvent('WebKitTransitionEvent') instanceof window.Event is true
-PASS document.createEvent('WebKitTransitionEvent').constructor === window.WebKitTransitionEvent is true
 PASS document.createEvent('WheelEvent') instanceof window.WheelEvent is true
 PASS document.createEvent('WheelEvent') instanceof window.MouseEvent is true
 PASS document.createEvent('WheelEvent') instanceof window.UIEvent is true

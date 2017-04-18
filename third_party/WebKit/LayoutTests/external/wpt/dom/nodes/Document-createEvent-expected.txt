@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 331 tests; 306 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 331 tests; 307 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
 PASS animationevent should be an alias for AnimationEvent. 
@@ -333,9 +333,7 @@ PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "TimeEvent"
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "TimeEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebKitAnimationEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitAnimationEvents" 
-FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebKitTransitionEvent" assert_throws: function "function () {
-        var evt = document.createEvent(eventInterface);
-      }" did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "WebKitTransitionEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "WebKitTransitionEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "XULCommandEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "XULCommandEvents" 
