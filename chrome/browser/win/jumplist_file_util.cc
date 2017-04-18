@@ -125,6 +125,9 @@ void DeleteDirectoryAndLogResults(const base::FilePath& path,
 
 void DeleteDirectoryContentAndLogResults(const base::FilePath& path,
                                          int max_file_deleted) {
+  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
+  SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.DeleteDirectoryContentDuration");
+
   DirectoryStatus dir_status = NON_EXIST;
 
   // Delete the content in |path|. If |path| doesn't exist, create one.

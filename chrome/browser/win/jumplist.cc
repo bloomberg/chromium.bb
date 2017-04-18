@@ -277,6 +277,9 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
     local_recently_closed_pages = data->recently_closed_pages_;
   }
 
+  // Delete the content in JumpListIcons folder and log the results to UMA.
+  DeleteDirectoryContentAndLogResults(icon_dir, kFileDeleteLimit);
+
   // Create a new JumpList and replace the current JumpList with it. The
   // jumplist links are updated anyway, while the jumplist icons may not as
   // mentioned above.
@@ -606,13 +609,8 @@ void JumpList::DeferredRunUpdate() {
       profile_ ? IncognitoModePrefs::GetAvailability(profile_->GetPrefs())
                : IncognitoModePrefs::ENABLED;
 
-  // Post a task to delete the content in JumpListIcons folder and log the
-  // results to UMA.
-  update_jumplisticons_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeleteDirectoryContentAndLogResults, icon_dir_,
-                            kFileDeleteLimit));
-
-  // Post a task to update the jumplist used by the shell.
+  // Post a task to update the jumplist in JumpListIcons folder, which consists
+  // of 1) delete old icons, 2) create new icons, 3) notify the OS.
   update_jumplisticons_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RunUpdateJumpList, incognito_availability, app_id_,
                             icon_dir_, base::RetainedRef(jumplist_data_)));
