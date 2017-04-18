@@ -182,6 +182,8 @@ void V8UnitTest::SetUp() {
   send_function->RemovePrototype();
   chrome->Set(v8::String::NewFromUtf8(isolate, "send"), send_function);
 
+  context_.Reset(isolate, v8::Context::New(isolate, NULL, global));
+
   // Set up console object for console.log(), etc.
   v8::Local<v8::ObjectTemplate> console = v8::ObjectTemplate::New(isolate);
   global->Set(v8::String::NewFromUtf8(isolate, "console"), console);
@@ -192,8 +194,14 @@ void V8UnitTest::SetUp() {
       v8::FunctionTemplate::New(isolate, &V8UnitTest::Error);
   error_function->RemovePrototype();
   console->Set(v8::String::NewFromUtf8(isolate, "error"), error_function);
-
-  context_.Reset(isolate, v8::Context::New(isolate, NULL, global));
+  {
+    v8::Local<v8::Context> context = context_.Get(isolate);
+    v8::Context::Scope context_scope(context);
+    context->Global()
+        ->Set(context, v8::String::NewFromUtf8(isolate, "console"),
+              console->NewInstance(context).ToLocalChecked())
+        .ToChecked();
+  }
 
   loop_ = base::MakeUnique<base::MessageLoop>();
 }
