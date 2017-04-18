@@ -105,15 +105,16 @@ TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {
   EXPECT_CALL(wrapped_provider_, CancelDownload(id));
   EXPECT_CALL(wrapped_provider_, PauseDownload(id));
   EXPECT_CALL(wrapped_provider_, ResumeDownload(id));
+  EXPECT_CALL(wrapped_provider_, GetVisualsForItem(id, _));
   EXPECT_CALL(wrapped_provider_, GetItemById(id)).WillRepeatedly(Return(&item));
   EXPECT_CALL(wrapped_provider_, GetAllItems()).WillRepeatedly(Return(items));
-
   wrapped_provider_.NotifyOnItemsAvailable();
   provider_.OpenItem(id);
   provider_.RemoveItem(id);
   provider_.CancelDownload(id);
   provider_.PauseDownload(id);
   provider_.ResumeDownload(id);
+  provider_.GetVisualsForItem(id, OfflineContentProvider::VisualsCallback());
   EXPECT_EQ(&item, provider_.GetItemById(id));
   EXPECT_EQ(items, provider_.GetAllItems());
 }

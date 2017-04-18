@@ -77,6 +77,12 @@ ThrottledOfflineContentProvider::GetAllItems() {
   return items;
 }
 
+void ThrottledOfflineContentProvider::GetVisualsForItem(
+    const ContentId& id,
+    const VisualsCallback& callback) {
+  wrapped_provider_->GetVisualsForItem(id, callback);
+}
+
 void ThrottledOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK(observer);

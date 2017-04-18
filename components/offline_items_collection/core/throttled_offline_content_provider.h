@@ -43,6 +43,8 @@ class ThrottledOfflineContentProvider
   // the future.
   const OfflineItem* GetItemById(const ContentId& id) override;
   OfflineItemList GetAllItems() override;
+  void GetVisualsForItem(const ContentId& id,
+                         const VisualsCallback& callback) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 

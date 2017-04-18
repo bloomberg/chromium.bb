@@ -271,25 +271,26 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                         info.getPercentCompleted(), info.getBytesReceived(),
                         info.getTimeRemainingInMillis(), notificationInfo.startTime,
                         info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered,
-                        info.getIsTransient());
+                        info.getIsTransient(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
                 mBoundService.notifyDownloadPaused(
-                        info.getContentId(), true, false, info.getIsTransient());
+                        info.getContentId(), true, false, info.getIsTransient(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
                 mBoundService.notifyDownloadPaused(info.getContentId(), info.isResumable(),
-                        notificationInfo.isAutoResumable, info.getIsTransient());
+                        notificationInfo.isAutoResumable, info.getIsTransient(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                 final int notificationId = mBoundService.notifyDownloadSuccessful(
                         info.getContentId(), info.getFilePath(), info.getFileName(),
                         notificationInfo.systemDownloadId, info.isOffTheRecord(),
-                        notificationInfo.isSupportedMimeType, info.getIsOpenable());
+                        notificationInfo.isSupportedMimeType, info.getIsOpenable(), info.getIcon());
                 onSuccessNotificationShown(notificationInfo, notificationId);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
-                mBoundService.notifyDownloadFailed(info.getContentId(), info.getFileName());
+                mBoundService.notifyDownloadFailed(
+                        info.getContentId(), info.getFileName(), info.getIcon());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
                 mBoundService.notifyDownloadCanceled(info.getContentId());

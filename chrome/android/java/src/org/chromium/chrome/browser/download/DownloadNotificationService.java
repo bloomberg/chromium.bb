@@ -575,7 +575,7 @@ public class DownloadNotificationService extends Service {
             // Move all regular downloads to pending.  Don't propagate the pause because
             // if native is still working and it triggers an update, then the service will be
             // restarted.
-            notifyDownloadPaused(entry.id, !entry.isOffTheRecord, true, entry.isTransient);
+            notifyDownloadPaused(entry.id, !entry.isOffTheRecord, true, entry.isTransient, null);
         }
     }
 
@@ -734,59 +734,67 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Adds or updates an in-progress download notification.
-     * @param id The {@link ContentId} of the download.
-     * @param fileName File name of the download.
-     * @param percentage Percentage completed. Value should be between 0 to 100 if
-     *        the percentage can be determined, or -1 if it is unknown.
-     * @param bytesReceived Total number of bytes received.
-     * @param timeRemainingInMillis Remaining download time in milliseconds.
-     * @param startTime Time when download started.
-     * @param isOffTheRecord Whether the download is off the record.
+     * @param id                      The {@link ContentId} of the download.
+     * @param fileName                File name of the download.
+     * @param percentage              Percentage completed. Value should be between 0 to 100 if the
+     *                                percentage can be determined, or -1 if it is unknown.
+     * @param bytesReceived           Total number of bytes received.
+     * @param timeRemainingInMillis   Remaining download time in milliseconds.
+     * @param startTime               Time when download started.
+     * @param isOffTheRecord          Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
-     * @param isTransient Whether or not clicking on the download should launch downloads home.
+     * @param isTransient             Whether or not clicking on the download should launch
+     *                                downloads home.
+     * @param icon                    A {@link Bitmap} to be used as the large icon for display.
      */
     @VisibleForTesting
     public void notifyDownloadProgress(ContentId id, String fileName, int percentage,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, boolean isTransient) {
+            boolean canDownloadWhileMetered, boolean isTransient, Bitmap icon) {
         updateActiveDownloadNotification(id, fileName, percentage, bytesReceived,
                 timeRemainingInMillis, startTime, isOffTheRecord, canDownloadWhileMetered, false,
-                isTransient);
+                isTransient, icon);
     }
 
     /**
      * Adds or updates a pending download notification.
-     * @param id The {@link ContentId} of the download.
-     * @param fileName File name of the download.
-     * @param isOffTheRecord Whether the download is off the record.
+     * @param id                      The {@link ContentId} of the download.
+     * @param fileName                File name of the download.
+     * @param isOffTheRecord          Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
-     * @param isTransient Whether or not clicking on the download should launch downloads home.
+     * @param isTransient             Whether or not clicking on the download should launch
+     *                                downloads home.
+     * @param icon                    A {@link Bitmap} to be used as the large icon for display.
      */
     private void notifyDownloadPending(ContentId id, String fileName, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, boolean isTransient) {
+            boolean canDownloadWhileMetered, boolean isTransient, Bitmap icon) {
         updateActiveDownloadNotification(id, fileName,
                 DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE, 0, 0, 0, isOffTheRecord,
-                canDownloadWhileMetered, true, isTransient);
+                canDownloadWhileMetered, true, isTransient, icon);
     }
 
     /**
      * Helper method to update the notification for an active download, the download is either in
      * progress or pending.
-     * @param id The {@link ContentId} of the download.
-     * @param fileName File name of the download.
-     * @param percentage Percentage completed. Value should be between 0 to 100 if
-     *        the percentage can be determined, or -1 if it is unknown.
-     * @param bytesReceived Total number of bytes received.
-     * @param timeRemainingInMillis Remaining download time in milliseconds or -1 if it is unknown.
-     * @param startTime Time when download started.
-     * @param isOffTheRecord Whether the download is off the record.
+     * @param id                      The {@link ContentId} of the download.
+     * @param fileName                File name of the download.
+     * @param percentage              Percentage completed. Value should be between 0 to 100 if the
+     *                                percentage can be determined, or -1 if it is unknown.
+     * @param bytesReceived           Total number of bytes received.
+     * @param timeRemainingInMillis   Remaining download time in milliseconds or -1 if it is
+     *                                unknown.
+     * @param startTime               Time when download started.
+     * @param isOffTheRecord          Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
-     * @param isDownloadPending Whether the download is pending.
-     * @param isTransient Whether or not clicking on the download should launch downloads home.
+     * @param isDownloadPending       Whether the download is pending.
+     * @param isTransient             Whether or not clicking on the download should launch
+     *                                downloads home.
+     * @param icon                    A {@link Bitmap} to be used as the large icon for display.
      */
     private void updateActiveDownloadNotification(ContentId id, String fileName, int percentage,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient) {
+            boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient,
+            Bitmap icon) {
         boolean indeterminate =
                 (percentage == DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         String contentText = null;
@@ -832,6 +840,7 @@ public class DownloadNotificationService extends Service {
                     downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         builder.setAutoCancel(false);
+        if (icon != null) builder.setLargeIcon(icon);
 
         Intent pauseIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_PAUSE, id, isOffTheRecord);
         builder.addAction(R.drawable.ic_pause_white_24dp,
@@ -886,18 +895,19 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Change a download notification to paused state.
-     * @param id The {@link ContentId} of the download.
-     * @param isResumable Whether download can be resumed.
+     * @param id              The {@link ContentId} of the download.
+     * @param isResumable     Whether download can be resumed.
      * @param isAutoResumable whether download is can be resumed automatically.
-     * @param isTransient Whether or not clicking on the download should launch downloads home.
+     * @param isTransient     Whether or not clicking on the download should launch downloads home.
+     * @param icon            A {@link Bitmap} to be used as the large icon for display.
      */
-    public void notifyDownloadPaused(
-            ContentId id, boolean isResumable, boolean isAutoResumable, boolean isTransient) {
+    public void notifyDownloadPaused(ContentId id, boolean isResumable, boolean isAutoResumable,
+            boolean isTransient, Bitmap icon) {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
         if (!isResumable) {
-            notifyDownloadFailed(id, entry.fileName);
+            notifyDownloadFailed(id, entry.fileName, icon);
             return;
         }
         // If download is already paused, do nothing.
@@ -905,7 +915,7 @@ public class DownloadNotificationService extends Service {
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
             notifyDownloadPending(id, entry.fileName, entry.isOffTheRecord,
-                    entry.canDownloadWhileMetered, isTransient);
+                    entry.canDownloadWhileMetered, isTransient, icon);
             stopTrackingInProgressDownload(id, true);
             return;
         }
@@ -923,6 +933,7 @@ public class DownloadNotificationService extends Service {
                     downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         builder.setAutoCancel(false);
+        if (icon != null) builder.setLargeIcon(icon);
 
         Intent resumeIntent =
                 buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME, id, entry.isOffTheRecord);
@@ -949,19 +960,20 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a download successful notification.
-     * @param id The {@link ContentId} of the download.
-     * @param filePath Full path to the download.
-     * @param fileName Filename of the download.
-     * @param systemDownloadId Download ID assigned by system DownloadManager.
+     * @param id                  The {@link ContentId} of the download.
+     * @param filePath            Full path to the download.
+     * @param fileName            Filename of the download.
+     * @param systemDownloadId    Download ID assigned by system DownloadManager.
      * @param isSupportedMimeType Whether the MIME type can be viewed inside browser.
-     * @param isOpenable Whether or not this download can be opened.
-     * @return ID of the successful download notification. Used for removing the notification when
-     *         user click on the snackbar.
+     * @param isOpenable          Whether or not this download can be opened.
+     * @param icon                A {@link Bitmap} to be used as the large icon for display.
+     * @return                    ID of the successful download notification. Used for removing the
+     *                            notification when user click on the snackbar.
      */
     @VisibleForTesting
     public int notifyDownloadSuccessful(ContentId id, String filePath, String fileName,
             long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
-            boolean isOpenable) {
+            boolean isOpenable, Bitmap icon) {
         int notificationId = getNotificationId(id);
         ChromeNotificationBuilder builder = buildNotification(R.drawable.offline_pin, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
@@ -988,13 +1000,13 @@ public class DownloadNotificationService extends Service {
             builder.setContentIntent(PendingIntent.getBroadcast(
                     mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
-        if (mDownloadSuccessLargeIcon == null) {
+        if (icon == null && mDownloadSuccessLargeIcon == null) {
             Bitmap bitmap = BitmapFactory.decodeResource(
                     mContext.getResources(), R.drawable.offline_pin);
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
         builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
-        builder.setLargeIcon(mDownloadSuccessLargeIcon);
+        builder.setLargeIcon(icon != null ? icon : mDownloadSuccessLargeIcon);
         updateNotification(notificationId, builder.build(), id, null);
         stopTrackingInProgressDownload(id, true);
         return notificationId;
@@ -1002,11 +1014,12 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a download failed notification.
-     * @param id The {@link ContentId} of the download.
+     * @param id       The {@link ContentId} of the download.
      * @param fileName GUID of the download.
+     * @param icon     A {@link Bitmap} to be used as the large icon for display.
      */
     @VisibleForTesting
-    public void notifyDownloadFailed(ContentId id, String fileName) {
+    public void notifyDownloadFailed(ContentId id, String fileName, Bitmap icon) {
         // If the download is not in history db, fileName could be empty. Get it from
         // SharedPreferences.
         if (TextUtils.isEmpty(fileName)) {
@@ -1020,6 +1033,7 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 buildNotification(android.R.drawable.stat_sys_download_done, fileName,
                         mContext.getResources().getString(R.string.download_notification_failed));
+        if (icon != null) builder.setLargeIcon(icon);
         builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
         updateNotification(notificationId, builder.build(), id, null);
         stopTrackingInProgressDownload(id, true);
@@ -1152,7 +1166,10 @@ public class DownloadNotificationService extends Service {
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) {
-                notifyDownloadPaused(entry.id, !entry.isOffTheRecord, false, entry.isTransient);
+                // TODO(dtrainor): Should we spin up native to make sure we have the icon?  Or maybe
+                // build a Java cache for easy access.
+                notifyDownloadPaused(
+                        entry.id, !entry.isOffTheRecord, false, entry.isTransient, null);
                 hideSummaryNotificationIfNecessary(-1);
                 return;
             }
@@ -1199,11 +1216,15 @@ public class DownloadNotificationService extends Service {
                             observer.onDownloadCanceled(entry.id);
                         }
                 } else if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
-                    notifyDownloadPaused(entry.id, true, false, entry.isTransient);
+                    // TODO(dtrainor): Consider hitting the delegate and rely on that to update the
+                    // state.
+                    notifyDownloadPaused(entry.id, true, false, entry.isTransient, null);
                     downloadServiceDelegate.pauseDownload(entry.id, entry.isOffTheRecord);
                 } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+                    // TODO(dtrainor): Consider hitting the delegate and rely on that to update the
+                    // state.
                     notifyDownloadPending(entry.id, entry.fileName, entry.isOffTheRecord,
-                            entry.canDownloadWhileMetered, entry.isTransient);
+                            entry.canDownloadWhileMetered, entry.isTransient, null);
                     downloadServiceDelegate.resumeDownload(
                             entry.id, entry.buildDownloadItem(), true);
                 } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) {
@@ -1372,7 +1393,7 @@ public class DownloadNotificationService extends Service {
             if (mDownloadsInProgress.contains(entry.id)) continue;
 
             notifyDownloadPending(entry.id, entry.fileName, false, entry.canDownloadWhileMetered,
-                    entry.isTransient);
+                    entry.isTransient, null);
             DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(entry.id);
             downloadServiceDelegate.resumeDownload(entry.id, entry.buildDownloadItem(), false);
             downloadServiceDelegate.destroyServiceDelegate();

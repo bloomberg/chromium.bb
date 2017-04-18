@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "url/gurl.h"
 
@@ -15,6 +16,7 @@ namespace offline_items_collection {
 
 struct ContentId;
 struct OfflineItem;
+struct OfflineItemVisuals;
 
 // A provider of a set of OfflineItems that are meant to be exposed to the UI.
 // The provider is required to notify all observers of OnItemsAvailable when the
@@ -23,6 +25,8 @@ struct OfflineItem;
 class OfflineContentProvider {
  public:
   using OfflineItemList = std::vector<OfflineItem>;
+  using VisualsCallback =
+      base::Callback<void(const ContentId&, const OfflineItemVisuals*)>;
 
   // An observer class that should be notified of relevant changes to the
   // underlying data source.
@@ -44,6 +48,7 @@ class OfflineContentProvider {
 
     // Called when the contents of |item| have been updated and the UI should be
     // refreshed for that item.
+    // TODO(dtrainor): Make this take a list of OfflineItems.
     virtual void OnItemUpdated(const OfflineItem& item) = 0;
 
    protected:
@@ -78,6 +83,13 @@ class OfflineContentProvider {
 
   // Returns all OfflineItems for this particular provider.
   virtual OfflineItemList GetAllItems() = 0;
+
+  // Asks for an OfflineItemVisuals struct for an OfflineItem represented by
+  // |id| or |nullptr| if one doesn't exist.  The implementer should post any
+  // replies even if the results are available immediately to prevent reentrancy
+  // and for consistent behavior.
+  virtual void GetVisualsForItem(const ContentId& id,
+                                 const VisualsCallback& callback) = 0;
 
   // Adds an observer that should be notified of OfflineItem list modifications.
   // If the provider is already initialized OnItemsAvailable should be scheduled

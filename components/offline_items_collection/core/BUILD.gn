@@ -23,10 +23,13 @@ static_library("core") {
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//ui/gfx",
     "//url",
   ]
 
-  deps = []
+  deps = [
+    "//ui/gfx/geometry",
+  ]
 
   if (is_android) {
     sources += [
@@ -34,6 +37,8 @@ static_library("core") {
       "android/offline_content_aggregator_bridge.h",
       "android/offline_item_bridge.cc",
       "android/offline_item_bridge.h",
+      "android/offline_item_visuals_bridge.cc",
+      "android/offline_item_visuals_bridge.h",
     ]
 
     deps += [ ":jni_headers" ]
@@ -58,12 +63,15 @@ source_set("unit_tests") {
 if (is_android) {
   android_library("core_java") {
     java_files = [
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/ContentId.java",
       "android/java/src/org/chromium/components/offline_items_collection/LegacyHelpers.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentProvider.java",
       "android/java/src/org/chromium/components/offline_items_collection/OfflineItem.java",
-      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemVisuals.java",
+      "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
     ]
 
     srcjar_deps = [ ":jni_enums" ]
@@ -79,7 +87,8 @@ if (is_android) {
 
     sources = [
       "android/java/src/org/chromium/components/offline_items_collection/OfflineContentAggregatorBridge.java",
-      "android/java/src/org/chromium/components/offline_items_collection/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemBridge.java",
+      "android/java/src/org/chromium/components/offline_items_collection/bridges/OfflineItemVisualsBridge.java",
     ]
 
     jni_package = "components/offline_items_collection/core/android"

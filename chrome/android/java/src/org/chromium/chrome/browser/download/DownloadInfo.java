@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.graphics.Bitmap;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.content_public.browser.DownloadState;
 
 /**
@@ -42,6 +45,7 @@ public final class DownloadInfo {
     private final ContentId mContentId;
     private final boolean mIsOpenable;
     private final boolean mIsTransient;
+    private final Bitmap mIcon;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -74,6 +78,7 @@ public final class DownloadInfo {
         }
         mIsOpenable = builder.mIsOpenable;
         mIsTransient = builder.mIsTransient;
+        mIcon = builder.mIcon;
     }
 
     public String getUrl() {
@@ -182,12 +187,16 @@ public final class DownloadInfo {
         return mIsTransient;
     }
 
+    public Bitmap getIcon() {
+        return mIcon;
+    }
+
     /**
      * Helper method to build a {@link DownloadInfo} from an {@link OfflineItem}.
      * @param item The {@link OfflineItem} to mimic.
      * @return     A {@link DownloadInfo} containing the relevant fields from {@code item}.
      */
-    public static DownloadInfo fromOfflineItem(OfflineItem item) {
+    public static DownloadInfo fromOfflineItem(OfflineItem item, OfflineItemVisuals visuals) {
         int state;
         switch (item.state) {
             case OfflineItemState.COMPLETE:
@@ -225,6 +234,7 @@ public final class DownloadInfo {
                 .setBytesReceived(item.receivedBytes)
                 .setPercentCompleted(item.percentCompleted)
                 .setTimeRemainingInMillis(item.timeRemainingMs)
+                .setIcon(visuals == null ? null : visuals.icon)
                 .build();
     }
 
@@ -257,6 +267,7 @@ public final class DownloadInfo {
         private ContentId mContentId;
         private boolean mIsOpenable = true;
         private boolean mIsTransient;
+        private Bitmap mIcon;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -384,6 +395,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIcon(Bitmap icon) {
+            mIcon = icon;
+            return this;
+        }
+
         public DownloadInfo build() {
             return new DownloadInfo(this);
         }
@@ -416,7 +432,8 @@ public final class DownloadInfo {
                     .setIsOffTheRecord(downloadInfo.isOffTheRecord())
                     .setIsOfflinePage(downloadInfo.isOfflinePage())
                     .setState(downloadInfo.state())
-                    .setLastAccessTime(downloadInfo.getLastAccessTime());
+                    .setLastAccessTime(downloadInfo.getLastAccessTime())
+                    .setIcon(downloadInfo.getIcon());
             return builder;
         }
     }

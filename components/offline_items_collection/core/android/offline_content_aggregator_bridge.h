@@ -69,6 +69,12 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   base::android::ScopedJavaLocalRef<jobject> GetAllItems(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj);
+  void GetVisualsForItem(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& j_namespace,
+      const base::android::JavaParamRef<jstring>& j_id,
+      const base::android::JavaParamRef<jobject>& j_callback);
 
  private:
   OfflineContentAggregatorBridge(OfflineContentAggregator* aggregator);

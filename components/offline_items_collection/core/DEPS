@@ -4,5 +4,6 @@ include_rules = [
   "+components/offline_pages",
   "+jni",
   "+testing",
+  "+ui/gfx",
   "+url",
 ]

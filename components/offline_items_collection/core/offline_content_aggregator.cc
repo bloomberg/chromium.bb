@@ -145,6 +145,20 @@ OfflineContentAggregator::GetAllItems() {
   return items;
 }
 
+void OfflineContentAggregator::GetVisualsForItem(
+    const ContentId& id,
+    const VisualsCallback& callback) {
+  auto it = providers_.find(id.name_space);
+
+  if (it == providers_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, id, nullptr));
+    return;
+  }
+
+  it->second->GetVisualsForItem(id, callback);
+}
+
 void OfflineContentAggregator::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK(observer);

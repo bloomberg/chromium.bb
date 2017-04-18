@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/offline_item_filter.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace offline_items_collection {
@@ -131,6 +132,27 @@ struct OfflineItem {
   // represents an unknown time remaining.  This field is not used if |state| is
   // COMPLETE.
   int64_t time_remaining_ms;
+};
+
+// This struct holds any potentially expensive visuals for an OfflineItem.  If
+// the front end requires the visuals it will ask for them through the
+// OfflineContentProvider interface asynchronously to give the backend time to
+// generate them if necessary.
+//
+// It is not expected that these will change.  Currently the UI might cache the
+// results of this call.
+// TODO(dtrainor): If we run into a scenario where this changes, add a way for
+// an OfflineItem update to let us know about an update to the visuals.
+struct OfflineItemVisuals {
+  OfflineItemVisuals();
+  OfflineItemVisuals(const OfflineItemVisuals& other);
+
+  ~OfflineItemVisuals();
+
+  // The icon to use for displaying this item.  The icon should be 64dp x 64dp.
+  // TODO(dtrainor): Suggest icon size based on the icon size supported by the
+  // current OS.
+  gfx::Image icon;
 };
 
 }  // namespace offline_items_collection

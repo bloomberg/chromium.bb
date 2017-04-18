@@ -45,7 +45,7 @@ public class OfflineItem {
     public int percentCompleted;
     public long timeRemainingMs;
 
-    OfflineItem() {
+    public OfflineItem() {
         id = new ContentId();
         filter = OfflineItemFilter.FILTER_OTHER;
         state = OfflineItemState.COMPLETE;

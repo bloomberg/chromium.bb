@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Notification;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
@@ -96,13 +97,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     @Override
     public int notifyDownloadSuccessful(final ContentId id, final String filePath,
             final String fileName, final long systemDownloadId, final boolean isOffTheRecord,
-            final boolean isSupportedMimeType, final boolean isOpenable) {
+            final boolean isSupportedMimeType, final boolean isOpenable, final Bitmap icon) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return MockDownloadNotificationService.super.notifyDownloadSuccessful(id, filePath,
-                        fileName, systemDownloadId, isOffTheRecord, isSupportedMimeType,
-                        isOpenable);
+                        fileName, systemDownloadId, isOffTheRecord, isSupportedMimeType, isOpenable,
+                        icon);
             }
         });
     }
@@ -111,23 +112,23 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     public void notifyDownloadProgress(final ContentId id, final String fileName,
             final int percentage, final long bytesReceived, final long timeRemainingInMillis,
             final long startTime, final boolean isOffTheRecord,
-            final boolean canDownloadWhileMetered, final boolean isTransient) {
+            final boolean canDownloadWhileMetered, final boolean isTransient, final Bitmap icon) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName,
                         percentage, bytesReceived, timeRemainingInMillis, startTime, isOffTheRecord,
-                        canDownloadWhileMetered, isTransient);
+                        canDownloadWhileMetered, isTransient, icon);
             }
         });
     }
 
     @Override
-    public void notifyDownloadFailed(final ContentId id, final String fileName) {
+    public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName);
+                MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName, icon);
             }
         });
     }

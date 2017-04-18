@@ -5,7 +5,9 @@
 #include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "components/offline_items_collection/core/android/offline_item_bridge.h"
+#include "components/offline_items_collection/core/android/offline_item_visuals_bridge.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "jni/OfflineContentAggregatorBridge_jni.h"
 
@@ -14,6 +16,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ScopedJavaGlobalRef;
 
 namespace offline_items_collection {
 namespace android {
@@ -26,6 +29,16 @@ ContentId CreateContentId(JNIEnv* env,
                           const JavaParamRef<jstring>& j_id) {
   return ContentId(ConvertJavaStringToUTF8(env, j_namespace),
                    ConvertJavaStringToUTF8(env, j_id));
+}
+
+void GetVisualsForItemHelperCallback(ScopedJavaGlobalRef<jobject> j_callback,
+                                     const ContentId& id,
+                                     const OfflineItemVisuals* visuals) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_OfflineContentAggregatorBridge_onVisualsAvailable(
+      env, j_callback.obj(), ConvertUTF8ToJavaString(env, id.name_space),
+      ConvertUTF8ToJavaString(env, id.id),
+      OfflineItemVisualsBridge::CreateOfflineItemVisuals(env, visuals));
 }
 
 }  // namespace
@@ -131,6 +144,18 @@ ScopedJavaLocalRef<jobject> OfflineContentAggregatorBridge::GetAllItems(
     const JavaParamRef<jobject>& jobj) {
   return OfflineItemBridge::CreateOfflineItemList(env,
                                                   aggregator_->GetAllItems());
+}
+
+void OfflineContentAggregatorBridge::GetVisualsForItem(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& j_namespace,
+    const JavaParamRef<jstring>& j_id,
+    const JavaParamRef<jobject>& j_callback) {
+  aggregator_->GetVisualsForItem(
+      CreateContentId(env, j_namespace, j_id),
+      base::Bind(&GetVisualsForItemHelperCallback,
+                 ScopedJavaGlobalRef<jobject>(env, j_callback)));
 }
 
 void OfflineContentAggregatorBridge::OnItemsAvailable(

@@ -69,4 +69,9 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          time_remaining_ms == offline_item.time_remaining_ms;
 }
 
+OfflineItemVisuals::OfflineItemVisuals() = default;
+OfflineItemVisuals::OfflineItemVisuals(const OfflineItemVisuals& other) =
+    default;
+OfflineItemVisuals::~OfflineItemVisuals() = default;
+
 }  // namespace offline_items_collection

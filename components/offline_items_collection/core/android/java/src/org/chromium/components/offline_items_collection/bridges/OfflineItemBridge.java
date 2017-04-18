@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.offline_items_collection;
+package org.chromium.components.offline_items_collection.bridges;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 
 import java.util.ArrayList;
 
@@ -16,7 +19,7 @@ import java.util.ArrayList;
  * instances.
  */
 @JNINamespace("offline_items_collection::android")
-public class OfflineItemBridge {
+public final class OfflineItemBridge {
     private OfflineItemBridge() {}
 
     /**

@@ -1630,6 +1630,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/cookies/CanonicalCookieTest.java",
   "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnableUnitTest.java",
   "junit/src/org/chromium/chrome/browser/download/DownloadSharedPreferenceEntryTest.java",
+  "junit/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUiTest.java",
   "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",

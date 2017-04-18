@@ -296,7 +296,7 @@ public class DownloadNotificationServiceTest extends
 
         DownloadNotificationService service = bindNotificationService();
         ContentId id3 = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
-        service.notifyDownloadProgress(id3, "test", 1, 100L, 1L, 1L, true, true, false);
+        service.notifyDownloadProgress(id3, "test", 1, 100L, 1L, 1L, true, true, false, null);
         assertEquals(3, getService().getNotificationIds().size());
         int lastNotificationId = getService().getLastAddedNotificationId();
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
@@ -305,13 +305,13 @@ public class DownloadNotificationServiceTest extends
 
         ContentId id1 = LegacyHelpers.buildLegacyContentId(false, guid1);
         service.notifyDownloadSuccessful(
-                id1, "/path/to/success", "success", 100L, false, false, true);
+                id1, "/path/to/success", "success", 100L, false, false, true, null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
 
         ContentId id2 = LegacyHelpers.buildLegacyContentId(false, guid2);
-        service.notifyDownloadFailed(id2, "failed");
+        service.notifyDownloadFailed(id2, "failed", null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(1, entries.size());
@@ -322,7 +322,7 @@ public class DownloadNotificationServiceTest extends
 
         ContentId id4 = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadSuccessful(
-                id4, "/path/to/success", "success", 100L, false, false, true);
+                id4, "/path/to/success", "success", 100L, false, false, true, null);
         assertEquals(3, getService().getNotificationIds().size());
         int nextNotificationId = getService().getLastAddedNotificationId();
         service.cancelNotification(nextNotificationId, id4);
@@ -341,7 +341,8 @@ public class DownloadNotificationServiceTest extends
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
-        service.notifyDownloadSuccessful(id, "/path/to/test", "test", 100L, false, false, true);
+        service.notifyDownloadSuccessful(
+                id, "/path/to/test", "test", 100L, false, false, true, null);
         assertEquals(1, getService().getNotificationIds().size());
     }
 
