@@ -126,7 +126,8 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 // This views holds the primary content of this controller. At any point in
 // time, it contains exactly one of the BookmarkCollectionView subclasses.
-@property(nonatomic, strong) ContentView* contentView;
+@property(nonatomic, readwrite, strong) ContentView* view;
+
 // The possible views that can be shown from the menu.
 @property(nonatomic, strong) BookmarkFolderCollectionView* folderView;
 // This view is created and used if the model is not fully loaded yet by the
@@ -272,11 +273,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @end
 
 @implementation BookmarkHomeTabletNTPController
+
+@dynamic view;
 @synthesize editing = _editing;
 @synthesize editIndexPaths = _editIndexPaths;
 @synthesize bookmarks = _bookmarks;
 
-@synthesize contentView = _contentView;
 @synthesize folderView = _folderView;
 @synthesize waitForModelView = _waitForModelView;
 
@@ -319,7 +321,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)dealloc {
-  _contentView.delegate = nil;
+  self.view.delegate = nil;
 
   _folderView.delegate = nil;
 
@@ -355,7 +357,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   // NTPController's scrollview can still scroll with the gestures.
   [self.panelView enableSideSwiping:NO];
 
-  CGFloat width = self.contentView.bounds.size.width;
+  CGFloat width = self.view.bounds.size.width;
   LayoutRect navBarLayout =
       LayoutRectMake(leadingMargin, width, 0, width - leadingMargin,
                      CGRectGetHeight([self navigationBarFrame]));
@@ -437,7 +439,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 - (void)loadWaitingView {
   DCHECK(!self.waitForModelView);
-  DCHECK(self.contentView);
+  DCHECK(self.view);
 
   // Present a waiting view.
   BookmarkHomeWaitingView* waitingView =
@@ -514,7 +516,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   if ([self.primaryMenuItem isEqual:menuItem])
     return;
 
-  if (![self.contentView superview])
+  if (![self.view superview])
     return;
 
   [[self primaryView] removeFromSuperview];
@@ -529,7 +531,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
   [self moveMenuAndPrimaryViewToAdequateParent];
 
-  // [self.contentView sendSubviewToBack:primaryView];
+  // [self.view sendSubviewToBack:primaryView];
   [self refreshFrameOfPrimaryView];
 
   self.navigationBar.hidden = NO;
@@ -578,7 +580,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
                                      menuViewWidth:[self menuWidth]];
     }
     [self.view addSubview:self.panelView];
-    CGSize size = self.contentView.bounds.size;
+    CGSize size = self.view.bounds.size;
     CGFloat navBarHeight = CGRectGetHeight([self navigationBarFrame]);
     LayoutRect panelLayout = LayoutRectMake(
         0, size.width, navBarHeight, size.width, size.height - navBarHeight);
@@ -1171,9 +1173,9 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)dismissKeyboard {
-  // Uses self.contentView directly instead of going throught self.view to
+  // Uses self.view directly instead of going throught self.view to
   // avoid creating the view hierarchy unnecessarily.
-  [self.contentView endEditing:YES];
+  [self.view endEditing:YES];
 }
 
 - (void)setScrollsToTop:(BOOL)enabled {
@@ -1181,33 +1183,31 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   [[self primaryView] setScrollsToTop:self.scrollToTop];
 }
 
-- (UIView*)view {
-  if (!self.contentView) {
-    _contentView = [[ContentView alloc] initWithFrame:CGRectZero];
-    _contentView.delegate = self;
-    self.contentView.backgroundColor =
-        bookmark_utils_ios::mainBackgroundColor();
-    BookmarkNavigationBar* bar =
-        [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
-    self.navigationBar = bar;
-    self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+- (void)loadView {
+  self.view = [[ContentView alloc] initWithFrame:CGRectZero];
+}
 
-    [self.navigationBar setEditTarget:self
-                               action:@selector(navigationBarWantsEditing:)];
-    [self.navigationBar setBackTarget:self
-                               action:@selector(navigationBarBack:)];
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.view.delegate = self;
+  self.view.backgroundColor = bookmark_utils_ios::mainBackgroundColor();
+  BookmarkNavigationBar* bar =
+      [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
+  self.navigationBar = bar;
+  self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
-    [self.navigationBar setMenuTarget:self
-                               action:@selector(toggleMenuAnimated)];
+  [self.navigationBar setEditTarget:self
+                             action:@selector(navigationBarWantsEditing:)];
+  [self.navigationBar setBackTarget:self action:@selector(navigationBarBack:)];
 
-    [self.view addSubview:self.navigationBar];
+  [self.navigationBar setMenuTarget:self action:@selector(toggleMenuAnimated)];
 
-    if (self.bookmarks->loaded())
-      [self loadBookmarkViews];
-    else
-      [self loadWaitingView];
-  }
-  return self.contentView;
+  [self.view addSubview:self.navigationBar];
+
+  if (self.bookmarks->loaded())
+    [self loadBookmarkViews];
+  else
+    [self loadWaitingView];
 }
 
 - (CGFloat)alphaForBottomShadow {
@@ -1217,7 +1217,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {
-  if (!self.contentView)
+  if (!self.view)
     return;
 
   DCHECK(self.waitForModelView);

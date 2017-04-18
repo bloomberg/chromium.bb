@@ -34,7 +34,7 @@
 
 @interface NewTabPageController (TestSupport)
 - (id<NewTabPagePanelProtocol>)currentController;
-- (id<NewTabPagePanelProtocol>)bookmarkController;
+- (BookmarkHomeTabletNTPController*)bookmarkController;
 - (id<NewTabPagePanelProtocol>)incognitoController;
 @end
 
@@ -48,7 +48,7 @@
   return currentController_;
 }
 
-- (id<NewTabPagePanelProtocol>)bookmarkController {
+- (BookmarkHomeTabletNTPController*)bookmarkController {
   return bookmarkController_.get();
 }
 

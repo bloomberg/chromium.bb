@@ -22,7 +22,7 @@ bookmarkControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                                                    browserState:browserState];
 }
 
-- (id<NewTabPagePanelProtocol>)
+- (BookmarkHomeTabletNTPController*)
 bookmarkPanelControllerForBrowserState:(ios::ChromeBrowserState*)browserState
                                 loader:(id<UrlLoader>)loader
                             colorCache:(NSMutableDictionary*)cache {

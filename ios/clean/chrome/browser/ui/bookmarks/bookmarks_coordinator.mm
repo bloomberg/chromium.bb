@@ -17,12 +17,10 @@
 
 @interface BookmarksCoordinator ()
 @property(nonatomic, strong) UIViewController* viewController;
-@property(nonatomic, strong) BookmarkHomeTabletNTPController* wrapperController;
 @end
 
 @implementation BookmarksCoordinator
 @synthesize viewController = _viewController;
-@synthesize wrapperController = _wrapperController;
 
 - (void)start {
   // HACK: Re-using old view controllers for now.
@@ -34,12 +32,10 @@
   } else {
     BookmarkControllerFactory* factory =
         [[BookmarkControllerFactory alloc] init];
-    self.wrapperController = [factory
+    self.viewController = [factory
         bookmarkPanelControllerForBrowserState:self.browser->browser_state()
                                         loader:nil
                                     colorCache:nil];
-    self.viewController = [[UIViewController alloc] init];
-    self.viewController.view = [self.wrapperController view];
   }
   [super start];
 }

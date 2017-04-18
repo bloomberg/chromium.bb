@@ -36,6 +36,7 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
 
 }  // namespace NewTabPage
 
+@class BookmarkHomeTabletNTPController;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingController;
 @protocol NewTabPagePanelProtocol;
@@ -75,7 +76,7 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
                               UIGestureRecognizerDelegate,
                               UIScrollViewDelegate> {
  @private
-  base::scoped_nsprotocol<id<NewTabPagePanelProtocol>> bookmarkController_;
+  base::scoped_nsobject<BookmarkHomeTabletNTPController> bookmarkController_;
   base::scoped_nsobject<GoogleLandingController> googleLandingController_;
   base::scoped_nsprotocol<id<NewTabPagePanelProtocol>> incognitoController_;
   // The currently visible controller, one of the above.

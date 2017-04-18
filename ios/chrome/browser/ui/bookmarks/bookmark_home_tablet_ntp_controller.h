@@ -14,7 +14,8 @@ class ChromeBrowserState;
 }  // namespace ios
 
 // Navigate/edit the bookmark hierarchy on tablet, from the New Tab Page (NTP).
-@interface BookmarkHomeTabletNTPController : NSObject<NewTabPagePanelProtocol>
+@interface BookmarkHomeTabletNTPController
+    : UIViewController<NewTabPagePanelProtocol>
 // Designated initializer.
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState;

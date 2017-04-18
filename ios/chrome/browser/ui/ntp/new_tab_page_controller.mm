@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -284,8 +285,9 @@ enum {
   // //web -wasDismissed method on CRWNativeContent would be more accurate. If
   // CRWNativeContent leaks, this will not be called.
   // TODO(crbug.com/708319): Also call -removeFromParentViewController for
-  // bookmarks, open tabs and incognit here.
+  // open tabs and incognito here.
   [googleLandingController_ removeFromParentViewController];
+  [bookmarkController_ removeFromParentViewController];
 
   [googleLandingController_ setDelegate:nil];
   [bookmarkController_ setDelegate:nil];
@@ -301,8 +303,9 @@ enum {
   // from the view hierarchy, making it an ideal spot to intiate view controller
   // containment methods.
   // TODO(crbug.com/708319): Also call -willMoveToParentViewController:nil for
-  // bookmarks, open tabs and incognito here.
+  // open tabs and incognito here.
   [googleLandingController_ willMoveToParentViewController:nil];
+  [bookmarkController_ willMoveToParentViewController:nil];
 }
 
 - (void)reload {
@@ -512,8 +515,8 @@ enum {
                                           loader:loader_
                                       colorCache:dominantColorCache_] retain]);
     }
+    panelController = bookmarkController_;
     view = [bookmarkController_ view];
-    // TODO(crbug.com/708319): Also set panelController for bookmarks here.
     [bookmarkController_ setDelegate:self];
   } else if (item.identifier == NewTabPage::kMostVisitedPanel) {
     if (!googleLandingController_) {
