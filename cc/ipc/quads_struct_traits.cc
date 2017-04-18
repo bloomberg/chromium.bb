@@ -229,7 +229,8 @@ bool StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad>::Read(
   if (!data.ReadYaTexCoordRect(&quad->ya_tex_coord_rect) ||
       !data.ReadUvTexCoordRect(&quad->uv_tex_coord_rect) ||
       !data.ReadYaTexSize(&quad->ya_tex_size) ||
-      !data.ReadUvTexSize(&quad->uv_tex_size)) {
+      !data.ReadUvTexSize(&quad->uv_tex_size) ||
+      !data.ReadVideoColorSpace(&quad->video_color_space)) {
     return false;
   }
   quad->resources.ids[cc::YUVVideoDrawQuad::kYPlaneResourceIdIndex] =

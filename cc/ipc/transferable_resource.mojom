@@ -6,6 +6,7 @@ module cc.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
 enum ResourceFormat {
@@ -31,4 +32,5 @@ struct TransferableResource {
   bool is_overlay_candidate;
   bool is_backed_by_surface_texture;
   bool wants_promotion_hint;
+  gfx.mojom.ColorSpace color_space;
 };

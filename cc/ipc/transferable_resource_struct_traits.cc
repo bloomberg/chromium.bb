@@ -16,7 +16,8 @@ bool StructTraits<cc::mojom::TransferableResourceDataView,
     Read(cc::mojom::TransferableResourceDataView data,
          cc::TransferableResource* out) {
   if (!data.ReadSize(&out->size) ||
-      !data.ReadMailboxHolder(&out->mailbox_holder))
+      !data.ReadMailboxHolder(&out->mailbox_holder) ||
+      !data.ReadColorSpace(&out->color_space))
     return false;
   out->id = data.id();
   out->format = static_cast<cc::ResourceFormat>(data.format());
