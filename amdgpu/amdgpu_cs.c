@@ -59,13 +59,11 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	int i, j, k;
 	int r;
 
-	if (NULL == dev)
-		return -EINVAL;
-	if (NULL == context)
+	if (!dev || !context)
 		return -EINVAL;
 
 	gpu_context = calloc(1, sizeof(struct amdgpu_context));
-	if (NULL == gpu_context)
+	if (!gpu_context)
 		return -ENOMEM;
 
 	gpu_context->dev = dev;
@@ -110,7 +108,7 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	int i, j, k;
 	int r;
 
-	if (NULL == context)
+	if (!context)
 		return -EINVAL;
 
 	pthread_mutex_destroy(&context->sequence_mutex);
@@ -330,9 +328,7 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
 	uint32_t i;
 	int r;
 
-	if (NULL == context)
-		return -EINVAL;
-	if (NULL == ibs_request)
+	if (!context || !ibs_request)
 		return -EINVAL;
 
 	r = 0;
@@ -416,11 +412,7 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 	bool busy = true;
 	int r;
 
-	if (NULL == fence)
-		return -EINVAL;
-	if (NULL == expired)
-		return -EINVAL;
-	if (NULL == fence->context)
+	if (!fence || !expired || !fence->context)
 		return -EINVAL;
 	if (fence->ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
@@ -493,12 +485,9 @@ int amdgpu_cs_wait_fences(struct amdgpu_cs_fence *fences,
 	uint32_t i;
 
 	/* Sanity check */
-	if (NULL == fences)
+	if (!fences || !status || !fence_count)
 		return -EINVAL;
-	if (NULL == status)
-		return -EINVAL;
-	if (fence_count <= 0)
-		return -EINVAL;
+
 	for (i = 0; i < fence_count; i++) {
 		if (NULL == fences[i].context)
 			return -EINVAL;
@@ -518,11 +507,11 @@ int amdgpu_cs_create_semaphore(amdgpu_semaphore_handle *sem)
 {
 	struct amdgpu_semaphore *gpu_semaphore;
 
-	if (NULL == sem)
+	if (!sem)
 		return -EINVAL;
 
 	gpu_semaphore = calloc(1, sizeof(struct amdgpu_semaphore));
-	if (NULL == gpu_semaphore)
+	if (!gpu_semaphore)
 		return -ENOMEM;
 
 	atomic_set(&gpu_semaphore->refcount, 1);
@@ -537,13 +526,11 @@ int amdgpu_cs_signal_semaphore(amdgpu_context_handle ctx,
 			       uint32_t ring,
 			       amdgpu_semaphore_handle sem)
 {
-	if (NULL == ctx)
+	if (!ctx || !sem)
 		return -EINVAL;
 	if (ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
 	if (ring >= AMDGPU_CS_MAX_RINGS)
-		return -EINVAL;
-	if (NULL == sem)
 		return -EINVAL;
 	/* sem has been signaled */
 	if (sem->signal_fence.context)
@@ -565,13 +552,11 @@ int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
 			     uint32_t ring,
 			     amdgpu_semaphore_handle sem)
 {
-	if (NULL == ctx)
+	if (!ctx || !sem)
 		return -EINVAL;
 	if (ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
 	if (ring >= AMDGPU_CS_MAX_RINGS)
-		return -EINVAL;
-	if (NULL == sem)
 		return -EINVAL;
 	/* must signal first */
 	if (NULL == sem->signal_fence.context)
@@ -585,9 +570,7 @@ int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
 
 static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem)
 {
-	if (NULL == sem)
-		return -EINVAL;
-	if (NULL == sem->signal_fence.context)
+	if (!sem || !sem->signal_fence.context)
 		return -EINVAL;
 
 	sem->signal_fence.context = NULL;;
@@ -601,7 +584,7 @@ static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem)
 
 static int amdgpu_cs_unreference_sem(amdgpu_semaphore_handle sem)
 {
-	if (NULL == sem)
+	if (!sem)
 		return -EINVAL;
 
 	if (update_references(&sem->refcount, NULL))

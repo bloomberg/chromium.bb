@@ -652,7 +652,7 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
 		return -EINVAL;
 
 	list = malloc(number_of_resources * sizeof(struct drm_amdgpu_bo_list_entry));
-	if (list == NULL)
+	if (!list)
 		return -ENOMEM;
 
 	args.in.operation = AMDGPU_BO_LIST_OP_UPDATE;
