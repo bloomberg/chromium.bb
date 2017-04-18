@@ -771,7 +771,6 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
-    bool always_require_handshake_confirmation,
     float load_server_info_timeout_srtt_multiplier,
     bool enable_connection_racing,
     bool enable_non_blocking_io,
@@ -815,8 +814,6 @@ QuicStreamFactory::QuicStreamFactory(
                                     transport_security_state,
                                     cert_transparency_verifier))),
       supported_versions_(supported_versions),
-      always_require_handshake_confirmation_(
-          always_require_handshake_confirmation),
       load_server_info_timeout_srtt_multiplier_(
           load_server_info_timeout_srtt_multiplier),
       enable_connection_racing_(enable_connection_racing),
@@ -1188,8 +1185,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
       job_requests_map_.find(server_id);
   DCHECK(requests_iter != job_requests_map_.end());
   if (rv == OK) {
-    if (!always_require_handshake_confirmation_)
-      set_require_confirmation(false);
+    set_require_confirmation(false);
 
     if (!requests_iter->second.empty()) {
       SessionMap::iterator session_it = active_sessions_.find(server_id);

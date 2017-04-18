@@ -142,14 +142,6 @@ net::QuicTagVector GetQuicConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
-bool ShouldQuicAlwaysRequireHandshakeConfirmation(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "always_require_handshake_confirmation"),
-      "true");
-}
-
 float GetQuicLoadServerInfoTimeoutSrttMultiplier(
     const VariationParameters& quic_trial_params) {
   double value;
@@ -318,8 +310,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params);
 
   if (params->enable_quic) {
-    params->quic_always_require_handshake_confirmation =
-        ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params);
     params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);

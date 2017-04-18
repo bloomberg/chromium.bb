@@ -208,7 +208,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       size_t max_packet_length,
       const std::string& user_agent_id,
       const QuicVersionVector& supported_versions,
-      bool always_require_handshake_confirmation,
       float load_server_info_timeout_srtt_multiplier,
       bool enable_connection_racing,
       bool enable_non_blocking_io,
@@ -561,10 +560,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CertVerifierJobMap active_cert_verifier_jobs_;
 
   const QuicVersionVector supported_versions_;
-
-  // Set if we always require handshake confirmation. If true, this will
-  // introduce at least one RTT for the handshake before the client sends data.
-  bool always_require_handshake_confirmation_;
 
   // Specifies the ratio between time to load QUIC server information from disk
   // cache to 'smoothed RTT'. This ratio is used to calculate the timeout in

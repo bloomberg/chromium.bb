@@ -125,8 +125,6 @@ class NET_EXPORT HttpNetworkSession
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
-    // Disables QUIC's 0-RTT behavior.
-    bool quic_always_require_handshake_confirmation;
     // If not zero, the task to load QUIC server configs from the disk cache
     // will timeout after this value multiplied by the smoothed RTT for the
     // server.

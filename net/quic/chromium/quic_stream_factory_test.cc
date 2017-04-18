@@ -243,7 +243,6 @@ class QuicStreamFactoryTestBase {
         url3_(kServer3Url),
         url4_(kServer4Url),
         privacy_mode_(PRIVACY_MODE_DISABLED),
-        always_require_handshake_confirmation_(false),
         load_server_info_timeout_srtt_multiplier_(0.0f),
         enable_connection_racing_(enable_connection_racing),
         enable_non_blocking_io_(true),
@@ -273,7 +272,6 @@ class QuicStreamFactoryTestBase {
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
-        always_require_handshake_confirmation_,
         load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
         enable_non_blocking_io_, disable_disk_cache_, delay_tcp_race_,
         /*max_server_configs_stored_in_properties*/ 0,
@@ -772,7 +770,6 @@ class QuicStreamFactoryTestBase {
   TestCompletionCallback callback_;
 
   // Variables to configure QuicStreamFactory.
-  bool always_require_handshake_confirmation_;
   double load_server_info_timeout_srtt_multiplier_;
   bool enable_connection_racing_;
   bool enable_non_blocking_io_;

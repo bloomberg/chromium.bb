@@ -300,7 +300,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   variations::testing::ClearAllVariationParams();
 
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["always_require_handshake_confirmation"] = "true";
   field_trial_params["disable_delay_tcp_race"] = "true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
@@ -310,7 +309,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_quic);
-  EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
   EXPECT_TRUE(params_.quic_delay_tcp_race);
 }
 
