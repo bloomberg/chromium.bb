@@ -436,6 +436,10 @@ String Deprecation::DeprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("RTCPeerConnection.getStreamById()", M62,
                            "5751819573657600");
 
+    case UseCounter::kV8SVGPathElement_GetPathSegAtLength_Method:
+      return willBeRemoved("SVGPathElement.getPathSegAtLength", M62,
+                           "5638783282184192");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
