@@ -10,6 +10,7 @@ Has category: Elements
 Has category: Mobile
 Has category: Network
 Has category: Panel
+Has category: Settings
 Has category: Sources
 
 Switching to console panel
