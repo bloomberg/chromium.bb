@@ -32,9 +32,11 @@
 #define CoreProbes_h
 
 #include "core/CoreExport.h"
+#include "core/animation/Animation.h"
 #include "core/dom/Document.h"
-#include "core/dom/Node.h"
+#include "core/dom/PseudoElement.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/page/ChromeClient.h"
 #include "platform/probe/PlatformProbes.h"
 

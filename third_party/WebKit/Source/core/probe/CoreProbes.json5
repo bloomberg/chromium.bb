@@ -3,10 +3,6 @@
     export_symbol: "CORE_EXPORT",
     include_path: "core/inspector",
     includes: [
-      "core/animation/Animation.h",
-      "core/dom/CharacterData.h",
-      "core/dom/PseudoElement.h",
-      "core/html/HTMLSlotElement.h",
       "core/probe/CoreProbes.h",
     ],
   },

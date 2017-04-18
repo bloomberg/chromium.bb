@@ -187,6 +187,7 @@ source_set("generated") {
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/WebKit/Source/core:all_generators",
+    "//third_party/WebKit/Source/core/probe:generated",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//v8",

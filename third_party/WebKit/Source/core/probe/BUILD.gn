@@ -4,13 +4,6 @@
 
 import("//third_party/WebKit/Source/core/core.gni")
 
-blink_core_sources("probe") {
-  sources = [
-    "CoreProbes.cpp",
-    "CoreProbes.h",
-  ]
-}
-
 action("instrumentation_probes") {
   script = "../../build/scripts/make_instrumenting_probes.py"
 
@@ -37,21 +30,26 @@ action("instrumentation_probes") {
   ]
 }
 
-# Compiles the sources generated above.
 source_set("generated") {
-  sources = get_target_outputs(":instrumentation_probes")
+  deps = [
+    ":instrumentation_probes",
+  ]
+}
 
-  configs -= core_config_remove
-  configs +=
-      core_config_add + [ "//third_party/WebKit/Source/core:core_include_dirs" ]
-
-  if (is_win) {
-    cflags = [ "/wd4702" ]  # Unreachable code.
-  }
+# Compiles the sources generated above.
+blink_core_sources("probe") {
+  sources = [
+    "CoreProbes.cpp",
+    "CoreProbes.h",
+  ]
+  sources += get_target_outputs(":instrumentation_probes")
 
   deps = [
     ":instrumentation_probes",
     "//skia",
+    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
+    "//third_party/WebKit/Source/core:all_generators",
+    "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/wtf",
     "//v8",
   ]
