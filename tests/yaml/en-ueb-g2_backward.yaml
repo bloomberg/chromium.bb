@@ -25,7 +25,13 @@ tests:
   - [⠘⠺, word]
   - [⠸⠍, many]
   - [⠐⠝, name]
-  - [⠰⠃, \\56/b]
   - [⠁⠰⠝, ation]
+  # #311: The grade 1 symbol indicator.
+  - [⠰⠃, b]
+  - [⠰⠠⠃, B]
+  - [⠰⠁⠃, ab]
+  - [⠰⠠⠁⠃, Ab]
+  - [⠼⠁⠰⠁, 1a]
+  - [⠼⠁⠰⠠⠁, 1A]
   # #309: Ensure correct back-translation to "this".
   - [⠹, this]
