@@ -23,6 +23,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "ui/message_center/notification_types.h"
 #include "url/gurl.h"
 
 class NotificationPlatformBridgeMacTest : public testing::Test {
@@ -249,6 +250,7 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayProgress) {
   const int kSamplePercent = 10;
 
   notification->set_progress(kSamplePercent);
+  notification->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
 
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
       new NotificationPlatformBridgeMac(notification_center(),

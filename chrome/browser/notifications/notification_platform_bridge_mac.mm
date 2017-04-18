@@ -39,6 +39,7 @@
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/message_center/notification_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -118,7 +119,7 @@ void RecordXPCEvent(XPCConnectionEvent event) {
 
 base::string16 CreateNotificationTitle(const Notification& notification) {
   base::string16 title;
-  if (notification.progress() > 0) {
+  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     title += base::FormatPercent(notification.progress());
     title += base::UTF8ToUTF16(" - ");
   }
@@ -254,7 +255,8 @@ void NotificationPlatformBridgeMac::Display(
   // can be displayed as alerts. Chrome itself can only display
   // banners.
   // Progress Notifications are always considered persistent.
-  if (notification.never_timeout() || notification.progress() > 0) {
+  if (notification.never_timeout() ||
+      notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     NSDictionary* dict = [builder buildDictionary];
     [alert_dispatcher_ dispatchNotification:dict];
   } else {
