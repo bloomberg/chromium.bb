@@ -135,6 +135,11 @@ def upper_camel_case(name):
 def lower_camel_case(name):
     return lower_first_letter(upper_camel_case(name))
 
+
+def snake_case(name):
+    return '_'.join(word.lower() for word in split_name(name))
+
+
 # Use these high level naming functions which describe the semantics of the name,
 # rather than a particular style.
 
@@ -148,8 +153,7 @@ def enum_value_name(name):
 
 
 def class_member_name(name):
-    lower_case_words = [word.lower() for word in split_name(name)]
-    return "_".join(lower_case_words) + "_"
+    return snake_case(name) + "_"
 
 
 def method_name(name):
