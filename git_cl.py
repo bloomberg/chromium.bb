@@ -2641,8 +2641,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           return data
 
     try:
-      data = gerrit_util.GetChangeDetail(
-          self._GetGerritHost(), str(issue), options, accept_statuses=[200])
+      data = gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
+                                         options, ignore_404=False)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
         raise GerritChangeNotExists(issue, self.GetCodereviewServer())

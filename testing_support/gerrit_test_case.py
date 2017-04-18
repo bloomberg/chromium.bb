@@ -208,7 +208,7 @@ class GerritTestCase(unittest.TestCase):
     path = 'projects/%s' % urllib.quote(name, '')
     conn = gerrit_util.CreateHttpConn(
         cls.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
-    jmsg = gerrit_util.ReadHttpJsonResponse(conn, accept_statuses=[200, 201])
+    jmsg = gerrit_util.ReadHttpJsonResponse(conn, expect_status=201)
     assert jmsg['name'] == name
 
   @classmethod

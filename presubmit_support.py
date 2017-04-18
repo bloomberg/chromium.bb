@@ -202,7 +202,7 @@ class GerritAccessor(object):
       return gerrit_util.GetChangeDetail(
           self.host, str(issue),
           ['ALL_REVISIONS', 'DETAILED_LABELS', 'ALL_COMMITS'],
-          accept_statuses=[200])
+          ignore_404=False)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
         raise Exception('Either Gerrit issue %s doesn\'t exist, or '
