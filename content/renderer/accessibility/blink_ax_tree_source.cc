@@ -385,6 +385,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   dst->state = AXStateFromBlink(src);
   dst->id = src.AxID();
 
+  TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
+               ui::ToString(dst->role));
+
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;

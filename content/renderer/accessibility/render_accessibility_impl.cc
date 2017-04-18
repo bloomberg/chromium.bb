@@ -59,6 +59,9 @@ const size_t kMaxSnapshotNodeCount = 5000;
 void RenderAccessibilityImpl::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
     AXContentTreeUpdate* response) {
+  TRACE_EVENT0("accessibility",
+               "RenderAccessibilityImpl::SnapshotAccessibilityTree");
+
   DCHECK(render_frame);
   DCHECK(response);
   if (!render_frame->GetWebFrame())
@@ -342,6 +345,9 @@ WebDocument RenderAccessibilityImpl::GetMainDocument() {
 }
 
 void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
+  TRACE_EVENT0("accessibility",
+               "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
+
   const WebDocument& document = GetMainDocument();
   if (document.IsNull())
     return;
@@ -427,6 +433,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 }
 
 void RenderAccessibilityImpl::SendLocationChanges() {
+  TRACE_EVENT0("accessibility", "RenderAccessibilityImpl::SendLocationChanges");
+
   std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
 
   // Update layout on the root of the tree.

@@ -346,6 +346,9 @@ bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
 
 void BrowserAccessibilityManager::OnAccessibilityEvents(
     const std::vector<AXEventNotificationDetails>& details) {
+  TRACE_EVENT0("accessibility",
+               "BrowserAccessibilityManager::OnAccessibilityEvents");
+
   // Update the cached device scale factor.
   if (delegate_ && !use_custom_device_scale_factor_for_testing_)
     device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
