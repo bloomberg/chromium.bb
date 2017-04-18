@@ -33,10 +33,15 @@
 #      'target_name': 'app_state_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'column_visibility_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'column_visibility_controller',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        'directory_model',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'constants',
       'includes': ['../../../compile_js2.gypi'],
@@ -82,14 +87,22 @@
 #      'target_name': 'directory_tree_naming_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'elements_importer',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'empty_folder_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'elements_importer',
+      'dependencies': [
+        '<(EXTERNS_GYP):metrics_private',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'empty_folder_controller',
+      'dependencies': [
+        'directory_model',
+        'file_list_model',
+        'ui/compiled_resources2.gyp:empty_folder',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'file_list_model',
       'dependencies': [
@@ -111,17 +124,26 @@
 #    {
 #      'target_name': 'file_selection',
 #      'dependencies': [
+#        '../../common/js/compiled_resources2.gyp:file_type',
 #        '../../common/js/compiled_resources2.gyp:util',
 #        '../../common/js/compiled_resources2.gyp:volume_manager_common',
 #        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
 #        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+#        'constants',
+#        'file_manager',
 #      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'file_tasks',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'file_tasks',
+      'dependencies': [
+        'directory_model',
+        'metadata/compiled_resources2.gyp:metadata_model',
+        'ui/compiled_resources2.gyp:file_manager_ui',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'file_transfer_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -197,10 +219,13 @@
 #      'target_name': 'metadata_update_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'metrics_start',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'metrics_start',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:metrics',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
     {
       'target_name': 'mouse_inactivity_watcher',
       'includes': ['../../../compile_js2.gypi'],
@@ -249,10 +274,16 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'quick_view_uma',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'quick_view_uma',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:file_type',
+        'dialog_type',
+        'file_tasks',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'scan_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -276,14 +307,22 @@
       ],
       'includes': ['../../../compile_js2.gypi'],
     },
-#    {
-#      'target_name': 'sort_menu_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'spinner_controller',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'sort_menu_controller',
+      'dependencies': [
+        '../elements/compiled_resources2.gyp:files_toggle_ripple',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_button',
+        'file_list_model',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'spinner_controller',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:event_target',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'task_controller',
 #      'includes': ['../../../compile_js2.gypi'],
