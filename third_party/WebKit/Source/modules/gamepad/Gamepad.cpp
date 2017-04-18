@@ -37,7 +37,7 @@ void Gamepad::SetAxes(unsigned count, const double* data) {
     std::copy(data, data + count, axes_.begin());
 }
 
-void Gamepad::SetButtons(unsigned count, const WebGamepadButton* data) {
+void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
   if (buttons_.size() != count) {
     buttons_.Resize(count);
     for (unsigned i = 0; i < count; ++i)
@@ -51,7 +51,7 @@ void Gamepad::SetButtons(unsigned count, const WebGamepadButton* data) {
   }
 }
 
-void Gamepad::SetPose(const WebGamepadPose& pose) {
+void Gamepad::SetPose(const device::GamepadPose& pose) {
   if (!pose.not_null) {
     if (pose_)
       pose_ = nullptr;
@@ -64,15 +64,15 @@ void Gamepad::SetPose(const WebGamepadPose& pose) {
   pose_->SetPose(pose);
 }
 
-void Gamepad::SetHand(const WebGamepadHand& hand) {
+void Gamepad::SetHand(const device::GamepadHand& hand) {
   switch (hand) {
-    case kGamepadHandNone:
+    case device::GamepadHand::kNone:
       hand_ = "";
       break;
-    case kGamepadHandLeft:
+    case device::GamepadHand::kLeft:
       hand_ = "left";
       break;
-    case kGamepadHandRight:
+    case device::GamepadHand::kRight:
       hand_ = "right";
       break;
     default:

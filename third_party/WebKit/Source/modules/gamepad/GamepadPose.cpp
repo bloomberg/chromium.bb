@@ -8,7 +8,7 @@ namespace blink {
 
 namespace {
 
-DOMFloat32Array* VecToFloat32Array(const WebGamepadVector& vec) {
+DOMFloat32Array* VecToFloat32Array(const device::GamepadVector& vec) {
   if (vec.not_null) {
     DOMFloat32Array* out = DOMFloat32Array::Create(3);
     out->Data()[0] = vec.x;
@@ -19,7 +19,7 @@ DOMFloat32Array* VecToFloat32Array(const WebGamepadVector& vec) {
   return nullptr;
 }
 
-DOMFloat32Array* QuatToFloat32Array(const WebGamepadQuaternion& quat) {
+DOMFloat32Array* QuatToFloat32Array(const device::GamepadQuaternion& quat) {
   if (quat.not_null) {
     DOMFloat32Array* out = DOMFloat32Array::Create(4);
     out->Data()[0] = quat.x;
@@ -35,7 +35,7 @@ DOMFloat32Array* QuatToFloat32Array(const WebGamepadQuaternion& quat) {
 
 GamepadPose::GamepadPose() {}
 
-void GamepadPose::SetPose(const WebGamepadPose& state) {
+void GamepadPose::SetPose(const device::GamepadPose& state) {
   if (state.not_null) {
     has_orientation_ = state.has_orientation;
     has_position_ = state.has_position;

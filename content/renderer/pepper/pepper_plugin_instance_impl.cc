@@ -61,6 +61,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/sad_plugin.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "ppapi/c/dev/ppp_text_input_dev.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_audio_config.h"
@@ -98,7 +99,6 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -458,9 +458,9 @@ PPB_Gamepad_API* PepperPluginInstanceImpl::GamepadImpl::AsPPB_Gamepad_API() {
 void PepperPluginInstanceImpl::GamepadImpl::Sample(
     PP_Instance instance,
     PP_GamepadsSampleData* data) {
-  blink::WebGamepads webkit_data;
-  RenderThreadImpl::current()->SampleGamepads(&webkit_data);
-  ConvertWebKitGamepadData(bit_cast<ppapi::WebKitGamepads>(webkit_data), data);
+  device::Gamepads gamepads_data;
+  RenderThreadImpl::current()->SampleGamepads(&gamepads_data);
+  ppapi::ConvertDeviceGamepadData(gamepads_data, data);
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(

@@ -18,9 +18,8 @@
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "mojo/public/cpp/system/buffer.h"
-
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -35,7 +34,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadConnectionChangeClient {
  public:
   virtual void OnGamepadConnectionChange(bool connected,
                                          int index,
-                                         const blink::WebGamepad& pad) = 0;
+                                         const Gamepad& pad) = 0;
 };
 
 class DEVICE_GAMEPAD_EXPORT GamepadProvider
@@ -63,7 +62,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   void AddGamepadDataFetcher(GamepadDataFetcher* fetcher);
   void RemoveGamepadDataFetcher(GamepadDataFetcher* fetcher);
 
-  void GetCurrentGamepadData(blink::WebGamepads* data);
+  void GetCurrentGamepadData(Gamepads* data);
 
   // Pause and resume the background polling thread. Can be called from any
   // thread.
@@ -101,9 +100,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   void DoPoll();
   void ScheduleDoPoll();
 
-  void OnGamepadConnectionChange(bool connected,
-                                 int index,
-                                 const blink::WebGamepad& pad);
+  void OnGamepadConnectionChange(bool connected, int index, const Gamepad& pad);
 
   // Checks the gamepad state to see if the user has interacted with it.
   void CheckForUserGesture();

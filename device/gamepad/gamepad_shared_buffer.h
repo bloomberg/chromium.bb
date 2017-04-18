@@ -8,7 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/gamepad_export.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 
 namespace device {
 
@@ -25,7 +25,7 @@ namespace device {
 
 */
 
-typedef SharedMemorySeqLockBuffer<blink::WebGamepads> GamepadHardwareBuffer;
+typedef SharedMemorySeqLockBuffer<Gamepads> GamepadHardwareBuffer;
 
 class DEVICE_GAMEPAD_EXPORT GamepadSharedBuffer {
  public:
@@ -33,7 +33,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadSharedBuffer {
   ~GamepadSharedBuffer();
 
   base::SharedMemory* shared_memory();
-  blink::WebGamepads* buffer();
+  Gamepads* buffer();
   GamepadHardwareBuffer* hardware_buffer();
 
   void WriteBegin();

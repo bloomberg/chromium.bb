@@ -56,6 +56,7 @@ source_set("exo") {
     "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//device/gamepad",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",

@@ -12,6 +12,10 @@
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
+namespace device {
+class Gamepads;
+}
+
 namespace ppapi {
 
 // TODO(brettw) when we remove the non-IPC-based gamepad implementation, this
@@ -117,6 +121,10 @@ struct ContentGamepadHardwareBuffer {
 
 PPAPI_SHARED_EXPORT void ConvertWebKitGamepadData(
     const WebKitGamepads& webkit_data,
+    PP_GamepadsSampleData* output_data);
+
+PPAPI_SHARED_EXPORT void ConvertDeviceGamepadData(
+    const device::Gamepads& device_data,
     PP_GamepadsSampleData* output_data);
 
 }  // namespace ppapi

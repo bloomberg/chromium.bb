@@ -60,6 +60,7 @@ component("gamepad") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//device/base/synchronization",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/interfaces",
     "//mojo/public/cpp/system",
     "//third_party/WebKit/public:blink_headers",
@@ -104,6 +105,7 @@ static_library("test_helpers") {
   public_deps = [
     ":gamepad",
     "//base",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//third_party/WebKit/public:blink_headers",
   ]
 }

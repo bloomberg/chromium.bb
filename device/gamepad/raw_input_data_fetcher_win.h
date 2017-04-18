@@ -24,7 +24,7 @@
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
 
@@ -49,13 +49,13 @@ struct RawGamepadInfo {
   uint32_t vendor_id;
   uint32_t product_id;
 
-  wchar_t id[blink::WebGamepad::kIdLengthCap];
+  wchar_t id[Gamepad::kIdLengthCap];
 
   uint32_t buttons_length;
-  bool buttons[blink::WebGamepad::kButtonsLengthCap];
+  bool buttons[Gamepad::kButtonsLengthCap];
 
   uint32_t axes_length;
-  RawGamepadAxis axes[blink::WebGamepad::kAxesLengthCap];
+  RawGamepadAxis axes[Gamepad::kAxesLengthCap];
 };
 
 class RawInputDataFetcher : public GamepadDataFetcher,

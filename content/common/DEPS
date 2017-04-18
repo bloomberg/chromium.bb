@@ -19,8 +19,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebFloatPoint.h",
   "+third_party/WebKit/public/platform/WebFloatRect.h",
   "+third_party/WebKit/public/platform/WebFocusType.h",
-  "+third_party/WebKit/public/platform/WebGamepad.h",
-  "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGestureEvent.h",
   "+third_party/WebKit/public/platform/WebHTTPBody.h",
   "+third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h",

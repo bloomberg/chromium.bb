@@ -62,7 +62,6 @@ namespace blink {
 namespace scheduler {
 class WebThreadBase;
 }
-class WebGamepads;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 }
@@ -77,6 +76,10 @@ class BeginFrameSource;
 class CompositorFrameSink;
 class SyntheticBeginFrameSource;
 class TaskGraphRunner;
+}
+
+namespace device {
+class Gamepads;
 }
 
 namespace discardable_memory {
@@ -461,7 +464,7 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
   // Retrieve current gamepad data.
-  void SampleGamepads(blink::WebGamepads* data);
+  void SampleGamepads(device::Gamepads* data);
 
   // Called by a RenderWidget when it is created or destroyed. This
   // allows the process to know when there are no visible widgets.

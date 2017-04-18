@@ -17,8 +17,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 
-using blink::WebGamepad;
-
 namespace device {
 
 namespace {
@@ -228,11 +226,11 @@ void NormalizeXboxOneButtonData(const XboxOneButtonData& data,
 }
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     blink::WebUChar* dest,
+                                     UChar* dest,
                                      size_t dest_len) {
   NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
   memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(blink::WebUChar)];
+  [as16 getBytes:dest length:dest_len - sizeof(UChar)];
 }
 
 }  // namespace
@@ -811,7 +809,7 @@ void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
   if (!state)
     return;  // No available slot for this device
 
-  WebGamepad& pad = state->data;
+  Gamepad& pad = state->data;
 
   for (size_t i = 0; i < 6; i++) {
     pad.buttons[i].pressed = data.buttons[i];

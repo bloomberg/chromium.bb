@@ -15,7 +15,7 @@ GamepadDispatcher& GamepadDispatcher::Instance() {
   return gamepad_dispatcher;
 }
 
-void GamepadDispatcher::SampleGamepads(WebGamepads& gamepads) {
+void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
   Platform::Current()->SampleGamepads(gamepads);
 }
 
@@ -28,21 +28,21 @@ DEFINE_TRACE(GamepadDispatcher) {
 }
 
 void GamepadDispatcher::DidConnectGamepad(unsigned index,
-                                          const WebGamepad& gamepad) {
+                                          const device::Gamepad& gamepad) {
   DispatchDidConnectOrDisconnectGamepad(index, gamepad, true);
 }
 
 void GamepadDispatcher::DidDisconnectGamepad(unsigned index,
-                                             const WebGamepad& gamepad) {
+                                             const device::Gamepad& gamepad) {
   DispatchDidConnectOrDisconnectGamepad(index, gamepad, false);
 }
 
 void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
     unsigned index,
-    const WebGamepad& gamepad,
+    const device::Gamepad& gamepad,
     bool connected) {
-  ASSERT(index < WebGamepads::kItemsLengthCap);
-  ASSERT(connected == gamepad.connected);
+  DCHECK(index < device::Gamepads::kItemsLengthCap);
+  DCHECK_EQ(connected, gamepad.connected);
 
   latest_change_.pad = gamepad;
   latest_change_.index = index;

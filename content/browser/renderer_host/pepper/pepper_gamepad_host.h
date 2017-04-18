@@ -51,9 +51,9 @@ class CONTENT_EXPORT PepperGamepadHost :
 
   // GamepadConsumer implementation.
   void OnGamepadConnected(unsigned index,
-                          const blink::WebGamepad& gamepad) override {}
+                          const device::Gamepad& gamepad) override {}
   void OnGamepadDisconnected(unsigned index,
-                             const blink::WebGamepad& gamepad) override {}
+                             const device::Gamepad& gamepad) override {}
 
  private:
   int32_t OnRequestMemory(ppapi::host::HostMessageContext* context);

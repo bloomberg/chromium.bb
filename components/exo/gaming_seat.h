@@ -50,7 +50,7 @@ class GamingSeat : public WMHelper::FocusObserver {
   class ThreadSafeGamepadChangeFetcher;
 
   // Processes updates of gamepad data and passes changes on to delegate.
-  void ProcessGamepadChanges(int index, const blink::WebGamepad new_pad);
+  void ProcessGamepadChanges(int index, const device::Gamepad new_pad);
 
   // Private implementation of methods and resources that are used on the
   // polling thread.
@@ -60,10 +60,10 @@ class GamingSeat : public WMHelper::FocusObserver {
   GamingSeatDelegate* const delegate_;
 
   // The delegate instances that all other events are dispatched to.
-  GamepadDelegate* gamepad_delegates_[blink::WebGamepads::kItemsLengthCap];
+  GamepadDelegate* gamepad_delegates_[device::Gamepads::kItemsLengthCap];
 
   // The current state of the gamepad represented by this instance.
-  blink::WebGamepads pad_state_;
+  device::Gamepads pad_state_;
 
   // ThreadChecker for the origin thread.
   base::ThreadChecker thread_checker_;

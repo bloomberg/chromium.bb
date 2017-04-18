@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/interfaces/gamepad.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace content {
 
-typedef device::SharedMemorySeqLockBuffer<blink::WebGamepads>
+typedef device::SharedMemorySeqLockBuffer<device::Gamepads>
     GamepadHardwareBuffer;
 
 class GamepadSharedMemoryReader : public RendererGamepadProvider,
@@ -27,7 +27,7 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider,
   ~GamepadSharedMemoryReader() override;
 
   // RendererGamepadProvider implementation.
-  void SampleGamepads(blink::WebGamepads& gamepads) override;
+  void SampleGamepads(device::Gamepads& gamepads) override;
   void Start(blink::WebPlatformEventListener* listener) override;
 
  protected:
@@ -37,9 +37,8 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider,
 
  private:
   // device::mojom::GamepadObserver methods.
-  void GamepadConnected(int index, const blink::WebGamepad& gamepad) override;
-  void GamepadDisconnected(int index,
-                           const blink::WebGamepad& gamepad) override;
+  void GamepadConnected(int index, const device::Gamepad& gamepad) override;
+  void GamepadDisconnected(int index, const device::Gamepad& gamepad) override;
 
   mojo::ScopedSharedBufferHandle renderer_shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping renderer_shared_buffer_mapping_;

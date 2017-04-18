@@ -90,6 +90,7 @@ test("device_unittests") {
     "//device/bluetooth/uribeacon",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/interfaces",
     "//device/gamepad/public/interfaces:gamepad_struct_traits_test",
     "//device/generic_sensor",

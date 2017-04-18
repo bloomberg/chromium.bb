@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 
 namespace {
 // A big enough deadzone to detect accidental presses.
@@ -17,9 +17,9 @@ const float kAxisMoveAmountThreshold = 0.5;
 
 namespace device {
 
-bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads) {
-  for (unsigned int i = 0; i < blink::WebGamepads::kItemsLengthCap; i++) {
-    const blink::WebGamepad& pad = gamepads.items[i];
+bool GamepadsHaveUserGesture(const Gamepads& gamepads) {
+  for (unsigned int i = 0; i < Gamepads::kItemsLengthCap; i++) {
+    const Gamepad& pad = gamepads.items[i];
 
     // If the device is physically connected, then check the buttons and axes
     // to see if there is currently an intentional user action.

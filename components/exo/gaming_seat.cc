@@ -50,7 +50,7 @@ class GamingSeat::ThreadSafeGamepadChangeFetcher
           GamingSeat::ThreadSafeGamepadChangeFetcher> {
  public:
   using ProcessGamepadChangesCallback =
-      base::Callback<void(int index, const blink::WebGamepad)>;
+      base::Callback<void(int index, const device::Gamepad)>;
 
   ThreadSafeGamepadChangeFetcher(
       const ProcessGamepadChangesCallback& post_gamepad_changes,
@@ -120,11 +120,11 @@ class GamingSeat::ThreadSafeGamepadChangeFetcher
 
     DCHECK(fetcher_);
 
-    blink::WebGamepads new_state = state_;
+    device::Gamepads new_state = state_;
     fetcher_->GetGamepadData(
         false /* No hardware changed notification from the system */);
 
-    for (size_t i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
+    for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
       device::PadState& pad_state = pad_states_.get()[i];
 
       // After querying the gamepad clear the state if it did not have it's
@@ -171,7 +171,7 @@ class GamingSeat::ThreadSafeGamepadChangeFetcher
   std::unique_ptr<device::GamepadDataFetcher> fetcher_;
 
   // The current state of all gamepads.
-  blink::WebGamepads state_;
+  device::Gamepads state_;
 
   // True if a poll has been scheduled.
   bool has_poll_scheduled_ = false;
@@ -216,7 +216,7 @@ GamingSeat::~GamingSeat() {
   gamepad_change_fetcher_->EnablePolling(false);
 
   delegate_->OnGamingSeatDestroying(this);
-  for (size_t i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
+  for (size_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     if (gamepad_delegates_[i]) {
       gamepad_delegates_[i]->OnRemoved();
     }
@@ -249,11 +249,11 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
 // GamingSeat, private:
 
 void GamingSeat::ProcessGamepadChanges(int index,
-                                       const blink::WebGamepad new_pad) {
+                                       const device::Gamepad new_pad) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool send_frame = false;
 
-  blink::WebGamepad& pad_state = pad_state_.items[index];
+  device::Gamepad& pad_state = pad_state_.items[index];
   // Update connection state.
   GamepadDelegate* delegate = gamepad_delegates_[index];
   if (new_pad.connected != pad_state.connected) {

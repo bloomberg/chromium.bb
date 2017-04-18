@@ -30,7 +30,7 @@ namespace blink {
 GamepadList::GamepadList() {}
 
 void GamepadList::Set(unsigned index, Gamepad* gamepad) {
-  if (index >= WebGamepads::kItemsLengthCap)
+  if (index >= device::Gamepads::kItemsLengthCap)
     return;
   items_[index] = gamepad;
 }
@@ -40,7 +40,7 @@ Gamepad* GamepadList::item(unsigned index) {
 }
 
 DEFINE_TRACE(GamepadList) {
-  for (unsigned index = 0; index < WebGamepads::kItemsLengthCap; index++) {
+  for (unsigned index = 0; index < device::Gamepads::kItemsLengthCap; index++) {
     visitor->Trace(items_[index]);
   }
 }

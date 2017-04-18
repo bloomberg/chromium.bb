@@ -19,10 +19,6 @@ namespace {
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
-class WebGamepad;
-}
-
 namespace content {
 class GamepadServiceTestConstructor;
 }
@@ -83,10 +79,10 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   void Terminate();
 
   // Called on IO thread when a gamepad is connected.
-  void OnGamepadConnected(int index, const blink::WebGamepad& pad);
+  void OnGamepadConnected(int index, const Gamepad& pad);
 
   // Called on IO thread when a gamepad is disconnected.
-  void OnGamepadDisconnected(int index, const blink::WebGamepad& pad);
+  void OnGamepadDisconnected(int index, const Gamepad& pad);
 
  private:
   friend struct base::DefaultSingletonTraits<GamepadService>;
@@ -107,7 +103,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
 
   void OnGamepadConnectionChange(bool connected,
                                  int index,
-                                 const blink::WebGamepad& pad) override;
+                                 const Gamepad& pad) override;
 
   void SetSanitizationEnabled(bool sanitize);
 

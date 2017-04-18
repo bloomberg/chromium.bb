@@ -15,7 +15,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 
 namespace device {
 

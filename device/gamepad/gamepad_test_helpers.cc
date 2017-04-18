@@ -6,8 +6,7 @@
 
 namespace device {
 
-MockGamepadDataFetcher::MockGamepadDataFetcher(
-    const blink::WebGamepads& test_data)
+MockGamepadDataFetcher::MockGamepadDataFetcher(const Gamepads& test_data)
     : test_data_(test_data),
       read_data_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                  base::WaitableEvent::InitialState::NOT_SIGNALED) {}
@@ -22,11 +21,11 @@ void MockGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   {
     base::AutoLock lock(lock_);
 
-    for (unsigned int i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
+    for (unsigned int i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       if (test_data_.items[i].connected) {
         PadState* pad = GetPadState(i);
         if (pad)
-          memcpy(&pad->data, &test_data_.items[i], sizeof(blink::WebGamepad));
+          memcpy(&pad->data, &test_data_.items[i], sizeof(Gamepad));
       }
     }
   }
@@ -46,7 +45,7 @@ void MockGamepadDataFetcher::WaitForDataReadAndCallbacksIssued() {
   WaitForDataRead();
 }
 
-void MockGamepadDataFetcher::SetTestData(const blink::WebGamepads& new_data) {
+void MockGamepadDataFetcher::SetTestData(const Gamepads& new_data) {
   base::AutoLock lock(lock_);
   test_data_ = new_data;
 }
@@ -56,7 +55,7 @@ GamepadTestHelper::GamepadTestHelper() {}
 GamepadTestHelper::~GamepadTestHelper() {}
 
 GamepadServiceTestConstructor::GamepadServiceTestConstructor(
-    const blink::WebGamepads& test_data) {
+    const Gamepads& test_data) {
   data_fetcher_ = new MockGamepadDataFetcher(test_data);
   gamepad_service_ =
       new GamepadService(std::unique_ptr<GamepadDataFetcher>(data_fetcher_));

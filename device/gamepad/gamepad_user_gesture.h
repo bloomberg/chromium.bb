@@ -5,15 +5,13 @@
 #ifndef DEVICE_GAMEPAD_USER_GESTURE_H_
 #define DEVICE_GAMEPAD_USER_GESTURE_H_
 
-namespace blink {
-class WebGamepads;
-}
-
 namespace device {
+
+class Gamepads;
 
 // Returns true if any of the gamepads have a button pressed or axis moved
 // that would be considered a user gesture for interaction.
-bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads);
+bool GamepadsHaveUserGesture(const Gamepads& gamepads);
 
 }  // namespace device
 

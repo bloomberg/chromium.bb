@@ -30,11 +30,11 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/PlatformEventController.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebGamepads.h"
 
 namespace blink {
 
@@ -62,7 +62,7 @@ class MODULES_EXPORT NavigatorGamepad final
   DECLARE_VIRTUAL_TRACE();
 
   void DidConnectOrDisconnectGamepad(unsigned index,
-                                     const WebGamepad&,
+                                     const device::Gamepad&,
                                      bool connected);
 
  private:

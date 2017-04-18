@@ -6,7 +6,7 @@
 #define DEVICE_GAMEPAD_GAMEPAD_CONSUMER_H_
 
 #include "device/gamepad/gamepad_export.h"
-#include "third_party/WebKit/public/platform/WebGamepad.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 
 namespace device {
 
@@ -15,10 +15,9 @@ class DEVICE_GAMEPAD_EXPORT GamepadConsumer {
   GamepadConsumer();
   virtual ~GamepadConsumer();
 
-  virtual void OnGamepadConnected(unsigned index,
-                                  const blink::WebGamepad& gamepad) = 0;
+  virtual void OnGamepadConnected(unsigned index, const Gamepad& gamepad) = 0;
   virtual void OnGamepadDisconnected(unsigned index,
-                                     const blink::WebGamepad& gamepad) = 0;
+                                     const Gamepad& gamepad) = 0;
 };
 
 }  // namespace device

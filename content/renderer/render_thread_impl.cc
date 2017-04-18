@@ -122,6 +122,7 @@
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -2326,7 +2327,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   return shared_worker_context_provider_;
 }
 
-void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
+void RenderThreadImpl::SampleGamepads(device::Gamepads* data) {
   blink_platform_impl_->SampleGamepads(*data);
 }
 

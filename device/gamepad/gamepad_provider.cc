@@ -24,9 +24,6 @@
 #include "device/gamepad/gamepad_user_gesture.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-using blink::WebGamepad;
-using blink::WebGamepads;
-
 namespace device {
 
 GamepadProvider::ClosureAndThread::ClosureAndThread(
@@ -102,8 +99,8 @@ mojo::ScopedSharedBufferHandle GamepadProvider::GetSharedBufferHandle() {
                                       true /* read_only */);
 }
 
-void GamepadProvider::GetCurrentGamepadData(WebGamepads* data) {
-  const WebGamepads* pads = gamepad_shared_buffer_->buffer();
+void GamepadProvider::GetCurrentGamepadData(Gamepads* data) {
+  const Gamepads* pads = gamepad_shared_buffer_->buffer();
   base::AutoLock lock(shared_memory_lock_);
   *data = *pads;
 }
@@ -227,8 +224,8 @@ void GamepadProvider::DoPoll() {
 
   bool changed;
 
-  ANNOTATE_BENIGN_RACE_SIZED(gamepad_shared_buffer_->buffer(),
-                             sizeof(WebGamepads), "Racey reads are discarded");
+  ANNOTATE_BENIGN_RACE_SIZED(gamepad_shared_buffer_->buffer(), sizeof(Gamepads),
+                             "Racey reads are discarded");
 
   {
     base::AutoLock lock(devices_changed_lock_);
@@ -244,12 +241,12 @@ void GamepadProvider::DoPoll() {
     it->GetGamepadData(changed);
   }
 
-  blink::WebGamepads* buffer = gamepad_shared_buffer_->buffer();
+  Gamepads* buffer = gamepad_shared_buffer_->buffer();
 
   // Send out disconnect events using the last polled data before we wipe it out
   // in the mapping step.
   if (ever_had_user_gesture_) {
-    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
+    for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
       if (!state.active_state && state.source != GAMEPAD_SOURCE_NONE) {
@@ -267,7 +264,7 @@ void GamepadProvider::DoPoll() {
     // Acquire the SeqLock. There is only ever one writer to this data.
     // See gamepad_shared_buffer.h.
     gamepad_shared_buffer_->WriteBegin();
-    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
+    for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
       // Must run through the map+sanitize here or CheckForUserGesture may fail.
       MapAndSanitizeGamepadData(&state, &buffer->items[i], sanitize_);
@@ -276,7 +273,7 @@ void GamepadProvider::DoPoll() {
   }
 
   if (ever_had_user_gesture_) {
-    for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
+    for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
       PadState& state = pad_states_.get()[i];
 
       if (state.active_state) {
@@ -312,7 +309,7 @@ void GamepadProvider::ScheduleDoPoll() {
 
 void GamepadProvider::OnGamepadConnectionChange(bool connected,
                                                 int index,
-                                                const WebGamepad& pad) {
+                                                const Gamepad& pad) {
   if (connection_change_client_)
     connection_change_client_->OnGamepadConnectionChange(connected, index, pad);
 }
@@ -322,7 +319,7 @@ void GamepadProvider::CheckForUserGesture() {
   if (user_gesture_observers_.empty() && ever_had_user_gesture_)
     return;
 
-  const WebGamepads* pads = gamepad_shared_buffer_->buffer();
+  const Gamepads* pads = gamepad_shared_buffer_->buffer();
   if (GamepadsHaveUserGesture(*pads)) {
     ever_had_user_gesture_ = true;
     for (size_t i = 0; i < user_gesture_observers_.size(); i++) {

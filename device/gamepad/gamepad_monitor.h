@@ -23,10 +23,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadMonitor
   static void Create(mojom::GamepadMonitorRequest request);
 
   // GamepadConsumer implementation.
-  void OnGamepadConnected(unsigned index,
-                          const blink::WebGamepad& gamepad) override;
-  void OnGamepadDisconnected(unsigned index,
-                             const blink::WebGamepad& gamepad) override;
+  void OnGamepadConnected(unsigned index, const Gamepad& gamepad) override;
+  void OnGamepadDisconnected(unsigned index, const Gamepad& gamepad) override;
 
   // mojom::GamepadMonitor implementation.
   void GamepadStartPolling(

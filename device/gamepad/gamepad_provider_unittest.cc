@@ -19,8 +19,6 @@ namespace device {
 
 namespace {
 
-using blink::WebGamepads;
-
 // Helper class to generate and record user gesture callbacks.
 class UserGestureListener {
  public:
@@ -43,7 +41,7 @@ class UserGestureListener {
 // Main test fixture
 class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
  public:
-  GamepadProvider* CreateProvider(const WebGamepads& test_data) {
+  GamepadProvider* CreateProvider(const Gamepads& test_data) {
     mock_data_fetcher_ = new MockGamepadDataFetcher(test_data);
     provider_.reset(new GamepadProvider(
         nullptr, std::unique_ptr<GamepadDataFetcher>(mock_data_fetcher_)));
@@ -73,12 +71,12 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   }
 
   void ReadGamepadHardwareBuffer(GamepadHardwareBuffer* buffer,
-                                 WebGamepads* output) {
-    memset(output, 0, sizeof(WebGamepads));
+                                 Gamepads* output) {
+    memset(output, 0, sizeof(Gamepads));
     base::subtle::Atomic32 version;
     do {
       version = buffer->seqlock.ReadBegin();
-      memcpy(output, &buffer->data, sizeof(WebGamepads));
+      memcpy(output, &buffer->data, sizeof(Gamepads));
     } while (buffer->seqlock.ReadRetry(version));
   }
 
@@ -94,8 +92,8 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
 };
 
 TEST_F(GamepadProviderTest, PollingAccess) {
-  WebGamepads test_data;
-  memset(&test_data, 0, sizeof(WebGamepads));
+  Gamepads test_data;
+  memset(&test_data, 0, sizeof(Gamepads));
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
   test_data.items[0].buttons_length = 1;
@@ -124,7 +122,7 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   // Wait until the shared memory buffer has been written at least once.
   WaitForData(buffer);
 
-  WebGamepads output;
+  Gamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
   EXPECT_EQ(1u, output.items[0].buttons_length);
@@ -136,7 +134,7 @@ TEST_F(GamepadProviderTest, PollingAccess) {
 }
 
 TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
-  WebGamepads test_data;
+  Gamepads test_data;
   test_data.items[0].connected = true;
   test_data.items[0].timestamp = 0;
   test_data.items[0].axes_length = 2;
@@ -149,7 +147,7 @@ TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
   test_data.items[1].axes[0] = 1.f;
   test_data.items[1].axes[1] = -.5f;
 
-  WebGamepads test_data_onedisconnected;
+  Gamepads test_data_onedisconnected;
   test_data_onedisconnected.items[1].connected = true;
   test_data_onedisconnected.items[1].timestamp = 0;
   test_data_onedisconnected.items[1].axes_length = 2;
@@ -175,7 +173,7 @@ TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
   // Wait until the shared memory buffer has been written at least once.
   WaitForData(buffer);
 
-  WebGamepads output;
+  Gamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
   EXPECT_EQ(2u, output.items[0].axes_length);
@@ -199,7 +197,7 @@ TEST_F(GamepadProviderTest, ConnectDisconnectMultiple) {
 
 // Tests that waiting for a user gesture works properly.
 TEST_F(GamepadProviderTest, UserGesture) {
-  WebGamepads no_button_data;
+  Gamepads no_button_data;
   no_button_data.items[0].connected = true;
   no_button_data.items[0].timestamp = 0;
   no_button_data.items[0].buttons_length = 1;
@@ -209,7 +207,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
   no_button_data.items[0].axes[0] = 0.f;
   no_button_data.items[0].axes[1] = .4f;
 
-  WebGamepads button_down_data = no_button_data;
+  Gamepads button_down_data = no_button_data;
   button_down_data.items[0].buttons[0].value = 1.f;
   button_down_data.items[0].buttons[0].pressed = true;
 
@@ -252,7 +250,7 @@ TEST_F(GamepadProviderTest, UserGesture) {
 
 // Tests that waiting for a user gesture works properly.
 TEST_F(GamepadProviderTest, Sanitization) {
-  WebGamepads active_data;
+  Gamepads active_data;
   active_data.items[0].connected = true;
   active_data.items[0].timestamp = 0;
   active_data.items[0].buttons_length = 1;
@@ -261,7 +259,7 @@ TEST_F(GamepadProviderTest, Sanitization) {
   active_data.items[0].buttons[0].pressed = true;
   active_data.items[0].axes[0] = -1.f;
 
-  WebGamepads zero_data;
+  Gamepads zero_data;
   zero_data.items[0].connected = true;
   zero_data.items[0].timestamp = 0;
   zero_data.items[0].buttons_length = 1;
@@ -290,7 +288,7 @@ TEST_F(GamepadProviderTest, Sanitization) {
   // Wait until the shared memory buffer has been written at least once.
   WaitForData(buffer);
 
-  WebGamepads output;
+  Gamepads output;
   ReadGamepadHardwareBuffer(buffer, &output);
 
   // Initial data should all be zeroed out due to sanitization, even though the

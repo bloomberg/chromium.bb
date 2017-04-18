@@ -45,7 +45,6 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -69,8 +68,6 @@
 
 using device::MotionData;
 using device::OrientationData;
-using blink::WebGamepad;
-using blink::WebGamepads;
 using blink::WebRect;
 using blink::WebSize;
 

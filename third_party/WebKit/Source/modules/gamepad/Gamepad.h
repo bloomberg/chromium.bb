@@ -27,12 +27,12 @@
 #define Gamepad_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 #include "modules/gamepad/GamepadButton.h"
 #include "modules/gamepad/GamepadPose.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebGamepad.h"
 
 namespace blink {
 
@@ -65,13 +65,13 @@ class Gamepad final : public GarbageCollectedFinalized<Gamepad>,
   void SetAxes(unsigned count, const double* data);
 
   const GamepadButtonVector& buttons() const { return buttons_; }
-  void SetButtons(unsigned count, const WebGamepadButton* data);
+  void SetButtons(unsigned count, const device::GamepadButton* data);
 
   GamepadPose* pose() const { return pose_; }
-  void SetPose(const WebGamepadPose&);
+  void SetPose(const device::GamepadPose&);
 
   const String& hand() const { return hand_; }
-  void SetHand(const WebGamepadHand&);
+  void SetHand(const device::GamepadHand&);
 
   unsigned displayId() const { return display_id_; }
   void SetDisplayId(unsigned val) { display_id_ = val; }

@@ -47,7 +47,7 @@ class GamingSeatTest : public test::ExoTestBase {
   GamingSeatTest() {}
 
   std::unique_ptr<device::GamepadDataFetcher> MockDataFetcherFactory() {
-    blink::WebGamepads initial_data;
+    device::Gamepads initial_data;
     std::unique_ptr<device::MockGamepadDataFetcher> fetcher(
         new device::MockGamepadDataFetcher(initial_data));
     mock_data_fetcher_ = fetcher.get();
@@ -73,7 +73,7 @@ class GamingSeatTest : public test::ExoTestBase {
     polling_task_runner_ = nullptr;
   }
 
-  void SetDataAndPostToDelegate(const blink::WebGamepads& new_data) {
+  void SetDataAndPostToDelegate(const device::Gamepads& new_data) {
     ASSERT_TRUE(mock_data_fetcher_ != nullptr);
     mock_data_fetcher_->SetTestData(new_data);
     // Run one polling cycle, which will post a task to the origin task runner.
@@ -132,7 +132,7 @@ TEST_F(GamingSeatTest, ConnectionChange) {
     EXPECT_CALL(gamepad_delegate2, OnRemoved()).Times(1);
   }
   // Gamepad connected.
-  blink::WebGamepads gamepad_connected;
+  device::Gamepads gamepad_connected;
   gamepad_connected.items[0].connected = true;
   gamepad_connected.items[0].timestamp = 1;
   SetDataAndPostToDelegate(gamepad_connected);
@@ -152,7 +152,7 @@ TEST_F(GamingSeatTest, ConnectionChange) {
   SetDataAndPostToDelegate(gamepad_connected);
 
   // Gamepad disconnected.
-  blink::WebGamepads all_disconnected;
+  device::Gamepads all_disconnected;
   SetDataAndPostToDelegate(all_disconnected);
 
   DestroyGamingSeat(gaming_seat_delegate);
@@ -182,7 +182,7 @@ TEST_F(GamingSeatTest, OnAxis) {
       .WillOnce(testing::Return(&gamepad_delegate0))
       .WillOnce(testing::Return(&gamepad_delegate2));
 
-  blink::WebGamepads gamepad_connected;
+  device::Gamepads gamepad_connected;
   gamepad_connected.items[0].connected = true;
   gamepad_connected.items[0].timestamp = 1;
   SetDataAndPostToDelegate(gamepad_connected);
@@ -192,7 +192,7 @@ TEST_F(GamingSeatTest, OnAxis) {
   SetDataAndPostToDelegate(gamepad_connected);
 
   // send axis event to 2 and then 0
-  blink::WebGamepads axis_moved;
+  device::Gamepads axis_moved;
   axis_moved.items[0].connected = true;
   axis_moved.items[0].timestamp = 1;
   axis_moved.items[2].connected = true;
@@ -241,7 +241,7 @@ TEST_F(GamingSeatTest, OnButton) {
       .WillOnce(testing::Return(&gamepad_delegate0))
       .WillOnce(testing::Return(&gamepad_delegate2));
 
-  blink::WebGamepads gamepad_connected;
+  device::Gamepads gamepad_connected;
   gamepad_connected.items[0].connected = true;
   gamepad_connected.items[0].timestamp = 1;
   SetDataAndPostToDelegate(gamepad_connected);
@@ -251,7 +251,7 @@ TEST_F(GamingSeatTest, OnButton) {
   SetDataAndPostToDelegate(gamepad_connected);
 
   // send axis event to 2 and then 0
-  blink::WebGamepads axis_moved;
+  device::Gamepads axis_moved;
   axis_moved.items[0].connected = true;
   axis_moved.items[0].timestamp = 1;
   axis_moved.items[2].connected = true;

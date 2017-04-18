@@ -18,19 +18,16 @@
 #import <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDKeys.h>
 
-using blink::WebGamepad;
-using blink::WebGamepads;
-
 namespace device {
 
 namespace {
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     blink::WebUChar* dest,
+                                     UChar* dest,
                                      size_t dest_len) {
   NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
   memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(blink::WebUChar)];
+  [as16 getBytes:dest length:dest_len - sizeof(UChar)];
 }
 
 NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {
@@ -179,7 +176,7 @@ bool GamepadPlatformDataFetcherMac::CheckCollection(IOHIDElementRef element) {
 bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
                                                       PadState* state,
                                                       size_t slot) {
-  WebGamepad& pad = state->data;
+  Gamepad& pad = state->data;
   AssociatedData& associated = associated_[slot];
 
   pad.axes_length = 0;
@@ -200,13 +197,13 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
     if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Button &&
         usage_page == kButtonUsagePage) {
       uint32_t button_index = usage - 1;
-      if (button_index < WebGamepad::kButtonsLengthCap) {
+      if (button_index < Gamepad::kButtonsLengthCap) {
         associated.button_elements[button_index] = element;
         pad.buttons_length = std::max(pad.buttons_length, button_index + 1);
       }
     } else if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc) {
       uint32_t axis_index = usage - kAxisMinimumUsageNumber;
-      if (axis_index < WebGamepad::kAxesLengthCap) {
+      if (axis_index < Gamepad::kAxesLengthCap) {
         associated.axis_elements[axis_index] = element;
         pad.axes_length = std::max(pad.axes_length, axis_index + 1);
       } else {
@@ -226,19 +223,19 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
       uint32_t usage_page = IOHIDElementGetUsagePage(element);
       uint32_t usage = IOHIDElementGetUsage(element);
       if (IOHIDElementGetType(element) == kIOHIDElementTypeInput_Misc &&
-          usage - kAxisMinimumUsageNumber >= WebGamepad::kAxesLengthCap &&
+          usage - kAxisMinimumUsageNumber >= Gamepad::kAxesLengthCap &&
           usage_page <= kGameControlsUsagePage) {
-        for (; next_index < WebGamepad::kAxesLengthCap; ++next_index) {
+        for (; next_index < Gamepad::kAxesLengthCap; ++next_index) {
           if (associated.axis_elements[next_index] == NULL)
             break;
         }
-        if (next_index < WebGamepad::kAxesLengthCap) {
+        if (next_index < Gamepad::kAxesLengthCap) {
           associated.axis_elements[next_index] = element;
           pad.axes_length = std::max(pad.axes_length, next_index + 1);
         }
       }
 
-      if (next_index >= WebGamepad::kAxesLengthCap)
+      if (next_index >= Gamepad::kAxesLengthCap)
         break;
     }
   }
@@ -268,19 +265,19 @@ bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
 
 size_t GamepadPlatformDataFetcherMac::GetEmptySlot() {
   // Find a free slot for this device.
-  for (size_t slot = 0; slot < WebGamepads::kItemsLengthCap; ++slot) {
+  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     if (associated_[slot].device_ref == nullptr)
       return slot;
   }
-  return WebGamepads::kItemsLengthCap;
+  return Gamepads::kItemsLengthCap;
 }
 
 size_t GamepadPlatformDataFetcherMac::GetSlotForDevice(IOHIDDeviceRef device) {
-  for (size_t slot = 0; slot < WebGamepads::kItemsLengthCap; ++slot) {
+  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     // If we already have this device, and it's already connected, don't do
     // anything now.
     if (associated_[slot].device_ref == device)
-      return WebGamepads::kItemsLengthCap;
+      return Gamepads::kItemsLengthCap;
   }
   return GetEmptySlot();
 }
@@ -300,7 +297,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   size_t slot = GetSlotForDevice(device);
 
   // We can't handle this many connected devices.
-  if (slot == WebGamepads::kItemsLengthCap)
+  if (slot == Gamepads::kItemsLengthCap)
     return;
 
   // Clear some state that may have been left behind by previous gamepads
@@ -356,11 +353,11 @@ void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
 
   // Find the index for this device.
   size_t slot;
-  for (slot = 0; slot < WebGamepads::kItemsLengthCap; ++slot) {
+  for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     if (associated_[slot].device_ref == device)
       break;
   }
-  DCHECK(slot < WebGamepads::kItemsLengthCap);
+  DCHECK(slot < Gamepads::kItemsLengthCap);
   // Leave associated device_ref so that it will be reconnected in the same
   // location. Simply mark it as disconnected.
   associated_[slot].location_id = 0;
@@ -376,18 +373,18 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
 
   // Find device slot.
   size_t slot;
-  for (slot = 0; slot < WebGamepads::kItemsLengthCap; ++slot) {
+  for (slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     if (associated_[slot].device_ref == device)
       break;
   }
-  if (slot == WebGamepads::kItemsLengthCap)
+  if (slot == Gamepads::kItemsLengthCap)
     return;
 
   PadState* state = GetPadState(associated_[slot].location_id);
   if (!state)
     return;
 
-  WebGamepad& pad = state->data;
+  Gamepad& pad = state->data;
   AssociatedData& associated = associated_[slot];
 
   uint32_t value_length = IOHIDValueGetLength(value);
@@ -442,7 +439,7 @@ void GamepadPlatformDataFetcherMac::GetGamepadData(bool) {
     return;
 
   // Loop through and GetPadState to indicate the devices are still connected.
-  for (size_t slot = 0; slot < WebGamepads::kItemsLengthCap; ++slot) {
+  for (size_t slot = 0; slot < Gamepads::kItemsLengthCap; ++slot) {
     if (associated_[slot].device_ref != nullptr) {
       GetPadState(associated_[slot].location_id);
     }

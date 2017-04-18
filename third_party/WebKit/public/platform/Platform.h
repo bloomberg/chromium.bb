@@ -43,7 +43,6 @@
 #include "WebDeviceLightListener.h"
 #include "WebFeaturePolicy.h"
 #include "WebGamepadListener.h"
-#include "WebGamepads.h"
 #include "WebGestureDevice.h"
 #include "WebLocalizedString.h"
 #include "WebMessagePortChannel.h"
@@ -59,6 +58,10 @@
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+
+namespace device {
+class Gamepads;
+}
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -280,7 +283,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Gamepad -------------------------------------------------------------
 
-  virtual void SampleGamepads(WebGamepads& into) {}
+  virtual void SampleGamepads(device::Gamepads& into) {}
 
   // History -------------------------------------------------------------
 

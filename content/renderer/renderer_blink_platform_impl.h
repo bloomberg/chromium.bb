@@ -43,6 +43,7 @@ class WebServiceWorkerCacheStorage;
 }
 
 namespace device {
+class Gamepads;
 class MotionData;
 class OrientationData;
 }
@@ -156,7 +157,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebMIDIAccessorClient* client) override;
 
   blink::WebBlobRegistry* GetBlobRegistry() override;
-  void SampleGamepads(blink::WebGamepads&) override;
+  void SampleGamepads(device::Gamepads&) override;
   blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client) override;
   blink::WebRTCCertificateGenerator* CreateRTCCertificateGenerator() override;

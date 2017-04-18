@@ -16,16 +16,12 @@
 
 #include "jni/GamepadList_jni.h"
 
-#include "third_party/WebKit/public/platform/WebGamepads.h"
-
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ClearException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using blink::WebGamepad;
-using blink::WebGamepads;
 
 namespace device {
 
@@ -81,7 +77,7 @@ static void SetGamepadData(JNIEnv* env,
   DCHECK(data_fetcher);
   GamepadPlatformDataFetcherAndroid* fetcher =
       reinterpret_cast<GamepadPlatformDataFetcherAndroid*>(data_fetcher);
-  DCHECK_LT(index, static_cast<int>(blink::WebGamepads::kItemsLengthCap));
+  DCHECK_LT(index, static_cast<int>(Gamepads::kItemsLengthCap));
 
   // Do not set gamepad parameters for all the gamepad devices that are not
   // attached.
@@ -93,25 +89,25 @@ static void SetGamepadData(JNIEnv* env,
   if (!state)
     return;
 
-  blink::WebGamepad& pad = state->data;
+  Gamepad& pad = state->data;
 
   // Is this the first time we've seen this device?
   if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
-    // Map the Gamepad DeviceName String to the WebGamepad Id. Ideally it should
+    // Map the Gamepad DeviceName String to the Gamepad Id. Ideally it should
     // be mapped to vendor and product information but it is only available at
     // kernel level and it can not be queried using class
     // android.hardware.input.InputManager.
     base::string16 device_name;
     base::android::ConvertJavaStringToUTF16(env, devicename, &device_name);
     const size_t name_to_copy =
-        std::min(device_name.size(), WebGamepad::kIdLengthCap - 1);
+        std::min(device_name.size(), Gamepad::kIdLengthCap - 1);
     memcpy(pad.id, device_name.data(),
            name_to_copy * sizeof(base::string16::value_type));
     pad.id[name_to_copy] = 0;
 
     base::string16 mapping_name = base::UTF8ToUTF16(mapping ? "standard" : "");
     const size_t mapping_to_copy =
-        std::min(mapping_name.size(), WebGamepad::kMappingLengthCap - 1);
+        std::min(mapping_name.size(), Gamepad::kMappingLengthCap - 1);
     memcpy(pad.mapping, mapping_name.data(),
            mapping_to_copy * sizeof(base::string16::value_type));
     pad.mapping[mapping_to_copy] = 0;
@@ -123,13 +119,13 @@ static void SetGamepadData(JNIEnv* env,
   std::vector<float> axes;
   base::android::JavaFloatArrayToFloatVector(env, jaxes, &axes);
 
-  // Set WebGamepad axeslength to total number of axes on the gamepad device.
+  // Set Gamepad axeslength to total number of axes on the gamepad device.
   // Only return the first axesLengthCap if axeslength captured by GamepadList
   // is larger than axesLengthCap.
   pad.axes_length = std::min(static_cast<int>(axes.size()),
-                             static_cast<int>(WebGamepad::kAxesLengthCap));
+                             static_cast<int>(Gamepad::kAxesLengthCap));
 
-  // Copy axes state to the WebGamepad axes[].
+  // Copy axes state to the Gamepad axes[].
   for (unsigned int i = 0; i < pad.axes_length; i++) {
     pad.axes[i] = static_cast<double>(axes[i]);
   }
@@ -137,14 +133,13 @@ static void SetGamepadData(JNIEnv* env,
   std::vector<float> buttons;
   base::android::JavaFloatArrayToFloatVector(env, jbuttons, &buttons);
 
-  // Set WebGamepad buttonslength to total number of axes on the gamepad
+  // Set Gamepad buttonslength to total number of axes on the gamepad
   // device. Only return the first buttonsLengthCap if axeslength captured by
   // GamepadList is larger than buttonsLengthCap.
-  pad.buttons_length =
-      std::min(static_cast<int>(buttons.size()),
-               static_cast<int>(WebGamepad::kButtonsLengthCap));
+  pad.buttons_length = std::min(static_cast<int>(buttons.size()),
+                                static_cast<int>(Gamepad::kButtonsLengthCap));
 
-  // Copy buttons state to the WebGamepad buttons[].
+  // Copy buttons state to the Gamepad buttons[].
   for (unsigned int j = 0; j < pad.buttons_length; j++) {
     pad.buttons[j].pressed = buttons[j];
     pad.buttons[j].value = buttons[j];

@@ -7,10 +7,7 @@
 #include <cmath>
 
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
-
-using blink::WebGamepad;
-using blink::WebGamepads;
+#include "device/gamepad/public/cpp/gamepads.h"
 
 namespace device {
 
@@ -21,9 +18,9 @@ const float kMinAxisResetValue = 0.1f;
 }  // namespace
 
 GamepadPadStateProvider::GamepadPadStateProvider() {
-  pad_states_.reset(new PadState[WebGamepads::kItemsLengthCap]);
+  pad_states_.reset(new PadState[Gamepads::kItemsLengthCap]);
 
-  for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i)
+  for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i)
     ClearPadState(pad_states_.get()[i]);
 }
 
@@ -33,7 +30,7 @@ PadState* GamepadPadStateProvider::GetPadState(GamepadSource source,
                                                int source_id) {
   // Check to see if the device already has a reserved slot
   PadState* empty_slot = nullptr;
-  for (size_t i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
+  for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i) {
     PadState& state = pad_states_.get()[i];
     if (state.source == source && state.source_id == source_id) {
       // Retrieving the pad state marks this gamepad as active.
@@ -61,13 +58,13 @@ void GamepadPadStateProvider::InitializeDataFetcher(
 }
 
 void GamepadPadStateProvider::MapAndSanitizeGamepadData(PadState* pad_state,
-                                                        WebGamepad* pad,
+                                                        Gamepad* pad,
                                                         bool sanitize) {
   DCHECK(pad_state);
   DCHECK(pad);
 
   if (!pad_state->data.connected) {
-    memset(pad, 0, sizeof(WebGamepad));
+    memset(pad, 0, sizeof(Gamepad));
     return;
   }
 

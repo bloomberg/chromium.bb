@@ -6,18 +6,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_types.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace device {
 
 namespace {
 
-void CopyToWebUString(blink::WebUChar* dest,
-                      size_t dest_length,
-                      base::string16 src) {
-  static_assert(sizeof(base::string16::value_type) == sizeof(blink::WebUChar),
+void CopyToUString(UChar* dest, size_t dest_length, base::string16 src) {
+  static_assert(sizeof(base::string16::value_type) == sizeof(UChar),
                 "Mismatched string16/WebUChar size.");
 
   const size_t str_to_copy = std::min(src.size(), dest_length - 1);
@@ -26,8 +24,6 @@ void CopyToWebUString(blink::WebUChar* dest,
 }
 
 }  // namespace
-
-using namespace blink;
 
 GvrGamepadDataFetcher::Factory::Factory(GvrGamepadDataProvider* data_provider,
                                         unsigned int display_id)
@@ -85,22 +81,22 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   // TODO(bajones): ensure consistency?
   GvrGamepadData provided_data = gamepad_data_;
 
-  WebGamepad& pad = state->data;
+  Gamepad& pad = state->data;
   if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
     // This is the first time we've seen this device, so do some one-time
     // initialization
     pad.connected = true;
-    CopyToWebUString(pad.id, WebGamepad::kIdLengthCap,
-                     base::UTF8ToUTF16("Daydream Controller"));
-    CopyToWebUString(pad.mapping, WebGamepad::kMappingLengthCap,
-                     base::UTF8ToUTF16(""));
+    CopyToUString(pad.id, Gamepad::kIdLengthCap,
+                  base::UTF8ToUTF16("Daydream Controller"));
+    CopyToUString(pad.mapping, Gamepad::kMappingLengthCap,
+                  base::UTF8ToUTF16(""));
     pad.buttons_length = 1;
     pad.axes_length = 2;
 
     pad.display_id = display_id_;
 
     pad.hand =
-        provided_data.right_handed ? kGamepadHandRight : kGamepadHandLeft;
+        provided_data.right_handed ? GamepadHand::kRight : GamepadHand::kLeft;
   }
 
   pad.timestamp = provided_data.timestamp;

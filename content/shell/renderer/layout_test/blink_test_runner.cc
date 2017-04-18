@@ -161,7 +161,7 @@ class MockGamepadProvider : public RendererGamepadProvider {
   }
 
   // RendererGamepadProvider implementation.
-  void SampleGamepads(blink::WebGamepads& gamepads) override {
+  void SampleGamepads(device::Gamepads& gamepads) override {
     controller_->SampleGamepads(gamepads);
   }
   void Start(blink::WebPlatformEventListener* listener) override {

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//device/gamepad/public/interfaces/gamepad.mojom"
-public_headers = [ "//third_party/WebKit/public/platform/WebGamepad.h" ]
+public_headers = [ "//device/gamepad/public/cpp/gamepad.h" ]
 traits_headers =
     [ "//device/gamepad/public/interfaces/gamepad_struct_traits.h" ]
 sources = [
@@ -15,10 +15,10 @@ deps = [
 ]
 
 type_mappings = [
-  "device.mojom.Gamepad=blink::WebGamepad",
-  "device.mojom.GamepadButton=blink::WebGamepadButton",
-  "device.mojom.GamepadHand=blink::WebGamepadHand",
-  "device.mojom.GamepadPose=blink::WebGamepadPose[nullable_is_same_type]",
-  "device.mojom.GamepadQuaternion=blink::WebGamepadQuaternion[nullable_is_same_type]",
-  "device.mojom.GamepadVector=blink::WebGamepadVector[nullable_is_same_type]",
+  "device.mojom.Gamepad=device::Gamepad",
+  "device.mojom.GamepadButton=device::GamepadButton",
+  "device.mojom.GamepadHand=device::GamepadHand",
+  "device.mojom.GamepadPose=device::GamepadPose[nullable_is_same_type]",
+  "device.mojom.GamepadQuaternion=device::GamepadQuaternion[nullable_is_same_type]",
+  "device.mojom.GamepadVector=device::GamepadVector[nullable_is_same_type]",
 ]

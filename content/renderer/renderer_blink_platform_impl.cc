@@ -69,6 +69,7 @@
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -90,7 +91,6 @@
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
@@ -148,8 +148,6 @@ using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
 using blink::WebFileInfo;
 using blink::WebFileSystem;
-using blink::WebGamepad;
-using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebImageCaptureFrameGrabber;
 using blink::WebMIDIAccessor;
@@ -785,7 +783,7 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::SampleGamepads(WebGamepads& gamepads) {
+void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
   PlatformEventObserverBase* observer =
       platform_event_observers_.Lookup(blink::kWebPlatformEventTypeGamepad);
   if (!observer)

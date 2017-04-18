@@ -108,7 +108,7 @@ void GamepadService::Terminate() {
 
 void GamepadService::OnGamepadConnectionChange(bool connected,
                                                int index,
-                                               const blink::WebGamepad& pad) {
+                                               const Gamepad& pad) {
   if (connected) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&GamepadService::OnGamepadConnected,
@@ -120,8 +120,7 @@ void GamepadService::OnGamepadConnectionChange(bool connected,
   }
 }
 
-void GamepadService::OnGamepadConnected(int index,
-                                        const blink::WebGamepad& pad) {
+void GamepadService::OnGamepadConnected(int index, const Gamepad& pad) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   for (ConsumerSet::iterator it = consumers_.begin(); it != consumers_.end();
@@ -131,8 +130,7 @@ void GamepadService::OnGamepadConnected(int index,
   }
 }
 
-void GamepadService::OnGamepadDisconnected(int index,
-                                           const blink::WebGamepad& pad) {
+void GamepadService::OnGamepadDisconnected(int index, const Gamepad& pad) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   for (ConsumerSet::iterator it = consumers_.begin(); it != consumers_.end();
@@ -166,10 +164,10 @@ void GamepadService::OnUserGesture() {
     if (!it->did_observe_user_gesture && it->is_active) {
       const ConsumerInfo& info = *it;
       info.did_observe_user_gesture = true;
-      blink::WebGamepads gamepads;
+      Gamepads gamepads;
       provider_->GetCurrentGamepadData(&gamepads);
-      for (unsigned i = 0; i < blink::WebGamepads::kItemsLengthCap; ++i) {
-        const blink::WebGamepad& pad = gamepads.items[i];
+      for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i) {
+        const Gamepad& pad = gamepads.items[i];
         if (pad.connected)
           info.consumer->OnGamepadConnected(i, pad);
       }

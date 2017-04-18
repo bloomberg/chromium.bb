@@ -14,7 +14,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
-#include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 
 namespace device {
 
@@ -23,7 +23,7 @@ class MockGamepadDataFetcher : public GamepadDataFetcher {
  public:
   // Initializes the fetcher with the given gamepad data, which will be
   // returned when the provider queries us.
-  explicit MockGamepadDataFetcher(const blink::WebGamepads& test_data);
+  explicit MockGamepadDataFetcher(const Gamepads& test_data);
 
   ~MockGamepadDataFetcher() override;
 
@@ -42,11 +42,11 @@ class MockGamepadDataFetcher : public GamepadDataFetcher {
   void WaitForDataReadAndCallbacksIssued();
 
   // Updates the test data.
-  void SetTestData(const blink::WebGamepads& new_data);
+  void SetTestData(const Gamepads& new_data);
 
  private:
   base::Lock lock_;
-  blink::WebGamepads test_data_;
+  Gamepads test_data_;
   base::WaitableEvent read_data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGamepadDataFetcher);
@@ -71,7 +71,7 @@ class GamepadTestHelper {
 // global singleton for the gamepad service.
 class GamepadServiceTestConstructor : public GamepadTestHelper {
  public:
-  explicit GamepadServiceTestConstructor(const blink::WebGamepads& test_data);
+  explicit GamepadServiceTestConstructor(const Gamepads& test_data);
   ~GamepadServiceTestConstructor() override;
 
   GamepadService* gamepad_service() { return gamepad_service_; }

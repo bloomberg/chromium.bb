@@ -10,7 +10,10 @@
 
 namespace blink {
 class WebGamepadListener;
-class WebGamepads;
+}
+
+namespace device {
+class Gamepads;
 }
 
 namespace content {
@@ -25,7 +28,7 @@ class RendererGamepadProvider
   ~RendererGamepadProvider() override {}
 
   // Provides latest snapshot of gamepads.
-  virtual void SampleGamepads(blink::WebGamepads& gamepads) = 0;
+  virtual void SampleGamepads(device::Gamepads& gamepads) = 0;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(RendererGamepadProvider);

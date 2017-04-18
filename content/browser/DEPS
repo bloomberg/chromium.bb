@@ -66,8 +66,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebDragOperation.h",
   "+third_party/WebKit/public/platform/WebFeaturePolicy.h",
   "+third_party/WebKit/public/platform/WebFocusType.h",
-  "+third_party/WebKit/public/platform/WebGamepad.h",
-  "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGestureEvent.h",
   "+third_party/WebKit/public/platform/WebInputEvent.h",
   "+third_party/WebKit/public/platform/WebInsecureRequestPolicy.h",

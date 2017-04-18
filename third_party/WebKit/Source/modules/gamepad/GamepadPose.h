@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "public/platform/WebGamepad.h"
 
 namespace blink {
 
@@ -30,7 +30,7 @@ class GamepadPose final : public GarbageCollected<GamepadPose>,
   DOMFloat32Array* angularAcceleration() const { return angular_acceleration_; }
   DOMFloat32Array* linearAcceleration() const { return linear_acceleration_; }
 
-  void SetPose(const WebGamepadPose& state);
+  void SetPose(const device::GamepadPose& state);
 
   DECLARE_VIRTUAL_TRACE();
 

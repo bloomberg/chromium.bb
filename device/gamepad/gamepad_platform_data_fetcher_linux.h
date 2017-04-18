@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/public/cpp/gamepads.h"
 
 extern "C" {
 struct udev_device;
@@ -47,7 +48,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void ReadDeviceData(size_t index);
 
   // File descriptor for the /dev/input/js* devices. -1 if not in use.
-  int device_fd_[blink::WebGamepads::kItemsLengthCap];
+  int device_fd_[Gamepads::kItemsLengthCap];
 
   std::unique_ptr<device::UdevLinux> udev_;
 

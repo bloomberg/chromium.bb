@@ -6,38 +6,37 @@
 
 namespace device {
 
-blink::WebGamepadButton AxisToButton(float input) {
+GamepadButton AxisToButton(float input) {
   float value = (input + 1.f) / 2.f;
   bool pressed = value > kDefaultButtonPressedThreshold;
   bool touched = value > 0.0f;
-  return blink::WebGamepadButton(pressed, touched, value);
+  return GamepadButton(pressed, touched, value);
 }
 
-blink::WebGamepadButton AxisNegativeAsButton(float input) {
+GamepadButton AxisNegativeAsButton(float input) {
   float value = (input < -0.5f) ? 1.f : 0.f;
   bool pressed = value > kDefaultButtonPressedThreshold;
   bool touched = value > 0.0f;
-  return blink::WebGamepadButton(pressed, touched, value);
+  return GamepadButton(pressed, touched, value);
 }
 
-blink::WebGamepadButton AxisPositiveAsButton(float input) {
+GamepadButton AxisPositiveAsButton(float input) {
   float value = (input > 0.5f) ? 1.f : 0.f;
   bool pressed = value > kDefaultButtonPressedThreshold;
   bool touched = value > 0.0f;
-  return blink::WebGamepadButton(pressed, touched, value);
+  return GamepadButton(pressed, touched, value);
 }
 
-blink::WebGamepadButton ButtonFromButtonAndAxis(blink::WebGamepadButton button,
-                                                float axis) {
+GamepadButton ButtonFromButtonAndAxis(GamepadButton button, float axis) {
   float value = (axis + 1.f) / 2.f;
-  return blink::WebGamepadButton(button.pressed, button.touched, value);
+  return GamepadButton(button.pressed, button.touched, value);
 }
 
-blink::WebGamepadButton NullButton() {
-  return blink::WebGamepadButton(false, false, 0.0);
+GamepadButton NullButton() {
+  return GamepadButton(false, false, 0.0);
 }
 
-void DpadFromAxis(blink::WebGamepad* mapped, float dir) {
+void DpadFromAxis(Gamepad* mapped, float dir) {
   bool up = false;
   bool right = false;
   bool down = false;

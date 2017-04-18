@@ -446,6 +446,7 @@ target(link_target_type, "renderer") {
     "//content/public/common:service_names",
     "//crypto:platform",
     "//device/base/synchronization",
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/interfaces",
     "//device/screen_orientation/public/interfaces",
     "//device/sensors/public/cpp:full",

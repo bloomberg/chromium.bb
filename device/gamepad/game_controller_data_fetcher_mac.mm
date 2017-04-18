@@ -14,19 +14,16 @@
 
 #import <GameController/GameController.h>
 
-using blink::WebGamepad;
-using blink::WebGamepads;
-
 namespace device {
 
 namespace {
 
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     blink::WebUChar* dest,
+                                     UChar* dest,
                                      size_t dest_len) {
   NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
   memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(blink::WebUChar)];
+  [as16 getBytes:dest length:dest_len - sizeof(UChar)];
 }
 
 }  // namespace
@@ -55,7 +52,7 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
     if (!state)
       continue;
 
-    WebGamepad& pad = state->data;
+    Gamepad& pad = state->data;
 
     // This first time we encounter a gamepad, set its name, mapping, and
     // axes/button counts. This information is static, so it only needs to be

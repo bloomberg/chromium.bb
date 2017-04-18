@@ -21,4 +21,8 @@ blink_modules_sources("gamepad") {
     "NavigatorGamepad.cpp",
     "NavigatorGamepad.h",
   ]
+
+  deps = [
+    "//device/gamepad/public/cpp:shared_with_blink",
+  ]
 }

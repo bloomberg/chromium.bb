@@ -12,6 +12,7 @@ include_rules = [
   "+content/public/renderer",
   "+content/child",
   "+device/base/synchronization",
+  "+device/gamepad/public/cpp",
   "+device/gamepad/public/interfaces",
   "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",

@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
+#include "device/gamepad/public/cpp/gamepad.h"
 #include "modules/gamepad/GamepadDispatcher.h"
 #include "modules/gamepad/GamepadEvent.h"
 #include "modules/gamepad/GamepadList.h"
@@ -38,27 +39,27 @@ namespace blink {
 template <typename T>
 static void SampleGamepad(unsigned index,
                           T& gamepad,
-                          const WebGamepad& web_gamepad) {
-  gamepad.SetId(web_gamepad.id);
+                          const device::Gamepad& device_gamepad) {
+  gamepad.SetId(device_gamepad.id);
   gamepad.SetIndex(index);
-  gamepad.SetConnected(web_gamepad.connected);
-  gamepad.SetTimestamp(web_gamepad.timestamp);
-  gamepad.SetMapping(web_gamepad.mapping);
-  gamepad.SetAxes(web_gamepad.axes_length, web_gamepad.axes);
-  gamepad.SetButtons(web_gamepad.buttons_length, web_gamepad.buttons);
-  gamepad.SetPose(web_gamepad.pose);
-  gamepad.SetHand(web_gamepad.hand);
-  gamepad.SetDisplayId(web_gamepad.display_id);
+  gamepad.SetConnected(device_gamepad.connected);
+  gamepad.SetTimestamp(device_gamepad.timestamp);
+  gamepad.SetMapping(device_gamepad.mapping);
+  gamepad.SetAxes(device_gamepad.axes_length, device_gamepad.axes);
+  gamepad.SetButtons(device_gamepad.buttons_length, device_gamepad.buttons);
+  gamepad.SetPose(device_gamepad.pose);
+  gamepad.SetHand(device_gamepad.hand);
+  gamepad.SetDisplayId(device_gamepad.display_id);
 }
 
 template <typename GamepadType, typename ListType>
 static void SampleGamepads(ListType* into) {
-  WebGamepads gamepads;
+  device::Gamepads gamepads;
 
   GamepadDispatcher::Instance().SampleGamepads(gamepads);
 
-  for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
-    WebGamepad& web_gamepad = gamepads.items[i];
+  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+    device::Gamepad& web_gamepad = gamepads.items[i];
     if (web_gamepad.connected) {
       GamepadType* gamepad = into->item(i);
       if (!gamepad)
@@ -254,7 +255,7 @@ void NavigatorGamepad::PageVisibilityChanged() {
   GamepadList* new_gamepads = gamepads_.Get();
   DCHECK(new_gamepads);
 
-  for (unsigned i = 0; i < WebGamepads::kItemsLengthCap; ++i) {
+  for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     Gamepad* old_gamepad = old_gamepads ? old_gamepads->item(i) : 0;
     Gamepad* new_gamepad = new_gamepads->item(i);
     bool old_was_connected = old_gamepad && old_gamepad->connected();

@@ -18,21 +18,17 @@
 namespace device {
 
 namespace {
-static const int kNumberOfGamepads = blink::WebGamepads::kItemsLengthCap;
+static const int kNumberOfGamepads = Gamepads::kItemsLengthCap;
 }
-
-using blink::WebGamepads;
 
 class ConnectionListener : public device::GamepadConsumer {
  public:
   ConnectionListener() { ClearCounters(); }
 
-  void OnGamepadConnected(unsigned index,
-                          const blink::WebGamepad& gamepad) override {
+  void OnGamepadConnected(unsigned index, const Gamepad& gamepad) override {
     connected_counter_++;
   }
-  void OnGamepadDisconnected(unsigned index,
-                             const blink::WebGamepad& gamepad) override {
+  void OnGamepadDisconnected(unsigned index, const Gamepad& gamepad) override {
     disconnected_counter_++;
   }
 
@@ -71,7 +67,7 @@ class GamepadServiceTest : public testing::Test {
   device::MockGamepadDataFetcher* fetcher_;
   GamepadService* service_;
   std::unique_ptr<ConnectionListener> connection_listener_;
-  WebGamepads test_data_;
+  Gamepads test_data_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadServiceTest);
 };
