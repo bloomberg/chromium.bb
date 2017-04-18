@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
+#include "core/dom/AncestorList.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/weborigin/KURL.h"
@@ -29,9 +30,16 @@ class WebTaskRunner;
 // A SingleModuleClient is notified when single module script node (node as in a
 // module tree graph) load is complete and its corresponding entry is created in
 // module map.
-class SingleModuleClient : public GarbageCollectedMixin {
+class CORE_EXPORT SingleModuleClient : public GarbageCollectedMixin {
  public:
   virtual void NotifyModuleLoadFinished(ModuleScript*) = 0;
+};
+
+// A ModuleTreeClient is notified when a module script and its whole descendent
+// tree load is complete.
+class CORE_EXPORT ModuleTreeClient : public GarbageCollectedMixin {
+ public:
+  virtual void NotifyModuleTreeLoadFinished(ModuleScript*) = 0;
 };
 
 // spec: "top-level module fetch flag"
@@ -61,6 +69,23 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual WebTaskRunner* TaskRunner() = 0;
   virtual ReferrerPolicy GetReferrerPolicy() = 0;
   virtual SecurityOrigin* GetSecurityOrigin() = 0;
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+  virtual void FetchTree(const ModuleScriptFetchRequest&,
+                         ModuleTreeClient*) = 0;
+
+  // https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
+  virtual void FetchTreeInternal(const ModuleScriptFetchRequest&,
+                                 const AncestorList&,
+                                 ModuleGraphLevel,
+                                 ModuleTreeClient*) = 0;
+
+  // Asynchronously retrieve a module script from the module map, or fetch it
+  // and put it in the map if it's not there already.
+  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+  virtual void FetchSingle(const ModuleScriptFetchRequest&,
+                           ModuleGraphLevel,
+                           SingleModuleClient*) = 0;
 
   // Synchronously retrieves a single module script from existing module map
   // entry.

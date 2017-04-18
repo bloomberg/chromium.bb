@@ -36,6 +36,24 @@ WebTaskRunner* DummyModulator::TaskRunner() {
   return nullptr;
 };
 
+void DummyModulator::FetchTree(const ModuleScriptFetchRequest&,
+                               ModuleTreeClient*) {
+  NOTREACHED();
+}
+
+void DummyModulator::FetchTreeInternal(const ModuleScriptFetchRequest&,
+                                       const AncestorList&,
+                                       ModuleGraphLevel,
+                                       ModuleTreeClient*) {
+  NOTREACHED();
+};
+
+void DummyModulator::FetchSingle(const ModuleScriptFetchRequest&,
+                                 ModuleGraphLevel,
+                                 SingleModuleClient*) {
+  NOTREACHED();
+}
+
 ModuleScript* DummyModulator::GetFetchedModuleScript(const KURL&) {
   NOTREACHED();
   return nullptr;

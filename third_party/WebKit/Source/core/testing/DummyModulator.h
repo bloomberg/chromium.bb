@@ -36,6 +36,14 @@ class DummyModulator : public Modulator {
   ReferrerPolicy GetReferrerPolicy() override;
   SecurityOrigin* GetSecurityOrigin() override;
 
+  void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;
+  void FetchTreeInternal(const ModuleScriptFetchRequest&,
+                         const AncestorList&,
+                         ModuleGraphLevel,
+                         ModuleTreeClient*) override;
+  void FetchSingle(const ModuleScriptFetchRequest&,
+                   ModuleGraphLevel,
+                   SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
