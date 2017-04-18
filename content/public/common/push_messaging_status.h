@@ -65,12 +65,15 @@ enum PushRegistrationStatus {
   // automatically after unsubscribing to fix the corruption.
   PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT = 14,
 
+  // Registration failed because the renderer was shut down.
+  PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN = 15,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
-  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT
+  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN
 };
 
 // Push unregistration reason for reporting in UMA. Enum values can be added,
@@ -178,12 +181,16 @@ enum PushGetRegistrationStatus {
   // Getting the registration failed because storage was corrupt.
   PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT = 6,
 
+  // Getting the registration failed because the renderer was shut down.
+  PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN = 7,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_GETREGISTRATION_STATUS_LAST below.
 
-  PUSH_GETREGISTRATION_STATUS_LAST = PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT
+  PUSH_GETREGISTRATION_STATUS_LAST =
+      PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN
 };
 
 // Push message event success/error codes for internal use & reporting in UMA.

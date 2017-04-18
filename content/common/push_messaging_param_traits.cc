@@ -107,6 +107,13 @@ static_assert(
             content::mojom::PushRegistrationStatus::STORAGE_CORRUPT),
     "PushRegistrationStatus enums must match, STORAGE_CORRUPT");
 
+static_assert(
+    content::PushRegistrationStatus::
+            PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN ==
+        static_cast<content::PushRegistrationStatus>(
+            content::mojom::PushRegistrationStatus::RENDERER_SHUTDOWN),
+    "PushRegistrationStatus enums must match, RENDERER_SHUTDOWN");
+
 static_assert(content::PushRegistrationStatus::PUSH_REGISTRATION_STATUS_LAST ==
                   static_cast<content::PushRegistrationStatus>(
                       content::mojom::PushRegistrationStatus::LAST),
@@ -195,6 +202,13 @@ static_assert(
         static_cast<content::PushGetRegistrationStatus>(
             content::mojom::PushGetRegistrationStatus::STORAGE_CORRUPT),
     "PushGetRegistrationStatus enums must match, STORAGE_CORRUPT");
+
+static_assert(
+    content::PushGetRegistrationStatus::
+            PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN ==
+        static_cast<content::PushGetRegistrationStatus>(
+            content::mojom::PushGetRegistrationStatus::RENDERER_SHUTDOWN),
+    "PushGetRegistrationStatus enums must match, RENDERER_SHUTDOWN");
 
 static_assert(
     content::PushGetRegistrationStatus::PUSH_GETREGISTRATION_STATUS_LAST ==

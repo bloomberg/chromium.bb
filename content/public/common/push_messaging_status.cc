@@ -60,6 +60,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
 
     case PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT:
       return "Registration failed - storage corrupt";
+
+    case PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN:
+      return "Registration failed - renderer shutdown";
   }
   NOTREACHED();
   return "";

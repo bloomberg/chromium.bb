@@ -72,12 +72,15 @@ enum PushRegistrationStatus {
   // automatically after unsubscribing to fix the corruption.
   STORAGE_CORRUPT = 14,
 
+  // Registration failed because the renderer was shut down.
+  RENDERER_SHUTDOWN = 15,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update LAST below.
 
-  LAST = STORAGE_CORRUPT
+  LAST = RENDERER_SHUTDOWN
 };
 
 enum PushErrorType {
@@ -116,12 +119,15 @@ enum PushGetRegistrationStatus {
   // Getting the registration failed because storage was corrupt.
   STORAGE_CORRUPT = 6,
 
+  // Getting the registration failed because the renderer was shut down.
+  RENDERER_SHUTDOWN = 7,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update LAST below.
 
-  LAST = STORAGE_CORRUPT
+  LAST = RENDERER_SHUTDOWN
 };
 
 enum PushPermissionStatus {

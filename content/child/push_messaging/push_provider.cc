@@ -63,6 +63,7 @@ blink::WebPushError PushRegistrationStatusToWebPushError(
     case PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE:
     case PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING:
     case PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT:
+    case PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN:
       error_type = blink::WebPushError::kErrorTypeAbort;
       break;
   }

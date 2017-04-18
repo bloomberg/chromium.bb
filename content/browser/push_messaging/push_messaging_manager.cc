@@ -375,12 +375,13 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
   } else {
     PushMessagingService* push_service = service();
     if (!push_service) {
-      NOTREACHED() << "Shouldn't be possible to have a stored push "
-                      "subscription in a profile with no push service.";
+      // Shouldn't be possible to have a stored push subscription in a profile
+      // with no push service, but this case can occur when the renderer is
+      // shutting down.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                     data, PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE));
+                     data, PUSH_REGISTRATION_STATUS_RENDERER_SHUTDOWN));
       return;
     }
 
@@ -847,6 +848,19 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
 
     RecordGetRegistrationStatus(status);
   } else {
+    PushMessagingService* push_service = service();
+    if (!push_service) {
+      // Shouldn't be possible to have a stored push subscription in a profile
+      // with no push service, but this case can occur when the renderer is
+      // shutting down.
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(callback, PUSH_GETREGISTRATION_STATUS_RENDERER_SHUTDOWN,
+                     base::nullopt /* endpoint */, base::nullopt /* options */,
+                     base::nullopt /* p256dh */, base::nullopt /* auth */));
+      return;
+    }
+
     // Uh-oh! Although there was a cached subscription in the Service Worker
     // database, it did not have matching counterparts in the
     // PushMessagingAppIdentifier map and/or GCM Store. Unsubscribe to fix this
@@ -854,8 +868,6 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     PushGetRegistrationStatus status =
         PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT;
 
-    PushMessagingService* push_service = service();
-    DCHECK(push_service);  // NOT_FOUND response can only come from service.
     push_service->Unsubscribe(
         PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT, origin,
         service_worker_registration_id, sender_info,
