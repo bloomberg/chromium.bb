@@ -636,7 +636,8 @@ void ImageCapture::OnCapabilitiesUpdateInternal(
     settings_.setZoom(capabilities.zoom->current);
   }
 
-  capabilities_.setTorch(capabilities.supports_torch);
+  if (capabilities.supports_torch)
+    capabilities_.setTorch(capabilities.supports_torch);
   if (capabilities.supports_torch)
     settings_.setTorch(capabilities.torch);
 }
