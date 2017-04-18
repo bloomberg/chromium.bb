@@ -119,7 +119,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      * Change this static function to add or take out default {@code PreTestHook}s.
      */
     private static List<PreTestHook> defaultPreTestHooks() {
-        return new ArrayList<PreTestHook>();
+        return null;
     }
 
     /**

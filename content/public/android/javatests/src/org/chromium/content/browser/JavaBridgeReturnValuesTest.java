@@ -31,7 +31,8 @@ import org.chromium.content.browser.JavaBridgeTestCommon.Controller;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class JavaBridgeReturnValuesTest {
     @Rule
-    public JavaBridgeActivityTestRule mActivityTestRule = new JavaBridgeActivityTestRule();
+    public JavaBridgeActivityTestRule mActivityTestRule =
+            new JavaBridgeActivityTestRule().shouldSetUp(true);
 
     // An instance of this class is injected into the page to test returning
     // Java values to JavaScript.

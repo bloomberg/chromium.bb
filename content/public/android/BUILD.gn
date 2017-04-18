@@ -441,6 +441,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/input/CursorAnchorInfoControllerTest.java",
     "javatests/src/org/chromium/content/browser/input/ImeLollipopTest.java",
     "javatests/src/org/chromium/content/browser/input/ImeTest.java",
+    "javatests/src/org/chromium/content/browser/input/ImeActivityTestRule.java",
     "javatests/src/org/chromium/content/browser/input/ImeTestUtils.java",
     "javatests/src/org/chromium/content/browser/input/InputDialogContainerTest.java",
     "javatests/src/org/chromium/content/browser/input/SelectPopupTest.java",

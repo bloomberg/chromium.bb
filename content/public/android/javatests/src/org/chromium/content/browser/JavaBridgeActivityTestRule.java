@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.test.SetUpStatement;
+import org.chromium.base.test.SetUpTestRule;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -18,8 +20,10 @@ import java.lang.annotation.Annotation;
  * ActivityTestRule with common functionality for testing the Java Bridge.
  */
 public class JavaBridgeActivityTestRule
-        extends ContentShellActivityTestRule implements TestCommonCallback<ContentShellActivity> {
+        extends ContentShellActivityTestRule implements TestCommonCallback<ContentShellActivity>,
+                                                        SetUpTestRule<JavaBridgeActivityTestRule> {
     private JavaBridgeTestCommon mTestCommon;
+    private boolean mSetup = false;
 
     public JavaBridgeActivityTestRule() {
         super();
@@ -29,7 +33,7 @@ public class JavaBridgeActivityTestRule
     /**
      * Sets up the ContentView. Intended to be called from setUp().
      */
-    private void setUpContentView() {
+    public void setUpContentView() {
         mTestCommon.setUpContentView();
     }
 
@@ -61,13 +65,19 @@ public class JavaBridgeActivityTestRule
     }
 
     @Override
-    public Statement apply(final Statement base, Description desc) {
-        return super.apply(new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                setUpContentView();
-                base.evaluate();
-            }
-        }, desc);
+    public Statement apply(Statement base, Description desc) {
+        SetUpStatement setUpBase = new SetUpStatement(base, this, mSetup);
+        return super.apply(setUpBase, desc);
+    }
+
+    @Override
+    public JavaBridgeActivityTestRule shouldSetUp(boolean runSetUp) {
+        mSetup = runSetUp;
+        return this;
+    }
+
+    @Override
+    public void setUp() {
+        setUpContentView();
     }
 }
