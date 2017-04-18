@@ -39,7 +39,7 @@ class U2fDevice {
                           std::unique_ptr<U2fApduResponse> response)>;
   using WinkCallback = base::Callback<void()>;
 
-  ~U2fDevice();
+  virtual ~U2fDevice();
 
   // Raw messages parameters are defined by the specification at
   // https://fidoalliance.org/specs/fido-u2f-v1.0-nfc-bt-amendment-20150514/fido-u2f-raw-message-formats.html
