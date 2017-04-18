@@ -246,24 +246,7 @@ bool NGBlockNode::CanUseNewLayout() {
 
   if (!layout_box_->IsLayoutBlockFlow())
     return false;
-  return RuntimeEnabledFeatures::layoutNGEnabled() || !HasInlineChildren();
-}
-
-bool NGBlockNode::HasInlineChildren() {
-  if (!layout_box_->IsLayoutBlockFlow())
-    return false;
-
-  const LayoutBlockFlow* block_flow = ToLayoutBlockFlow(layout_box_);
-  if (!block_flow->ChildrenInline())
-    return false;
-  LayoutObject* child = block_flow->FirstChild();
-  while (child) {
-    if (child->IsInline())
-      return true;
-    child = child->NextSibling();
-  }
-
-  return false;
+  return RuntimeEnabledFeatures::layoutNGEnabled();
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(

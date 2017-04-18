@@ -63,7 +63,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  private:
 
   bool CanUseNewLayout();
-  bool HasInlineChildren();
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
