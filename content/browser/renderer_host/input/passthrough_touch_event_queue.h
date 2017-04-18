@@ -121,6 +121,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
   // Whether touch events should be sent as uncancelable or not.
   bool send_touch_events_async_;
 
+  bool processing_acks_;
+
   // Event is saved to compare pointer positions for new touchmove events.
   std::unique_ptr<blink::WebTouchEvent> last_sent_touchevent_;
 
