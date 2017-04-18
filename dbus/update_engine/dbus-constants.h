@@ -26,6 +26,8 @@ const char kCanRollback[] = "CanRollback";
 const char kGetEolStatus[] = "GetEolStatus";
 const char kSetUpdateOverCellularPermission[] =
     "SetUpdateOverCellularPermission";
+const char kSetUpdateOverCellularTarget[] =
+    "SetUpdateOverCellularTarget";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
@@ -57,6 +59,8 @@ const char kUpdateStatusReportingErrorEvent[] =
 const char kUpdateStatusAttemptingRollback[] =
     "UPDATE_STATUS_ATTEMPTING_ROLLBACK";
 const char kUpdateStatusDisabled[] = "UPDATE_STATUS_DISABLED";
+const char kUpdateStatusNeedPermissionToUpdate[] =
+    "UPDATE_STATUS_NEED_PERMISSION_TO_UPDATE";
 }  // namespace update_engine
 
 #endif  // SYSTEM_API_DBUS_UPDATE_ENGINE_DBUS_CONSTANTS_H_
