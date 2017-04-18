@@ -47,14 +47,13 @@ bool NavigatorBeacon::CanSendBeacon(ExecutionContext* context,
                                     const KURL& url,
                                     ExceptionState& exception_state) {
   if (!url.IsValid()) {
-    exception_state.ThrowDOMException(
-        kSyntaxError, "The URL argument is ill-formed or unsupported.");
+    exception_state.ThrowTypeError(
+        "The URL argument is ill-formed or unsupported.");
     return false;
   }
   // For now, only support HTTP and related.
   if (!url.ProtocolIsInHTTPFamily()) {
-    exception_state.ThrowDOMException(
-        kSyntaxError, "Beacons are only supported over HTTP(S).");
+    exception_state.ThrowTypeError("Beacons are only supported over HTTP(S).");
     return false;
   }
 
