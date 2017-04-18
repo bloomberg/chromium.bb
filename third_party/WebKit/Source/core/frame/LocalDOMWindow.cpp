@@ -110,7 +110,7 @@ class PostMessageTimer final
       : SuspendableTimer(window.document(), TaskType::kPostedMessage),
         event_(event),
         window_(&window),
-        target_origin_(target_origin),
+        target_origin_(std::move(target_origin)),
         location_(std::move(location)),
         user_gesture_token_(user_gesture_token),
         disposal_allowed_(true) {

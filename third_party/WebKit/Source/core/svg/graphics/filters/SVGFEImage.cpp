@@ -45,7 +45,7 @@ FEImage::FEImage(Filter* filter,
                  PassRefPtr<Image> image,
                  SVGPreserveAspectRatio* preserve_aspect_ratio)
     : FilterEffect(filter),
-      image_(image),
+      image_(std::move(image)),
       tree_scope_(nullptr),
       preserve_aspect_ratio_(preserve_aspect_ratio) {
   FilterEffect::SetOperatingColorSpace(kColorSpaceDeviceRGB);

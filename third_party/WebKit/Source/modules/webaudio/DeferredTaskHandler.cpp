@@ -256,7 +256,7 @@ void DeferredTaskHandler::AddRenderingOrphanHandler(
     PassRefPtr<AudioHandler> handler) {
   DCHECK(handler);
   DCHECK(!rendering_orphan_handlers_.Contains(handler));
-  rendering_orphan_handlers_.push_back(handler);
+  rendering_orphan_handlers_.push_back(std::move(handler));
 }
 
 void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {

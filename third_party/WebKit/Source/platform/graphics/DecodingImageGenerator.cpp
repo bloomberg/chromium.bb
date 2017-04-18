@@ -45,7 +45,7 @@ DecodingImageGenerator::DecodingImageGenerator(
     uint32_t unique_id)
     : SkImageGenerator(info, unique_id),
       frame_generator_(std::move(frame_generator)),
-      data_(data),
+      data_(std::move(data)),
       all_data_received_(all_data_received),
       frame_index_(index),
       can_yuv_decode_(false) {}

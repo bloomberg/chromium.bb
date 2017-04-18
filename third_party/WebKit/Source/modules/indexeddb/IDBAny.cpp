@@ -125,7 +125,7 @@ IDBAny::IDBAny(const Vector<RefPtr<IDBValue>>& values)
     : type_(kIDBValueArrayType), idb_values_(values) {}
 
 IDBAny::IDBAny(PassRefPtr<IDBValue> value)
-    : type_(kIDBValueType), idb_value_(value) {}
+    : type_(kIDBValueType), idb_value_(std::move(value)) {}
 
 IDBAny::IDBAny(IDBKey* key) : type_(kKeyType), idb_key_(key) {}
 

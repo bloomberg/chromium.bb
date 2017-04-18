@@ -46,7 +46,7 @@ class AnimatableShadow final : public AnimatableValue {
 
  private:
   explicit AnimatableShadow(PassRefPtr<ShadowList> shadow_list)
-      : shadow_list_(shadow_list) {}
+      : shadow_list_(std::move(shadow_list)) {}
   AnimatableType GetType() const override { return kTypeShadow; }
   bool EqualTo(const AnimatableValue*) const override;
 

@@ -19,7 +19,8 @@ class AnimatablePath final : public AnimatableValue {
   }
 
  private:
-  explicit AnimatablePath(PassRefPtr<StylePath> path) : path_(path) {}
+  explicit AnimatablePath(PassRefPtr<StylePath> path)
+      : path_(std::move(path)) {}
   AnimatableType GetType() const override { return kTypePath; }
   bool EqualTo(const AnimatableValue*) const override;
   const RefPtr<StylePath> path_;

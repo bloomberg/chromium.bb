@@ -305,9 +305,12 @@ static PassRefPtr<AnimatableValue> CreateFromTransformProperties(
     double zoom,
     PassRefPtr<TransformOperation> initial_transform) {
   TransformOperations operation;
-  if (transform || initial_transform)
-    operation.Operations().push_back(transform ? transform : initial_transform);
-  return AnimatableTransform::Create(operation, transform ? zoom : 1);
+  bool has_transform = static_cast<bool>(transform);
+  if (has_transform || initial_transform) {
+    operation.Operations().push_back(
+        std::move(has_transform ? transform : initial_transform));
+  }
+  return AnimatableTransform::Create(operation, has_transform ? zoom : 1);
 }
 
 static PassRefPtr<AnimatableValue> CreateFromFontWeight(

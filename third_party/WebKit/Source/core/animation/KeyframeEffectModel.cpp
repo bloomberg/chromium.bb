@@ -282,7 +282,7 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::AppendKeyframe(
     PassRefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(keyframes_.IsEmpty() ||
          keyframes_.back()->Offset() <= keyframe->Offset());
-  keyframes_.push_back(keyframe);
+  keyframes_.push_back(std::move(keyframe));
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::

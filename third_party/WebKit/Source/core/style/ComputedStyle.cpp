@@ -436,7 +436,7 @@ ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
   if (!cached_pseudo_styles_)
     cached_pseudo_styles_ = WTF::WrapUnique(new PseudoStyleCache);
 
-  cached_pseudo_styles_->push_back(pseudo);
+  cached_pseudo_styles_->push_back(std::move(pseudo));
 
   return result;
 }

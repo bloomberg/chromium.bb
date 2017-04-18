@@ -59,7 +59,7 @@ class InheritedPathChecker : public InterpolationType::ConversionChecker {
 
  private:
   InheritedPathChecker(PassRefPtr<StylePath> style_path)
-      : style_path_(style_path) {}
+      : style_path_(std::move(style_path)) {}
 
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {

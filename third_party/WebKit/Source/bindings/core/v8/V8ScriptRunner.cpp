@@ -371,9 +371,11 @@ static std::unique_ptr<CompileFn> SelectCompileFunction(
     case kV8CacheOptionsAlways: {
       // Use code caching for recently seen resources.
       // Use compression depending on the cache option.
-      if (code_cache)
+      if (code_cache) {
         return Bind(CompileAndConsumeCache, WrapPersistent(cache_handler),
-                    code_cache, v8::ScriptCompiler::kConsumeCodeCache);
+                    std::move(code_cache),
+                    v8::ScriptCompiler::kConsumeCodeCache);
+      }
       if (cache_options != kV8CacheOptionsAlways &&
           !IsResourceHotForCaching(cache_handler, kHotHours)) {
         V8ScriptRunner::SetCacheTimeStamp(cache_handler);

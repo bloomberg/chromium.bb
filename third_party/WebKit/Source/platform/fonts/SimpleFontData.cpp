@@ -80,7 +80,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
                                PassRefPtr<OpenTypeVerticalData> vertical_data)
     : platform_data_(platform_data),
-      vertical_data_(vertical_data),
+      vertical_data_(std::move(vertical_data)),
       is_text_orientation_fallback_(false),
       has_vertical_glyphs_(false),
       visual_overflow_inflation_for_ascent_(0),

@@ -30,7 +30,7 @@ IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
                    const WebVector<WebBlobInfo>& web_blob_info,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
-    : data_(data),
+    : data_(std::move(data)),
       blob_data_(WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>()),
       blob_info_(
           WTF::WrapUnique(new Vector<WebBlobInfo>(web_blob_info.size()))),

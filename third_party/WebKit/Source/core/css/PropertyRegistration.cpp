@@ -42,7 +42,7 @@ PropertyRegistration::PropertyRegistration(
     : syntax_(syntax),
       inherits_(inherits),
       initial_(initial),
-      initial_variable_data_(initial_variable_data),
+      initial_variable_data_(std::move(initial_variable_data)),
       interpolation_types_(SetRegistrationOnCSSInterpolationTypes(
           std::move(css_interpolation_types),
           *this)) {}

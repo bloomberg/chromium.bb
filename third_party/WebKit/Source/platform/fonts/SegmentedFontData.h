@@ -40,9 +40,8 @@ class PLATFORM_EXPORT SegmentedFontData : public FontData {
     return AdoptRef(new SegmentedFontData);
   }
 
-  void AppendFace(
-      const PassRefPtr<FontDataForRangeSet> font_data_for_range_set) {
-    faces_.push_back(font_data_for_range_set);
+  void AppendFace(PassRefPtr<FontDataForRangeSet> font_data_for_range_set) {
+    faces_.push_back(std::move(font_data_for_range_set));
   }
   unsigned NumFaces() const { return faces_.size(); }
   PassRefPtr<FontDataForRangeSet> FaceAt(unsigned i) const { return faces_[i]; }
