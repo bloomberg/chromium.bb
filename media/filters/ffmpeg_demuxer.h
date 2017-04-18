@@ -117,8 +117,8 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_decoder_config() override;
   VideoRotation video_rotation() override;
 
-  bool enabled() const;
-  void set_enabled(bool enabled, base::TimeDelta timestamp);
+  bool IsEnabled() const;
+  void SetEnabled(bool enabled, base::TimeDelta timestamp);
 
   void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 

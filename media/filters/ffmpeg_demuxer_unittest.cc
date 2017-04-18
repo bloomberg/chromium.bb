@@ -558,20 +558,20 @@ TEST_F(FFmpegDemuxerTest, Seeking_PreferredStreamSelection) {
 
   // A disabled stream should be preferred only when there's no other viable
   // option among enabled streams.
-  audio->set_enabled(false, base::TimeDelta());
+  audio->SetEnabled(false, base::TimeDelta());
   EXPECT_EQ(video, preferred_seeking_stream(video_start_time));
   // Audio stream is preferred, even though it is disabled, since video stream
   // start time is higher than the seek target == audio_start_time in this case.
   EXPECT_EQ(audio, preferred_seeking_stream(audio_start_time));
 
-  audio->set_enabled(true, base::TimeDelta());
-  video->set_enabled(false, base::TimeDelta());
+  audio->SetEnabled(true, base::TimeDelta());
+  video->SetEnabled(false, base::TimeDelta());
   EXPECT_EQ(audio, preferred_seeking_stream(audio_start_time));
   EXPECT_EQ(audio, preferred_seeking_stream(video_start_time));
 
   // When both audio and video streams are disabled and there's no enabled
   // streams, then audio is preferred since it has lower start time.
-  audio->set_enabled(false, base::TimeDelta());
+  audio->SetEnabled(false, base::TimeDelta());
   EXPECT_EQ(audio, preferred_seeking_stream(audio_start_time));
   EXPECT_EQ(audio, preferred_seeking_stream(video_start_time));
 }
@@ -832,7 +832,7 @@ TEST_F(FFmpegDemuxerTest, Read_DiscardDisabledVideoStream) {
   auto bytes_read_with_video_enabled = data_source_->bytes_read_for_testing();
 
   static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::VIDEO))
-      ->set_enabled(false, base::TimeDelta());
+      ->SetEnabled(false, base::TimeDelta());
   data_source_->reset_bytes_read_for_testing();
   Seek(seek_target);
   GetStream(DemuxerStream::AUDIO)
@@ -1576,7 +1576,7 @@ TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledVideoStream) {
 
   // Now pretend that video stream got disabled, e.g. due to current tab going
   // into background.
-  vstream->set_enabled(false, base::TimeDelta());
+  vstream->SetEnabled(false, base::TimeDelta());
   // Since there's no other enabled streams, the preferred seeking stream should
   // still be the video stream.
   EXPECT_EQ(vstream, preferred_seeking_stream(base::TimeDelta()));
@@ -1592,7 +1592,7 @@ TEST_F(FFmpegDemuxerTest, Seek_FallbackToDisabledAudioStream) {
   EXPECT_EQ(astream, preferred_seeking_stream(base::TimeDelta()));
 
   // Now pretend that audio stream got disabled.
-  astream->set_enabled(false, base::TimeDelta());
+  astream->SetEnabled(false, base::TimeDelta());
   // Since there's no other enabled streams, the preferred seeking stream should
   // still be the audio stream.
   EXPECT_EQ(astream, preferred_seeking_stream(base::TimeDelta()));

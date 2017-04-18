@@ -4658,16 +4658,16 @@ void CheckStreamStatusNotifications(MediaResource* media_resource,
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  ASSERT_TRUE(stream->enabled());
+  ASSERT_TRUE(stream->IsEnabled());
   media_resource->SetStreamStatusChangeCB(
       base::Bind(&OnStreamStatusChanged, base::Unretained(&event)));
 
-  stream->set_enabled(false, base::TimeDelta());
+  stream->SetEnabled(false, base::TimeDelta());
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(event.IsSignaled());
 
   event.Reset();
-  stream->set_enabled(true, base::TimeDelta());
+  stream->SetEnabled(true, base::TimeDelta());
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(event.IsSignaled());
 }

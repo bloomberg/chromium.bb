@@ -728,12 +728,12 @@ VideoRotation FFmpegDemuxerStream::video_rotation() {
   return video_rotation_;
 }
 
-bool FFmpegDemuxerStream::enabled() const {
+bool FFmpegDemuxerStream::IsEnabled() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return is_enabled_;
 }
 
-void FFmpegDemuxerStream::set_enabled(bool enabled, base::TimeDelta timestamp) {
+void FFmpegDemuxerStream::SetEnabled(bool enabled, base::TimeDelta timestamp) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (enabled == is_enabled_)
     return;
@@ -1043,12 +1043,12 @@ std::vector<DemuxerStream*> FFmpegDemuxer::GetAllStreams() {
   // MediaResource::GetFirstStream returns the enabled stream if there is one.
   // TODO(servolk): Revisit this after media track switching is supported.
   for (const auto& stream : streams_) {
-    if (stream && stream->enabled())
+    if (stream && stream->IsEnabled())
       result.push_back(stream.get());
   }
   // And include disabled streams at the end of the list.
   for (const auto& stream : streams_) {
-    if (stream && !stream->enabled())
+    if (stream && !stream->IsEnabled())
       result.push_back(stream.get());
   }
   return result;
@@ -1064,7 +1064,7 @@ void FFmpegDemuxer::SetStreamStatusChangeCB(const StreamStatusChangeCB& cb) {
 FFmpegDemuxerStream* FFmpegDemuxer::GetFirstEnabledFFmpegStream(
     DemuxerStream::Type type) const {
   for (const auto& stream : streams_) {
-    if (stream && stream->type() == type && stream->enabled()) {
+    if (stream && stream->type() == type && stream->IsEnabled()) {
       return stream.get();
     }
   }
@@ -1339,11 +1339,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
-      streams_[i]->set_enabled(detected_audio_track_count == 1,
-                               base::TimeDelta());
+      streams_[i]->SetEnabled(detected_audio_track_count == 1,
+                              base::TimeDelta());
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
-      streams_[i]->set_enabled(detected_video_track_count == 1,
-                               base::TimeDelta());
+      streams_[i]->SetEnabled(detected_video_track_count == 1,
+                              base::TimeDelta());
     }
 
     if ((codec_type == AVMEDIA_TYPE_AUDIO &&
@@ -1571,7 +1571,7 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindStreamWithLowestStartTimestamp(
     bool enabled) {
   FFmpegDemuxerStream* lowest_start_time_stream = nullptr;
   for (const auto& stream : streams_) {
-    if (!stream || stream->enabled() != enabled)
+    if (!stream || stream->IsEnabled() != enabled)
       continue;
     if (!lowest_start_time_stream ||
         stream->start_time() < lowest_start_time_stream->start_time()) {
@@ -1587,7 +1587,8 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
   // than the |seek_time| or unknown, then always prefer it for seeking.
   FFmpegDemuxerStream* video_stream = nullptr;
   for (const auto& stream : streams_) {
-    if (stream && stream->type() == DemuxerStream::VIDEO && stream->enabled()) {
+    if (stream && stream->type() == DemuxerStream::VIDEO &&
+        stream->IsEnabled()) {
       video_stream = stream.get();
       if (video_stream->start_time() <= seek_time) {
         return video_stream;
@@ -1680,13 +1681,13 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
     if (stream && stream->type() == DemuxerStream::AUDIO &&
         enabled_streams.find(stream.get()) == enabled_streams.end()) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
-      stream->set_enabled(false, curr_time);
+      stream->SetEnabled(false, curr_time);
     }
   }
   for (auto* stream : enabled_streams) {
     DCHECK(stream);
     DVLOG(1) << __func__ << ": enabling stream " << stream;
-    stream->set_enabled(true, curr_time);
+    stream->SetEnabled(true, curr_time);
   }
 }
 
@@ -1708,12 +1709,12 @@ void FFmpegDemuxer::OnSelectedVideoTrackChanged(
     if (stream && stream->type() == DemuxerStream::VIDEO &&
         stream.get() != selected_stream) {
       DVLOG(1) << __func__ << ": disabling stream " << stream.get();
-      stream->set_enabled(false, curr_time);
+      stream->SetEnabled(false, curr_time);
     }
   }
   if (selected_stream) {
     DVLOG(1) << __func__ << ": enabling stream " << selected_stream;
-    selected_stream->set_enabled(true, curr_time);
+    selected_stream->SetEnabled(true, curr_time);
   }
 }
 
@@ -1801,7 +1802,7 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
     }
 
     FFmpegDemuxerStream* demuxer_stream = streams_[packet->stream_index].get();
-    if (demuxer_stream->enabled())
+    if (demuxer_stream->IsEnabled())
       demuxer_stream->EnqueuePacket(std::move(packet));
 
     // If duration estimate was incorrect, update it and tell higher layers.

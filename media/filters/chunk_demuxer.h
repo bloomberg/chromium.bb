@@ -115,8 +115,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;
 
-  bool enabled() const;
-  void set_enabled(bool enabled, base::TimeDelta timestamp);
+  bool IsEnabled() const;
+  void SetEnabled(bool enabled, base::TimeDelta timestamp);
 
   void SetStreamStatusChangeCB(const StreamStatusChangeCB& cb);
 
