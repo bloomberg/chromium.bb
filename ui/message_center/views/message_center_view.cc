@@ -105,6 +105,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_->layer()->SetMasksToBounds(true);
 
   message_list_view_.reset(new MessageListView());
+  message_list_view_->set_scroller(scroller_);
   message_list_view_->set_owned_by_client();
   message_list_view_->AddObserver(this);
 
@@ -395,6 +396,7 @@ bool MessageCenterView::SetRepositionTarget() {
   if (message_list_view_->IsMouseHovered()) {
     for (const auto& hover_id_view : notification_views_) {
       MessageView* hover_view = hover_id_view.second;
+
       if (hover_view->IsMouseHovered()) {
         message_list_view_->SetRepositionTarget(hover_view->bounds());
         return true;

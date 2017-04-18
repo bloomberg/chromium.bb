@@ -126,6 +126,8 @@ class MockMessageCenterView : public MessageCenterView {
 
   bool SetRepositionTarget() override;
 
+  void PreferredSizeChanged() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenterView);
 };
@@ -144,6 +146,11 @@ MockMessageCenterView::MockMessageCenterView(MessageCenter* message_center,
 // mouse is hovering.
 bool MockMessageCenterView::SetRepositionTarget() {
   return true;
+}
+
+void MockMessageCenterView::PreferredSizeChanged() {
+  SetSize(GetPreferredSize());
+  MessageCenterView::PreferredSizeChanged();
 }
 
 /* Test fixture ***************************************************************/
@@ -247,9 +254,9 @@ void MessageCenterViewTest::SetUp() {
 
   // Then create a new MockMessageCenterView with that single notification.
   message_center_view_.reset(
-      new MockMessageCenterView(message_center_.get(), NULL, 100, false));
+      new MockMessageCenterView(message_center_.get(), NULL, 600, false));
   GetMessageListView()->quit_message_loop_after_animation_for_test_ = true;
-  GetMessageCenterView()->SetBounds(0, 0, 380, 600);
+  GetMessageCenterView()->SetBounds(0, 0, 380, 100);
   message_center_view_->SetNotifications(notifications);
   message_center_view_->set_owned_by_client();
 
@@ -560,6 +567,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
 }
 
 TEST_F(MessageCenterViewTest, SizeAfterRemove) {
+  int original_height = GetMessageListView()->height();
   EXPECT_EQ(2, GetMessageListView()->child_count());
   RemoveNotification(kNotificationId1, false);
 
@@ -569,13 +577,9 @@ TEST_F(MessageCenterViewTest, SizeAfterRemove) {
 
   EXPECT_EQ(1, GetMessageListView()->child_count());
 
-  int width =
-      GetMessageListView()->width() - GetMessageListView()->GetInsets().width();
   EXPECT_FALSE(GetNotificationView(kNotificationId1));
   EXPECT_TRUE(GetNotificationView(kNotificationId2));
-  EXPECT_EQ(GetMessageListView()->height(),
-            GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
-                GetMessageListView()->GetInsets().height());
+  EXPECT_EQ(GetMessageListView()->height(), original_height);
 }
 
 TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
@@ -620,8 +624,6 @@ TEST_F(MessageCenterViewTest, PositionAfterRemove) {
   int previous_height = GetMessageListView()->height();
   int previous_notification2_y =
       GetNotificationView(kNotificationId2)->bounds().y();
-  int previous_notification2_height =
-      GetNotificationView(kNotificationId2)->bounds().height();
 
   EXPECT_EQ(2, GetMessageListView()->child_count());
   RemoveNotification(kNotificationId2, false);
@@ -647,10 +649,8 @@ TEST_F(MessageCenterViewTest, PositionAfterRemove) {
   // target in the message list.
   FireOnMouseExitedEvent();
 
-  // The height should shrink from the height of the removed notification 2.
-  EXPECT_EQ(previous_height - previous_notification2_height -
-                (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()),
-            GetMessageListView()->height());
+  // The height should be kept even after the cursor moved out.
+  EXPECT_EQ(previous_height, GetMessageListView()->height());
 }
 
 TEST_F(MessageCenterViewTest, CloseButton) {

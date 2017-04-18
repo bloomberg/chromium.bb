@@ -175,9 +175,41 @@ void MessageListView::ReorderChildLayers(ui::Layer* parent_layer) {
   }
 }
 
+void MessageListView::UpdateFixedHeight(int requested_height,
+                                        bool prevent_scroll) {
+  int previous_fixed_height = fixed_height_;
+  int min_height;
+
+  // When the |prevent_scroll| flag is set, we use |fixed_height_|, which is the
+  // bottom position of the visible rect. It's to keep the current visible
+  // window, in other words, not to be scrolled, when the visible rect has a
+  // blank area at the bottom.
+  // Otherwise (in else block), we use the height of the visible rect to make
+  // the height of the message list as small as possible.
+  if (prevent_scroll) {
+    // TODO(yoshiki): Consider the case with scrolling. If the message center
+    // has scrollbar and its height is maximum, we may not need to keep the
+    // height of the list in the scroll view.
+    min_height = fixed_height_;
+  } else {
+    if (scroller_) {
+      gfx::Rect visible_rect = scroller_->GetVisibleRect();
+      min_height = visible_rect.height();
+    } else {
+      // Fallback for testing.
+      min_height = fixed_height_;
+    }
+  }
+  fixed_height_ = std::max(min_height, requested_height);
+
+  if (previous_fixed_height != fixed_height_) {
+    PreferredSizeChanged();
+  }
+}
+
 void MessageListView::SetRepositionTarget(const gfx::Rect& target) {
   reposition_top_ = std::max(target.y(), 0);
-  fixed_height_ = GetHeightForWidth(width());
+  UpdateFixedHeight(GetHeightForWidth(width()), false);
 }
 
 void MessageListView::ResetRepositionSession() {
@@ -195,7 +227,8 @@ void MessageListView::ResetRepositionSession() {
   }
 
   reposition_top_ = -1;
-  fixed_height_ = 0;
+
+  UpdateFixedHeight(fixed_height_, false);
 }
 
 void MessageListView::ClearAllClosableNotifications(
@@ -290,7 +323,7 @@ void MessageListView::DoUpdateIfPossible() {
           switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
     AnimateNotificationsBelowTarget();
   else
-    AnimateNotificationsAboveTarget();
+    AnimateNotifications();
 
   adding_views_.clear();
   deleting_views_.clear();
@@ -299,6 +332,7 @@ void MessageListView::DoUpdateIfPossible() {
     GetWidget()->SynthesizeMouseMoveEvent();
 }
 
+// TODO(yoshiki): Remove this method. It is no longer maintained.
 void MessageListView::AnimateNotificationsBelowTarget() {
   int target_index = -1;
   int padding = kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
@@ -362,11 +396,17 @@ std::vector<int> MessageListView::ComputeRepositionOffsets(
       vertical_gap_to_target_from_top += heights[i] + padding;
   }
 
-  // If the calculated length is changed from |repositon_top_|, it means that
-  // some of items above the target are updated and their height are changed.
+  // If the calculated length is expanded from |repositon_top_|, it means that
+  // some of items above the target are updated and their height increased.
   // Adjust the vertical length above the target.
-  fixed_height_ -= reposition_top_ - vertical_gap_to_target_from_top;
-  reposition_top_ = vertical_gap_to_target_from_top;
+  if (vertical_gap_to_target_from_top > reposition_top_) {
+    fixed_height_ += vertical_gap_to_target_from_top - reposition_top_;
+    reposition_top_ = vertical_gap_to_target_from_top;
+  }
+
+  // TODO(yoshiki): Scroll the parent container to keep the physical position
+  // of the target notification when the scrolling is caused by a size change
+  // of notification above.
 
   std::vector<int> positions;
   positions.reserve(heights.size());
@@ -377,7 +417,8 @@ std::vector<int> MessageListView::ComputeRepositionOffsets(
     if (!deleting[i])
       y += heights[i] + padding;
   }
-  DCHECK_EQ(y, reposition_top_);
+  DCHECK_EQ(y, vertical_gap_to_target_from_top);
+  DCHECK_LE(y, reposition_top_);
 
   // Match the top with |reposition_top_|.
   y = reposition_top_;
@@ -387,15 +428,18 @@ std::vector<int> MessageListView::ComputeRepositionOffsets(
     if (!deleting[i])
       y += heights[i] + padding;
   }
-  // If the target view, or any views below it expand they might exceed
-  // |fixed_height_|. Rather than letting them push out the bottom and be
-  // clipped, instead increase |fixed_height_|.
-  fixed_height_ = std::max(fixed_height_, y - padding + GetInsets().bottom());
+
+  // Update the fixed height. |requested_height| is the height to have all
+  // notifications in the list and to keep the vertical position of the target
+  // notification. It may not just a total of all the notification heights if
+  // the target exists.
+  int requested_height = y - padding + GetInsets().bottom();
+  UpdateFixedHeight(requested_height, true);
 
   return positions;
 }
 
-void MessageListView::AnimateNotificationsAboveTarget() {
+void MessageListView::AnimateNotifications() {
   int target_index = -1;
   int padding = kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
   gfx::Rect child_area = GetContentsBounds();
@@ -408,15 +452,6 @@ void MessageListView::AnimateNotificationsAboveTarget() {
         // Find the target.
         target_index = i;
         break;
-      }
-    }
-    // If no items are below |reposition_top_|, use the last item as the target.
-    if (target_index == -1) {
-      target_index = child_count() - 1;
-      for (; target_index != -1; target_index--) {
-        views::View* target_view = child_at(target_index);
-        if (deleting_views_.find(target_view) == deleting_views_.end())
-          break;
       }
     }
   }
@@ -434,7 +469,9 @@ void MessageListView::AnimateNotificationsAboveTarget() {
     std::vector<int> ys =
         ComputeRepositionOffsets(heights, deleting, target_index, padding);
     for (int i = 0; i < child_count(); ++i) {
-      AnimateChild(child_at(i), ys[i], heights[i], true /* animate_on_move */);
+      bool above_target = (i < target_index);
+      AnimateChild(child_at(i), ys[i], heights[i],
+                   !above_target /* animate_on_move */);
     }
   } else {
     // Layout all the items.
@@ -445,7 +482,8 @@ void MessageListView::AnimateNotificationsAboveTarget() {
       if (AnimateChild(child, y, height, true))
         y += height + padding;
     }
-    fixed_height_ = y - padding + GetInsets().bottom();
+    int new_height = y - padding + GetInsets().bottom();
+    UpdateFixedHeight(new_height, false);
   }
 }
 

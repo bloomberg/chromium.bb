@@ -17,6 +17,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -55,6 +56,8 @@ class MESSAGE_CENTER_EXPORT MessageListView
   void SetRepositionTargetForTest(
       const gfx::Rect& target_rect);
 
+  void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
+
  protected:
   // Overridden from views::View.
   void Layout() override;
@@ -77,9 +80,9 @@ class MESSAGE_CENTER_EXPORT MessageListView
   // Animates all notifications below target upwards to align with the top of
   // the last closed notification.
   void AnimateNotificationsBelowTarget();
-  // Animates all notifications above target downwards to align with the top of
-  // the last closed notification.
-  void AnimateNotificationsAboveTarget();
+  // Animates all notifications to align with the top of the last closed
+  // notification.
+  void AnimateNotifications();
   // Computes reposition offsets for |AnimateNotificationsAboveTarget|.
   std::vector<int> ComputeRepositionOffsets(const std::vector<int>& heights,
                                             const std::vector<bool>& deleting,
@@ -92,6 +95,10 @@ class MESSAGE_CENTER_EXPORT MessageListView
                     int top,
                     int height,
                     bool animate_even_on_move);
+
+  // Calculate the new fixed height and update with it. |requested_height|
+  // is the minimum height, and actual fixed height should be more than it.
+  void UpdateFixedHeight(int requested_height, bool prevent_scroll);
 
   // Animate clearing one notification.
   void AnimateClearingOneNotification();
@@ -109,6 +116,8 @@ class MESSAGE_CENTER_EXPORT MessageListView
   std::set<views::View*> deleted_when_done_;
   std::list<views::View*> clearing_all_views_;
   views::BoundsAnimator animator_;
+
+  views::ScrollView* scroller_ = nullptr;
 
   // If true, the message loop will be quitted after the animation finishes.
   // This is just for tests and has no setter.
