@@ -226,7 +226,7 @@
   Tab* currentTab = [self.currentBVC tabModel].currentTab;
   // Set the active URL if there's a current tab and the current BVC is not OTR.
   if (currentTab && self.currentBVC != self.otrBVC) {
-    activeURL = currentTab.url;
+    activeURL = currentTab.visibleURL;
   }
   [self.deviceSharingManager updateActiveURL:activeURL];
 }
