@@ -86,7 +86,6 @@ enum class GpuRasterizationStatus {
   OFF_DEVICE,
   OFF_VIEWPORT,
   MSAA_CONTENT,
-  OFF_CONTENT
 };
 
 // LayerTreeHost->Proxy callback interface.

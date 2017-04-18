@@ -5300,15 +5300,15 @@ class LayerTreeHostTestGpuRasterizationEnabled
     // Ensure the suitability bit sticks.
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
-    EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_FALSE(layer_->IsSuitableForGpuRasterization());
 
-    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
     EndTest();
   }
 
@@ -5324,6 +5324,23 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 class LayerTreeHostTestGpuRasterizationReenabled
     : public LayerTreeHostWithGpuRasterizationTest {
  protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_msaa_sample_count = 4;
+  }
+
+  std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
+      scoped_refptr<ContextProvider> compositor_context_provider,
+      scoped_refptr<ContextProvider> worker_context_provider) override {
+    std::unique_ptr<TestWebGraphicsContext3D> context =
+        TestWebGraphicsContext3D::Create();
+    context->SetMaxSamples(4);
+    context->set_gpu_rasterization(true);
+    compositor_context_provider =
+        TestContextProvider::Create(std::move(context));
+    return LayerTreeTest::CreateCompositorFrameSink(compositor_context_provider,
+                                                    worker_context_provider);
+  }
+
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
@@ -5362,10 +5379,10 @@ class LayerTreeHostTestGpuRasterizationReenabled
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     SCOPED_TRACE(base::StringPrintf("commit %d", num_commits_));
-    if (expected_gpu_enabled_) {
-      EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    if (expected_use_msaa_) {
+      EXPECT_TRUE(host_impl->use_msaa());
     } else {
-      EXPECT_FALSE(host_impl->use_gpu_rasterization());
+      EXPECT_FALSE(host_impl->use_msaa());
     }
 
     ++num_commits_;
@@ -5380,7 +5397,7 @@ class LayerTreeHostTestGpuRasterizationReenabled
         layer_->set_force_unsuitable_for_gpu_rasterization(false);
         break;
       case 90:
-        expected_gpu_enabled_ = true;
+        expected_use_msaa_ = false;
         break;
     }
     PostSetNeedsCommitToMainThread();
@@ -5394,7 +5411,7 @@ class LayerTreeHostTestGpuRasterizationReenabled
   FakePictureLayer* layer_;
   FakeRecordingSource* recording_source_;
   int num_commits_ = 0;
-  bool expected_gpu_enabled_ = false;
+  bool expected_use_msaa_ = true;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationReenabled);

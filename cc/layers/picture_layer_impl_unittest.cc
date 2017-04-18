@@ -2352,7 +2352,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   host_impl()->SetHasGpuRasterizationTrigger(true);
   host_impl()->SetContentIsSuitableForGpuRasterization(false);
   host_impl()->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
+  EXPECT_EQ(GpuRasterizationStatus::ON,
             host_impl()->gpu_rasterization_status());
 }
 

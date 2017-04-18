@@ -1857,14 +1857,13 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
   } else if (!has_gpu_rasterization_trigger_) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_VIEWPORT;
-  } else if (content_is_suitable_for_gpu_rasterization_) {
-    use_gpu = true;
-    gpu_rasterization_status_ = GpuRasterizationStatus::ON;
-  } else if (using_msaa_for_complex_content) {
+  } else if (!content_is_suitable_for_gpu_rasterization_ &&
+             using_msaa_for_complex_content) {
     use_gpu = use_msaa = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
   } else {
-    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_CONTENT;
+    use_gpu = true;
+    gpu_rasterization_status_ = GpuRasterizationStatus::ON;
   }
 
   if (use_gpu && !use_gpu_rasterization_) {
