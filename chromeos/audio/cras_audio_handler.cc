@@ -37,9 +37,9 @@ const int kMuteThresholdPercent = 1;
 const int kHDMIRediscoverGracePeriodDurationInMs = 2000;
 
 // Mixer matrix, [0.5, 0.5; 0.5, 0.5]
-const std::vector<double> kStereoToMono = {0.5, 0.5, 0.5, 0.5};
+const double kStereoToMono[] = {0.5, 0.5, 0.5, 0.5};
 // Mixer matrix, [1, 0; 0, 1]
-const std::vector<double> kStereoToStereo = {1, 0, 0, 1};
+const double kStereoToStereo[] = {1, 0, 0, 1};
 
 static CrasAudioHandler* g_cras_audio_handler = nullptr;
 
@@ -430,11 +430,17 @@ void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {
 void CrasAudioHandler::SetOutputMono(bool mono_on) {
   output_mono_on_ = mono_on;
   if (mono_on) {
-    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
-        SetGlobalOutputChannelRemix(output_channels_, kStereoToMono);
+    chromeos::DBusThreadManager::Get()
+        ->GetCrasAudioClient()
+        ->SetGlobalOutputChannelRemix(
+            output_channels_,
+            std::vector<double>(kStereoToMono, std::end(kStereoToMono)));
   } else {
-    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
-        SetGlobalOutputChannelRemix(output_channels_, kStereoToStereo);
+    chromeos::DBusThreadManager::Get()
+        ->GetCrasAudioClient()
+        ->SetGlobalOutputChannelRemix(
+            output_channels_,
+            std::vector<double>(kStereoToStereo, std::end(kStereoToStereo)));
   }
 
   for (auto& observer : observers_)
