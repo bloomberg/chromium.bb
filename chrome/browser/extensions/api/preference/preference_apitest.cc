@@ -25,7 +25,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/translate/core/common/translate_pref_names.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "extensions/browser/extension_registry.h"

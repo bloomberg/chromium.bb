@@ -32,6 +32,8 @@ static_library("browser") {
     "translate_language_list.h",
     "translate_manager.cc",
     "translate_manager.h",
+    "translate_pref_names.cc",
+    "translate_pref_names.h",
     "translate_prefs.cc",
     "translate_prefs.h",
     "translate_ranker.h",

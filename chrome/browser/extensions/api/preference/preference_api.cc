@@ -34,7 +34,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
-#include "components/translate/core/common/translate_pref_names.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_pref_value_map.h"

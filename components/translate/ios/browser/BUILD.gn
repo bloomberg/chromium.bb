@@ -57,7 +57,7 @@ source_set("unit_tests") {
     "//base",
     "//components/prefs:test_support",
     "//components/resources",
-    "//components/translate/core/common",
+    "//components/translate/core/browser",
     "//ios/web:test_support",
     "//testing/gtest",
     "//third_party/ocmock",

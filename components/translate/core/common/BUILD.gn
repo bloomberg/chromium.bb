@@ -11,8 +11,6 @@ static_library("common") {
     "translate_errors.h",
     "translate_metrics.cc",
     "translate_metrics.h",
-    "translate_pref_names.cc",
-    "translate_pref_names.h",
     "translate_switches.cc",
     "translate_switches.h",
     "translate_util.cc",

@@ -34,7 +34,6 @@
 #include "components/translate/core/browser/translate_url_util.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -177,8 +176,10 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  PrefService* prefs = translate_client_->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kEnableTranslate)) {
+  std::unique_ptr<TranslatePrefs> translate_prefs(
+      translate_client_->GetTranslatePrefs());
+
+  if (!translate_prefs->IsEnabled()) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
     RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_PREF);
@@ -213,9 +214,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
         TranslateBrowserMetrics::INITIATION_STATUS_URL_IS_NOT_SUPPORTED);
     return;
   }
-
-  std::unique_ptr<TranslatePrefs> translate_prefs(
-      translate_client_->GetTranslatePrefs());
 
   std::string target_lang = GetTargetLanguage(translate_prefs.get());
   std::string language_code =

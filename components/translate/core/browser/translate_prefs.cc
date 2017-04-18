@@ -17,6 +17,7 @@
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_experiment.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_util.h"
 
 namespace translate {
@@ -158,6 +159,10 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
 #else
   DCHECK(!preferred_languages_pref);
 #endif
+}
+
+bool TranslatePrefs::IsEnabled() const {
+  return prefs_->GetBoolean(prefs::kEnableTranslate);
 }
 
 void TranslatePrefs::SetCountry(const std::string& country) {
