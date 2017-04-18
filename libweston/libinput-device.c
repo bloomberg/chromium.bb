@@ -596,7 +596,6 @@ evdev_device_destroy(struct evdev_device *device)
 		wl_list_remove(&device->output_destroy_listener.link);
 	wl_list_remove(&device->link);
 	libinput_device_unref(device->device);
-	free(device->devnode);
 	free(device->output_name);
 	free(device);
 }

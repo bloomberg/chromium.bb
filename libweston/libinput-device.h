@@ -47,7 +47,6 @@ struct evdev_device {
 	struct wl_list link;
 	struct weston_output *output;
 	struct wl_listener output_destroy_listener;
-	char *devnode;
 	char *output_name;
 	int fd;
 };
