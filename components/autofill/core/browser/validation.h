@@ -15,9 +15,18 @@ class Time;
 
 namespace autofill {
 
+class CreditCard;
+
 // Constants for the length of a CVC.
 static const size_t GENERAL_CVC_LENGTH = 3;
 static const size_t AMEX_CVC_LENGTH = 4;
+
+// Used to express the completion status of a credit card.
+typedef uint32_t CreditCardCompletionStatus;
+static const CreditCardCompletionStatus CREDIT_CARD_COMPLETE = 0;
+static const CreditCardCompletionStatus CREDIT_CARD_EXPIRED = 1 << 0;
+static const CreditCardCompletionStatus CREDIT_CARD_NO_CARDHOLDER = 1 << 1;
+static const CreditCardCompletionStatus CREDIT_CARD_NO_NUMBER = 1 << 2;
 
 // Returns true if |year| and |month| describe a date later than |now|.
 // |year| must have 4 digits.
@@ -41,6 +50,18 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
     const base::string16& text,
     const std::set<std::string>& supported_basic_card_networks,
     base::string16* error_message);
+
+// Returns the credit card's completion status. If equal to
+// CREDIT_CARD_COMPLETE, then the card is ready to be used for Payment Request.
+// TODO(crbug.com/709776): Check for billing address association.
+CreditCardCompletionStatus GetCompletionStatusForCard(
+    const CreditCard& credit_card,
+    const std::string& app_locale);
+
+// Return the message to be displayed to the user, indicating what's missing
+// to make the credit card complete for payment. If more than one thing is
+// missing, the message will be a generic "more information required".
+base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status);
 
 // Returns true if |text| looks like a valid e-mail address.
 bool IsValidEmailAddress(const base::string16& text);

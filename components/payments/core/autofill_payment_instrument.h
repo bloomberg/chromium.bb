@@ -41,6 +41,7 @@ class AutofillPaymentInstrument
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
   bool IsCompleteForPayment() override;
+  base::string16 GetMissingInfoLabel() override;
   bool IsValidForCanMakePayment() override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:

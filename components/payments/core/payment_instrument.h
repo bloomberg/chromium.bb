@@ -39,6 +39,9 @@ class PaymentInstrument {
   // Returns whether the instrument is complete to be used as a payment method
   // without further editing.
   virtual bool IsCompleteForPayment() = 0;
+  // Returns a message to indicate to the user what's missing for the instrument
+  // to be complete for payment.
+  virtual base::string16 GetMissingInfoLabel() = 0;
   // Returns whether the instrument is valid for the purposes of responding to
   // canMakePayment.
   virtual bool IsValidForCanMakePayment() = 0;

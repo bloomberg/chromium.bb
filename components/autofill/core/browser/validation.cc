@@ -125,6 +125,43 @@ bool IsValidCreditCardNumberForBasicCardNetworks(
   return false;
 }
 
+CreditCardCompletionStatus GetCompletionStatusForCard(
+    const CreditCard& card,
+    const std::string& app_locale) {
+  CreditCardCompletionStatus status = CREDIT_CARD_COMPLETE;
+  if (card.IsExpired(autofill::AutofillClock::Now()))
+    status |= CREDIT_CARD_EXPIRED;
+
+  if (card.number().empty())
+    status |= CREDIT_CARD_NO_NUMBER;
+
+  if (card.GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
+                   app_locale)
+          .empty()) {
+    status |= CREDIT_CARD_NO_CARDHOLDER;
+  }
+
+  return status;
+}
+
+base::string16 GetCompletionMessageForCard(CreditCardCompletionStatus status) {
+  switch (status) {
+    case CREDIT_CARD_COMPLETE:
+      return base::string16();
+    case CREDIT_CARD_EXPIRED:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED);
+    case CREDIT_CARD_NO_CARDHOLDER:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_NAME_ON_CARD_REQUIRED);
+    case CREDIT_CARD_NO_NUMBER:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE);
+    default:
+      // Multiple things are missing
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_MORE_INFORMATION_REQUIRED);
+  }
+}
+
 bool IsValidEmailAddress(const base::string16& text) {
   // E-Mail pattern as defined by the WhatWG. (4.10.7.1.5 E-Mail state)
   const base::string16 kEmailPattern = base::ASCIIToUTF16(

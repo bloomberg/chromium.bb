@@ -10,26 +10,13 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
 
 namespace payments {
-
-namespace {
-
-// Returns whether |card| has a non-empty number and cardholder name. Server
-// cards will have a non-empty number.
-bool CreditCardHasNumberAndName(const autofill::CreditCard& card,
-                                const std::string& app_locale) {
-  return !card.number().empty() &&
-         !card.GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
-                       app_locale)
-              .empty();
-}
-
-}  // namespace
 
 AutofillPaymentInstrument::AutofillPaymentInstrument(
     const std::string& method_name,
@@ -68,16 +55,22 @@ void AutofillPaymentInstrument::InvokePaymentApp(
 }
 
 bool AutofillPaymentInstrument::IsCompleteForPayment() {
-  // A card is complete for payment if it's not expired, its number is not
-  // empty (a server card fills this condition) and there is a cardholder name.
-  // TODO(crbug.com/709776): Check for billing address association.
-  return !credit_card_.IsExpired(autofill::AutofillClock::Now()) &&
-         CreditCardHasNumberAndName(credit_card_, app_locale_);
+  return autofill::GetCompletionStatusForCard(credit_card_, app_locale_) ==
+         autofill::CREDIT_CARD_COMPLETE;
+}
+
+base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() {
+  return autofill::GetCompletionMessageForCard(
+      autofill::GetCompletionStatusForCard(credit_card_, app_locale_));
 }
 
 bool AutofillPaymentInstrument::IsValidForCanMakePayment() {
-  // An expired card is still valid for the purposes of canMakePayment.
-  return CreditCardHasNumberAndName(credit_card_, app_locale_);
+  autofill::CreditCardCompletionStatus status =
+      autofill::GetCompletionStatusForCard(credit_card_, app_locale_);
+  // Card has to have a cardholder name and number for the purposes of
+  // CanMakePayment. An expired card is still valid at this stage.
+  return !(status & autofill::CREDIT_CARD_NO_CARDHOLDER ||
+           status & autofill::CREDIT_CARD_NO_NUMBER);
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(

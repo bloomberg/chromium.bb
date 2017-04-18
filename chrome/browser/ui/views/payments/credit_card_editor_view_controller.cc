@@ -204,9 +204,11 @@ bool CreditCardEditorViewController::ValidateModelAndSave() {
                         locale);
   }
 
-  // TODO(mathp): Display global error message.
-  if (!credit_card.IsValid())
+  // TODO(crbug.com/711365): Display global error message.
+  if (autofill::GetCompletionStatusForCard(credit_card, locale) !=
+      autofill::CREDIT_CARD_COMPLETE) {
     return false;
+  }
 
   if (!credit_card_to_edit_) {
     // Add the card (will not add a duplicate).

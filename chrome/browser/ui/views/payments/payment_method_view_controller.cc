@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -82,11 +83,23 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     card_info_container->SetLayoutManager(box_layout.release());
 
-    card_info_container->AddChildView(new views::Label(instrument_->label()));
-    card_info_container->AddChildView(
-        new views::Label(instrument_->sublabel()));
-    // TODO(anthonyvd): Add the "card is incomplete" label once the
-    // completedness logic is implemented.
+    if (!instrument_->label().empty())
+      card_info_container->AddChildView(new views::Label(instrument_->label()));
+    if (!instrument_->sublabel().empty()) {
+      card_info_container->AddChildView(
+          new views::Label(instrument_->sublabel()));
+    }
+    if (!instrument_->IsCompleteForPayment()) {
+      std::unique_ptr<views::Label> missing_info_label =
+          base::MakeUnique<views::Label>(instrument_->GetMissingInfoLabel());
+      missing_info_label->SetFontList(
+          missing_info_label->GetDefaultFontList().DeriveWithSizeDelta(-1));
+      missing_info_label->SetEnabledColor(
+          missing_info_label->GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_LinkEnabled));
+      card_info_container->AddChildView(missing_info_label.release());
+    }
+
     return card_info_container;
   }
 

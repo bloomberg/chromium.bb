@@ -67,10 +67,12 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/metrics/proto",
+    "//components/strings:components_strings_grit",
     "//components/ukm",
     "//components/ukm:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",
+    "//ui/base",
   ]
 }
