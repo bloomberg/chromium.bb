@@ -298,25 +298,16 @@ void ReadLastShutdownFile(ShutdownType type,
     return;
 
   if (type == WINDOW_CLOSE) {
-    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
-    UMA_HISTOGRAM_TIMES("Shutdown.window_close.time",
-                        TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.window_close.time2",
                                TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_TIMES("Shutdown.window_close.time_per_process",
                         TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   } else if (type == BROWSER_EXIT) {
-    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
-    UMA_HISTOGRAM_TIMES("Shutdown.browser_exit.time",
-                        TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.browser_exit.time2",
                                TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_TIMES("Shutdown.browser_exit.time_per_process",
                         TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
   } else if (type == END_SESSION) {
-    // TODO(manzagop): turn down recording in M57 (once trendlines overlap).
-    UMA_HISTOGRAM_TIMES("Shutdown.end_session.time",
-                        TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.end_session.time2",
                                TimeDelta::FromMilliseconds(shutdown_ms));
     UMA_HISTOGRAM_TIMES("Shutdown.end_session.time_per_process",
