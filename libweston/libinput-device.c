@@ -346,10 +346,17 @@ do_set_calibration(struct evdev_device *evdev_device,
 {
 	enum libinput_config_status status;
 
+	weston_log("input device %s: applying calibration:\n",
+		   libinput_device_get_sysname(evdev_device->device));
+	weston_log_continue(STAMP_SPACE "  %f %f %f\n",
+			    cal->m[0], cal->m[1], cal->m[2]);
+	weston_log_continue(STAMP_SPACE "  %f %f %f\n",
+			    cal->m[3], cal->m[4], cal->m[5]);
+
 	status = libinput_device_config_calibration_set_matrix(evdev_device->device,
 							       cal->m);
 	if (status != LIBINPUT_CONFIG_STATUS_SUCCESS)
-		weston_log("Failed to apply calibration.\n");
+		weston_log("Error: Failed to apply calibration.\n");
 }
 
 static void
@@ -559,8 +566,7 @@ evdev_device_set_calibration(struct evdev_device *device)
 	const char *sysname = libinput_device_get_sysname(device->device);
 	const char *calibration_values;
 	uint32_t width, height;
-	float calibration[6];
-	enum libinput_config_status status;
+	struct weston_touch_device_matrix calibration;
 
 	if (!libinput_device_config_calibration_has_matrix(device->device))
 		return;
@@ -570,7 +576,7 @@ evdev_device_set_calibration(struct evdev_device *device)
 	 * output to load a calibration. */
 	if (libinput_device_config_calibration_get_default_matrix(
 							  device->device,
-							  calibration) != 0)
+							  calibration.m) != 0)
 		return;
 
 	/* touch_set_calibration() has updated the values, do not load old
@@ -614,35 +620,26 @@ evdev_device_set_calibration(struct evdev_device *device)
 
 	if (!calibration_values || sscanf(calibration_values,
 					  "%f %f %f %f %f %f",
-					  &calibration[0],
-					  &calibration[1],
-					  &calibration[2],
-					  &calibration[3],
-					  &calibration[4],
-					  &calibration[5]) != 6)
+					  &calibration.m[0],
+					  &calibration.m[1],
+					  &calibration.m[2],
+					  &calibration.m[3],
+					  &calibration.m[4],
+					  &calibration.m[5]) != 6)
 		goto out;
-
-	weston_log("Applying calibration: %f %f %f %f %f %f "
-		   "(normalized %f %f)\n",
-		    calibration[0],
-		    calibration[1],
-		    calibration[2],
-		    calibration[3],
-		    calibration[4],
-		    calibration[5],
-		    calibration[2] / width,
-		    calibration[5] / height);
 
 	/* normalize to a format libinput can use. There is a chance of
 	   this being wrong if the width/height don't match the device
 	   width/height but I'm not sure how to fix that */
-	calibration[2] /= width;
-	calibration[5] /= height;
+	calibration.m[2] /= width;
+	calibration.m[5] /= height;
 
-	status = libinput_device_config_calibration_set_matrix(device->device,
-							       calibration);
-	if (status != LIBINPUT_CONFIG_STATUS_SUCCESS)
-		weston_log("Failed to apply calibration.\n");
+	do_set_calibration(device, &calibration);
+
+	weston_log_continue(STAMP_SPACE "  raw translation %f %f for output %s\n",
+		   calibration.m[2] * width,
+		   calibration.m[5] * height,
+		   device->output->name);
 
 out:
 	if (udev_device)
