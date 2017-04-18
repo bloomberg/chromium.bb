@@ -61,7 +61,7 @@ class ContentHashFetcher {
 
  private:
   // Callback for when a job getting content hashes has completed.
-  void JobFinished(ContentHashFetcherJob* job);
+  void JobFinished(scoped_refptr<ContentHashFetcherJob> job);
 
   net::URLRequestContextGetter* context_getter_;
   ContentVerifierDelegate* delegate_;
