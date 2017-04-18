@@ -10,7 +10,7 @@
 #include "core/events/EventTarget.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
+#include "public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
 
 namespace blink {
 

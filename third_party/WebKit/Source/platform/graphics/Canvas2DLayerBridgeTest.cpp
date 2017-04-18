@@ -38,6 +38,7 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
@@ -48,7 +49,6 @@
 #include "skia/ext/texture_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 

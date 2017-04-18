@@ -40,11 +40,11 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
 
 using testing::Test;
 using testing::_;

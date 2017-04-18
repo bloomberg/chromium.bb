@@ -11,12 +11,12 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {

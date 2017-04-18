@@ -42,8 +42,8 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
+#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
 namespace blink {
 

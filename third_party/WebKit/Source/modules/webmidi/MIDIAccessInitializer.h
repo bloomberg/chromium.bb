@@ -15,8 +15,8 @@
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/wtf/Vector.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
+#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
 namespace blink {
 
