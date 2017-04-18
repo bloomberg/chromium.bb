@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS controller.error() should error the stream 
+PASS controller.error() on erroring stream should not throw 
+FAIL surplus calls to controller.error() should be a no-op Cannot error a errored writable stream
+FAIL controller.error() on errored stream should not throw promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
+FAIL controller.error() on closed stream should not throw promise_test: Unhandled rejection with value: object "TypeError: Cannot error a closed writable stream"
+Harness: the test ran to completion.
+
