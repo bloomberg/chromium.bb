@@ -442,18 +442,21 @@ def parse_args():
                         help="Ignore locally added files in the working directory (requires git).")
     parser.add_argument("--css-mode", action="store_true",
                         help="Run CSS testsuite specific lints")
+    parser.add_argument("--whitelist-path", default=None,
+                        help="Optional path for lint.whitelist")
     return parser.parse_args()
 
 def main(force_css_mode=False):
     args = parse_args()
     paths = args.paths if args.paths else all_paths(repo_root, args.ignore_local)
-    return lint(repo_root, paths, args.json, force_css_mode or args.css_mode)
+    whitelist_path = kwargs.get("whitelist_path")
+    return lint(repo_root, paths, output_format, kwargs.get("css_mode", False), whitelist_path)
 
-def lint(repo_root, paths, output_json, css_mode):
+def lint(repo_root, paths, output_json, css_mode, whitelist_path=None):
     error_count = defaultdict(int)
     last = None
 
-    with open(os.path.join(repo_root, "lint.whitelist")) as f:
+    with open(whitelist_path or os.path.join(repo_root, "lint.whitelist")) as f:
         whitelist, ignored_files = parse_whitelist(f)
 
     if output_json:
