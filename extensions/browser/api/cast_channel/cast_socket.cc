@@ -311,13 +311,18 @@ void CastSocketImpl::OnConnectTimeout() {
   DoConnectCallback();
 }
 
+void CastSocketImpl::ResetConnectLoopCallback() {
+  DCHECK(connect_loop_callback_.IsCancelled());
+  connect_loop_callback_.Reset(
+      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
+}
+
 void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
   DCHECK(CalledOnValidThread());
-  DCHECK(connect_loop_callback_.IsCancelled());
-  connect_loop_callback_.Reset(base::Bind(&CastSocketImpl::DoConnectLoop,
-                                          base::Unretained(this), result));
+
+  ResetConnectLoopCallback();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, connect_loop_callback_.callback());
+      FROM_HERE, base::Bind(connect_loop_callback_.callback(), result));
 }
 
 // This method performs the state machine transitions for connection flow.
@@ -467,9 +472,8 @@ int CastSocketImpl::DoAuthChallengeSend() {
   VLOG_WITH_CONNECTION(1) << "Sending challenge: "
                           << CastMessageToString(challenge_message);
 
-  transport_->SendMessage(
-      challenge_message,
-      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
+  ResetConnectLoopCallback();
+  transport_->SendMessage(challenge_message, connect_loop_callback_.callback());
 
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
@@ -592,7 +596,6 @@ void CastSocketImpl::CloseInternal() {
   // Cancel callbacks that we queued ourselves to re-enter the connect or read
   // loops.
   connect_loop_callback_.Cancel();
-  send_auth_challenge_callback_.Cancel();
   connect_timeout_callback_.Cancel();
   SetReadyState(READY_STATE_CLOSED);
 }

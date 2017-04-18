@@ -285,7 +285,12 @@ class CastSocketImpl : public CastSocket {
   int DoAuthChallengeReplyComplete(int result);
   /////////////////////////////////////////////////////////////////////////////
 
-  // Schedules asynchrous connection loop processing in the MessageLoop.
+  // Resets the cancellable callback used for async invocations of
+  // DoConnectLoop.
+  void ResetConnectLoopCallback();
+
+  // Posts a task to invoke |connect_loop_callback_| with |result| on the
+  // current message loop.
   void PostTaskToStartConnectLoop(int result);
 
   // Runs the external connection callback and resets it.
@@ -379,13 +384,12 @@ class CastSocketImpl : public CastSocket {
   // The current status of the channel.
   ReadyState ready_state_;
 
-  // Task invoked to (re)start the connect loop.  Canceled on entry to the
-  // connect loop.
-  base::CancelableClosure connect_loop_callback_;
-
-  // Task invoked to send the auth challenge.  Canceled when the auth challenge
-  // has been sent.
-  base::CancelableClosure send_auth_challenge_callback_;
+  // Callback which, when invoked, will re-enter the connection state machine.
+  // Oustanding callbacks will be cancelled when |this| is destroyed.
+  // The callback signature is based on net::CompletionCallback, which passes
+  // operation result codes as byte counts in the success case, or as
+  // net::Error enum values for error cases.
+  base::CancelableCallback<void(int)> connect_loop_callback_;
 
   // Cast message formatting and parsing layer.
   std::unique_ptr<CastTransport> transport_;

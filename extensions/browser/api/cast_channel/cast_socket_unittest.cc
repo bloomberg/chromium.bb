@@ -638,6 +638,23 @@ TEST_F(CastSocketTest, TestConnectChallengeSendError) {
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
 }
 
+// Test connection error - connection is destroyed after the challenge is
+// sent, with the async result still lurking in the task queue.
+TEST_F(CastSocketTest, TestConnectDestroyedAfterChallengeSent) {
+  CreateCastSocketSecure();
+  socket_->SetupMockTransport();
+  socket_->SetupTcpConnect(net::SYNCHRONOUS, net::OK);
+  socket_->SetupSslConnect(net::SYNCHRONOUS, net::OK);
+  EXPECT_CALL(*socket_->GetMockTransport(),
+              SendMessage(EqualsProto(CreateAuthChallenge()), _))
+      .WillOnce(PostCompletionCallbackTask<1>(net::ERR_CONNECTION_RESET));
+  socket_->Connect(std::move(delegate_),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  socket_.reset();
+  RunPendingTasks();
+}
+
 // Test connection error - challenge reply receive fails
 TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
   CreateCastSocketSecure();
