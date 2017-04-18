@@ -1665,6 +1665,9 @@ crbug.com/501659 virtual/mojo-loading/http/tests/security/xss-DENIED-xml-externa
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 crbug.com/501659 virtual/sharedarraybuffer/fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
+crbug.com/686470 http/tests/security/xss-DENIED-window-name-navigator.html [ Pass Failure ]
+crbug.com/686470 virtual/mojo-loading/http/tests/security/xss-DENIED-window-name-navigator.html [ Pass Failure ]
+
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
