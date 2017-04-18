@@ -72,13 +72,14 @@ def _RunUmaHistogramChecks(input_api, output_api):
     else:
         return []
 
-    START_MARKER = '^enum Feature : uint32_t {'
-    END_MARKER = '^NumberOfFeatures'
+    start_marker = '^enum Feature : uint32_t {'
+    end_marker = '^kNumberOfFeatures'
     should_update_histogram, duplicated_values = update_histogram_enum.HistogramNeedsUpdate(
         histogram_enum_name='FeatureObserver',
         source_enum_path=source_path,
-        start_marker=START_MARKER,
-        end_marker=END_MARKER)
+        start_marker=start_marker,
+        end_marker=end_marker,
+        strip_k_prefix=True)
     if duplicated_values:
         return [output_api.PresubmitPromptWarning(
             'UseCounter::Feature has been updated and there exists duplicated '
