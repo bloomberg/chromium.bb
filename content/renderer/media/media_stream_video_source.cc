@@ -651,7 +651,8 @@ void MediaStreamVideoSource::FinalizeAddTrackLegacy() {
       VideoTrackAdapter::CalculateTargetSize(
           current_format_.frame_size, gfx::Size(max_width, max_height),
           min_aspect_ratio, max_aspect_ratio, &desired_size);
-      track.track->SetTargetSize(desired_size.width(), desired_size.height());
+      track.track->SetTargetSizeAndFrameRate(
+          desired_size.width(), desired_size.height(), max_frame_rate);
     }
 
     DVLOG(3) << "FinalizeAddTrackLegacy() result " << result;
@@ -687,7 +688,9 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
                     track.adapter_settings->max_height),
           track.adapter_settings->min_aspect_ratio,
           track.adapter_settings->max_aspect_ratio, &desired_size);
-      track.track->SetTargetSize(desired_size.width(), desired_size.height());
+      track.track->SetTargetSizeAndFrameRate(
+          desired_size.width(), desired_size.height(),
+          track.adapter_settings->max_frame_rate);
     }
 
     if (!track.callback.is_null())

@@ -391,18 +391,24 @@ void MediaStreamVideoTrack::Stop() {
 void MediaStreamVideoTrack::GetSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (!source_)
+    return;
+
   if (width_ && height_) {
     settings.width = width_;
     settings.height = height_;
   }
 
-  if (!source_)
-    return;
+  // 0.0 means the track is using the source's frame rate.
+  if (frame_rate_ != 0.0) {
+    settings.frame_rate = frame_rate_;
+  }
 
   base::Optional<media::VideoCaptureFormat> format =
       source_->GetCurrentFormat();
   if (format) {
-    settings.frame_rate = format->frame_rate;
+    if (frame_rate_ == 0.0)
+      settings.frame_rate = format->frame_rate;
     settings.video_kind = GetVideoKindForFormat(*format);
   }
   switch (source_->device_info().device.video_facing) {

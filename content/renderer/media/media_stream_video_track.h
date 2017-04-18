@@ -113,9 +113,10 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.
-  void SetTargetSize(int width, int height) {
+  void SetTargetSizeAndFrameRate(int width, int height, double frame_rate) {
     width_ = width;
     height_ = height;
+    frame_rate_ = frame_rate;
   }
 
  private:
@@ -159,9 +160,10 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // This is used for tracking if all connected video sinks are secure.
   SecureDisplayLinkTracker<MediaStreamVideoSink> secure_tracker_;
 
-  // Remembering our desired video size.
+  // Remembering our desired video size and frame rate.
   int width_ = 0;
   int height_ = 0;
+  double frame_rate_ = 0.0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };

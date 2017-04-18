@@ -17,6 +17,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/video_track_adapter.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
@@ -88,6 +89,21 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     const bool enabled = true;
     blink::WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, MediaStreamSource::ConstraintsCallback(), enabled);
+    if (!source_started_) {
+      mock_source_->StartMockedSource();
+      source_started_ = true;
+    }
+    return track;
+  }
+
+  // Create a track that's associated with |mock_source_| and has the given
+  // |adapter_settings|.
+  blink::WebMediaStreamTrack CreateTrackWithSettings(
+      const VideoTrackAdapterSettings& adapter_settings) {
+    const bool enabled = true;
+    blink::WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
+        mock_source_, adapter_settings, base::Optional<bool>(), false, 0.0,
+        MediaStreamSource::ConstraintsCallback(), enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
       source_started_ = true;
@@ -294,6 +310,41 @@ TEST_F(MediaStreamVideoTrackTest, GetSettings) {
   EXPECT_EQ(30.0, settings.frame_rate);
   EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
             settings.facing_mode);
+}
+
+TEST_F(MediaStreamVideoTrackTest, GetSettingsWithAdjustment) {
+  InitializeSource();
+  const int kAdjustedWidth = 600;
+  const int kAdjustedHeight = 400;
+  const double kAdjustedFrameRate = 20.0;
+  VideoTrackAdapterSettings adapter_settings(kAdjustedWidth, kAdjustedHeight,
+                                             0.0, 10000.0, kAdjustedFrameRate);
+  blink::WebMediaStreamTrack track = CreateTrackWithSettings(adapter_settings);
+  MediaStreamVideoTrack* const native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  blink::WebMediaStreamTrack::Settings settings;
+  native_track->GetSettings(settings);
+  EXPECT_EQ(kAdjustedWidth, settings.width);
+  EXPECT_EQ(kAdjustedHeight, settings.height);
+  EXPECT_EQ(kAdjustedFrameRate, settings.frame_rate);
+  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
+            settings.facing_mode);
+}
+
+TEST_F(MediaStreamVideoTrackTest, GetSettingsStopped) {
+  InitializeSource();
+  blink::WebMediaStreamTrack track = CreateTrack();
+  MediaStreamVideoTrack* const native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  native_track->Stop();
+  blink::WebMediaStreamTrack::Settings settings;
+  native_track->GetSettings(settings);
+  EXPECT_EQ(-1, settings.width);
+  EXPECT_EQ(-1, settings.height);
+  EXPECT_EQ(-1, settings.frame_rate);
+  EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
+            settings.facing_mode);
+  EXPECT_TRUE(settings.device_id.IsNull());
 }
 
 // TODO(guidou): Remove this test. http://crbug.com/706408
