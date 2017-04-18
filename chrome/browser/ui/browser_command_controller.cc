@@ -798,7 +798,8 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RECENT_TABS_MENU,
                                         !guest_session &&
                                         !profile()->IsOffTheRecord());
-  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
+                                        !guest_session);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
   command_updater_.UpdateCommandEnabled(IDC_TOUCH_HUD_PROJECTION_TOGGLE, true);
