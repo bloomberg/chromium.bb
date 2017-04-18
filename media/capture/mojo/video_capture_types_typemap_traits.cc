@@ -100,6 +100,113 @@ bool EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency>::
 }
 
 // static
+media::mojom::VideoCaptureApi
+EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
+    media::VideoCaptureApi input) {
+  switch (input) {
+    case media::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE:
+      return media::mojom::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
+    case media::VideoCaptureApi::WIN_MEDIA_FOUNDATION:
+      return media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION;
+    case media::VideoCaptureApi::WIN_DIRECT_SHOW:
+      return media::mojom::VideoCaptureApi::WIN_DIRECT_SHOW;
+    case media::VideoCaptureApi::MACOSX_AVFOUNDATION:
+      return media::mojom::VideoCaptureApi::MACOSX_AVFOUNDATION;
+    case media::VideoCaptureApi::MACOSX_DECKLINK:
+      return media::mojom::VideoCaptureApi::MACOSX_DECKLINK;
+    case media::VideoCaptureApi::ANDROID_API1:
+      return media::mojom::VideoCaptureApi::ANDROID_API1;
+    case media::VideoCaptureApi::ANDROID_API2_LEGACY:
+      return media::mojom::VideoCaptureApi::ANDROID_API2_LEGACY;
+    case media::VideoCaptureApi::ANDROID_API2_FULL:
+      return media::mojom::VideoCaptureApi::ANDROID_API2_FULL;
+    case media::VideoCaptureApi::ANDROID_API2_LIMITED:
+      return media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED;
+    case media::VideoCaptureApi::ANDROID_TANGO:
+      return media::mojom::VideoCaptureApi::ANDROID_TANGO;
+    case media::VideoCaptureApi::UNKNOWN:
+      return media::mojom::VideoCaptureApi::UNKNOWN;
+  }
+  NOTREACHED();
+  return media::mojom::VideoCaptureApi::UNKNOWN;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::
+    FromMojom(media::mojom::VideoCaptureApi input,
+              media::VideoCaptureApi* output) {
+  switch (input) {
+    case media::mojom::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE:
+      *output = media::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
+      return true;
+    case media::mojom::VideoCaptureApi::WIN_MEDIA_FOUNDATION:
+      *output = media::VideoCaptureApi::WIN_MEDIA_FOUNDATION;
+      return true;
+    case media::mojom::VideoCaptureApi::WIN_DIRECT_SHOW:
+      *output = media::VideoCaptureApi::WIN_DIRECT_SHOW;
+      return true;
+    case media::mojom::VideoCaptureApi::MACOSX_AVFOUNDATION:
+      *output = media::VideoCaptureApi::MACOSX_AVFOUNDATION;
+      return true;
+    case media::mojom::VideoCaptureApi::MACOSX_DECKLINK:
+      *output = media::VideoCaptureApi::MACOSX_DECKLINK;
+      return true;
+    case media::mojom::VideoCaptureApi::ANDROID_API1:
+      *output = media::VideoCaptureApi::ANDROID_API1;
+      return true;
+    case media::mojom::VideoCaptureApi::ANDROID_API2_LEGACY:
+      *output = media::VideoCaptureApi::ANDROID_API2_LEGACY;
+      return true;
+    case media::mojom::VideoCaptureApi::ANDROID_API2_FULL:
+      *output = media::VideoCaptureApi::ANDROID_API2_FULL;
+      return true;
+    case media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED:
+      *output = media::VideoCaptureApi::ANDROID_API2_LIMITED;
+      return true;
+    case media::mojom::VideoCaptureApi::ANDROID_TANGO:
+      *output = media::VideoCaptureApi::ANDROID_TANGO;
+      return true;
+    case media::mojom::VideoCaptureApi::UNKNOWN:
+      *output = media::VideoCaptureApi::UNKNOWN;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+media::mojom::VideoCaptureTransportType EnumTraits<
+    media::mojom::VideoCaptureTransportType,
+    media::VideoCaptureTransportType>::ToMojom(media::VideoCaptureTransportType
+                                                   input) {
+  switch (input) {
+    case media::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN:
+      return media::mojom::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN;
+    case media::VideoCaptureTransportType::OTHER_TRANSPORT:
+      return media::mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
+  }
+  NOTREACHED();
+  return media::mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
+}
+
+// static
+bool EnumTraits<media::mojom::VideoCaptureTransportType,
+                media::VideoCaptureTransportType>::
+    FromMojom(media::mojom::VideoCaptureTransportType input,
+              media::VideoCaptureTransportType* output) {
+  switch (input) {
+    case media::mojom::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN:
+      *output = media::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN;
+      return true;
+    case media::mojom::VideoCaptureTransportType::OTHER_TRANSPORT:
+      *output = media::VideoCaptureTransportType::OTHER_TRANSPORT;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<media::mojom::VideoCaptureFormatDataView,
                   media::VideoCaptureFormat>::
     Read(media::mojom::VideoCaptureFormatDataView data,
@@ -124,6 +231,36 @@ bool StructTraits<media::mojom::VideoCaptureParamsDataView,
   if (!data.ReadResolutionChangePolicy(&out->resolution_change_policy))
     return false;
   if (!data.ReadPowerLineFrequency(&out->power_line_frequency))
+    return false;
+  return true;
+}
+
+// static
+bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
+                  media::VideoCaptureDeviceDescriptor>::
+    Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,
+         media::VideoCaptureDeviceDescriptor* output) {
+  if (!data.ReadDisplayName(&(output->display_name)))
+    return false;
+  if (!data.ReadDeviceId(&(output->device_id)))
+    return false;
+  if (!data.ReadModelId(&(output->model_id)))
+    return false;
+  if (!data.ReadCaptureApi(&(output->capture_api)))
+    return false;
+  if (!data.ReadTransportType(&(output->transport_type)))
+    return false;
+  return true;
+}
+
+// static
+bool StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
+                  media::VideoCaptureDeviceInfo>::
+    Read(media::mojom::VideoCaptureDeviceInfoDataView data,
+         media::VideoCaptureDeviceInfo* output) {
+  if (!data.ReadDescriptor(&(output->descriptor)))
+    return false;
+  if (!data.ReadSupportedFormats(&(output->supported_formats)))
     return false;
   return true;
 }

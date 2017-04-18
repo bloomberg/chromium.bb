@@ -5,8 +5,10 @@
 #ifndef MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_
 #define MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_
 
-#include "media/capture/video_capture_types.h"
 #include "media/capture/mojo/video_capture_types.mojom.h"
+#include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/capture/video/video_capture_device_info.h"
+#include "media/capture/video_capture_types.h"
 
 namespace mojo {
 
@@ -36,6 +38,22 @@ struct EnumTraits<media::mojom::PowerLineFrequency, media::PowerLineFrequency> {
 
   static bool FromMojom(media::mojom::PowerLineFrequency input,
                         media::PowerLineFrequency* out);
+};
+
+template <>
+struct EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi> {
+  static media::mojom::VideoCaptureApi ToMojom(media::VideoCaptureApi input);
+  static bool FromMojom(media::mojom::VideoCaptureApi input,
+                        media::VideoCaptureApi* output);
+};
+
+template <>
+struct EnumTraits<media::mojom::VideoCaptureTransportType,
+                  media::VideoCaptureTransportType> {
+  static media::mojom::VideoCaptureTransportType ToMojom(
+      media::VideoCaptureTransportType input);
+  static bool FromMojom(media::mojom::VideoCaptureTransportType input,
+                        media::VideoCaptureTransportType* output);
 };
 
 template <>
@@ -83,6 +101,55 @@ struct StructTraits<media::mojom::VideoCaptureParamsDataView,
 
   static bool Read(media::mojom::VideoCaptureParamsDataView data,
                    media::VideoCaptureParams* out);
+};
+
+template <>
+struct StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
+                    media::VideoCaptureDeviceDescriptor> {
+  static const std::string& display_name(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.display_name;
+  }
+
+  static const std::string& device_id(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.device_id;
+  }
+
+  static const std::string& model_id(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.model_id;
+  }
+
+  static media::VideoCaptureApi capture_api(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.capture_api;
+  }
+
+  static media::VideoCaptureTransportType transport_type(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.transport_type;
+  }
+
+  static bool Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,
+                   media::VideoCaptureDeviceDescriptor* output);
+};
+
+template <>
+struct StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
+                    media::VideoCaptureDeviceInfo> {
+  static const media::VideoCaptureDeviceDescriptor& descriptor(
+      const media::VideoCaptureDeviceInfo& input) {
+    return input.descriptor;
+  }
+
+  static const std::vector<media::VideoCaptureFormat>& supported_formats(
+      const media::VideoCaptureDeviceInfo& input) {
+    return input.supported_formats;
+  }
+
+  static bool Read(media::mojom::VideoCaptureDeviceInfoDataView data,
+                   media::VideoCaptureDeviceInfo* output);
 };
 }
 

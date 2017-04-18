@@ -23,8 +23,8 @@ class ServiceTest : public service_manager::test::ServiceTest {
  protected:
   mojom::ServicePtr service_;
   mojom::DeviceFactoryPtr factory_;
-  base::MockCallback<mojom::DeviceFactory::EnumerateDeviceDescriptorsCallback>
-      descriptor_receiver_;
+  base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
+      device_info_receiver_;
 };
 
 }  // namespace video_capture

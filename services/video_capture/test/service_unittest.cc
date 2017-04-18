@@ -20,30 +20,30 @@ namespace video_capture {
 using VideoCaptureServiceTest = ServiceTest;
 
 // Tests that an answer arrives from the service when calling
-// EnumerateDeviceDescriptors().
-TEST_F(VideoCaptureServiceTest,
-       DISABLED_EnumerateDeviceDescriptorsCallbackArrives) {
+// GetDeviceInfos().
+TEST_F(VideoCaptureServiceTest, DISABLED_GetDeviceInfosCallbackArrives) {
   base::RunLoop wait_loop;
-  EXPECT_CALL(descriptor_receiver_, Run(_))
+  EXPECT_CALL(device_info_receiver_, Run(_))
       .Times(Exactly(1))
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
 
-  factory_->EnumerateDeviceDescriptors(descriptor_receiver_.Get());
+  factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
 }
 
 TEST_F(VideoCaptureServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
-  EXPECT_CALL(descriptor_receiver_, Run(_))
+  EXPECT_CALL(device_info_receiver_, Run(_))
       .Times(Exactly(1))
-      .WillOnce(Invoke([&wait_loop, &num_devices_enumerated](
-          const std::vector<media::VideoCaptureDeviceDescriptor>& descriptors) {
-        num_devices_enumerated = descriptors.size();
-        wait_loop.Quit();
-      }));
+      .WillOnce(
+          Invoke([&wait_loop, &num_devices_enumerated](
+                     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+            num_devices_enumerated = infos.size();
+            wait_loop.Quit();
+          }));
 
-  factory_->EnumerateDeviceDescriptors(descriptor_receiver_.Get());
+  factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
   ASSERT_EQ(1u, num_devices_enumerated);
 }

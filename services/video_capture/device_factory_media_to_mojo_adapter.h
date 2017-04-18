@@ -30,11 +30,7 @@ class DeviceFactoryMediaToMojoAdapter : public mojom::DeviceFactory {
   ~DeviceFactoryMediaToMojoAdapter() override;
 
   // mojom::DeviceFactory:
-  void EnumerateDeviceDescriptors(
-      const EnumerateDeviceDescriptorsCallback& callback) override;
-  void GetSupportedFormats(
-      const std::string& device_id,
-      const GetSupportedFormatsCallback& callback) override;
+  void GetDeviceInfos(const GetDeviceInfosCallback& callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
                     const CreateDeviceCallback& callback) override;

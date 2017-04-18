@@ -11,9 +11,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/capture/video/fake_video_capture_device.h"
+#include "media/capture/video/video_capture_device_info.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
-#include "services/video_capture/public/cpp/capture_settings.h"
 
 namespace video_capture {
 
@@ -39,37 +39,9 @@ DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
 
 DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;
 
-void DeviceFactoryMediaToMojoAdapter::EnumerateDeviceDescriptors(
-    const EnumerateDeviceDescriptorsCallback& callback) {
-  media::VideoCaptureDeviceDescriptors descriptors;
-  device_factory_->GetDeviceDescriptors(&descriptors);
-  callback.Run(std::move(descriptors));
-}
-
-void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
-    const std::string& device_id,
-    const GetSupportedFormatsCallback& callback) {
-  media::VideoCaptureDeviceDescriptor descriptor;
-  media::VideoCaptureFormats media_formats;
-  if (LookupDescriptorFromId(device_id, &descriptor))
-    device_factory_->GetSupportedFormats(descriptor, &media_formats);
-  std::vector<I420CaptureFormat> result;
-  for (const auto& media_format : media_formats) {
-    // The Video Capture Service requires devices to deliver frames either in
-    // I420 or MJPEG formats.
-    // TODO(chfremer): Add support for Y16 format. See crbug.com/624436.
-    if (media_format.pixel_format != media::PIXEL_FORMAT_I420 &&
-        media_format.pixel_format != media::PIXEL_FORMAT_MJPEG) {
-      continue;
-    }
-    I420CaptureFormat format;
-    format.frame_size = media_format.frame_size;
-    format.frame_rate = media_format.frame_rate;
-    if (base::ContainsValue(result, format))
-      continue;  // Result already contains this format
-    result.push_back(format);
-  }
-  callback.Run(std::move(result));
+void DeviceFactoryMediaToMojoAdapter::GetDeviceInfos(
+    const GetDeviceInfosCallback& callback) {
+  NOTIMPLEMENTED();
 }
 
 void DeviceFactoryMediaToMojoAdapter::CreateDevice(

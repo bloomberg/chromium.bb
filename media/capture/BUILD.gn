@@ -19,6 +19,10 @@ component("capture_base") {
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
     "capture_export.h",
+    "video/video_capture_device_descriptor.cc",
+    "video/video_capture_device_descriptor.h",
+    "video/video_capture_device_info.cc",
+    "video/video_capture_device_info.h",
     "video_capture_types.cc",
     "video_capture_types.h",
   ]
@@ -86,12 +90,8 @@ component("capture_lib") {
     "video/video_capture_device.h",
     "video/video_capture_device_client.cc",
     "video/video_capture_device_client.h",
-    "video/video_capture_device_descriptor.cc",
-    "video/video_capture_device_descriptor.h",
     "video/video_capture_device_factory.cc",
     "video/video_capture_device_factory.h",
-    "video/video_capture_device_info.cc",
-    "video/video_capture_device_info.h",
     "video/video_capture_jpeg_decoder.h",
     "video/video_capture_system.h",
     "video/video_capture_system_impl.cc",

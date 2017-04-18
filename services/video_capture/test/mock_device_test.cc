@@ -67,8 +67,8 @@ void MockDeviceTest::SetUp() {
       mock_descriptor.device_id, mojo::MakeRequest(&device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
-  requested_settings_.format.frame_size = gfx::Size(800, 600);
-  requested_settings_.format.frame_rate = 15;
+  requested_settings_.requested_format.frame_size = gfx::Size(800, 600);
+  requested_settings_.requested_format.frame_rate = 15;
   requested_settings_.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_RESOLUTION;
   requested_settings_.power_line_frequency =

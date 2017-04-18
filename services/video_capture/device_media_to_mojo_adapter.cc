@@ -25,10 +25,9 @@ DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
   Stop();
 }
 
-void DeviceMediaToMojoAdapter::Start(const CaptureSettings& requested_settings,
-                                     mojom::ReceiverPtr receiver) {
-  media::VideoCaptureParams params;
-  requested_settings.ConvertToMediaVideoCaptureParams(&params);
+void DeviceMediaToMojoAdapter::Start(
+    const media::VideoCaptureParams& requested_settings,
+    mojom::ReceiverPtr receiver) {
   receiver.set_connection_error_handler(
       base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                  base::Unretained(this)));
@@ -47,7 +46,7 @@ void DeviceMediaToMojoAdapter::Start(const CaptureSettings& requested_settings,
   auto device_client = base::MakeUnique<media::VideoCaptureDeviceClient>(
       std::move(media_receiver), buffer_pool, jpeg_decoder_factory_callback_);
 
-  device_->AllocateAndStart(params, std::move(device_client));
+  device_->AllocateAndStart(requested_settings, std::move(device_client));
   device_running_ = true;
 }
 

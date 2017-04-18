@@ -5,9 +5,7 @@
 module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
-import "services/video_capture/public/interfaces/device_descriptor.mojom";
 import "services/video_capture/public/interfaces/device.mojom";
-import "services/video_capture/public/interfaces/capture_settings.mojom";
 
 enum DeviceAccessResultCode {
   NOT_INITIALIZED,
@@ -16,19 +14,15 @@ enum DeviceAccessResultCode {
 };
 
 // Enables access to a set of video capture devices.
-// Typical operation is to first call EnumerateDeviceDescriptors() to obtain
-// information about available devices. The |device_id| of the descriptors can
-// subsequently be used to either obtain the supported formats for a device
-// using GetSupportedFormats(), or to create an instance of
+// Typical operation is to first call GetDeviceInfos() to obtain
+// information about available devices. The |device_id| of the infos can
+// subsequently be used to create an instance of
 // video_capture.mojom.Device using CreateDevice().
-// The factory guarantees that no two device descriptors it returns use the
+// The factory guarantees that no two device infos it returns use the
 // same |device_id|.
 interface DeviceFactory {
-  EnumerateDeviceDescriptors()
-      => (array<DeviceDescriptor> descriptors);
-
-  GetSupportedFormats(string device_id)
-      => (array<I420CaptureFormat> supported_formats);
+  GetDeviceInfos()
+      => (array<media.mojom.VideoCaptureDeviceInfo> device_infos);
 
   // Provides exclusive access to the device identified by |device_id|.
   // The access is valid until either the message pipe associated with

@@ -8,7 +8,6 @@
 #include "base/test/mock_callback.h"
 #include "media/capture/video/video_capture_device.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-#include "services/video_capture/public/cpp/capture_settings.h"
 #include "services/video_capture/public/interfaces/service.mojom.h"
 #include "services/video_capture/test/mock_device_factory.h"
 #include "services/video_capture/test/mock_receiver.h"
@@ -37,6 +36,8 @@ class MockDevice : public media::VideoCaptureDevice {
                void(media::mojom::PhotoSettingsPtr* settings,
                     SetPhotoOptionsCallback* callback));
   MOCK_METHOD1(DoTakePhoto, void(TakePhotoCallback* callback));
+  MOCK_METHOD2(OnUtilizationReport,
+               void(int frame_feedback_id, double utilization));
 
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
@@ -60,14 +61,14 @@ class MockDeviceTest : public ::testing::Test {
 
   mojom::DeviceFactoryPtr factory_;
   std::unique_ptr<mojo::Binding<mojom::DeviceFactory>> mock_factory_binding_;
-  base::MockCallback<mojom::DeviceFactory::EnumerateDeviceDescriptorsCallback>
-      descriptor_receiver_;
+  base::MockCallback<mojom::DeviceFactory::GetDeviceInfosCallback>
+      device_infos_receiver_;
 
   MockDevice mock_device_;
   std::unique_ptr<MockReceiver> mock_receiver_;
   mojom::DevicePtr device_proxy_;
   mojom::ReceiverPtr mock_receiver_proxy_;
-  CaptureSettings requested_settings_;
+  media::VideoCaptureParams requested_settings_;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;

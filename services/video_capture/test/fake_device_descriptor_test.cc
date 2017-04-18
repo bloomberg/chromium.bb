@@ -20,13 +20,14 @@ void FakeDeviceDescriptorTest::SetUp() {
   video_capture::ServiceTest::SetUp();
 
   base::RunLoop wait_loop;
-  EXPECT_CALL(descriptor_receiver_, Run(_))
-      .WillOnce(Invoke([this, &wait_loop](
-          const std::vector<media::VideoCaptureDeviceDescriptor>& descriptors) {
-        fake_device_descriptor_ = descriptors[0];
-        wait_loop.Quit();
-      }));
-  factory_->EnumerateDeviceDescriptors(descriptor_receiver_.Get());
+  EXPECT_CALL(device_info_receiver_, Run(_))
+      .WillOnce(
+          Invoke([this, &wait_loop](
+                     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
+            fake_device_info_ = infos[0];
+            wait_loop.Quit();
+          }));
+  factory_->GetDeviceInfos(device_info_receiver_.Get());
   wait_loop.Run();
 }
 

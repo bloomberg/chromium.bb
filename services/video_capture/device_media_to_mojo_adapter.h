@@ -22,7 +22,7 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   ~DeviceMediaToMojoAdapter() override;
 
   // mojom::Device:
-  void Start(const CaptureSettings& requested_settings,
+  void Start(const media::VideoCaptureParams& requested_settings,
              mojom::ReceiverPtr receiver) override;
 
   void Stop();

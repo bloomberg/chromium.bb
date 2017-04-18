@@ -19,7 +19,7 @@ class FakeDeviceDescriptorTest : public ServiceTest {
   void SetUp() override;
 
  protected:
-  media::VideoCaptureDeviceDescriptor fake_device_descriptor_;
+  media::VideoCaptureDeviceInfo fake_device_info_;
 };
 
 }  // namespace video_capture

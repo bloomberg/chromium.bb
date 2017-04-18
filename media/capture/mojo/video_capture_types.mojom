@@ -67,3 +67,16 @@ struct VideoFrameInfo{
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
 };
+
+struct VideoCaptureDeviceDescriptor {
+  string display_name;
+  string device_id;
+  string model_id;
+  VideoCaptureApi capture_api;
+  VideoCaptureTransportType transport_type;
+};
+
+struct VideoCaptureDeviceInfo {
+  VideoCaptureDeviceDescriptor descriptor;
+  array<VideoCaptureFormat> supported_formats;
+};

@@ -6,9 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "capture_settings.mojom",
     "device.mojom",
-    "device_descriptor.mojom",
     "device_factory.mojom",
     "receiver.mojom",
     "service.mojom",

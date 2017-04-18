@@ -6,7 +6,7 @@
 #include "base/run_loop.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "services/video_capture/public/cpp/capture_settings.h"
+#include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 #include "services/video_capture/test/fake_device_test.h"
 #include "services/video_capture/test/mock_receiver.h"
@@ -21,7 +21,6 @@ struct FrameInfo {
   gfx::Size size;
   media::VideoPixelFormat pixel_format;
   media::VideoFrame::StorageType storage_type;
-  bool is_mappable;
   base::TimeDelta timestamp;
 };
 
@@ -78,7 +77,6 @@ TEST_F(FakeVideoCaptureDeviceTest,
             auto& frame_info = received_frame_infos[received_frame_count];
             frame_info.pixel_format = video_frame->format();
             frame_info.storage_type = video_frame->storage_type();
-            frame_info.is_mappable = video_frame->IsMappable();
             frame_info.size = video_frame->natural_size();
             frame_info.timestamp = video_frame->timestamp();
             received_frame_count += 1;
@@ -98,8 +96,6 @@ TEST_F(FakeVideoCaptureDeviceTest,
     // Service is expected to always use STORAGE_MOJO_SHARED_BUFFER
     EXPECT_EQ(media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER,
               frame_info.storage_type);
-    EXPECT_TRUE(frame_info.is_mappable);
-    EXPECT_EQ(requestable_settings_.format.frame_size, frame_info.size);
     // Timestamps are expected to increase
     if (i > 0)
       EXPECT_GT(frame_info.timestamp, previous_timestamp);
