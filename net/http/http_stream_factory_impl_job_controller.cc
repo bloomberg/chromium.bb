@@ -994,12 +994,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     }
 
     DCHECK_EQ(kProtoQUIC, alternative_service.protocol);
-    if (origin.host() != alternative_service.host &&
-        !session_->params()
-             .enable_quic_alternative_service_with_different_host) {
-      continue;
-    }
-
     quic_all_broken = false;
     if (!session_->IsQuicEnabled())
       continue;

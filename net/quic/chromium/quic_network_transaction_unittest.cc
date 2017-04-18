@@ -3015,7 +3015,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
   // There is no need to set up main job, because no attempt will be made to
   // speak to the proxy over TCP.
   request_.url = GURL("http://mail.example.org/");
-  params_.enable_quic_alternative_service_with_different_host = false;
   TestProxyDelegate test_proxy_delegate;
   const HostPortPair host_port_pair("mail.example.org", 443);
 

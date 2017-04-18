@@ -271,7 +271,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, Default) {
 
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_TRUE(params_.origins_to_force_quic_on.empty());
@@ -319,27 +318,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   ConfigureParamsFromFieldTrialsAndCommandLine();
 
   EXPECT_TRUE(params_.enable_quic);
-}
-
-TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
-       EnableAlternativeServicesFromCommandLineWithQuicDisabled) {
-  command_line_.AppendSwitch("enable-alternative-services");
-
-  ConfigureParamsFromFieldTrialsAndCommandLine();
-
-  EXPECT_FALSE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
-}
-
-TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
-       EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitch("enable-alternative-services");
-
-  ConfigureParamsFromFieldTrialsAndCommandLine();
-
-  EXPECT_TRUE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,

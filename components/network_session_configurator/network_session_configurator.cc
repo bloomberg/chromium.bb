@@ -123,14 +123,6 @@ bool ShouldRetryWithoutAltSvcOnQuicErrors(
       "true");
 }
 
-bool ShouldQuicEnableAlternativeServicesForDifferentHost(
-    const VariationParameters& quic_trial_params) {
-  return !base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "enable_alternative_service_with_different_host"),
-      "false");
-}
-
 net::QuicTagVector GetQuicConnectionOptions(
     const VariationParameters& quic_trial_params) {
   VariationParameters::const_iterator it =
@@ -306,8 +298,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->retry_without_alt_svc_on_quic_errors =
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
-  params->enable_quic_alternative_service_with_different_host =
-      ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params);
 
   if (params->enable_quic) {
     params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
