@@ -193,9 +193,9 @@ class FetchManager::Loader final
     }
 
     void DidGetReadable() override {
-      ASSERT(reader_);
-      ASSERT(loader_);
-      ASSERT(response_);
+      DCHECK(reader_);
+      DCHECK(loader_);
+      DCHECK(response_);
 
       WebDataConsumerHandle::Result r = WebDataConsumerHandle::kOk;
       while (r == WebDataConsumerHandle::kOk) {
@@ -309,7 +309,7 @@ FetchManager::Loader::Loader(ExecutionContext* execution_context,
 }
 
 FetchManager::Loader::~Loader() {
-  ASSERT(!loader_);
+  DCHECK(!loader_);
 }
 
 DEFINE_TRACE(FetchManager::Loader) {
@@ -329,7 +329,7 @@ void FetchManager::Loader::DidReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  ASSERT(handle);
+  DCHECK(handle);
   // TODO(horo): This check could be false when we will use the response url
   // in service worker responses. (crbug.com/553535)
   DCHECK(response.Url() == url_list_.back());
@@ -493,7 +493,7 @@ void FetchManager::Loader::DidReceiveResponse(
     resolver_->Resolve(r);
     resolver_.Clear();
   } else {
-    ASSERT(!integrity_verifier_);
+    DCHECK(!integrity_verifier_);
     integrity_verifier_ =
         new SRIVerifier(std::move(handle), sri_consumer, r, this,
                         request_->Integrity(), response.Url());
@@ -543,7 +543,7 @@ Document* FetchManager::Loader::GetDocument() const {
 }
 
 void FetchManager::Loader::LoadSucceeded() {
-  ASSERT(!failed_);
+  DCHECK(!failed_);
 
   finished_ = true;
 
@@ -700,7 +700,7 @@ void FetchManager::Loader::PerformNetworkError(const String& message) {
 
 void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
                                             bool cors_preflight_flag) {
-  ASSERT(SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+  DCHECK(SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
              request_->Url().Protocol()) ||
          (request_->Url().ProtocolIs("blob") && !cors_flag &&
           !cors_preflight_flag));
@@ -839,7 +839,7 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
 //   'same-origin' mode.
 // - We reject non-GET method.
 void FetchManager::Loader::PerformDataFetch() {
-  ASSERT(request_->Url().ProtocolIsData());
+  DCHECK(request_->Url().ProtocolIsData());
 
   ResourceRequest request(request_->Url());
   request.SetRequestContext(request_->Context());

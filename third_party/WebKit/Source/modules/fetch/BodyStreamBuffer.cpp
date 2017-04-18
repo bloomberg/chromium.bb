@@ -131,8 +131,8 @@ ScriptValue BodyStreamBuffer::Stream() {
 
 PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy) {
-  ASSERT(!IsStreamLocked());
-  ASSERT(!IsStreamDisturbed());
+  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamDisturbed());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
@@ -149,8 +149,8 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
 }
 
 PassRefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
-  ASSERT(!IsStreamLocked());
-  ASSERT(!IsStreamDisturbed());
+  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamDisturbed());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
@@ -167,8 +167,8 @@ PassRefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
 
 void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
                                     FetchDataLoader::Client* client) {
-  ASSERT(!loader_);
-  ASSERT(script_state_->ContextIsValid());
+  DCHECK(!loader_);
+  DCHECK(script_state_->ContextIsValid());
   loader_ = loader;
   loader->Start(ReleaseHandle(),
                 new LoaderClient(ExecutionContext::From(script_state_.Get()),
@@ -199,7 +199,7 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
 }
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
-  ASSERT(script_state == script_state_.Get());
+  DCHECK_EQ(script_state, script_state_.Get());
   if (stream_needs_more_)
     return ScriptPromise::CastUndefined(script_state);
   stream_needs_more_ = true;
@@ -209,7 +209,7 @@ ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
 
 ScriptPromise BodyStreamBuffer::Cancel(ScriptState* script_state,
                                        ScriptValue reason) {
-  ASSERT(script_state == script_state_.Get());
+  DCHECK_EQ(script_state, script_state_.Get());
   Close();
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -346,7 +346,7 @@ void BodyStreamBuffer::ProcessData() {
 }
 
 void BodyStreamBuffer::EndLoading() {
-  ASSERT(loader_);
+  DCHECK(loader_);
   loader_ = nullptr;
 }
 

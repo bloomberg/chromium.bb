@@ -348,7 +348,7 @@ Request* Request::CreateRequestWithRequestOrString(
   if (init.headers) {
     r->getHeaders()->FillWith(init.headers.Get(), exception_state);
   } else {
-    ASSERT(headers);
+    DCHECK(headers);
     r->getHeaders()->FillWith(headers, exception_state);
   }
   if (exception_state.HadException())
@@ -437,7 +437,7 @@ Request* Request::Create(ScriptState* script_state,
                          const RequestInfo& input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  ASSERT(!input.isNull());
+  DCHECK(!input.isNull());
   if (input.isUSVString())
     return Create(script_state, input.getAsUSVString(), init, exception_state);
   return Create(script_state, input.getAsRequest(), init, exception_state);
@@ -589,9 +589,9 @@ String Request::referrer() const {
   // "The referrer attribute's getter must return the empty string if
   // request's referrer is no referrer, "about:client" if request's referrer
   // is client and request's referrer, serialized, otherwise."
-  ASSERT(FetchRequestData::NoReferrerString() == AtomicString());
-  ASSERT(FetchRequestData::ClientReferrerString() ==
-         AtomicString("about:client"));
+  DCHECK_EQ(FetchRequestData::NoReferrerString(), AtomicString());
+  DCHECK_EQ(FetchRequestData::ClientReferrerString(),
+            AtomicString("about:client"));
   return request_->ReferrerString();
 }
 
@@ -610,7 +610,7 @@ String Request::getReferrerPolicy() const {
     case kReferrerPolicyOriginWhenCrossOrigin:
       return "origin-when-cross-origin";
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      ASSERT(RuntimeEnabledFeatures::reducedReferrerGranularityEnabled());
+      DCHECK(RuntimeEnabledFeatures::reducedReferrerGranularityEnabled());
       return "no-referrer-when-downgrade-origin-when-cross-origin";
   }
   ASSERT_NOT_REACHED();
@@ -706,7 +706,7 @@ Request* Request::clone(ScriptState* script_state,
 }
 
 FetchRequestData* Request::PassRequestData(ScriptState* script_state) {
-  ASSERT(!bodyUsed());
+  DCHECK(!bodyUsed());
   FetchRequestData* data = request_->Pass(script_state);
   RefreshBody(script_state);
   // |data|'s buffer('s js wrapper) has no retainer, but it's OK because

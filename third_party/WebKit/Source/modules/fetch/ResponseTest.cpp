@@ -63,7 +63,7 @@ TEST(ServiceWorkerResponseTest, FromFetchResponseData) {
   fetch_response_data->SetURLList(url_list);
   Response* response =
       Response::Create(&page->GetDocument(), fetch_response_data);
-  ASSERT(response);
+  DCHECK(response);
   EXPECT_EQ(url, response->url());
 }
 
@@ -72,7 +72,7 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse) {
   std::unique_ptr<WebServiceWorkerResponse> web_response =
       CreateTestWebServiceWorkerResponse();
   Response* response = Response::Create(scope.GetScriptState(), *web_response);
-  ASSERT(response);
+  DCHECK(response);
   ASSERT_EQ(1u, web_response->UrlList().size());
   EXPECT_EQ(web_response->UrlList()[0], response->url());
   EXPECT_EQ(web_response->Status(), response->status());

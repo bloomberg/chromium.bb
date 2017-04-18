@@ -89,7 +89,7 @@ FetchResponseData* CreateFetchResponseDataFromWebResponse(
     case kWebServiceWorkerResponseTypeDefault:
       break;
     case kWebServiceWorkerResponseTypeError:
-      ASSERT(response->GetType() == FetchResponseData::kErrorType);
+      DCHECK_EQ(response->GetType(), FetchResponseData::kErrorType);
       break;
   }
 

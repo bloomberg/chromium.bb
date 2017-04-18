@@ -111,24 +111,24 @@ class DataConsumerHandleTestUtil {
 
       void RegisterThreadHolder(ThreadHolder* holder) {
         MutexLocker locker(holder_mutex_);
-        ASSERT(!holder_);
+        DCHECK(!holder_);
         holder_ = holder;
       }
       void UnregisterThreadHolder() {
         MutexLocker locker(holder_mutex_);
-        ASSERT(holder_);
+        DCHECK(holder_);
         holder_ = nullptr;
       }
       void PostTaskToReadingThread(const WebTraceLocation& location,
                                    std::unique_ptr<CrossThreadClosure> task) {
         MutexLocker locker(holder_mutex_);
-        ASSERT(holder_);
+        DCHECK(holder_);
         holder_->ReadingThread()->PostTask(location, std::move(task));
       }
       void PostTaskToUpdatingThread(const WebTraceLocation& location,
                                     std::unique_ptr<CrossThreadClosure> task) {
         MutexLocker locker(holder_mutex_);
-        ASSERT(holder_);
+        DCHECK(holder_);
         holder_->UpdatingThread()->PostTask(location, std::move(task));
       }
 

@@ -203,7 +203,7 @@ ScriptValue Body::body(ScriptState* script_state) {
   if (!BodyBuffer())
     return ScriptValue::CreateNull(script_state);
   ScriptValue stream = BodyBuffer()->Stream();
-  ASSERT(stream.GetScriptState() == script_state);
+  DCHECK_EQ(stream.GetScriptState(), script_state);
   return stream;
 }
 

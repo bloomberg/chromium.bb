@@ -26,7 +26,7 @@ TEST(ServiceWorkerRequestTest, FromString) {
   Request* request =
       Request::Create(scope.GetScriptState(), url, exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  ASSERT(request);
+  DCHECK(request);
   EXPECT_EQ(url, request->url());
 }
 
@@ -37,12 +37,12 @@ TEST(ServiceWorkerRequestTest, FromRequest) {
   KURL url(kParsedURLString, "http://www.example.com/");
   Request* request1 =
       Request::Create(scope.GetScriptState(), url, exception_state);
-  ASSERT(request1);
+  DCHECK(request1);
 
   Request* request2 =
       Request::Create(scope.GetScriptState(), request1, exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  ASSERT(request2);
+  DCHECK(request2);
   EXPECT_EQ(url, request2->url());
 }
 
@@ -73,7 +73,7 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   web_request.SetReferrer(referrer, kReferrerPolicy);
 
   Request* request = Request::Create(scope.GetScriptState(), web_request);
-  ASSERT(request);
+  DCHECK(request);
   EXPECT_EQ(url, request->url());
   EXPECT_EQ(method, request->method());
   EXPECT_EQ("audio", request->Context());
@@ -111,7 +111,7 @@ TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment) {
   String url = url_without_fragment + "#fragment";
   Request* request =
       Request::Create(scope.GetScriptState(), url, exception_state);
-  ASSERT(request);
+  DCHECK(request);
 
   WebServiceWorkerRequest web_request;
   request->PopulateWebServiceWorkerRequest(web_request);

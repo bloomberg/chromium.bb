@@ -220,16 +220,16 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
   switch (type_) {
     case kBasicType:
     case kCORSType:
-      ASSERT(internal_response_);
-      ASSERT(buffer_ == internal_response_->buffer_);
-      ASSERT(internal_response_->type_ == kDefaultType);
+      DCHECK(internal_response_);
+      DCHECK_EQ(buffer_, internal_response_->buffer_);
+      DCHECK_EQ(internal_response_->type_, kDefaultType);
       new_response->internal_response_ =
           internal_response_->Clone(script_state);
       buffer_ = internal_response_->buffer_;
       new_response->buffer_ = new_response->internal_response_->buffer_;
       break;
     case kDefaultType: {
-      ASSERT(!internal_response_);
+      DCHECK(!internal_response_);
       if (buffer_) {
         BodyStreamBuffer* new1 = nullptr;
         BodyStreamBuffer* new2 = nullptr;
@@ -240,14 +240,14 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state) {
       break;
     }
     case kErrorType:
-      ASSERT(!internal_response_);
-      ASSERT(!buffer_);
+      DCHECK(!internal_response_);
+      DCHECK(!buffer_);
       break;
     case kOpaqueType:
     case kOpaqueRedirectType:
-      ASSERT(internal_response_);
-      ASSERT(!buffer_);
-      ASSERT(internal_response_->type_ == kDefaultType);
+      DCHECK(internal_response_);
+      DCHECK(!buffer_);
+      DCHECK_EQ(internal_response_->type_, kDefaultType);
       new_response->internal_response_ =
           internal_response_->Clone(script_state);
       break;
@@ -289,11 +289,11 @@ FetchResponseData::FetchResponseData(Type type,
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   if (type_ == kBasicType || type_ == kCORSType) {
-    ASSERT(internal_response_);
+    DCHECK(internal_response_);
     internal_response_->buffer_ = buffer;
     buffer_ = buffer;
   } else if (type_ == kDefaultType) {
-    ASSERT(!internal_response_);
+    DCHECK(!internal_response_);
     buffer_ = buffer;
   }
 }

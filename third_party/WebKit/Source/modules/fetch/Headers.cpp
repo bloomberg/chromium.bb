@@ -238,7 +238,7 @@ void Headers::set(const String& name,
 }
 
 void Headers::FillWith(const Headers* object, ExceptionState& exception_state) {
-  ASSERT(header_list_->size() == 0);
+  DCHECK(header_list_->size() == 0);
   // There used to be specific steps describing filling a Headers object with
   // another Headers object, but it has since been removed because it should be
   // handled like a sequence (http://crbug.com/690428).
@@ -252,7 +252,7 @@ void Headers::FillWith(const Headers* object, ExceptionState& exception_state) {
 
 void Headers::FillWith(const Vector<Vector<String>>& object,
                        ExceptionState& exception_state) {
-  ASSERT(!header_list_->size());
+  DCHECK(!header_list_->size());
   // "1. If |object| is a sequence, then for each |header| in |object|, run
   //     these substeps:
   //     1. If |header| does not contain exactly two items, then throw a
@@ -272,7 +272,7 @@ void Headers::FillWith(const Vector<Vector<String>>& object,
 
 void Headers::FillWith(const Vector<std::pair<String, String>>& object,
                        ExceptionState& exception_state) {
-  ASSERT(!header_list_->size());
+  DCHECK(!header_list_->size());
 
   for (const auto& item : object) {
     append(item.first, item.second, exception_state);
