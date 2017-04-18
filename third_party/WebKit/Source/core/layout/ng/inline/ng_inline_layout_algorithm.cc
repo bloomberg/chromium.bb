@@ -271,6 +271,11 @@ bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
   // |last_break_opportunity|.
   start_index_ = last_break_opportunity_index_;
   start_offset_ = last_break_opportunity_offset_;
+  // If the offset is at the end of the item, move to the next item.
+  if (start_offset_ == items[start_index_].EndOffset() &&
+      start_index_ < items.size() - 1) {
+    start_index_++;
+  }
   DCHECK_GE(end_position_, last_break_opportunity_position_);
   end_position_ -= last_break_opportunity_position_;
   last_break_opportunity_position_ = LayoutUnit();
@@ -304,8 +309,9 @@ void NGInlineLayoutAlgorithm::BidiReorder(
   // runs instead of characters.
   Vector<UBiDiLevel, 32> levels;
   levels.ReserveInitialCapacity(line_item_chunks->size());
+  const Vector<NGLayoutInlineItem>& items = Node()->Items();
   for (const auto& chunk : *line_item_chunks)
-    levels.push_back(Node()->Items()[chunk.index].BidiLevel());
+    levels.push_back(items[chunk.index].BidiLevel());
   Vector<int32_t, 32> indices_in_visual_order(line_item_chunks->size());
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
@@ -318,6 +324,23 @@ void NGInlineLayoutAlgorithm::BidiReorder(
     line_item_chunks_in_visual_order[visual_index] =
         (*line_item_chunks)[logical_index];
   }
+
+  // Keep Open before Close in the visual order.
+  HashMap<LayoutObject*, unsigned> first_index;
+  for (unsigned i = 0; i < line_item_chunks_in_visual_order.size(); i++) {
+    LineItemChunk& chunk = line_item_chunks_in_visual_order[i];
+    const NGLayoutInlineItem& item = items[chunk.index];
+    if (item.Type() != NGLayoutInlineItem::kOpenTag &&
+        item.Type() != NGLayoutInlineItem::kCloseTag) {
+      continue;
+    }
+    auto result = first_index.insert(item.GetLayoutObject(), i);
+    if (!result.is_new_entry && item.Type() == NGLayoutInlineItem::kOpenTag) {
+      std::swap(line_item_chunks_in_visual_order[i],
+                line_item_chunks_in_visual_order[result.stored_value->value]);
+    }
+  }
+
   line_item_chunks->Swap(line_item_chunks_in_visual_order);
 }
 
@@ -383,35 +406,29 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
   NGTextFragmentBuilder text_builder(Node());
+  NGInlineBoxState* box = box_states_.OnBeginPlaceItems(&LineStyle());
   LayoutUnit inline_size;
   for (const auto& line_item_chunk : line_item_chunks) {
     const NGLayoutInlineItem& item = items[line_item_chunk.index];
-    // Skip bidi controls.
-    if (!item.GetLayoutObject())
-      continue;
-
-    LayoutUnit block_start;
+    LayoutUnit line_top;
     if (item.Type() == NGLayoutInlineItem::kText) {
       DCHECK(item.GetLayoutObject()->IsText());
-      const ComputedStyle* style = item.Style();
-      // The direction of a fragment is the CSS direction to resolve logical
-      // properties, not the resolved bidi direction.
-      text_builder.SetDirection(style->Direction())
-          .SetInlineSize(line_item_chunk.inline_size);
-
-      // |InlineTextBoxPainter| sets the baseline at |top +
-      // ascent-of-primary-font|. Compute |top| to match.
-      NGLineHeightMetrics metrics(*style, baseline_type_);
-      block_start = -metrics.ascent;
-      metrics.AddLeading(style->ComputedLineHeightAsFixed());
-      text_builder.SetBlockSize(metrics.LineHeight());
-      line_box.UniteMetrics(metrics);
-
+      if (box->text_metrics.IsEmpty())
+        box->ComputeTextMetrics(item, baseline_type_);
+      line_top = box->text_top;
+      text_builder.SetSize(
+          {line_item_chunk.inline_size, box->text_metrics.LineHeight()});
       // Take all used fonts into account if 'line-height: normal'.
-      if (style->LineHeight().IsNegative())
+      if (box->include_used_fonts)
         AccumulateUsedFonts(item, line_item_chunk, &line_box);
+    } else if (item.Type() == NGLayoutInlineItem::kOpenTag) {
+      box = box_states_.OnOpenTag(item, &line_box, &text_builder);
+      continue;
+    } else if (item.Type() == NGLayoutInlineItem::kCloseTag) {
+      box = box_states_.OnCloseTag(item, &line_box, box);
+      continue;
     } else if (item.Type() == NGLayoutInlineItem::kAtomicInline) {
-      block_start = PlaceAtomicInline(item, &line_box, &text_builder);
+      line_top = PlaceAtomicInline(item, &line_box, box, &text_builder);
     } else if (item.Type() == NGLayoutInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -435,7 +452,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     NGLogicalOffset logical_offset(
         inline_size + current_opportunity_.InlineStartOffset() -
             ConstraintSpace().BfcOffset().inline_offset,
-        block_start);
+        line_top);
     line_box.AddChild(std::move(text_fragment), logical_offset);
     inline_size += line_item_chunk.inline_size;
   }
@@ -443,6 +460,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   if (line_box.Children().IsEmpty()) {
     return true;  // The line was empty.
   }
+
+  box_states_.OnEndPlaceItems(&line_box);
 
   // The baselines are always placed at pixel boundaries. Not doing so results
   // in incorrect layout of text decorations, most notably underlines.
@@ -498,6 +517,7 @@ void NGInlineLayoutAlgorithm::AccumulateUsedFonts(
 LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGLayoutInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
+    NGInlineBoxState* state,
     NGTextFragmentBuilder* text_builder) {
   NGBoxFragment fragment(
       ConstraintSpace().WritingMode(),
@@ -508,21 +528,23 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
-  text_builder->SetInlineSize(fragment.InlineSize()).SetBlockSize(block_size);
+  text_builder->SetSize({fragment.InlineSize(), block_size});
 
   // TODO(kojii): Add baseline position to NGPhysicalFragment.
-  LayoutBox* box = ToLayoutBox(item.GetLayoutObject());
+  LayoutBox* layout_box = ToLayoutBox(item.GetLayoutObject());
   LineDirectionMode line_direction_mode =
       IsHorizontalWritingMode() ? LineDirectionMode::kHorizontalLine
                                 : LineDirectionMode::kVerticalLine;
-  LayoutUnit baseline_offset(box->BaselinePosition(
+  LayoutUnit baseline_offset(layout_box->BaselinePosition(
       baseline_type_, IsFirstLine(), line_direction_mode));
-  line_box->UniteMetrics({baseline_offset, block_size - baseline_offset});
+
+  NGLineHeightMetrics metrics(baseline_offset, block_size - baseline_offset);
+  state->metrics.Unite(metrics);
 
   // TODO(kojii): Figure out what to do with OOF in NGLayoutResult.
   // Floats are ok because atomic inlines are BFC?
 
-  return -baseline_offset;
+  return -metrics.ascent;
 }
 
 void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {

@@ -27,11 +27,18 @@ void NGLineHeightMetrics::Initialize(const FontMetrics& font_metrics,
 }
 
 void NGLineHeightMetrics::AddLeading(LayoutUnit line_height) {
+  DCHECK(!IsEmpty());
   LayoutUnit half_leading = (line_height - (ascent + descent)) / 2;
   // TODO(kojii): floor() is to make text dump compatible with legacy test
   // results. Revisit when we paint.
   ascent += half_leading.Floor();
   descent = line_height - ascent;
+}
+
+void NGLineHeightMetrics::Move(LayoutUnit delta) {
+  DCHECK(!IsEmpty());
+  ascent -= delta;
+  descent += delta;
 }
 
 void NGLineHeightMetrics::Unite(const NGLineHeightMetrics& other) {

@@ -19,7 +19,8 @@ class FontMetrics;
 // compute metrics for line boxes.
 // https://drafts.csswg.org/css2/visudet.html#line-height
 struct NGLineHeightMetrics {
-  NGLineHeightMetrics() {}
+  NGLineHeightMetrics()
+      : ascent(LayoutUnit::Min()), descent(LayoutUnit::Min()) {}
   NGLineHeightMetrics(LayoutUnit initial_ascent, LayoutUnit initial_descent)
       : ascent(initial_ascent), descent(initial_descent) {}
 
@@ -30,9 +31,14 @@ struct NGLineHeightMetrics {
   // Compute from FontMetrics. The leading is not included.
   NGLineHeightMetrics(const FontMetrics&, FontBaseline);
 
+  bool IsEmpty() const { return ascent == LayoutUnit::Min(); }
+
   // Add the leading. Half the leading is added to ascent and descent each.
   // https://drafts.csswg.org/css2/visudet.html#leading
   void AddLeading(LayoutUnit line_height);
+
+  // Move the metrics by the specified amount, in line progression direction.
+  void Move(LayoutUnit);
 
   // Unite a metrics for an inline box to a metrics for a line box.
   void Unite(const NGLineHeightMetrics&);

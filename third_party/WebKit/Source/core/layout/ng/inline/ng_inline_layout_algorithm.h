@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -135,12 +136,14 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                            NGLineBoxFragmentBuilder*);
   LayoutUnit PlaceAtomicInline(const NGLayoutInlineItem&,
                                NGLineBoxFragmentBuilder*,
+                               NGInlineBoxState*,
                                NGTextFragmentBuilder*);
 
   // Finds the next layout opportunity for the next text fragment.
   void FindNextLayoutOpportunity();
 
   Vector<RefPtr<NGLayoutResult>, 32> layout_results_;
+  NGInlineLayoutStateStack box_states_;
   unsigned start_index_ = 0;
   unsigned start_offset_ = 0;
   unsigned last_index_ = 0;

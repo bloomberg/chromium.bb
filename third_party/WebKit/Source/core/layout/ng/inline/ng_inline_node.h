@@ -61,6 +61,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   }
 
   Vector<NGLayoutInlineItem>& Items() { return items_; }
+  const Vector<NGLayoutInlineItem>& Items() const { return items_; }
   NGLayoutInlineItemRange Items(unsigned start_index, unsigned end_index);
 
   void GetLayoutTextOffsets(Vector<unsigned, 32>*);

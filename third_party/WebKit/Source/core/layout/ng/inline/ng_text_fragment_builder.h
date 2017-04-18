@@ -23,8 +23,7 @@ class CORE_EXPORT NGTextFragmentBuilder final {
 
   NGTextFragmentBuilder& SetDirection(TextDirection);
 
-  NGTextFragmentBuilder& SetInlineSize(LayoutUnit);
-  NGTextFragmentBuilder& SetBlockSize(LayoutUnit);
+  NGTextFragmentBuilder& SetSize(const NGLogicalSize&);
 
   void UniteMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }

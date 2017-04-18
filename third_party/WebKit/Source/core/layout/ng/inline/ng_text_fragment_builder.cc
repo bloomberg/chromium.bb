@@ -20,13 +20,9 @@ NGTextFragmentBuilder& NGTextFragmentBuilder::SetDirection(
   return *this;
 }
 
-NGTextFragmentBuilder& NGTextFragmentBuilder::SetInlineSize(LayoutUnit size) {
-  size_.inline_size = size;
-  return *this;
-}
-
-NGTextFragmentBuilder& NGTextFragmentBuilder::SetBlockSize(LayoutUnit size) {
-  size_.block_size = size;
+NGTextFragmentBuilder& NGTextFragmentBuilder::SetSize(
+    const NGLogicalSize& size) {
+  size_ = size;
   return *this;
 }
 

@@ -6,12 +6,12 @@
 #define NGLineBoxFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
 
-class NGInlineBreakToken;
 class NGInlineNode;
 class NGPhysicalFragment;
 class NGPhysicalLineBoxFragment;
@@ -29,6 +29,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   NGLineBoxFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                                      const NGLogicalOffset&);
   void MoveChildrenInBlockDirection(LayoutUnit);
+  void MoveChildrenInBlockDirection(LayoutUnit, unsigned start, unsigned end);
 
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;

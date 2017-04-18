@@ -44,6 +44,13 @@ void NGLineBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
     offset.block_offset += delta;
 }
 
+void NGLineBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta,
+                                                            unsigned start,
+                                                            unsigned end) {
+  for (unsigned index = start; index < end; index++)
+    offsets_[index].block_offset += delta;
+}
+
 void NGLineBoxFragmentBuilder::UniteMetrics(
     const NGLineHeightMetrics& metrics) {
   metrics_.Unite(metrics);
