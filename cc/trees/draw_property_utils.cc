@@ -743,23 +743,6 @@ static void UpdateRenderTarget(EffectTree* effect_tree,
   }
 }
 
-static void UpdateScrollTree(ScrollTree* scroll_tree,
-                             const LayerTreeHost* layer_tree_host) {
-  if (!scroll_tree->needs_update())
-    return;
-
-  for (int i = ScrollTree::kRootNodeId;
-       i < static_cast<int>(scroll_tree->size()); ++i) {
-    ScrollNode* scroll_node = scroll_tree->Node(i);
-    if (Layer* scroll_layer =
-            layer_tree_host->LayerById(scroll_node->owning_layer_id)) {
-      if (Layer* scroll_clip_layer = scroll_layer->scroll_clip_layer()) {
-        scroll_node->scroll_clip_layer_bounds = scroll_clip_layer->bounds();
-      }
-    }
-  }
-}
-
 static void ComputeClips(PropertyTrees* property_trees) {
   DCHECK(!property_trees->transform_tree.needs_update());
   ClipTree* clip_tree = &property_trees->clip_tree;
@@ -889,7 +872,6 @@ void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
     property_trees->clip_tree.set_needs_update(true);
     property_trees->effect_tree.set_needs_update(true);
   }
-  UpdateScrollTree(&property_trees->scroll_tree, layer_tree_host);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeEffects(&property_trees->effect_tree);
   // Computation of clips uses ToScreen which is updated while computing
