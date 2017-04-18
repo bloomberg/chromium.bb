@@ -93,5 +93,8 @@ class TranslateCompactInfoBar extends InfoBar implements TabLayout.OnTabSelected
     @Override
     public void onTabReselected(TabLayout.Tab tab) {}
 
-    private native void nativeApplyTranslateOptions(long nativeTranslateCompactInfoBar);
+    private native void nativeApplyStringTranslateOption(
+            long nativeTranslateCompactInfoBar, int option, String value);
+    private native void nativeApplyBoolTranslateOption(
+            long nativeTranslateCompactInfoBar, int option, boolean value);
 }

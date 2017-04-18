@@ -78,10 +78,45 @@ void TranslateCompactInfoBar::SetJavaInfoBar(
                                             reinterpret_cast<intptr_t>(this));
 }
 
-void TranslateCompactInfoBar::ApplyTranslateOptions(
+void TranslateCompactInfoBar::ApplyStringTranslateOption(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  // TODO(ramyasharma): Implement.
+    const JavaParamRef<jobject>& obj,
+    int option,
+    const JavaParamRef<jstring>& value) {
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
+  if (option == TranslateUtils::OPTION_SOURCE_CODE) {
+    std::string source_code =
+        base::android::ConvertJavaStringToUTF8(env, value);
+    if (delegate->original_language_code().compare(source_code) != 0)
+      delegate->UpdateOriginalLanguage(source_code);
+  } else if (option == TranslateUtils::OPTION_TARGET_CODE) {
+    std::string target_code =
+        base::android::ConvertJavaStringToUTF8(env, value);
+    if (delegate->target_language_code().compare(target_code) != 0)
+      delegate->UpdateTargetLanguage(target_code);
+  } else {
+    DCHECK(false);
+  }
+}
+
+void TranslateCompactInfoBar::ApplyBoolTranslateOption(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    int option,
+    jboolean value) {
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
+  if (option == TranslateUtils::OPTION_ALWAYS_TRANSLATE) {
+    if (delegate->ShouldAlwaysTranslate() != value)
+      delegate->ToggleAlwaysTranslate();
+  } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE) {
+    if (value && delegate->IsTranslatableLanguageByPrefs())
+      delegate->ToggleTranslatableLanguageByPrefs();
+  } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
+    if (value && !delegate->IsSiteBlacklisted())
+      delegate->ToggleSiteBlacklist();
+  } else {
+    DCHECK(false);
+  }
 }
 
 void TranslateCompactInfoBar::OnPageTranslated(

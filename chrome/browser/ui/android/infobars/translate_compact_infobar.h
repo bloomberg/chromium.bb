@@ -23,9 +23,18 @@ class TranslateCompactInfoBar
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate);
   ~TranslateCompactInfoBar() override;
 
-  // JNI methods specific to translate.
-  void ApplyTranslateOptions(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  // JNI method specific to string settings in translate.
+  void ApplyStringTranslateOption(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int option,
+      const base::android::JavaParamRef<jstring>& value);
+
+  // JNI method specific to boolean settings in translate.
+  void ApplyBoolTranslateOption(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                int option,
+                                jboolean value);
 
   // ContentTranslateDriver::Observer implementation.
   void OnPageTranslated(const std::string& original_lang,
