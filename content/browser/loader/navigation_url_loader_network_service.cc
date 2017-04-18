@@ -46,9 +46,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->first_party_for_cookies = request_info->first_party_for_cookies;
   new_request->priority = net::HIGHEST;
 
-  mojom::URLLoaderClientPtr url_loader_client_ptr;
-  mojom::URLLoaderClientRequest url_loader_client_request =
-      mojo::MakeRequest(&url_loader_client_ptr);
   mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
   binding_.Bind(&url_loader_client_ptr_to_pass);
 
