@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
 #define MAYBE_FileDisplay FileDisplay
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_FileDisplay,
+    MAYBE_FileDisplay,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
@@ -153,7 +153,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_KeyboardOperations KeyboardOperations
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_KeyboardOperations,
+    MAYBE_KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
@@ -272,7 +272,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_Transfer Transfer
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_Transfer,
+    MAYBE_Transfer,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
@@ -388,7 +388,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_GenericTask GenericTask
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_GenericTask,
+    MAYBE_GenericTask,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
@@ -560,7 +560,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_GearMenu GearMenu
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_GearMenu,
+    MAYBE_GearMenu,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesOnDownloads"),
