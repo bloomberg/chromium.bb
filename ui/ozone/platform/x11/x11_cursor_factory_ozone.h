@@ -27,10 +27,12 @@ class X11CursorFactoryOzone : public CursorFactoryOzone {
   // CursorFactoryOzone:
   PlatformCursor GetDefaultCursor(int type) override;
   PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
-                                   const gfx::Point& hotspot) override;
+                                   const gfx::Point& hotspot,
+                                   float bitmap_dpi) override;
   PlatformCursor CreateAnimatedCursor(const std::vector<SkBitmap>& bitmaps,
                                       const gfx::Point& hotspot,
-                                      int frame_delay_ms) override;
+                                      int frame_delay_ms,
+                                      float bitmap_dpi) override;
   void RefImageCursor(PlatformCursor cursor) override;
   void UnrefImageCursor(PlatformCursor cursor) override;
 

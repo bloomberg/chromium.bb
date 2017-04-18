@@ -24,8 +24,8 @@ void CursorLoaderOzone::LoadImageCursor(int id,
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
 
-  cursors_[id] =
-      CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hotspot);
+  cursors_[id] = CursorFactoryOzone::GetInstance()->CreateImageCursor(
+      bitmap, hotspot, scale());
 }
 
 void CursorLoaderOzone::LoadAnimatedCursor(int id,
@@ -39,7 +39,7 @@ void CursorLoaderOzone::LoadAnimatedCursor(int id,
       resource_id, scale(), rotation(), &hotspot, &bitmaps);
 
   cursors_[id] = CursorFactoryOzone::GetInstance()->CreateAnimatedCursor(
-      bitmaps, hotspot, frame_delay_ms);
+      bitmaps, hotspot, frame_delay_ms, scale());
 }
 
 void CursorLoaderOzone::UnloadAll() {

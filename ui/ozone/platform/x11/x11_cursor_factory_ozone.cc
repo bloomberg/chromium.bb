@@ -43,7 +43,8 @@ PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(int type) {
 
 PlatformCursor X11CursorFactoryOzone::CreateImageCursor(
     const SkBitmap& bitmap,
-    const gfx::Point& hotspot) {
+    const gfx::Point& hotspot,
+    float bitmap_dpi) {
   // There is a problem with custom cursors that have no custom data. The
   // resulting SkBitmap is empty and X crashes when creating a zero size cursor
   // image. Return invisible cursor here instead.
@@ -59,7 +60,8 @@ PlatformCursor X11CursorFactoryOzone::CreateImageCursor(
 PlatformCursor X11CursorFactoryOzone::CreateAnimatedCursor(
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& hotspot,
-    int frame_delay_ms) {
+    int frame_delay_ms,
+    float bitmap_dpi) {
   X11CursorOzone* cursor = new X11CursorOzone(bitmaps, hotspot, frame_delay_ms);
   cursor->AddRef();
   return ToPlatformCursor(cursor);

@@ -571,6 +571,8 @@ component("base") {
       "cursor/cursor_ozone.cc",
       "cursor/ozone/bitmap_cursor_factory_ozone.cc",
       "cursor/ozone/bitmap_cursor_factory_ozone.h",
+      "cursor/ozone/cursor_data_factory_ozone.cc",
+      "cursor/ozone/cursor_data_factory_ozone.h",
     ]
 
     deps += [

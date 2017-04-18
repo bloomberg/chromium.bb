@@ -79,7 +79,8 @@ PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(int type) {
 
 PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(
     const SkBitmap& bitmap,
-    const gfx::Point& hotspot) {
+    const gfx::Point& hotspot,
+    float bitmap_dpi) {
   BitmapCursorOzone* cursor = new BitmapCursorOzone(bitmap, hotspot);
   cursor->AddRef();  // Balanced by UnrefImageCursor.
   return ToPlatformCursor(cursor);
@@ -88,7 +89,8 @@ PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(
 PlatformCursor BitmapCursorFactoryOzone::CreateAnimatedCursor(
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& hotspot,
-    int frame_delay_ms) {
+    int frame_delay_ms,
+    float bitmap_dpi) {
   DCHECK_LT(0U, bitmaps.size());
   BitmapCursorOzone* cursor =
       new BitmapCursorOzone(bitmaps, hotspot, frame_delay_ms);

@@ -136,6 +136,10 @@ static_library("test_support") {
     "//ui/views:test_support_internal",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [
     ":views_mus_tests_catalog",
     "//ui/resources:ui_test_pak_data",

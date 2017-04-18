@@ -35,6 +35,10 @@ namespace service_manager {
 class Connector;
 }
 
+namespace ui {
+class CursorDataFactoryOzone;
+}
+
 namespace wm {
 class WMState;
 }
@@ -151,6 +155,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<base::Thread> io_thread_;
 
   base::ObserverList<MusClientObserver> observer_list_;
+
+#if defined(USE_OZONE)
+  std::unique_ptr<ui::CursorDataFactoryOzone> cursor_factory_ozone_;
+#endif
 
   // NOTE: this may be null (creation is based on argument supplied to
   // constructor).

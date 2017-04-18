@@ -33,6 +33,10 @@
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/wm_state.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
+#endif
+
 // Widget::InitParams::Type must match that of ui::mojom::WindowType.
 #define WINDOW_TYPES_MATCH(NAME)                                      \
   static_assert(                                                      \
@@ -66,6 +70,16 @@ MusClient::MusClient(service_manager::Connector* connector,
   DCHECK(!instance_);
   DCHECK(aura::Env::GetInstance());
   instance_ = this;
+
+#if defined(USE_OZONE)
+  // If we're in a mus client, we aren't going to have all of ozone initialized
+  // even though we're in an ozone build. All the hard coded USE_OZONE ifdefs
+  // that handle cursor code expect that there will be a CursorFactoryOzone
+  // instance. Partially initialize the ozone cursor internals here, like we
+  // partially initialize other ozone subsystems in
+  // ChromeBrowserMainExtraPartsViews.
+  cursor_factory_ozone_ = base::MakeUnique<ui::CursorDataFactoryOzone>();
+#endif
 
   if (!io_task_runner) {
     io_thread_ = base::MakeUnique<base::Thread>("IOThread");
