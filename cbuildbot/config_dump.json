@@ -23407,10 +23407,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23420,9 +23416,6 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "tael-full": {
@@ -23466,10 +23459,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23479,9 +23468,6 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "tael-paladin": {
@@ -23490,30 +23476,21 @@
             "tael"
         ],
         "chrome_sdk": false,
-        "description": "Commit Queue (internal)",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
         "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
             "virtual/target-os-test"
         ],
-        "prebuilts": "private",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -23528,10 +23505,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23541,46 +23514,8 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ],
         "vm_tests": []
-    },
-    "tael-release": {
-        "_template": "release",
-        "afdo_use": false,
-        "boards": [
-            "tael"
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hw_tests": [],
-        "hwqual": false,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "virtual/target-os-test"
-        ],
-        "paygen": false,
-        "sign_types": null,
-        "signer_tests": false,
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "upload_stripped_packages": [
-            "sys-kernel/*kernel*"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
     },
     "tael-unittest-stress": {
         "_template": "unittest_stress",
@@ -23595,10 +23530,6 @@
             "base",
             "test"
         ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23608,9 +23539,6 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "tatl-compile-only-pre-cq": {
@@ -23623,10 +23551,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23636,9 +23560,6 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "tatl-full": {
@@ -23682,10 +23603,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23695,42 +23612,30 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "tatl-paladin": {
         "_template": "paladin",
-        "active_waterfall": "chromeos",
+        "active_waterfall": "chromiumos",
         "boards": [
             "tatl"
         ],
         "chrome_sdk": false,
-        "description": "Commit Queue (internal)",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
         "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
             "virtual/target-os-test"
         ],
-        "prebuilts": "private",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -23745,10 +23650,6 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "image_test": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23758,46 +23659,8 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ],
         "vm_tests": []
-    },
-    "tatl-release": {
-        "_template": "release",
-        "afdo_use": false,
-        "boards": [
-            "tatl"
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hw_tests": [],
-        "hwqual": false,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "packages": [
-            "virtual/target-os",
-            "virtual/target-os-dev",
-            "virtual/target-os-test"
-        ],
-        "paygen": false,
-        "sign_types": null,
-        "signer_tests": false,
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "upload_stripped_packages": [
-            "sys-kernel/*kernel*"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
     },
     "tatl-unittest-stress": {
         "_template": "unittest_stress",
@@ -23812,10 +23675,6 @@
             "base",
             "test"
         ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
         "packages": [
             "virtual/target-os",
             "virtual/target-os-dev",
@@ -23825,9 +23684,6 @@
         "upload_hw_test_artifacts": false,
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
-        ],
-        "useflags": [
-            "chrome_internal"
         ]
     },
     "terra-chrome-pfq": {

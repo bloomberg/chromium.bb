@@ -428,7 +428,6 @@ _arm_internal_release_boards = frozenset([
     'scarlet',
     'smaug',
     'smaug-cheets',
-    'tael',
     'veyron_fievel',
     'veyron_jaq',
     'veyron_jerry',
@@ -448,6 +447,7 @@ _arm_external_boards = frozenset([
     'arm-generic',
     'arm64-generic',
     'arm64-llvmpipe',
+    'tael',
 ])
 
 _x86_internal_release_boards = frozenset([
@@ -535,7 +535,6 @@ _x86_internal_release_boards = frozenset([
     'stumpy',
     'sumo',
     'swanky',
-    'tatl',
     'terra',
     'tidus',
     'tricky',
@@ -554,6 +553,7 @@ _x86_internal_release_boards = frozenset([
 
 _x86_external_boards = frozenset([
     'amd64-generic',
+    'tatl',
     'x32-generic',
     'x86-generic',
 ])
