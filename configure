@@ -497,6 +497,7 @@ post_process_cmdline() {
     soft_enable ec_multisymbol
     soft_enable palette
     soft_enable alt_intra
+    soft_enable palette_throughput
 
     # Fix up experiment dependencies
     enabled pvq && enable_feature ec_adapt
