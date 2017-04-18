@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "content/public/browser/notification_service.h"
 
 namespace {
@@ -377,9 +379,21 @@ void NotificationPlatformBridgeLinux::NotifyNow(
 
   GVariantBuilder hints_builder;
   g_variant_builder_init(&hints_builder, G_VARIANT_TYPE("a{sv}"));
+
   g_variant_builder_add(&hints_builder, "{sv}", "urgency",
                         g_variant_new_byte(NotificationPriorityToFdoUrgency(
                             notification.priority())));
+
+  std::unique_ptr<base::Environment> env = base::Environment::Create();
+  base::FilePath desktop_file(
+      shell_integration_linux::GetDesktopName(env.get()));
+  const char kDesktopFileSuffix[] = ".desktop";
+  DCHECK(base::EndsWith(desktop_file.value(), kDesktopFileSuffix,
+                        base::CompareCase::SENSITIVE));
+
+  desktop_file = desktop_file.RemoveFinalExtension();
+  g_variant_builder_add(&hints_builder, "{sv}", "desktop-entry",
+                        g_variant_new_string(desktop_file.value().c_str()));
 
   if (!resource_files->icon_file.empty()) {
     g_variant_builder_add(
@@ -392,9 +406,10 @@ void NotificationPlatformBridgeLinux::NotifyNow(
   const std::string title = base::UTF16ToUTF8(notification.title());
   const std::string message = base::UTF16ToUTF8(notification.message());
 
-  GVariant* parameters =
-      g_variant_new("(susssasa{sv}i)", "", data->dbus_id, "", title.c_str(),
-                    message.c_str(), &actions_builder, &hints_builder, -1);
+  GVariant* parameters = g_variant_new(
+      "(susssasa{sv}i)", "" /* app_name passed implicitly via desktop-entry */,
+      data->dbus_id, "" /* app_icon passed implicitly via desktop-entry */,
+      title.c_str(), message.c_str(), &actions_builder, &hints_builder, -1);
   g_dbus_proxy_call(notification_proxy_, "Notify", parameters,
                     G_DBUS_CALL_FLAGS_NONE, -1, data->cancellable, callback,
                     user_data);
