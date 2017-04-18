@@ -72,7 +72,7 @@ void FocusController::DeactivateWindow(aura::Window* window) {
     FocusWindow(rules_->GetNextActivatableWindow(window));
 }
 
-aura::Window* FocusController::GetActiveWindow() {
+const aura::Window* FocusController::GetActiveWindow() const {
   return active_window_;
 }
 

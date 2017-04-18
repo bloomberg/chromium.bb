@@ -4,9 +4,9 @@
 
 #include "ash/devtools/ash_devtools_css_agent.h"
 
-#include "ash/wm_window.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace devtools {
@@ -163,7 +163,7 @@ ui::devtools::protocol::Response AshDevToolsCSSAgent::setStyleTexts(
   return ui::devtools::protocol::Response::OK();
 }
 
-void AshDevToolsCSSAgent::OnWindowBoundsChanged(WmWindow* window) {
+void AshDevToolsCSSAgent::OnWindowBoundsChanged(aura::Window* window) {
   InvalidateStyleSheet(dom_agent_->GetNodeIdFromWindow(window));
 }
 
@@ -192,9 +192,9 @@ void AshDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
 bool AshDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
                                                  gfx::Rect* bounds,
                                                  bool* visible) {
-  WmWindow* window = dom_agent_->GetWindowFromNodeId(node_id);
+  aura::Window* window = dom_agent_->GetWindowFromNodeId(node_id);
   if (window) {
-    *bounds = window->GetBounds();
+    *bounds = window->bounds();
     *visible = window->IsVisible();
     return true;
   }
@@ -216,7 +216,7 @@ bool AshDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
 bool AshDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
                                                  const gfx::Rect& bounds,
                                                  bool visible) {
-  WmWindow* window = dom_agent_->GetWindowFromNodeId(node_id);
+  aura::Window* window = dom_agent_->GetWindowFromNodeId(node_id);
   if (window) {
     window->SetBounds(bounds);
     if (visible != window->IsVisible()) {

@@ -233,7 +233,7 @@ void CastFocusClientAura::ActivateWindow(aura::Window* window) {}
 
 void CastFocusClientAura::DeactivateWindow(aura::Window* window) {}
 
-aura::Window* CastFocusClientAura::GetActiveWindow() {
+const aura::Window* CastFocusClientAura::GetActiveWindow() const {
   return nullptr;
 }
 

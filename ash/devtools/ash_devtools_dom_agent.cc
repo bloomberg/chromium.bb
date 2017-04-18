@@ -7,12 +7,13 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm_window.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace devtools {
@@ -38,12 +39,12 @@ std::unique_ptr<DOM::Node> BuildNode(
   return node;
 }
 
-std::unique_ptr<Array<std::string>> GetAttributes(const ash::WmWindow* window) {
+std::unique_ptr<Array<std::string>> GetAttributes(const aura::Window* window) {
   std::unique_ptr<Array<std::string>> attributes = Array<std::string>::create();
   attributes->addItem("name");
-  attributes->addItem(window->aura_window()->GetName());
+  attributes->addItem(window->GetName());
   attributes->addItem("active");
-  attributes->addItem(window->IsActive() ? "true" : "false");
+  attributes->addItem(::wm::IsActiveWindow(window) ? "true" : "false");
   return attributes;
 }
 
@@ -63,10 +64,9 @@ std::unique_ptr<Array<std::string>> GetAttributes(const views::View* view) {
   return attributes;
 }
 
-WmWindow* FindPreviousSibling(WmWindow* window) {
-  std::vector<WmWindow*> siblings = window->GetParent()->GetChildren();
-  std::vector<WmWindow*>::iterator it =
-      std::find(siblings.begin(), siblings.end(), window);
+aura::Window* FindPreviousSibling(aura::Window* window) {
+  const aura::Window::Windows& siblings = window->parent()->children();
+  auto it = std::find(siblings.begin(), siblings.end(), window);
   DCHECK(it != siblings.end());
   // If this is the first child of its parent, the previous sibling is null
   return it == siblings.begin() ? nullptr : *std::prev(it);
@@ -99,8 +99,8 @@ SkColor RGBAToSkColor(DOM::RGBA* rgba) {
                         MaskColor(rgba->getB()));
 }
 
-views::Widget* GetWidgetFromWmWindow(WmWindow* window) {
-  return views::Widget::GetWidgetForNativeView(window->aura_window());
+views::Widget* GetWidgetFromWindow(aura::Window* window) {
+  return views::Widget::GetWidgetForNativeView(window);
 }
 
 }  // namespace
@@ -146,7 +146,7 @@ void AshDevToolsDOMAgent::OnWindowHierarchyChanging(
   // Finally, We only trigger this  0 or 1 times as an old_parent will
   // either exist and only call this callback once, or not at all.
   if (params.receiver == params.old_parent)
-    RemoveWindowTree(WmWindow::Get(params.target), true);
+    RemoveWindowTree(params.target, true);
 }
 
 // Handles adding windows.
@@ -158,19 +158,19 @@ void AshDevToolsDOMAgent::OnWindowHierarchyChanged(
   // new_parent. If there is only a new_parent, OnWindowHierarchyChanging is
   // never called and the window is only added here.
   if (params.receiver == params.new_parent)
-    AddWindowTree(WmWindow::Get(params.target));
+    AddWindowTree(params.target);
 }
 
 void AshDevToolsDOMAgent::OnWindowStackingChanged(aura::Window* window) {
-  RemoveWindowTree(WmWindow::Get(window), false);
-  AddWindowTree(WmWindow::Get(window));
+  RemoveWindowTree(window, false);
+  AddWindowTree(window);
 }
 
 void AshDevToolsDOMAgent::OnWindowBoundsChanged(aura::Window* window,
                                                 const gfx::Rect& old_bounds,
                                                 const gfx::Rect& new_bounds) {
   for (auto& observer : observers_)
-    observer.OnWindowBoundsChanged(WmWindow::Get(window));
+    observer.OnWindowBoundsChanged(window);
 }
 
 void AshDevToolsDOMAgent::OnWillRemoveView(views::Widget* widget,
@@ -206,7 +206,7 @@ void AshDevToolsDOMAgent::OnViewBoundsChanged(views::View* view) {
     observer.OnViewBoundsChanged(view);
 }
 
-WmWindow* AshDevToolsDOMAgent::GetWindowFromNodeId(int nodeId) {
+aura::Window* AshDevToolsDOMAgent::GetWindowFromNodeId(int nodeId) {
   return node_id_to_window_map_.count(nodeId) ? node_id_to_window_map_[nodeId]
                                               : nullptr;
 }
@@ -221,7 +221,7 @@ views::View* AshDevToolsDOMAgent::GetViewFromNodeId(int nodeId) {
                                             : nullptr;
 }
 
-int AshDevToolsDOMAgent::GetNodeIdFromWindow(WmWindow* window) {
+int AshDevToolsDOMAgent::GetNodeIdFromWindow(aura::Window* window) {
   DCHECK(window_to_node_id_map_.count(window));
   return window_to_node_id_map_[window];
 }
@@ -249,26 +249,26 @@ std::unique_ptr<ui::devtools::protocol::DOM::Node>
 AshDevToolsDOMAgent::BuildInitialTree() {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
   for (aura::Window* window : Shell::GetAllRootWindows())
-    children->addItem(BuildTreeForWindow(WmWindow::Get(window)));
+    children->addItem(BuildTreeForWindow(window));
   return BuildNode("root", nullptr, std::move(children));
 }
 
 std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
-    ash::WmWindow* window) {
+    aura::Window* window) {
   DCHECK(!window_to_node_id_map_.count(window));
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
-  views::Widget* widget = GetWidgetFromWmWindow(window);
+  views::Widget* widget = GetWidgetFromWindow(window);
   if (widget)
     children->addItem(BuildTreeForRootWidget(widget));
-  for (ash::WmWindow* child : window->GetChildren()) {
+  for (aura::Window* child : window->children()) {
     if (!IsHighlightingWindow(child))
       children->addItem(BuildTreeForWindow(child));
   }
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Window", GetAttributes(window), std::move(children));
-  if (!window->aura_window()->HasObserver(this))
-    window->aura_window()->AddObserver(this);
+  if (!window->HasObserver(this))
+    window->AddObserver(this);
   window_to_node_id_map_[window] = node->getNodeId();
   node_id_to_window_map_[node->getNodeId()] = window;
   return node;
@@ -303,48 +303,48 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForView(
   return node;
 }
 
-void AshDevToolsDOMAgent::AddWindowTree(WmWindow* window) {
+void AshDevToolsDOMAgent::AddWindowTree(aura::Window* window) {
   if (IsHighlightingWindow(window))
     return;
 
-  DCHECK(window_to_node_id_map_.count(window->GetParent()));
-  WmWindow* prev_sibling = FindPreviousSibling(window);
+  DCHECK(window_to_node_id_map_.count(window->parent()));
+  aura::Window* prev_sibling = FindPreviousSibling(window);
   frontend()->childNodeInserted(
-      window_to_node_id_map_[window->GetParent()],
+      window_to_node_id_map_[window->parent()],
       prev_sibling ? window_to_node_id_map_[prev_sibling] : 0,
       BuildTreeForWindow(window));
 }
 
-void AshDevToolsDOMAgent::RemoveWindowTree(WmWindow* window,
+void AshDevToolsDOMAgent::RemoveWindowTree(aura::Window* window,
                                            bool remove_observer) {
   DCHECK(window);
   if (IsHighlightingWindow(window))
     return;
 
-  if (GetWidgetFromWmWindow(window))
-    RemoveWidgetTree(GetWidgetFromWmWindow(window), remove_observer);
+  if (GetWidgetFromWindow(window))
+    RemoveWidgetTree(GetWidgetFromWindow(window), remove_observer);
 
-  for (ash::WmWindow* child : window->GetChildren())
+  for (aura::Window* child : window->children())
     RemoveWindowTree(child, remove_observer);
 
   RemoveWindowNode(window, remove_observer);
 }
 
-void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window,
+void AshDevToolsDOMAgent::RemoveWindowNode(aura::Window* window,
                                            bool remove_observer) {
   WindowToNodeIdMap::iterator window_to_node_id_it =
       window_to_node_id_map_.find(window);
   DCHECK(window_to_node_id_it != window_to_node_id_map_.end());
 
   int node_id = window_to_node_id_it->second;
-  int parent_id = GetNodeIdFromWindow(window->GetParent());
+  int parent_id = GetNodeIdFromWindow(window->parent());
 
   NodeIdToWindowMap::iterator node_id_to_window_it =
       node_id_to_window_map_.find(node_id);
   DCHECK(node_id_to_window_it != node_id_to_window_map_.end());
 
   if (remove_observer)
-    window->aura_window()->RemoveObserver(this);
+    window->RemoveObserver(this);
 
   node_id_to_window_map_.erase(node_id_to_window_it);
   window_to_node_id_map_.erase(window_to_node_id_it);
@@ -366,7 +366,7 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget,
   DCHECK(widget_to_node_id_it != widget_to_node_id_map_.end());
 
   int node_id = widget_to_node_id_it->second;
-  int parent_id = GetNodeIdFromWindow(WmWindow::Get(widget->GetNativeWindow()));
+  int parent_id = GetNodeIdFromWindow(widget->GetNativeWindow());
 
   if (remove_observer)
     widget->RemoveRemovalsObserver(this);
@@ -426,7 +426,7 @@ void AshDevToolsDOMAgent::RemoveViewNode(views::View* view,
 
 void AshDevToolsDOMAgent::RemoveObservers() {
   for (auto& pair : window_to_node_id_map_)
-    pair.first->aura_window()->RemoveObserver(this);
+    pair.first->RemoveObserver(this);
   for (auto& pair : widget_to_node_id_map_)
     pair.first->RemoveRemovalsObserver(this);
   for (auto& pair : view_to_node_id_map_)
@@ -447,21 +447,20 @@ void AshDevToolsDOMAgent::Reset() {
 
 AshDevToolsDOMAgent::WindowAndBoundsPair
 AshDevToolsDOMAgent::GetNodeWindowAndBounds(int node_id) {
-  WmWindow* window = GetWindowFromNodeId(node_id);
+  aura::Window* window = GetWindowFromNodeId(node_id);
   if (window)
     return std::make_pair(window, window->GetBoundsInScreen());
 
   views::Widget* widget = GetWidgetFromNodeId(node_id);
   if (widget) {
-    return std::make_pair(WmWindow::Get(widget->GetNativeWindow()),
+    return std::make_pair(widget->GetNativeWindow(),
                           widget->GetWindowBoundsInScreen());
   }
 
   views::View* view = GetViewFromNodeId(node_id);
   if (view) {
     gfx::Rect bounds = view->GetBoundsInScreen();
-    return std::make_pair(WmWindow::Get(view->GetWidget()->GetNativeWindow()),
-                          bounds);
+    return std::make_pair(view->GetWidget()->GetNativeWindow(), bounds);
   }
 
   return std::make_pair(nullptr, gfx::Rect());
@@ -494,9 +493,11 @@ void AshDevToolsDOMAgent::UpdateHighlight(
   root_view->SetBorder(views::CreateSolidBorder(kBorderThickness, border));
   root_view->set_background(
       views::Background::CreateSolidBackground(background));
-  WmWindow::Get(widget_for_highlighting_->GetNativeWindow())
-      ->SetBoundsInScreen(window_and_bounds.second,
-                          window_and_bounds.first->GetDisplayNearestWindow());
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          window_and_bounds.first);
+  widget_for_highlighting_->GetNativeWindow()->SetBoundsInScreen(
+      window_and_bounds.second, display);
 }
 
 ui::devtools::protocol::Response AshDevToolsDOMAgent::HighlightNode(
@@ -524,9 +525,9 @@ ui::devtools::protocol::Response AshDevToolsDOMAgent::HighlightNode(
   return ui::devtools::protocol::Response::OK();
 }
 
-bool AshDevToolsDOMAgent::IsHighlightingWindow(WmWindow* window) {
+bool AshDevToolsDOMAgent::IsHighlightingWindow(aura::Window* window) {
   return widget_for_highlighting_ &&
-         GetWidgetFromWmWindow(window) == widget_for_highlighting_.get();
+         GetWidgetFromWindow(window) == widget_for_highlighting_.get();
 }
 
 }  // namespace devtools

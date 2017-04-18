@@ -39,7 +39,7 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
       aura::client::ActivationChangeObserver* observer) override;
   void ActivateWindow(aura::Window* window) override;
   void DeactivateWindow(aura::Window* window) override;
-  aura::Window* GetActiveWindow() override;
+  const aura::Window* GetActiveWindow() const override;
   aura::Window* GetActivatableWindow(aura::Window* window) override;
   aura::Window* GetToplevelWindow(aura::Window* window) override;
   bool CanActivateWindow(aura::Window* window) const override;

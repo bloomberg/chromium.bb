@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
@@ -98,6 +99,14 @@ class AshTestBase : public testing::Test {
   aura::Window* CreateTestWindowInShell(SkColor color,
                                         int id,
                                         const gfx::Rect& bounds);
+
+  // Creates a visible window parented to |parent| with the specified bounds and
+  // id.
+  std::unique_ptr<aura::Window> CreateChildWindow(
+      aura::Window* parent,
+      const gfx::Rect& bounds = gfx::Rect(),
+      int shell_window_id = kShellWindowId_Invalid);
+
   aura::Window* CreateTestWindowInShellWithDelegate(
       aura::WindowDelegate* delegate,
       int id,

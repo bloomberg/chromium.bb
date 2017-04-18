@@ -25,7 +25,7 @@ namespace wm {
 
 WM_EXPORT void ActivateWindow(aura::Window* window);
 WM_EXPORT void DeactivateWindow(aura::Window* window);
-WM_EXPORT bool IsActiveWindow(aura::Window* window);
+WM_EXPORT bool IsActiveWindow(const aura::Window* window);
 WM_EXPORT bool CanActivateWindow(aura::Window* window);
 WM_EXPORT void SetWindowFullscreen(aura::Window* window, bool fullscreen);
 

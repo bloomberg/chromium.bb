@@ -249,6 +249,20 @@ aura::Window* AshTestBase::CreateTestWindowInShell(SkColor color,
       new aura::test::ColorTestWindowDelegate(color), id, bounds);
 }
 
+std::unique_ptr<aura::Window> AshTestBase::CreateChildWindow(
+    aura::Window* parent,
+    const gfx::Rect& bounds,
+    int shell_window_id) {
+  std::unique_ptr<aura::Window> window =
+      base::MakeUnique<aura::Window>(nullptr, ui::wm::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->SetBounds(bounds);
+  window->set_id(shell_window_id);
+  parent->AddChild(window.get());
+  window->Show();
+  return window;
+}
+
 aura::Window* AshTestBase::CreateTestWindowInShellWithDelegate(
     aura::WindowDelegate* delegate,
     int id,

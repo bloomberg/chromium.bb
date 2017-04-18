@@ -67,11 +67,11 @@ void DeactivateWindow(aura::Window* window) {
       window);
 }
 
-bool IsActiveWindow(aura::Window* window) {
+bool IsActiveWindow(const aura::Window* window) {
   DCHECK(window);
   if (!window->GetRootWindow())
     return false;
-  aura::client::ActivationClient* client =
+  const aura::client::ActivationClient* client =
       aura::client::GetActivationClient(window->GetRootWindow());
   return client && client->GetActiveWindow() == window;
 }

@@ -28,7 +28,11 @@ class AURA_EXPORT ActivationClient {
   virtual void DeactivateWindow(Window* window) = 0;
 
   // Retrieves the active window, or NULL if there is none.
-  virtual Window* GetActiveWindow() = 0;
+  Window* GetActiveWindow() {
+    return const_cast<Window*>(
+        const_cast<const ActivationClient*>(this)->GetActiveWindow());
+  }
+  virtual const Window* GetActiveWindow() const = 0;
 
   // Retrieves the activatable window for |window|, or NULL if there is none.
   // Note that this is often but not always the toplevel window (see
@@ -52,6 +56,8 @@ class AURA_EXPORT ActivationClient {
 AURA_EXPORT void SetActivationClient(Window* root_window,
                                      ActivationClient* client);
 AURA_EXPORT ActivationClient* GetActivationClient(Window* root_window);
+AURA_EXPORT const ActivationClient* GetActivationClient(
+    const Window* root_window);
 
 // Some types of transient window are only visible when active.
 // The transient parents of these windows may have visual appearance properties

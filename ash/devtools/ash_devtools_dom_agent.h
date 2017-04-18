@@ -17,15 +17,17 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 
-namespace ash {
+namespace aura {
+class Window;
+}
 
-class WmWindow;
+namespace ash {
 
 namespace devtools {
 
 class ASH_EXPORT AshDevToolsDOMAgentObserver {
  public:
-  virtual void OnWindowBoundsChanged(WmWindow* window) {}
+  virtual void OnWindowBoundsChanged(aura::Window* window) {}
   virtual void OnWidgetBoundsChanged(views::Widget* widget) {}
   virtual void OnViewBoundsChanged(views::View* view) {}
 };
@@ -72,11 +74,11 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void OnChildViewReordered(views::View* parent, views::View*) override;
   void OnViewBoundsChanged(views::View* view) override;
 
-  WmWindow* GetWindowFromNodeId(int nodeId);
+  aura::Window* GetWindowFromNodeId(int nodeId);
   views::Widget* GetWidgetFromNodeId(int nodeId);
   views::View* GetViewFromNodeId(int nodeId);
 
-  int GetNodeIdFromWindow(WmWindow* window);
+  int GetNodeIdFromWindow(aura::Window* window);
   int GetNodeIdFromWidget(views::Widget* widget);
   int GetNodeIdFromView(views::View* view);
 
@@ -86,19 +88,19 @@ class ASH_EXPORT AshDevToolsDOMAgent
  private:
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForWindow(
-      WmWindow* window);
+      aura::Window* window);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForRootWidget(
       views::Widget* widget);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildTreeForView(
       views::View* view);
 
-  void AddWindowTree(WmWindow* window);
+  void AddWindowTree(aura::Window* window);
   // |remove_observer| ensures that we don't add a duplicate observer in any
   // observer callback. For example, |remove_observer| is false when rebuilding
   // the tree in OnWindowStackingChanged so that the observer is not removed and
   // re-added, thus causing endless calls on the observer.
-  void RemoveWindowTree(WmWindow* window, bool remove_observer);
-  void RemoveWindowNode(WmWindow* window, bool remove_observer);
+  void RemoveWindowTree(aura::Window* window, bool remove_observer);
+  void RemoveWindowNode(aura::Window* window, bool remove_observer);
 
   // Don't need AddWidgetTree because |widget| will always be inside a window,
   // so when windows are created, their widget nodes are created as well.
@@ -117,7 +119,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void RemoveObservers();
   void Reset();
 
-  using WindowAndBoundsPair = std::pair<WmWindow*, gfx::Rect>;
+  using WindowAndBoundsPair = std::pair<aura::Window*, gfx::Rect>;
   WindowAndBoundsPair GetNodeWindowAndBounds(int node_id);
   void InitializeHighlightingWidget();
   void UpdateHighlight(const WindowAndBoundsPair& window_and_bounds,
@@ -127,13 +129,13 @@ class ASH_EXPORT AshDevToolsDOMAgent
       std::unique_ptr<ui::devtools::protocol::DOM::HighlightConfig>
           highlight_config,
       int node_id);
-  bool IsHighlightingWindow(WmWindow* window);
+  bool IsHighlightingWindow(aura::Window* window);
 
   std::unique_ptr<views::Widget> widget_for_highlighting_;
 
-  using WindowToNodeIdMap = std::unordered_map<WmWindow*, int>;
+  using WindowToNodeIdMap = std::unordered_map<aura::Window*, int>;
   WindowToNodeIdMap window_to_node_id_map_;
-  using NodeIdToWindowMap = std::unordered_map<int, WmWindow*>;
+  using NodeIdToWindowMap = std::unordered_map<int, aura::Window*>;
   NodeIdToWindowMap node_id_to_window_map_;
 
   using WidgetToNodeIdMap = std::unordered_map<views::Widget*, int>;

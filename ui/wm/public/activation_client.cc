@@ -21,9 +21,14 @@ void SetActivationClient(Window* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);
 }
 
+const ActivationClient* GetActivationClient(const Window* root_window) {
+  return root_window ? root_window->GetProperty(kRootWindowActivationClientKey)
+                     : nullptr;
+}
+
 ActivationClient* GetActivationClient(Window* root_window) {
-  return root_window ?
-      root_window->GetProperty(kRootWindowActivationClientKey) : NULL;
+  return root_window ? root_window->GetProperty(kRootWindowActivationClientKey)
+                     : nullptr;
 }
 
 void SetHideOnDeactivate(Window* window, bool hide_on_deactivate) {

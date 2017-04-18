@@ -7,10 +7,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
-#include "ash/test/ash_test.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/widget_finder.h"
-#include "ash/wm_window.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
@@ -81,12 +79,12 @@ std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
   return nullptr;
 }
 
-bool Equals(WmWindow* window, DOM::Node* node) {
-  int children_count = static_cast<int>(window->GetChildren().size());
-  if (GetInternalWidgetForWindow(window->aura_window()))
+bool Equals(aura::Window* window, DOM::Node* node) {
+  int children_count = static_cast<int>(window->children().size());
+  if (GetInternalWidgetForWindow(window))
     children_count++;
   return "Window" == node->getNodeName() &&
-         window->aura_window()->GetName() == GetAttributeValue("name", node) &&
+         window->GetName() == GetAttributeValue("name", node) &&
          children_count == node->getChildNodeCount(kDefaultChildNodeCount);
 }
 
@@ -104,11 +102,11 @@ void Compare(views::View* view, DOM::Node* node) {
             node->getChildNodeCount(kDefaultChildNodeCount));
 }
 
-void Compare(WmWindow* window, DOM::Node* node) {
+void Compare(aura::Window* window, DOM::Node* node) {
   EXPECT_TRUE(Equals(window, node));
 }
 
-DOM::Node* FindInRoot(WmWindow* window, DOM::Node* root) {
+DOM::Node* FindInRoot(aura::Window* window, DOM::Node* root) {
   if (Equals(window, root))
     return root;
 
@@ -177,13 +175,13 @@ void ExpectHighlighted(const gfx::Rect& bounds, int root_window_index) {
                                   ->get_color());
 }
 
-WmWindow* GetPrimaryRootWindow() {
-  return ShellPort::Get()->GetPrimaryRootWindow();
+aura::Window* GetPrimaryRootWindow() {
+  return Shell::Get()->GetPrimaryRootWindow();
 }
 
 }  // namespace
 
-class AshDevToolsTest : public AshTest {
+class AshDevToolsTest : public test::AshTestBase {
  public:
   AshDevToolsTest() {}
   ~AshDevToolsTest() override {}
@@ -192,16 +190,20 @@ class AshDevToolsTest : public AshTest {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-    ShellPort::Get()
-        ->GetPrimaryRootWindowController()
+    Shell::GetPrimaryRootWindowController()
         ->ConfigureWidgetInitParamsForContainer(
             widget, kShellWindowId_DefaultContainer, &params);
     widget->Init(params);
     return widget->native_widget_private();
   }
 
+  std::unique_ptr<views::Widget> CreateTestWidget(const gfx::Rect& bounds) {
+    return AshTestBase::CreateTestWidget(nullptr, kShellWindowId_Invalid,
+                                         bounds);
+  }
+
   void SetUp() override {
-    AshTest::SetUp();
+    AshTestBase::SetUp();
     fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
     uber_dispatcher_ =
         base::MakeUnique<UberDispatcher>(fake_frontend_channel_.get());
@@ -218,7 +220,7 @@ class AshDevToolsTest : public AshTest {
     dom_agent_.reset();
     uber_dispatcher_.reset();
     fake_frontend_channel_.reset();
-    AshTest::TearDown();
+    AshTestBase::TearDown();
   }
 
   void ExpectChildNodeInserted(int parent_id, int prev_sibling_id) {
@@ -303,11 +305,10 @@ class AshDevToolsTest : public AshTest {
 TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
-  parent_window->aura_window()->SetName("parent_window");
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* child_window = child_owner->window();
-  child_window->aura_window()->SetName("child_window");
+  aura::Window* parent_window = widget->GetNativeWindow();
+  parent_window->SetName("parent_window");
+  std::unique_ptr<aura::Window> child_window = CreateChildWindow(parent_window);
+  child_window->SetName("child_window");
   widget->Show();
   views::View* child_view = new TestView("child_view");
   widget->GetRootView()->AddChildView(child_view);
@@ -321,7 +322,7 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   ASSERT_TRUE(parent_children);
   DOM::Node* widget_node = parent_children->get(0);
   Compare(widget.get(), widget_node);
-  Compare(child_window, parent_children->get(1));
+  Compare(child_window.get(), parent_children->get(1));
   Array<DOM::Node>* widget_children = widget_node->getChildren(nullptr);
   ASSERT_TRUE(widget_children);
   Compare(widget->GetRootView(), widget_children->get(0));
@@ -333,7 +334,7 @@ TEST_F(AshDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
   views::internal::NativeWidgetPrivate* native_widget_private =
       CreateTestNativeWidget();
   views::Widget* widget = native_widget_private->GetWidget();
-  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* parent_window = widget->GetNativeWindow();
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -351,14 +352,14 @@ TEST_F(AshDevToolsTest, WindowAddedChildNodeInserted) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* root_window = GetPrimaryRootWindow();
-  WmWindow* parent_window = root_window->GetChildren()[0];
+  aura::Window* root_window = GetPrimaryRootWindow();
+  aura::Window* parent_window = root_window->children()[0];
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
   Array<DOM::Node>* parent_node_children = parent_node->getChildren(nullptr);
   DOM::Node* sibling_node =
       parent_node_children->get(parent_node_children->length() - 1);
 
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
+  std::unique_ptr<aura::Window> child(CreateChildWindow(parent_window));
   ExpectChildNodeInserted(parent_node->getNodeId(), sibling_node->getNodeId());
 }
 
@@ -367,10 +368,10 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* root_window = GetPrimaryRootWindow();
-  WmWindow* rotation_window = root_window->GetChildren()[0];
-  WmWindow* parent_window = rotation_window->GetChildren()[0];
-  WmWindow* child_window = parent_window->GetChildren()[0];
+  aura::Window* root_window = GetPrimaryRootWindow();
+  aura::Window* rotation_window = root_window->children()[0];
+  aura::Window* parent_window = rotation_window->children()[0];
+  aura::Window* child_window = parent_window->children()[0];
   DOM::Node* root_node =
       root->getChildren(nullptr)->get(0)->getChildren(nullptr)->get(0);
   DOM::Node* parent_node = root_node->getChildren(nullptr)->get(0);
@@ -378,7 +379,7 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
 
   Compare(parent_window, parent_node);
   Compare(child_window, child_node);
-  child_window->Destroy();
+  delete child_window;
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
 }
 
@@ -387,11 +388,11 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* root_window = GetPrimaryRootWindow();
-  WmWindow* rotation_window = root_window->GetChildren()[0];
-  WmWindow* parent_window = rotation_window->GetChildren()[0];
-  WmWindow* target_window = rotation_window->GetChildren()[1];
-  WmWindow* child_window = parent_window->GetChildren()[0];
+  aura::Window* root_window = GetPrimaryRootWindow();
+  aura::Window* rotation_window = root_window->children()[0];
+  aura::Window* parent_window = rotation_window->children()[0];
+  aura::Window* target_window = rotation_window->children()[1];
+  aura::Window* child_window = parent_window->children()[0];
 
   DOM::Node* root_node =
       root->getChildren(nullptr)->get(0)->getChildren(nullptr)->get(0);
@@ -411,12 +412,11 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
 }
 
 TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
-  WmWindow* root_window = GetPrimaryRootWindow();
-  WmWindow* rotation_window = root_window->GetChildren()[0];
-  WmWindow* parent_window = rotation_window->GetChildren()[0];
-  WmWindow* target_window = rotation_window->GetChildren()[1];
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* child_window = child_owner->window();
+  aura::Window* root_window = GetPrimaryRootWindow();
+  aura::Window* rotation_window = root_window->children()[0];
+  aura::Window* parent_window = rotation_window->children()[0];
+  aura::Window* target_window = rotation_window->children()[1];
+  std::unique_ptr<aura::Window> child_window(CreateChildWindow(parent_window));
 
   // Initialize DOMAgent
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
@@ -434,9 +434,9 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
 
   Compare(parent_window, parent_node);
   Compare(target_window, target_node);
-  Compare(child_window, child_node);
-  parent_window->RemoveChild(child_window);
-  target_window->AddChild(child_window);
+  Compare(child_window.get(), child_node);
+  parent_window->RemoveChild(child_window.get());
+  target_window->AddChild(child_window.get());
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
 }
@@ -446,10 +446,10 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  WmWindow* root_window = GetPrimaryRootWindow();
-  WmWindow* parent_window = root_window->GetChildren()[0];
-  WmWindow* child_window = parent_window->GetChildren()[0];
-  WmWindow* target_window = parent_window->GetChildren()[1];
+  aura::Window* root_window = GetPrimaryRootWindow();
+  aura::Window* parent_window = root_window->children()[0];
+  aura::Window* child_window = parent_window->children()[0];
+  aura::Window* target_window = parent_window->children()[1];
 
   DOM::Node* parent_node =
       root->getChildren(nullptr)->get(0)->getChildren(nullptr)->get(0);
@@ -468,7 +468,7 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
 TEST_F(AshDevToolsTest, ViewInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* window = widget->GetNativeWindow();
   widget->Show();
 
   // Initialize DOMAgent
@@ -495,7 +495,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
   // Need to store |view| in unique_ptr because it is removed from the widget
   // and needs to be destroyed independently
   std::unique_ptr<views::View> child_view = base::MakeUnique<views::View>();
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* window = widget->GetNativeWindow();
   widget->Show();
   views::View* root_view = widget->GetRootView();
   root_view->AddChildView(child_view.get());
@@ -522,7 +522,7 @@ TEST_F(AshDevToolsTest, ViewRemoved) {
 TEST_F(AshDevToolsTest, ViewRearranged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* window = widget->GetNativeWindow();
   widget->Show();
   views::View* root_view = widget->GetRootView();
   views::View* parent_view = new views::View;
@@ -560,7 +560,7 @@ TEST_F(AshDevToolsTest, ViewRearranged) {
 TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
+  aura::Window* window = widget->GetNativeWindow();
   widget->Show();
   views::View* root_view = widget->GetRootView();
   views::View* parent_view = new views::View;
@@ -599,9 +599,8 @@ TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
 TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
-  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* window = child_owner->window();
+  aura::Window* parent_window = widget->GetNativeWindow();
+  std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
   views::View* root_view = widget->GetRootView();
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
@@ -638,30 +637,28 @@ TEST_F(AshDevToolsTest, WindowWidgetViewHighlight) {
 TEST_F(AshDevToolsTest, MultipleDisplayHighlight) {
   UpdateDisplay("300x400,500x500");
 
-  WmWindow::Windows root_windows = ShellPort::Get()->GetAllRootWindows();
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
-  WmWindow* window = window_owner->window();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 30, 40)));
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
-  HighlightNode(dom_agent()->GetNodeIdFromWindow(window));
+  HighlightNode(dom_agent()->GetNodeIdFromWindow(window.get()));
   ExpectHighlighted(window->GetBoundsInScreen(), 0);
 
   window->SetBoundsInScreen(gfx::Rect(500, 0, 50, 50), GetSecondaryDisplay());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  HighlightNode(dom_agent()->GetNodeIdFromWindow(window));
+  HighlightNode(dom_agent()->GetNodeIdFromWindow(window.get()));
   ExpectHighlighted(window->GetBoundsInScreen(), 1);
 }
 
 TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* window = child_owner->window();
+  aura::Window* parent_window = widget->GetNativeWindow();
+  std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
   gfx::Rect window_bounds(2, 2, 3, 3);
   gfx::Rect widget_bounds(50, 50, 100, 75);
   gfx::Rect view_bounds(4, 4, 3, 3);
@@ -686,9 +683,8 @@ TEST_F(AshDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
 TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  WmWindow* widget_window = WmWindow::Get(widget->GetNativeWindow());
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(widget_window));
-  WmWindow* child = child_owner->window();
+  aura::Window* widget_window = widget->GetNativeWindow();
+  std::unique_ptr<aura::Window> child(CreateChildWindow(widget_window));
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -718,9 +714,8 @@ TEST_F(AshDevToolsTest, WindowWidgetViewStyleSheetChanged) {
 TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   std::unique_ptr<views::Widget> widget(
       CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
-  WmWindow* parent_window = WmWindow::Get(widget->GetNativeWindow());
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* window = child_owner->window();
+  aura::Window* parent_window = widget->GetNativeWindow();
+  std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
   views::View* root_view = widget->GetRootView();
 
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
@@ -736,18 +731,18 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
 
   SetStyleTexts(window_node,
                 "x: 25; y:35; width: 5; height: 20; visibility: 1;", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->GetBounds());
+  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->bounds());
   EXPECT_TRUE(window->IsVisible());
 
   SetStyleTexts(window_node, "test_nothing_happens:1;", false);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->GetBounds());  // Not changed
+  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->bounds());  // Not changed
 
   SetStyleTexts(window_node, "\nheight: 10;\nvisibility: 0;\n", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 10), window->GetBounds());
+  EXPECT_EQ(gfx::Rect(25, 35, 5, 10), window->bounds());
   EXPECT_FALSE(window->IsVisible());
 
   SetStyleTexts(window_node, "\nx: 10; y: 23; width: 52;\n  ", true);
-  EXPECT_EQ(gfx::Rect(10, 23, 52, 10), window->GetBounds());
+  EXPECT_EQ(gfx::Rect(10, 23, 52, 10), window->bounds());
 
   // Test different combinations on widget node
   DOM::Node* widget_node = parent_children->get(0);

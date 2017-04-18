@@ -35,7 +35,7 @@ class ASH_EXPORT AshDevToolsCSSAgent
           result) override;
 
   // AshDevToolsDOMAgentObserver
-  void OnWindowBoundsChanged(WmWindow* window) override;
+  void OnWindowBoundsChanged(aura::Window* window) override;
   void OnWidgetBoundsChanged(views::Widget* widget) override;
   void OnViewBoundsChanged(views::View* view) override;
 
