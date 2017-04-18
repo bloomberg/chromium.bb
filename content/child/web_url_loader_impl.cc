@@ -532,7 +532,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // the WebURLLoader are the ones created by CommitNavigation. Several browser
   // tests load HTML directly through a data url which will be handled by the
   // block above.
-  DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_.get() ||
+  DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_ ||
          request.GetFrameType() == WebURLRequest::kFrameTypeNone);
 
   GURL referrer_url(
@@ -603,7 +603,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // contains the body of the response. The network request has already been
   // made by the browser.
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  if (stream_override_.get()) {
+  if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::kFrameTypeNone, request.GetFrameType());
@@ -716,7 +716,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   // PlzNavigate: during navigations, the ResourceResponse has already been
   // received on the browser side, and has been passed down to the renderer.
-  if (stream_override_.get()) {
+  if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
     // Compute the delta between the response sizes so that the accurate
     // transfer size can be reported at the end of the request.
@@ -785,19 +785,20 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     client_->DidReceiveResponse(response, std::move(read_handle));
     // TODO(yhirano): Support ftp listening and multipart
     return;
-  } else {
-    client_->DidReceiveResponse(response);
   }
 
-  // We may have been cancelled after didReceiveResponse, which would leave us
-  // without a client and therefore without much need to do further handling.
+  client_->DidReceiveResponse(response);
+
+  // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
+  // go away.
   if (!client_)
     return;
 
-  DCHECK(!ftp_listing_delegate_.get());
+  DCHECK(!ftp_listing_delegate_);
   if (info.mime_type == "text/vnd.chromium.ftp-dir" && !show_raw_listing) {
-    ftp_listing_delegate_.reset(
-        new FtpDirectoryListingResponseDelegate(client_, loader_, response));
+    ftp_listing_delegate_ =
+        base::MakeUnique<FtpDirectoryListingResponseDelegate>(client_, loader_,
+                                                              response);
   }
 }
 
@@ -829,16 +830,17 @@ void WebURLLoaderImpl::Context::OnReceivedData(
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
     ftp_listing_delegate_->OnReceivedData(payload, data_length);
-  } else {
-    // We dispatch the data even when |useStreamOnResponse()| is set, in order
-    // to make Devtools work.
-    client_->DidReceiveData(payload, data_length);
+    return;
+  }
 
-    if (request_.UseStreamOnResponse()) {
-      // We don't support ftp_listening_delegate_ for now.
-      // TODO(yhirano): Support ftp listening.
-      body_stream_writer_->AddData(std::move(data));
-    }
+  // We dispatch the data even when |useStreamOnResponse()| is set, in order
+  // to make Devtools work.
+  client_->DidReceiveData(payload, data_length);
+
+  if (request_.UseStreamOnResponse()) {
+    // We don't support |ftp_listing_delegate_| for now.
+    // TODO(yhirano): Support ftp listening.
+    body_stream_writer_->AddData(std::move(data));
   }
 }
 
@@ -889,7 +891,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
                        total_transfer_size, encoded_body_size);
     } else {
       // PlzNavigate: compute the accurate transfer size for navigations.
-      if (stream_override_.get()) {
+      if (stream_override_) {
         DCHECK(IsBrowserSideNavigationEnabled());
         total_transfer_size += stream_override_->total_transfer_size_delta;
       }
