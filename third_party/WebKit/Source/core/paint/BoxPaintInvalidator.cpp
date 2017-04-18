@@ -217,8 +217,9 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
             old_layout_overflow, new_layout_overflow);
     if (!paints_onto_scrolling_contents_layer) {
       if (should_fully_invalidate) {
-        box_.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-            kPaintInvalidationLayoutOverflowBoxChange);
+        box_.GetMutableForPainting()
+            .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+                kPaintInvalidationLayoutOverflowBoxChange);
       }
       return;
     }
