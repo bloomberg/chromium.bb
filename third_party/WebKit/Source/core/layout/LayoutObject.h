@@ -1662,7 +1662,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool ShouldDoFullPaintInvalidation() const {
     return bitfields_.FullPaintInvalidationReason() != kPaintInvalidationNone;
   }
-  virtual void SetShouldDoFullPaintInvalidation(
+  void SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason = kPaintInvalidationFull);
   void SetShouldDoFullPaintInvalidationWithoutGeometryChange(
       PaintInvalidationReason = kPaintInvalidationFull);

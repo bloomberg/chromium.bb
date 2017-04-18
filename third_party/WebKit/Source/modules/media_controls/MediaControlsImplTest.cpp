@@ -77,24 +77,13 @@ class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
 
 class MockLayoutObject : public LayoutObject {
  public:
-  MockLayoutObject() : LayoutObject(nullptr) {}
+  MockLayoutObject(Node* node) : LayoutObject(node) {}
 
   const char* GetName() const override { return "MockLayoutObject"; }
   void UpdateLayout() override {}
   FloatRect LocalBoundingBoxRectForAccessibility() const override {
     return FloatRect();
   }
-
-  void SetShouldDoFullPaintInvalidation(PaintInvalidationReason) {
-    full_paint_invalidation_call_count_++;
-  }
-
-  int FullPaintInvalidationCallCount() const {
-    return full_paint_invalidation_call_count_;
-  }
-
- private:
-  int full_paint_invalidation_call_count_ = 0;
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
@@ -591,21 +580,27 @@ TEST_F(MediaControlsImplTest, VolumeSliderPaintInvalidationOnInput) {
 
   Element* volume_slider = VolumeSliderElement();
 
-  MockLayoutObject layout_object;
+  MockLayoutObject layout_object(volume_slider);
   LayoutObject* prev_layout_object = volume_slider->GetLayoutObject();
   volume_slider->SetLayoutObject(&layout_object);
 
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
   Event* event = Event::Create(EventTypeNames::input);
   volume_slider->DefaultEventHandler(event);
-  EXPECT_EQ(1, layout_object.FullPaintInvalidationCallCount());
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
 
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
   event = Event::Create(EventTypeNames::input);
   volume_slider->DefaultEventHandler(event);
-  EXPECT_EQ(2, layout_object.FullPaintInvalidationCallCount());
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
 
+  layout_object.ClearPaintInvalidationFlags();
+  EXPECT_FALSE(layout_object.ShouldDoFullPaintInvalidation());
   event = Event::Create(EventTypeNames::input);
   volume_slider->DefaultEventHandler(event);
-  EXPECT_EQ(3, layout_object.FullPaintInvalidationCallCount());
+  EXPECT_TRUE(layout_object.ShouldDoFullPaintInvalidation());
 
   volume_slider->SetLayoutObject(prev_layout_object);
 }
