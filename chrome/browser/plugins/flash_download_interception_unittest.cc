@@ -42,7 +42,7 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
-  const char* flash_intercept_urls[] = {
+  const char* const flash_intercept_urls[] = {
       "https://get.adobe.com/flashplayer/",
       "http://get.adobe.com/flash",
       "http://get.adobe.com/fr/flashplayer/",
@@ -52,6 +52,8 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       "http://adobe.com/go/CA-H-GET-FLASH",
       "http://adobe.com/go/DE_CH-H-M-A2",
       "http://adobe.com/go/gntray_dl_getflashplayer_jp",
+      "http://www.adobe.com/shockwave/download/download.cgi?"
+      "P1_Prod_Version=ShockwaveFlash",
   };
 
   for (auto* url : flash_intercept_urls) {
@@ -59,8 +61,9 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
         << "Should have intercepted: " << url;
   }
 
-  const char* flash_no_intercept_urls[] = {
-      "https://www.example.com", "http://example.com/get.adobe.com/flashplayer",
+  const char* const flash_no_intercept_urls[] = {
+      "https://www.examplefoo.com",
+      "http://examplefoo.com/get.adobe.com/flashplayer",
       "http://ww.macromedia.com/go/getflashplayer",
       "http://wwwxmacromedia.com/go/getflashplayer",
       "http://www.adobe.com/software/flash/about/",
@@ -72,6 +75,8 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       // Don't match text within the query or fragment.
       "http://www.adobe.com/go/non-matching?foo=flashplayer",
       "http://www.adobe.com/go/non-matching#!foo=flashplayer",
+      "http://www.adobe.com/shockwave/download/download.cgi?"
+      "P1_Prod_Version=SomethingElse",
   };
 
   for (auto* url : flash_no_intercept_urls) {
