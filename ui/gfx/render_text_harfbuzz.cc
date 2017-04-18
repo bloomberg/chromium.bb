@@ -1202,7 +1202,6 @@ void RenderTextHarfBuzz::EnsureLayout() {
       ShapeRunList(display_text, display_run_list_.get());
     }
     update_display_run_list_ = false;
-
     std::vector<internal::Line> empty_lines;
     set_lines(&empty_lines);
   }
@@ -1648,13 +1647,13 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
       ShapeRunList(text, &layout_run_list_);
     }
 
-    std::vector<internal::Line> empty_lines;
-    set_lines(&empty_lines);
     display_run_list_.reset();
     update_display_text_ = true;
     update_layout_run_list_ = false;
   }
   if (update_display_text_) {
+    std::vector<internal::Line> empty_lines;
+    set_lines(&empty_lines);
     UpdateDisplayText(multiline() ? 0 : layout_run_list_.width());
     update_display_text_ = false;
     update_display_run_list_ = text_elided();

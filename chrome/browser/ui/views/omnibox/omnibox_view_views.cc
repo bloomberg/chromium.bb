@@ -138,6 +138,7 @@ OmniboxViewViews::~OmniboxViewViews() {
 void OmniboxViewViews::Init() {
   set_controller(this);
   SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
+  GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
 
   if (popup_window_mode_)
     SetReadOnly(true);
@@ -761,6 +762,8 @@ void OmniboxViewViews::OnFocus() {
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
+  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+
   // Focus changes can affect the visibility of any keyword hint.
   if (model()->is_keyword_hint())
     location_bar_view_->Layout();
@@ -788,6 +791,8 @@ void OmniboxViewViews::OnBlur() {
 
   // Make sure the beginning of the text is visible.
   SelectRange(gfx::Range(0));
+
+  GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
 
   // Focus changes can affect the visibility of any keyword hint.
   if (model()->is_keyword_hint())

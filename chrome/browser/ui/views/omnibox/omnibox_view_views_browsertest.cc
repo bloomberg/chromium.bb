@@ -393,3 +393,17 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FocusedTextInputClient) {
   EXPECT_EQ(static_cast<ui::TextInputClient*>(omnibox_view_views),
             input_method->GetTextInputClient());
 }
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, TextElideStatus) {
+  OmniboxView* view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
+
+  ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
+  EXPECT_EQ(omnibox_view_views->GetRenderText()->elide_behavior(),
+            gfx::ELIDE_TAIL);
+
+  chrome::FocusLocationBar(browser());
+  EXPECT_EQ(omnibox_view_views->GetRenderText()->elide_behavior(),
+            gfx::NO_ELIDE);
+}

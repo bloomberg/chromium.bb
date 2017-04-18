@@ -534,6 +534,10 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
     return GetRenderText()->GetLineOffset(line_num).y() + 1;
   }
 
+  // Do not use this function to ensure layout. This is only used to run a
+  // subset of the EnsureLayout functionality and check intermediate state.
+  void EnsureLayoutRunList() { GetRenderTextHarfBuzz()->EnsureLayoutRunList(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzzTest);
 };
@@ -3963,6 +3967,17 @@ TEST_P(RenderTextMacTest, Mac_ElidedText) {
   EXPECT_GT(text.size(), static_cast<size_t>(glyph_count));
   EXPECT_NE(0, glyph_count);
 }
+
+TEST_P(RenderTextMacTest, LinesInvalidationOnElideBehaviorChange) {
+  RenderTextMac* render_text = GetRenderTextMac();
+  render_text->SetText(ASCIIToUTF16("This is an example"));
+  test_api()->EnsureLayout();
+  EXPECT_TRUE(GetCoreTextLine());
+
+  // Lines are cleared when elide behavior changes.
+  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  EXPECT_FALSE(GetCoreTextLine());
+}
 #endif  // defined(OS_MACOSX)
 
 // Ensure color changes are picked up by the RenderText implementation.
@@ -4407,6 +4422,18 @@ TEST_P(RenderTextTest, InvalidFont) {
   render_text->SetText(ASCIIToUTF16("abc"));
 
   DrawVisualText();
+}
+
+TEST_P(RenderTextHarfBuzzTest, LinesInvalidationOnElideBehaviorChange) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+  render_text->SetText(ASCIIToUTF16("This is an example"));
+  test_api()->EnsureLayout();
+  EXPECT_FALSE(test_api()->lines().empty());
+
+  // Lines are cleared when elide behavior changes.
+  render_text->SetElideBehavior(gfx::ELIDE_TAIL);
+  EnsureLayoutRunList();
+  EXPECT_TRUE(test_api()->lines().empty());
 }
 
 // Ensures that text is centered vertically and consistently when either the
