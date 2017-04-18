@@ -110,9 +110,6 @@ struct SecurityInfo {
   // content that was loaded over an HTTPS connection with
   // certificate errors.
   ContentStatus content_with_cert_errors_status;
-  // The verification statuses of the signed certificate timestamps
-  // for the connection.
-  std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
   bool scheme_is_cryptographic;
   net::CertStatus cert_status;
   scoped_refptr<net::X509Certificate> certificate;
@@ -168,9 +165,6 @@ struct VisibleSecurityState {
   // unknown (older cache entries may not store the value) or not applicable.
   uint16_t key_exchange_group;
   int security_bits;
-  // The verification statuses of the Signed Certificate
-  // Timestamps (if any) that the server provided.
-  std::vector<net::ct::SCTVerifyStatus> sct_verify_statuses;
   // True if the page displayed passive mixed content.
   bool displayed_mixed_content;
   // True if the secure page contained a form with a nonsecure target.

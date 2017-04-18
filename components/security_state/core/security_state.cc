@@ -213,8 +213,6 @@ void SecurityInfoForRequest(
   security_info->obsolete_ssl_status =
       net::ObsoleteSSLStatus(security_info->connection_status);
   security_info->pkp_bypassed = visible_security_state.pkp_bypassed;
-  security_info->sct_verify_statuses =
-      visible_security_state.sct_verify_statuses;
 
   security_info->malicious_content_status =
       visible_security_state.malicious_content_status;
@@ -304,7 +302,6 @@ bool VisibleSecurityState::operator==(const VisibleSecurityState& other) const {
           connection_status == other.connection_status &&
           key_exchange_group == other.key_exchange_group &&
           security_bits == other.security_bits &&
-          sct_verify_statuses == other.sct_verify_statuses &&
           displayed_mixed_content == other.displayed_mixed_content &&
           ran_mixed_content == other.ran_mixed_content &&
           displayed_content_with_cert_errors ==
