@@ -978,6 +978,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.HeapProfilerAgent = target.heapProfilerAgent();
         InspectorTest.InspectorAgent = target.inspectorAgent();
         InspectorTest.NetworkAgent = target.networkAgent();
+        InspectorTest.OverlayAgent = target.overlayAgent();
         InspectorTest.PageAgent = target.pageAgent();
         InspectorTest.ProfilerAgent = target.profilerAgent();
         InspectorTest.RuntimeAgent = target.runtimeAgent();
@@ -992,6 +993,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.domDebuggerModel = target.model(SDK.DOMDebuggerModel);
         InspectorTest.cssModel = target.model(SDK.CSSModel);
         InspectorTest.cpuProfilerModel = target.model(SDK.CPUProfilerModel);
+        InspectorTest.overlayModel = target.model(SDK.OverlayModel);
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
