@@ -146,7 +146,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   base::string16 command_line_string = command_line.GetCommandLineString();
 
   base::string16 command = base::StringPrintf(
-      L"%ls /c %ls < %ls > %ls", comspec.get(), command_line_string.c_str(),
+      L"%ls /d /c %ls < %ls > %ls", comspec.get(), command_line_string.c_str(),
       in_pipe_name.c_str(), out_pipe_name.c_str());
 
   base::LaunchOptions options;
