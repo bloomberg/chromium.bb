@@ -48,6 +48,7 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -779,8 +780,20 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
 
   if (have_recorded_draw_commands_ && GetOrCreateSurface()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecordingOnly");
-    recorder_->finishRecordingAsPicture()->playback(
-        GetOrCreateSurface()->getCanvas());
+
+    // For legacy canvases, transform all input colors and images to the target
+    // space using a SkCreateColorSpaceXformCanvas. This ensures blending will
+    // be done using target space pixel values.
+    SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
+    std::unique_ptr<SkCanvas> color_transform_canvas;
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled() &&
+        !sk_surfaces_use_color_space_) {
+      color_transform_canvas =
+          SkCreateColorSpaceXformCanvas(canvas, color_space_.ToSkColorSpace());
+      canvas = color_transform_canvas.get();
+    }
+
+    recorder_->finishRecordingAsPicture()->playback(canvas);
     if (is_deferral_enabled_)
       StartRecording();
     have_recorded_draw_commands_ = false;
