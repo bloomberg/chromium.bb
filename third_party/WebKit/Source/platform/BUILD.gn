@@ -773,6 +773,8 @@ component("platform") {
     "graphics/Canvas2DImageBufferSurface.h",
     "graphics/Canvas2DLayerBridge.cpp",
     "graphics/Canvas2DLayerBridge.h",
+    "graphics/CanvasColorParams.cpp",
+    "graphics/CanvasColorParams.h",
     "graphics/CanvasMetrics.cpp",
     "graphics/CanvasMetrics.h",
     "graphics/CanvasSurfaceLayerBridge.cpp",

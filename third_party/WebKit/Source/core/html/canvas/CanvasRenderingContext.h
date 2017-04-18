@@ -31,6 +31,7 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
@@ -46,20 +47,6 @@ class HTMLCanvasElement;
 class ImageData;
 class ImageBitmap;
 class WebLayer;
-
-enum CanvasColorSpace {
-  kLegacyCanvasColorSpace,
-  kSRGBCanvasColorSpace,
-  kRec2020CanvasColorSpace,
-  kP3CanvasColorSpace,
-};
-
-enum CanvasPixelFormat {
-  kRGBA8CanvasPixelFormat,
-  kRGB10A2CanvasPixelFormat,
-  kRGBA12CanvasPixelFormat,
-  kF16CanvasPixelFormat,
-};
 
 constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
@@ -102,11 +89,11 @@ class CORE_EXPORT CanvasRenderingContext
 
   HTMLCanvasElement* canvas() const { return canvas_; }
 
-  CanvasColorSpace ColorSpace() const { return color_space_; };
+  CanvasColorSpace ColorSpace() const;
   WTF::String ColorSpaceAsString() const;
-  CanvasPixelFormat PixelFormat() const { return pixel_format_; };
+  CanvasPixelFormat PixelFormat() const;
   WTF::String PixelFormatAsString() const;
-  bool LinearPixelMath() const { return linear_pixel_math_; };
+  bool LinearPixelMath() const;
 
   // The color space in which the the content should be interpreted by the
   // compositor. This is always defined.
@@ -232,9 +219,7 @@ class CORE_EXPORT CanvasRenderingContext
   Member<OffscreenCanvas> offscreen_canvas_;
   HashSet<String> clean_urls_;
   HashSet<String> dirty_urls_;
-  CanvasColorSpace color_space_;
-  CanvasPixelFormat pixel_format_;
-  bool linear_pixel_math_ = false;
+  CanvasColorParams color_params_;
   CanvasContextCreationAttributes creation_attributes_;
   bool finalize_frame_scheduled_ = false;
 };

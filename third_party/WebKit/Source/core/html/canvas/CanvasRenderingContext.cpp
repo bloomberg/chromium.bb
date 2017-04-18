@@ -39,28 +39,28 @@ CanvasRenderingContext::CanvasRenderingContext(
     const CanvasContextCreationAttributes& attrs)
     : canvas_(canvas),
       offscreen_canvas_(offscreen_canvas),
-      color_space_(kLegacyCanvasColorSpace),
-      pixel_format_(kRGBA8CanvasPixelFormat),
-      linear_pixel_math_(false),
+      color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
       creation_attributes_(attrs) {
   if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled() &&
       RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
     // Set the default color space to SRGB and continue
-    color_space_ = kSRGBCanvasColorSpace;
+    CanvasColorSpace color_space = kSRGBCanvasColorSpace;
     if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
-      color_space_ = kRec2020CanvasColorSpace;
+      color_space = kRec2020CanvasColorSpace;
     else if (creation_attributes_.colorSpace() == kP3CanvasColorSpaceName)
-      color_space_ = kP3CanvasColorSpace;
+      color_space = kP3CanvasColorSpace;
 
     // For now, we only support RGBA8 (for SRGB) and F16 (for all). Everything
     // else falls back to SRGB + RGBA8.
+    CanvasPixelFormat pixel_format = kRGBA8CanvasPixelFormat;
     if (creation_attributes_.pixelFormat() == kF16CanvasPixelFormatName) {
-      pixel_format_ = kF16CanvasPixelFormat;
-      linear_pixel_math_ = true;
+      pixel_format = kF16CanvasPixelFormat;
     } else {
-      color_space_ = kSRGBCanvasColorSpace;
-      pixel_format_ = kRGBA8CanvasPixelFormat;
+      color_space = kSRGBCanvasColorSpace;
+      pixel_format = kRGBA8CanvasPixelFormat;
     }
+
+    color_params_ = CanvasColorParams(color_space, pixel_format);
   }
 
   // Make m_creationAttributes reflect the effective colorSpace, pixelFormat and
@@ -71,7 +71,7 @@ CanvasRenderingContext::CanvasRenderingContext(
 }
 
 WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
-  switch (color_space_) {
+  switch (color_params_.color_space()) {
     case kLegacyCanvasColorSpace:
       return kLegacyCanvasColorSpaceName;
     case kSRGBCanvasColorSpace:
@@ -86,7 +86,7 @@ WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
 }
 
 WTF::String CanvasRenderingContext::PixelFormatAsString() const {
-  switch (pixel_format_) {
+  switch (color_params_.pixel_format()) {
     case kRGBA8CanvasPixelFormat:
       return kRGBA8CanvasPixelFormatName;
     case kRGB10A2CanvasPixelFormat:
@@ -101,32 +101,19 @@ WTF::String CanvasRenderingContext::PixelFormatAsString() const {
 }
 
 gfx::ColorSpace CanvasRenderingContext::GfxColorSpace() const {
-  switch (color_space_) {
-    case kLegacyCanvasColorSpace:
-      return gfx::ColorSpace::CreateSRGB();
-    case kSRGBCanvasColorSpace:
-      if (pixel_format_ == kF16CanvasPixelFormat)
-        return gfx::ColorSpace::CreateSCRGBLinear();
-      return gfx::ColorSpace::CreateSRGB();
-    case kRec2020CanvasColorSpace:
-      return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                             gfx::ColorSpace::TransferID::IEC61966_2_1);
-    case kP3CanvasColorSpace:
-      return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTEST432_1,
-                             gfx::ColorSpace::TransferID::IEC61966_2_1);
-  }
-  NOTREACHED();
-  return gfx::ColorSpace();
+  return color_params_.GetGfxColorSpace();
 }
 
 sk_sp<SkColorSpace> CanvasRenderingContext::SkSurfaceColorSpace() const {
-  if (SkSurfacesUseColorSpace())
-    return GfxColorSpace().ToSkColorSpace();
-  return nullptr;
+  return color_params_.GetSkColorSpaceForSkSurfaces();
 }
 
 bool CanvasRenderingContext::SkSurfacesUseColorSpace() const {
-  return color_space_ != kLegacyCanvasColorSpace;
+  return color_params_.GetSkColorSpaceForSkSurfaces();
+}
+
+bool CanvasRenderingContext::LinearPixelMath() const {
+  return color_params_.LinearPixelMath();
 }
 
 ColorBehavior CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas()
@@ -136,10 +123,12 @@ ColorBehavior CanvasRenderingContext::ColorBehaviorForMediaDrawnToCanvas()
   return ColorBehavior::TransformToGlobalTarget();
 }
 
+CanvasColorSpace CanvasRenderingContext::ColorSpace() const {
+  return color_params_.color_space();
+}
+
 SkColorType CanvasRenderingContext::ColorType() const {
-  if (pixel_format_ == kF16CanvasPixelFormat)
-    return kRGBA_F16_SkColorType;
-  return kN32_SkColorType;
+  return color_params_.GetSkColorType();
 }
 
 void CanvasRenderingContext::Dispose() {
