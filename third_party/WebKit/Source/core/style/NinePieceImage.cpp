@@ -69,16 +69,6 @@ NinePieceImageData::NinePieceImageData()
              Length(0, kFixed),
              Length(0, kFixed)) {}
 
-NinePieceImageData::NinePieceImageData(const NinePieceImageData& other)
-    : RefCounted<NinePieceImageData>(),
-      fill(other.fill),
-      horizontal_rule(other.horizontal_rule),
-      vertical_rule(other.vertical_rule),
-      image(other.image),
-      image_slices(other.image_slices),
-      border_slices(other.border_slices),
-      outset(other.outset) {}
-
 bool NinePieceImageData::operator==(const NinePieceImageData& other) const {
   return DataEquivalent(image, other.image) &&
          image_slices == other.image_slices && fill == other.fill &&
