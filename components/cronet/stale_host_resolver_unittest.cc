@@ -451,6 +451,8 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
       true,
       // Enable SDCH.
       false,
+      // Enable Brotli.
+      false,
       // Type of http cache.
       URLRequestContextConfig::HttpCacheType::DISK,
       // Max size of http cache in bytes.

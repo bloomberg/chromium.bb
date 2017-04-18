@@ -27,6 +27,10 @@ public abstract class ICronetEngineBuilder {
             boolean value);
     public abstract ICronetEngineBuilder enableQuic(boolean value);
     public abstract ICronetEngineBuilder enableSdch(boolean value);
+    public ICronetEngineBuilder enableBrotli(boolean value) {
+        // Do nothing for older implementations.
+        return this;
+    }
     public abstract ICronetEngineBuilder setExperimentalOptions(String options);
     public abstract ICronetEngineBuilder setLibraryLoader(
             CronetEngine.Builder.LibraryLoader loader);

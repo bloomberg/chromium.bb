@@ -83,6 +83,7 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     private boolean mQuicEnabled;
     private boolean mHttp2Enabled;
     private boolean mSdchEnabled;
+    private boolean mBrotiEnabled;
     private String mDataReductionProxyKey;
     private String mDataReductionProxyPrimaryProxy;
     private String mDataReductionProxyFallbackProxy;
@@ -104,6 +105,7 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         enableQuic(false);
         enableHttp2(true);
         enableSdch(false);
+        enableBrotli(false);
         enableHttpCache(HTTP_CACHE_DISABLED, 0);
         enableNetworkQualityEstimator(false);
         enablePublicKeyPinningBypassForLocalTrustAnchors(true);
@@ -185,6 +187,16 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     boolean sdchEnabled() {
         return mSdchEnabled;
+    }
+
+    @Override
+    public CronetEngineBuilderImpl enableBrotli(boolean value) {
+        mBrotiEnabled = value;
+        return this;
+    }
+
+    boolean brotliEnabled() {
+        return mBrotiEnabled;
     }
 
     @Override

@@ -172,6 +172,18 @@ public abstract class CronetEngine {
         }
 
         /**
+         * Sets whether <a href="https://tools.ietf.org/html/rfc7932">Brotli</a> compression is
+         * enabled. If enabled, Brotli will be advertised in Accept-Encoding request headers.
+         * Defaults to disabled.
+         * @param value {@code true} to enable Brotli, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder enableBrotli(boolean value) {
+            mBuilderDelegate.enableBrotli(value);
+            return this;
+        }
+
+        /**
          * Setting to disable HTTP cache. Some data may still be temporarily stored in memory.
          * Passed to {@link #enableHttpCache}.
          */

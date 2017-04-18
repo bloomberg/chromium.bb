@@ -87,6 +87,8 @@ struct URLRequestContextConfig {
       bool enable_spdy,
       // Enable SDCH.
       bool enable_sdch,
+      // Enable Brotli.
+      bool enable_brotli,
       // Type of http cache.
       HttpCacheType http_cache,
       // Max size of http cache in bytes.
@@ -132,6 +134,8 @@ struct URLRequestContextConfig {
   const bool enable_spdy;
   // Enable SDCH.
   const bool enable_sdch;
+  // Enable Brotli.
+  const bool enable_brotli;
   // Type of http cache.
   const HttpCacheType http_cache;
   // Max size of http cache in bytes.
@@ -201,6 +205,8 @@ struct URLRequestContextConfigBuilder {
   bool enable_spdy = true;
   // Enable SDCH.
   bool enable_sdch = false;
+  // Enable Brotli.
+  bool enable_brotli = false;
   // Type of http cache.
   URLRequestContextConfig::HttpCacheType http_cache =
       URLRequestContextConfig::DISABLED;

@@ -731,6 +731,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   context_ = context_builder.Build();
 
   context_->set_check_cleartext_permitted(true);
+  context_->set_enable_brotli(config->enable_brotli);
 
   if (network_quality_estimator_)
     context_->set_network_quality_estimator(network_quality_estimator_.get());
@@ -1090,6 +1091,7 @@ static jlong CreateRequestContextConfig(
     const JavaParamRef<jstring>& jquic_default_user_agent_id,
     jboolean jhttp2_enabled,
     jboolean jsdch_enabled,
+    jboolean jbrotli_enabled,
     const JavaParamRef<jstring>& jdata_reduction_proxy_key,
     const JavaParamRef<jstring>& jdata_reduction_proxy_primary_proxy,
     const JavaParamRef<jstring>& jdata_reduction_proxy_fallback_proxy,
@@ -1105,7 +1107,7 @@ static jlong CreateRequestContextConfig(
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
-      jhttp2_enabled, jsdch_enabled,
+      jhttp2_enabled, jsdch_enabled, jbrotli_enabled,
       static_cast<URLRequestContextConfig::HttpCacheType>(jhttp_cache_mode),
       jhttp_cache_max_size, jdisable_cache,
       ConvertNullableJavaStringToUTF8(env, jstorage_path),

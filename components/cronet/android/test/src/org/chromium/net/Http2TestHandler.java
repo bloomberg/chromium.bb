@@ -41,6 +41,7 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
     public static final String ECHO_METHOD_PATH = "/echomethod";
     public static final String ECHO_STREAM_PATH = "/echostream";
     public static final String ECHO_TRAILERS_PATH = "/echotrailers";
+    public static final String SERVE_SIMPLE_BROTLI_RESPONSE = "/simplebrotli";
 
     private static final String TAG = Http2TestHandler.class.getSimpleName();
     private static final Http2FrameLogger sLogger =
@@ -174,6 +175,24 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
         }
     }
 
+    // A RequestResponder that serves a simple Brotli-encoded response.
+    private class ServeSimpleBrotliResponder extends RequestResponder {
+        @Override
+        void onHeadersRead(ChannelHandlerContext ctx, int streamId, boolean endOfStream,
+                Http2Headers headers) {
+            Http2Headers responseHeaders = new DefaultHttp2Headers().status(OK.codeAsText());
+            byte[] quickfoxCompressed = {0x0b, 0x15, -0x80, 0x54, 0x68, 0x65, 0x20, 0x71, 0x75,
+                    0x69, 0x63, 0x6b, 0x20, 0x62, 0x72, 0x6f, 0x77, 0x6e, 0x20, 0x66, 0x6f, 0x78,
+                    0x20, 0x6a, 0x75, 0x6d, 0x70, 0x73, 0x20, 0x6f, 0x76, 0x65, 0x72, 0x20, 0x74,
+                    0x68, 0x65, 0x20, 0x6c, 0x61, 0x7a, 0x79, 0x20, 0x64, 0x6f, 0x67, 0x03};
+            ByteBuf content = copiedBuffer(quickfoxCompressed);
+            responseHeaders.add("content-encoding", "br");
+            encoder().writeHeaders(ctx, streamId, responseHeaders, 0, false, ctx.newPromise());
+            encoder().writeData(ctx, streamId, content, 0, true, ctx.newPromise());
+            ctx.flush();
+        }
+    }
+
     private static Http2Headers createDefaultResponseHeaders() {
         return new DefaultHttp2Headers().status(OK.codeAsText());
     }
@@ -230,6 +249,8 @@ public final class Http2TestHandler extends Http2ConnectionHandler implements Ht
             responder = new EchoHeaderResponder();
         } else if (path.startsWith(ECHO_METHOD_PATH)) {
             responder = new EchoMethodResponder();
+        } else if (path.startsWith(SERVE_SIMPLE_BROTLI_RESPONSE)) {
+            responder = new ServeSimpleBrotliResponder();
         } else {
             responder = new RequestResponder();
         }

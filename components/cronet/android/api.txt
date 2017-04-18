@@ -62,6 +62,7 @@ public class org.chromium.net.CronetEngine$Builder {
   public org.chromium.net.CronetEngine$Builder enableQuic(boolean);
   public org.chromium.net.CronetEngine$Builder enableHttp2(boolean);
   public org.chromium.net.CronetEngine$Builder enableSdch(boolean);
+  public org.chromium.net.CronetEngine$Builder enableBrotli(boolean);
   public org.chromium.net.CronetEngine$Builder enableHttpCache(int, long);
   public org.chromium.net.CronetEngine$Builder addQuicHint(java.lang.String, int, int);
   public org.chromium.net.CronetEngine$Builder addPublicKeyPins(java.lang.String, java.util.Set<byte[]>, boolean, java.util.Date);
@@ -104,6 +105,7 @@ public abstract class org.chromium.net.ICronetEngineBuilder {
   public abstract org.chromium.net.ICronetEngineBuilder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean);
   public abstract org.chromium.net.ICronetEngineBuilder enableQuic(boolean);
   public abstract org.chromium.net.ICronetEngineBuilder enableSdch(boolean);
+  public org.chromium.net.ICronetEngineBuilder enableBrotli(boolean);
   public abstract org.chromium.net.ICronetEngineBuilder setExperimentalOptions(java.lang.String);
   public abstract org.chromium.net.ICronetEngineBuilder setLibraryLoader(org.chromium.net.CronetEngine$Builder$LibraryLoader);
   public abstract org.chromium.net.ICronetEngineBuilder setStoragePath(java.lang.String);

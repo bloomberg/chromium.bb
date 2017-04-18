@@ -93,6 +93,13 @@ public final class Http2TestServer {
         return getServerUrl() + Http2TestHandler.ECHO_TRAILERS_PATH;
     }
 
+    /**
+     * @return url of a brotli-encoded server resource.
+     */
+    public static String getServeSimpleBrotliResponse() {
+        return getServerUrl() + Http2TestHandler.SERVE_SIMPLE_BROTLI_RESPONSE;
+    }
+
     public static boolean startHttp2TestServer(
             Context context, String certFileName, String keyFileName) throws Exception {
         new Thread(
