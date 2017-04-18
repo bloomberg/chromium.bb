@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_provider.h"
@@ -26,8 +26,7 @@
 namespace device {
 class AccessTokenStore;
 
-class NetworkLocationProvider : public base::NonThreadSafe,
-                                public LocationProvider {
+class NetworkLocationProvider : public LocationProvider {
  public:
   // Cache of recently resolved locations. Public for tests.
   class DEVICE_GEOLOCATION_EXPORT PositionCache {
@@ -71,22 +70,19 @@ class NetworkLocationProvider : public base::NonThreadSafe,
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
-  void SetUpdateCallback(
-      const LocationProviderUpdateCallback& callback) override;
+  void SetUpdateCallback(const LocationProviderUpdateCallback& cb) override;
   bool StartProvider(bool high_accuracy) override;
   void StopProvider() override;
   const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
  private:
-  // Satisfies a position request from cache or network.
+  // Tries to update |position_| request from cache or network.
   void RequestPosition();
 
-  // Gets called when new wifi data is available.
+  // Gets called when new wifi data is available, either via explicit request to
+  // or callback from |wifi_data_provider_manager_|.
   void OnWifiDataUpdate();
-
-  // Internal helper used by OnWifiDataUpdate.
-  void OnWifiDataUpdated();
 
   bool IsStarted() const;
 
@@ -97,7 +93,8 @@ class NetworkLocationProvider : public base::NonThreadSafe,
 
   const scoped_refptr<AccessTokenStore> access_token_store_;
 
-  // The wifi data provider, acquired via global factories.
+  // The wifi data provider, acquired via global factories. Valid between
+  // StartProvider() and StopProvider(), and checked via IsStarted().
   WifiDataProviderManager* wifi_data_provider_manager_;
 
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_update_callback_;
@@ -125,10 +122,12 @@ class NetworkLocationProvider : public base::NonThreadSafe,
   bool is_new_data_available_;
 
   // The network location request object, and the url it uses.
-  std::unique_ptr<NetworkLocationRequest> request_;
+  const std::unique_ptr<NetworkLocationRequest> request_;
 
   // The cache of positions.
   const std::unique_ptr<PositionCache> position_cache_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_;
 
