@@ -67,6 +67,11 @@
         color: var(--link-color);
       }
 
+      iron-selector > a[disabled] {
+        opacity: 0.65;
+        pointer-events: none;
+      }
+
       #spacer {
         flex: 1;
       }
@@ -101,8 +106,11 @@
         <paper-ripple></paper-ripple>
       </a>
       <div class="separator"></div>
-      <a href="chrome://settings/clearBrowserData"
-          on-tap="onClearBrowsingDataTap_" id="clear-browsing-data">
+      <a id="clear-browsing-data"
+          href="chrome://settings/clearBrowserData"
+          on-tap="onClearBrowsingDataTap_"
+          disabled$="[[guestSession_]]"
+          tabindex$="[[computeClearBrowsingDataTabIndex_(guestSession_)]]">
         $i18n{clearBrowsingData}
         <iron-icon icon="cr:open-in-new"></iron-icon>
         <paper-ripple id="cbd-ripple"></paper-ripple>
