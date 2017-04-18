@@ -15,8 +15,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -402,18 +400,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new File(mCrashDir, mTestUpload.getName().replace(".forced", ".skipped"));
         assertFalse(expectedSkippedFileAfterUpload.exists());
         assertTrue(mExpectedFileAfterUpload.exists());
-    }
-
-    private void extendUploadFile(int numBytes) throws FileNotFoundException, IOException {
-        FileOutputStream stream = null;
-        try {
-            stream = new FileOutputStream(mTestUpload, true);
-            byte[] buf = new byte[numBytes];
-            stream.write(buf);
-            stream.flush();
-        } finally {
-            if (stream != null) stream.close();
-        }
     }
 
     @SmallTest
