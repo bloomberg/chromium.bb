@@ -831,12 +831,19 @@ void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
   CreateChild();
-
   // Show/hide the close button.
   GetWidget()->non_client_view()->ResetWindowControls();
   GetWidget()->UpdateWindowIcon();
   GetWidget()->UpdateWindowTitle();
-  SizeToContents();
+  if (model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
+    // Update the height and keep the existing width.
+    gfx::Rect bubble_bounds = GetWidget()->GetWindowBoundsInScreen();
+    bubble_bounds.set_height(
+        GetWidget()->GetRootView()->GetHeightForWidth(bubble_bounds.width()));
+    GetWidget()->SetBounds(bubble_bounds);
+  } else {
+    SizeToContents();
+  }
 }
 
 void ManagePasswordsBubbleView::CreateChild() {

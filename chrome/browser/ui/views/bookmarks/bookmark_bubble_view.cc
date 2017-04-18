@@ -411,6 +411,7 @@ void BookmarkBubbleView::ShowIOSPromotion() {
   AddChildView(ios_promo_view_);
   GetWidget()->UpdateWindowIcon();
   GetWidget()->UpdateWindowTitle();
-  SizeToContents();
+  // Resize the bubble so it has the same width as the parent bubble.
+  ios_promo_view_->UpdateBubbleHeight();
 }
 #endif

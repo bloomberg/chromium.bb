@@ -10,11 +10,26 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
+
+namespace {
+// Returns the appropriate size for the promotion text label on the bubble.
+int GetPromoBubbleTextLabelWidth(
+    desktop_ios_promotion::PromotionEntryPoint entry_point) {
+  if (entry_point ==
+      desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE) {
+    return views::Widget::GetLocalizedContentsWidth(
+        IDS_DESKTOP_IOS_PROMOTION_SAVE_PASSWORDS_BUBBLE_TEXT_WIDTH_CHARS);
+  }
+  return views::Widget::GetLocalizedContentsWidth(
+      IDS_DESKTOP_IOS_PROMOTION_TEXT_WIDTH_CHARS);
+}
+}  // namespace
 
 DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
     Profile* profile,
@@ -25,10 +40,8 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
           base::MakeUnique<DesktopIOSPromotionController>(profile,
                                                           this,
                                                           entry_point)) {
-  int bubble_width = ManagePasswordsBubbleView::kDesiredBubbleWidth;
   views::GridLayout* layout = new views::GridLayout(this);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  layout->set_minimum_size(gfx::Size(bubble_width, 0));
   layout->SetInsets(
       0,
       provider->GetDistanceMetric(DISTANCE_PANEL_CONTENT_MARGIN) +
@@ -45,7 +58,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
   constexpr int kLabelColumnSet = 1;
   views::ColumnSet* column_set = layout->AddColumnSet(kLabelColumnSet);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                        views::GridLayout::FIXED, bubble_width, 0);
+                        views::GridLayout::USE_PREF, 0, 0);
   constexpr int kDoubleButtonColumnSet = 2;
   column_set = layout->AddColumnSet(kDoubleButtonColumnSet);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
@@ -57,6 +70,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
                         0, views::GridLayout::USE_PREF, 0, 0);
   promotion_text_label_->SetEnabledColor(SK_ColorGRAY);
   promotion_text_label_->SetMultiLine(true);
+  promotion_text_label_->SizeToFit(GetPromoBubbleTextLabelWidth(entry_point));
   promotion_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRow(0, kLabelColumnSet);
   layout->AddView(promotion_text_label_);
@@ -82,11 +96,19 @@ void DesktopIOSPromotionBubbleView::ButtonPressed(views::Button* sender,
   GetWidget()->Close();
 }
 
+void DesktopIOSPromotionBubbleView::UpdateBubbleHeight() {
+  gfx::Rect old_bounds = GetWidget()->GetWindowBoundsInScreen();
+  old_bounds.set_height(
+      GetWidget()->GetRootView()->GetHeightForWidth(old_bounds.width()));
+  GetWidget()->SetBounds(old_bounds);
+}
+
 void DesktopIOSPromotionBubbleView::UpdateRecoveryPhoneLabel() {
   std::string number = promotion_controller_->GetUsersRecoveryPhoneNumber();
   if (!number.empty()) {
     promotion_text_label_->SetText(desktop_ios_promotion::GetPromoText(
         promotion_controller_->entry_point(), number));
-    SizeToPreferredSize();
+    Layout();
+    UpdateBubbleHeight();
   }
 }

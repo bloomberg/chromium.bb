@@ -28,6 +28,9 @@ class DesktopIOSPromotionBubbleView : public DesktopIOSPromotionView,
       desktop_ios_promotion::PromotionEntryPoint entry_point);
   ~DesktopIOSPromotionBubbleView() override;
 
+  // Update Bubble Height to fit the content.
+  void UpdateBubbleHeight();
+
   // DesktopIOSPromotionView:
   void UpdateRecoveryPhoneLabel() override;
 

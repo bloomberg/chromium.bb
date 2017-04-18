@@ -156,6 +156,16 @@
         <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
           46
         </message>
+        
+        <!-- The width of the Text on the save password Desktop iOS promotion bubble. -->
+        <message name="IDS_DESKTOP_IOS_PROMOTION_SAVE_PASSWORDS_BUBBLE_TEXT_WIDTH_CHARS" use_name_for_id="true">
+          55
+        </message>
+
+        <!-- The width of the Text on the Desktop iOS promotion bubble. -->
+        <message name="IDS_DESKTOP_IOS_PROMOTION_TEXT_WIDTH_CHARS" use_name_for_id="true">
+          41
+        </message>
       </if>
 
       <if expr="chromeos">
