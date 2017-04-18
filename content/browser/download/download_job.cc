@@ -66,4 +66,6 @@ bool DownloadJob::UsesParallelRequests() const {
   return false;
 }
 
+void DownloadJob::CancelRequestWithOffset(int64_t offset) {}
+
 }  // namespace content

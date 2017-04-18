@@ -43,6 +43,10 @@ class CONTENT_EXPORT DownloadJob {
   // Returns whether the download uses parallel requests.
   virtual bool UsesParallelRequests() const;
 
+  // Cancel a particular request starts from |offset|, while the download is not
+  // canceled. Used in parallel download.
+  virtual void CancelRequestWithOffset(int64_t offset);
+
  protected:
   void StartDownload() const;
   void Interrupt(DownloadInterruptReason reason);

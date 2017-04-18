@@ -35,6 +35,7 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   void Pause() override;
   void Resume(bool resume_request) override;
   bool UsesParallelRequests() const override;
+  void CancelRequestWithOffset(int64_t offset) override;
 
  protected:
   // Virtual for testing.

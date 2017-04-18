@@ -97,6 +97,17 @@ bool ParallelDownloadJob::UsesParallelRequests() const {
   return true;
 }
 
+void ParallelDownloadJob::CancelRequestWithOffset(int64_t offset) {
+  if (initial_request_offset_ == offset) {
+    DownloadJobImpl::Cancel(false);
+    return;
+  }
+
+  auto it = workers_.find(offset);
+  if (it != workers_.end())
+    it->second->Cancel();
+}
+
 void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
   DCHECK(workers_.empty());
   DCHECK(!requests_sent_);

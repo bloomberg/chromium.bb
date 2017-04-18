@@ -53,7 +53,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   ~DownloadFileImpl() override;
 
   // DownloadFile functions.
-  void Initialize(const InitializeCallback& callback,
+  void Initialize(const InitializeCallback& initialize_callback,
+                  const CancelRequestCallback& cancel_request_callback,
                   const DownloadItem::ReceivedSlices& received_slices) override;
 
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
@@ -114,7 +115,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     ByteStreamReader* stream_reader() const { return stream_reader_.get(); }
     int64_t offset() const { return offset_; }
     int64_t length() const { return length_; }
-    void set_length(int64_t length) { length_ = length; }
     int64_t bytes_written() const { return bytes_written_; }
     bool is_finished() const { return finished_; }
     void set_finished(bool finish) { finished_ = finish; }
@@ -229,6 +229,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // SourceStreams are ordered by their offsets
   SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
 
+  // See |cancel_request_callback_|.
+  void CancelRequestOnUIThread(int64_t offset);
+
   // Print the internal states for debugging.
   void DebugStates() const;
 
@@ -248,6 +251,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Map of the offset and the source stream that represents the slice
   // starting from offset.
   SourceStreams source_streams_;
+
+  // Used to cancel the request on UI thread, since the ByteStreamReader can't
+  // close the underlying resource writing to the pipe.
+  CancelRequestCallback cancel_request_callback_;
 
   // Used to trigger progress updates.
   std::unique_ptr<base::RepeatingTimer> update_timer_;

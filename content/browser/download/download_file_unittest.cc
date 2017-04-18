@@ -243,7 +243,7 @@ class DownloadFileTest : public testing::Test {
         base::Bind(&DownloadFileTest::SetInterruptReasonCallback,
                    weak_ptr_factory.GetWeakPtr(), loop_runner.QuitClosure(),
                    &result),
-        received_slices);
+        DownloadFile::CancelRequestCallback(), received_slices);
     loop_runner.Run();
 
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);

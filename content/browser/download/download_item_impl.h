@@ -507,6 +507,9 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void UpdateValidatorsOnResumption(
       const DownloadCreateInfo& new_create_info);
 
+  // Cancel a particular request that starts from |offset|.
+  void CancelRequestWithOffset(int64_t offset);
+
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);
   static DownloadInternalState ExternalToInternalState(

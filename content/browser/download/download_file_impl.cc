@@ -128,12 +128,14 @@ DownloadFileImpl::~DownloadFileImpl() {
 }
 
 void DownloadFileImpl::Initialize(
-    const InitializeCallback& callback,
+    const InitializeCallback& initialize_callback,
+    const CancelRequestCallback& cancel_request_callback,
     const DownloadItem::ReceivedSlices& received_slices) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   update_timer_.reset(new base::RepeatingTimer());
   int64_t bytes_so_far = 0;
+  cancel_request_callback_ = cancel_request_callback;
   received_slices_ = received_slices;
   if (IsSparseFile()) {
     for (const auto& received_slice : received_slices_) {
@@ -148,8 +150,8 @@ void DownloadFileImpl::Initialize(
       save_info_->hash_of_partial_file, std::move(save_info_->hash_state),
       IsSparseFile());
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(initialize_callback, result));
     return;
   }
 
@@ -160,8 +162,8 @@ void DownloadFileImpl::Initialize(
   SendUpdate();
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(
-          callback, DOWNLOAD_INTERRUPT_REASON_NONE));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(initialize_callback, DOWNLOAD_INTERRUPT_REASON_NONE));
 
   // Initial pull from the straw from all source streams.
   for (auto& source_stream : source_streams_)
@@ -328,6 +330,8 @@ void DownloadFileImpl::RenameWithRetryInternal(
     SendUpdate();
 
     // Null out callback so that we don't do any more stream processing.
+    // The request that writes to the pipe should be canceled after
+    // the download being interrupted.
     for (auto& stream : source_streams_) {
       ByteStreamReader* stream_reader = stream.second->stream_reader();
       if (stream_reader)
@@ -469,6 +473,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     // Signal successful completion or termination of the current stream.
     source_stream->stream_reader()->RegisterCallback(base::Closure());
     source_stream->set_finished(true);
+    if (should_terminate)
+      CancelRequestOnUIThread(source_stream->offset());
     if (source_stream->length() == DownloadSaveInfo::kLengthFullContent) {
       SetPotentialFileLength(source_stream->offset() +
                              source_stream->bytes_written());
@@ -641,6 +647,7 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
           DCHECK_EQ(stream.second->bytes_written(), 0);
           stream.second->stream_reader()->RegisterCallback(base::Closure());
           stream.second->set_finished(true);
+          CancelRequestOnUIThread(stream.second->offset());
           num_active_streams_--;
         }
       }
@@ -678,6 +685,13 @@ DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(
     }
   }
   return ret;
+}
+
+void DownloadFileImpl::CancelRequestOnUIThread(int64_t offset) {
+  if (!cancel_request_callback_.is_null()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(cancel_request_callback_, offset));
+  }
 }
 
 void DownloadFileImpl::DebugStates() const {

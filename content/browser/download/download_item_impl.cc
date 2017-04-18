@@ -1061,6 +1061,12 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   // notified when the download transitions to the IN_PROGRESS state.
 }
 
+void DownloadItemImpl::CancelRequestWithOffset(int64_t offset) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (job_)
+    job_->CancelRequestWithOffset(offset);
+}
+
 void DownloadItemImpl::NotifyRemoved() {
   for (auto& observer : observers_)
     observer.OnDownloadRemoved(this);
@@ -1312,6 +1318,8 @@ void DownloadItemImpl::StartDownload() {
                  // Safe because we control download file lifetime.
                  base::Unretained(download_file_.get()),
                  base::Bind(&DownloadItemImpl::OnDownloadFileInitialized,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 base::Bind(&DownloadItemImpl::CancelRequestWithOffset,
                             weak_ptr_factory_.GetWeakPtr()),
                  received_slices_));
 }

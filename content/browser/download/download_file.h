@@ -42,13 +42,18 @@ class CONTENT_EXPORT DownloadFile {
                               const base::FilePath& path)>
       RenameCompletionCallback;
 
+  // Used to drop the request, when the byte stream reader should be closed on
+  // FILE thread.
+  typedef base::Callback<void(int64_t offset)> CancelRequestCallback;
+
   virtual ~DownloadFile() {}
 
-  // Upon completion, |callback| will be called on the UI
+  // Upon completion, |initialize_callback| will be called on the UI
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
   virtual void Initialize(
-      const InitializeCallback& callback,
+      const InitializeCallback& initialize_callback,
+      const CancelRequestCallback& cancel_request_callback,
       const DownloadItem::ReceivedSlices& received_slices) = 0;
 
   // Add a byte stream reader to write into a slice of the file, used for
