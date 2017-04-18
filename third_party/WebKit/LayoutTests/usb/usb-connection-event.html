@@ -8,13 +8,10 @@
 'use strict';
 
 usb_test(() => {
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return navigator.usb.getDevices().then(devices => {
-    assert_equals(devices.length, 1);
-    let evt = new USBConnectionEvent('connect', { device: devices[0] });
+  return getFakeDevice().then(({ device }) => {
+    let evt = new USBConnectionEvent('connect', { device: device });
     assert_equals(evt.type, 'connect');
-    assert_equals(evt.device, devices[0]);
+    assert_equals(evt.device, device);
   });
 }, 'Can construct a USBConnectionEvent with a device');
 

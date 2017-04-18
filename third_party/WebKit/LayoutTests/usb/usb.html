@@ -7,35 +7,23 @@
 <script>
 'use strict';
 
-// Returns a promise that is resolved when the next USBConnectionEvent of the
-// given type is received.
-function connectionEventPromise(eventType) {
-  return new Promise(resolve => {
-    let eventHandler = e => {
-      assert_true(e instanceof USBConnectionEvent);
-      navigator.usb.removeEventListener(eventType, eventHandler);
-      resolve(e.device);
-    };
-    navigator.usb.addEventListener(eventType, eventHandler);
+usb_test(() => {
+  return getFakeDevice().then(({ device }) => {
+    return navigator.usb.getDevices().then(devices => {
+      assert_equals(devices.length, 1);
+      assert_equals(device, devices[0]);
+      assertDeviceInfoEquals(devices[0], fakeDeviceInit);
+    });
   });
-}
+}, 'getDevices returns devices that are connected');
 
 usb_test(() => {
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return navigator.usb.getDevices().then(devices => {
-    assert_equals(devices.length, 1);
-    assertDeviceInfoEquals(devices[0], fakeDeviceInit);
-  });
-}, 'getDevices returns devices exposed by the DeviceManager service');
-
-usb_test(() => {
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return navigator.usb.getDevices().then(devicesFirstTime => {
-    assert_equals(devicesFirstTime.length, 1);
-    return navigator.usb.getDevices().then(devicesSecondTime => {
-      assert_array_equals(devicesSecondTime, devicesFirstTime);
+  return getFakeDevice().then(() => {
+    return navigator.usb.getDevices().then(devicesFirstTime => {
+      assert_equals(devicesFirstTime.length, 1);
+      return navigator.usb.getDevices().then(devicesSecondTime => {
+        assert_array_equals(devicesSecondTime, devicesFirstTime);
+      });
     });
   });
 }, 'getDevices returns the same objects for each USB device');
@@ -62,26 +50,29 @@ usb_test(() => {
 }, 'requestDevice rejects when no device is chosen');
 
 usb_test(() => {
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-  navigator.usb.test.chosenDevice = guid;
-
-  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
-    .then(device => {
-      assertDeviceInfoEquals(device, fakeDeviceInit);
-    })
-  );
+  return getFakeDevice().then(({ device, fakeDevice }) => {
+    navigator.usb.test.chosenDevice = fakeDevice;
+    return callWithKeyDown(() => {
+      return navigator.usb.requestDevice({ filters: [] }).then(chosenDevice => {
+        assert_equals(chosenDevice, device);
+      });
+    });
+  });
 }, 'requestDevice returns the device chosen by the user');
 
 usb_test(() => {
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-  navigator.usb.test.chosenDevice = guid;
-
-  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
-      .then(device => navigator.usb.getDevices().then(devices => {
-        assert_equals(devices.length, 1);
-        assert_equals(devices[0], device);
-      }))
-  );
+  return getFakeDevice().then(({ device, fakeDevice }) => {
+    navigator.usb.test.chosenDevice = fakeDevice;
+    return callWithKeyDown(() => {
+      return navigator.usb.requestDevice({ filters: [] }).then(chosenDevice => {
+        assert_equals(chosenDevice, device);
+        return navigator.usb.getDevices().then(devices => {
+          assert_equals(devices.length, 1);
+          assert_equals(devices[0], chosenDevice);
+        });
+      });
+    });
+  });
 }, 'getDevices returns the same object as requestDevice');
 
 usb_test(() => {
@@ -105,34 +96,15 @@ usb_test(() => {
 }, 'filters are sent correctly');
 
 usb_test(() => {
-  let promise = connectionEventPromise('connect');
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return promise.then(device => {
+  return getFakeDevice().then(({ device }) => {
     assertDeviceInfoEquals(device, fakeDeviceInit);
     return device.open().then(() => device.close());
   });
 }, 'onconnect event is trigged by adding a device');
 
 usb_test(usb => {
-  let promise = connectionEventPromise('connect');
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return promise
-      .then(device => navigator.usb.getDevices().then(devices => {
-        assert_equals(devices.length, 1);
-        assert_equals(devices[0], device);
-      }));
-}, 'getDevices returns the same object as sent in the onconnect event');
-
-usb_test(usb => {
-  let deviceAdded = connectionEventPromise('connect');
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
-  return deviceAdded.then(device => {
-    let deviceRemoved = connectionEventPromise('disconnect');
-    navigator.usb.test.removeFakeDevice(guid);
-    return deviceRemoved.then(removedDevice => {
+  return getFakeDevice().then(({ device, fakeDevice }) => {
+    return waitForDisconnect(fakeDevice).then(removedDevice => {
       assertDeviceInfoEquals(removedDevice, fakeDeviceInit);
       assert_equals(removedDevice, device);
       return removedDevice.open().then(() => {

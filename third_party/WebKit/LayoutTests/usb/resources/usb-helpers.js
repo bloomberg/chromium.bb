@@ -13,6 +13,38 @@ function usb_test(func, name, properties) {
   }, name, properties);
 }
 
+// Returns a promise that is resolved when the next USBConnectionEvent of the
+// given type is received.
+function connectionEventPromise(eventType) {
+  return new Promise(resolve => {
+    let eventHandler = e => {
+      assert_true(e instanceof USBConnectionEvent);
+      navigator.usb.removeEventListener(eventType, eventHandler);
+      resolve(e.device);
+    };
+    navigator.usb.addEventListener(eventType, eventHandler);
+  });
+}
+
+// Creates a fake device and returns a promise that resolves once the
+// 'connect' event is fired for the fake device. The promise is resolved with
+// an object containing the fake USB device and the corresponding USBDevice.
+function getFakeDevice() {
+  let promise = connectionEventPromise('connect');
+  let fakeDevice = navigator.usb.test.addFakeDevice(fakeDeviceInit);
+  return promise.then(device => {
+    return { device: device, fakeDevice: fakeDevice };
+  });
+}
+
+// Disconnects the given device and returns a promise that is resolved when it
+// is done.
+function waitForDisconnect(fakeDevice) {
+  let promise = connectionEventPromise('disconnect');
+  fakeDevice.disconnect();
+  return promise;
+}
+
 function assertRejectsWithError(promise, name, message) {
   return promise.then(() => {
     assert_unreached('expected promise to reject with ' + name);

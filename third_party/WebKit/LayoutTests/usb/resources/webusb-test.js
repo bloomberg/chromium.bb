@@ -8,14 +8,17 @@
 //
 // interface USBTest {
 //   attribute EventHandler ondeviceclose;
-//   attribute DOMString? chosenDevice;
+//   attribute FakeUSBDevice? chosenDevice;
 //   attribute FrozenArray<USBDeviceFilter>? lastFilters;
 //
 //   Promise<void> initialize();
 //   Promise<void> attachToWindow(Window window);
-//   DOMString addFakeDevice(FakeUSBDeviceInit deviceInit);
-//   void removeFakeDevice(DOMString);
+//   FakeUSBDevice addFakeDevice(FakeUSBDeviceInit deviceInit);
 //   void reset();
+// };
+//
+// interface FakeUSBDevice {
+//   void disconnect();
 // };
 //
 // dictionary FakeUSBDeviceInit {
@@ -76,6 +79,7 @@ let g_initializePromise = null;
 let g_chooserService = null;
 let g_deviceManager = null;
 let g_closeListener = null;
+let g_nextGuid = 0;
 
 function fakeDeviceInitToDeviceInfo(guid, init) {
   let deviceInfo = {
@@ -347,33 +351,40 @@ class FakeDeviceManager {
     this.bindingSet_ =
         new mojo.bindings.BindingSet(mojo.deviceManager.DeviceManager);
     this.devices_ = new Map();
+    this.devicesByGuid_ = new Map();
     this.client_ = null;
+    this.nextGuid_ = 0;
   }
 
   addBinding(handle) {
     this.bindingSet_.addBinding(this, handle);
   }
 
-  addDevice(info) {
+  addDevice(fakeDevice, info) {
     let device = {
-      guid: this.nextGuid_++ + "",
+      fakeDevice: fakeDevice,
+      guid: (this.nextGuid_++).toString(),
       info: info,
       bindingArray: []
     };
-    this.devices_.set(device.guid, device);
+    this.devices_.set(fakeDevice, device);
+    this.devicesByGuid_.set(device.guid, device);
     if (this.client_)
       this.client_.onDeviceAdded(fakeDeviceInitToDeviceInfo(device.guid, info));
-    return device.guid;
   }
 
-  removeDevice(guid) {
-    let device = this.devices_.get(guid);
+  removeDevice(fakeDevice) {
+    let device = this.devices_.get(fakeDevice);
+    if (!device)
+      throw new Error('Cannot remove unknown device.');
+
     for (var binding of device.bindingArray)
       binding.close();
-    this.devices_.delete(guid);
+    this.devices_.delete(device.fakeDevice);
+    this.devicesByGuid_.delete(device.guid);
     if (this.client_) {
       this.client_.onDeviceRemoved(
-          fakeDeviceInitToDeviceInfo(guid, device.info));
+          fakeDeviceInitToDeviceInfo(device.guid, device.info));
     }
   }
 
@@ -385,6 +396,7 @@ class FakeDeviceManager {
           fakeDeviceInitToDeviceInfo(device.guid, device.info));
     });
     this.devices_.clear();
+    this.devicesByGuid_.clear();
   }
 
   getDevices(options) {
@@ -396,13 +408,13 @@ class FakeDeviceManager {
   }
 
   getDevice(guid, request) {
-    let device = this.devices_.get(guid);
+    let device = this.devicesByGuid_.get(guid);
     if (device) {
       let binding = new mojo.bindings.Binding(
           mojo.device.Device, new FakeDevice(device.info), request);
       binding.setConnectionErrorHandler(() => {
         if (g_closeListener)
-          g_closeListener(guid);
+          g_closeListener(device.fakeDevice);
       });
       device.bindingArray.push(binding);
     } else {
@@ -427,13 +439,13 @@ class FakeChooserService {
     this.bindingSet_.addBinding(this, handle);
   }
 
-  setChosenDevice(guid) {
-    this.chosenDeviceGuid_ = guid;
+  setChosenDevice(fakeDevice) {
+    this.chosenDevice_ = fakeDevice;
   }
 
   getPermission(deviceFilters) {
     this.lastFilters_ = convertMojoDeviceFilters(deviceFilters);
-    let device = g_deviceManager.devices_.get(this.chosenDeviceGuid_);
+    let device = g_deviceManager.devices_.get(this.chosenDevice_);
     if (device) {
       return Promise.resolve({
         result: fakeDeviceInitToDeviceInfo(device.guid, device.info)
@@ -441,6 +453,13 @@ class FakeChooserService {
     } else {
       return Promise.resolve({ result: null });
     }
+  }
+}
+
+// Unlike FakeDevice this class is exported to callers of USBTest.addFakeDevice.
+class FakeUSBDevice {
+  disconnect() {
+    setTimeout(() => g_deviceManager.removeDevice(this), 0);
   }
 }
 
@@ -522,25 +541,23 @@ class USBTest {
     if (!g_deviceManager)
       throw new Error('Call initialize() before addFakeDevice().');
 
-    return g_deviceManager.addDevice(deviceInit);
-  }
-
-  removeFakeDevice(guid) {
-    if (!g_deviceManager)
-      throw new Error('Call initialize() before removeFakeDevice().');
-
-    return g_deviceManager.removeDevice(guid);
+    // |addDevice| and |removeDevice| are called in a setTimeout callback so
+    // that tests do not rely on the device being immediately available which
+    // may not be true for all implementations of this test API.
+    let fakeDevice = new FakeUSBDevice();
+    setTimeout(() => g_deviceManager.addDevice(fakeDevice, deviceInit), 0);
+    return fakeDevice;
   }
 
   set ondeviceclose(func) {
     g_closeListener = func;
   }
 
-  set chosenDevice(guid) {
+  set chosenDevice(fakeDevice) {
     if (!g_chooserService)
       throw new Error('Call initialize() before setting chosenDevice.');
 
-    g_chooserService.setChosenDevice(guid);
+    g_chooserService.setChosenDevice(fakeDevice);
   }
 
   get lastFilters() {
