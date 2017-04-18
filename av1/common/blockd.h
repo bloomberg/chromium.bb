@@ -829,14 +829,14 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 }
 
 #if CONFIG_EXT_INTRA
-#define MAX_ANGLE_DELTA_UV 2
-#define ANGLE_STEP_UV 4
+#define MAX_ANGLE_DELTA_UV 3
+#define ANGLE_STEP_UV 3
 
 static const uint8_t av1_angle_step_y[TX_SIZES] = {
-  0, 4, 3, 3,
+  0, 3, 3, 3,
 };
 static const uint8_t av1_max_angle_delta_y[TX_SIZES] = {
-  0, 2, 3, 3,
+  0, 3, 3, 3,
 };
 
 extern const int16_t dr_intra_derivative[90];
