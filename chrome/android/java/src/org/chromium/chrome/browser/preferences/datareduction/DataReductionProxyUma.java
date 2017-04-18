@@ -45,7 +45,8 @@ public class DataReductionProxyUma {
     public static final int ACTION_MAIN_MENU_OFF_TO_ON = 17;
     public static final int ACTION_MAIN_MENU_ON_TO_OFF = 18;
     public static final int ACTION_MAIN_MENU_ON_TO_ON = 19;
-    public static final int ACTION_INDEX_BOUNDARY = 20;
+    public static final int ACTION_STATS_RESET = 20;
+    public static final int ACTION_INDEX_BOUNDARY = 21;
 
     // Represent the possible Lo-Fi context menu user actions. This must remain in sync with
     // Previews.ContextMenuAction.LoFi in tools/metrics/histograms/histograms.xml.

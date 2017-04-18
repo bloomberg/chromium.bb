@@ -181,6 +181,8 @@ public class DataReductionStatsPreference extends Preference {
                     updateReductionStatistics();
                     setDetailText();
                     notifyChanged();
+                    DataReductionProxyUma.dataReductionProxyUIAction(
+                            DataReductionProxyUma.ACTION_STATS_RESET);
                 }
             });
         }
