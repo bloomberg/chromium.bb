@@ -150,7 +150,8 @@ const int64_t kLastUsedFolderNone = -1;
   const BookmarkNode* defaultFolder =
       [[self class] folderForNewBookmarksInBrowserState:_browserState];
   self.bookmarkModel->AddURL(defaultFolder, defaultFolder->child_count(),
-                             base::SysNSStringToUTF16(tab.title), tab.url);
+                             base::SysNSStringToUTF16(tab.title),
+                             tab.lastCommittedURL);
 
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
   __weak BookmarkInteractionController* weakSelf = self;
@@ -184,7 +185,8 @@ const int64_t kLastUsedFolderNone = -1;
   DCHECK(tab);
 
   const BookmarkNode* bookmark =
-      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(tab.url);
+      self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
+          tab.lastCommittedURL);
   if (!bookmark)
     return;
 
