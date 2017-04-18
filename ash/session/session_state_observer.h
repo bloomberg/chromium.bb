@@ -15,7 +15,6 @@ namespace ash {
 
 enum class LoginStatus;
 
-// TODO(xiyuan): Rename to On*Changed().
 class ASH_EXPORT SessionStateObserver {
  public:
   // Called when the active user session has changed.
@@ -35,6 +34,9 @@ class ASH_EXPORT SessionStateObserver {
 
   // Called when the lock state is changed. |locked| is the current lock stated.
   virtual void OnLockStateChanged(bool locked) {}
+
+  // Called when chrome is terminating.
+  virtual void OnChromeTerminating() {}
 
  protected:
   virtual ~SessionStateObserver() {}

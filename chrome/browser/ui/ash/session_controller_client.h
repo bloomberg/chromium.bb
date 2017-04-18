@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -27,7 +29,8 @@ class SessionControllerClient
     : public ash::mojom::SessionControllerClient,
       public user_manager::UserManager::UserSessionStateObserver,
       public user_manager::UserManager::Observer,
-      public session_manager::SessionManagerObserver {
+      public session_manager::SessionManagerObserver,
+      public content::NotificationObserver {
  public:
   SessionControllerClient();
   ~SessionControllerClient() override;
@@ -53,6 +56,11 @@ class SessionControllerClient
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // TODO(xiyuan): Remove after SessionStateDelegateChromeOS is gone.
   static bool CanLockScreen();
@@ -87,6 +95,9 @@ class SessionControllerClient
 
   // Whether the primary user session info is sent to ash.
   bool primary_user_session_sent_ = false;
+
+  // For observing NOTIFICATION_APP_TERMINATING.
+  content::NotificationRegistrar registrar_;
 
   ash::mojom::SessionInfoPtr last_sent_session_info_;
 

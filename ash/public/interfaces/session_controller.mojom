@@ -147,6 +147,9 @@ interface SessionController {
   // dismissing. When the mojo call returns, screen locker takes that as a
   // signal of finished unlock animation and dismisses itself.
   RunUnlockAnimation() => ();
+
+  // Notifies that chrome is terminating.
+  NotifyChromeTerminating();
 };
 
 // Interface for ash to request session service from its client (e.g. Chrome).

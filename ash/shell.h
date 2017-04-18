@@ -269,9 +269,6 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   void SetDisplayWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
 
-  // Called when the application is exiting.
-  void OnAppTerminating();
-
   // Called when a casting session is started or stopped.
   void OnCastingSessionStartedOrStopped(bool started);
 
@@ -635,6 +632,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
+  void OnChromeTerminating() override;
 
   // Callback for prefs::ConnectToPrefService.
   void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);

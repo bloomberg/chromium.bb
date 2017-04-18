@@ -7,6 +7,7 @@
 #include <deque>
 #include <memory>
 
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
@@ -198,7 +199,7 @@ TEST_F(VideoDetectorTest, DontReportWhenWindowHidden) {
 TEST_F(VideoDetectorTest, DontReportDuringShutdown) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(0, 0, 1024, 768));
-  Shell::Get()->OnAppTerminating();
+  Shell::Get()->session_controller()->NotifyChromeTerminating();
   SendUpdates(window.get(), kMinRect, kMinFps + 5, 2 * kMinDuration);
   EXPECT_TRUE(observer_->empty());
 }

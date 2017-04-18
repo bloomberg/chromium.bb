@@ -76,7 +76,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
-#include "chrome/browser/chromeos/power/login_lock_state_notifier.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_prefs.h"
@@ -830,9 +829,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     // These are dependent on the ash::Shell singleton already having been
     // initialized. Consequently, these cannot be used when running as a mus
     // client.
-    // TODO(oshima): Remove ash dependency in LoginLockStateNotifier.
-    // crbug.com/408832.
-    login_lock_state_notifier_.reset(new LoginLockStateNotifier);
     data_promo_notification_.reset(new DataPromoNotification());
 
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
@@ -920,7 +916,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 #endif
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
-  login_lock_state_notifier_.reset();
   idle_action_warning_observer_.reset();
 
   if (!ash_util::IsRunningInMash())

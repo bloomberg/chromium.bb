@@ -30,7 +30,6 @@ class EventRewriterController;
 class EventRewriterDelegateImpl;
 class ExtensionVolumeObserver;
 class IdleActionWarningObserver;
-class LoginLockStateNotifier;
 class LowDiskNotification;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
@@ -75,7 +74,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<ExtensionVolumeObserver> extension_volume_observer_;
   std::unique_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;
   std::unique_ptr<PowerPrefs> power_prefs_;
-  std::unique_ptr<LoginLockStateNotifier> login_lock_state_notifier_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;

@@ -221,6 +221,11 @@ void SessionController::RunUnlockAnimation(
     Shell::Get()->lock_state_controller()->OnLockScreenHide(callback);
 }
 
+void SessionController::NotifyChromeTerminating() {
+  for (auto& observer : observers_)
+    observer.OnChromeTerminating();
+}
+
 void SessionController::ClearUserSessionsForTest() {
   user_sessions_.clear();
 }

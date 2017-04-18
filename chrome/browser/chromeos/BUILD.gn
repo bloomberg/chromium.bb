@@ -1211,8 +1211,6 @@ source_set("chromeos") {
     "power/idle_action_warning_dialog_view.h",
     "power/idle_action_warning_observer.cc",
     "power/idle_action_warning_observer.h",
-    "power/login_lock_state_notifier.cc",
-    "power/login_lock_state_notifier.h",
     "power/peripheral_battery_observer.cc",
     "power/peripheral_battery_observer.h",
     "power/power_data_collector.cc",
