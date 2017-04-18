@@ -133,14 +133,8 @@ nfc_test(nfc => {
 }, 'Check that provided NFCPushOptions values are correctly converted.');
 
 nfc_test(nfc => {
-  return navigator.nfc.push(test_buffer_data).then(() => {
-    nfc.assertNFCMessagesEqual(test_buffer_data, nfc.mockNFC.pushedMessage());
-  });
-}, 'Push ArrayBuffer with default NFCPushOptions.');
-
-nfc_test(nfc => {
   return navigator.nfc.push(test_text_data)
-      .then(() => { navigator.nfc.cancelPush });
+      .then(() => { return navigator.nfc.cancelPush(); });
 }, 'nfc.cancelPush should succeed if there is pending push operation.');
 
 nfc_test(nfc => {
