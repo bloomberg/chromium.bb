@@ -56,6 +56,9 @@ class MockProcess(object):
     def communicate(self, *_):
         return (self.stdout.getvalue(), self.stderr.getvalue())
 
+    def kill(self):
+        return
+
 
 class MockExecutive(object):
     PIPE = 'MOCK PIPE'
