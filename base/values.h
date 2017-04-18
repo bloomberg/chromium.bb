@@ -48,6 +48,7 @@ class Value;
 // See the file-level comment above for more information.
 class BASE_EXPORT Value {
  public:
+  using BlobStorage = std::vector<char>;
   using DictStorage = base::flat_map<std::string, std::unique_ptr<Value>>;
   using ListStorage = std::vector<Value>;
 
@@ -66,7 +67,7 @@ class BASE_EXPORT Value {
   // For situations where you want to keep ownership of your buffer, this
   // factory method creates a new BinaryValue by copying the contents of the
   // buffer that's passed in.
-  // DEPRECATED, use MakeUnique<Value>(const std::vector<char>&) instead.
+  // DEPRECATED, use MakeUnique<Value>(const BlobStorage&) instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   static std::unique_ptr<Value> CreateWithCopiedBuffer(const char* buffer,
                                                        size_t size);
@@ -92,8 +93,8 @@ class BASE_EXPORT Value {
   explicit Value(const string16& in_string);
   explicit Value(StringPiece in_string);
 
-  explicit Value(const std::vector<char>& in_blob);
-  explicit Value(std::vector<char>&& in_blob) noexcept;
+  explicit Value(const BlobStorage& in_blob);
+  explicit Value(BlobStorage&& in_blob) noexcept;
 
   explicit Value(DictStorage&& in_dict) noexcept;
 
@@ -128,7 +129,7 @@ class BASE_EXPORT Value {
   int GetInt() const;
   double GetDouble() const;  // Implicitly converts from int if necessary.
   const std::string& GetString() const;
-  const std::vector<char>& GetBlob() const;
+  const BlobStorage& GetBlob() const;
 
   size_t GetSize() const;         // DEPRECATED, use GetBlob().size() instead.
   const char* GetBuffer() const;  // DEPRECATED, use GetBlob().data() instead.
@@ -193,7 +194,7 @@ class BASE_EXPORT Value {
     int int_value_;
     double double_value_;
     ManualConstructor<std::string> string_value_;
-    ManualConstructor<std::vector<char>> binary_value_;
+    ManualConstructor<BlobStorage> binary_value_;
     ManualConstructor<DictStorage> dict_;
     ManualConstructor<ListStorage> list_;
   };

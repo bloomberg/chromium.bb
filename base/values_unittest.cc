@@ -28,7 +28,7 @@ TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_constructible<Value, std::string&&>::value,
                 "IsNothrowMoveConstructibleFromString");
   static_assert(
-      std::is_nothrow_constructible<Value, std::vector<char>&&>::value,
+      std::is_nothrow_constructible<Value, Value::BlobStorage&&>::value,
       "IsNothrowMoveConstructibleFromBlob");
   static_assert(std::is_nothrow_move_assignable<Value>::value,
                 "IsNothrowMoveAssignable");
@@ -100,9 +100,10 @@ TEST(ValuesTest, ConstructStringFromStringPiece) {
 }
 
 TEST(ValuesTest, ConstructBinary) {
-  Value value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
+  Value value(Value::BlobStorage({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
   EXPECT_EQ(Value::Type::BINARY, value.type());
-  EXPECT_EQ(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}), value.GetBlob());
+  EXPECT_EQ(Value::BlobStorage({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}),
+            value.GetBlob());
 }
 
 TEST(ValuesTest, ConstructDict) {
@@ -180,7 +181,7 @@ TEST(ValuesTest, CopyString) {
 }
 
 TEST(ValuesTest, CopyBinary) {
-  Value value(std::vector<char>({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
+  Value value(Value::BlobStorage({0xF, 0x0, 0x0, 0xB, 0xA, 0x2}));
   Value copied_value(value);
   EXPECT_EQ(value.type(), copied_value.type());
   EXPECT_EQ(value.GetBlob(), copied_value.GetBlob());
@@ -299,7 +300,7 @@ TEST(ValuesTest, MoveString) {
 }
 
 TEST(ValuesTest, MoveBinary) {
-  const std::vector<char> buffer = {0xF, 0x0, 0x0, 0xB, 0xA, 0x2};
+  const Value::BlobStorage buffer = {0xF, 0x0, 0x0, 0xB, 0xA, 0x2};
   Value value(buffer);
   Value moved_value(std::move(value));
   EXPECT_EQ(Value::Type::BINARY, moved_value.type());
@@ -449,7 +450,7 @@ TEST(ValuesTest, BinaryValue) {
   ASSERT_EQ(0U, binary->GetSize());
 
   // Test the common case of a non-empty buffer
-  std::vector<char> buffer(15);
+  Value::BlobStorage buffer(15);
   char* original_buffer = buffer.data();
   binary.reset(new Value(std::move(buffer)));
   ASSERT_TRUE(binary.get());
@@ -673,7 +674,7 @@ TEST(ValuesTest, DeepCopy) {
   Value* original_string16 = scoped_string16.get();
   original_dict.Set("string16", std::move(scoped_string16));
 
-  std::vector<char> original_buffer(42, '!');
+  Value::BlobStorage original_buffer(42, '!');
   std::unique_ptr<Value> scoped_binary(new Value(std::move(original_buffer)));
   Value* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));
@@ -917,8 +918,8 @@ TEST(ValuesTest, Comparisons) {
   EXPECT_FALSE(string1 >= string2);
 
   // Test Binary Values.
-  Value binary1(std::vector<char>{0x01});
-  Value binary2(std::vector<char>{0x02});
+  Value binary1(Value::BlobStorage{0x01});
+  Value binary2(Value::BlobStorage{0x02});
   EXPECT_FALSE(binary1 == binary2);
   EXPECT_NE(binary1, binary2);
   EXPECT_LT(binary1, binary2);
@@ -1006,7 +1007,7 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   Value* original_string16 = scoped_string16.get();
   original_dict.Set("string16", std::move(scoped_string16));
 
-  std::vector<char> original_buffer(42, '!');
+  Value::BlobStorage original_buffer(42, '!');
   std::unique_ptr<Value> scoped_binary(new Value(std::move(original_buffer)));
   Value* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));

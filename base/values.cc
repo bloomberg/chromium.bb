@@ -78,7 +78,7 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 // static
 std::unique_ptr<Value> Value::CreateWithCopiedBuffer(const char* buffer,
                                                      size_t size) {
-  return MakeUnique<Value>(std::vector<char>(buffer, buffer + size));
+  return MakeUnique<Value>(BlobStorage(buffer, buffer + size));
 }
 
 Value::Value(const Value& that) {
@@ -158,11 +158,11 @@ Value::Value(const string16& in_string) : type_(Type::STRING) {
 
 Value::Value(StringPiece in_string) : Value(in_string.as_string()) {}
 
-Value::Value(const std::vector<char>& in_blob) : type_(Type::BINARY) {
+Value::Value(const BlobStorage& in_blob) : type_(Type::BINARY) {
   binary_value_.Init(in_blob);
 }
 
-Value::Value(std::vector<char>&& in_blob) noexcept : type_(Type::BINARY) {
+Value::Value(BlobStorage&& in_blob) noexcept : type_(Type::BINARY) {
   binary_value_.Init(std::move(in_blob));
 }
 
@@ -224,7 +224,7 @@ const std::string& Value::GetString() const {
   return *string_value_;
 }
 
-const std::vector<char>& Value::GetBlob() const {
+const Value::BlobStorage& Value::GetBlob() const {
   CHECK(is_blob());
   return *binary_value_;
 }
