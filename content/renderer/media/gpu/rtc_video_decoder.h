@@ -156,11 +156,12 @@ class CONTENT_EXPORT RTCVideoDecoder
   void ResetInternal();
 
   // Static method is to allow it to run even after RVD is deleted.
-  static void ReleaseMailbox(base::WeakPtr<RTCVideoDecoder> decoder,
-                             media::GpuVideoAcceleratorFactories* factories,
-                             int64_t picture_buffer_id,
-                             uint32_t texture_id,
-                             const gpu::SyncToken& release_sync_token);
+  static void ReleaseMailbox(
+      base::WeakPtr<RTCVideoDecoder> decoder,
+      media::GpuVideoAcceleratorFactories* factories,
+      int64_t picture_buffer_id,
+      const media::PictureBuffer::TextureIds& texture_ids,
+      const gpu::SyncToken& release_sync_token);
   // Tells VDA that a picture buffer can be recycled.
   void ReusePictureBuffer(int64_t picture_buffer_id);
 
@@ -249,7 +250,8 @@ class CONTENT_EXPORT RTCVideoDecoder
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via read_cb_, and which will be returned
   // to us via ReusePictureBuffer.
-  typedef std::map<int32_t /* picture_buffer_id */, uint32_t /* texture_id */>
+  typedef std::map<int32_t /* picture_buffer_id */,
+                   media::PictureBuffer::TextureIds /* texture ids */>
       PictureBufferTextureMap;
   PictureBufferTextureMap picture_buffers_at_display_;
 

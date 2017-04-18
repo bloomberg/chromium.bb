@@ -141,6 +141,29 @@ class RTCVideoDecoderTest
     idle_waiter_.Wait();
   }
 
+  bool CreateMockTextures(int32_t count,
+                          const gfx::Size& size,
+                          std::vector<uint32_t>* texture_ids,
+                          std::vector<gpu::Mailbox>* texture_mailboxes,
+                          uint32_t texture_target) {
+    texture_ids->resize(count, 0);
+    texture_mailboxes->resize(count, gpu::Mailbox());
+    return true;
+  }
+
+  void ProvidePictureBuffers(uint32_t buffer_count,
+                             media::VideoPixelFormat format,
+                             uint32_t textures_per_buffer,
+                             const gfx::Size& size,
+                             uint32_t texture_target) {
+    vda_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::ProvidePictureBuffers,
+                   base::Unretained(rtc_decoder_.get()), buffer_count, format,
+                   textures_per_buffer, size, texture_target));
+    RunUntilIdle();
+  }
+
   void SetUpResetVDA() {
     mock_vda_after_reset_ = new media::MockVideoDecodeAccelerator;
     EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoDecodeAccelerator())
@@ -274,6 +297,28 @@ TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
       rtc_decoder_->IsFirstBufferAfterReset(0, RTCVideoDecoder::ID_LAST));
   EXPECT_FALSE(
       rtc_decoder_->IsFirstBufferAfterReset(1, RTCVideoDecoder::ID_LAST));
+}
+
+TEST_F(RTCVideoDecoderTest, MultipleTexturesPerBuffer) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
+  const uint32_t kBufferCount = 5;
+  const uint32_t kTexturesPerBuffer = 3;
+  const gfx::Size kSize(48, 48);
+
+  EXPECT_CALL(*mock_gpu_factories_.get(), CreateTextures(_, _, _, _, _))
+      .WillRepeatedly(Invoke(this, &RTCVideoDecoderTest::CreateMockTextures));
+  EXPECT_CALL(*mock_gpu_factories_.get(), DeleteTexture(_))
+      .Times(kBufferCount * kTexturesPerBuffer);
+
+  std::vector<media::PictureBuffer> pbs;
+  EXPECT_CALL(*mock_vda_, AssignPictureBuffers(_)).WillOnce(SaveArg<0>(&pbs));
+  ProvidePictureBuffers(kBufferCount, media::PIXEL_FORMAT_UNKNOWN,
+                        kTexturesPerBuffer, kSize, 0);
+  EXPECT_EQ(kBufferCount, pbs.size());
+  for (const auto pb : pbs) {
+    EXPECT_EQ(kSize, pb.size());
+    EXPECT_EQ(kTexturesPerBuffer, pb.client_texture_ids().size());
+  }
 }
 
 // Tests/Verifies that |rtc_encoder_| drops incoming frames and its error
