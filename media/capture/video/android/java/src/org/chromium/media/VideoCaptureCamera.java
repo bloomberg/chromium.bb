@@ -84,11 +84,13 @@ public class VideoCaptureCamera
     private final Object mPhotoTakenCallbackLock = new Object();
 
     // Storage of takePicture() callback Id. There can be one such request in flight at most, and
-    // needs to be exercised either in case of error or sucess.
+    // needs to be exercised either in case of error or success.
     private long mPhotoTakenCallbackId;
+
     private int mPhotoWidth;
     private int mPhotoHeight;
     private android.hardware.Camera.Area mAreaOfInterest;
+    private android.hardware.Camera.Parameters mPreviewParameters;
 
     private android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
@@ -153,6 +155,17 @@ public class VideoCaptureCamera
     private class CrPictureCallback implements android.hardware.Camera.PictureCallback {
         @Override
         public void onPictureTaken(byte[] data, android.hardware.Camera camera) {
+            try {
+                Log.d(TAG, "|mPreviewParameters|: %s", mPreviewParameters.flatten());
+                camera.setParameters(mPreviewParameters);
+            } catch (RuntimeException ex) {
+                Log.e(TAG, "onPictureTaken, setParameters() " + ex);
+            }
+            try {
+                camera.startPreview();
+            } catch (RuntimeException ex) {
+                Log.e(TAG, "onPictureTaken, startPreview() " + ex);
+            }
             synchronized (mPhotoTakenCallbackLock) {
                 if (mPhotoTakenCallbackId != 0) {
                     nativeOnPhotoTaken(
@@ -160,10 +173,6 @@ public class VideoCaptureCamera
                 }
                 mPhotoTakenCallbackId = 0;
             }
-            android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
-            parameters.setRotation(0);
-            mCamera.setParameters(parameters);
-            camera.startPreview();
         }
     };
 
@@ -751,44 +760,40 @@ public class VideoCaptureCamera
             if (mPhotoTakenCallbackId != 0) return false;
             mPhotoTakenCallbackId = callbackId;
         }
+        mPreviewParameters = getCameraParameters(mCamera);
 
-        android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
-        parameters.setRotation(getCameraRotation());
-        final android.hardware.Camera.Size original_size = parameters.getPictureSize();
+        android.hardware.Camera.Parameters photoParameters = getCameraParameters(mCamera);
+        photoParameters.setRotation(getCameraRotation());
 
-        List<android.hardware.Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
-        android.hardware.Camera.Size closestSize = null;
-        int minDiff = Integer.MAX_VALUE;
-        for (android.hardware.Camera.Size size : supportedSizes) {
-            final int diff = ((mPhotoWidth > 0) ? Math.abs(size.width - mPhotoWidth) : 0)
-                    + ((mPhotoHeight > 0) ? Math.abs(size.height - mPhotoHeight) : 0);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closestSize = size;
+        if (mPhotoWidth > 0 || mPhotoHeight > 0) {
+            final List<android.hardware.Camera.Size> supportedSizes =
+                    photoParameters.getSupportedPictureSizes();
+            android.hardware.Camera.Size closestSize = null;
+            int minDiff = Integer.MAX_VALUE;
+            for (android.hardware.Camera.Size size : supportedSizes) {
+                final int diff = ((mPhotoWidth > 0) ? Math.abs(size.width - mPhotoWidth) : 0)
+                        + ((mPhotoHeight > 0) ? Math.abs(size.height - mPhotoHeight) : 0);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSize = size;
+                }
+            }
+            if (minDiff != Integer.MAX_VALUE) {
+                Log.d(TAG, "requested resolution: (%dx%d); matched (%dx%d)", mPhotoWidth,
+                        mPhotoHeight, closestSize.width, closestSize.height);
+                photoParameters.setPictureSize(closestSize.width, closestSize.height);
             }
         }
-        Log.d(TAG, "requested resolution: (%dx%d)", mPhotoWidth, mPhotoHeight);
-        if (minDiff != Integer.MAX_VALUE) {
-            Log.d(TAG, " matched (%dx%d)", closestSize.width, closestSize.height);
-            parameters.setPictureSize(closestSize.width, closestSize.height);
-        }
 
         try {
-            mCamera.setParameters(parameters);
-            mCamera.takePicture(null, null, null, new CrPictureCallback());
+            Log.d(TAG, "|photoParameters|: %s", photoParameters.flatten());
+            mCamera.setParameters(photoParameters);
         } catch (RuntimeException ex) {
-            Log.e(TAG, "takePicture ", ex);
+            Log.e(TAG, "setParameters " + ex);
             return false;
         }
 
-        // Restore original parameters.
-        parameters.setPictureSize(original_size.width, original_size.height);
-        try {
-            mCamera.setParameters(parameters);
-        } catch (RuntimeException ex) {
-            Log.e(TAG, "takePicture ", ex);
-            return false;
-        }
+        mCamera.takePicture(null, null, null, new CrPictureCallback());
         return true;
     }
 
