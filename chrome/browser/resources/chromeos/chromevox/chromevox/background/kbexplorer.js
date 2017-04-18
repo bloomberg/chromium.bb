@@ -16,6 +16,7 @@ goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.CommandStore');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeyUtil');
+goog.require('cvox.LibLouis');
 
 /**
  * Class to manage the keyboard explorer.
@@ -58,6 +59,11 @@ cvox.KbExplorer.init = function() {
     cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
     cvox.ChromeVox.modKeyStr = 'Search+Shift';
   }
+
+  /** @type {cvox.LibLouis} */
+  this.currentBrailleTranslator_ = backgroundWindow['cvox']['BrailleBackground']
+      ['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
+
   cvox.ChromeVoxKbHandler.commandHandler = cvox.KbExplorer.onCommand;
   $('instruction').focus();
 };
@@ -132,25 +138,58 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
     case cvox.BrailleKeyCommand.BOTTOM:
       msgid = 'braille_bottom';
       break;
-      break;
     case cvox.BrailleKeyCommand.ROUTING:
     case cvox.BrailleKeyCommand.SECONDARY_ROUTING:
       msgid = 'braille_routing';
       msgArgs.push(/** @type {number} */ (evt.displayPosition + 1));
       break;
     case cvox.BrailleKeyCommand.CHORD:
-      if (!evt.brailleDots)
+      var dots = evt.brailleDots;
+      if (!dots)
         return;
+
+      // First, check for the dots mapping to a key code.
+      var keyCode = cvox.BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
+      if (keyCode) {
+        text = keyCode;
+        break;
+      }
+
+      // Next, check for the modifier mappings.
+      var mods = cvox.BrailleKeyEvent.brailleDotsToModifiers[dots];
+      if (mods) {
+        var outputs = [];
+        for (var mod in mods) {
+          if (mod == 'ctrlKey')
+            outputs.push('control');
+          else if (mod == 'altKey')
+            outputs.push('alt');
+          else if (mod == 'shiftKey')
+            outputs.push('shift');
+        }
+
+        text = outputs.join(' ');
+        break;
+      }
+
       var command =
-          BrailleCommandHandler.getCommand(evt.brailleDots);
+          BrailleCommandHandler.getCommand(dots);
       if (command && cvox.KbExplorer.onCommand(command))
         return;
-      // Fall through.
-    case cvox.BrailleKeyCommand.DOTS:
-      if (!evt.brailleDots)
-        return;
-      text = BrailleCommandHandler.makeShortcutText(evt.brailleDots);
+      text = BrailleCommandHandler.makeShortcutText(dots, true);
       break;
+    case cvox.BrailleKeyCommand.DOTS:
+      var dots = evt.brailleDots;
+      if (!dots)
+        return;
+      var cells = new ArrayBuffer(1);
+      var view = new Uint8Array(cells);
+      view[0]= dots;
+    cvox.KbExplorer.currentBrailleTranslator_.backTranslate(cells,
+          function(res) {
+            cvox.KbExplorer.output(res);
+          }.bind(this));
+      return;
     case cvox.BrailleKeyCommand.STANDARD_KEY:
       break;
   }
