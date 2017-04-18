@@ -172,8 +172,6 @@ class NET_EXPORT HttpNetworkSession
     // Specifies the maximum time duration that QUIC packet reader can perform
     // consecutive packets reading.
     int quic_packet_reader_yield_after_duration_milliseconds;
-    // If true, disable preconnections if QUIC can do 0RTT.
-    bool quic_disable_preconnect_if_0rtt;
     // If true, active QUIC sessions may be migrated onto a new network when
     // the platform indicates that the default network is changing.
     bool quic_migrate_sessions_on_network_change;

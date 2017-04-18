@@ -246,13 +246,6 @@ bool ShouldQuicEstimateInitialRtt(
       GetVariationParam(quic_trial_params, "estimate_initial_rtt"), "true");
 }
 
-bool ShouldQuicDisablePreConnectIfZeroRtt(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_preconnect_if_0rtt"),
-      "true");
-}
-
 bool ShouldQuicMigrateSessionsOnNetworkChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -369,8 +362,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicDoNotFragment(quic_trial_params);
     params->quic_estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
-    params->quic_disable_preconnect_if_0rtt =
-        ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params);
     params->quic_migrate_sessions_on_network_change =
         ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params);
     params->quic_migrate_sessions_early =

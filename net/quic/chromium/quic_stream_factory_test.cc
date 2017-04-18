@@ -4729,21 +4729,6 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
   EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
 }
 
-TEST_P(QuicStreamFactoryTest, QuicDoingZeroRTT) {
-  Initialize();
-
-  factory_->set_require_confirmation(true);
-  QuicServerId quic_server_id(host_port_pair_, PRIVACY_MODE_DISABLED);
-  EXPECT_FALSE(factory_->ZeroRTTEnabledFor(quic_server_id));
-
-  factory_->set_require_confirmation(false);
-  EXPECT_FALSE(factory_->ZeroRTTEnabledFor(quic_server_id));
-
-  // Load server config and verify QUIC will do 0RTT.
-  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id);
-  EXPECT_TRUE(factory_->ZeroRTTEnabledFor(quic_server_id));
-}
-
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();

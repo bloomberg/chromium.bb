@@ -738,7 +738,6 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
 
     HttpNetworkSession::Params params;
     params.enable_quic = true;
-    params.quic_disable_preconnect_if_0rtt = false;
     scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
         new SSLConfigServiceDefaults);
     HttpServerPropertiesImpl http_server_properties;
@@ -875,7 +874,6 @@ void SetupForQuicAlternativeProxyTest(
     TransportSecurityState* transport_security_state,
     bool set_alternative_proxy_server) {
   params->enable_quic = true;
-  params->quic_disable_preconnect_if_0rtt = false;
   params->client_socket_factory = socket_factory;
   params->host_resolver = host_resolver;
   params->transport_security_state = transport_security_state;
@@ -1142,7 +1140,6 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     HttpNetworkSession::Params params =
         SpdySessionDependencies::CreateSessionParams(&session_deps);
     params.enable_quic = true;
-    params.quic_disable_preconnect_if_0rtt = true;
     params.http_server_properties = &http_server_properties;
 
     std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
@@ -1169,63 +1166,6 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelperForURL(num_streams, url, session.get());
     EXPECT_EQ(num_streams, ssl_conn_pool->last_num_streams());
-  }
-}
-
-TEST_F(HttpStreamFactoryTest, QuicDisablePreConnectIfZeroRtt) {
-  for (int num_streams = 1; num_streams < 3; ++num_streams) {
-    GURL url = GURL("https://www.google.com");
-
-    // Set up QUIC as alternative_service.
-    HttpServerPropertiesImpl http_server_properties;
-    const AlternativeService alternative_service(kProtoQUIC, "www.google.com",
-                                                 443);
-    AlternativeServiceInfoVector alternative_service_info_vector;
-    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, expiration));
-    HostPortPair host_port_pair(alternative_service.host_port_pair());
-    url::SchemeHostPort server("https", host_port_pair.host(),
-                               host_port_pair.port());
-    http_server_properties.SetAlternativeServices(
-        server, alternative_service_info_vector);
-
-    SpdySessionDependencies session_deps;
-
-    // Setup params to disable preconnect, but QUIC does 0RTT.
-    HttpNetworkSession::Params params =
-        SpdySessionDependencies::CreateSessionParams(&session_deps);
-    params.enable_quic = true;
-    params.quic_disable_preconnect_if_0rtt = true;
-    params.http_server_properties = &http_server_properties;
-
-    std::unique_ptr<HttpNetworkSession> session(new HttpNetworkSession(params));
-
-    // Setup 0RTT for QUIC.
-    QuicStreamFactory* factory = session->quic_stream_factory();
-    factory->set_require_confirmation(false);
-    test::QuicStreamFactoryPeer::CacheDummyServerConfig(
-        factory, QuicServerId(host_port_pair, PRIVACY_MODE_DISABLED));
-
-    HttpNetworkSessionPeer peer(session.get());
-    CapturePreconnectsTransportSocketPool* transport_conn_pool =
-        new CapturePreconnectsTransportSocketPool(
-            session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-            session_deps.transport_security_state.get(),
-            session_deps.cert_transparency_verifier.get(),
-            session_deps.ct_policy_enforcer.get());
-    std::unique_ptr<MockClientSocketPoolManager> mock_pool_manager(
-        new MockClientSocketPoolManager);
-    mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
-    peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-
-    HttpRequestInfo request;
-    request.method = "GET";
-    request.url = url;
-    request.load_flags = 0;
-
-    session->http_stream_factory()->PreconnectStreams(num_streams, request);
-    EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
   }
 }
 

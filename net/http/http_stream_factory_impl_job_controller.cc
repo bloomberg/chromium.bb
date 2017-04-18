@@ -136,13 +136,6 @@ void HttpStreamFactoryImpl::JobController::Preconnect(
       request_info, nullptr, HttpStreamRequest::HTTP_STREAM);
 
   if (alternative_service.protocol != kProtoUnknown) {
-    if (session_->params().quic_disable_preconnect_if_0rtt &&
-        alternative_service.protocol == kProtoQUIC &&
-        session_->quic_stream_factory()->ZeroRTTEnabledFor(QuicServerId(
-            alternative_service.host_port_pair(), request_info.privacy_mode))) {
-      MaybeNotifyFactoryOfCompletion();
-      return;
-    }
     destination = alternative_service.host_port_pair();
     ignore_result(ApplyHostMappingRules(request_info.url, &destination));
   }

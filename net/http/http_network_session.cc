@@ -142,7 +142,6 @@ HttpNetworkSession::Params::Params()
       quic_reduced_ping_timeout_seconds(kPingTimeoutSecs),
       quic_packet_reader_yield_after_duration_milliseconds(
           kQuicYieldAfterDurationMilliseconds),
-      quic_disable_preconnect_if_0rtt(false),
       quic_migrate_sessions_on_network_change(false),
       quic_migrate_sessions_early(false),
       quic_allow_server_migration(false),
@@ -347,8 +346,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetInteger(
       "packet_reader_yield_after_duration_milliseconds",
       params_.quic_packet_reader_yield_after_duration_milliseconds);
-  dict->SetBoolean("disable_preconnect_if_0rtt",
-                   params_.quic_disable_preconnect_if_0rtt);
   dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
   dict->SetBoolean("race_cert_verification",
                    params_.quic_race_cert_verification);
