@@ -802,8 +802,6 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   // API either.
   if (!CanCommitURL(child_id, filesystem_url.origin())) {
     UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
-    // TODO(nick): Temporary instrumentation for https://crbug.com/654479.
-    base::debug::DumpWithoutCrashing();
     return false;
   }
 
