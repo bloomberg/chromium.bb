@@ -294,6 +294,7 @@ EXPERIMENT_LIST="
     xiphrc
     cb4x4
     chroma_2x2
+    chroma_sub8x8
     frame_size
     delta_q
     ext_delta_q
