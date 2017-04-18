@@ -57,10 +57,13 @@ class MojoTestConnector {
 
   std::unique_ptr<ServiceProcessLauncherDelegateImpl>
       service_process_launcher_delegate_;
-  service_manager::BackgroundServiceManager background_service_manager_;
+  std::unique_ptr<service_manager::BackgroundServiceManager>
+      background_service_manager_;
 
   std::unique_ptr<base::Thread> ipc_thread_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+
+  std::unique_ptr<base::Value> catalog_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);
 };

@@ -188,8 +188,8 @@ MojoTestConnector::MojoTestConnector(
     std::unique_ptr<base::Value> catalog_contents)
     : service_process_launcher_delegate_(
           new ServiceProcessLauncherDelegateImpl),
-      background_service_manager_(service_process_launcher_delegate_.get(),
-                                  std::move(catalog_contents)) {}
+      background_service_manager_(nullptr),
+      catalog_contents_(std::move(catalog_contents)) {}
 
 service_manager::mojom::ServiceRequest MojoTestConnector::Init() {
   // In single-process test mode, browser code will initialize the EDK and IPC.
@@ -207,7 +207,15 @@ service_manager::mojom::ServiceRequest MojoTestConnector::Init() {
 
   service_manager::mojom::ServicePtr service;
   service_manager::mojom::ServiceRequest request(&service);
-  background_service_manager_.RegisterService(
+
+  // BackgroundServiceManager must be created after mojo::edk::Init() as it
+  // attempts to create mojo pipes for the provided catalog on a separate
+  // thread.
+  background_service_manager_ =
+      base::MakeUnique<service_manager::BackgroundServiceManager>(
+          service_process_launcher_delegate_.get(),
+          std::move(catalog_contents_));
+  background_service_manager_->RegisterService(
       service_manager::Identity(kTestRunnerName,
                                 service_manager::mojom::kRootUserID),
       std::move(service), nullptr);
@@ -220,7 +228,7 @@ std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
     base::CommandLine* command_line,
     base::TestLauncher::LaunchOptions* test_launch_options) {
   auto test_state =
-      base::MakeUnique<MojoTestState>(&background_service_manager_);
+      base::MakeUnique<MojoTestState>(background_service_manager_.get());
   test_state->Init(command_line, test_launch_options);
   return test_state;
 }
