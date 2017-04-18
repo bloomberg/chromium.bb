@@ -216,7 +216,7 @@ class ListHashSet
 
   void erase(ValuePeekInType value) { return erase(Find(value)); }
   void erase(iterator);
-  void Clear();
+  void clear();
   template <typename Collection>
   void RemoveAll(const Collection& other) {
     WTF::RemoveAll(*this, other);
@@ -1003,9 +1003,9 @@ inline void ListHashSet<T, inlineCapacity, U, V>::erase(iterator it) {
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-inline void ListHashSet<T, inlineCapacity, U, V>::Clear() {
+inline void ListHashSet<T, inlineCapacity, U, V>::clear() {
   DeleteAllNodes();
-  impl_.Clear();
+  impl_.clear();
   head_ = nullptr;
   tail_ = nullptr;
 }

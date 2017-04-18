@@ -287,7 +287,7 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
     if (font_face->LoadStatus() == FontFace::kLoading)
       RemoveFromLoadingFonts(font_face);
   }
-  non_css_connected_faces_.Clear();
+  non_css_connected_faces_.clear();
   font_selector->FontFaceInvalidated();
 }
 

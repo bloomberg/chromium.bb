@@ -625,7 +625,7 @@ template <typename T,
           typename X,
           typename Y>
 inline void HashMap<T, U, V, W, X, Y>::Clear() {
-  impl_.Clear();
+  impl_.clear();
 }
 
 template <typename T,

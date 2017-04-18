@@ -155,7 +155,7 @@ bool FontDataCache::PurgeLeastRecentlyUsed(int count) {
 
   if (it == end) {
     // Removed everything
-    inactive_font_data_.Clear();
+    inactive_font_data_.clear();
   } else {
     for (int i = 0; i < count; ++i)
       inactive_font_data_.erase(inactive_font_data_.begin());

@@ -85,7 +85,7 @@ bool MediaQueryList::HasPendingActivity() const {
 }
 
 void MediaQueryList::ContextDestroyed(ExecutionContext*) {
-  listeners_.Clear();
+  listeners_.clear();
   RemoveAllEventListeners();
 }
 

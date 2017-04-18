@@ -578,7 +578,7 @@ TEST(ListHashSetTest, WithOwnPtr) {
   set.erase(ptr1);
   EXPECT_TRUE(deleted1);
 
-  set.Clear();
+  set.clear();
   EXPECT_TRUE(deleted2);
   EXPECT_TRUE(set.IsEmpty());
 
@@ -815,7 +815,7 @@ TYPED_TEST(ListOrLinkedHashSetMoveOnlyTest, MoveOnlyValue) {
   // ... but they don't have any pass-out (like take()) methods.
 
   set.erase(MoveOnly(3));
-  set.Clear();
+  set.clear();
 }
 
 }  // anonymous namespace

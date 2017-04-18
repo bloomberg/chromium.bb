@@ -283,7 +283,7 @@ inline void HashSet<T, U, V, W>::erase(ValuePeekInType value) {
 
 template <typename T, typename U, typename V, typename W>
 inline void HashSet<T, U, V, W>::Clear() {
-  impl_.Clear();
+  impl_.clear();
 }
 
 template <typename T, typename U, typename V, typename W>

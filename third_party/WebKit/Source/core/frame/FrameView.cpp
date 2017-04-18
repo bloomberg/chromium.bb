@@ -3162,7 +3162,7 @@ void FrameView::PerformScrollAnchoringAdjustments() {
       scroller->GetScrollAnchor()->Adjust();
     }
   }
-  anchoring_adjustment_queue_.Clear();
+  anchoring_adjustment_queue_.clear();
 }
 
 void FrameView::PrePaint() {

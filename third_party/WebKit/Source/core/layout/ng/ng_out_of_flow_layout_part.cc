@@ -89,7 +89,7 @@ void NGOutOfFlowLayoutPart::Run() {
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
-    out_of_flow_candidates.Clear();
+    out_of_flow_candidates.clear();
     out_of_flow_candidate_positions.Clear();
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
         &out_of_flow_candidates, &out_of_flow_candidate_positions);

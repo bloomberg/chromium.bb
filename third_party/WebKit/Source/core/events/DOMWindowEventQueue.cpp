@@ -119,7 +119,7 @@ void DOMWindowEventQueue::Close() {
                                queued_event);
     }
   }
-  queued_events_.Clear();
+  queued_events_.clear();
 }
 
 void DOMWindowEventQueue::PendingEventTimerFired() {

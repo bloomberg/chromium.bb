@@ -319,7 +319,7 @@ FloatingObjects::FloatingObjects(const LayoutBlockFlow* layout_object,
       cached_horizontal_writing_mode_(false) {}
 
 void FloatingObjects::Clear() {
-  set_.Clear();
+  set_.clear();
   placed_floats_tree_.Clear();
   left_objects_count_ = 0;
   right_objects_count_ = 0;

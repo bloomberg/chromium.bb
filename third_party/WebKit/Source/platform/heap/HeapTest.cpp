@@ -3170,9 +3170,9 @@ void OrderedSetHelper(bool strong) {
   set1->insert(keep_numbers_alive[1]);
   set1->insert(keep_numbers_alive[2]);
 
-  set2->Clear();
+  set2->clear();
   set2->insert(IntWrapper::Create(42));
-  set2->Clear();
+  set2->clear();
 
   EXPECT_EQ(4u, set1->size());
   typename Set::iterator it(set1->begin());
@@ -3607,7 +3607,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       if (collection_number != kWeakSetIndex)
         weak_set->Clear();
       if (collection_number != kWeakOrderedSetIndex)
-        weak_ordered_set->Clear();
+        weak_ordered_set->clear();
 
       if (test_that_iterators_make_strong) {
         WeakStrong::iterator it1 = weak_strong->begin();

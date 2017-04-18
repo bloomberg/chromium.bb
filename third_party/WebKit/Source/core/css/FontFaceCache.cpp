@@ -124,7 +124,7 @@ void FontFaceCache::ClearAll() {
   font_faces_.Clear();
   fonts_.Clear();
   style_rule_to_font_face_.Clear();
-  css_connected_font_faces_.Clear();
+  css_connected_font_faces_.clear();
   IncrementVersion();
 }
 

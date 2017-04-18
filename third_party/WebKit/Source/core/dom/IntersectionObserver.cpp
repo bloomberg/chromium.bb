@@ -280,7 +280,7 @@ void IntersectionObserver::ComputeIntersectionObservations() {
 void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
-  observations_.Clear();
+  observations_.clear();
   entries_.Clear();
 }
 

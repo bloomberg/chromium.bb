@@ -290,7 +290,7 @@ class LinkedHashSet {
 
   void erase(ValuePeekInType);
   void erase(iterator);
-  void Clear() { impl_.Clear(); }
+  void clear() { impl_.clear(); }
   template <typename Collection>
   void RemoveAll(const Collection& other) {
     WTF::RemoveAll(*this, other);

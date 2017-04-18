@@ -548,7 +548,7 @@ void IDBTransaction::EnqueueEvent(Event* event) {
 void IDBTransaction::AbortOutstandingRequests() {
   for (IDBRequest* request : request_list_)
     request->Abort();
-  request_list_.Clear();
+  request_list_.clear();
 }
 
 void IDBTransaction::RevertDatabaseMetadata() {

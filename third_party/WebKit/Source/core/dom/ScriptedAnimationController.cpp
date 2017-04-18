@@ -93,7 +93,7 @@ void ScriptedAnimationController::DispatchEvents(
   HeapVector<Member<Event>> events;
   if (event_interface_filter.IsEmpty()) {
     events.Swap(event_queue_);
-    per_frame_events_.Clear();
+    per_frame_events_.clear();
   } else {
     HeapVector<Member<Event>> remaining;
     for (auto& event : event_queue_) {

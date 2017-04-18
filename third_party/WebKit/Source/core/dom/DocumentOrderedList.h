@@ -47,7 +47,7 @@ class DocumentOrderedList final {
   void Add(Node*);
   void Remove(const Node*);
   bool IsEmpty() const { return nodes_.IsEmpty(); }
-  void Clear() { nodes_.Clear(); }
+  void Clear() { nodes_.clear(); }
   size_t size() const { return nodes_.size(); }
 
   using iterator = HeapListHashSet<Member<Node>, 32>::iterator;

@@ -760,7 +760,7 @@ class HashTable final
   void erase(KeyPeekInType);
   void erase(iterator);
   void erase(const_iterator);
-  void Clear();
+  void clear();
 
   static bool IsEmptyBucket(const ValueType& value) {
     return IsHashTraitsEmptyValue<KeyTraits>(Extractor::Extract(value));
@@ -1793,7 +1793,7 @@ void HashTable<Key,
                HashFunctions,
                Traits,
                KeyTraits,
-               Allocator>::Clear() {
+               Allocator>::clear() {
   RegisterModification();
   if (!table_)
     return;
