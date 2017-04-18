@@ -1872,31 +1872,47 @@ class TestGitCl(TestCase):
 
   def test_update_reviewers(self):
     data = [
-      ('foo', [], 'foo'),
-      ('foo\nR=xx', [], 'foo\nR=xx'),
-      ('foo\nTBR=xx', [], 'foo\nTBR=xx'),
-      ('foo', ['a@c'], 'foo\n\nR=a@c'),
-      ('foo\nR=xx', ['a@c'], 'foo\n\nR=a@c, xx'),
-      ('foo\nTBR=xx', ['a@c'], 'foo\n\nR=a@c\nTBR=xx'),
-      ('foo\nTBR=xx\nR=yy', ['a@c'], 'foo\n\nR=a@c, yy\nTBR=xx'),
-      ('foo\nBUG=', ['a@c'], 'foo\nBUG=\nR=a@c'),
-      ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], 'foo\n\nR=a@c, xx, bar\nTBR=yy'),
-      ('foo', ['a@c', 'b@c'], 'foo\n\nR=a@c, b@c'),
-      ('foo\nBar\n\nR=\nBUG=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
-      ('foo\nBar\n\nR=\nBUG=\nR=', ['c@c'], 'foo\nBar\n\nR=c@c\nBUG='),
+      ('foo', [], [],
+       'foo'),
+      ('foo\nR=xx', [], [],
+       'foo\nR=xx'),
+      ('foo\nTBR=xx', [], [],
+       'foo\nTBR=xx'),
+      ('foo', ['a@c'], [],
+       'foo\n\nR=a@c'),
+      ('foo\nR=xx', ['a@c'], [],
+       'foo\n\nR=a@c, xx'),
+      ('foo\nTBR=xx', ['a@c'], [],
+       'foo\n\nR=a@c\nTBR=xx'),
+      ('foo\nTBR=xx\nR=yy', ['a@c'], [],
+       'foo\n\nR=a@c, yy\nTBR=xx'),
+      ('foo\nBUG=', ['a@c'], [],
+       'foo\nBUG=\nR=a@c'),
+      ('foo\nR=xx\nTBR=yy\nR=bar', ['a@c'], [],
+       'foo\n\nR=a@c, bar, xx\nTBR=yy'),
+      ('foo', ['a@c', 'b@c'], [],
+       'foo\n\nR=a@c, b@c'),
+      ('foo\nBar\n\nR=\nBUG=', ['c@c'], [],
+       'foo\nBar\n\nR=c@c\nBUG='),
+      ('foo\nBar\n\nR=\nBUG=\nR=', ['c@c'], [],
+       'foo\nBar\n\nR=c@c\nBUG='),
       # Same as the line before, but full of whitespaces.
       (
-        'foo\nBar\n\n R = \n BUG = \n R = ', ['c@c'],
+        'foo\nBar\n\n R = \n BUG = \n R = ', ['c@c'], [],
         'foo\nBar\n\nR=c@c\n BUG =',
       ),
       # Whitespaces aren't interpreted as new lines.
-      ('foo BUG=allo R=joe ', ['c@c'], 'foo BUG=allo R=joe\n\nR=c@c'),
+      ('foo BUG=allo R=joe ', ['c@c'], [],
+       'foo BUG=allo R=joe\n\nR=c@c'),
+      # Redundant TBRs get promoted to Rs
+      ('foo\n\nR=a@c\nTBR=t@c', ['b@c', 'a@c'], ['a@c', 't@c'],
+       'foo\n\nR=a@c, b@c\nTBR=t@c'),
     ]
-    expected = [i[2] for i in data]
+    expected = [i[-1] for i in data]
     actual = []
-    for orig, reviewers, _expected in data:
+    for orig, reviewers, tbrs, _expected in data:
       obj = git_cl.ChangeDescription(orig)
-      obj.update_reviewers(reviewers)
+      obj.update_reviewers(reviewers, tbrs)
       actual.append(obj.description)
     self.assertEqual(expected, actual)
 

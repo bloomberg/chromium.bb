@@ -1608,10 +1608,11 @@ class Changelist(object):
       self.SetWatchers(watchlist.GetWatchersForPaths(files))
 
     if not options.bypass_hooks:
-      if options.reviewers or options.add_owners_to:
+      if options.reviewers or options.tbrs or options.add_owners_to:
         # Set the reviewer list now so that presubmit checks can access it.
         change_description = ChangeDescription(change.FullDescriptionText())
         change_description.update_reviewers(options.reviewers,
+                                            options.tbrs,
                                             options.add_owners_to,
                                             change)
         change.SetDescriptionText(change_description.description)
@@ -2217,9 +2218,8 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           message = options.title + '\n\n' + message
       change_desc = ChangeDescription(message)
       if options.reviewers or options.add_owners_to:
-        change_desc.update_reviewers(options.reviewers,
-                                     options.add_owners_to,
-                                     change)
+        change_desc.update_reviewers(options.reviewers, options.tbrs,
+                                     options.add_owners_to, change)
       if not options.force:
         change_desc.prompt(bug=options.bug, git_footer=False)
 
@@ -2927,9 +2927,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             'single commit.')
       confirm_or_exit(action='upload')
 
-    if options.reviewers or options.add_owners_to:
-      change_desc.update_reviewers(options.reviewers, options.add_owners_to,
-                                   change)
+    if options.reviewers or options.tbrs or options.add_owners_to:
+      change_desc.update_reviewers(options.reviewers, options.tbrs,
+                                   options.add_owners_to, change)
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
@@ -3247,13 +3247,32 @@ class ChangeDescription(object):
       lines.pop(-1)
     self._description_lines = lines
 
-  def update_reviewers(self, reviewers, add_owners_to=None, change=None):
-    """Rewrites the R=/TBR= line(s) as a single line each."""
+  def update_reviewers(self, reviewers, tbrs, add_owners_to=None, change=None):
+    """Rewrites the R=/TBR= line(s) as a single line each.
+
+    Args:
+      reviewers (list(str)) - list of additional emails to use for reviewers.
+      tbrs (list(str)) - list of additional emails to use for TBRs.
+      add_owners_to (None|'R'|'TBR') - Pass to do an OWNERS lookup for files in
+        the change that are missing OWNER coverage. If this is not None, you
+        must also pass a value for `change`.
+      change (Change) - The Change that should be used for OWNERS lookups.
+    """
     assert isinstance(reviewers, list), reviewers
+    assert isinstance(tbrs, list), tbrs
+
     assert add_owners_to in (None, 'TBR', 'R'), add_owners_to
-    if not reviewers and not add_owners_to:
+    assert not add_owners_to or not change, add_owners_to
+
+    if not reviewers and not tbrs and not add_owners_to:
       return
-    reviewers = reviewers[:]
+
+    reviewers = set(reviewers)
+    tbrs = set(tbrs)
+    LOOKUP = {
+      'TBR': tbrs,
+      'R': reviewers,
+    }
 
     # Get the set of R= and TBR= lines and remove them from the desciption.
     regexp = re.compile(self.R_LINE)
@@ -3263,34 +3282,27 @@ class ChangeDescription(object):
     self.set_description(new_desc)
 
     # Construct new unified R= and TBR= lines.
-    r_names = []
-    tbr_names = []
+
+    # First, update tbrs/reviewers with names from the R=/TBR= lines (if any).
     for match in matches:
       if not match:
         continue
-      people = cleanup_list([match.group(2).strip()])
-      if match.group(1) == 'TBR':
-        tbr_names.extend(people)
-      else:
-        r_names.extend(people)
-    for name in r_names:
-      if name not in reviewers:
-        reviewers.append(name)
+      LOOKUP[match.group(1)].update(cleanup_list([match.group(2).strip()]))
+
+    # Next, maybe fill in OWNERS coverage gaps to either tbrs/reviewers.
     if add_owners_to:
       owners_db = owners.Database(change.RepositoryRoot(),
                                   fopen=file, os_path=os.path)
-      all_reviewers = set(tbr_names + reviewers)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
-                                                     all_reviewers)
-      names = owners_db.reviewers_for(missing_files, change.author_email)
+                                                     (tbrs + reviewers))
+      LOOKUP[add_owners_to].update(
+        owners_db.reviewers_for(missing_files, change.author_email))
 
-      {
-        'TBR': tbr_names,
-        'R': reviewers,
-      }[add_owners_to].extend(names)
+    # If any folks ended up in both groups, remove them from tbrs.
+    tbrs -= reviewers
 
-    new_r_line = 'R=' + ', '.join(reviewers) if reviewers else None
-    new_tbr_line = 'TBR=' + ', '.join(tbr_names) if tbr_names else None
+    new_r_line = 'R=' + ', '.join(sorted(reviewers)) if reviewers else None
+    new_tbr_line = 'TBR=' + ', '.join(sorted(tbrs)) if tbrs else None
 
     # Put the new lines in the description where the old first R= line was.
     line_loc = next((i for i, match in enumerate(matches) if match), -1)
@@ -4711,6 +4723,9 @@ def CMDupload(parser, args):
   parser.add_option('-r', '--reviewers',
                     action='append', default=[],
                     help='reviewer email addresses')
+  parser.add_option('--tbrs',
+                    action='append', default=[],
+                    help='TBR email addresses')
   parser.add_option('--cc',
                     action='append', default=[],
                     help='cc email addresses')
@@ -4763,6 +4778,7 @@ def CMDupload(parser, args):
     return 1
 
   options.reviewers = cleanup_list(options.reviewers)
+  options.tbrs = cleanup_list(options.tbrs)
   options.cc = cleanup_list(options.cc)
 
   if options.message_file:
@@ -4927,7 +4943,7 @@ def CMDland(parser, args):
   # the commit viewvc url.
   if cl.GetIssue():
     change_desc.update_reviewers(
-        get_approving_reviewers(cl.GetIssueProperties()))
+        get_approving_reviewers(cl.GetIssueProperties()), [])
 
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
