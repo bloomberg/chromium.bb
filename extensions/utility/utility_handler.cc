@@ -17,7 +17,7 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/utility/unpacker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
@@ -134,15 +134,17 @@ void UtilityThreadStarted() {
     extension_l10n_util::SetProcessLocale(lang);
 }
 
-void ExposeInterfacesToBrowser(service_manager::InterfaceRegistry* registry,
+void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
                                bool running_elevated) {
   // If our process runs with elevated privileges, only add elevated Mojo
   // interfaces to the interface registry.
   if (running_elevated)
     return;
 
-  registry->AddInterface(base::Bind(&ExtensionUnpackerImpl::Create));
-  registry->AddInterface(base::Bind(&ManifestParserImpl::Create));
+  registry->AddInterface(base::Bind(&ExtensionUnpackerImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(base::Bind(&ManifestParserImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
 }
 
 }  // namespace utility_handler

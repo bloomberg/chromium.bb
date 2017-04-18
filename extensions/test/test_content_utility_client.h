@@ -17,8 +17,6 @@ class TestContentUtilityClient : public content::ContentUtilityClient {
 
   // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
-  void ExposeInterfacesToBrowser(
-      service_manager::InterfaceRegistry* registry) override;
 };
 
 }  // namespace extensions

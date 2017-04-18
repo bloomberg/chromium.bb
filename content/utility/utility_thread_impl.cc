@@ -14,12 +14,14 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/utility_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/utility/utility_blink_platform_impl.h"
 #include "content/utility/utility_service_factory.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/features/features.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 #if defined(OS_POSIX) && BUILDFLAG(ENABLE_PLUGINS)
@@ -30,12 +32,15 @@
 namespace content {
 
 UtilityThreadImpl::UtilityThreadImpl()
-    : ChildThreadImpl(ChildThreadImpl::Options::Builder().Build()) {
+    : ChildThreadImpl(ChildThreadImpl::Options::Builder()
+                          .AutoStartServiceManagerConnection(false)
+                          .Build()) {
   Init();
 }
 
 UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
+                          .AutoStartServiceManagerConnection(false)
                           .InBrowserProcess(params)
                           .Build()) {
   Init();
@@ -79,14 +84,20 @@ void UtilityThreadImpl::EnsureBlinkInitialized() {
 void UtilityThreadImpl::Init() {
   batch_mode_ = false;
   ChildProcess::current()->AddRefProcess();
+
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(
+      base::Bind(&UtilityThreadImpl::BindServiceFactoryRequest,
+                 base::Unretained(this)),
+      base::ThreadTaskRunnerHandle::Get());
+  ChildThread::Get()->GetServiceManagerConnection()->AddConnectionFilter(
+      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+
   GetContentClient()->utility()->UtilityThreadStarted();
 
   service_factory_.reset(new UtilityServiceFactory);
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &UtilityThreadImpl::BindServiceFactoryRequest, base::Unretained(this)));
 
-  GetContentClient()->utility()->ExposeInterfacesToBrowser(
-      GetInterfaceRegistry());
+  StartServiceManagerConnection();
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

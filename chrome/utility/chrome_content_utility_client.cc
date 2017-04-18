@@ -19,13 +19,15 @@
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_info.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/zlib/google/zip.h"
 
 #if !defined(OS_ANDROID)
@@ -244,6 +246,53 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUtilityProcessRunningElevated))
     utility_process_running_elevated_ = true;
+
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
+      registry.get(), utility_process_running_elevated_);
+  extensions::utility_handler::ExposeInterfacesToBrowser(
+      registry.get(), utility_process_running_elevated_);
+#endif
+  // If our process runs with elevated privileges, only add elevated Mojo
+  // interfaces to the interface registry.
+  if (!utility_process_running_elevated_) {
+    registry->AddInterface(base::Bind(&FilePatcherImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+#if !defined(OS_ANDROID)
+    registry->AddInterface<net::interfaces::ProxyResolverFactory>(
+        base::Bind(CreateProxyResolverFactory),
+        base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(base::Bind(CreateResourceUsageReporter),
+                           base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(base::Bind(&ProfileImportHandler::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(
+        base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create),
+        base::ThreadTaskRunnerHandle::Get());
+#endif  // !defined(OS_ANDROID)
+    registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(
+        base::Bind(&safe_json::SafeJsonParserMojoImpl::Create),
+        base::ThreadTaskRunnerHandle::Get());
+#if defined(OS_WIN)
+    registry->AddInterface(base::Bind(&ShellHandlerImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+#endif
+#if defined(OS_CHROMEOS)
+    registry->AddInterface(base::Bind(&ZipFileCreatorImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+#endif
+#if defined(FULL_SAFE_BROWSING)
+    registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+#endif
+  }
+  content::ChildThread::Get()
+      ->GetServiceManagerConnection()
+      ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+          std::move(registry)));
 }
 
 bool ChromeContentUtilityClient::OnMessageReceived(
@@ -257,42 +306,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   }
 
   return false;
-}
-
-void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
-    service_manager::InterfaceRegistry* registry) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExtensionsHandler::ExposeInterfacesToBrowser(
-      registry, utility_process_running_elevated_);
-  extensions::utility_handler::ExposeInterfacesToBrowser(
-      registry, utility_process_running_elevated_);
-#endif
-  // If our process runs with elevated privileges, only add elevated Mojo
-  // interfaces to the interface registry.
-  if (utility_process_running_elevated_)
-    return;
-
-  registry->AddInterface(base::Bind(&FilePatcherImpl::Create));
-#if !defined(OS_ANDROID)
-  registry->AddInterface<net::interfaces::ProxyResolverFactory>(
-      base::Bind(CreateProxyResolverFactory));
-  registry->AddInterface(base::Bind(CreateResourceUsageReporter));
-  registry->AddInterface(base::Bind(&ProfileImportHandler::Create));
-  registry->AddInterface(
-      base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create));
-#endif  // !defined(OS_ANDROID)
-  registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create));
-  registry->AddInterface(
-      base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
-#if defined(OS_WIN)
-  registry->AddInterface(base::Bind(&ShellHandlerImpl::Create));
-#endif
-#if defined(OS_CHROMEOS)
-  registry->AddInterface(base::Bind(&ZipFileCreatorImpl::Create));
-#endif
-#if defined(FULL_SAFE_BROWSING)
-  registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create));
-#endif
 }
 
 // static

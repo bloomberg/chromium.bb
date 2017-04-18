@@ -210,6 +210,7 @@ static_library("content_shell_lib") {
     # This exposes all public content APIs.
     "//content/public/app:both",
     "//content/public/browser",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
     "//content/public/utility",

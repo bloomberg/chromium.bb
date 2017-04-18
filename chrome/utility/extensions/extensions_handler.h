@@ -20,7 +20,7 @@
 #endif
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace extensions {
@@ -36,7 +36,7 @@ class ExtensionsHandler : public UtilityMessageHandler {
   static void PreSandboxStartup();
 
   static void ExposeInterfacesToBrowser(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       bool running_elevated);
 
   // UtilityMessageHandler:

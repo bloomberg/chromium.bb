@@ -6,7 +6,7 @@
 #define EXTENSIONS_UTILITY_UTILITY_HANDLER_H_
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace extensions {
@@ -15,7 +15,7 @@ namespace utility_handler {
 
 void UtilityThreadStarted();
 
-void ExposeInterfacesToBrowser(service_manager::InterfaceRegistry* registry,
+void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
                                bool running_elevated);
 
 }  // namespace utility_handler

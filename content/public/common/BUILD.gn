@@ -222,6 +222,8 @@ source_set("common_sources") {
     "service_info.cc",
     "service_info.h",
     "service_manager_connection.h",
+    "simple_connection_filter.cc",
+    "simple_connection_filter.h",
     "speech_recognition_error.h",
     "speech_recognition_grammar.h",
     "speech_recognition_result.cc",

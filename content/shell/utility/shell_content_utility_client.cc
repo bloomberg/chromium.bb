@@ -11,11 +11,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
+#include "content/public/child/child_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/test/test_service.h"
 #include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 
@@ -76,15 +79,20 @@ std::unique_ptr<service_manager::Service> CreateTestService() {
 ShellContentUtilityClient::~ShellContentUtilityClient() {
 }
 
+void ShellContentUtilityClient::UtilityThreadStarted() {
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::Bind(&TestServiceImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
+  content::ChildThread::Get()
+      ->GetServiceManagerConnection()
+      ->AddConnectionFilter(
+          base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
+}
+
 void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
   ServiceInfo info;
   info.factory = base::Bind(&CreateTestService);
   services->insert(std::make_pair(kTestServiceUrl, info));
-}
-
-void ShellContentUtilityClient::ExposeInterfacesToBrowser(
-    service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface(base::Bind(&TestServiceImpl::Create));
 }
 
 }  // namespace content

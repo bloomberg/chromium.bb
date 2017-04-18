@@ -20,7 +20,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/ui_base_switches.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
@@ -178,21 +178,25 @@ void ExtensionsHandler::PreSandboxStartup() {
 
 // static
 void ExtensionsHandler::ExposeInterfacesToBrowser(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     bool running_elevated) {
   // If our process runs with elevated privileges, only add elevated Mojo
   // interfaces to the interface registry.
   if (running_elevated) {
 #if defined(OS_WIN)
-    registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create));
-    registry->AddInterface(base::Bind(&WiFiCredentialsGetterImpl::Create));
+    registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
+    registry->AddInterface(base::Bind(&WiFiCredentialsGetterImpl::Create),
+                           base::ThreadTaskRunnerHandle::Get());
 #endif
     return;
   }
 
-  registry->AddInterface(base::Bind(&MediaParserImpl::Create));
+  registry->AddInterface(base::Bind(&MediaParserImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
 #if !defined(OS_WIN)
-  registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create));
+  registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
 #endif
 }
 
