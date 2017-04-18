@@ -3262,7 +3262,7 @@ class ChangeDescription(object):
     assert isinstance(tbrs, list), tbrs
 
     assert add_owners_to in (None, 'TBR', 'R'), add_owners_to
-    assert not add_owners_to or not change, add_owners_to
+    assert not add_owners_to or change, add_owners_to
 
     if not reviewers and not tbrs and not add_owners_to:
       return
