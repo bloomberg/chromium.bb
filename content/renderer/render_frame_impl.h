@@ -582,7 +582,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidHandleOnloadEvents() override;
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
-  void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishLoad() override;
   void DidNavigateWithinPage(const blink::WebHistoryItem& item,
                              blink::WebHistoryCommitType commit_type,
                              bool content_initiated) override;

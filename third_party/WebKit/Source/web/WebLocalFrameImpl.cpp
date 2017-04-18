@@ -1918,7 +1918,7 @@ void WebLocalFrameImpl::DidFinish() {
   if (WebPluginContainerImpl* plugin = PluginContainerFromFrame(GetFrame()))
     plugin->DidFinishLoading();
 
-  Client()->DidFinishLoad(this);
+  Client()->DidFinishLoad();
 }
 
 void WebLocalFrameImpl::SetCanHaveScrollbars(bool can_have_scrollbars) {

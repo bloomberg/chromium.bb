@@ -10347,9 +10347,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(3, callback_count_++);
   }
   void DidHandleOnloadEvents() override { EXPECT_EQ(4, callback_count_++); }
-  void DidFinishLoad(WebLocalFrame*) override {
-    EXPECT_EQ(5, callback_count_++);
-  }
+  void DidFinishLoad() override { EXPECT_EQ(5, callback_count_++); }
   void DidStopLoading() override {
     EXPECT_EQ(6, callback_count_++);
     FrameTestHelpers::TestWebFrameClient::DidStopLoading();
@@ -11721,7 +11719,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       did_call_did_handle_onload_events_ = true;
     }
 
-    void DidFinishLoad(WebLocalFrame*) override {
+    void DidFinishLoad() override {
       EXPECT_TRUE(false) << "didFinishLoad() should not have been called.";
     }
 

@@ -4007,21 +4007,20 @@ void RenderFrameImpl::DidFailLoad(const blink::WebURLError& error,
                                              error.was_ignored_by_handler));
 }
 
-void RenderFrameImpl::DidFinishLoad(blink::WebLocalFrame* frame) {
+void RenderFrameImpl::DidFinishLoad() {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFinishLoad", "id", routing_id_);
-  DCHECK_EQ(frame_, frame);
-  if (!frame->Parent()) {
+  if (!frame_->Parent()) {
     TRACE_EVENT_INSTANT0("WebCore,benchmark,rail", "LoadFinished",
                          TRACE_EVENT_SCOPE_PROCESS);
   }
 
   for (auto& observer : render_view_->observers())
-    observer.DidFinishLoad(frame);
+    observer.DidFinishLoad(frame_);
   for (auto& observer : observers_)
     observer.DidFinishLoad();
 
-  WebDataSource* ds = frame->DataSource();
+  WebDataSource* ds = frame_->DataSource();
   Send(new FrameHostMsg_DidFinishLoad(routing_id_, ds->GetRequest().Url()));
 
   if (RenderThreadImpl::current()) {

@@ -413,7 +413,7 @@ class BLINK_EXPORT WebFrameClient {
   virtual void DidFailLoad(const WebURLError&, WebHistoryCommitType) {}
 
   // The frame's document and all of its subresources succeeded to load.
-  virtual void DidFinishLoad(WebLocalFrame*) {}
+  virtual void DidFinishLoad() {}
 
   // The navigation resulted in no change to the documents within the page.
   // For example, the navigation may have just resulted in scrolling to a

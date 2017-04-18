@@ -155,9 +155,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidFailLoad(error, commit_type);
   }
 
-  void DidFinishLoad(blink::WebLocalFrame* frame) override {
-    Base::DidFinishLoad(frame);
-    test_client()->DidFinishLoad(frame);
+  void DidFinishLoad() override {
+    Base::DidFinishLoad();
+    test_client()->DidFinishLoad();
   }
 
   void DidNavigateWithinPage(const blink::WebHistoryItem& history_item,

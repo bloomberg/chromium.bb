@@ -79,7 +79,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidHandleOnloadEvents() override;
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
-  void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  void DidFinishLoad() override;
   void DidNavigateWithinPage(const blink::WebHistoryItem& history_item,
                              blink::WebHistoryCommitType commit_type,
                              bool contentInitiated) override;

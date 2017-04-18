@@ -509,10 +509,9 @@ void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
   }
 }
 
-void WebFrameTestClient::DidFinishLoad(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
+void WebFrameTestClient::DidFinishLoad() {
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, frame);
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(" - didFinishLoadForFrame\n");
   }
 }
