@@ -17,13 +17,11 @@ namespace {
 // See url_pattern.h for examples of valid and invalid patterns.
 
 static const int kAllSchemes =
-    URLPattern::SCHEME_HTTP |
-    URLPattern::SCHEME_HTTPS |
-    URLPattern::SCHEME_FILE |
-    URLPattern::SCHEME_FTP |
-    URLPattern::SCHEME_CHROMEUI |
-    URLPattern::SCHEME_EXTENSION |
-    URLPattern::SCHEME_FILESYSTEM;
+    URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
+    URLPattern::SCHEME_FILE | URLPattern::SCHEME_FTP |
+    URLPattern::SCHEME_CHROMEUI | URLPattern::SCHEME_EXTENSION |
+    URLPattern::SCHEME_FILESYSTEM | URLPattern::SCHEME_WS |
+    URLPattern::SCHEME_WSS;
 
 TEST(ExtensionURLPatternTest, ParseInvalid) {
   const struct {
@@ -542,7 +540,7 @@ TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
       URLPattern::SCHEME_FTP,
       "http://google.com/monkey").ConvertToExplicitSchemes());
 
-  ASSERT_EQ(7u, all_urls.size());
+  ASSERT_EQ(9u, all_urls.size());
   ASSERT_EQ(2u, all_schemes.size());
   ASSERT_EQ(1u, monkey.size());
 
@@ -551,6 +549,10 @@ TEST(ExtensionURLPatternTest, ConvertToExplicitSchemes) {
   EXPECT_EQ("file:///*", all_urls[2].GetAsString());
   EXPECT_EQ("ftp://*/*", all_urls[3].GetAsString());
   EXPECT_EQ("chrome://*/*", all_urls[4].GetAsString());
+  EXPECT_EQ("chrome-extension://*/*", all_urls[5].GetAsString());
+  EXPECT_EQ("filesystem://*/*", all_urls[6].GetAsString());
+  EXPECT_EQ("ws://*/*", all_urls[7].GetAsString());
+  EXPECT_EQ("wss://*/*", all_urls[8].GetAsString());
 
   EXPECT_EQ("http://google.com/foo", all_schemes[0].GetAsString());
   EXPECT_EQ("https://google.com/foo", all_schemes[1].GetAsString());
