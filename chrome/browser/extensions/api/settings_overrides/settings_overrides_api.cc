@@ -228,19 +228,17 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   const SettingsOverrides* settings = SettingsOverrides::Get(extension);
   DCHECK(settings);
   DCHECK(settings->search_engine);
-  auto info =
-      base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(extension->id());
-  info->wants_to_be_default_engine = settings->search_engine->is_default;
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
-  info->install_time = prefs->GetInstallTime(extension->id());
   std::string install_parameter = prefs->GetInstallParam(extension->id());
   std::unique_ptr<TemplateURLData> data = ConvertSearchProvider(
       profile_->GetPrefs(), *settings->search_engine, install_parameter);
   auto turl = base::MakeUnique<TemplateURL>(
-      *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+      *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, extension->id(),
+      prefs->GetInstallTime(extension->id()),
+      settings->search_engine->is_default);
 
-  url_service_->AddExtensionControlledTURL(std::move(turl), std::move(info));
+  url_service_->Add(std::move(turl));
 
   if (settings->search_engine->is_default) {
     // Override current DSE pref to have extension overriden value.

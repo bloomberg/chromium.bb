@@ -189,11 +189,6 @@ class TemplateURLService : public WebDataServiceConsumer,
                                 const base::string16& keyword,
                                 const std::string& url);
 
-  // Adds a search engine with the specified info for extensions.
-  TemplateURL* AddExtensionControlledTURL(
-      std::unique_ptr<TemplateURL> template_url,
-      std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info);
-
   // Removes the keyword from the model. This deletes the supplied TemplateURL.
   // This fails if the supplied template_url is the default search provider.
   void Remove(TemplateURL* template_url);

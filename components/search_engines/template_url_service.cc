@@ -431,6 +431,13 @@ TemplateURL* TemplateURLService::GetTemplateURLForHost(
 
 TemplateURL* TemplateURLService::Add(
     std::unique_ptr<TemplateURL> template_url) {
+  DCHECK(template_url);
+  DCHECK(
+      !IsCreatedByExtension(template_url.get()) ||
+      (!FindTemplateURLForExtension(template_url->extension_info_->extension_id,
+                                    template_url->type()) &&
+       template_url->id() == kInvalidTemplateURLID));
+
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
   TemplateURL* template_url_ptr = AddNoNotify(std::move(template_url), true);
   if (template_url_ptr)
@@ -449,21 +456,6 @@ TemplateURL* TemplateURLService::AddWithOverrides(
   template_url->data_.SetShortName(short_name);
   template_url->data_.SetKeyword(keyword);
   template_url->SetURL(url);
-  return Add(std::move(template_url));
-}
-
-TemplateURL* TemplateURLService::AddExtensionControlledTURL(
-    std::unique_ptr<TemplateURL> template_url,
-    std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info) {
-  DCHECK(template_url);
-  DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
-  DCHECK(info);
-  DCHECK_NE(TemplateURL::NORMAL, template_url->type());
-  DCHECK(
-      !FindTemplateURLForExtension(info->extension_id, template_url->type()));
-
-  template_url->extension_info_.swap(info);
-
   return Add(std::move(template_url));
 }
 
@@ -534,12 +526,9 @@ void TemplateURLService::RegisterOmniboxKeyword(
   data.SetShortName(base::UTF8ToUTF16(extension_name));
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(template_url_string);
-  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
-      new TemplateURL::AssociatedExtensionInfo(extension_id));
-  info->install_time = extension_install_time;
-  AddExtensionControlledTURL(
-      base::MakeUnique<TemplateURL>(data, TemplateURL::OMNIBOX_API_EXTENSION),
-      std::move(info));
+  Add(base::MakeUnique<TemplateURL>(data, TemplateURL::OMNIBOX_API_EXTENSION,
+                                    extension_id, extension_install_time,
+                                    false));
 }
 
 TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
@@ -1985,11 +1974,8 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       // (1) Tests that initialize the TemplateURLService in peculiar ways.
       // (2) If the user deleted the pre-populated default and we subsequently
       // lost their user-selected value.
-      std::unique_ptr<TemplateURL> new_dse_ptr =
-          base::MakeUnique<TemplateURL>(*data);
-      TemplateURL* new_dse = new_dse_ptr.get();
-      if (AddNoNotify(std::move(new_dse_ptr), true))
-        default_search_provider_ = new_dse;
+      default_search_provider_ =
+          AddNoNotify(base::MakeUnique<TemplateURL>(*data), true);
     }
   } else if (source == DefaultSearchManager::FROM_USER) {
     default_search_provider_ = GetTemplateURLForGUID(data->sync_guid);
@@ -2002,11 +1988,8 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
       UpdateNoNotify(default_search_provider_, TemplateURL(new_data));
     } else {
       new_data.id = kInvalidTemplateURLID;
-      std::unique_ptr<TemplateURL> new_dse_ptr =
-          base::MakeUnique<TemplateURL>(new_data);
-      TemplateURL* new_dse = new_dse_ptr.get();
-      if (AddNoNotify(std::move(new_dse_ptr), true))
-        default_search_provider_ = new_dse;
+      default_search_provider_ =
+          AddNoNotify(base::MakeUnique<TemplateURL>(new_data), true);
     }
     if (default_search_provider_ && prefs_) {
       prefs_->SetString(prefs::kSyncedDefaultSearchProviderGUID,

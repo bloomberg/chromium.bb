@@ -1140,8 +1140,12 @@ std::string TemplateURLRef::HandleReplacements(
 // TemplateURL ----------------------------------------------------------------
 
 TemplateURL::AssociatedExtensionInfo::AssociatedExtensionInfo(
-    const std::string& extension_id)
-    : extension_id(extension_id), wants_to_be_default_engine(false) {}
+    const std::string& extension_id,
+    base::Time install_time,
+    bool wants_to_be_default_engine)
+    : extension_id(extension_id),
+      install_time(install_time),
+      wants_to_be_default_engine(wants_to_be_default_engine) {}
 
 TemplateURL::AssociatedExtensionInfo::~AssociatedExtensionInfo() {
 }
@@ -1162,6 +1166,21 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
   if (data_.search_terms_replacement_key ==
       google_util::kGoogleInstantExtendedEnabledKeyFull)
     data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
+}
+
+TemplateURL::TemplateURL(const TemplateURLData& data,
+                         Type type,
+                         std::string extension_id,
+                         base::Time install_time,
+                         bool wants_to_be_default_engine)
+    : TemplateURL(data, type) {
+  DCHECK(type == NORMAL_CONTROLLED_BY_EXTENSION ||
+         type == OMNIBOX_API_EXTENSION);
+  // Omnibox keywords may not be set as default.
+  DCHECK(!wants_to_be_default_engine || type != OMNIBOX_API_EXTENSION) << type;
+  DCHECK_EQ(kInvalidTemplateURLID, data.id);
+  extension_info_ = base::MakeUnique<AssociatedExtensionInfo>(
+      extension_id, install_time, wants_to_be_default_engine);
 }
 
 TemplateURL::~TemplateURL() {

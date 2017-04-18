@@ -261,10 +261,9 @@ TemplateURL* TemplateURLServiceTest::AddExtensionSearchEngine(
   turl_data->safe_for_autoreplace = false;
 
   auto ext_dse = base::MakeUnique<TemplateURL>(
-      *turl_data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  return test_util()->AddExtensionControlledTURL(
-      std::move(ext_dse), extension_name, wants_to_be_default_engine,
-      install_time);
+      *turl_data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, extension_name,
+      install_time, wants_to_be_default_engine);
+  return test_util()->AddExtensionControlledTURL(std::move(ext_dse));
 }
 
 void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
@@ -1892,13 +1891,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
       model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default.get(), actual_managed_default);
 
-  std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
-      model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
-      std::string(), std::string(), std::string(), true, kPrepopulatedId,
-      "UTF-8", Time(), Time(), Time(),
-      TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  TemplateURL* ext_dse_ptr =
-      test_util()->AddExtensionControlledTURL(std::move(ext_dse), "ext1", true);
+  TemplateURL* ext_dse_ptr = AddExtensionSearchEngine("ext1", "ext1", true);
   EXPECT_EQ(ext_dse_ptr,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext1")));
   EXPECT_TRUE(model()->is_default_search_managed());

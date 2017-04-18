@@ -482,20 +482,31 @@ class TemplateURL {
   // An AssociatedExtensionInfo represents information about the extension that
   // added the search engine.
   struct AssociatedExtensionInfo {
-    explicit AssociatedExtensionInfo(const std::string& extension_id);
+    AssociatedExtensionInfo(const std::string& extension_id,
+                            base::Time install_time,
+                            bool wants_to_be_default_engine);
     ~AssociatedExtensionInfo();
 
     std::string extension_id;
 
-    // Whether the search engine is supposed to be default.
-    bool wants_to_be_default_engine;
-
     // Used to resolve conflicts when there are multiple extensions specifying
     // the default search engine. The most recently-installed wins.
     base::Time install_time;
+
+    // Whether the search engine is supposed to be default.
+    bool wants_to_be_default_engine;
   };
 
   explicit TemplateURL(const TemplateURLData& data, Type type = NORMAL);
+
+  // Constructor for extension controlled engine. |type| must be
+  // NORMAL_CONTROLLED_BY_EXTENSION or OMNIBOX_API_EXTENSION.
+  TemplateURL(const TemplateURLData& data,
+              Type type,
+              std::string extension_id,
+              base::Time install_time,
+              bool wants_to_be_default_engine);
+
   ~TemplateURL();
 
   // Generates a suitable keyword for the specified url, which must be valid.

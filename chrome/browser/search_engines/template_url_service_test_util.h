@@ -70,10 +70,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // search pref in an extension controlled preferences, if extension wants to
   // be default.
   TemplateURL* AddExtensionControlledTURL(
-      std::unique_ptr<TemplateURL> extension_turl,
-      const std::string& extension_id,
-      bool wants_to_be_default,
-      base::Time install_time = base::Time());
+      std::unique_ptr<TemplateURL> extension_turl);
 
   // Removes a TemplateURL controlled by |extension_id| from the model, and,
   // if necessary, from the extension-controlled default search preference.
