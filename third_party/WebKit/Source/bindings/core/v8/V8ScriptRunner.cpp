@@ -260,7 +260,7 @@ bool IsResourceHotForCaching(CachedMetadataHandler* cache_handler,
     return false;
   double time_stamp;
   const int size = sizeof(time_stamp);
-  ASSERT(cached_metadata->size() == size);
+  DCHECK_EQ(cached_metadata->size(), static_cast<unsigned long>(size));
   memcpy(&time_stamp, cached_metadata->Data(), size);
   return (WTF::CurrentTime() - time_stamp) < cache_within_seconds;
 }
@@ -309,7 +309,7 @@ v8::MaybeLocal<v8::Script> PostStreamCompile(
 
     case kV8CacheOptionsAlways:
       // Currently V8CacheOptionsAlways doesn't support streaming.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     case kV8CacheOptionsNone:
       break;
   }
@@ -391,13 +391,13 @@ static std::unique_ptr<CompileFn> SelectCompileFunction(
     case kV8CacheOptionsNone:
       // Shouldn't happen, as this is handled above.
       // Case is here so that compiler can check all cases are handled.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
   // All switch branches should return and we should never get here.
   // But some compilers aren't sure, hence this default.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return Bind(CompileWithoutOptions, V8CompileHistogram::kCacheable);
 }
 
@@ -406,11 +406,11 @@ std::unique_ptr<CompileFn> SelectCompileFunction(V8CacheOptions cache_options,
                                                  ScriptResource* resource,
                                                  ScriptStreamer* streamer) {
   // We don't stream scripts which don't have a Resource.
-  ASSERT(resource);
+  DCHECK(resource);
   // Failed resources should never get this far.
-  ASSERT(!resource->ErrorOccurred());
-  ASSERT(streamer->IsFinished());
-  ASSERT(!streamer->StreamingSuppressed());
+  DCHECK(!resource->ErrorOccurred());
+  DCHECK(streamer->IsFinished());
+  DCHECK(!streamer->StreamingSuppressed());
   return WTF::Bind(PostStreamCompile, cache_options,
                    WrapPersistent(resource->CacheHandler()),
                    WrapPersistent(streamer));
@@ -468,8 +468,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       "data",
       InspectorCompileScriptEvent::Data(file_name, script_start_position));
 
-  ASSERT(!streamer || resource);
-  ASSERT(!resource || resource->CacheHandler() == cache_handler);
+  DCHECK(!streamer || resource);
+  DCHECK(!resource || resource->CacheHandler() == cache_handler);
 
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
@@ -527,7 +527,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Isolate* isolate,
     v8::Local<v8::Script> script,
     ExecutionContext* context) {
-  ASSERT(!script.IsEmpty());
+  DCHECK(!script.IsEmpty());
   ScopedFrameBlamer frame_blamer(
       context->IsDocument() ? ToDocument(context)->GetFrame() : nullptr);
   TRACE_EVENT1("v8", "v8.run", "fileName",
@@ -537,7 +537,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
   if (v8::MicrotasksScope::GetCurrentDepth(isolate) >= kMaxRecursionDepth)
     return ThrowStackOverflowExceptionIfNeeded(isolate);
 
-  RELEASE_ASSERT(!context->IsIteratingOverObservers());
+  CHECK(!context->IsIteratingOverObservers());
 
   // Run the script and keep track of the current recursion depth.
   v8::MaybeLocal<v8::Value> result;
@@ -640,7 +640,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     return v8::MaybeLocal<v8::Value>(
         ThrowStackOverflowExceptionIfNeeded(isolate));
 
-  RELEASE_ASSERT(!context->IsIteratingOverObservers());
+  CHECK(!context->IsIteratingOverObservers());
 
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     ThrowScriptForbiddenException(isolate);

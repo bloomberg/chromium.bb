@@ -82,7 +82,7 @@ inline bool V8Call(v8::Maybe<T> maybe,
                    T& out_variable,
                    v8::TryCatch& try_catch) {
   bool success = V8Call(maybe, out_variable);
-  ASSERT(success || try_catch.HasCaught());
+  DCHECK(success || try_catch.HasCaught());
   return success;
 }
 
@@ -98,7 +98,7 @@ inline bool V8Call(v8::MaybeLocal<T> maybe_local,
                    v8::Local<T>& out_variable,
                    v8::TryCatch& try_catch) {
   bool success = maybe_local.ToLocal(&out_variable);
-  ASSERT(success || try_catch.HasCaught());
+  DCHECK(success || try_catch.HasCaught());
   return success;
 }
 

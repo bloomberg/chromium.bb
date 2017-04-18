@@ -226,7 +226,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo,
 template <typename CallbackInfo>
 inline void V8SetReturnValueForMainWorld(const CallbackInfo& callback_info,
                                          ScriptWrappable* impl) {
-  ASSERT(DOMWrapperWorld::Current(callback_info.GetIsolate()).IsMainWorld());
+  DCHECK(DOMWrapperWorld::Current(callback_info.GetIsolate()).IsMainWorld());
   if (UNLIKELY(!impl)) {
     V8SetReturnValueNull(callback_info);
     return;
@@ -570,7 +570,7 @@ inline int64_t ToInt64(v8::Isolate* isolate,
                        ExceptionState& exception_state) {
   // Clamping not supported for int64_t/long long int. See
   // Source/wtf/MathExtras.h.
-  ASSERT(configuration != kClamp);
+  DCHECK_NE(configuration, kClamp);
 
   // Fast case. The value is a 32-bit integer.
   if (LIKELY(value->IsInt32()))
@@ -658,7 +658,7 @@ inline double ToCoreDate(v8::Isolate* isolate,
 
 inline v8::MaybeLocal<v8::Value> V8DateOrNaN(v8::Isolate* isolate,
                                              double value) {
-  ASSERT(isolate);
+  DCHECK(isolate);
   return v8::Date::New(isolate->GetCurrentContext(), value);
 }
 
@@ -866,7 +866,7 @@ inline bool ToV8Sequence(v8::Local<v8::Value> value,
   // Attempt converting to a sequence if the value is not already an array but
   // is any kind of object except for a native Date object or a native RegExp
   // object.
-  ASSERT(!value->IsArray());
+  DCHECK(!value->IsArray());
   // FIXME: Do we really need to special case Date and RegExp object?
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
   if (!value->IsObject() || value->IsDate() || value->IsRegExp()) {

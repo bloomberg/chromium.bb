@@ -83,7 +83,7 @@ class DOMWrapperMap {
   void Clear() { map_.Clear(); }
 
   void RemoveAndDispose(KeyType* key) {
-    ASSERT(ContainsKey(key));
+    DCHECK(ContainsKey(key));
     map_.Remove(key);
   }
 

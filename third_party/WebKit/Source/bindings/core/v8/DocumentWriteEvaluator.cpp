@@ -73,7 +73,7 @@ bool DocumentWriteEvaluator::EnsureEvaluationContext() {
   if (!persistent_context_.IsEmpty())
     return false;
   TRACE_EVENT0("blink", "DocumentWriteEvaluator::initializeEvaluationContext");
-  ASSERT(persistent_context_.IsEmpty());
+  DCHECK(persistent_context_.IsEmpty());
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
   v8::Isolate::Scope isolate_scope(isolate);
   v8::HandleScope handle_scope(isolate);

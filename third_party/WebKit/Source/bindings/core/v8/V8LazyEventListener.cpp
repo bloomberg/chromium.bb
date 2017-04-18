@@ -87,7 +87,7 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {
-  ASSERT(!js_event.IsEmpty());
+  DCHECK(!js_event.IsEmpty());
   v8::Local<v8::Object> listener_object =
       GetListenerObject(ExecutionContext::From(script_state));
   if (listener_object.IsEmpty())

@@ -51,7 +51,7 @@ V8LazyEventListener* CreateAttributeEventListener(
     const QualifiedName& name,
     const AtomicString& value,
     const AtomicString& event_parameter_name) {
-  ASSERT(node);
+  DCHECK(node);
   if (value.IsNull())
     return nullptr;
 

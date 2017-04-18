@@ -135,7 +135,7 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
 }
 
 DOMWrapperWorld& DOMWrapperWorld::MainWorld() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_REF(
       DOMWrapperWorld, cached_main_world,
       (DOMWrapperWorld::Create(v8::Isolate::GetCurrent(), WorldType::kMain)));
@@ -167,7 +167,7 @@ void DOMWrapperWorld::MarkWrappersInAllWorlds(
 }
 
 DOMWrapperWorld::~DOMWrapperWorld() {
-  ASSERT(!IsMainWorld());
+  DCHECK(!IsMainWorld());
   if (IsMainThread())
     number_of_non_main_worlds_in_main_thread_--;
 
@@ -187,7 +187,9 @@ void DOMWrapperWorld::Dispose() {
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
     v8::Isolate* isolate,
     int world_id) {
-  ASSERT(IsIsolatedWorldId(world_id));
+#if DCHECK_IS_ON()
+  DCHECK(IsIsolatedWorldId(world_id));
+#endif
 
   WorldMap& map = GetWorldMap();
   auto it = map.Find(world_id);
@@ -203,13 +205,13 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
 
 typedef HashMap<int, RefPtr<SecurityOrigin>> IsolatedWorldSecurityOriginMap;
 static IsolatedWorldSecurityOriginMap& IsolatedWorldSecurityOrigins() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(IsolatedWorldSecurityOriginMap, map, ());
   return map;
 }
 
 SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
-  ASSERT(this->IsIsolatedWorld());
+  DCHECK(this->IsIsolatedWorld());
   IsolatedWorldSecurityOriginMap& origins = IsolatedWorldSecurityOrigins();
   IsolatedWorldSecurityOriginMap::iterator it = origins.Find(GetWorldId());
   return it == origins.end() ? 0 : it->value.Get();
@@ -218,7 +220,9 @@ SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
 void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
     int world_id,
     PassRefPtr<SecurityOrigin> security_origin) {
-  ASSERT(IsIsolatedWorldId(world_id));
+#if DCHECK_IS_ON()
+  DCHECK(IsIsolatedWorldId(world_id));
+#endif
   if (security_origin)
     IsolatedWorldSecurityOrigins().Set(world_id, std::move(security_origin));
   else
@@ -227,7 +231,7 @@ void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
 
 typedef HashMap<int, String> IsolatedWorldHumanReadableNameMap;
 static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(IsolatedWorldHumanReadableNameMap, map, ());
   return map;
 }
@@ -240,20 +244,22 @@ String DOMWrapperWorld::IsolatedWorldHumanReadableName() {
 void DOMWrapperWorld::SetIsolatedWorldHumanReadableName(
     int world_id,
     const String& human_readable_name) {
-  ASSERT(IsIsolatedWorldId(world_id));
+#if DCHECK_IS_ON()
+  DCHECK(IsIsolatedWorldId(world_id));
+#endif
   IsolatedWorldHumanReadableNames().Set(world_id, human_readable_name);
 }
 
 typedef HashMap<int, bool> IsolatedWorldContentSecurityPolicyMap;
 static IsolatedWorldContentSecurityPolicyMap&
 IsolatedWorldContentSecurityPolicies() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(IsolatedWorldContentSecurityPolicyMap, map, ());
   return map;
 }
 
 bool DOMWrapperWorld::IsolatedWorldHasContentSecurityPolicy() {
-  ASSERT(this->IsIsolatedWorld());
+  DCHECK(this->IsIsolatedWorld());
   IsolatedWorldContentSecurityPolicyMap& policies =
       IsolatedWorldContentSecurityPolicies();
   IsolatedWorldContentSecurityPolicyMap::iterator it =
@@ -264,7 +270,9 @@ bool DOMWrapperWorld::IsolatedWorldHasContentSecurityPolicy() {
 void DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(
     int world_id,
     const String& policy) {
-  ASSERT(IsIsolatedWorldId(world_id));
+#if DCHECK_IS_ON()
+  DCHECK(IsIsolatedWorldId(world_id));
+#endif
   if (!policy.IsEmpty())
     IsolatedWorldContentSecurityPolicies().Set(world_id, true);
   else
@@ -285,7 +293,7 @@ template void DOMWrapperWorld::RegisterDOMObjectHolder(v8::Isolate*,
 
 void DOMWrapperWorld::RegisterDOMObjectHolderInternal(
     std::unique_ptr<DOMObjectHolderBase> holder_base) {
-  ASSERT(!dom_object_holders_.Contains(holder_base.get()));
+  DCHECK(!dom_object_holders_.Contains(holder_base.get()));
   holder_base->SetWorld(this);
   holder_base->SetWeak(&DOMWrapperWorld::WeakCallbackForDOMObjectHolder);
   dom_object_holders_.insert(std::move(holder_base));
@@ -293,7 +301,7 @@ void DOMWrapperWorld::RegisterDOMObjectHolderInternal(
 
 void DOMWrapperWorld::UnregisterDOMObjectHolder(
     DOMObjectHolderBase* holder_base) {
-  ASSERT(dom_object_holders_.Contains(holder_base));
+  DCHECK(dom_object_holders_.Contains(holder_base));
   dom_object_holders_.erase(holder_base);
 }
 

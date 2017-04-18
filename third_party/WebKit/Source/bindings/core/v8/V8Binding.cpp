@@ -97,7 +97,7 @@ NodeFilter* ToNodeFilter(v8::Local<v8::Value> callback,
 bool ToBooleanSlow(v8::Isolate* isolate,
                    v8::Local<v8::Value> value,
                    ExceptionState& exception_state) {
-  ASSERT(!value->IsBoolean());
+  DCHECK(!value->IsBoolean());
   v8::TryCatch block(isolate);
   bool result = false;
   if (!V8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
@@ -199,7 +199,7 @@ static inline T ToSmallerInt(v8::Isolate* isolate,
       return 0;
     }
   }
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   if (configuration == kEnforceRange)
     return EnforceRange(number_object->Value(), LimitsTrait::kMinValue,
@@ -259,7 +259,7 @@ static inline T ToSmallerUInt(v8::Isolate* isolate,
       return 0;
     }
   }
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   if (configuration == kEnforceRange)
     return EnforceRange(number_object->Value(), 0, LimitsTrait::kMaxValue,
@@ -317,7 +317,7 @@ int32_t ToInt32Slow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     IntegerConversionConfiguration configuration,
                     ExceptionState& exception_state) {
-  ASSERT(!value->IsInt32());
+  DCHECK(!value->IsInt32());
   // Can the value be converted to a number?
   v8::TryCatch block(isolate);
   v8::Local<v8::Number> number_object;
@@ -327,7 +327,7 @@ int32_t ToInt32Slow(v8::Isolate* isolate,
     return 0;
   }
 
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   double number_value = number_object->Value();
   if (configuration == kEnforceRange)
@@ -356,9 +356,9 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
                       v8::Local<v8::Value> value,
                       IntegerConversionConfiguration configuration,
                       ExceptionState& exception_state) {
-  ASSERT(!value->IsUint32());
+  DCHECK(!value->IsUint32());
   if (value->IsInt32()) {
-    ASSERT(configuration != kNormalConversion);
+    DCHECK_NE(configuration, kNormalConversion);
     int32_t result = value.As<v8::Int32>()->Value();
     if (result >= 0)
       return result;
@@ -367,7 +367,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
           "Value is outside the 'unsigned long' value range.");
       return 0;
     }
-    ASSERT(configuration == kClamp);
+    DCHECK_EQ(configuration, kClamp);
     return clampTo<uint32_t>(result);
   }
 
@@ -379,7 +379,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   if (configuration == kEnforceRange)
     return EnforceRange(number_object->Value(), 0, kMaxUInt32, "unsigned long",
@@ -409,7 +409,7 @@ int64_t ToInt64Slow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     IntegerConversionConfiguration configuration,
                     ExceptionState& exception_state) {
-  ASSERT(!value->IsInt32());
+  DCHECK(!value->IsInt32());
 
   v8::Local<v8::Number> number_object;
   // Can the value be converted to a number?
@@ -419,7 +419,7 @@ int64_t ToInt64Slow(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   double number_value = number_object->Value();
 
@@ -440,7 +440,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
                       v8::Local<v8::Value> value,
                       IntegerConversionConfiguration configuration,
                       ExceptionState& exception_state) {
-  ASSERT(!value->IsUint32());
+  DCHECK(!value->IsUint32());
   if (value->IsInt32()) {
     ASSERT(configuration != kNormalConversion);
     int32_t result = value.As<v8::Int32>()->Value();
@@ -451,7 +451,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
           "Value is outside the 'unsigned long long' value range.");
       return 0;
     }
-    ASSERT(configuration == kClamp);
+    DCHECK_EQ(configuration, kClamp);
     return clampTo<uint64_t>(result);
   }
 
@@ -463,7 +463,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
     exception_state.RethrowV8Exception(block.Exception());
     return 0;
   }
-  ASSERT(!number_object.IsEmpty());
+  DCHECK(!number_object.IsEmpty());
 
   double number_value = number_object->Value();
 
@@ -502,7 +502,7 @@ float ToRestrictedFloat(v8::Isolate* isolate,
 double ToDoubleSlow(v8::Isolate* isolate,
                     v8::Local<v8::Value> value,
                     ExceptionState& exception_state) {
-  ASSERT(!value->IsNumber());
+  DCHECK(!value->IsNumber());
   v8::TryCatch block(isolate);
   v8::Local<v8::Number> number_value;
   if (!value->ToNumber(isolate->GetCurrentContext()).ToLocal(&number_value)) {
@@ -604,7 +604,7 @@ static String ReplaceUnmatchedSurrogates(const String& string) {
   // Blink-specific optimization to avoid making an unnecessary copy.
   if (!HasUnmatchedSurrogates(string))
     return string;
-  ASSERT(!string.Is8Bit());
+  DCHECK(!string.Is8Bit());
 
   // 1. Let S be the DOMString value.
   const UChar* s = string.Characters16();
@@ -634,13 +634,13 @@ static String ReplaceUnmatchedSurrogates(const String& string) {
       u.Append(kReplacementCharacter);
     } else {
       // 0xD800 <= c <= 0xDBFF
-      ASSERT(U16_IS_LEAD(c));
+      DCHECK(U16_IS_LEAD(c));
       if (i == n - 1) {
         // 1. If i = n-1, then append to U a U+FFFD REPLACEMENT CHARACTER.
         u.Append(kReplacementCharacter);
       } else {
         // 2. Otherwise, i < n-1:
-        ASSERT(i < n - 1);
+        DCHECK_LT(i, n - 1);
         // ....1. Let d be the code unit in S at index i+1.
         UChar d = s[i + 1];
         if (U16_IS_TRAIL(d)) {
@@ -664,7 +664,7 @@ static String ReplaceUnmatchedSurrogates(const String& string) {
   }
 
   // 6. Return U.
-  ASSERT(u.length() == string.length());
+  DCHECK_EQ(u.length(), string.length());
   return u.ToString();
 }
 
@@ -774,7 +774,7 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                FlexibleArrayBufferView& result,
                                void* storage) {
-  ASSERT(value->IsArrayBufferView());
+  DCHECK(value->IsArrayBufferView());
   v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
   if (!storage) {
     result.SetFull(V8ArrayBufferView::toImpl(buffer));
@@ -801,7 +801,7 @@ static ScriptState* ToScriptStateImpl(LocalFrame* frame,
 
 v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
-  ASSERT(context);
+  DCHECK(context);
   if (context->IsDocument()) {
     if (LocalFrame* frame = ToDocument(context)->GetFrame())
       return ToV8Context(frame, world);
@@ -824,7 +824,7 @@ v8::Local<v8::Context> ToV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
 
 v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
                                                  DOMWrapperWorld& world) {
-  ASSERT(frame);
+  DCHECK(frame);
   return frame->WindowProxy(world)->ContextIfInitialized();
 }
 
@@ -908,7 +908,7 @@ bool AddHiddenValueToArray(v8::Isolate* isolate,
                            v8::Local<v8::Object> object,
                            v8::Local<v8::Value> value,
                            int array_index) {
-  ASSERT(!value.IsEmpty());
+  DCHECK(!value.IsEmpty());
   v8::Local<v8::Value> array_value = object->GetInternalField(array_index);
   if (array_value->IsNull() || array_value->IsUndefined()) {
     array_value = v8::Array::New(isolate);

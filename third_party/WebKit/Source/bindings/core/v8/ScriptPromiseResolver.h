@@ -52,7 +52,7 @@ class CORE_EXPORT ScriptPromiseResolver
     //  - this resolver is destructed before it is resolved, rejected,
     //    detached, the V8 isolate is terminated or the associated
     //    ExecutionContext is stopped.
-    ASSERT(state_ == kDetached || !is_promise_called_ ||
+    DCHECK(state_ == kDetached || !is_promise_called_ ||
            !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
            GetExecutionContext()->IsContextDestroyed());
   }
@@ -122,7 +122,7 @@ class CORE_EXPORT ScriptPromiseResolver
     if (state_ != kPending || !GetScriptState()->ContextIsValid() ||
         !GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
       return;
-    ASSERT(new_state == kResolving || new_state == kRejecting);
+    DCHECK(new_state == kResolving || new_state == kRejecting);
     state_ = new_state;
 
     ScriptState::Scope scope(script_state_.Get());

@@ -106,7 +106,7 @@ int ScriptRegexp::Match(const String& string,
   //
   // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
 
-  ASSERT(!return_value.IsEmpty());
+  DCHECK(!return_value.IsEmpty());
   if (!return_value->IsArray())
     return -1;
 

@@ -21,14 +21,14 @@ typedef HashMap<int,
     DOMActivityLoggerMapForIsolatedWorld;
 
 static DOMActivityLoggerMapForMainWorld& DomActivityLoggersForMainWorld() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForMainWorld, map, ());
   return map;
 }
 
 static DOMActivityLoggerMapForIsolatedWorld&
 DomActivityLoggersForIsolatedWorld() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(DOMActivityLoggerMapForIsolatedWorld, map, ());
   return map;
 }

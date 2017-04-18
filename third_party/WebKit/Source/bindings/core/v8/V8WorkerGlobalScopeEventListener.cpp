@@ -73,7 +73,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {
-  ASSERT(!js_event.IsEmpty());
+  DCHECK(!js_event.IsEmpty());
   v8::Local<v8::Function> handler_function = GetListenerFunction(script_state);
   v8::Local<v8::Object> receiver = GetReceiverObject(script_state, event);
   if (handler_function.IsEmpty() || receiver.IsEmpty())

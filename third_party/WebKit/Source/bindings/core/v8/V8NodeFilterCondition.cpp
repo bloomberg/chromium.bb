@@ -63,11 +63,11 @@ unsigned V8NodeFilterCondition::AcceptNode(
     Node* node,
     ExceptionState& exception_state) const {
   v8::Isolate* isolate = script_state_->GetIsolate();
-  ASSERT(!script_state_->GetContext().IsEmpty());
+  DCHECK(!script_state_->GetContext().IsEmpty());
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Value> filter = filter_.NewLocal(isolate);
 
-  ASSERT(filter.IsEmpty() || filter->IsObject());
+  DCHECK(filter.IsEmpty() || filter->IsObject());
   if (filter.IsEmpty())
     return NodeFilter::kFilterAccept;
 
@@ -120,7 +120,7 @@ unsigned V8NodeFilterCondition::AcceptNode(
     return NodeFilter::kFilterReject;
   }
 
-  ASSERT(!result.IsEmpty());
+  DCHECK(!result.IsEmpty());
 
   uint32_t uint32_value;
   if (!V8Call(result->Uint32Value(script_state_->GetContext()), uint32_value,

@@ -63,7 +63,7 @@ class RejectedPromises::Message final {
     // Either collected or https://crbug.com/450330
     if (value.IsEmpty() || !value->IsPromise())
       return;
-    ASSERT(!HasHandler());
+    DCHECK(!HasHandler());
 
     EventTarget* target = execution_context->ErrorEventTarget();
     if (target && !execution_context->ShouldSanitizeScriptError(resource_name_,
@@ -127,19 +127,21 @@ class RejectedPromises::Message final {
   }
 
   void MakePromiseWeak() {
-    ASSERT(!promise_.IsEmpty() && !promise_.IsWeak());
+    DCHECK(!promise_.IsEmpty());
+    DCHECK(!promise_.IsWeak());
     promise_.SetWeak(this, &Message::DidCollectPromise);
     exception_.SetWeak(this, &Message::DidCollectException);
   }
 
   void MakePromiseStrong() {
-    ASSERT(!promise_.IsEmpty() && promise_.IsWeak());
+    DCHECK(!promise_.IsEmpty());
+    DCHECK(promise_.IsWeak());
     promise_.ClearWeak();
     exception_.ClearWeak();
   }
 
   bool HasHandler() {
-    ASSERT(!IsCollected());
+    DCHECK(!IsCollected());
     ScriptState::Scope scope(script_state_);
     v8::Local<v8::Value> value = promise_.NewLocal(script_state_->GetIsolate());
     return v8::Local<v8::Promise>::Cast(value)->HasHandler();

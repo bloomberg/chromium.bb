@@ -40,12 +40,12 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
 }
 
 ScriptState::~ScriptState() {
-  ASSERT(!per_context_data_);
-  ASSERT(context_.IsEmpty());
+  DCHECK(!per_context_data_);
+  DCHECK(context_.IsEmpty());
 }
 
 void ScriptState::DetachGlobalObject() {
-  ASSERT(!context_.IsEmpty());
+  DCHECK(!context_.IsEmpty());
   GetContext()->DetachGlobal();
 }
 

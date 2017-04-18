@@ -59,7 +59,7 @@ V0CustomElementConstructorBuilder::V0CustomElementConstructorBuilder(
     ScriptState* script_state,
     const ElementRegistrationOptions& options)
     : script_state_(script_state), options_(options) {
-  ASSERT(script_state_->GetContext() ==
+  DCHECK(script_state_->GetContext() ==
          script_state_->GetIsolate()->GetCurrentContext());
 }
 
@@ -71,7 +71,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     const AtomicString& type,
     QualifiedName& tag_name,
     ExceptionState& exception_state) {
-  ASSERT(prototype_.IsEmpty());
+  DCHECK(prototype_.IsEmpty());
 
   v8::TryCatch try_catch(script_state_->GetIsolate());
 
@@ -85,7 +85,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
   }
 
   if (options_.hasPrototype()) {
-    ASSERT(options_.prototype().IsObject());
+    DCHECK(options_.prototype().IsObject());
     prototype_ = options_.prototype().V8Value().As<v8::Object>();
   } else {
     prototype_ = v8::Object::New(script_state_->GetIsolate());
@@ -103,7 +103,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
   if (HasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
     namespace_uri = SVGNames::svgNamespaceURI;
 
-  ASSERT(!try_catch.HasCaught());
+  DCHECK(!try_catch.HasCaught());
 
   AtomicString local_name;
 
@@ -135,14 +135,14 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     local_name = type;
   }
 
-  ASSERT(!try_catch.HasCaught());
+  DCHECK(!try_catch.HasCaught());
   tag_name = QualifiedName(g_null_atom, local_name, namespace_uri);
   return true;
 }
 
 V0CustomElementLifecycleCallbacks*
 V0CustomElementConstructorBuilder::CreateCallbacks() {
-  ASSERT(!prototype_.IsEmpty());
+  DCHECK(!prototype_.IsEmpty());
 
   v8::TryCatch exception_catcher(script_state_->GetIsolate());
   exception_catcher.SetVerbose(true);
@@ -175,9 +175,9 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
     Document* document,
     V0CustomElementDefinition* definition,
     ExceptionState& exception_state) {
-  ASSERT(!prototype_.IsEmpty());
-  ASSERT(constructor_.IsEmpty());
-  ASSERT(document);
+  DCHECK(!prototype_.IsEmpty());
+  DCHECK(constructor_.IsEmpty());
+  DCHECK(document);
 
   v8::Isolate* isolate = script_state_->GetIsolate();
   v8::Local<v8::Context> context = script_state_->GetContext();
@@ -280,7 +280,7 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
 }
 
 bool V0CustomElementConstructorBuilder::DidRegisterDefinition() const {
-  ASSERT(!constructor_.IsEmpty());
+  DCHECK(!constructor_.IsEmpty());
 
   return callbacks_->SetBinding(
       V0CustomElementBinding::Create(script_state_->GetIsolate(), prototype_));

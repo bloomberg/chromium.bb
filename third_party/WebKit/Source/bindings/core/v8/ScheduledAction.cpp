@@ -51,7 +51,7 @@ ScheduledAction* ScheduledAction::Create(ScriptState* script_state,
                                          ExecutionContext* target,
                                          const ScriptValue& handler,
                                          const Vector<ScriptValue>& arguments) {
-  ASSERT(handler.IsFunction());
+  DCHECK(handler.IsFunction());
   if (!script_state->World().IsWorkerWorld()) {
     if (!BindingSecurity::ShouldAllowAccessToFrame(
             EnteredDOMWindow(script_state->GetIsolate()),
@@ -114,7 +114,7 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
                                  const ScriptValue& function,
                                  const Vector<ScriptValue>& arguments)
     : script_state_(script_state), info_(script_state->GetIsolate()) {
-  ASSERT(function.IsFunction());
+  DCHECK(function.IsFunction());
   function_.Set(script_state->GetIsolate(),
                 v8::Local<v8::Function>::Cast(function.V8Value()));
   info_.ReserveCapacity(arguments.size());
@@ -166,7 +166,7 @@ void ScheduledAction::Execute(LocalFrame* frame) {
 }
 
 void ScheduledAction::Execute(WorkerGlobalScope* worker) {
-  ASSERT(worker->GetThread()->IsCurrentThread());
+  DCHECK(worker->GetThread()->IsCurrentThread());
 
   if (!script_state_->ContextIsValid()) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";

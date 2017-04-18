@@ -58,7 +58,7 @@ void ScriptPromiseResolver::KeepAliveWhilePending() {
 }
 
 void ScriptPromiseResolver::OnTimerFired(TimerBase*) {
-  ASSERT(state_ == kResolving || state_ == kRejecting);
+  DCHECK(state_ == kResolving || state_ == kRejecting);
   if (!GetScriptState()->ContextIsValid()) {
     Detach();
     return;

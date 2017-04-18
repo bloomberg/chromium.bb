@@ -231,7 +231,7 @@ SerializedScriptValue::~SerializedScriptValue() {
   // likely used in a context other than Worker's onmessage environment and the
   // presence of current v8 context is not guaranteed. Avoid calling v8 then.
   if (has_registered_external_allocation_) {
-    ASSERT(v8::Isolate::GetCurrent());
+    DCHECK(v8::Isolate::GetCurrent());
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
         -static_cast<int64_t>(DataLengthInBytes()));
   }

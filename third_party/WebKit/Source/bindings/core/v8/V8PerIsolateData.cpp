@@ -45,7 +45,7 @@ namespace blink {
 static V8PerIsolateData* g_main_thread_per_isolate_data = 0;
 
 static void BeforeCallEnteredCallback(v8::Isolate* isolate) {
-  RELEASE_ASSERT(!ScriptForbiddenScope::IsScriptForbidden());
+  CHECK(!ScriptForbiddenScope::IsScriptForbidden());
 }
 
 static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
@@ -75,7 +75,7 @@ V8PerIsolateData::V8PerIsolateData(WebTaskRunner* task_runner)
 V8PerIsolateData::~V8PerIsolateData() {}
 
 v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
-  ASSERT(g_main_thread_per_isolate_data);
+  DCHECK(g_main_thread_per_isolate_data);
   return g_main_thread_per_isolate_data->GetIsolate();
 }
 
@@ -279,7 +279,7 @@ void V8PerIsolateData::RunEndOfScopeTasks() {
   tasks.Swap(end_of_scope_tasks_);
   for (const auto& task : tasks)
     task->Run();
-  ASSERT(end_of_scope_tasks_.IsEmpty());
+  DCHECK(end_of_scope_tasks_.IsEmpty());
 }
 
 void V8PerIsolateData::ClearEndOfScopeTasks() {
@@ -288,7 +288,7 @@ void V8PerIsolateData::ClearEndOfScopeTasks() {
 
 void V8PerIsolateData::SetThreadDebugger(
     std::unique_ptr<V8PerIsolateData::Data> thread_debugger) {
-  ASSERT(!thread_debugger_);
+  DCHECK(!thread_debugger_);
   thread_debugger_ = std::move(thread_debugger);
 }
 

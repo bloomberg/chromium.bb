@@ -40,7 +40,7 @@ void V8PerformanceObserver::constructorCustom(
     return;
   }
   performance = DOMWindowPerformance::performance(*window);
-  ASSERT(performance);
+  DCHECK(performance);
 
   if (info.Length() <= 0 || !info[0]->IsFunction()) {
     V8ThrowException::ThrowTypeError(

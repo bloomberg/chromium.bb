@@ -65,9 +65,9 @@ ScriptPromise ScriptPromisePropertyBase::Promise(DOMWrapperWorld& world) {
 }
 
 void ScriptPromisePropertyBase::ResolveOrReject(State target_state) {
-  ASSERT(GetExecutionContext());
-  ASSERT(state_ == kPending);
-  ASSERT(target_state == kResolved || target_state == kRejected);
+  DCHECK(GetExecutionContext());
+  DCHECK_EQ(state_, kPending);
+  DCHECK(target_state == kResolved || target_state == kRejected);
 
   state_ = target_state;
 
@@ -109,7 +109,7 @@ void ScriptPromisePropertyBase::ResolveOrRejectInternal(
   v8::Local<v8::Context> context = resolver->CreationContext();
   switch (state_) {
     case kPending:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
     case kResolved:
       resolver->Resolve(context, ResolvedValue(isolate_, context->Global()))
@@ -169,13 +169,13 @@ void ScriptPromisePropertyBase::ClearWrappers() {
 }
 
 void ScriptPromisePropertyBase::CheckThis() {
-  RELEASE_ASSERT(this);
+  CHECK(this);
 }
 
 void ScriptPromisePropertyBase::CheckWrappers() {
   for (WeakPersistentSet::iterator i = wrappers_.begin(); i != wrappers_.end();
        ++i) {
-    RELEASE_ASSERT(*i);
+    CHECK(*i);
   }
 }
 

@@ -57,7 +57,7 @@
 namespace blink {
 
 Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
-  ASSERT(node);
+  DCHECK(node);
   if (node->isConnected()) {
     Document& document = node->GetDocument();
     if (HTMLImportsController* controller = document.ImportsController())
@@ -99,7 +99,7 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
 
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
-    ASSERT(V8DOMWrapper::HasInternalFieldsSet(wrapper));
+    DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
     if (ToWrapperTypeInfo(wrapper)->IsActiveScriptWrappable() &&
         ToScriptWrappable(wrapper)->HasPendingActivity()) {
       v8::Persistent<v8::Object>::Cast(*value).MarkActive();
@@ -107,7 +107,7 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
     }
 
     if (class_id == WrapperTypeInfo::kNodeClassId) {
-      ASSERT(V8Node::hasInstance(wrapper, isolate_));
+      DCHECK(V8Node::hasInstance(wrapper, isolate_));
       Node* node = V8Node::toImpl(wrapper);
       if (node->HasEventListeners()) {
         v8::Persistent<v8::Object>::Cast(*value).MarkActive();
@@ -345,7 +345,7 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
                          "weak processing");
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -389,7 +389,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
                        UsedHeapSize(isolate));
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   if (IsMainThread())
@@ -424,7 +424,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
                                            BlinkGC::kForcedGC);
 
       // Forces a precise GC at the end of the current event loop.
-      RELEASE_ASSERT(!current_thread_state->IsInGC());
+      CHECK(!current_thread_state->IsInGC());
       current_thread_state->SetGCState(ThreadState::kFullGCScheduled);
     }
 
@@ -517,7 +517,7 @@ class PendingActivityVisitor : public v8::PersistentHandleVisitor {
 
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
-    ASSERT(V8DOMWrapper::HasInternalFieldsSet(wrapper));
+    DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
     // The ExecutionContext check is heavy, so it should be done at the last.
     if (ToWrapperTypeInfo(wrapper)->IsActiveScriptWrappable() &&
         ToScriptWrappable(wrapper)->HasPendingActivity()) {
@@ -542,7 +542,7 @@ bool V8GCController::HasPendingActivity(v8::Isolate* isolate,
                                         ExecutionContext* execution_context) {
   // V8GCController::hasPendingActivity is used only when a worker checks if
   // the worker contains any wrapper that has pending activities.
-  ASSERT(!IsMainThread());
+  DCHECK(!IsMainThread());
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, scan_pending_activity_histogram,

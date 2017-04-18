@@ -75,7 +75,7 @@ class CORE_EXPORT ScriptValue final {
                                : SharedPersistent<v8::Value>::Create(
                                      value,
                                      script_state->GetIsolate())) {
-    ASSERT(IsEmpty() || script_state_);
+    DCHECK(IsEmpty() || script_state_);
   }
 
   template <typename T>
@@ -85,12 +85,12 @@ class CORE_EXPORT ScriptValue final {
                                : SharedPersistent<v8::Value>::Create(
                                      value.ToLocalChecked(),
                                      script_state->GetIsolate())) {
-    ASSERT(IsEmpty() || script_state_);
+    DCHECK(IsEmpty() || script_state_);
   }
 
   ScriptValue(const ScriptValue& value)
       : script_state_(value.script_state_), value_(value.value_) {
-    ASSERT(IsEmpty() || script_state_);
+    DCHECK(IsEmpty() || script_state_);
   }
 
   ScriptState* GetScriptState() const { return script_state_.Get(); }
@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptValue final {
   }
 
   v8::Local<v8::Context> GetContext() const {
-    ASSERT(script_state_.Get());
+    DCHECK(script_state_.Get());
     return script_state_->GetContext();
   }
 
@@ -126,7 +126,7 @@ class CORE_EXPORT ScriptValue final {
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
   bool IsFunction() const {
-    ASSERT(!IsEmpty());
+    DCHECK(!IsEmpty());
     v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsFunction();
   }
@@ -134,7 +134,7 @@ class CORE_EXPORT ScriptValue final {
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
   bool IsNull() const {
-    ASSERT(!IsEmpty());
+    DCHECK(!IsEmpty());
     v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsNull();
   }
@@ -142,7 +142,7 @@ class CORE_EXPORT ScriptValue final {
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
   bool IsUndefined() const {
-    ASSERT(!IsEmpty());
+    DCHECK(!IsEmpty());
     v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsUndefined();
   }
@@ -150,7 +150,7 @@ class CORE_EXPORT ScriptValue final {
   // This creates a new local Handle; Don't use this in performance-sensitive
   // places.
   bool IsObject() const {
-    ASSERT(!IsEmpty());
+    DCHECK(!IsEmpty());
     v8::Local<v8::Value> value = V8Value();
     return !value.IsEmpty() && value->IsObject();
   }

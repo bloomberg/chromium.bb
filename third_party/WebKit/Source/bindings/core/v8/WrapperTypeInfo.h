@@ -187,14 +187,14 @@ struct WrapperTypeInfo {
 
 template <typename T, int offset>
 inline T* GetInternalField(const v8::PersistentBase<v8::Object>& persistent) {
-  ASSERT(offset < v8::Object::InternalFieldCount(persistent));
+  DCHECK_LT(offset, v8::Object::InternalFieldCount(persistent));
   return reinterpret_cast<T*>(
       v8::Object::GetAlignedPointerFromInternalField(persistent, offset));
 }
 
 template <typename T, int offset>
 inline T* GetInternalField(v8::Local<v8::Object> wrapper) {
-  ASSERT(offset < wrapper->InternalFieldCount());
+  DCHECK_LT(offset, wrapper->InternalFieldCount());
   return reinterpret_cast<T*>(
       wrapper->GetAlignedPointerFromInternalField(offset));
 }

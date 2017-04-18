@@ -83,7 +83,7 @@ class CORE_EXPORT StringCache {
 
   v8::Local<v8::String> V8ExternalString(v8::Isolate* isolate,
                                          StringImpl* string_impl) {
-    ASSERT(string_impl);
+    DCHECK(string_impl);
     if (last_string_impl_.Get() == string_impl)
       return last_v8_string_.NewLocal(isolate);
     return V8ExternalStringSlow(isolate, string_impl);
@@ -91,7 +91,7 @@ class CORE_EXPORT StringCache {
 
   void SetReturnValueFromString(v8::ReturnValue<v8::Value> return_value,
                                 StringImpl* string_impl) {
-    ASSERT(string_impl);
+    DCHECK(string_impl);
     if (last_string_impl_.Get() == string_impl)
       last_v8_string_.SetReturnValue(return_value);
     else

@@ -46,7 +46,7 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
     ScriptState* script_state,
     v8::Local<v8::Value> js_event,
     Event* event) {
-  ASSERT(!js_event.IsEmpty());
+  DCHECK(!js_event.IsEmpty());
   if (!event->HasInterface(EventNames::ErrorEvent))
     return V8EventListener::CallListenerFunction(script_state, js_event, event);
 

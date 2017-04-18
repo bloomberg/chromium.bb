@@ -103,13 +103,13 @@ WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
       execution_forbidden_(false),
       rejected_promises_(RejectedPromises::Create()),
       execution_state_(0) {
-  ASSERT(isolate);
+  DCHECK(isolate);
   world_ =
       DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);
 }
 
 WorkerOrWorkletScriptController::~WorkerOrWorkletScriptController() {
-  ASSERT(!rejected_promises_);
+  DCHECK(!rejected_promises_);
 }
 
 void WorkerOrWorkletScriptController::Dispose() {
@@ -339,12 +339,12 @@ bool WorkerOrWorkletScriptController::Evaluate(
 }
 
 void WorkerOrWorkletScriptController::ForbidExecution() {
-  ASSERT(global_scope_->IsContextThread());
+  DCHECK(global_scope_->IsContextThread());
   execution_forbidden_ = true;
 }
 
 bool WorkerOrWorkletScriptController::IsExecutionForbidden() const {
-  ASSERT(global_scope_->IsContextThread());
+  DCHECK(global_scope_->IsContextThread());
   return execution_forbidden_;
 }
 

@@ -34,7 +34,7 @@ v8::MaybeLocal<v8::Object> V8ObjectConstructor::NewInstance(
     v8::Local<v8::Function> function,
     int argc,
     v8::Local<v8::Value> argv[]) {
-  ASSERT(!function.IsEmpty());
+  DCHECK(!function.IsEmpty());
   TRACE_EVENT0("v8", "v8.newInstance");
   ConstructorMode constructor_mode(isolate);
   v8::MicrotasksScope microtasks_scope(

@@ -54,7 +54,7 @@ void V8IntersectionObserver::constructorCustom(
       intersection_observer_init, *callback, exception_state);
   if (exception_state.HadException())
     return;
-  ASSERT(observer);
+  DCHECK(observer);
   V8SetReturnValue(info,
                    V8DOMWrapper::AssociateObjectWithWrapper(
                        info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));

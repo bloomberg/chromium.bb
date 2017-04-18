@@ -140,7 +140,9 @@ class SourceStreamDataQueue {
 
  private:
   bool TryGetData(const uint8_t** data, size_t* length) {
-    ASSERT(mutex_.Locked());
+#if DCHECK_IS_ON()
+    DCHECK(mutex_.Locked());
+#endif
     if (!data_.IsEmpty()) {
       std::pair<const uint8_t*, size_t> next_data = data_.TakeFirst();
       *data = next_data.first;

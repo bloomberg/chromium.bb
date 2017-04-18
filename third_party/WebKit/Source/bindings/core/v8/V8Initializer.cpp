@@ -90,7 +90,7 @@ static Frame* FindFrame(v8::Isolate* isolate,
     return V8Location::toImpl(host)->GetFrame();
 
   // This function can handle only those types listed above.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -156,7 +156,7 @@ const size_t kWasmWireBytesLimit = 1 << 12;
 
 void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
                                                v8::Local<v8::Value> data) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
   if (isolate->GetEnteredContext().IsEmpty())
@@ -201,7 +201,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
 namespace {
 
 static RejectedPromises& RejectedPromisesOnMainThread() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   DEFINE_STATIC_LOCAL(RefPtr<RejectedPromises>, rejected_promises,
                       (RejectedPromises::Create()));
   return *rejected_promises;
@@ -221,7 +221,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     return;
   }
 
-  ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
+  DCHECK_EQ(data.GetEvent(), v8::kPromiseRejectWithNoHandler);
 
   v8::Local<v8::Promise> promise = data.GetPromise();
   v8::Isolate* isolate = promise->GetIsolate();
@@ -231,7 +231,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
   if (V8DOMWrapper::IsWrapper(isolate, exception)) {
     // Try to get the stack & location from a wrapped exception object (e.g.
     // DOMException).
-    ASSERT(exception->IsObject());
+    DCHECK(exception->IsObject());
     auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
     v8::Local<v8::Value> error =
         private_error.GetOrUndefined(exception.As<v8::Object>());
@@ -266,7 +266,7 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
 }
 
 static void PromiseRejectHandlerInMainThread(v8::PromiseRejectMessage data) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
 
   v8::Local<v8::Promise> promise = data.GetPromise();
 
@@ -299,10 +299,10 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
   if (!execution_context)
     return;
 
-  ASSERT(execution_context->IsWorkerGlobalScope());
+  DCHECK(execution_context->IsWorkerGlobalScope());
   WorkerOrWorkletScriptController* script_controller =
       ToWorkerGlobalScope(execution_context)->ScriptController();
-  ASSERT(script_controller);
+  DCHECK(script_controller);
 
   PromiseRejectHandler(data, *script_controller->GetRejectedPromises(),
                        script_state);
@@ -446,7 +446,7 @@ static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
 }
 
 void V8Initializer::InitializeMainThread() {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
 
   WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
 
@@ -493,7 +493,7 @@ void V8Initializer::InitializeMainThread() {
     profiler->SetGetRetainerInfosCallback(&V8GCController::GetRetainerInfos);
   }
 
-  ASSERT(ThreadState::MainThreadState());
+  DCHECK(ThreadState::MainThreadState());
   ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
       isolate, V8GCController::TraceDOMWrappers,
       ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque,

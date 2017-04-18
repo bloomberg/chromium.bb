@@ -77,7 +77,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     explicit Scope(ScriptState* script_state)
         : handle_scope_(script_state->GetIsolate()),
           context_(script_state->GetContext()) {
-      ASSERT(script_state->ContextIsValid());
+      DCHECK(script_state->ContextIsValid());
       context_->Enter();
     }
 
@@ -122,7 +122,7 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   }
 
   static ScriptState* From(v8::Local<v8::Context> context) {
-    ASSERT(!context.IsEmpty());
+    DCHECK(!context.IsEmpty());
     ScriptState* script_state =
         static_cast<ScriptState*>(context->GetAlignedPointerFromEmbedderData(
             kV8ContextPerContextDataIndex));

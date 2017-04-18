@@ -47,7 +47,7 @@ class WebCoreStringResourceBase {
 #if DCHECK_IS_ON()
     thread_id_ = WTF::CurrentThread();
 #endif
-    ASSERT(!string.IsNull());
+    DCHECK(!string.IsNull());
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
         string.CharactersSizeInBytes());
   }
@@ -57,14 +57,14 @@ class WebCoreStringResourceBase {
 #if DCHECK_IS_ON()
     thread_id_ = WTF::CurrentThread();
 #endif
-    ASSERT(!string.IsNull());
+    DCHECK(!string.IsNull());
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
         string.CharactersSizeInBytes());
   }
 
   virtual ~WebCoreStringResourceBase() {
 #if DCHECK_IS_ON()
-    ASSERT(thread_id_ == WTF::CurrentThread());
+    DCHECK_EQ(thread_id_, WTF::CurrentThread());
 #endif
     int64_t reduced_external_memory = plain_string_.CharactersSizeInBytes();
     if (plain_string_.Impl() != atomic_string_.Impl() &&
@@ -78,11 +78,11 @@ class WebCoreStringResourceBase {
 
   const AtomicString& GetAtomicString() {
 #if DCHECK_IS_ON()
-    ASSERT(thread_id_ == WTF::CurrentThread());
+    DCHECK_EQ(thread_id_, WTF::CurrentThread());
 #endif
     if (atomic_string_.IsNull()) {
       atomic_string_ = AtomicString(plain_string_);
-      ASSERT(!atomic_string_.IsNull());
+      DCHECK(!atomic_string_.IsNull());
       if (plain_string_.Impl() != atomic_string_.Impl())
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
             atomic_string_.CharactersSizeInBytes());
@@ -115,12 +115,12 @@ class WebCoreStringResource16 final
  public:
   explicit WebCoreStringResource16(const String& string)
       : WebCoreStringResourceBase(string) {
-    ASSERT(!string.Is8Bit());
+    DCHECK(!string.Is8Bit());
   }
 
   explicit WebCoreStringResource16(const AtomicString& string)
       : WebCoreStringResourceBase(string) {
-    ASSERT(!string.Is8Bit());
+    DCHECK(!string.Is8Bit());
   }
 
   size_t length() const override { return plain_string_.Impl()->length(); }
@@ -138,12 +138,12 @@ class WebCoreStringResource8 final
  public:
   explicit WebCoreStringResource8(const String& string)
       : WebCoreStringResourceBase(string) {
-    ASSERT(string.Is8Bit());
+    DCHECK(string.Is8Bit());
   }
 
   explicit WebCoreStringResource8(const AtomicString& string)
       : WebCoreStringResourceBase(string) {
-    ASSERT(string.Is8Bit());
+    DCHECK(string.Is8Bit());
   }
 
   size_t length() const override { return plain_string_.Impl()->length(); }
@@ -269,7 +269,7 @@ inline bool V8StringResource<kDefaultMode>::IsValid() const {
 
 template <>
 inline String V8StringResource<kDefaultMode>::FallbackString() const {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 

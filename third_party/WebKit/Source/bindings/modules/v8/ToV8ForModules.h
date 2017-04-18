@@ -26,7 +26,7 @@ inline v8::Local<v8::Value> ToV8(const SQLValue& sql_value,
     case SQLValue::kStringValue:
       return V8String(isolate, sql_value.GetString());
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return v8::Local<v8::Value>();
 }
 

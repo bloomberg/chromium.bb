@@ -52,7 +52,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
   context_holder_->SetContext(context);
 
   v8::Context::Scope context_scope(context);
-  ASSERT(error_prototype_.IsEmpty());
+  DCHECK(error_prototype_.IsEmpty());
   v8::Local<v8::Value> object_value =
       context->Global()
           ->Get(context, V8AtomicString(isolate_, "Error"))
@@ -85,7 +85,7 @@ V8PerContextData* V8PerContextData::From(v8::Local<v8::Context> context) {
 
 v8::Local<v8::Object> V8PerContextData::CreateWrapperFromCacheSlowCase(
     const WrapperTypeInfo* type) {
-  ASSERT(!error_prototype_.IsEmpty());
+  DCHECK(!error_prototype_.IsEmpty());
 
   v8::Context::Scope scope(GetContext());
   v8::Local<v8::Function> interface_object = ConstructorForType(type);
@@ -101,14 +101,14 @@ v8::Local<v8::Object> V8PerContextData::CreateWrapperFromCacheSlowCase(
 
 v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
     const WrapperTypeInfo* type) {
-  ASSERT(!error_prototype_.IsEmpty());
+  DCHECK(!error_prototype_.IsEmpty());
 
   v8::Local<v8::Context> current_context = GetContext();
   v8::Context::Scope scope(current_context);
   const DOMWrapperWorld& world = DOMWrapperWorld::World(current_context);
   // We shouldn't reach this point for the types that are implemented in v8 such
   // as typed arrays and hence don't have domTemplateFunction.
-  ASSERT(type->dom_template_function);
+  DCHECK(type->dom_template_function);
   v8::Local<v8::FunctionTemplate> interface_template =
       type->domTemplate(isolate_, world);
   // Getting the function might fail if we're running out of stack or memory.

@@ -71,7 +71,7 @@ class Iterable {
       if (!source->Next(script_state, key, value, exception_state))
         return;
 
-      ASSERT(!exception_state.HadException());
+      DCHECK(!exception_state.HadException());
 
       args[0] = ToV8(value, creation_context, isolate);
       args[1] = ToV8(key, creation_context, isolate);

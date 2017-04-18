@@ -22,8 +22,8 @@ static ScriptStreamerThread* g_shared_thread = 0;
 static Mutex* g_mutex = 0;
 
 void ScriptStreamerThread::Init() {
-  ASSERT(!g_shared_thread);
-  ASSERT(IsMainThread());
+  DCHECK(!g_shared_thread);
+  DCHECK(IsMainThread());
   // This is called in the main thread before any tasks are created, so no
   // locking is needed.
   g_mutex = new Mutex();
@@ -35,9 +35,9 @@ ScriptStreamerThread* ScriptStreamerThread::Shared() {
 }
 
 void ScriptStreamerThread::PostTask(std::unique_ptr<CrossThreadClosure> task) {
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
   MutexLocker locker(mutex_);
-  ASSERT(!running_task_);
+  DCHECK(!running_task_);
   running_task_ = true;
   PlatformThread().GetWebTaskRunner()->PostTask(BLINK_FROM_HERE,
                                                 std::move(task));
@@ -45,7 +45,7 @@ void ScriptStreamerThread::PostTask(std::unique_ptr<CrossThreadClosure> task) {
 
 void ScriptStreamerThread::TaskDone() {
   MutexLocker locker(mutex_);
-  ASSERT(running_task_);
+  DCHECK(running_task_);
   running_task_ = false;
 }
 

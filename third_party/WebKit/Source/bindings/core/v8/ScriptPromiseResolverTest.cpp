@@ -32,7 +32,7 @@ class Function : public ScriptFunction {
       : ScriptFunction(script_state), value_(value) {}
 
   ScriptValue Call(ScriptValue value) override {
-    ASSERT(!value.IsEmpty());
+    DCHECK(!value.IsEmpty());
     *value_ = ToCoreString(value.V8Value()
                                ->ToString(GetScriptState()->GetContext())
                                .ToLocalChecked());

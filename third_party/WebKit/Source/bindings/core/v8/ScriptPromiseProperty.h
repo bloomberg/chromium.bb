@@ -156,7 +156,7 @@ v8::Local<v8::Value>
 ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::ResolvedValue(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
-  ASSERT(GetState() == kResolved);
+  DCHECK_EQ(GetState(), kResolved);
   if (!resolved_with_undefined_)
     return ToV8(resolved_, creation_context, isolate);
   return v8::Undefined(isolate);
@@ -167,7 +167,7 @@ v8::Local<v8::Value>
 ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::RejectedValue(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
-  ASSERT(GetState() == kRejected);
+  DCHECK_EQ(GetState(), kRejected);
   return ToV8(rejected_, creation_context, isolate);
 }
 

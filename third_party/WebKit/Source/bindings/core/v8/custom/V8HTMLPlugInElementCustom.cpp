@@ -73,7 +73,7 @@ void SetScriptableObjectProperty(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  ASSERT(!value.IsEmpty());
+  DCHECK(!value.IsEmpty());
 
   HTMLPlugInElement* impl = ElementType::toImpl(info.Holder());
   RefPtr<SharedPersistent<v8::Object>> wrapper = impl->PluginWrapper();

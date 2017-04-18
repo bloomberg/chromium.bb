@@ -59,7 +59,7 @@ class Function : public ScriptFunction {
       : ScriptFunction(script_state), output_(output) {}
 
   ScriptValue Call(ScriptValue value) override {
-    ASSERT(!value.IsEmpty());
+    DCHECK(!value.IsEmpty());
     *output_ = value;
     return value;
   }

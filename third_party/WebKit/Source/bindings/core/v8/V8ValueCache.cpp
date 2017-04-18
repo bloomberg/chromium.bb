@@ -133,13 +133,13 @@ void StringCache::SetReturnValueFromStringSlow(
 v8::Local<v8::String> StringCache::CreateStringAndInsertIntoCache(
     v8::Isolate* isolate,
     StringImpl* string_impl) {
-  ASSERT(!string_cache_.Contains(string_impl));
-  ASSERT(string_impl->length());
+  DCHECK(!string_cache_.Contains(string_impl));
+  DCHECK(string_impl->length());
 
   v8::Local<v8::String> new_string =
       MakeExternalString(isolate, String(string_impl));
-  ASSERT(!new_string.IsEmpty());
-  ASSERT(new_string->Length());
+  DCHECK(!new_string.IsEmpty());
+  DCHECK(new_string->Length());
 
   v8::UniquePersistent<v8::String> wrapper(isolate, new_string);
 

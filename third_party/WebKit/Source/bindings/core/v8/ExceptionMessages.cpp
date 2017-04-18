@@ -145,14 +145,14 @@ String ExceptionMessages::NotEnoughArguments(unsigned expected,
 }
 
 String ExceptionMessages::NotAFiniteNumber(double value, const char* name) {
-  ASSERT(!std::isfinite(value));
+  DCHECK(!std::isfinite(value));
   return String::Format("The %s is %s.", name,
                         std::isinf(value) ? "infinite" : "not a number");
 }
 
 String ExceptionMessages::NotAFiniteNumber(const Decimal& value,
                                            const char* name) {
-  ASSERT(!value.IsFinite());
+  DCHECK(!value.IsFinite());
   return String::Format("The %s is %s.", name,
                         value.IsInfinity() ? "infinite" : "not a number");
 }

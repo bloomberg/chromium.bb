@@ -23,7 +23,7 @@ v8::Local<v8::Object> ScriptWrappable::Wrap(
     v8::Local<v8::Object> creation_context) {
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
 
-  ASSERT(!DOMDataStore::ContainsWrapper(this, isolate));
+  DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
   v8::Local<v8::Object> wrapper =
       V8DOMWrapper::CreateWrapper(isolate, creation_context, wrapper_type_info);

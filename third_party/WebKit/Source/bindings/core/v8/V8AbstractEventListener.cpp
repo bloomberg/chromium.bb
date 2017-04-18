@@ -63,7 +63,7 @@ V8AbstractEventListener::V8AbstractEventListener(bool is_attribute,
 }
 
 V8AbstractEventListener::~V8AbstractEventListener() {
-  ASSERT(listener_.IsEmpty());
+  DCHECK(listener_.IsEmpty());
   if (IsMainThread())
     InstanceCounters::DecrementCounter(
         InstanceCounters::kJSEventListenerCounter);
@@ -80,7 +80,7 @@ void V8AbstractEventListener::handleEvent(ExecutionContext* execution_context,
   // A ScriptState used by the event listener needs to be calculated based on
   // the ExecutionContext that fired the the event listener and the world
   // that installed the event listener.
-  ASSERT(event);
+  DCHECK(event);
   v8::HandleScope handle_scope(ToIsolate(execution_context));
   v8::Local<v8::Context> v8_context = ToV8Context(execution_context, World());
   if (v8_context.IsEmpty())
@@ -106,7 +106,7 @@ void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
 
 void V8AbstractEventListener::SetListenerObject(
     v8::Local<v8::Object> listener) {
-  ASSERT(listener_.IsEmpty());
+  DCHECK(listener_.IsEmpty());
   // Balanced in wrapperCleared xor clearListenerObject.
   if (worker_global_scope_) {
     worker_global_scope_->RegisterEventListener(this);

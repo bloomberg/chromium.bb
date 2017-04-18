@@ -86,7 +86,7 @@ class CORE_EXPORT Dictionary final {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   v8::Local<v8::Context> V8Context() const {
-    ASSERT(isolate_);
+    DCHECK(isolate_);
     return isolate_->GetCurrentContext();
   }
 

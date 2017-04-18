@@ -162,7 +162,7 @@ void V8Window::frameElementAttributeGetterCustom(
   // So, use its containing document as the creation context when wrapping.
   v8::Local<v8::Value> creation_context = ToV8(
       &impl->frameElement()->GetDocument(), info.Holder(), info.GetIsolate());
-  RELEASE_ASSERT(!creation_context.IsEmpty());
+  CHECK(!creation_context.IsEmpty());
   v8::Local<v8::Value> wrapper =
       ToV8(impl->frameElement(), v8::Local<v8::Object>::Cast(creation_context),
            info.GetIsolate());
@@ -189,7 +189,7 @@ void V8Window::openerAttributeSetterCustom(
   if (value->IsNull()) {
     // impl->frame() has to be a non-null LocalFrame.  Otherwise, the
     // same-origin check would have failed.
-    ASSERT(impl->GetFrame());
+    DCHECK(impl->GetFrame());
     ToLocalFrame(impl->GetFrame())->Loader().SetOpener(0);
   }
 
@@ -231,7 +231,7 @@ void V8Window::postMessageMethodCustom(
   // https://html.spec.whatwg.org/multipage/comms.html#dom-window-postmessage
   LocalDOMWindow* source = CurrentDOMWindow(info.GetIsolate());
 
-  ASSERT(window);
+  DCHECK(window);
   UseCounter::Count(window->GetFrame(), UseCounter::kWindowPostMessage);
 
   // If called directly by WebCore we don't have a calling context.

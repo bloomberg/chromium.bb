@@ -44,7 +44,7 @@ std::unique_ptr<V0CustomElementBinding> V0CustomElementBinding::Create(
 V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,
                                                v8::Local<v8::Object> prototype)
     : prototype_(isolate, prototype) {
-  ASSERT(!prototype_.IsEmpty());
+  DCHECK(!prototype_.IsEmpty());
 }
 
 V0CustomElementBinding::~V0CustomElementBinding() {}

@@ -81,9 +81,9 @@ inline void V8DOMWrapper::SetNativeInfo(
     v8::Local<v8::Object> wrapper,
     const WrapperTypeInfo* wrapper_type_info,
     ScriptWrappable* script_wrappable) {
-  ASSERT(wrapper->InternalFieldCount() >= 2);
-  ASSERT(script_wrappable);
-  ASSERT(wrapper_type_info);
+  DCHECK_GE(wrapper->InternalFieldCount(), 2);
+  DCHECK(script_wrappable);
+  DCHECK(wrapper_type_info);
   int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
   void* values[] = {script_wrappable,
                     const_cast<WrapperTypeInfo*>(wrapper_type_info)};
@@ -115,7 +115,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::AssociateObjectWithWrapper(
   if (DOMDataStore::SetWrapper(isolate, impl, wrapper_type_info, wrapper)) {
     WrapperTypeInfo::WrapperCreated();
     SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);
-    ASSERT(HasInternalFieldsSet(wrapper));
+    DCHECK(HasInternalFieldsSet(wrapper));
   }
   SECURITY_CHECK(ToScriptWrappable(wrapper) == impl);
   return wrapper;
@@ -135,7 +135,7 @@ class V8WrapperInstantiationScope {
     // creationContext should not be empty. Because if we have an
     // empty creationContext, we will end up creating
     // a new object in the context currently entered. This is wrong.
-    RELEASE_ASSERT(!creation_context.IsEmpty());
+    CHECK(!creation_context.IsEmpty());
     v8::Local<v8::Context> context_for_wrapper =
         creation_context->CreationContext();
 

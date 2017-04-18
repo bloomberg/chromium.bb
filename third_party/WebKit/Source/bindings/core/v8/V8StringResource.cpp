@@ -76,7 +76,7 @@ struct V8StringOneByteTrait {
 template <typename V8StringTrait>
 String StringTraits<String>::FromV8String(v8::Local<v8::String> v8_string,
                                           int length) {
-  ASSERT(v8_string->Length() == length);
+  DCHECK_EQ(v8_string->Length(), length);
   typename V8StringTrait::CharType* buffer;
   String result = String::CreateUninitialized(length, buffer);
   V8StringTrait::Write(v8_string, buffer, length);
@@ -87,7 +87,7 @@ template <typename V8StringTrait>
 AtomicString StringTraits<AtomicString>::FromV8String(
     v8::Local<v8::String> v8_string,
     int length) {
-  ASSERT(v8_string->Length() == length);
+  DCHECK_EQ(v8_string->Length(), length);
   static const int kInlineBufferSize =
       32 / sizeof(typename V8StringTrait::CharType);
   if (length <= kInlineBufferSize) {
@@ -159,7 +159,7 @@ template AtomicString V8StringToWebCoreString<AtomicString>(
 String Int32ToWebCoreStringFast(int value) {
   // Caching of small strings below is not thread safe: newly constructed
   // AtomicString are not safely published.
-  ASSERT(IsMainThread());
+  DCHECK(IsMainThread());
 
   // Most numbers used are <= 100. Even if they aren't used there's very little
   // cost in using the space.

@@ -294,8 +294,8 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!v8_value->IsArray())
     return false;
 
-  ASSERT(dictionary.GetIsolate());
-  ASSERT(dictionary.GetIsolate() == v8::Isolate::GetCurrent());
+  DCHECK(dictionary.GetIsolate());
+  DCHECK_EQ(dictionary.GetIsolate(), v8::Isolate::GetCurrent());
   value =
       ArrayValue(v8::Local<v8::Array>::Cast(v8_value), dictionary.GetIsolate());
   return true;

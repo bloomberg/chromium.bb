@@ -54,7 +54,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
       ToV8(transaction, m_scriptState->GetContext()->Global(), isolate);
   v8::Local<v8::Value> error_handle =
       ToV8(error, m_scriptState->GetContext()->Global(), isolate);
-  ASSERT(transaction_handle->IsObject());
+  DCHECK(transaction_handle->IsObject());
 
   v8::Local<v8::Value> argv[] = {transaction_handle, error_handle};
 

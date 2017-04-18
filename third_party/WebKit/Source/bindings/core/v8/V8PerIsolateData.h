@@ -101,8 +101,8 @@ class CORE_EXPORT V8PerIsolateData {
   static v8::Isolate* Initialize(WebTaskRunner*);
 
   static V8PerIsolateData* From(v8::Isolate* isolate) {
-    ASSERT(isolate);
-    ASSERT(isolate->GetData(gin::kEmbedderBlink));
+    DCHECK(isolate);
+    DCHECK(isolate->GetData(gin::kEmbedderBlink));
     return static_cast<V8PerIsolateData*>(
         isolate->GetData(gin::kEmbedderBlink));
   }

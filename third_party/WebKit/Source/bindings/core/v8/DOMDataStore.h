@@ -163,8 +163,8 @@ class DOMDataStore {
   static bool HolderContainsWrapper(v8::Local<v8::Object> holder,
                                     const ScriptWrappable* wrappable) {
     // Verify our assumptions about the main world.
-    ASSERT(wrappable);
-    ASSERT(!wrappable->ContainsWrapper() || !wrappable->IsEqualTo(holder) ||
+    DCHECK(wrappable);
+    DCHECK(!wrappable->ContainsWrapper() || !wrappable->IsEqualTo(holder) ||
            Current(v8::Isolate::GetCurrent()).is_main_world_);
     return wrappable->IsEqualTo(holder);
   }

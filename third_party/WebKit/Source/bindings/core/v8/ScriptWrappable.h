@@ -117,7 +117,7 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
   WARN_UNUSED_RESULT bool SetWrapper(v8::Isolate* isolate,
                                      const WrapperTypeInfo* wrapper_type_info,
                                      v8::Local<v8::Object>& wrapper) {
-    ASSERT(!wrapper.IsEmpty());
+    DCHECK(!wrapper.IsEmpty());
     if (UNLIKELY(ContainsWrapper())) {
       wrapper = MainWorldWrapper(isolate);
       return false;
@@ -125,7 +125,7 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
     main_world_wrapper_.Reset(isolate, wrapper);
     wrapper_type_info->ConfigureWrapper(&main_world_wrapper_);
     main_world_wrapper_.SetWeak();
-    ASSERT(ContainsWrapper());
+    DCHECK(ContainsWrapper());
     ScriptWrappableVisitor::WriteBarrier(&main_world_wrapper_);
     return true;
   }
