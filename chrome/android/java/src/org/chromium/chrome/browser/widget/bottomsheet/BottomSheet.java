@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Region;
 import android.os.Build;
@@ -25,6 +26,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -34,11 +36,13 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
+import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -70,6 +74,9 @@ public class BottomSheet
     public static final int SHEET_STATE_HALF = 1;
     public static final int SHEET_STATE_FULL = 2;
     public static final int SHEET_STATE_SCROLLING = 3;
+
+    /** Shared preference key for tracking whether the help bubble has been shown. */
+    private static final String BOTTOM_SHEET_HELP_BUBBLE_SHOWN = "bottom_sheet_help_bubble_shown";
 
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
@@ -192,6 +199,9 @@ public class BottomSheet
 
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
+
+    /** Whether the root view has been laid out at least once. **/
+    private boolean mHasRootLayoutOccurred;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -424,6 +434,18 @@ public class BottomSheet
      */
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
+
+        if (mHasRootLayoutOccurred && mTabModelSelector.isTabStateInitialized()) {
+            showHelpBubbleIfNecessary();
+        } else if (!mTabModelSelector.isTabStateInitialized()) {
+            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onTabStateInitialized() {
+                    if (mHasRootLayoutOccurred) showHelpBubbleIfNecessary();
+                    mTabModelSelector.removeObserver(this);
+                }
+            });
+        }
     }
 
     /**
@@ -496,6 +518,13 @@ public class BottomSheet
 
                 cancelAnimation();
                 setSheetState(mCurrentState, false);
+
+                if (!mHasRootLayoutOccurred && mTabModelSelector != null
+                        && mTabModelSelector.isTabStateInitialized()) {
+                    showHelpBubbleIfNecessary();
+                }
+
+                mHasRootLayoutOccurred = true;
             }
         });
 
@@ -1069,5 +1098,28 @@ public class BottomSheet
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
         return !isToolbarAndroidViewHidden() && !isInOverviewMode && !isFindInPageVisible;
+    }
+
+    private void showHelpBubbleIfNecessary() {
+        // The help bubble should only be shown after layout has occurred so that the anchor view is
+        // in the correct position on the screen. It also must be shown after the tab state has been
+        // initialized so that any tab that auto-opens the BottomSheet has had a chance to do so.
+        assert mHasRootLayoutOccurred && mTabModelSelector != null
+                && mTabModelSelector.isTabStateInitialized();
+
+        if (mCurrentState != SHEET_STATE_PEEK) return;
+
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) return;
+
+        ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(
+                getContext(), mControlContainer, R.string.bottom_sheet_help_bubble_message);
+        int inset = getContext().getResources().getDimensionPixelSize(
+                R.dimen.bottom_sheet_help_bubble_inset);
+        helpBubble.setInsetPx(0, inset, 0, inset);
+        helpBubble.setDismissOnTouchInteraction(true);
+        helpBubble.show();
+
+        preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
     }
 }

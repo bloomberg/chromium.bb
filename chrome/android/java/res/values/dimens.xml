@@ -437,7 +437,8 @@
     <dimen name="toolbar_wide_display_nav_icon_offset">-18dp</dimen>
     <dimen name="toolbar_wide_display_end_offset">-14dp</dimen>
 
-    <!-- Bottom sheet bottom nav dimensions -->
+    <!-- Bottom sheet dimensions -->
+    <dimen name="bottom_sheet_help_bubble_inset">10dp</dimen>
     <dimen name="bottom_nav_height">56dp</dimen>
     <dimen name="bottom_nav_height_inverse">-56dp</dimen>
     <dimen name="bottom_nav_space_from_toolbar">96dp</dimen>

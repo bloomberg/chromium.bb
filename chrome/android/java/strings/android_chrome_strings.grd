@@ -2936,6 +2936,11 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">
         Remove and recreate this shortcut
       </message>
+
+      <!-- Chrome Home -->
+      <message name="IDS_BOTTOM_SHEET_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content.">
+        Pull up to see bookmarks and more
+      </message>
     </messages>
   </release>
 </grit>
