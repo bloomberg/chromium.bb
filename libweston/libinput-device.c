@@ -554,6 +554,12 @@ evdev_device_set_output(struct evdev_device *device,
 		device->output_destroy_listener.notify = NULL;
 	}
 
+	weston_log("associating input device %s with output %s "
+		   "(%s by udev)\n",
+		   libinput_device_get_sysname(device->device),
+		   output->name,
+		   device->output_name ?: "none");
+
 	device->output = output;
 	device->output_destroy_listener.notify = notify_output_destroy;
 	wl_signal_add(&output->destroy_signal,
