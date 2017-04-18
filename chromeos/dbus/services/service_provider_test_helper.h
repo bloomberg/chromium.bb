@@ -18,6 +18,7 @@
 namespace dbus {
 
 class MockBus;
+class ObjectPath;
 
 }  // namespace dbus
 
@@ -40,7 +41,10 @@ class ServiceProviderTestHelper {
   ~ServiceProviderTestHelper();
 
   // Sets up helper. Should be called before |CallMethod()|.
-  void SetUp(const std::string& exported_method_name,
+  void SetUp(const std::string& service_name,
+             const dbus::ObjectPath& service_path,
+             const std::string& interface_name,
+             const std::string& exported_method_name,
              CrosDBusService::ServiceProviderInterface* service_provider);
 
   // Setups return signal callback. It's optional and don't need to be called

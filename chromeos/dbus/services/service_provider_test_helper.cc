@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "dbus/object_path.h"
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -31,6 +31,9 @@ ServiceProviderTestHelper::~ServiceProviderTestHelper() {
 }
 
 void ServiceProviderTestHelper::SetUp(
+    const std::string& service_name,
+    const dbus::ObjectPath& service_path,
+    const std::string& interface_name,
     const std::string& exported_method_name,
     CrosDBusService::ServiceProviderInterface* service_provider) {
   // Create a mock bus.
@@ -41,36 +44,31 @@ void ServiceProviderTestHelper::SetUp(
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
-  // Create a mock exported object that behaves as
-  // org.chromium.CrosDBusService.
+  // Create a mock exported object that behaves as the service.
   mock_exported_object_ =
-      new dbus::MockExportedObject(mock_bus_.get(),
-                                   dbus::ObjectPath(kLibCrosServicePath));
+      new dbus::MockExportedObject(mock_bus_.get(), service_path);
 
   // |mock_exported_object_|'s ExportMethod() will use
   // |MockExportedObject().
-  EXPECT_CALL(
-      *mock_exported_object_.get(),
-      ExportMethod(kLibCrosServiceInterface, exported_method_name, _, _))
+  EXPECT_CALL(*mock_exported_object_.get(),
+              ExportMethod(interface_name, exported_method_name, _, _))
       .WillOnce(Invoke(this, &ServiceProviderTestHelper::MockExportMethod));
 
   // Create a mock object proxy, with which we call a method of
   // |mock_exported_object_|.
   mock_object_proxy_ =
-      new dbus::MockObjectProxy(mock_bus_.get(),
-                                kLibCrosServiceName,
-                                dbus::ObjectPath(kLibCrosServicePath));
+      new dbus::MockObjectProxy(mock_bus_.get(), service_name, service_path);
   // |mock_object_proxy_|'s MockCallMethodAndBlock() will use
   // MockCallMethodAndBlock() to return responses.
   EXPECT_CALL(*mock_object_proxy_.get(),
               MockCallMethodAndBlock(
                   AllOf(ResultOf(std::mem_fun(&dbus::MethodCall::GetInterface),
-                                 kLibCrosServiceInterface),
+                                 interface_name),
                         ResultOf(std::mem_fun(&dbus::MethodCall::GetMember),
                                  exported_method_name)),
                   _))
       .WillOnce(
-           Invoke(this, &ServiceProviderTestHelper::MockCallMethodAndBlock));
+          Invoke(this, &ServiceProviderTestHelper::MockCallMethodAndBlock));
 
   service_provider->Start(mock_exported_object_.get());
 }

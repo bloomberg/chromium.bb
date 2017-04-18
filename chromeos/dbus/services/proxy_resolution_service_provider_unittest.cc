@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -197,7 +198,10 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     service_provider_ = base::MakeUnique<ProxyResolutionServiceProvider>(
         base::MakeUnique<TestDelegate>(network_thread_.task_runner(),
                                        proxy_resolver_.get()));
-    test_helper_.SetUp(kResolveNetworkProxy, service_provider_.get());
+    test_helper_.SetUp(kLibCrosServiceName,
+                       dbus::ObjectPath(kLibCrosServicePath),
+                       kLibCrosServiceInterface, kResolveNetworkProxy,
+                       service_provider_.get());
   }
 
   ~ProxyResolutionServiceProviderTest() override {
