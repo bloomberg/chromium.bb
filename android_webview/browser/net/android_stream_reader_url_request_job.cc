@@ -349,12 +349,6 @@ void AndroidStreamReaderURLRequestJob::HeadersComplete(
   NotifyHeadersComplete();
 }
 
-int AndroidStreamReaderURLRequestJob::GetResponseCode() const {
-  if (response_info_)
-    return response_info_->headers->response_code();
-  return URLRequestJob::GetResponseCode();
-}
-
 void AndroidStreamReaderURLRequestJob::GetResponseInfo(
     net::HttpResponseInfo* info) {
   if (response_info_)

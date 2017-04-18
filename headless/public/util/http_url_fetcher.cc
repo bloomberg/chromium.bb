@@ -182,8 +182,7 @@ void HttpURLFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
   // |request->response_info()| that we drop here.  Find a way to pipe it
   // through.
   result_listener_->OnFetchComplete(
-      request->url(), request->GetResponseCode(),
-      request->response_info().headers,
+      request->url(), request->response_info().headers,
       bytes_read_so_far_.c_str(), bytes_read_so_far_.size());
 }
 

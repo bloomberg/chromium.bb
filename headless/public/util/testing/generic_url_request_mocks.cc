@@ -48,7 +48,6 @@ void MockGenericURLRequestJobDelegate::OnResourceLoadFailed(
 void MockGenericURLRequestJobDelegate::OnResourceLoadComplete(
     const Request* request,
     const GURL& final_url,
-    int http_response_code,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size) {}

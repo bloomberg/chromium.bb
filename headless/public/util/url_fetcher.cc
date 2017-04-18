@@ -14,7 +14,6 @@ namespace headless {
 
 void URLFetcher::ResultListener::OnFetchCompleteExtractHeaders(
     const GURL& final_url,
-    int http_response_code,
     const char* response_data,
     size_t response_data_size) {
   size_t read_offset = 0;
@@ -32,7 +31,7 @@ void URLFetcher::ResultListener::OnFetchCompleteExtractHeaders(
   }
 
   CHECK_LE(read_offset, response_data_size);
-  OnFetchComplete(final_url, http_response_code, std::move(response_headers),
+  OnFetchComplete(final_url, std::move(response_headers),
                   response_data + read_offset,
                   response_data_size - read_offset);
 }

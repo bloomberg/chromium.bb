@@ -33,7 +33,6 @@ const char kUploadURL[] = "https://example/upload";
 
 struct MockUploadResult {
   int net_error;
-  int response_code;
   scoped_refptr<net::HttpResponseHeaders> response_headers;
 };
 
@@ -95,10 +94,6 @@ class UploadMockURLRequestJob : public net::URLRequestJob {
       NotifyStartError(net::URLRequestStatus::FromError(result_.net_error));
   }
 
-  int GetResponseCode() const override {
-    return result_.response_code;
-  }
-
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     info->headers = result_.response_headers;
   }
@@ -135,23 +130,12 @@ class UploadInterceptor : public net::URLRequestInterceptor {
   void ExpectRequestAndReturnError(int net_error) {
     MockUploadResult result;
     result.net_error = net_error;
-    result.response_code = -1;
     results_.push_back(result);
   }
 
-  void ExpectRequestAndReturnResponseCode(int response_code) {
+  void ExpectRequestAndReturnResponseHeaders(const char* headers) {
     MockUploadResult result;
     result.net_error = net::OK;
-    result.response_code = response_code;
-    results_.push_back(result);
-  }
-
-  void ExpectRequestAndReturnResponseCodeAndHeaders(
-      int response_code,
-      const char* headers) {
-    MockUploadResult result;
-    result.net_error = net::OK;
-    result.response_code = response_code;
     result.response_headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(headers, strlen(headers)));
     results_.push_back(result);
@@ -226,7 +210,7 @@ TEST_F(DomainReliabilityUploaderTest, Null) {
 }
 
 TEST_F(DomainReliabilityUploaderTest, SuccessfulUpload) {
-  interceptor()->ExpectRequestAndReturnResponseCode(200);
+  interceptor()->ExpectRequestAndReturnResponseHeaders("HTTP/1.1 200\r\n\r\n");
 
   TestUploadCallback c;
   uploader()->UploadReport("{}", 0, GURL(kUploadURL), c.callback());
@@ -250,7 +234,7 @@ TEST_F(DomainReliabilityUploaderTest, NetworkErrorUpload) {
 }
 
 TEST_F(DomainReliabilityUploaderTest, ServerErrorUpload) {
-  interceptor()->ExpectRequestAndReturnResponseCode(500);
+  interceptor()->ExpectRequestAndReturnResponseHeaders("HTTP/1.1 500\r\n\r\n");
 
   TestUploadCallback c;
   uploader()->UploadReport("{}", 0, GURL(kUploadURL), c.callback());
@@ -262,8 +246,7 @@ TEST_F(DomainReliabilityUploaderTest, ServerErrorUpload) {
 }
 
 TEST_F(DomainReliabilityUploaderTest, RetryAfterUpload) {
-  interceptor()->ExpectRequestAndReturnResponseCodeAndHeaders(
-      503,
+  interceptor()->ExpectRequestAndReturnResponseHeaders(
       "HTTP/1.1 503 Ugh\nRetry-After: 3600\n\n");
 
   TestUploadCallback c;
@@ -276,7 +259,7 @@ TEST_F(DomainReliabilityUploaderTest, RetryAfterUpload) {
 }
 
 TEST_F(DomainReliabilityUploaderTest, UploadDepth1) {
-  interceptor()->ExpectRequestAndReturnResponseCode(200);
+  interceptor()->ExpectRequestAndReturnResponseHeaders("HTTP/1.1 200\r\n\r\n");
 
   TestUploadCallback c;
   uploader()->UploadReport("{}", 0, GURL(kUploadURL), c.callback());
@@ -289,7 +272,7 @@ TEST_F(DomainReliabilityUploaderTest, UploadDepth1) {
 }
 
 TEST_F(DomainReliabilityUploaderTest, UploadDepth2) {
-  interceptor()->ExpectRequestAndReturnResponseCode(200);
+  interceptor()->ExpectRequestAndReturnResponseHeaders("HTTP/1.1 200\r\n\r\n");
 
   TestUploadCallback c;
   uploader()->UploadReport("{}", 1, GURL(kUploadURL), c.callback());

@@ -41,7 +41,6 @@ class HEADLESS_EXPORT URLFetcher {
     // valid until the fetcher is destroyed,
     virtual void OnFetchComplete(
         const GURL& final_url,
-        int http_response_code,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         const char* body,
         size_t body_size) = 0;
@@ -49,7 +48,6 @@ class HEADLESS_EXPORT URLFetcher {
     // Helper function which extracts the headers from |response_data| and calls
     // OnFetchComplete.
     void OnFetchCompleteExtractHeaders(const GURL& final_url,
-                                       int http_response_code,
                                        const char* response_data,
                                        size_t response_data_size);
 

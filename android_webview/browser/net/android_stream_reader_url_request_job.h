@@ -100,7 +100,6 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
-  int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
 
  protected:

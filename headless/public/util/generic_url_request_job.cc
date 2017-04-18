@@ -128,21 +128,19 @@ void GenericURLRequestJob::OnFetchStartError(net::Error error) {
 
 void GenericURLRequestJob::OnFetchComplete(
     const GURL& final_url,
-    int http_response_code,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const char* body,
     size_t body_size) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   response_time_ = base::TimeTicks::Now();
-  http_response_code_ = http_response_code;
   response_headers_ = response_headers;
   body_ = body;
   body_size_ = body_size;
 
   DispatchHeadersComplete();
 
-  delegate_->OnResourceLoadComplete(this, final_url, http_response_code,
-                                    response_headers_, body_, body_size_);
+  delegate_->OnResourceLoadComplete(this, final_url, response_headers_, body_,
+                                    body_size_);
 }
 
 int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
@@ -157,10 +155,6 @@ int GenericURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
     read_offset_ += bytes_to_copy;
   }
   return bytes_to_copy;
-}
-
-int GenericURLRequestJob::GetResponseCode() const {
-  return http_response_code_;
 }
 
 void GenericURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
@@ -321,7 +315,6 @@ void GenericURLRequestJob::MockResponse(
   mock_response_ = std::move(mock_response);
 
   OnFetchCompleteExtractHeaders(request_->url(),
-                                mock_response_->http_response_code,
                                 mock_response_->response_data.data(),
                                 mock_response_->response_data.size());
 }

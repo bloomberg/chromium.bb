@@ -91,9 +91,6 @@ class MockFetcher : public URLFetcher {
     ASSERT_TRUE(fetch_reply->GetAsDictionary(&reply_dictionary));
     std::string final_url;
     ASSERT_TRUE(reply_dictionary->GetString("url", &final_url));
-    int http_response_code;
-    ASSERT_TRUE(reply_dictionary->GetInteger("http_response_code",
-                                             &http_response_code));
     ASSERT_TRUE(reply_dictionary->GetString("data", &response_data_));
     base::DictionaryValue* reply_headers_dictionary;
     ASSERT_TRUE(
@@ -109,8 +106,8 @@ class MockFetcher : public URLFetcher {
     }
 
     result_listener->OnFetchComplete(
-        GURL(final_url), http_response_code, std::move(response_headers),
-        response_data_.c_str(), response_data_.size());
+        GURL(final_url), std::move(response_headers), response_data_.c_str(),
+        response_data_.size());
   }
 
  private:
@@ -193,7 +190,6 @@ TEST_F(GenericURLRequestJobTest, BasicGetRequestParams) {
   json_fetch_reply_map_["https://example.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -229,7 +225,6 @@ TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
   json_fetch_reply_map_["https://example.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -273,7 +268,6 @@ TEST_F(GenericURLRequestJobTest, BasicRequestProperties) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -303,7 +297,6 @@ TEST_F(GenericURLRequestJobTest, BasicRequestContents) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -329,7 +322,6 @@ TEST_F(GenericURLRequestJobTest, ReadInParts) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -416,7 +408,6 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -443,7 +434,6 @@ TEST_F(GenericURLRequestJobTest, DelegateBlocksLoading) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -465,7 +455,6 @@ TEST_F(GenericURLRequestJobTest, DelegateModifiesRequest) {
   json_fetch_reply_map_["https://example.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Welcome to example.com",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -475,7 +464,6 @@ TEST_F(GenericURLRequestJobTest, DelegateModifiesRequest) {
   json_fetch_reply_map_["https://othersite.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Welcome to othersite.com",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -525,7 +513,6 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks404Response) {
   std::string reply = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Reply",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -535,7 +522,6 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks404Response) {
   job_delegate_.SetPolicy(base::Bind([](PendingRequest* pending_request) {
     std::unique_ptr<GenericURLRequestJob::MockResponseData> mock_response_data(
         new GenericURLRequestJob::MockResponseData());
-    mock_response_data->http_response_code = 404;
     mock_response_data->response_data = "HTTP/1.1 404 Not Found\r\n\r\n";
     pending_request->MockResponse(std::move(mock_response_data));
   }));
@@ -552,7 +538,6 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks302Response) {
         "https://example.com/") {
       std::unique_ptr<GenericURLRequestJob::MockResponseData>
           mock_response_data(new GenericURLRequestJob::MockResponseData());
-      mock_response_data->http_response_code = 302;
       mock_response_data->response_data =
           "HTTP/1.1 302 Found\r\n"
           "Location: https://foo.com/\r\n\r\n";
@@ -565,7 +550,6 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks302Response) {
   json_fetch_reply_map_["https://example.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Welcome to example.com",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"
@@ -575,7 +559,6 @@ TEST_F(GenericURLRequestJobTest, DelegateMocks302Response) {
   json_fetch_reply_map_["https://foo.com/"] = R"(
       {
         "url": "https://example.com",
-        "http_response_code": 200,
         "data": "Welcome to foo.com",
         "headers": {
           "Content-Type": "text/html; charset=UTF-8"

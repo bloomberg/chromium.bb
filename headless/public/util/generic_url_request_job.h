@@ -96,7 +96,6 @@ class PendingRequest {
       const net::HttpRequestHeaders& request_headers) = 0;
 
   struct MockResponseData {
-    int http_response_code = 0;
     std::string response_data;
   };
 
@@ -140,7 +139,6 @@ class HEADLESS_EXPORT GenericURLRequestJob
     virtual void OnResourceLoadComplete(
         const Request* request,
         const GURL& final_url,
-        int http_response_code,
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         const char* body,
         size_t body_size) = 0;
@@ -162,7 +160,6 @@ class HEADLESS_EXPORT GenericURLRequestJob
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   void Start() override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
-  int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   bool GetMimeType(std::string* mime_type) const override;
   bool GetCharset(std::string* charset) override;
@@ -171,7 +168,6 @@ class HEADLESS_EXPORT GenericURLRequestJob
   // URLFetcher::FetchResultListener implementation:
   void OnFetchStartError(net::Error error) override;
   void OnFetchComplete(const GURL& final_url,
-                       int http_response_code,
                        scoped_refptr<net::HttpResponseHeaders> response_headers,
                        const char* body,
                        size_t body_size) override;
@@ -211,7 +207,6 @@ class HEADLESS_EXPORT GenericURLRequestJob
   Delegate* delegate_;          // Not owned.
   const content::ResourceRequestInfo* request_resource_info_;  // Not owned.
   const char* body_ = nullptr;  // Not owned.
-  int http_response_code_ = 0;
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
   base::TimeTicks response_time_;
