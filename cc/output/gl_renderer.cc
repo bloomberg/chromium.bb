@@ -1005,6 +1005,11 @@ const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   if (quad->material != DrawQuad::TILED_CONTENT)
     return nullptr;
 
+  // TODO(chrishtr): support could be added for opacity, but care needs
+  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
+  if (quad->shared_quad_state->opacity != 1.0f)
+    return nullptr;
+
   const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
   // Hack: this could be supported by passing in a subrectangle to draw
   // render pass, although in practice if there is only one quad there
