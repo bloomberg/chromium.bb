@@ -506,9 +506,7 @@ class TranslateManagerRenderViewHostTest
 
   void SimulateSupportedLanguagesURLFetch(
       bool success,
-      const std::vector<std::string>& languages,
-      bool use_alpha_languages,
-      const std::vector<std::string>& alpha_languages) {
+      const std::vector<std::string>& languages) {
     net::Error error = success ? net::OK : net::ERR_FAILED;
 
     std::string data;
@@ -523,20 +521,6 @@ class TranslateManagerRenderViewHostTest
         if (i == 0)
           comma = ",";
       }
-
-      if (use_alpha_languages) {
-        data += base::StringPrintf(
-            "},\"%s\": {",
-            translate::TranslateLanguageList::kAlphaLanguagesKey);
-        comma = "";
-        for (size_t i = 0; i < alpha_languages.size(); ++i) {
-          data += base::StringPrintf(
-              "%s\"%s\": 1", comma, alpha_languages[i].c_str());
-          if (i == 0)
-            comma = ",";
-        }
-      }
-
       data += "}}";
     }
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
@@ -577,17 +561,12 @@ class TranslateManagerRenderViewHostTest
 // Accept-Language list.
 static const char* server_language_list[] =
     {"ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
-static const char* alpha_language_list[] = {"ach", "yi"};
 
 // Test the fetching of languages from the translate server
 TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
   for (size_t i = 0; i < arraysize(server_language_list); ++i)
     server_languages.push_back(server_language_list[i]);
-
-  std::vector<std::string> alpha_languages;
-  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
-    alpha_languages.push_back(alpha_language_list[i]);
 
   // First, get the default languages list. Note that calling
   // GetSupportedLanguages() invokes RequestLanguageList() internally.
@@ -604,16 +583,14 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Also check that it didn't change if we failed the URL fetch.
-  SimulateSupportedLanguagesURLFetch(
-      false, std::vector<std::string>(), true, std::vector<std::string>());
+  SimulateSupportedLanguagesURLFetch(false, std::vector<std::string>());
   current_supported_languages.clear();
   translate::TranslateDownloadManager::GetSupportedLanguages(
       &current_supported_languages);
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Now check that we got the appropriate set of languages from the server.
-  SimulateSupportedLanguagesURLFetch(
-      true, server_languages, true, alpha_languages);
+  SimulateSupportedLanguagesURLFetch(true, server_languages);
   current_supported_languages.clear();
   translate::TranslateDownloadManager::GetSupportedLanguages(
       &current_supported_languages);
@@ -626,53 +603,7 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
       continue;
     EXPECT_NE(current_supported_languages.end(),
               std::find(current_supported_languages.begin(),
-                        current_supported_languages.end(),
-                        lang)) << "lang=" << lang;
-    bool is_alpha =
-        std::find(alpha_languages.begin(), alpha_languages.end(), lang) !=
-        alpha_languages.end();
-    EXPECT_EQ(translate::TranslateDownloadManager::IsAlphaLanguage(lang),
-              is_alpha)
-        << "lang=" << lang;
-  }
-}
-
-// Test the fetching of languages from the translate server without 'al'
-// parameter.
-TEST_F(TranslateManagerRenderViewHostTest,
-       FetchLanguagesFromTranslateServerWithoutAlpha) {
-  std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(server_language_list); ++i)
-    server_languages.push_back(server_language_list[i]);
-
-  std::vector<std::string> alpha_languages;
-  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
-    alpha_languages.push_back(alpha_language_list[i]);
-
-  // call GetSupportedLanguages to call RequestLanguageList internally.
-  std::vector<std::string> default_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &default_supported_languages);
-
-  SimulateSupportedLanguagesURLFetch(
-      true, server_languages, false, alpha_languages);
-
-  std::vector<std::string> current_supported_languages;
-  translate::TranslateDownloadManager::GetSupportedLanguages(
-      &current_supported_languages);
-
-  // "xx" can't be displayed in the Translate infobar, so this is eliminated.
-  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
-
-  for (size_t i = 0; i < server_languages.size(); ++i) {
-    const std::string& lang = server_languages[i];
-    if (lang == "xx")
-      continue;
-    EXPECT_NE(current_supported_languages.end(),
-              std::find(current_supported_languages.begin(),
-                        current_supported_languages.end(),
-                        lang)) << "lang=" << lang;
-    EXPECT_FALSE(translate::TranslateDownloadManager::IsAlphaLanguage(lang))
+                        current_supported_languages.end(), lang))
         << "lang=" << lang;
   }
 }

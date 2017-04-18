@@ -244,8 +244,6 @@
         var li = document.createElement('li');
 
         var text = formatLanguageCode(language);
-        if (details['alpha_languages'].indexOf(language) != -1)
-          text += ' - alpha';
         li.innerText = text;
 
         ul.appendChild(li);

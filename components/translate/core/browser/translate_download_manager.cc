@@ -100,17 +100,6 @@ bool TranslateDownloadManager::IsSupportedLanguage(
   return language_list->IsSupportedLanguage(language);
 }
 
-// static
-bool TranslateDownloadManager::IsAlphaLanguage(const std::string& language) {
-  TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return false;
-  }
-
-  return language_list->IsAlphaLanguage(language);
-}
-
 void TranslateDownloadManager::ClearTranslateScriptForTesting() {
   if (script_.get() == NULL) {
     NOTREACHED();

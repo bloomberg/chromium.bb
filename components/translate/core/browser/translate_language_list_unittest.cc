@@ -27,23 +27,4 @@ TEST(TranslateLanguageListTest, SetSupportedLanguages) {
   manager->ResetForTesting();
 }
 
-TEST(TranslateLanguageListTest, SetSupportedLanguagesWithAlphaKey) {
-  std::string language_list(
-      "{"
-      "\"sl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
-      "\"tl\":{\"en\":\"English\",\"ja\":\"Japanese\"},"
-      "\"al\":{\"en\":1}"
-      "}");
-  TranslateDownloadManager* manager = TranslateDownloadManager::GetInstance();
-  manager->set_application_locale("en");
-  EXPECT_TRUE(manager->language_list()->SetSupportedLanguages(language_list));
-
-  std::vector<std::string> results;
-  manager->language_list()->GetSupportedLanguages(&results);
-  ASSERT_EQ(2u, results.size());
-  EXPECT_EQ("en", results[0]);
-  EXPECT_EQ("ja", results[1]);
-  manager->ResetForTesting();
-}
-
 }  // namespace translate

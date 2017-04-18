@@ -74,10 +74,6 @@ class TranslateDownloadManager {
   // Returns true if |language| is supported by the translation server.
   static bool IsSupportedLanguage(const std::string& language);
 
-  // Returns true if |language| is supported by the translation server as an
-  // alpha language.
-  static bool IsAlphaLanguage(const std::string& language);
-
   // Must be called to shut Translate down. Cancels any pending fetches.
   void Shutdown();
 
