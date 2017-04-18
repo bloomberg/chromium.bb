@@ -38,7 +38,7 @@
 #include <emmintrin.h>
 #endif
 
-#if HAVE(ARM_NEON_INTRINSICS)
+#if CPU(ARM_NEON)
 #include <arm_neon.h>
 #endif
 
@@ -218,7 +218,7 @@ void Vsma(const float* source_p,
 
     n = tail_frames;
   }
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if ((source_stride == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -323,7 +323,7 @@ void Vsmul(const float* source_p,
       n--;
     }
   } else {  // If strides are not 1, rollback to normal algorithm.
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if ((source_stride == 1) && (dest_stride == 1)) {
     float k = *scale;
     int tail_frames = n % 4;
@@ -461,7 +461,7 @@ void Vadd(const float* source1p,
       n--;
     }
   } else {  // if strides are not 1, rollback to normal algorithm
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -564,7 +564,7 @@ void Vmul(const float* source1p,
 
     n = tail_frames;
   }
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if ((source_stride1 == 1) && (source_stride2 == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
@@ -642,7 +642,7 @@ void Zvmul(const float* real1p,
       i += 4;
     }
   }
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   unsigned end_size = frames_to_process - frames_to_process % 4;
   while (i < end_size) {
     float32x4_t real1 = vld1q_f32(real1p + i);
@@ -707,7 +707,7 @@ void Vsvesq(const float* source_p,
 
     n = tail_frames;
   }
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if (source_stride == 1) {
     int tail_frames = n % 4;
     const float* end_p = source_p + n - tail_frames;
@@ -782,7 +782,7 @@ void Vmaxmgv(const float* source_p,
 
     n = tail_frames;
   }
-#elif HAVE(ARM_NEON_INTRINSICS)
+#elif CPU(ARM_NEON)
   if (source_stride == 1) {
     int tail_frames = n % 4;
     const float* end_p = source_p + n - tail_frames;
@@ -847,7 +847,7 @@ void Vclip(const float* source_p,
   float high_threshold = *high_threshold_p;
 
 // FIXME: Optimize for SSE2.
-#if HAVE(ARM_NEON_INTRINSICS)
+#if CPU(ARM_NEON)
   if ((source_stride == 1) && (dest_stride == 1)) {
     int tail_frames = n % 4;
     const float* end_p = dest_p + n - tail_frames;
