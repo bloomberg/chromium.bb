@@ -77,11 +77,16 @@ void ServiceWorkerProcessManager::Shutdown() {
     browser_context_ = nullptr;
   }
 
-  for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
-       it != instance_info_.end();
-       ++it) {
-    RenderProcessHost::FromID(it->second.process_id)
-        ->DecrementServiceWorkerRefCount();
+  // In single-process mode, Shutdown() is called when deleting the default
+  // browser context, which is itself destroyed after the RenderProcessHost,
+  // and RenderProcessHost::FromID() just returns a nullptr.
+  // The refcount decrement can be skipped anyway since there's only one process
+  if (!RenderProcessHost::run_renderer_in_process()) {
+    for (std::map<int, ProcessInfo>::const_iterator it = instance_info_.begin();
+         it != instance_info_.end(); ++it) {
+      RenderProcessHost::FromID(it->second.process_id)
+          ->DecrementServiceWorkerRefCount();
+    }
   }
   instance_info_.clear();
 }
