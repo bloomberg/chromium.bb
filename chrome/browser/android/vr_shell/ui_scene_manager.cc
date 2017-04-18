@@ -62,6 +62,17 @@ UiSceneManager::UiSceneManager(UiScene* scene)
   element->lock_to_fov = true;
   transient_security_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
+
+  // Main web content quad.
+  element = base::MakeUnique<UiElement>();
+  element->id = id++;
+  element->name = "Content";
+  element->fill = vr_shell::Fill::CONTENT;
+  element->size = {(1.6f * (16 / 9)), 1.6f, 1};
+  element->translation = {0, 0, -2};
+  element->visible = false;
+  main_content_ = element.get();
+  scene_->AddUiElement(std::move(element));
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -72,6 +83,7 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
 
 void UiSceneManager::SetWebVRMode(bool web_vr) {
   web_vr_mode_ = web_vr;
+  main_content_->visible = !web_vr_mode_;
   ConfigureSecurityWarnings();
 }
 

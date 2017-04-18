@@ -34,6 +34,7 @@ class UiSceneManager {
   // UI elemenet pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
+  UiElement* main_content_ = nullptr;
 
   bool web_vr_mode_ = false;
   bool secure_origin_ = false;
