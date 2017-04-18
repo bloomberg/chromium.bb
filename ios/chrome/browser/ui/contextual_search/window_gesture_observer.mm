@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/ui/contextual_search/window_gesture_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation WindowGestureObserver {
   NSObject* _target;
   SEL _action;
@@ -42,11 +46,16 @@
     if (![[touch view] isDescendantOfView:_viewToExclude]) {
       _touchedView = [touch view];
       dispatch_async(dispatch_get_main_queue(), ^{
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         if (_actionPassesSelf) {
           [_target performSelector:_action withObject:self];
         } else {
           [_target performSelector:_action];
         }
+#pragma clang diagnostic pop
+
       });
       // Only invoke from the first qualifying touch.
       break;

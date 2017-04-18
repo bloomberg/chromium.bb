@@ -5,16 +5,17 @@
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
 
 #import "base/ios/crb_protocol_observers.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_protocols.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -42,12 +43,13 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
 // that motion will not cause the panel to move, but if the scrolling reaches
 // the end of its possible range, the gesture will then start dragging the
 // panel.
-@property(nonatomic, assign)
+@property(nonatomic, weak)
     UIView<ContextualSearchPanelScrollSynchronizer>* scrollSynchronizer;
 
 // Private readonly property to be used by weak pointers to |self| for non-
 // retaining access to the underlying ivar in blocks.
-@property(nonatomic, readonly) ContextualSearchPanelObservers* observers;
+@property(nonatomic, strong, readonly)
+    ContextualSearchPanelObservers* observers;
 
 // Utility to generate a PanelMotion struct for the panel's current position.
 - (ContextualSearch::PanelMotion)motion;
@@ -58,26 +60,19 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
 
   // Constraints that define the size of this view. These will be cleared and
   // regenerated when the horizontal size class changes.
-  base::scoped_nsobject<NSArray> _sizingConstraints;
+  NSArray* _sizingConstraints;
 
   CGPoint _draggingStartPosition;
   CGPoint _scrolledOffset;
-  base::scoped_nsobject<UIPanGestureRecognizer> _dragRecognizer;
-
-  base::scoped_nsobject<ContextualSearchPanelObservers> _observers;
-
-  base::scoped_nsobject<PanelConfiguration> _configuration;
-
-  base::WeakNSProtocol<id<ContextualSearchPanelScrollSynchronizer>>
-      _scrollSynchronizer;
+  UIPanGestureRecognizer* _dragRecognizer;
 
   // Guide that's used to position this view.
-  base::WeakNSObject<UILayoutGuide> _positioningGuide;
+  __weak UILayoutGuide* _positioningGuide;
   // Constraint that sets the size of |_positioningView| so this view is
   // positioned correctly for its state.
-  base::WeakNSObject<NSLayoutConstraint> _positioningViewConstraint;
+  __weak NSLayoutConstraint* _positioningViewConstraint;
   // Other constraints that determine the position of this view.
-  base::scoped_nsobject<NSArray> _positioningConstraints;
+  NSArray* _positioningConstraints;
 
   // Promotion state variables.
   BOOL _resizingForPromotion;
@@ -93,6 +88,9 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
 }
 
 @synthesize state = _state;
+@synthesize scrollSynchronizer = _scrollSynchronizer;
+@synthesize configuration = _configuration;
+@synthesize observers = _observers;
 
 + (BOOL)requiresConstraintBasedLayout {
   return YES;
@@ -102,27 +100,26 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
 
 - (instancetype)initWithConfiguration:(PanelConfiguration*)configuration {
   if ((self = [super initWithFrame:CGRectZero])) {
-    _configuration.reset([configuration retain]);
+    _configuration = configuration;
     _state = ContextualSearch::DISMISSED;
 
     self.translatesAutoresizingMaskIntoConstraints = NO;
     self.backgroundColor = [UIColor whiteColor];
     self.accessibilityIdentifier = @"contextualSearchPanel";
 
-    _observers.reset([[ContextualSearchPanelObservers
-        observersWithProtocol:@protocol(ContextualSearchPanelMotionObserver)]
-        retain]);
+    _observers = [ContextualSearchPanelObservers
+        observersWithProtocol:@protocol(ContextualSearchPanelMotionObserver)];
     [self addMotionObserver:self];
 
     // Add gesture recognizer.
-    _dragRecognizer.reset([[UIPanGestureRecognizer alloc]
+    _dragRecognizer = [[UIPanGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(handleDragFrom:)]);
+                action:@selector(handleDragFrom:)];
     [self addGestureRecognizer:_dragRecognizer];
     [_dragRecognizer setDelegate:self];
 
     // Set up the stack view that holds the panel content
-    _contents = [[[UIStackView alloc] initWithFrame:self.bounds] autorelease];
+    _contents = [[UIStackView alloc] initWithFrame:self.bounds];
     [self addSubview:_contents];
     _contents.translatesAutoresizingMaskIntoConstraints = NO;
     _contents.accessibilityIdentifier = @"panelContents";
@@ -197,16 +194,7 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
 #pragma mark - Public property getters/setters
 
 - (PanelConfiguration*)configuration {
-  return _configuration.get();
-}
-
-- (void)setScrollSynchronizer:
-    (id<ContextualSearchPanelScrollSynchronizer>)scrollSynchronizer {
-  _scrollSynchronizer.reset(scrollSynchronizer);
-}
-
-- (id<ContextualSearchPanelScrollSynchronizer>)scrollSynchronizer {
-  return _scrollSynchronizer;
+  return _configuration;
 }
 
 - (ContextualSearchPanelObservers*)observers {
@@ -218,11 +206,10 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
     return;
 
   [_positioningViewConstraint setActive:NO];
-  _positioningViewConstraint.reset();
-  base::WeakNSObject<ContextualSearchPanelView> weakSelf(self);
+  _positioningViewConstraint = nil;
+  __weak ContextualSearchPanelView* weakSelf = self;
   void (^transform)(void) = ^{
-    base::scoped_nsobject<ContextualSearchPanelView> strongSelf(
-        [weakSelf retain]);
+    ContextualSearchPanelView* strongSelf = weakSelf;
     if (strongSelf) {
       [strongSelf setNeedsUpdateConstraints];
       [[strongSelf superview] layoutIfNeeded];
@@ -231,15 +218,13 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
     }
   };
 
-  base::mac::ScopedBlock<ProceduralBlockWithBool> completion;
+  ProceduralBlockWithBool completion;
   NSTimeInterval animationDuration;
   if (state == ContextualSearch::DISMISSED) {
     animationDuration = kDismissAnimationDuration;
-    completion.reset(
-        ^(BOOL) {
-          [weakSelf setHidden:YES];
-        },
-        base::scoped_policy::RETAIN);
+    completion = [^(BOOL) {
+      [weakSelf setHidden:YES];
+    } copy];
   } else {
     self.hidden = NO;
     animationDuration = kPanelAnimationDuration;
@@ -282,8 +267,7 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
     if (self.traitCollection.horizontalSizeClass !=
             UIUserInterfaceSizeClassUnspecified &&
         !_sizingConstraints) {
-      _sizingConstraints.reset(
-          [[_configuration constraintsForSizingPanel:self] retain]);
+      _sizingConstraints = [_configuration constraintsForSizingPanel:self];
       [NSLayoutConstraint activateConstraints:_sizingConstraints];
     }
     // Update positioning constraints if they don't exist.
@@ -296,12 +280,12 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
       ];
       [NSLayoutConstraint activateConstraints:positioningConstraints];
 
-      _positioningConstraints.reset([positioningConstraints retain]);
+      _positioningConstraints = positioningConstraints;
     }
     // Always update the positioning view constraint.
-    _positioningViewConstraint.reset([self.configuration
-        constraintForPositioningGuide:_positioningGuide
-                              atState:self.state]);
+    _positioningViewConstraint =
+        [self.configuration constraintForPositioningGuide:_positioningGuide
+                                                  atState:self.state];
     [_positioningViewConstraint setActive:YES];
   }
   [super updateConstraints];
@@ -312,10 +296,10 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
     return;
   // Set up the invisible positioning view used to constrain this view's
   // position.
-  UILayoutGuide* positioningGuide = [[[UILayoutGuide alloc] init] autorelease];
+  UILayoutGuide* positioningGuide = [[UILayoutGuide alloc] init];
   positioningGuide.identifier = @"contextualSearchPosition";
   [self.superview addLayoutGuide:positioningGuide];
-  _positioningGuide.reset(positioningGuide);
+  _positioningGuide = positioningGuide;
   [self setNeedsUpdateConstraints];
 }
 
@@ -330,7 +314,7 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
   [_configuration
       setHorizontalSizeClass:self.traitCollection.horizontalSizeClass];
   [NSLayoutConstraint deactivateConstraints:_sizingConstraints];
-  _sizingConstraints.reset();
+  _sizingConstraints = nil;
   [self setNeedsUpdateConstraints];
 }
 
@@ -360,7 +344,6 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
   [self removeMotionObserver:self];
   [self removeGestureRecognizer:_dragRecognizer];
   [[_positioningGuide owningView] removeLayoutGuide:_positioningGuide];
-  [super dealloc];
 }
 
 #pragma mark - Gesture recognizer callbacks
@@ -465,12 +448,12 @@ const CGFloat kShadowElevation = MDCShadowElevationMenu;
         (UIGestureRecognizer*)otherGestureRecognizer {
   // Allow the drag recognizer and the panel content scroll recognizer to
   // co-recognize.
-  if (gestureRecognizer == _dragRecognizer.get() &&
+  if (gestureRecognizer == _dragRecognizer &&
       otherGestureRecognizer == self.scrollSynchronizer.scrollRecognizer) {
     return YES;
   }
 
-  if (gestureRecognizer == _dragRecognizer.get() &&
+  if (gestureRecognizer == _dragRecognizer &&
       [_dragRecognizer state] == UIGestureRecognizerStateChanged) {
     [gestureRecognizer setEnabled:NO];
   }

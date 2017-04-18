@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/command_line.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -21,6 +20,10 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "net/base/network_change_notifier.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Maps pref string values to state enum.
@@ -37,8 +40,7 @@ const struct {
 @interface TouchToSearchPermissionsMediator ()<PrefObserverDelegate> {
   ios::ChromeBrowserState* _browserState;
   SyncSetupService* _syncService;
-  base::WeakNSProtocol<NSObject<TouchToSearchPermissionsChangeAudience>*>
-      _audience;
+  __weak NSObject<TouchToSearchPermissionsChangeAudience>* _audience;
   // Pref observer to track changes to the touch-to-search and search engine
   // prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
@@ -89,7 +91,6 @@ const struct {
   if ((self = [super init])) {
     if (browserState && browserState->IsOffTheRecord()) {
       // Discard the allocated object and return a nil object.
-      [self release];
       return nil;
     }
     [self setUpBrowserState:browserState];
@@ -105,7 +106,6 @@ const struct {
 - (void)dealloc {
   // Set audience to nil to stop observation.
   self.audience = nil;
-  [super dealloc];
 }
 
 - (void)setUpBrowserState:(ios::ChromeBrowserState*)browserState {
@@ -146,7 +146,7 @@ const struct {
 - (void)setAudience:
     (NSObject<TouchToSearchPermissionsChangeAudience>*)audience {
   [self stopObserving];
-  _audience.reset(audience);
+  _audience = audience;
   [self startObserving];
 }
 
@@ -270,8 +270,8 @@ const struct {
   if (self.audience) {
     if ([self.audience
             respondsToSelector:@selector(touchToSearchPermissionsUpdated)]) {
-      base::WeakNSProtocol<NSObject<TouchToSearchPermissionsChangeAudience>*>
-          audience(self.audience);
+      __weak NSObject<TouchToSearchPermissionsChangeAudience>* audience =
+          self.audience;
       dispatch_async(dispatch_get_main_queue(), ^{
         [audience touchToSearchPermissionsUpdated];
       });

@@ -32,6 +32,7 @@ bundle_data("resources_unit_tests") {
 }
 
 source_set("contextual_search") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "contextual_search_context.cc",
     "contextual_search_context.h",

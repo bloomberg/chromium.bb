@@ -504,11 +504,13 @@ TEST_F(TouchToSearchPermissionsMediatorTest, OTR) {
 }
 
 TEST_F(TouchToSearchPermissionsMediatorTest, AudienceRemovedNotifications) {
-  base::scoped_nsobject<id> audience(
-      [[TestTouchToSearchPermissionsAudience alloc] init]);
-  [tts_permissions_ setAudience:audience];
-  EXPECT_TRUE([tts_permissions_ observing]);
-  audience.reset();
+  @autoreleasepool {
+    base::scoped_nsobject<id> audience(
+        [[TestTouchToSearchPermissionsAudience alloc] init]);
+    [tts_permissions_ setAudience:audience];
+    EXPECT_TRUE([tts_permissions_ observing]);
+    audience.reset();
+  }
   // Permissions shouldn't be observing after notifying a nil audience.
   [[NSNotificationCenter defaultCenter]
       postNotificationName:UIAccessibilityVoiceOverStatusChanged
@@ -516,7 +518,8 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceRemovedNotifications) {
   EXPECT_FALSE([tts_permissions_ observing]);
 
   // Permissions shouldn't observe while still observing.
-  audience.reset([[TestTouchToSearchPermissionsAudience alloc] init]);
+  base::scoped_nsobject<id> audience(
+      [[TestTouchToSearchPermissionsAudience alloc] init]);
   [tts_permissions_ setAudience:audience];
   audience.reset();
   audience.reset([[TestTouchToSearchPermissionsAudience alloc] init]);
