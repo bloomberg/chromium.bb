@@ -28,6 +28,8 @@ import android.os.Process;
 import android.os.StatFs;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
@@ -278,6 +280,19 @@ public class ApiCompatibilityUtils {
             textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, end, bottom);
         } else {
             textView.setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
+        }
+    }
+
+    /**
+     * @see android.text.Html#toHtml(Spanned, int)
+     * @param option is ignored on below N
+     */
+    @SuppressWarnings("deprecation")
+    public static String toHtml(Spanned spanned, int option) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.toHtml(spanned, option);
+        } else {
+            return Html.toHtml(spanned);
         }
     }
 

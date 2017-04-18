@@ -234,12 +234,14 @@ android_library("ui_java") {
 
 junit_binary("ui_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
   ]
   deps = [
     ":ui_java",
     "//base:base_java",
+    "//base:base_java_test_support",
   ]
 }
 

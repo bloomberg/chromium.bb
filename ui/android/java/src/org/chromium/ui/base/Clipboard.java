@@ -14,6 +14,7 @@ import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -72,7 +73,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      */
     @SuppressWarnings("javadoc")
     @CalledByNative
-    public String getCoercedText() {
+    private String getCoercedText() {
         // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
         // crbug.com/654802 and b/31501780)
         try {
@@ -97,6 +98,24 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         return false;
     }
 
+    public String clipDataToHtmlText(ClipData clipData) {
+        ClipDescription description = clipData.getDescription();
+        if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML)) {
+            return clipData.getItemAt(0).getHtmlText();
+        }
+
+        if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            CharSequence text = clipData.getItemAt(0).getText();
+            if (!(text instanceof Spanned)) return null;
+            Spanned spanned = (Spanned) text;
+            if (hasStyleSpan(spanned)) {
+                return ApiCompatibilityUtils.toHtml(
+                        spanned, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets the HTML text of top item on the primary clip on the Android clipboard.
      *
@@ -104,26 +123,15 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      *         text or no entries on the primary clip.
      */
     @CalledByNative
-    public String getHTMLText() {
+    private String getHTMLText() {
         // getPrimaryClip() has been observed to throw unexpected exceptions for some devices (see
         // crbug/654802 and b/31501780)
         try {
             ClipData clipData = mClipboardManager.getPrimaryClip();
-            ClipDescription description = clipData.getDescription();
-            if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML)) {
-                return clipData.getItemAt(0).getHtmlText();
-            }
-
-            if (description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                Spanned spanned = (Spanned) clipData.getItemAt(0).getText();
-                if (hasStyleSpan(spanned)) {
-                    return Html.toHtml(spanned);
-                }
-            }
+            return clipDataToHtmlText(clipData);
         } catch (Exception e) {
             return null;
         }
-        return null;
     }
 
     /**
