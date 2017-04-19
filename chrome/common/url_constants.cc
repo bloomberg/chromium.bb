@@ -425,33 +425,33 @@ const char kExtensionControlledSettingLearnMoreURL[] =
 
 const char kChromeHelpViaKeyboardURL[] =
 #if defined(OS_CHROMEOS)
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=keyboard";
-#endif  // defined(OFFICIAL_BUILD
+#endif  // defined(GOOGLE_CHROME_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=keyboard";
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeHelpViaMenuURL[] =
 #if defined(OS_CHROMEOS)
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=menu";
-#endif  // defined(OFFICIAL_BUILD
+#endif  // defined(GOOGLE_CHROME_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=menu";
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeHelpViaWebUIURL[] =
 #if defined(OS_CHROMEOS)
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=settings";
-#endif  // defined(OFFICIAL_BUILD
+#endif  // defined(GOOGLE_CHROME_BUILD
 #else
     "https://support.google.com/chrome/?p=help&ctx=settings";
 #endif  // defined(OS_CHROMEOS)
