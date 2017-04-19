@@ -527,6 +527,7 @@ class SQL_EXPORT Connection {
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, GetAppropriateMmapSizeAltStatus);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, OnMemoryDump);
   FRIEND_TEST_ALL_PREFIXES(SQLConnectionTest, RegisterIntentToUpload);
+  FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, WALNoClose);
 
   // Internal initialize function used by both Init and InitInMemory. The file
   // name is always 8 bits since we want to use the 8-bit version of
