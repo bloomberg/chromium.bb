@@ -19,6 +19,7 @@ import argparse
 import cgi
 import os
 import shutil
+import re
 import subprocess
 import sys
 import tempfile
@@ -480,6 +481,22 @@ def _GnBinary():
     return os.path.join(_REPOSITORY_ROOT, 'buildtools', subdir, exe)
 
 
+def GetThirdPartyDepsFromGNDepsOutput(gn_deps):
+    """Returns third_party/foo directories given the output of "gn desc deps".
+
+    Note that it always returns the direct sub-directory of third_party
+    where README.chromium and LICENSE files are, so that it can be passed to
+    ParseDir(). e.g.:
+        .../third_party/cld_3/src/src/BUILD.gn -> .../third_party/cld_3
+    """
+    third_party_deps = set()
+    for build_dep in gn_deps.split():
+        m = re.search(r'^(.+/third_party/[^/]+)/(.+/)?BUILD\.gn$', build_dep)
+        if m:
+            third_party_deps.add(m.group(1))
+    return third_party_deps
+
+
 def FindThirdPartyDeps(gn_out_dir, gn_target):
     if not gn_out_dir:
         raise RuntimeError("--gn-out-dir is required if --gn-target is used.")
@@ -500,12 +517,7 @@ def FindThirdPartyDeps(gn_out_dir, gn_target):
         if tmp_dir and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
 
-    third_party_deps = set()
-    for build_dep in gn_deps.split():
-        if ("third_party" in build_dep and
-                os.path.basename(build_dep) == "BUILD.gn"):
-            third_party_deps.add(os.path.dirname(build_dep))
-    return third_party_deps
+    return GetThirdPartyDepsFromGNDepsOutput(gn_deps)
 
 
 def ScanThirdPartyDirs(root=None):
