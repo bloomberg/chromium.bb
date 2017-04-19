@@ -120,7 +120,7 @@ void DeleteNotificationResourceFile(const base::FilePath& file_path) {
           .MayBlock()
           .WithPriority(base::TaskPriority::BACKGROUND)
           .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN),
-      base::Bind(base::IgnoreResult(base::DeleteFile), file_path, false));
+      base::BindOnce(base::IgnoreResult(base::DeleteFile), file_path, false));
 }
 
 }  // namespace

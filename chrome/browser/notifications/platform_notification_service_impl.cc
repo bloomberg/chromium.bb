@@ -452,7 +452,7 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     // n.b. this should only be posted once per notification.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &ReportNotificationImageOnIOThread,
             make_scoped_refptr(g_browser_process->safe_browsing_service()),
             profile, origin, notification_resources.image));

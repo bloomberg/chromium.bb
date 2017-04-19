@@ -69,6 +69,6 @@ void StubNotificationPlatformBridge::GetDisplayed(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, base::Passed(&displayed_notifications),
-                 true /* supports_synchronization */));
+      base::BindOnce(callback, base::Passed(&displayed_notifications),
+                     true /* supports_synchronization */));
 }
