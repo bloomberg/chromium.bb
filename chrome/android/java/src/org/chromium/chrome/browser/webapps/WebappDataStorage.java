@@ -63,6 +63,9 @@ public class WebappDataStorage {
     // Whether to check updates less frequently.
     static final String KEY_RELAX_UPDATES = "relax_updates";
 
+    // The shell Apk version requested in the last update.
+    static final String KEY_LAST_REQUESTED_SHELL_APK_VERSION = "last_requested_shell_apk_version";
+
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
     public static final long UPDATE_INTERVAL = TimeUnit.DAYS.toMillis(3L);
 
@@ -73,6 +76,9 @@ public class WebappDataStorage {
     // Number of milliseconds to wait before re-requesting an updated WebAPK from the WebAPK
     // server if the previous update attempt failed.
     public static final long RETRY_UPDATE_DURATION = TimeUnit.HOURS.toMillis(12L);
+
+    // The default shell Apk version of WebAPKs.
+    static final int DEFAULT_SHELL_APK_VERSION = 1;
 
     // Unset/invalid constants for last used times and URLs. 0 is used as the null last used time as
     // WebappRegistry assumes that this is always a valid timestamp.
@@ -435,6 +441,16 @@ public class WebappDataStorage {
         return mPreferences.getInt(KEY_UPDATE_REQUESTED, 0);
     }
 
+    /** Updates the shell Apk version requested in the last update. */
+    void updateLastRequestedShellApkVersion(int shellApkVersion) {
+        mPreferences.edit().putInt(KEY_LAST_REQUESTED_SHELL_APK_VERSION, shellApkVersion).apply();
+    }
+
+    /** Returns the shell Apk version requested in last update. */
+    int getLastRequestedShellApkVersion() {
+        return mPreferences.getInt(KEY_LAST_REQUESTED_SHELL_APK_VERSION, DEFAULT_SHELL_APK_VERSION);
+    }
+
     /**
      * Returns whether the previous WebAPK update attempt succeeded. Returns true if there has not
      * been any update attempts.
@@ -467,7 +483,7 @@ public class WebappDataStorage {
         if (sinceLastCheckDurationMs >= checkUpdatesInterval) return true;
 
         long sinceLastUpdateRequestDurationMs = now - getLastWebApkUpdateRequestCompletionTime();
-        return sinceLastUpdateRequestDurationMs >= WebappDataStorage.RETRY_UPDATE_DURATION
+        return sinceLastUpdateRequestDurationMs >= RETRY_UPDATE_DURATION
                 && !didPreviousUpdateSucceed();
     }
 

@@ -721,4 +721,39 @@ public class WebApkUpdateManagerTest {
         assertTrue(updateManager.updateRequested());
         assertEquals(0, storage.getUpdateRequests());
     }
+
+    /**
+     * Tests that a WebAPK update is requested immediately if:
+     * the Shell APK is out of date,
+     * AND
+     * there wasn't a previous request for this ShellAPK version.
+     */
+    @Test
+    public void testShellApkOutOfDate() {
+        registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION - 1);
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(getStorage());
+
+        // There have not been any update requests for the current ShellAPK version. A WebAPK update
+        // should be requested immediately.
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotManifestData(updateManager, defaultManifestData());
+        assertTrue(updateManager.updateRequested());
+
+        WebappDataStorage storage = getStorage();
+        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
+        storage.updateLastRequestedShellApkVersion(WebApkVersion.CURRENT_SHELL_APK_VERSION);
+
+        mClock.advance(1);
+        updateIfNeeded(updateManager);
+        assertFalse(updateManager.updateCheckStarted());
+
+        // A previous update request was made for the current ShellAPK version. A WebAPK update
+        // should be requested after the regular delay.
+        mClock.advance(WebappDataStorage.UPDATE_INTERVAL - 1);
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+        onGotManifestData(updateManager, defaultManifestData());
+        assertTrue(updateManager.updateRequested());
+    }
 }
