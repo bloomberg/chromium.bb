@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.UiUtils;
 
@@ -234,7 +235,12 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
-        NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
+        // The toolbar data provider can be null during startup, before the ToolbarManager has been
+        // initialized.
+        ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
+        if (toolbarDataProvider == null) return;
+
+        NewTabPage ntp = toolbarDataProvider.getNewTabPageForCurrentTab();
 
         // If the default search engine is not Google, isLocationBarShownInNTP() will return false.
         if (ntp == null || !ntp.isLocationBarShownInNTP()
