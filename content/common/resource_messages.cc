@@ -47,18 +47,31 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
 }
 
 namespace {
+
 void GetCertSize(base::PickleSizer* s, net::X509Certificate* cert) {
-  base::Pickle temp;
-  cert->Persist(&temp);
-  s->AddBytes(temp.payload_size());
+  GetParamSize(s, !!cert);
+  if (cert) {
+    base::Pickle temp;
+    cert->Persist(&temp);
+    s->AddBytes(temp.payload_size());
+  }
 }
 
 void WriteCert(base::Pickle* m, net::X509Certificate* cert) {
-  cert->Persist(m);
+  WriteParam(m, !!cert);
+  if (cert)
+    cert->Persist(m);
 }
 
-bool ReadCert(base::PickleIterator* iter,
+bool ReadCert(const base::Pickle* m,
+              base::PickleIterator* iter,
               scoped_refptr<net::X509Certificate>* cert) {
+  DCHECK(!*cert);
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object)
+    return true;
   *cert = net::X509Certificate::CreateFromPickle(
       iter, net::X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);
   return !!cert->get();
@@ -129,8 +142,8 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
     return false;
   if (!is_valid)
     return true;
-  return ReadCert(iter, &r->cert) &&
-         ReadCert(iter, &r->unverified_cert) &&
+  return ReadCert(m, iter, &r->cert) &&
+         ReadCert(m, iter, &r->unverified_cert) &&
          ReadParam(m, iter, &r->cert_status) &&
          ReadParam(m, iter, &r->security_bits) &&
          ReadParam(m, iter, &r->key_exchange_group) &&
