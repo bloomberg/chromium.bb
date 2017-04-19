@@ -210,6 +210,10 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
     'TypingTest.testShouldBeAbleToTypeIntoEmptyContentEditableElement',
 
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=922
+    'CorrectEventFiringTest.testShouldEmitOnClickEventsWhenSelectingElements',
+    'CorrectEventFiringTest.testSendingKeysToAnotherElementShouldCauseTheBlurEventToFire',
+
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
 
@@ -245,6 +249,18 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
         'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
+         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=922
+        'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
+        'CorrectEventFiringTest.testClickEventsShouldBubble',
+        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
+        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
+        'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
+        'ImplicitWaitTest.testShouldImplicitlyWaitUntilAtLeastOneElementIsFoundWhenSearchingForMany',
+        'ImplicitWaitTest.testShouldImplicitlyWaitForAnElementToBeVisibleBeforeInteracting',
+        'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
+        'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
+        'TypingTest.testShiftSelectionDeletes',
+        'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
