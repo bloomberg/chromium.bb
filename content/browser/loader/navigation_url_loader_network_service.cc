@@ -34,8 +34,6 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(scottmg): Maybe some of this setup should be done only once, instead
   // of every time.
-  url_loader_factory_request_ = mojo::MakeRequest(&url_loader_factory_);
-
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
       mojom::kNetworkServiceName, &url_loader_factory_);
 
@@ -113,6 +111,11 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
 }
 
 void NavigationURLLoaderNetworkService::OnComplete(
-    const ResourceRequestCompletionStatus& completion_status) {}
+    const ResourceRequestCompletionStatus& completion_status) {
+  if (completion_status.error_code != net::OK) {
+    delegate_->OnRequestFailed(completion_status.exists_in_cache,
+                               completion_status.error_code);
+  }
+}
 
 }  // namespace content

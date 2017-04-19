@@ -64,7 +64,6 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader,
 
   NavigationURLLoaderDelegate* delegate_;
 
-  mojom::URLLoaderFactoryRequest url_loader_factory_request_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   mojo::Binding<mojom::URLLoaderClient> binding_;
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr_;
