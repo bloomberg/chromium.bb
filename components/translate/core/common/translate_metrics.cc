@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <algorithm>
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "url/url_constants.h"
 
 namespace translate {
@@ -27,6 +29,8 @@ const char kTranslateTimeToTranslate[] = "Translate.TimeToTranslate";
 const char kTranslateUserActionDuration[] = "Translate.UserActionDuration";
 const char kTranslatePageScheme[] = "Translate.PageScheme";
 const char kTranslateSimilarLanguageMatch[] = "Translate.SimilarLanguageMatch";
+const char kTranslateLanguageDetectionConflict[] =
+    "Translate.LanguageDetectionConflict";
 
 struct MetricsEntry {
   MetricsNameIndex index;
@@ -44,10 +48,16 @@ const MetricsEntry kMetricsEntries[] = {
     {UMA_TIME_TO_TRANSLATE, kTranslateTimeToTranslate},
     {UMA_USER_ACTION_DURATION, kTranslateUserActionDuration},
     {UMA_PAGE_SCHEME, kTranslatePageScheme},
-    {UMA_SIMILAR_LANGUAGE_MATCH, kTranslateSimilarLanguageMatch}, };
+    {UMA_SIMILAR_LANGUAGE_MATCH, kTranslateSimilarLanguageMatch},
+    {UMA_LANGUAGE_DETECTION_CONFLICT, kTranslateLanguageDetectionConflict},
+};
 
 static_assert(arraysize(kMetricsEntries) == UMA_MAX,
               "kMetricsEntries should have UMA_MAX elements");
+
+// Page languages for which we track CLD3 language conflicts.
+const char* kLanguageDetectionConflictPageLangs[] = {
+    "en", "en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-ZA", "en-IN"};
 
 LanguageCheckType GetLanguageCheckMetric(const std::string& provided_code,
                                          const std::string& revised_code) {
@@ -75,8 +85,7 @@ void ReportHtmlLang(const std::string& provided_code,
 }
 
 void ReportLanguageVerification(LanguageVerificationType type) {
-  UMA_HISTOGRAM_ENUMERATION(kTranslateLanguageVerification,
-                            type,
+  UMA_HISTOGRAM_ENUMERATION(kTranslateLanguageVerification, type,
                             LANGUAGE_VERIFICATION_MAX);
 }
 
@@ -117,6 +126,19 @@ void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end) {
 
 void ReportSimilarLanguageMatch(bool match) {
   UMA_HISTOGRAM_BOOLEAN(kTranslateSimilarLanguageMatch, match);
+}
+
+void ReportLanguageDetectionConflict(const std::string& page_lang,
+                                     const std::string& cld_lang) {
+  const char* const* const it =
+      std::find(std::begin(kLanguageDetectionConflictPageLangs),
+                std::end(kLanguageDetectionConflictPageLangs), page_lang);
+  const std::string page_lang_token =
+      it == std::end(kLanguageDetectionConflictPageLangs) ? "other" : *it;
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kTranslateLanguageDetectionConflict,
+      base::HashMetricName(page_lang_token + "," + cld_lang));
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {

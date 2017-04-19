@@ -291,6 +291,13 @@ std::string DeterminePageLanguage(const std::string& code,
   std::string language = modified_html_lang.empty() ? modified_code :
                                                       modified_html_lang;
 
+  // When the page language is English, log conflicting CLD results. We will use
+  // these metrics to decide when to favor CLD.
+  if (language.substr(0, 2) == "en" && cld_language.substr(0, 2) != "en" &&
+      cld_language != kUnknownLanguageCode) {
+    translate::ReportLanguageDetectionConflict(language, cld_language);
+  }
+
   // If |language| is empty, just use CLD result even though it might be
   // translate::kUnknownLanguageCode.
   if (language.empty()) {
@@ -324,7 +331,7 @@ std::string DeterminePageLanguage(const std::string& code,
   }
 
   // Content-Language value might be wrong because CLD says that this page is
-  // written in another language with confidence.  In this case, Chrome doesn't
+  // written in another language with confidence. In this case, Chrome doesn't
   // rely on any of the language codes, and gives up suggesting a translation.
   translate::ReportLanguageVerification(
       translate::LANGUAGE_VERIFICATION_CLD_DISAGREE);

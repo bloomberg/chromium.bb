@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -284,6 +285,30 @@ TEST(TranslateMetricsTest, ReportLanguageDetectionTime) {
   translate::ReportLanguageDetectionTime(begin, end);
   recorder.CheckValueInLogs(9.009);
   recorder.CheckTotalCount(1);
+}
+
+TEST(TranslateMetricsTest, ReportLanguageDetectionConflict) {
+  MetricsRecorder recorder(
+      translate::GetMetricsName(translate::UMA_LANGUAGE_DETECTION_CONFLICT));
+  recorder.CheckTotalCount(0);
+
+  translate::ReportLanguageDetectionConflict("en", "es");
+  recorder.CheckTotalCount(1);
+  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en,es")), 1);
+
+  translate::ReportLanguageDetectionConflict("en", "es");
+  recorder.CheckTotalCount(2);
+  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en,es")), 2);
+
+  translate::ReportLanguageDetectionConflict("en-AU", "ru-Latn");
+  recorder.CheckTotalCount(3);
+  EXPECT_EQ(recorder.GetCount(base::HashMetricName("en-AU,ru-Latn")), 1);
+
+  // We don't track "en-XX" or "en-YY" as page codes.
+  translate::ReportLanguageDetectionConflict("en-XX", "es");
+  translate::ReportLanguageDetectionConflict("en-YY", "es");
+  recorder.CheckTotalCount(5);
+  EXPECT_EQ(recorder.GetCount(base::HashMetricName("other,es")), 2);
 }
 
 }  // namespace translate
