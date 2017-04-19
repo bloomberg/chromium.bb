@@ -93,6 +93,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private View mView;
     private ActionMode mActionMode;
+    private MenuDescriptor mActionMenuDescriptor;
 
     // Bit field for mappings from menu item to a flag indicating it is allowed.
     private int mAllowedMenuItems;
@@ -337,6 +338,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             // Should be nulled out in case #onDestroyActionMode() is not invoked in response.
             mActionMode = null;
+            mActionMenuDescriptor = null;
         }
     }
 
@@ -436,41 +438,54 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private void createActionMenu(ActionMode mode, Menu menu) {
         initializeMenu(mContext, mode, menu);
-        updateAssistMenuItem(menu);
+
+        mActionMenuDescriptor = createActionMenuDescriptor();
+        mActionMenuDescriptor.apply(menu);
+
+        initializeTextProcessingMenu(menu);
+    }
+
+    private MenuDescriptor createActionMenuDescriptor() {
+        MenuDescriptor descriptor = new MenuDescriptor();
+
+        updateAssistMenuItem(descriptor);
 
         if (!isSelectionEditable() || !canPaste()) {
-            menu.removeItem(R.id.select_action_menu_paste);
+            descriptor.removeItem(R.id.select_action_menu_paste);
         }
 
         if (isInsertion()) {
-            menu.removeItem(R.id.select_action_menu_select_all);
-            menu.removeItem(R.id.select_action_menu_cut);
-            menu.removeItem(R.id.select_action_menu_copy);
-            menu.removeItem(R.id.select_action_menu_share);
-            menu.removeItem(R.id.select_action_menu_web_search);
-            return;
+            descriptor.removeItem(R.id.select_action_menu_select_all);
+            descriptor.removeItem(R.id.select_action_menu_cut);
+            descriptor.removeItem(R.id.select_action_menu_copy);
+            descriptor.removeItem(R.id.select_action_menu_share);
+            descriptor.removeItem(R.id.select_action_menu_web_search);
+            return descriptor;
         }
 
         if (!isSelectionEditable()) {
-            menu.removeItem(R.id.select_action_menu_cut);
+            descriptor.removeItem(R.id.select_action_menu_cut);
         }
 
         if (isSelectionEditable() || !isSelectActionModeAllowed(MENU_ITEM_SHARE)) {
-            menu.removeItem(R.id.select_action_menu_share);
+            descriptor.removeItem(R.id.select_action_menu_share);
         }
 
         if (isSelectionEditable() || isIncognito()
                 || !isSelectActionModeAllowed(MENU_ITEM_WEB_SEARCH)) {
-            menu.removeItem(R.id.select_action_menu_web_search);
+            descriptor.removeItem(R.id.select_action_menu_web_search);
         }
 
         if (isSelectionPassword()) {
-            menu.removeItem(R.id.select_action_menu_copy);
-            menu.removeItem(R.id.select_action_menu_cut);
-            return;
+            descriptor.removeItem(R.id.select_action_menu_copy);
+            descriptor.removeItem(R.id.select_action_menu_cut);
         }
 
-        initializeTextProcessingMenu(menu);
+        return descriptor;
+    }
+
+    private boolean needsActionMenuUpdate() {
+        return !createActionMenuDescriptor().equals(mActionMenuDescriptor);
     }
 
     private boolean canPaste() {
@@ -479,7 +494,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return clipMgr.hasPrimaryClip();
     }
 
-    private void updateAssistMenuItem(Menu menu) {
+    private void updateAssistMenuItem(MenuDescriptor descriptor) {
         // There is no Assist functionality before Android O.
         if (!BuildInfo.isAtLeastO() || mAssistMenuItemId == 0) return;
 
@@ -490,9 +505,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         // Android O SDK and remove |mAssistMenuItemId|.
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
-            menu.add(R.id.select_action_menu_default_items, mAssistMenuItemId, 1,
-                        mClassificationResult.label)
-                    .setIcon(mClassificationResult.icon);
+            descriptor.addItem(R.id.select_action_menu_default_items, mAssistMenuItemId, 1,
+                    mClassificationResult.label, mClassificationResult.icon);
         }
     }
 
@@ -571,6 +585,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @Override
     public void onDestroyActionMode() {
         mActionMode = null;
+        mActionMenuDescriptor = null;
         if (mUnselectAllOnDismiss) {
             mWebContents.dismissTextHandles();
             clearSelection();
@@ -630,7 +645,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     void selectAll() {
         mWebContents.selectAll();
         mClassificationResult = null;
-        showActionModeOrClearOnFailure();
+        if (needsActionMenuUpdate()) showActionModeOrClearOnFailure();
+
         // Even though the above statement logged a SelectAll user action, we want to
         // track whether the focus was in an editable field, so log that too.
         if (isSelectionEditable()) {

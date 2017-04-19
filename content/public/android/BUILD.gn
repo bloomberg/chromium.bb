@@ -140,6 +140,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/MediaResourceGetter.java",
     "java/src/org/chromium/content/browser/MediaSessionImpl.java",
     "java/src/org/chromium/content/browser/MemoryMonitorAndroid.java",
+    "java/src/org/chromium/content/browser/MenuDescriptor.java",
     "java/src/org/chromium/content/browser/MotionEventSynthesizer.java",
     "java/src/org/chromium/content/browser/NfcFactory.java",
     "java/src/org/chromium/content/browser/PepperPluginManager.java",
@@ -461,12 +462,13 @@ android_library("content_javatests") {
 
 junit_binary("content_junit_tests") {
   java_files = [
+    "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
+    "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionFactoryTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",
     "junit/src/org/chromium/content/browser/picker/DateDialogNormalizerTest.java",
-    "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
     "junit/src/org/chromium/content/browser/installedapp/InstalledAppProviderTest.java",
     "junit/src/org/chromium/content/browser/installedapp/PackageHashTest.java",
   ]
