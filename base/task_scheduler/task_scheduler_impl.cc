@@ -15,11 +15,6 @@
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
-#include "build/build_config.h"
-
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-#include "base/task_scheduler/task_tracker_posix.h"
-#endif
 
 namespace base {
 namespace internal {
@@ -134,13 +129,11 @@ int TaskSchedulerImpl::GetMaxConcurrentTasksWithTraitsDeprecated(
 
 void TaskSchedulerImpl::Shutdown() {
   // TODO(fdoray): Increase the priority of BACKGROUND tasks blocking shutdown.
-  DCHECK(task_tracker_);
-  task_tracker_->Shutdown();
+  task_tracker_.Shutdown();
 }
 
 void TaskSchedulerImpl::FlushForTesting() {
-  DCHECK(task_tracker_);
-  task_tracker_->Flush();
+  task_tracker_.Flush();
 }
 
 void TaskSchedulerImpl::JoinForTesting() {
@@ -176,24 +169,20 @@ void TaskSchedulerImpl::Initialize(
   service_thread_options.timer_slack = TIMER_SLACK_MAXIMUM;
   CHECK(service_thread_.StartWithOptions(service_thread_options));
 
-  // Instantiate TaskTracker. Needs to happen after starting the service thread
-  // to get its message_loop().
-  task_tracker_ =
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-      base::MakeUnique<TaskTrackerPosix>(
-          static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
-#else
-      base::MakeUnique<TaskTracker>();
+  // Needs to happen after starting the service thread to get its
+  // message_loop().
+  task_tracker_.set_watch_file_descriptor_message_loop(
+      static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
 #endif
 
-  // Instantiate DelayedTaskManager. Needs to happen after starting the service
-  // thread to get its task_runner().
+  // Needs to happen after starting the service thread to get its task_runner().
   delayed_task_manager_ =
       base::MakeUnique<DelayedTaskManager>(service_thread_.task_runner());
 
   single_thread_task_runner_manager_ =
       MakeUnique<SchedulerSingleThreadTaskRunnerManager>(
-          task_tracker_.get(), delayed_task_manager_.get());
+          &task_tracker_, delayed_task_manager_.get());
   single_thread_task_runner_manager_->Start();
 
   // Callback invoked by workers to re-enqueue a sequence in the appropriate
@@ -227,7 +216,7 @@ void TaskSchedulerImpl::Initialize(
     worker_pools_[environment_type] = MakeUnique<SchedulerWorkerPoolImpl>(
         name_ + kEnvironmentParams[environment_type].name_suffix,
         kEnvironmentParams[environment_type].priority_hint,
-        re_enqueue_sequence_callback, task_tracker_.get(),
+        re_enqueue_sequence_callback, &task_tracker_,
         delayed_task_manager_.get());
     worker_pools_[environment_type]->Start(
         *worker_pool_params[environment_type]);

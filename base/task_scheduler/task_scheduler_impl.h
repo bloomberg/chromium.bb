@@ -17,9 +17,14 @@
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/task_scheduler/task_tracker.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+#include "base/task_scheduler/task_tracker_posix.h"
+#endif
 
 namespace base {
 
@@ -29,7 +34,6 @@ namespace internal {
 
 class DelayedTaskManager;
 class SchedulerSingleThreadTaskRunnerManager;
-class TaskTracker;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
@@ -84,7 +88,11 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 
   const std::string name_;
   Thread service_thread_;
-  std::unique_ptr<TaskTracker> task_tracker_;
+#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
+  TaskTrackerPosix task_tracker_;
+#else
+  TaskTracker task_tracker_;
+#endif
   std::unique_ptr<DelayedTaskManager> delayed_task_manager_;
   std::unique_ptr<SchedulerSingleThreadTaskRunnerManager>
       single_thread_task_runner_manager_;
