@@ -36,6 +36,10 @@ extern const char kChromeVersionSwitch[];
 // Indicates that crash reporting is enabled for the current user.
 extern const char kEnableCrashReportingSwitch[];
 
+// Indicates the execution mode for the Chrome Cleanup Tool. Possible values
+// defined in enum ExecutionMode.
+extern const char kExecutionModeSwitch[];
+
 // Indicates that the current user opted into Safe Browsing Extended Reporting.
 extern const char kExtendedSafeBrowsingEnabledSwitch[];
 
@@ -83,6 +87,22 @@ enum class ChromePromptValue {
   kPrompted = 3,
   // The user accepted the prompt after navigating to it from the menu.
   kShownFromMenu = 4
+};
+
+// Values to be passed to the kExecutionModeSwitch for the Chrome Cleanup Tool
+// to indicate the mode in which it should be executed.
+enum class ExecutionMode {
+  // No mode specified, which means the cleaner is running in legacy mode and
+  // will show its own UI and handle logs uploading permissions.
+  kNone = 0,
+  // The cleaner will run in scanning mode. No UI will be shown to the user
+  // (UI handled by Chrome) and logs will only be uploaded if the user opted
+  // into Extended Safe Browsing Reporting.
+  kScanning = 1,
+  // The cleaner will run in cleanup mode only. No UI will be shown to the
+  // user (UI handled by Chrome) and logs will only be uploaded if the user
+  // opted into Extended Safe Browsing Reporting v2.
+  kCleanup = 2,
 };
 
 }  // namespace chrome_cleaner

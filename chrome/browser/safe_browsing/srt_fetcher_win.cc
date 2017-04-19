@@ -650,6 +650,10 @@ base::Process SwReporterProcess::LaunchConnectedReporterProcess() {
       pending_process_connection.CreateMessagePipe(&mojo_pipe_token);
   invocation_.command_line.AppendSwitchASCII(
       chrome_cleaner::kChromeMojoPipeTokenSwitch, mojo_pipe_token);
+  invocation_.command_line.AppendSwitchASCII(
+      chrome_cleaner::kExecutionModeSwitch,
+      base::IntToString(
+          static_cast<int>(chrome_cleaner::ExecutionMode::kScanning)));
 
   mojo::edk::PlatformChannelPair channel;
   base::HandlesToInheritVector handles_to_inherit;
