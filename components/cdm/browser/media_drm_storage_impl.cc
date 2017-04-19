@@ -167,12 +167,18 @@ void MediaDrmStorageImpl::SavePersistentSession(
   base::DictionaryValue* origin_dict = nullptr;
   // The origin string may contain dots. Do not use path expansion.
   storage_dict->GetDictionaryWithoutPathExpansion(origin_string_, &origin_dict);
+
+  // This could happen if the profile is removed, but the device is still
+  // provisioned for the origin. In this case, just create a new entry.
   if (!origin_dict) {
-    DVLOG(1) << __func__
-             << ": Failed to save persistent session data; entry for origin "
-             << origin_string_ << " does not exist.";
-    callback.Run(false);
-    return;
+
+    DVLOG(1) << __func__ << ": Entry for origin " << origin_string_
+             << " does not exist; create a new one.";
+    storage_dict->SetWithoutPathExpansion(origin_string_,
+                                          CreateOriginDictionary());
+    storage_dict->GetDictionaryWithoutPathExpansion(origin_string_,
+                                                    &origin_dict);
+    DCHECK(origin_dict);
   }
 
   base::DictionaryValue* sessions_dict = nullptr;

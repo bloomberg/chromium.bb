@@ -143,7 +143,7 @@ TEST_F(MediaDrmStorageImplTest, OnProvisioned_Twice) {
 }
 
 TEST_F(MediaDrmStorageImplTest, SaveSession_Unprovisioned) {
-  SavePersistentSession("session_id", {1, 0}, "mime/type", false);
+  SaveAndLoadPersistentSession("session_id", {1, 0}, "mime/type1");
   base::RunLoop().RunUntilIdle();
 }
 
