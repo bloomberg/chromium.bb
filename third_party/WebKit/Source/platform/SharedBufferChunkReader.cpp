@@ -64,7 +64,7 @@ void SharedBufferChunkReader::SetSeparator(const Vector<char>& separator) {
 }
 
 void SharedBufferChunkReader::SetSeparator(const char* separator) {
-  separator_.Clear();
+  separator_.clear();
   separator_.Append(separator, strlen(separator));
 }
 
@@ -73,7 +73,7 @@ bool SharedBufferChunkReader::NextChunk(Vector<char>& chunk,
   if (reached_end_of_file_)
     return false;
 
-  chunk.Clear();
+  chunk.clear();
   while (true) {
     while (segment_index_ < segment_length_) {
       char current_character = segment_[segment_index_++];
@@ -123,7 +123,7 @@ String SharedBufferChunkReader::NextChunkAsUTF8StringWithLatin1Fallback(
 
 size_t SharedBufferChunkReader::Peek(Vector<char>& data,
                                      size_t requested_size) {
-  data.Clear();
+  data.clear();
   if (requested_size <= segment_length_ - segment_index_) {
     data.Append(segment_ + segment_index_, requested_size);
     return requested_size;

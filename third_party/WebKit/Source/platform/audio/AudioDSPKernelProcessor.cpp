@@ -59,7 +59,7 @@ void AudioDSPKernelProcessor::Uninitialize() {
     return;
 
   MutexLocker locker(process_lock_);
-  kernels_.Clear();
+  kernels_.clear();
 
   initialized_ = false;
 }

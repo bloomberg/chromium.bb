@@ -171,12 +171,12 @@ void BlendWithColorsFromGradient(CSSGradientValue* gradient,
   } else {
     if (colors.size() > 1) {
       // Gradient on gradient is too complicated, bail out
-      colors.Clear();
+      colors.clear();
       return;
     }
 
     Color existing_color = colors.front();
-    colors.Clear();
+    colors.clear();
     for (auto stop_color : stop_colors) {
       found_non_transparent_color =
           found_non_transparent_color || (stop_color.Alpha() != 0);
@@ -204,7 +204,7 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
 
   if (!style_image->IsGeneratedImage()) {
     // Make no assertions about the colors in non-generated images
-    colors.Clear();
+    colors.clear();
     found_opaque_color = false;
     return;
   }
@@ -247,7 +247,7 @@ bool GetColorsFromRect(LayoutRect rect,
         isHTMLImageElement(element) || isHTMLObjectElement(element) ||
         isHTMLPictureElement(element) || element->IsSVGElement() ||
         isHTMLVideoElement(element)) {
-      colors.Clear();
+      colors.clear();
       found_opaque_color = false;
       continue;
     }
@@ -267,7 +267,7 @@ bool GetColorsFromRect(LayoutRect rect,
         colors.push_back(background_color);
       } else {
         if (!background_color.HasAlpha()) {
-          colors.Clear();
+          colors.clear();
           colors.push_back(background_color);
           found_opaque_color = true;
         } else {
@@ -285,7 +285,7 @@ bool GetColorsFromRect(LayoutRect rect,
     bool contains = found_top_element || element->BoundingBox().Contains(rect);
     if (!contains && found_non_transparent_color) {
       // Only return colors if some opaque element covers up this one.
-      colors.Clear();
+      colors.clear();
       found_opaque_color = false;
     }
   }
@@ -380,7 +380,7 @@ struct InspectorCSSAgent::VectorStringHashTraits
   }
 
   static void ConstructDeletedValue(Vector<String>& vec, bool) {
-    vec.Clear();
+    vec.clear();
     vec.push_back(String(WTF::kHashTableDeletedValue));
   }
 

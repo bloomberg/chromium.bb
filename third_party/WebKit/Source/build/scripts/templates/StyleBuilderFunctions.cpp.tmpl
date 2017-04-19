@@ -99,7 +99,7 @@ namespace blink {
 {% set vector = attribute + "List()" %}
 {{declare_initial_function(property_id)}} {
   CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
-  data.{{vector}}.Clear();
+  data.{{vector}}.clear();
   data.{{vector}}.push_back(CSS{{animation}}Data::Initial{{attribute}}());
 }
 
@@ -113,7 +113,7 @@ namespace blink {
 
 {{declare_value_function(property_id)}} {
   CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
-  data.{{vector}}.Clear();
+  data.{{vector}}.clear();
   for (auto& listValue : ToCSSValueList(value))
     data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(*listValue));
 }

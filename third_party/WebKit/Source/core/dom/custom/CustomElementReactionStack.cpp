@@ -110,7 +110,7 @@ void CustomElementReactionStack::ClearQueue(Element* element) {
 void CustomElementReactionStack::InvokeBackupQueue() {
   DCHECK(IsMainThread());
   InvokeReactions(*backup_queue_);
-  backup_queue_->Clear();
+  backup_queue_->clear();
 }
 
 CustomElementReactionStack& CustomElementReactionStack::Current() {

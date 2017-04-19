@@ -167,7 +167,7 @@ void SensorProxy::PageVisibilityChanged() {
 
 void SensorProxy::HandleSensorError() {
   state_ = kUninitialized;
-  frequencies_used_.Clear();
+  frequencies_used_.clear();
   reading_ = device::SensorReading();
 
   // The m_sensor.reset() will release all callbacks and its bound parameters,

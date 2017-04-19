@@ -566,7 +566,7 @@ class PLATFORM_EXPORT ThreadState {
   ~ThreadState();
 
   void ClearSafePointScopeMarker() {
-    safe_point_stack_copy_.Clear();
+    safe_point_stack_copy_.clear();
     safe_point_scope_marker_ = nullptr;
   }
 

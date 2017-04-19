@@ -450,7 +450,7 @@ Vector<String> DocumentState::ToStateVector() {
   }
   bool has_only_signature = state_vector.size() == 1;
   if (has_only_signature)
-    state_vector.Clear();
+    state_vector.clear();
   return state_vector;
 }
 

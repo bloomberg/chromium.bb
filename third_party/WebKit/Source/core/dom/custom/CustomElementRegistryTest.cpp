@@ -216,8 +216,8 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   HeapVector<Member<Adopted>> adopted_;
 
   void Clear() {
-    logs_.Clear();
-    attribute_changed_.Clear();
+    logs_.clear();
+    attribute_changed_.clear();
   }
 
   bool RunConstructor(Element* element) override {

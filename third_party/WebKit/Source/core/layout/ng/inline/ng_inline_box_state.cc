@@ -108,7 +108,7 @@ void NGInlineLayoutStateStack::ApplyBaselineShift(
       line_box->MoveChildrenInBlockDirection(
           baseline_shift, child.fragment_start, child.fragment_end);
     }
-    box->pending_descendants.Clear();
+    box->pending_descendants.clear();
   }
 
   const ComputedStyle& style = *box->style;

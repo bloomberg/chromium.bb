@@ -490,7 +490,7 @@ String TextResourceDecoder::Decode(const char* data, size_t len) {
       data_for_decode, length_for_decode, WTF::kDoNotFlush,
       content_type_ == kXMLContent && !use_lenient_xml_decoding_, saw_error_);
 
-  buffer_.Clear();
+  buffer_.clear();
   return result;
 }
 
@@ -514,7 +514,7 @@ String TextResourceDecoder::Flush() {
   String result = codec_->Decode(
       buffer_.Data(), buffer_.size(), WTF::kFetchEOF,
       content_type_ == kXMLContent && !use_lenient_xml_decoding_, saw_error_);
-  buffer_.Clear();
+  buffer_.clear();
   codec_.reset();
   checked_for_bom_ = false;  // Skip BOM again when re-decoding.
   return result;

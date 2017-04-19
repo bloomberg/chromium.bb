@@ -209,7 +209,7 @@ void InspectorResourceContentLoader::Stop() {
   pending_resource_clients_.swap(pending_resource_clients);
   for (const auto& client : pending_resource_clients)
     client->loader_ = nullptr;
-  resources_.Clear();
+  resources_.clear();
   // Make sure all callbacks are called to prevent infinite waiting time.
   CheckDone();
   all_requests_started_ = false;

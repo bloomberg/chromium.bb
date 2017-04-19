@@ -607,7 +607,7 @@ void TokenPreloadScanner::RewindTo(
   in_script_ = checkpoint.in_script;
 
   css_scanner_.Reset();
-  checkpoints_.Clear();
+  checkpoints_.clear();
 }
 
 void TokenPreloadScanner::Scan(const HTMLToken& token,

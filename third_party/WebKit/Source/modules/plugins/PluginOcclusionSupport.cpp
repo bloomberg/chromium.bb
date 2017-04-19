@@ -48,7 +48,7 @@ namespace blink {
 
 static void GetObjectStack(const LayoutObject* ro,
                            Vector<const LayoutObject*>* ro_stack) {
-  ro_stack->Clear();
+  ro_stack->clear();
   while (ro) {
     ro_stack->push_back(ro);
     ro = ro->Parent();

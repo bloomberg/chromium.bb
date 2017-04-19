@@ -28,7 +28,7 @@ namespace {
 class TimerTest : public testing::Test {
  public:
   void SetUp() override {
-    run_times_.Clear();
+    run_times_.clear();
     platform_->AdvanceClockSeconds(10.0);
     start_time_ = MonotonicallyIncreasingTime();
   }

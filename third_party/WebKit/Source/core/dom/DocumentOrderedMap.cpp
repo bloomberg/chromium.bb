@@ -88,7 +88,7 @@ void DocumentOrderedMap::Add(const AtomicString& key, Element* element) {
   DCHECK(entry->count);
   entry->element = nullptr;
   entry->count++;
-  entry->ordered_list.Clear();
+  entry->ordered_list.clear();
 }
 
 void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
@@ -112,7 +112,7 @@ void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
           entry->ordered_list.size() > 1 ? entry->ordered_list[1] : nullptr;
     }
     entry->count--;
-    entry->ordered_list.Clear();
+    entry->ordered_list.clear();
   }
 }
 

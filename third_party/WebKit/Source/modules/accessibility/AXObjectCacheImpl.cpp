@@ -651,7 +651,7 @@ void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
       ChildrenChanged(obj->ParentObject());
   }
 
-  notifications_to_post_.Clear();
+  notifications_to_post_.clear();
 }
 
 void AXObjectCacheImpl::PostNotification(LayoutObject* layout_object,

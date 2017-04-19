@@ -47,7 +47,7 @@ void CustomContextMenuProvider::ContextMenuItemSelected(
 }
 
 void CustomContextMenuProvider::ContextMenuCleared() {
-  menu_items_.Clear();
+  menu_items_.clear();
   subject_element_ = nullptr;
 }
 

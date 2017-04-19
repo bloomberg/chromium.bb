@@ -86,7 +86,7 @@ void DeferredTaskHandler::BreakConnections() {
 
   for (unsigned i = 0; i < deferred_break_connection_list_.size(); ++i)
     deferred_break_connection_list_[i]->BreakConnectionWithLock();
-  deferred_break_connection_list_.Clear();
+  deferred_break_connection_list_.clear();
 }
 
 void DeferredTaskHandler::MarkSummingJunctionDirty(
@@ -265,7 +265,7 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   if (rendering_orphan_handlers_.IsEmpty())
     return;
   deletable_orphan_handlers_.AppendVector(rendering_orphan_handlers_);
-  rendering_orphan_handlers_.Clear();
+  rendering_orphan_handlers_.clear();
   Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
@@ -275,14 +275,14 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {
   DCHECK(IsMainThread());
   AutoLocker locker(*this);
-  deletable_orphan_handlers_.Clear();
+  deletable_orphan_handlers_.clear();
 }
 
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   DCHECK(IsMainThread());
   AutoLocker locker(*this);
-  rendering_orphan_handlers_.Clear();
-  deletable_orphan_handlers_.Clear();
+  rendering_orphan_handlers_.clear();
+  deletable_orphan_handlers_.clear();
 }
 
 void DeferredTaskHandler::SetAudioThreadToCurrentThread() {

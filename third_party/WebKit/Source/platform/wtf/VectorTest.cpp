@@ -218,7 +218,7 @@ TEST(VectorTest, OwnPtr) {
   EXPECT_EQ(count, copy_vector.size());
   EXPECT_EQ(0u, vector.size());
 
-  copy_vector.Clear();
+  copy_vector.clear();
   EXPECT_EQ(count, static_cast<size_t>(destruct_number));
 }
 
@@ -492,8 +492,8 @@ void TestDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
 
   for (unsigned i = 0; i < 13; i++) {
     for (unsigned j = 0; j < 13; j++) {
-      vector.Clear();
-      vector2.Clear();
+      vector.clear();
+      vector2.clear();
       EXPECT_EQ(0u, LivenessCounter::live_);
 
       for (unsigned k = 0; k < j; k++)
@@ -541,8 +541,8 @@ void TestValuesMovedAndSwappedWithInlineCapacity() {
 
   for (unsigned size = 0; size < 13; size++) {
     for (unsigned size2 = 0; size2 < 13; size2++) {
-      vector.Clear();
-      vector2.Clear();
+      vector.clear();
+      vector2.clear();
       for (unsigned i = 0; i < size; i++)
         vector.push_back(i);
       for (unsigned i = 0; i < size2; i++)

@@ -150,7 +150,7 @@ void EncodedFormData::AppendFileSystemURLRange(
 
 void EncodedFormData::Flatten(Vector<char>& data) const {
   // Concatenate all the byte arrays, but omit any files.
-  data.Clear();
+  data.clear();
   size_t n = elements_.size();
   for (size_t i = 0; i < n; ++i) {
     const FormDataElement& e = elements_[i];

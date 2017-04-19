@@ -87,7 +87,7 @@ SmartClipData SmartClip::DataForRect(const IntRect& crop_rect_in_viewport) {
   CollectOverlappingChildNodes(best_node, crop_rect_in_viewport, hit_nodes);
 
   if (hit_nodes.IsEmpty() || hit_nodes.size() == best_node->CountChildren()) {
-    hit_nodes.Clear();
+    hit_nodes.clear();
     hit_nodes.push_back(best_node);
   }
 

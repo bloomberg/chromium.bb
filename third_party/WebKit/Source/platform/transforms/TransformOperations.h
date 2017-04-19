@@ -72,7 +72,7 @@ class PLATFORM_EXPORT TransformOperations {
 
   bool OperationsMatch(const TransformOperations&) const;
 
-  void Clear() { operations_.Clear(); }
+  void clear() { operations_.clear(); }
 
   Vector<RefPtr<TransformOperation>>& Operations() { return operations_; }
   const Vector<RefPtr<TransformOperation>>& Operations() const {

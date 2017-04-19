@@ -16,7 +16,7 @@ using StyleImageList = PersistentHeapVector<Member<StyleImage>, 1>;
 class ImageListPropertyFunctions {
  public:
   static void GetInitialImageList(CSSPropertyID, StyleImageList& result) {
-    result.Clear();
+    result.clear();
   }
 
   static void GetImageList(CSSPropertyID property,
@@ -35,7 +35,7 @@ class ImageListPropertyFunctions {
         return;
     }
 
-    result.Clear();
+    result.clear();
     while (fill_layer) {
       result.push_back(fill_layer->GetImage());
       fill_layer = fill_layer->Next();

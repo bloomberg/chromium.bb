@@ -219,7 +219,7 @@ void TextTrackList::RemoveAllInbandTracks() {
   for (const auto& track : inband_tracks_) {
     track->SetTrackList(0);
   }
-  inband_tracks_.Clear();
+  inband_tracks_.clear();
 }
 
 bool TextTrackList::Contains(TextTrack* track) const {

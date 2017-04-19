@@ -105,9 +105,9 @@ bool HTMLTokenizer::FlushBufferedEndTag(SegmentedString& source) {
   if (token_->GetType() == HTMLToken::kCharacter)
     return true;
   token_->BeginEndTag(buffered_end_tag_name_);
-  buffered_end_tag_name_.Clear();
-  appropriate_end_tag_name_.Clear();
-  temporary_buffer_.Clear();
+  buffered_end_tag_name_.clear();
+  appropriate_end_tag_name_.clear();
+  temporary_buffer_.clear();
   return false;
 }
 
@@ -140,9 +140,9 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     // FIXME: This should call flushBufferedEndTag().
     // We started an end tag during our last iteration.
     token_->BeginEndTag(buffered_end_tag_name_);
-    buffered_end_tag_name_.Clear();
-    appropriate_end_tag_name_.Clear();
-    temporary_buffer_.Clear();
+    buffered_end_tag_name_.clear();
+    appropriate_end_tag_name_.clear();
+    temporary_buffer_.clear();
     if (state_ == HTMLTokenizer::kDataState) {
       // We're back in the data state, so we must be done with the tag.
       return true;
@@ -262,11 +262,11 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(kEndTagOpenState) {
       if (IsASCIIUpper(cc)) {
         token_->BeginEndTag(static_cast<LChar>(ToLowerCase(cc)));
-        appropriate_end_tag_name_.Clear();
+        appropriate_end_tag_name_.clear();
         HTML_ADVANCE_TO(kTagNameState);
       } else if (IsASCIILower(cc)) {
         token_->BeginEndTag(static_cast<LChar>(cc));
-        appropriate_end_tag_name_.Clear();
+        appropriate_end_tag_name_.clear();
         HTML_ADVANCE_TO(kTagNameState);
       } else if (cc == '>') {
         ParseError();
@@ -305,7 +305,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(kRCDATALessThanSignState) {
       if (cc == '/') {
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         DCHECK(buffered_end_tag_name_.IsEmpty());
         HTML_ADVANCE_TO(kRCDATAEndTagOpenState);
       } else {
@@ -361,8 +361,8 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
         BufferCharacter('<');
         BufferCharacter('/');
         token_->AppendToCharacter(temporary_buffer_);
-        buffered_end_tag_name_.Clear();
-        temporary_buffer_.Clear();
+        buffered_end_tag_name_.clear();
+        temporary_buffer_.clear();
         HTML_RECONSUME_IN(kRCDATAState);
       }
     }
@@ -370,7 +370,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(kRAWTEXTLessThanSignState) {
       if (cc == '/') {
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         DCHECK(buffered_end_tag_name_.IsEmpty());
         HTML_ADVANCE_TO(kRAWTEXTEndTagOpenState);
       } else {
@@ -426,8 +426,8 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
         BufferCharacter('<');
         BufferCharacter('/');
         token_->AppendToCharacter(temporary_buffer_);
-        buffered_end_tag_name_.Clear();
-        temporary_buffer_.Clear();
+        buffered_end_tag_name_.clear();
+        temporary_buffer_.clear();
         HTML_RECONSUME_IN(kRAWTEXTState);
       }
     }
@@ -435,7 +435,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(kScriptDataLessThanSignState) {
       if (cc == '/') {
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         DCHECK(buffered_end_tag_name_.IsEmpty());
         HTML_ADVANCE_TO(kScriptDataEndTagOpenState);
       } else if (cc == '!') {
@@ -495,8 +495,8 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
         BufferCharacter('<');
         BufferCharacter('/');
         token_->AppendToCharacter(temporary_buffer_);
-        buffered_end_tag_name_.Clear();
-        temporary_buffer_.Clear();
+        buffered_end_tag_name_.clear();
+        temporary_buffer_.clear();
         HTML_RECONSUME_IN(kScriptDataState);
       }
     }
@@ -573,19 +573,19 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(kScriptDataEscapedLessThanSignState) {
       if (cc == '/') {
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         DCHECK(buffered_end_tag_name_.IsEmpty());
         HTML_ADVANCE_TO(kScriptDataEscapedEndTagOpenState);
       } else if (IsASCIIUpper(cc)) {
         BufferCharacter('<');
         BufferCharacter(cc);
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         temporary_buffer_.push_back(ToLowerCase(cc));
         HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
       } else if (IsASCIILower(cc)) {
         BufferCharacter('<');
         BufferCharacter(cc);
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         temporary_buffer_.push_back(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(kScriptDataDoubleEscapeStartState);
       } else {
@@ -641,8 +641,8 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
         BufferCharacter('<');
         BufferCharacter('/');
         token_->AppendToCharacter(temporary_buffer_);
-        buffered_end_tag_name_.Clear();
-        temporary_buffer_.Clear();
+        buffered_end_tag_name_.clear();
+        temporary_buffer_.clear();
         HTML_RECONSUME_IN(kScriptDataEscapedState);
       }
     }
@@ -725,7 +725,7 @@ bool HTMLTokenizer::NextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(kScriptDataDoubleEscapedLessThanSignState) {
       if (cc == '/') {
         BufferCharacter(cc);
-        temporary_buffer_.Clear();
+        temporary_buffer_.clear();
         HTML_ADVANCE_TO(kScriptDataDoubleEscapeEndState);
       } else
         HTML_RECONSUME_IN(kScriptDataDoubleEscapedState);

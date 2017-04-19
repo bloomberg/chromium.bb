@@ -183,7 +183,7 @@ void MediaFragmentURIParser::ParseTimeFragment() {
       // previous occurrences (valid or invalid) SHOULD be ignored by the UA.
     }
   }
-  fragments_.Clear();
+  fragments_.clear();
 }
 
 bool MediaFragmentURIParser::ParseNPTFragment(const LChar* time_string,

@@ -122,7 +122,7 @@ void GenericEventQueue::CancelAllEvents() {
     EventTarget* target = event->target() ? event->target() : owner_.Get();
     probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
   }
-  pending_events_.Clear();
+  pending_events_.clear();
 }
 
 bool GenericEventQueue::HasPendingEvents() const {

@@ -541,7 +541,7 @@ void SourceBuffer::AbortIfUpdating() {
   // 4.1. Abort the buffer append and stream append loop algorithms if they are
   //      running.
   append_buffer_async_part_runner_->Stop();
-  pending_append_data_.Clear();
+  pending_append_data_.clear();
   pending_append_data_offset_ = 0;
 
   // 4.2. Set the updating attribute to false.
@@ -1218,7 +1218,7 @@ void SourceBuffer::AppendBufferAsyncPart() {
       web_source_buffer_->Append(append_data, append_size, &timestamp_offset_);
 
   if (!append_success) {
-    pending_append_data_.Clear();
+    pending_append_data_.clear();
     pending_append_data_offset_ = 0;
     AppendError();
   } else {
@@ -1233,7 +1233,7 @@ void SourceBuffer::AppendBufferAsyncPart() {
 
     // 3. Set the updating attribute to false.
     updating_ = false;
-    pending_append_data_.Clear();
+    pending_append_data_.clear();
     pending_append_data_offset_ = 0;
 
     // 4. Queue a task to fire a simple event named update at this SourceBuffer

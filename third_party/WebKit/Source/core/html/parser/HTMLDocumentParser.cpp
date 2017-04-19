@@ -468,7 +468,7 @@ void HTMLDocumentParser::DiscardSpeculationsAndResumeFrom(
 
   speculations_.Clear();
   pending_csp_meta_token_ = nullptr;
-  queued_preloads_.Clear();
+  queued_preloads_.clear();
 
   std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint =
       WTF::WrapUnique(new BackgroundHTMLParser::Checkpoint);
@@ -1280,7 +1280,7 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
     EvaluateAndPreloadScriptForDocumentWrite(script_source);
   }
 
-  queued_document_write_scripts_.Clear();
+  queued_document_write_scripts_.clear();
 }
 
 void HTMLDocumentParser::EvaluateAndPreloadScriptForDocumentWrite(

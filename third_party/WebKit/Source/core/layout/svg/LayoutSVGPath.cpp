@@ -127,7 +127,7 @@ bool LayoutSVGPath::ShouldGenerateMarkerPositions() const {
 }
 
 void LayoutSVGPath::ProcessMarkerPositions() {
-  marker_positions_.Clear();
+  marker_positions_.clear();
 
   if (!ShouldGenerateMarkerPositions())
     return;

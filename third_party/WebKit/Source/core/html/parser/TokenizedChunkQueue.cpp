@@ -30,7 +30,7 @@ bool TokenizedChunkQueue::Enqueue(
 
 void TokenizedChunkQueue::Clear() {
   pending_token_count_ = 0;
-  pending_chunks_.Clear();
+  pending_chunks_.clear();
 }
 
 void TokenizedChunkQueue::TakeAll(

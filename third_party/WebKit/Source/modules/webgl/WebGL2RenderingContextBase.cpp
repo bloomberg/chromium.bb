@@ -219,20 +219,20 @@ void WebGL2RenderingContextBase::InitializeNewContext() {
   GLint num_combined_texture_image_units = 0;
   ContextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                            &num_combined_texture_image_units);
-  sampler_units_.Clear();
+  sampler_units_.clear();
   sampler_units_.Resize(num_combined_texture_image_units);
 
   max_transform_feedback_separate_attribs_ = 0;
   ContextGL()->GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
                            &max_transform_feedback_separate_attribs_);
-  bound_indexed_transform_feedback_buffers_.Clear();
+  bound_indexed_transform_feedback_buffers_.clear();
   bound_indexed_transform_feedback_buffers_.Resize(
       max_transform_feedback_separate_attribs_);
 
   GLint max_uniform_buffer_bindings = 0;
   ContextGL()->GetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
                            &max_uniform_buffer_bindings);
-  bound_indexed_uniform_buffers_.Clear();
+  bound_indexed_uniform_buffers_.clear();
   bound_indexed_uniform_buffers_.Resize(max_uniform_buffer_bindings);
   max_bound_uniform_buffer_index_ = 0;
 

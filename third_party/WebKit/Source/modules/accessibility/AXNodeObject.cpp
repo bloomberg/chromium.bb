@@ -2760,7 +2760,7 @@ String AXNodeObject::NativeTextAlternative(
           local_related_objects.push_back(new NameSourceRelatedObject(
               figcaption_ax_object, text_alternative));
           *related_objects = local_related_objects;
-          local_related_objects.Clear();
+          local_related_objects.clear();
         }
 
         if (name_sources) {
@@ -2821,7 +2821,7 @@ String AXNodeObject::NativeTextAlternative(
           local_related_objects.push_back(
               new NameSourceRelatedObject(caption_ax_object, text_alternative));
           *related_objects = local_related_objects;
-          local_related_objects.Clear();
+          local_related_objects.clear();
         }
 
         if (name_sources) {
@@ -2878,7 +2878,7 @@ String AXNodeObject::NativeTextAlternative(
           local_related_objects.push_back(
               new NameSourceRelatedObject(title_ax_object, text_alternative));
           *related_objects = local_related_objects;
-          local_related_objects.Clear();
+          local_related_objects.clear();
         }
       }
       if (name_sources) {
@@ -2912,7 +2912,7 @@ String AXNodeObject::NativeTextAlternative(
           local_related_objects.push_back(
               new NameSourceRelatedObject(legend_ax_object, text_alternative));
           *related_objects = local_related_objects;
-          local_related_objects.Clear();
+          local_related_objects.clear();
         }
 
         if (name_sources) {
@@ -2970,7 +2970,7 @@ String AXNodeObject::NativeTextAlternative(
           local_related_objects.push_back(
               new NameSourceRelatedObject(title_ax_object, text_alternative));
           *related_objects = local_related_objects;
-          local_related_objects.Clear();
+          local_related_objects.clear();
         }
 
         if (name_sources) {
@@ -2995,7 +2995,7 @@ String AXNodeObject::Description(AXNameFrom name_from,
   String result =
       Description(name_from, description_from, nullptr, &related_objects);
   if (description_objects) {
-    description_objects->Clear();
+    description_objects->clear();
     for (size_t i = 0; i < related_objects.size(); i++)
       description_objects->push_back(related_objects[i]->object);
   }

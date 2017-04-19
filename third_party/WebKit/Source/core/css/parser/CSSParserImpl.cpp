@@ -147,7 +147,7 @@ static ImmutableStylePropertySet* CreateStylePropertySet(
 
   ImmutableStylePropertySet* result = ImmutableStylePropertySet::Create(
       results.Data() + unused_entries, results.size() - unused_entries, mode);
-  parsed_properties.Clear();
+  parsed_properties.clear();
   return result;
 }
 
@@ -331,7 +331,7 @@ bool CSSParserImpl::SupportsDeclaration(CSSParserTokenRange& range) {
   DCHECK(parsed_properties_.IsEmpty());
   ConsumeDeclaration(range, StyleRule::kStyle);
   bool result = !parsed_properties_.IsEmpty();
-  parsed_properties_.Clear();
+  parsed_properties_.clear();
   return result;
 }
 

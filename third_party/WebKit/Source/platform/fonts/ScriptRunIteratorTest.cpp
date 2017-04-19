@@ -41,7 +41,7 @@ class MockScriptData : public ScriptData {
     DCHECK_LT(ch, kMockCharLimit);
 
     int code = ch - kMockCharMin;
-    dst.Clear();
+    dst.clear();
     switch (code & kCodeSpecialMask) {
       case kCodeSpecialCommon:
         dst.push_back(USCRIPT_COMMON);

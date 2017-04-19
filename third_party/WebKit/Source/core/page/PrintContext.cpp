@@ -54,7 +54,7 @@ void PrintContext::ComputePageRects(const FloatRect& print_rect,
                                     float footer_height,
                                     float user_scale_factor,
                                     float& out_page_height) {
-  page_rects_.Clear();
+  page_rects_.clear();
   out_page_height = 0;
 
   if (!frame_->GetDocument() || !frame_->View() ||
@@ -89,7 +89,7 @@ void PrintContext::ComputePageRects(const FloatRect& print_rect,
 
 void PrintContext::ComputePageRectsWithPageSize(
     const FloatSize& page_size_in_pixels) {
-  page_rects_.Clear();
+  page_rects_.clear();
   ComputePageRectsWithPageSizeInternal(page_size_in_pixels);
 }
 

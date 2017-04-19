@@ -102,7 +102,7 @@ bool VibrationController::Vibrate(const VibrationPattern& pattern) {
     return true;
 
   if (pattern_.size() == 1 && !pattern_[0]) {
-    pattern_.Clear();
+    pattern_.clear();
     return true;
   }
 
@@ -158,7 +158,7 @@ void VibrationController::DidVibrate() {
 }
 
 void VibrationController::Cancel() {
-  pattern_.Clear();
+  pattern_.clear();
   timer_do_vibrate_.Stop();
 
   if (is_running_ && !is_calling_cancel_ && vibration_manager_) {

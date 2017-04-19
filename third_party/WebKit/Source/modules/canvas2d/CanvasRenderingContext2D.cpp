@@ -554,7 +554,7 @@ TreeScope* CanvasRenderingContext2D::GetTreeScope() {
 
 void CanvasRenderingContext2D::ClearFilterReferences() {
   filter_operations_.RemoveClient(this);
-  filter_operations_.Clear();
+  filter_operations_.clear();
 }
 
 void CanvasRenderingContext2D::UpdateFilterReferences(

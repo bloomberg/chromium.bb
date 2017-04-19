@@ -45,7 +45,7 @@ class NGInlineNodeForTest : public NGInlineNode {
 
   void ClearText() {
     text_content_ = String();
-    items_.Clear();
+    items_.clear();
   }
 
   void SegmentText() {

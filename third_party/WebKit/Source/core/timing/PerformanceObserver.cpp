@@ -65,7 +65,7 @@ void PerformanceObserver::disconnect() {
   if (performance_) {
     performance_->UnregisterPerformanceObserver(*this);
   }
-  performance_entries_.Clear();
+  performance_entries_.clear();
   is_registered_ = false;
 }
 

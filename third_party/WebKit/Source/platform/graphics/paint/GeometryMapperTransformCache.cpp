@@ -20,7 +20,7 @@ void GeometryMapperTransformCache::ClearCache() {
 
 void GeometryMapperTransformCache::InvalidateCacheIfNeeded() {
   if (cache_generation_ != g_transform_cache_generation) {
-    transform_cache_.Clear();
+    transform_cache_.clear();
     cache_generation_ = g_transform_cache_generation;
   }
 }

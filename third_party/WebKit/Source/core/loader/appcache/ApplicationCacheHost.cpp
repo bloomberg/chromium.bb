@@ -264,7 +264,7 @@ void ApplicationCacheHost::StopDeferringEvents() {
                      deferred.error_url, deferred.error_status,
                      deferred.error_message);
   }
-  deferred_events_.Clear();
+  deferred_events_.clear();
   defers_events_ = false;
 }
 

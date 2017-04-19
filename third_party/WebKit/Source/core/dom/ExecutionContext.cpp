@@ -125,7 +125,7 @@ void ExecutionContext::DispatchErrorEvent(ErrorEvent* error_event,
     return;
   for (ErrorEvent* e : pending_exceptions_)
     ExceptionThrown(e);
-  pending_exceptions_.Clear();
+  pending_exceptions_.clear();
 }
 
 bool ExecutionContext::DispatchErrorEventInternal(

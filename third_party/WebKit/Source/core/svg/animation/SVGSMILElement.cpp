@@ -238,7 +238,7 @@ void SVGSMILElement::ClearResourceAndEventBaseReferences() {
 void SVGSMILElement::ClearConditions() {
   DisconnectSyncBaseConditions();
   DisconnectEventBaseConditions();
-  conditions_.Clear();
+  conditions_.clear();
 }
 
 void SVGSMILElement::BuildPendingResource() {

@@ -523,7 +523,7 @@ bool String::IsSafeToSendToAnotherThread() const {
 void String::Split(const StringView& separator,
                    bool allow_empty_entries,
                    Vector<String>& result) const {
-  result.Clear();
+  result.clear();
 
   unsigned start_pos = 0;
   size_t end_pos;
@@ -539,7 +539,7 @@ void String::Split(const StringView& separator,
 void String::Split(UChar separator,
                    bool allow_empty_entries,
                    Vector<String>& result) const {
-  result.Clear();
+  result.clear();
 
   unsigned start_pos = 0;
   size_t end_pos;

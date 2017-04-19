@@ -282,7 +282,7 @@ void DataConsumerHandleTestUtil::HandleReader::DidGetReadable() {
   }
   std::unique_ptr<HandleReadResult> result =
       WTF::MakeUnique<HandleReadResult>(r, data_);
-  data_.Clear();
+  data_.clear();
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       WTF::Bind(&HandleReader::RunOnFinishedReading, WTF::Unretained(this),
@@ -322,7 +322,7 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::DidGetReadable() {
   }
   std::unique_ptr<HandleReadResult> result =
       WTF::MakeUnique<HandleReadResult>(r, data_);
-  data_.Clear();
+  data_.clear();
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       WTF::Bind(&HandleTwoPhaseReader::RunOnFinishedReading,

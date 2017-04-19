@@ -54,7 +54,7 @@ class WTFVectorPersistentValueVectorTraits {
   static void ReserveCapacity(Impl* impl, size_t capacity) {
     impl->ReserveCapacity(capacity);
   }
-  static void Clear(Impl* impl) { impl->Clear(); }
+  static void Clear(Impl* impl) { impl->clear(); }
 };
 
 template <class ValueType>

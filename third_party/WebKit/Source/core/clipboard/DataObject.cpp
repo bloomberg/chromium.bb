@@ -91,7 +91,7 @@ void DataObject::DeleteItem(unsigned long index) {
 }
 
 void DataObject::ClearAll() {
-  item_list_.Clear();
+  item_list_.clear();
 }
 
 DataObjectItem* DataObject::Add(const String& data, const String& type) {

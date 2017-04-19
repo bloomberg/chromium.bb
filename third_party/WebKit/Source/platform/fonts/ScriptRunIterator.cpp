@@ -39,7 +39,7 @@ void ICUScriptData::GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
   if (U_FAILURE(status)) {
     DLOG(ERROR) << "Could not get icu script data: " << status << " for 0x"
                 << std::hex << ch;
-    dst.Clear();
+    dst.clear();
     return;
   }
 
@@ -128,7 +128,7 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text,
   DCHECK(data);
 
   if (ahead_pos_ < length_) {
-    current_set_.Clear();
+    current_set_.clear();
     // Priming the m_currentSet with USCRIPT_COMMON here so that the first
     // resolution between m_currentSet and m_nextSet in mergeSets() leads to
     // chosing the script of the first consumed character.
@@ -171,7 +171,7 @@ bool ScriptRunIterator::Consume(unsigned& limit, UScriptCode& script) {
 
   limit = length_;
   script = ResolveCurrentScript();
-  current_set_.Clear();
+  current_set_.clear();
   return true;
 }
 
@@ -193,7 +193,7 @@ void ScriptRunIterator::CloseBracket(UChar32 ch) {
       if (it->ch == target) {
         // Have a match, use open paren's resolved script.
         UScriptCode script = it->script;
-        next_set_.Clear();
+        next_set_.clear();
         next_set_.push_back(script);
 
         // And pop stack to this point.

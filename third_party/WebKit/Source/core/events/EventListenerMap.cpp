@@ -80,7 +80,7 @@ bool EventListenerMap::ContainsCapturing(const AtomicString& event_type) const {
 void EventListenerMap::Clear() {
   CheckNoActiveIterators();
 
-  entries_.Clear();
+  entries_.clear();
 }
 
 Vector<AtomicString> EventListenerMap::EventTypes() const {

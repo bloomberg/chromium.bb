@@ -103,7 +103,7 @@ class MapIterationSource final
 };
 
 void MediaKeyStatusMap::Clear() {
-  entries_.Clear();
+  entries_.clear();
 }
 
 void MediaKeyStatusMap::AddEntry(WebData key_id, const String& status) {

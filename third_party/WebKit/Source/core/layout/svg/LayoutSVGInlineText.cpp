@@ -333,7 +333,7 @@ void LayoutSVGInlineText::AddMetricsFromRun(
 
 void LayoutSVGInlineText::UpdateMetricsList(
     bool& last_character_was_white_space) {
-  metrics_.Clear();
+  metrics_.clear();
 
   if (!TextLength())
     return;

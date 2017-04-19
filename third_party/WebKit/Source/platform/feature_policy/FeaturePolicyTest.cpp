@@ -51,7 +51,7 @@ class FeaturePolicyTest : public ::testing::Test {
 TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kValidPolicies) {
-    messages.Clear();
+    messages.clear();
     ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_EQ(0UL, messages.size());
   }
@@ -60,7 +60,7 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
 TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kInvalidPolicies) {
-    messages.Clear();
+    messages.clear();
     ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages);
     EXPECT_NE(0UL, messages.size());
   }

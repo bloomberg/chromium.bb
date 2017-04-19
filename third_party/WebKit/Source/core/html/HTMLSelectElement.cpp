@@ -573,7 +573,7 @@ void HTMLSelectElement::SaveLastSelection() {
     return;
   }
 
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
   for (auto& element : GetListItems())
     last_on_change_selection_.push_back(
         isHTMLOptionElement(*element) &&
@@ -940,7 +940,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
       ResetToDefaultSelection();
   }
   SetNeedsValidityCheck();
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
 }
 
 void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
@@ -962,19 +962,19 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
   if (option.Selected())
     SetAutofilled(false);
   SetNeedsValidityCheck();
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
 }
 
 void HTMLSelectElement::OptGroupInsertedOrRemoved(
     HTMLOptGroupElement& optgroup) {
   SetRecalcListItems();
   SetNeedsValidityCheck();
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
 }
 
 void HTMLSelectElement::HrInsertedOrRemoved(HTMLHRElement& hr) {
   SetRecalcListItems();
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
 }
 
 // TODO(tkent): This function is not efficient.  It contains multiple O(N)
@@ -1072,7 +1072,7 @@ void HTMLSelectElement::DispatchBlurEvent(
   // made.  This matches other browsers' behavior.
   if (UsesMenuList())
     DispatchInputAndChangeEventForMenuList();
-  last_on_change_selection_.Clear();
+  last_on_change_selection_.clear();
   if (PopupIsVisible())
     HidePopup();
   HTMLFormControlElementWithState::DispatchBlurEvent(new_focused_element, type,

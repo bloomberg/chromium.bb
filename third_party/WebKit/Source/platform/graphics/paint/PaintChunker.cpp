@@ -95,8 +95,8 @@ void PaintChunker::DecrementDisplayItemIndex() {
 }
 
 void PaintChunker::Clear() {
-  chunks_.Clear();
-  chunk_behavior_.Clear();
+  chunks_.clear();
+  chunk_behavior_.clear();
   current_chunk_id_ = WTF::kNullopt;
   current_properties_ = PaintChunkProperties();
 }
@@ -104,7 +104,7 @@ void PaintChunker::Clear() {
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
   Vector<PaintChunk> chunks;
   chunks.Swap(chunks_);
-  chunk_behavior_.Clear();
+  chunk_behavior_.clear();
   current_chunk_id_ = WTF::kNullopt;
   current_properties_ = PaintChunkProperties();
   return chunks;

@@ -417,13 +417,13 @@ void FillRelationships(AXObject& ax_object,
     properties.addItem(CreateRelatedNodeListProperty(
         AXRelationshipAttributesEnum::Describedby, results,
         aria_describedbyAttr, ax_object));
-  results.Clear();
+  results.clear();
 
   ax_object.AriaOwnsElements(results);
   if (!results.IsEmpty())
     properties.addItem(CreateRelatedNodeListProperty(
         AXRelationshipAttributesEnum::Owns, results, aria_ownsAttr, ax_object));
-  results.Clear();
+  results.clear();
 }
 
 std::unique_ptr<AXValue> CreateRoleNameValue(AccessibilityRole role) {

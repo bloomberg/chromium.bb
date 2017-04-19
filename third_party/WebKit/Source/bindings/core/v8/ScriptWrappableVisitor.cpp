@@ -90,7 +90,7 @@ void ScriptWrappableVisitor::PerformCleanup() {
       header->UnmarkWrapperHeader();
   }
 
-  headers_to_unmark_.Clear();
+  headers_to_unmark_.clear();
   marking_deque_.Clear();
   verifier_deque_.Clear();
   should_cleanup_ = false;

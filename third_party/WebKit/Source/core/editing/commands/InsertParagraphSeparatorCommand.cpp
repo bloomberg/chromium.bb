@@ -136,7 +136,7 @@ void InsertParagraphSeparatorCommand::GetAncestorsInsideBlock(
     const Node* insertion_node,
     Element* outer_block,
     HeapVector<Member<Element>>& ancestors) {
-  ancestors.Clear();
+  ancestors.clear();
 
   // Build up list of ancestors elements between the insertion node and the
   // outer block.

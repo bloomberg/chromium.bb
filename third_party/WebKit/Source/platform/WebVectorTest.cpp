@@ -30,7 +30,7 @@ TEST(WebVectorTest, Iterators) {
     EXPECT_EQ(input[i], output[i]);
 
   // Use begin()/end() const_iterators directly.
-  output.Clear();
+  output.clear();
   for (WebVector<int>::const_iterator it = const_web_vector.begin();
        it != const_web_vector.end(); ++it)
     output.push_back(*it);
@@ -39,7 +39,7 @@ TEST(WebVectorTest, Iterators) {
     EXPECT_EQ(input[i], output[i]);
 
   // Use range-based for loop.
-  output.Clear();
+  output.clear();
   for (int x : web_vector)
     output.push_back(x);
   ASSERT_EQ(input.size(), output.size());

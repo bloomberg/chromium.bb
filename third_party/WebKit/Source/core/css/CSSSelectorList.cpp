@@ -89,7 +89,7 @@ CSSSelectorList CSSSelectorList::AdoptSelectorVector(
   }
   DCHECK_EQ(flattened_size, array_index);
   list.selector_array_[array_index - 1].SetLastInSelectorList();
-  selector_vector.Clear();
+  selector_vector.clear();
 
   return list;
 }

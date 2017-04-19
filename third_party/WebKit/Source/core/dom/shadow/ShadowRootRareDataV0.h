@@ -71,7 +71,7 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
     descendant_insertion_points_.Swap(list);
   }
   void ClearDescendantInsertionPoints() {
-    descendant_insertion_points_.Clear();
+    descendant_insertion_points_.clear();
   }
 
   void SetYoungerShadowRoot(ShadowRoot& younger_shadow_root) {

@@ -117,7 +117,7 @@ bool InvalidatableInterpolation::IsNeutralKeyframeActive() const {
 void InvalidatableInterpolation::ClearConversionCache() const {
   is_conversion_cached_ = false;
   cached_pair_conversion_.reset();
-  conversion_checkers_.Clear();
+  conversion_checkers_.clear();
   cached_value_.reset();
 }
 

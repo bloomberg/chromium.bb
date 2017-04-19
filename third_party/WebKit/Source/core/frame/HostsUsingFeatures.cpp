@@ -72,7 +72,7 @@ void HostsUsingFeatures::CountName(Feature feature, const String& name) {
 
 void HostsUsingFeatures::Clear() {
   value_by_name_.Clear();
-  url_and_values_.Clear();
+  url_and_values_.clear();
 }
 
 void HostsUsingFeatures::DocumentDetached(Document& document) {
@@ -93,7 +93,7 @@ void HostsUsingFeatures::UpdateMeasurementsAndClear() {
   if (!url_and_values_.IsEmpty()) {
     RecordHostToRappor();
     RecordETLDPlus1ToRappor();
-    url_and_values_.Clear();
+    url_and_values_.clear();
   }
   if (!value_by_name_.IsEmpty())
     RecordNamesToRappor();

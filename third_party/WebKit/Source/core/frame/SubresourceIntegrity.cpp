@@ -190,7 +190,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     if (metadata.Algorithm() != strongest_algorithm)
       continue;
 
-    digest.Clear();
+    digest.clear();
     bool digest_success =
         ComputeDigest(metadata.Algorithm(), content, size, digest);
 
@@ -210,7 +210,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(
     }
   }
 
-  digest.Clear();
+  digest.clear();
   if (ComputeDigest(kHashAlgorithmSha256, content, size, digest)) {
     // This message exposes the digest of the resource to the console.
     // Because this is only to the console, that's okay for now, but we

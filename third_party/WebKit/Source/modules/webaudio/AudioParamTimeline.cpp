@@ -1127,7 +1127,7 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
     // value.
     FillWithDefault(values, default_value, number_of_values, 0);
     smoothed_value_ = default_value;
-    events_.Clear();
+    events_.clear();
     return true;
   }
 

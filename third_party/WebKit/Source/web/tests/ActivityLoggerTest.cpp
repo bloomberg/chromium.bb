@@ -54,7 +54,7 @@ class TestActivityLogger : public V8DOMActivityLogger {
     logged_activities_.push_back(activity_string);
   }
 
-  void Clear() { logged_activities_.Clear(); }
+  void clear() { logged_activities_.clear(); }
   bool VerifyActivities(const Vector<String>& expected) const {
     EXPECT_EQ(expected.size(), logged_activities_.size());
     for (size_t i = 0; i < std::min(expected.size(), logged_activities_.size());

@@ -1691,7 +1691,7 @@ void LayoutTableSection::RecalcCells() {
 
   c_col_ = 0;
   c_row_ = 0;
-  grid_.Clear();
+  grid_.clear();
 
   for (LayoutTableRow* row = FirstRow(); row; row = row->NextRow()) {
     unsigned insertion_row = c_row_;

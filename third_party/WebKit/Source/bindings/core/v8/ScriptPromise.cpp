@@ -153,7 +153,7 @@ class PromiseAllHandler final
   void MarkPromiseSettled() {
     DCHECK(!is_settled_);
     is_settled_ = true;
-    values_.Clear();
+    values_.clear();
   }
 
   size_t number_of_pending_promises_;

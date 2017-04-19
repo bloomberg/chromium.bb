@@ -640,7 +640,7 @@ bool TextIteratorAlgorithm<Strategy>::HandleTextNode() {
 
   // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
   if (layout_object->ContainsReversedText()) {
-    sorted_text_boxes_.Clear();
+    sorted_text_boxes_.clear();
     for (InlineTextBox* text_box = layout_object->FirstTextBox(); text_box;
          text_box = text_box->NextTextBox()) {
       sorted_text_boxes_.push_back(text_box);
@@ -832,7 +832,7 @@ void TextIteratorAlgorithm<Strategy>::HandleTextNodeFirstLetter(
 
   LayoutObject* first_letter = pseudo_layout_object->SlowFirstChild();
 
-  sorted_text_boxes_.Clear();
+  sorted_text_boxes_.clear();
   remaining_text_box_ = text_box_;
   CHECK(first_letter && first_letter->IsText());
   first_letter_text_ = ToLayoutText(first_letter);

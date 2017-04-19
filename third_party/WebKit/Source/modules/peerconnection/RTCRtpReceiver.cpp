@@ -31,7 +31,7 @@ RTCRtpReceiver::getContributingSources() {
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
   if (!contributing_sources_needs_updating_)
     return;
-  contributing_sources_.Clear();
+  contributing_sources_.clear();
   for (const std::unique_ptr<WebRTCRtpContributingSource>&
            web_contributing_source : receiver_->GetSources()) {
     if (web_contributing_source->SourceType() ==

@@ -67,7 +67,7 @@ class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
   // SVGStringList DOM Spec implementation. These are only to be called from
   // SVGStringListTearOff:
   unsigned long length() { return values_.size(); }
-  void Clear() { values_.Clear(); }
+  void clear() { values_.clear(); }
   void Initialize(const String&);
   String GetItem(size_t, ExceptionState&);
   void InsertItemBefore(const String&, size_t);

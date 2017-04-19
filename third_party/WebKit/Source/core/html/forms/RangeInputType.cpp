@@ -356,7 +356,7 @@ static bool DecimalCompare(const Decimal& a, const Decimal& b) {
 void RangeInputType::UpdateTickMarkValues() {
   if (!tick_mark_values_dirty_)
     return;
-  tick_mark_values_.Clear();
+  tick_mark_values_.clear();
   tick_mark_values_dirty_ = false;
   HTMLDataListElement* data_list = GetElement().DataList();
   if (!data_list)

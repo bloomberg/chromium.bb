@@ -212,7 +212,7 @@ HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {
   MIMEHeader* header = MIMEHeader::ParseHeader(&line_reader_);
   HeapVector<Member<ArchiveResource>> resources;
   if (!ParseArchiveWithHeader(header, resources))
-    resources.Clear();
+    resources.clear();
   return resources;
 }
 

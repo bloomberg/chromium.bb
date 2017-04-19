@@ -281,7 +281,7 @@ void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
   observations_.clear();
-  entries_.Clear();
+  entries_.clear();
 }
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(

@@ -372,7 +372,7 @@ void RTCDataChannel::ScheduledEventTimerFired(TimerBase*) {
   for (; it != events.end(); ++it)
     DispatchEvent((*it).Release());
 
-  events.Clear();
+  events.clear();
 }
 
 DEFINE_TRACE(RTCDataChannel) {

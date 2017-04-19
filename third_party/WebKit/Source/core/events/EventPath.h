@@ -85,8 +85,8 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
 
   DECLARE_TRACE();
   void Clear() {
-    node_event_contexts_.Clear();
-    tree_scope_event_contexts_.Clear();
+    node_event_contexts_.clear();
+    tree_scope_event_contexts_.clear();
   }
 
  private:

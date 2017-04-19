@@ -45,7 +45,7 @@ class CORE_EXPORT DOMStringList final
   static DOMStringList* Create() { return new DOMStringList(); }
 
   bool IsEmpty() const { return strings_.IsEmpty(); }
-  void Clear() { strings_.Clear(); }
+  void clear() { strings_.clear(); }
   void Append(const String& string) { strings_.push_back(string); }
   void Sort();
 

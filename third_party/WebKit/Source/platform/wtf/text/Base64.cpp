@@ -62,7 +62,7 @@ void Base64Encode(const char* data,
                   unsigned len,
                   Vector<char>& out,
                   Base64EncodePolicy policy) {
-  out.Clear();
+  out.clear();
   if (!len)
     return;
 
@@ -129,7 +129,7 @@ bool Base64Decode(const Vector<char>& in,
                   Vector<char>& out,
                   CharacterMatchFunctionPtr should_ignore_character,
                   Base64DecodePolicy policy) {
-  out.Clear();
+  out.clear();
 
   // If the input string is pathologically large, just return nothing.
   if (in.size() > UINT_MAX)
@@ -146,7 +146,7 @@ static inline bool Base64DecodeInternal(
     Vector<char>& out,
     CharacterMatchFunctionPtr should_ignore_character,
     Base64DecodePolicy policy) {
-  out.Clear();
+  out.clear();
   if (!length)
     return true;
 

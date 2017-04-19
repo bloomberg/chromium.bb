@@ -640,7 +640,7 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::CommitExplicitEmbedding(
 
   SetContext(to_context);
 
-  current_explicit_embedding_sequence_.Clear();
+  current_explicit_embedding_sequence_.clear();
 
   return from_level != to_level;
 }

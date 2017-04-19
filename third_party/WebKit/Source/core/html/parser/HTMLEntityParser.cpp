@@ -128,7 +128,7 @@ static bool ConsumeNamedEntity(SegmentedString& source,
     // source back to the point at which we had consumed an
     // actual entity.
     UnconsumeCharacters(source, consumed_characters);
-    consumed_characters.Clear();
+    consumed_characters.clear();
     const HTMLEntityTableEntry* most_recent = entity_search.MostRecentMatch();
     const int length = most_recent->length;
     const LChar* reference = HTMLEntityTable::EntityString(*most_recent);

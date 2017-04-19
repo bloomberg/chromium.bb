@@ -688,7 +688,7 @@ bool BaseAudioContext::ReleaseFinishedSourceNodes() {
       }
     }
   }
-  finished_source_handlers_.Clear();
+  finished_source_handlers_.clear();
   return did_remove;
 }
 
@@ -705,7 +705,7 @@ void BaseAudioContext::ReleaseActiveSourceNodes() {
   for (auto& source_node : active_source_nodes_)
     source_node->Handler().BreakConnection();
 
-  active_source_nodes_.Clear();
+  active_source_nodes_.clear();
 }
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
@@ -793,7 +793,7 @@ void BaseAudioContext::ResolvePromisesForResumeOnMainThread() {
     }
   }
 
-  resume_resolvers_.Clear();
+  resume_resolvers_.clear();
   is_resolving_resume_promises_ = false;
 }
 
@@ -863,7 +863,7 @@ void BaseAudioContext::RejectPendingResolvers() {
     resolver->Reject(DOMException::Create(kInvalidStateError,
                                           "Audio context is going away"));
   }
-  resume_resolvers_.Clear();
+  resume_resolvers_.clear();
   is_resolving_resume_promises_ = false;
 
   RejectPendingDecodeAudioDataResolvers();

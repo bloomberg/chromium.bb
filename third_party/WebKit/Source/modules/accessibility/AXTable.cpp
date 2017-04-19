@@ -355,8 +355,8 @@ bool AXTable::IsTableExposableThroughAccessibility() const {
 
 void AXTable::ClearChildren() {
   AXLayoutObject::ClearChildren();
-  rows_.Clear();
-  columns_.Clear();
+  rows_.clear();
+  columns_.clear();
 
   if (header_container_) {
     header_container_->DetachFromParent();

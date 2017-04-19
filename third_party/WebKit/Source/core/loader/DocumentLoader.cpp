@@ -743,7 +743,7 @@ void DocumentLoader::ProcessData(const char* data, size_t length) {
 }
 
 void DocumentLoader::ClearRedirectChain() {
-  redirect_chain_.Clear();
+  redirect_chain_.clear();
 }
 
 void DocumentLoader::AppendRedirect(const KURL& url) {

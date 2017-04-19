@@ -1513,7 +1513,7 @@ void WebViewImpl::EnableTapHighlights(
 
   // Always clear any existing highlight when this is invoked, even if we
   // don't get a new target to highlight.
-  link_highlights_.Clear();
+  link_highlights_.clear();
 
   for (size_t i = 0; i < highlight_nodes.size(); ++i) {
     Node* node = highlight_nodes[i];
@@ -2548,7 +2548,7 @@ bool WebViewImpl::IsAcceleratedCompositingActive() const {
 
 void WebViewImpl::WillCloseLayerTreeView() {
   if (link_highlights_timeline_) {
-    link_highlights_.Clear();
+    link_highlights_.clear();
     DetachCompositorAnimationTimeline(link_highlights_timeline_.get());
     link_highlights_timeline_.reset();
   }
@@ -3651,7 +3651,7 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
   GetPage()->GetVisualViewport().MainFrameDidChangeSize();
 
   // Make sure link highlight from previous page is cleared.
-  link_highlights_.Clear();
+  link_highlights_.clear();
   EndActiveFlingAnimation();
 }
 

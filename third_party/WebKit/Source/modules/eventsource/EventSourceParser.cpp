@@ -38,7 +38,7 @@ void EventSourceParser::AddBytes(const char* bytes, size_t size) {
       is_recognizing_bom_ = false;
       if (memcmp(line.Data(), kBOM, sizeof(kBOM)) == 0) {
         start = i;
-        line_.Clear();
+        line_.clear();
         continue;
       }
     }
@@ -52,7 +52,7 @@ void EventSourceParser::AddBytes(const char* bytes, size_t size) {
     if (bytes[i] == '\r' || bytes[i] == '\n') {
       line_.Append(&bytes[start], i - start);
       ParseLine();
-      line_.Clear();
+      line_.clear();
       start = i + 1;
       is_recognizing_crlf_ = bytes[i] == '\r';
       is_recognizing_bom_ = false;
@@ -73,7 +73,7 @@ void EventSourceParser::ParseLine() {
       client_->OnMessageEvent(
           event_type_.IsEmpty() ? EventTypeNames::message : event_type_, data,
           last_event_id_);
-      data_.Clear();
+      data_.clear();
     }
     event_type_ = g_null_atom;
     return;

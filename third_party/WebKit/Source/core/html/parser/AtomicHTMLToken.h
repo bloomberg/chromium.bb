@@ -220,7 +220,7 @@ inline void AtomicHTMLToken::InitializeAttributes(
   if (!size)
     return;
 
-  attributes_.Clear();
+  attributes_.clear();
   attributes_.ReserveInitialCapacity(size);
   for (const auto& attribute : attributes) {
     if (attribute.NameAsVector().IsEmpty())

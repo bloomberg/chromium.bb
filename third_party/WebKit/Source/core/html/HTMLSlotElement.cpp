@@ -140,8 +140,8 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
 void HTMLSlotElement::ClearDistribution() {
   // TODO(hayato): Figure out when to call
   // lazyReattachDistributedNodesIfNeeded()
-  assigned_nodes_.Clear();
-  distributed_nodes_.Clear();
+  assigned_nodes_.clear();
+  distributed_nodes_.clear();
   distributed_indices_.Clear();
 }
 
@@ -314,7 +314,7 @@ void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
       node->LazyReattachIfAttached();
     probe::didPerformSlotDistribution(this);
   }
-  old_distributed_nodes_.Clear();
+  old_distributed_nodes_.clear();
 }
 
 void HTMLSlotElement::DidSlotChange(SlotChangeType slot_change_type) {

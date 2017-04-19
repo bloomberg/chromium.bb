@@ -522,7 +522,7 @@ void TextFinder::ClearFindMatchesCache() {
   if (!find_matches_cache_.IsEmpty())
     ++find_match_markers_version_;
 
-  find_matches_cache_.Clear();
+  find_matches_cache_.clear();
   find_match_rects_are_valid_ = false;
 }
 

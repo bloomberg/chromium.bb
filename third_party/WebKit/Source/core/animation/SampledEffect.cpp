@@ -13,7 +13,7 @@ SampledEffect::SampledEffect(KeyframeEffectReadOnly* effect)
 
 void SampledEffect::Clear() {
   effect_ = nullptr;
-  interpolations_.Clear();
+  interpolations_.clear();
 }
 
 bool SampledEffect::WillNeverChange() const {

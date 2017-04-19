@@ -108,8 +108,8 @@ void BackgroundHTMLInputStream::RewindTo(HTMLInputCheckpoint checkpoint_index,
 
   DCHECK_EQ(current_.IsClosed(), is_closed);
 
-  segments_.Clear();
-  checkpoints_.Clear();
+  segments_.clear();
+  checkpoints_.clear();
   first_valid_checkpoint_index_ = 0;
   first_valid_segment_index_ = 0;
 

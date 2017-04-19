@@ -400,7 +400,7 @@ void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
       }
       if (!has_checked_box_in_range) {
         has_checked_box_in_range = true;
-        rects.Clear();
+        rects.clear();
       }
       rects.push_back(LocalToAbsoluteQuad(r).EnclosingBoundingBox());
     } else if ((box->Start() <= start && start <= box->end()) ||
@@ -410,7 +410,7 @@ void LayoutText::AbsoluteRectsForRange(Vector<IntRect>& rects,
       if (!rect.IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
-          rects.Clear();
+          rects.clear();
         }
         rects.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
       }
@@ -529,7 +529,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       }
       if (!has_checked_box_in_range) {
         has_checked_box_in_range = true;
-        quads.Clear();
+        quads.clear();
       }
       quads.push_back(LocalToAbsoluteQuad(FloatRect(r)));
     } else if ((box->Start() <= start && start <= box->end()) ||
@@ -539,7 +539,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       if (!rect.IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
-          quads.Clear();
+          quads.clear();
         }
         quads.push_back(LocalToAbsoluteQuad(rect));
       }

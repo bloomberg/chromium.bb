@@ -135,9 +135,9 @@ void SharedBuffer::Clear() {
   for (size_t i = 0; i < segments_.size(); ++i)
     FreeSegment(segments_[i]);
 
-  segments_.Clear();
+  segments_.clear();
   size_ = 0;
-  buffer_.Clear();
+  buffer_.clear();
 }
 
 PassRefPtr<SharedBuffer> SharedBuffer::Copy() const {
@@ -168,7 +168,7 @@ void SharedBuffer::MergeSegmentsIntoBuffer() const {
       bytes_left -= bytes_to_copy;
       FreeSegment(segments_[i]);
     }
-    segments_.Clear();
+    segments_.clear();
   }
 }
 

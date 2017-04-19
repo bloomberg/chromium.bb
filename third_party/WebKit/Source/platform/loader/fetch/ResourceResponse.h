@@ -303,7 +303,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   const Vector<char>& MultipartBoundary() const { return multipart_boundary_; }
   void SetMultipartBoundary(const char* bytes, size_t size) {
-    multipart_boundary_.Clear();
+    multipart_boundary_.clear();
     multipart_boundary_.Append(bytes, size);
   }
 

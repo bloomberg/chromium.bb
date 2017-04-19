@@ -119,7 +119,7 @@ static String DecodeString(String input) {
 }
 
 void URLSearchParams::SetInput(const String& query_string) {
-  params_.Clear();
+  params_.clear();
 
   size_t start = 0;
   size_t query_string_length = query_string.length();

@@ -53,7 +53,7 @@ NGLayoutInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
 
 void NGInlineNode::InvalidatePrepareLayout() {
   text_content_ = String();
-  items_.Clear();
+  items_.clear();
 }
 
 void NGInlineNode::PrepareLayout() {
@@ -421,7 +421,7 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
         baseline + max_with_leading.descent);
 
     bidi_runs.DeleteRuns();
-    fragments_for_bidi_runs.Clear();
+    fragments_for_bidi_runs.clear();
   }
 }
 

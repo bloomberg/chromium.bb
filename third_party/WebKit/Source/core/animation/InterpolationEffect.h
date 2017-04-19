@@ -27,7 +27,7 @@ class CORE_EXPORT InterpolationEffect {
 
   void Clear() {
     is_populated_ = false;
-    interpolations_.Clear();
+    interpolations_.clear();
   }
 
   void GetActiveInterpolations(double fraction,

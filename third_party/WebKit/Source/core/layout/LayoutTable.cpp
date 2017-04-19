@@ -774,7 +774,7 @@ void LayoutTable::UpdateLayout() {
 }
 
 void LayoutTable::InvalidateCollapsedBorders() {
-  collapsed_borders_.Clear();
+  collapsed_borders_.clear();
   if (!CollapseBorders())
     return;
 
@@ -790,7 +790,7 @@ void LayoutTable::RecalcCollapsedBordersIfNeeded() {
   if (collapsed_borders_valid_ || !CollapseBorders())
     return;
   collapsed_borders_valid_ = true;
-  collapsed_borders_.Clear();
+  collapsed_borders_.clear();
   for (LayoutObject* section = FirstChild(); section;
        section = section->NextSibling()) {
     if (!section->IsTableSection())

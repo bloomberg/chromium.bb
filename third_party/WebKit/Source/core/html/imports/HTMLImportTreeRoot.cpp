@@ -30,7 +30,7 @@ HTMLImportTreeRoot::~HTMLImportTreeRoot() {}
 void HTMLImportTreeRoot::Dispose() {
   for (const auto& import_child : imports_)
     import_child->Dispose();
-  imports_.Clear();
+  imports_.clear();
   document_ = nullptr;
   recalc_timer_.Stop();
 }

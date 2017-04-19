@@ -70,7 +70,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   void AddPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
     paint_chunk_debug_data_.push_back(std::move(json));
   }
-  void ClearPaintChunkDebugData() { paint_chunk_debug_data_.Clear(); }
+  void ClearPaintChunkDebugData() { paint_chunk_debug_data_.clear(); }
 
   // cc::ContentLayerClient
   gfx::Rect PaintableRegion() override { return paintable_region_; }
@@ -91,7 +91,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
       return;
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-      tracking->tracked_raster_invalidations.Clear();
+      tracking->tracked_raster_invalidations.clear();
     else
       CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
   }
@@ -644,7 +644,7 @@ void PaintArtifactCompositor::Update(
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(layer);
   }
-  content_layer_clients_.Clear();
+  content_layer_clients_.clear();
   content_layer_clients_.Swap(new_content_layer_clients);
 
   // Mark the property trees as having been rebuilt.

@@ -70,7 +70,7 @@ void InspectorSession::Dispose() {
   inspector_backend_dispatcher_.reset();
   for (size_t i = agents_.size(); i > 0; i--)
     agents_[i - 1]->Dispose();
-  agents_.Clear();
+  agents_.clear();
   v8_session_.reset();
 }
 
@@ -183,7 +183,7 @@ void InspectorSession::flushProtocolNotifications() {
     client_->SendProtocolMessage(session_id_, 0,
                                  notification_queue_[i]->Serialize(), String());
   }
-  notification_queue_.Clear();
+  notification_queue_.clear();
 }
 
 DEFINE_TRACE(InspectorSession) {

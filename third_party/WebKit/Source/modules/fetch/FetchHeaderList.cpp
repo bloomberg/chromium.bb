@@ -110,7 +110,7 @@ bool FetchHeaderList::Get(const String& name, String& result) const {
 
 // This is going to be removed: see crbug.com/645492.
 void FetchHeaderList::GetAll(const String& name, Vector<String>& result) const {
-  result.Clear();
+  result.clear();
   auto range = header_list_.equal_range(name);
   for (auto header = range.first; header != range.second; ++header) {
     result.push_back(header->second);

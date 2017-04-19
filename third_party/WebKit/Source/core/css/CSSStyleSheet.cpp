@@ -212,8 +212,8 @@ void CSSStyleSheet::SetMediaQueries(MediaQuerySet* media_queries) {
 }
 
 bool CSSStyleSheet::MatchesMediaQueries(const MediaQueryEvaluator& evaluator) {
-  viewport_dependent_media_query_results_.Clear();
-  device_dependent_media_query_results_.Clear();
+  viewport_dependent_media_query_results_.clear();
+  device_dependent_media_query_results_.clear();
 
   if (!media_queries_)
     return true;
@@ -433,7 +433,7 @@ void CSSStyleSheet::SetLoadCompleted(bool completed) {
 }
 
 void CSSStyleSheet::SetText(const String& text) {
-  child_rule_cssom_wrappers_.Clear();
+  child_rule_cssom_wrappers_.clear();
 
   CSSStyleSheet::RuleMutationScope mutation_scope(this);
   contents_->ClearRules();

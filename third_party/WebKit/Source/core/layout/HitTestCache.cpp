@@ -70,7 +70,7 @@ void HitTestCache::AddCachedResult(const HitTestResult& result,
 
 void HitTestCache::Clear() {
   update_index_ = 0;
-  items_.Clear();
+  items_.clear();
 }
 
 DEFINE_TRACE(HitTestCache) {

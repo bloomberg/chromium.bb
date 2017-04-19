@@ -36,8 +36,8 @@ namespace blink {
 StyleSheetCollection::StyleSheetCollection() {}
 
 void StyleSheetCollection::Dispose() {
-  style_sheets_for_style_sheet_list_.Clear();
-  active_author_style_sheets_.Clear();
+  style_sheets_for_style_sheet_list_.clear();
+  active_author_style_sheets_.clear();
 }
 
 void StyleSheetCollection::Swap(StyleSheetCollection& other) {

@@ -58,7 +58,7 @@ String BuildStringFromByteStream(const SVGPathByteStream& stream) {
 
 SVGParsingError BuildByteStreamFromString(const String& d,
                                           SVGPathByteStream& result) {
-  result.Clear();
+  result.clear();
   if (d.IsEmpty())
     return SVGParseStatus::kNoError;
 

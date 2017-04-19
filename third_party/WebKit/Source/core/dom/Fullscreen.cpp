@@ -358,7 +358,7 @@ void Fullscreen::ContextDestroyed(ExecutionContext*) {
     full_screen_layout_object_->Destroy();
 
   current_full_screen_element_ = nullptr;
-  fullscreen_element_stack_.Clear();
+  fullscreen_element_stack_.clear();
 }
 
 // https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen
@@ -849,7 +849,7 @@ void Fullscreen::ClearFullscreenElementStack() {
   if (fullscreen_element_stack_.IsEmpty())
     return;
 
-  fullscreen_element_stack_.Clear();
+  fullscreen_element_stack_.clear();
 
   SetNeedsPaintPropertyUpdate(GetDocument());
 }

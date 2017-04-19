@@ -45,7 +45,7 @@ class CORE_EXPORT FileList final : public GarbageCollected<FileList>,
   File* item(unsigned index) const;
 
   bool IsEmpty() const { return files_.IsEmpty(); }
-  void Clear() { files_.Clear(); }
+  void clear() { files_.clear(); }
   void Append(File* file) { files_.push_back(file); }
   Vector<String> PathsForUserVisibleFiles() const;
 

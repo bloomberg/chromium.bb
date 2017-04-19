@@ -163,7 +163,7 @@ bool FontDataCache::PurgeLeastRecentlyUsed(int count) {
 
   bool did_work = font_data_to_delete.size();
 
-  font_data_to_delete.Clear();
+  font_data_to_delete.clear();
 
   is_purging = false;
 

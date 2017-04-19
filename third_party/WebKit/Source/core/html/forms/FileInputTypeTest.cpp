@@ -90,7 +90,7 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
   EXPECT_EQ(String("/native/path"), file_input->Files()->item(0)->GetPath());
 
   // Try to upload multiple files without multipleAttr
-  paths.Clear();
+  paths.clear();
   paths.push_back("/native/path1");
   paths.push_back("/native/path2");
   file_input->SetFilesFromPaths(paths);
@@ -99,7 +99,7 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
 
   // Try to upload multiple files with multipleAttr
   input->SetBooleanAttribute(HTMLNames::multipleAttr, true);
-  paths.Clear();
+  paths.clear();
   paths.push_back("/native/real/path1");
   paths.push_back("/native/real/path2");
   file_input->SetFilesFromPaths(paths);

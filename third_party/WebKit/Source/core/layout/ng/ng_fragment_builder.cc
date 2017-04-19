@@ -168,7 +168,7 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
     descendant_positions->push_back(builder_relative_position);
   }
   out_of_flow_descendant_candidates_.clear();
-  out_of_flow_candidate_placements_.Clear();
+  out_of_flow_candidate_placements_.clear();
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(

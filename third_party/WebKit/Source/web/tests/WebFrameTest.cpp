@@ -4454,8 +4454,8 @@ class ContextLifetimeTestWebFrameClient
   ~ContextLifetimeTestWebFrameClient() override { Reset(); }
 
   void Reset() {
-    create_notifications.Clear();
-    release_notifications.Clear();
+    create_notifications.clear();
+    release_notifications.clear();
   }
 
   Vector<std::unique_ptr<Notification>> create_notifications;

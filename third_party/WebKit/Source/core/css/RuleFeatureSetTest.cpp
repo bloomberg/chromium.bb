@@ -439,7 +439,7 @@ TEST_F(RuleFeatureSetTest, contentPseudo) {
 
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch, CollectFeatures(".a .b"));
 
-  invalidation_lists.descendants.Clear();
+  invalidation_lists.descendants.clear();
   CollectInvalidationSetsForClass(invalidation_lists, "a");
   ExpectClassesInvalidation("b", "c", invalidation_lists.descendants);
 }

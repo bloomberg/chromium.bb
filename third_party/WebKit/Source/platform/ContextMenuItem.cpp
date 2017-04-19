@@ -77,7 +77,7 @@ void ContextMenuItem::SetSubMenu(ContextMenu* sub_menu) {
     sub_menu_items_ = sub_menu->Items();
   } else {
     type_ = kActionType;
-    sub_menu_items_.Clear();
+    sub_menu_items_.clear();
   }
 }
 

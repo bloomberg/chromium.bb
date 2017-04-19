@@ -251,7 +251,7 @@ void NetworkStateNotifier::CollectZeroedObservers(
   for (size_t i = 0; i < list->zeroed_observers.size(); ++i)
     list->observers.erase(list->zeroed_observers[i]);
 
-  list->zeroed_observers.Clear();
+  list->zeroed_observers.clear();
 
   if (list->observers.IsEmpty()) {
     MutexLocker locker(mutex_);

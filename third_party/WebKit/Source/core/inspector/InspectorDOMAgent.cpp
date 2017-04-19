@@ -288,7 +288,7 @@ void InspectorDOMAgent::SetDocument(Document* doc) {
 }
 
 void InspectorDOMAgent::ReleaseDanglingNodes() {
-  dangling_node_to_id_maps_.Clear();
+  dangling_node_to_id_maps_.clear();
 }
 
 int InspectorDOMAgent::Bind(Node* node, NodeToIdMap* nodes_map) {

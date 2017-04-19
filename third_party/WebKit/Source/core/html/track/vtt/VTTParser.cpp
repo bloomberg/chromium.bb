@@ -347,7 +347,7 @@ DocumentFragment* VTTTreeBuilder::BuildFromString(const String& cue_text) {
   current_node_ = fragment;
 
   VTTTokenizer tokenizer(cue_text);
-  language_stack_.Clear();
+  language_stack_.clear();
 
   while (tokenizer.NextToken(token_))
     ConstructTreeFromToken(GetDocument());

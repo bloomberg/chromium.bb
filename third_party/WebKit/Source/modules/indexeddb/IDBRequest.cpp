@@ -159,7 +159,7 @@ void IDBRequest::Abort() {
     bool removed = event_queue->CancelEvent(enqueued_events_[i].Get());
     DCHECK(removed);
   }
-  enqueued_events_.Clear();
+  enqueued_events_.clear();
 
   error_.Clear();
   result_.Clear();
@@ -397,7 +397,7 @@ void IDBRequest::ContextDestroyed(ExecutionContext*) {
     }
   }
 
-  enqueued_events_.Clear();
+  enqueued_events_.clear();
   if (source_)
     source_->ContextWillBeDestroyed();
   if (result_)

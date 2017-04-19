@@ -28,7 +28,7 @@ class NGLayoutInlineItemsBuilderTest : public ::testing::Test {
   }
 
   const String& TestAppend(const String inputs[], int size) {
-    items_.Clear();
+    items_.clear();
     NGLayoutInlineItemsBuilder builder(&items_);
     for (int i = 0; i < size; i++)
       builder.Append(inputs[i], style_.Get());

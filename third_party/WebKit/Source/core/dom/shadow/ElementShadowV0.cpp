@@ -57,8 +57,8 @@ inline DistributionPool::DistributionPool(const ContainerNode& parent) {
 
 inline void DistributionPool::Clear() {
   DetachNonDistributedNodes();
-  nodes_.Clear();
-  distributed_.Clear();
+  nodes_.clear();
+  distributed_.clear();
 }
 
 inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {

@@ -605,7 +605,7 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
       float distance = DistanceToChildLayoutObject(child, point);
       if (distance >= closest_text.candidate_distance)
         continue;
-      candidates.Clear();
+      candidates.clear();
       closest_text.candidate_layout_object = child;
       closest_text.candidate_distance = distance;
       continue;

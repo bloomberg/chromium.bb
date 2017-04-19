@@ -177,7 +177,7 @@ void PositionPendingFloats(const LayoutUnit& origin_block_offset,
     NGLogicalOffset offset = PositionFloat(floating_object.Get(), space);
     builder->AddFloatingObject(floating_object, offset);
   }
-  builder->MutableUnpositionedFloats().Clear();
+  builder->MutableUnpositionedFloats().clear();
 }
 
 }  // namespace blink

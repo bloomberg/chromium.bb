@@ -112,7 +112,7 @@ void EventSender<T>::DispatchPendingEvents() {
       sender->DispatchPendingEvent(this);
     }
   }
-  dispatching_list_.Clear();
+  dispatching_list_.clear();
 }
 
 }  // namespace blink

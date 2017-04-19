@@ -360,7 +360,7 @@ void Canvas2DLayerBridge::ClearCHROMIUMImageCache() {
   for (const auto& it : image_info_cache_) {
     DeleteCHROMIUMImage(it);
   }
-  image_info_cache_.Clear();
+  image_info_cache_.clear();
 }
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
 

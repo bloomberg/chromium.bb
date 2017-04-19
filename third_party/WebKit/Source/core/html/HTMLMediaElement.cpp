@@ -1020,7 +1020,7 @@ void HTMLMediaElement::LoadInternal() {
   // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose
   // mode was not in the disabled state when the element's resource selection
   // algorithm last started".
-  text_tracks_when_resource_selection_began_.Clear();
+  text_tracks_when_resource_selection_began_.clear();
   if (text_tracks_) {
     for (unsigned i = 0; i < text_tracks_->length(); ++i) {
       TextTrack* track = text_tracks_->AnonymousIndexedGetter(i);
@@ -4067,7 +4067,7 @@ void HTMLMediaElement::ScheduleResolvePlayPromises() {
     return;
 
   play_promise_resolve_list_.AppendVector(play_promise_resolvers_);
-  play_promise_resolvers_.Clear();
+  play_promise_resolvers_.clear();
 
   if (play_promise_resolve_task_handle_.IsActive())
     return;
@@ -4093,7 +4093,7 @@ void HTMLMediaElement::ScheduleRejectPlayPromises(ExceptionCode code) {
     return;
 
   play_promise_reject_list_.AppendVector(play_promise_resolvers_);
-  play_promise_resolvers_.Clear();
+  play_promise_resolvers_.clear();
 
   if (play_promise_reject_task_handle_.IsActive())
     return;
@@ -4118,7 +4118,7 @@ void HTMLMediaElement::ResolveScheduledPlayPromises() {
   for (auto& resolver : play_promise_resolve_list_)
     resolver->Resolve();
 
-  play_promise_resolve_list_.Clear();
+  play_promise_resolve_list_.clear();
 }
 
 void HTMLMediaElement::RejectScheduledPlayPromises() {
@@ -4140,7 +4140,7 @@ void HTMLMediaElement::RejectScheduledPlayPromises() {
 void HTMLMediaElement::RejectPlayPromises(ExceptionCode code,
                                           const String& message) {
   play_promise_reject_list_.AppendVector(play_promise_resolvers_);
-  play_promise_resolvers_.Clear();
+  play_promise_resolvers_.clear();
   RejectPlayPromisesInternal(code, message);
 }
 
@@ -4151,7 +4151,7 @@ void HTMLMediaElement::RejectPlayPromisesInternal(ExceptionCode code,
   for (auto& resolver : play_promise_reject_list_)
     resolver->Reject(DOMException::Create(code, message));
 
-  play_promise_reject_list_.Clear();
+  play_promise_reject_list_.clear();
 }
 
 EnumerationHistogram& HTMLMediaElement::ShowControlsHistogram() const {

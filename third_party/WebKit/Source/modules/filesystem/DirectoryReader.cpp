@@ -109,7 +109,7 @@ void DirectoryReader::readEntries(EntriesCallback* entries_callback,
                     WrapPersistent(entries_callback),
                     PersistentHeapVector<Member<Entry>>(entries_)));
     }
-    entries_.Clear();
+    entries_.clear();
     return;
   }
 

@@ -1534,7 +1534,7 @@ void RTCPeerConnection::DispatchScheduledEvent() {
     }
   }
 
-  events.Clear();
+  events.clear();
 }
 
 void RTCPeerConnection::RecordRapporMetrics() {

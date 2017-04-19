@@ -286,7 +286,7 @@ void TextAutosizer::Destroy(LayoutBlock* block) {
     // Clear the cluster stack and the supercluster map to avoid stale pointers.
     // Speculative fix for http://crbug.com/369485.
     first_block_to_begin_layout_ = nullptr;
-    cluster_stack_.Clear();
+    cluster_stack_.clear();
   }
 }
 
@@ -386,8 +386,8 @@ void TextAutosizer::EndLayout(LayoutBlock* block) {
 
   if (block == first_block_to_begin_layout_) {
     first_block_to_begin_layout_ = nullptr;
-    cluster_stack_.Clear();
-    styles_retained_during_layout_.Clear();
+    cluster_stack_.clear();
+    styles_retained_during_layout_.clear();
 #if DCHECK_IS_ON()
     blocks_that_have_begun_layout_.Clear();
 #endif

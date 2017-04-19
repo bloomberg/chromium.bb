@@ -485,7 +485,7 @@ DOMPatchSupport::Digest* DOMPatchSupport::CreateDigest(
       digest->attrs_sha1_ =
           Base64Encode(reinterpret_cast<const char*>(digest_result.Data()), 10);
       AddStringToDigestor(digestor.get(), digest->attrs_sha1_);
-      digest_result.Clear();
+      digest_result.clear();
     }
   }
   FinishDigestor(digestor.get(), digest_result);

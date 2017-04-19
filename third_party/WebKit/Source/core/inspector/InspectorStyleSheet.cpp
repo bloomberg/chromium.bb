@@ -1407,7 +1407,7 @@ void InspectorStyleSheet::InnerSetText(const String& text,
         CSSStyleSheet::Create(style_sheet, *page_style_sheet_->ownerNode());
   }
 
-  parsed_flat_rules_.Clear();
+  parsed_flat_rules_.clear();
   CollectFlatRules(source_data_sheet, &parsed_flat_rules_);
 
   source_data_ = new CSSRuleSourceDataList();
@@ -1789,7 +1789,7 @@ void InspectorStyleSheet::MapSourceDataToCSSOM() {
   rule_to_source_data_.Clear();
   source_data_to_rule_.Clear();
 
-  cssom_flat_rules_.Clear();
+  cssom_flat_rules_.clear();
   CSSRuleVector& cssom_rules = cssom_flat_rules_;
   CollectFlatRules(page_style_sheet_.Get(), &cssom_rules);
 

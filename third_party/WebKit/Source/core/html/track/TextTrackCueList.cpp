@@ -110,7 +110,7 @@ void TextTrackCueList::UpdateCueIndex(TextTrackCue* cue) {
 }
 
 void TextTrackCueList::Clear() {
-  list_.Clear();
+  list_.clear();
 }
 
 void TextTrackCueList::InvalidateCueIndex(size_t index) {

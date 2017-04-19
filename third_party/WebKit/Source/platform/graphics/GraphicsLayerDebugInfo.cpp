@@ -103,7 +103,7 @@ void GraphicsLayerDebugInfo::AppendAnnotatedInvalidateRect(
 }
 
 void GraphicsLayerDebugInfo::ClearAnnotatedInvalidateRects() {
-  previous_invalidations_.Clear();
+  previous_invalidations_.clear();
   previous_invalidations_.Swap(invalidations_);
 }
 

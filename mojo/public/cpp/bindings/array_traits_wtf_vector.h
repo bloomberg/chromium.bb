@@ -21,7 +21,7 @@ struct ArrayTraits<WTF::Vector<U>> {
 
   static void SetToNull(WTF::Vector<U>* output) {
     // WTF::Vector<> doesn't support null state. Set it to empty instead.
-    output->Clear();
+    output->clear();
   }
 
   static size_t GetSize(const WTF::Vector<U>& input) { return input.size(); }

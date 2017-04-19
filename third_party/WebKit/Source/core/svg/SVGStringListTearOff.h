@@ -61,7 +61,7 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
       ThrowReadOnly(exception_state);
       return;
     }
-    Target()->Clear();
+    Target()->clear();
     CommitChange();
   }
 

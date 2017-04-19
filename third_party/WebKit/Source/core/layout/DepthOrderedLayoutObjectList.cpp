@@ -39,7 +39,7 @@ bool DepthOrderedLayoutObjectList::IsEmpty() const {
 void DepthOrderedLayoutObjectList::Add(LayoutObject& object) {
   DCHECK(!object.GetFrameView()->IsInPerformLayout());
   data_->objects_.insert(&object);
-  data_->ordered_objects_.Clear();
+  data_->ordered_objects_.clear();
 }
 
 void DepthOrderedLayoutObjectList::Remove(LayoutObject& object) {
@@ -48,12 +48,12 @@ void DepthOrderedLayoutObjectList::Remove(LayoutObject& object) {
     return;
   DCHECK(!object.GetFrameView()->IsInPerformLayout());
   data_->objects_.erase(it);
-  data_->ordered_objects_.Clear();
+  data_->ordered_objects_.clear();
 }
 
 void DepthOrderedLayoutObjectList::Clear() {
   data_->objects_.Clear();
-  data_->ordered_objects_.Clear();
+  data_->ordered_objects_.clear();
 }
 
 unsigned DepthOrderedLayoutObjectList::LayoutObjectWithDepth::DetermineDepth(

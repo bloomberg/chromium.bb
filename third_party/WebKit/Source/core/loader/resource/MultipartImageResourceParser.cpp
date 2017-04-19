@@ -86,7 +86,7 @@ void MultipartImageResourceParser::AppendData(const char* bytes, size_t size) {
         '-' == data_[boundary_end_position]) {
       // This was the last boundary so we can stop processing.
       saw_last_boundary_ = true;
-      data_.Clear();
+      data_.clear();
       return;
     }
 
@@ -120,7 +120,7 @@ void MultipartImageResourceParser::Finish() {
   // it to the client.
   if (!is_parsing_headers_ && !data_.IsEmpty())
     client_->MultipartDataReceived(data_.Data(), data_.size());
-  data_.Clear();
+  data_.clear();
   saw_last_boundary_ = true;
 }
 

@@ -177,7 +177,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
 
     for (const auto& console_message : console_messages_)
       execution_context_->AddConsoleMessage(console_message);
-    console_messages_.Clear();
+    console_messages_.clear();
 
     for (const auto& policy : policies_) {
       UseCounter::Count(*document, GetUseCounterType(policy->HeaderType()));

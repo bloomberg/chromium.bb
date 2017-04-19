@@ -85,7 +85,7 @@ class FrontendMenuProvider final : public ContextMenuProvider {
       devtools_host_->ClearMenuProvider();
       devtools_host_ = nullptr;
     }
-    items_.Clear();
+    items_.clear();
   }
 
   void PopulateContextMenu(ContextMenu* menu) override {

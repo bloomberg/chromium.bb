@@ -947,7 +947,7 @@ bool DrawingBuffer::ResizeFramebufferInternal(const IntSize& new_size) {
     // Free all mailboxes, because they are now of the wrong size. Only the
     // first call in this loop has any effect.
     recycled_color_buffer_queue_.Clear();
-    recycled_bitmaps_.Clear();
+    recycled_bitmaps_.clear();
 
     if (adjusted_size.IsEmpty())
       return false;

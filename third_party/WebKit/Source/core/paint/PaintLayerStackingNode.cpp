@@ -105,9 +105,9 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
 #endif
 
   if (pos_z_order_list_)
-    pos_z_order_list_->Clear();
+    pos_z_order_list_->clear();
   if (neg_z_order_list_)
-    neg_z_order_list_->Clear();
+    neg_z_order_list_->clear();
   z_order_lists_dirty_ = true;
 
   if (!GetLayoutObject().DocumentBeingDestroyed())

@@ -90,8 +90,8 @@ bool ICOImageDecoder::FrameIsCompleteAtIndex(size_t index) const {
 }
 
 bool ICOImageDecoder::SetFailed() {
-  bmp_readers_.Clear();
-  png_decoders_.Clear();
+  bmp_readers_.clear();
+  png_decoders_.clear();
   return ImageDecoder::SetFailed();
 }
 

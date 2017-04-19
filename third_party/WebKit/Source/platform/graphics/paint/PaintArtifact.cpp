@@ -79,7 +79,7 @@ PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source) {
 
 void PaintArtifact::Reset() {
   display_item_list_.Clear();
-  paint_chunks_.Clear();
+  paint_chunks_.clear();
 }
 
 size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {

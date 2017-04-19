@@ -140,7 +140,7 @@ void ModuleMapTestModulator::ResolveFetches() {
                   WrapPersistent(test_request->client.Get()),
                   WrapPersistent(module_script)));
   }
-  test_requests_.Clear();
+  test_requests_.clear();
 }
 
 class ModuleMapTest : public testing::Test {

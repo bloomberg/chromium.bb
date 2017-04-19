@@ -315,7 +315,7 @@ void XMLDocumentParser::ClearCurrentNodeStack() {
   leaf_text_node_ = nullptr;
 
   if (current_node_stack_.size()) {  // Aborted parsing.
-    current_node_stack_.Clear();
+    current_node_stack_.clear();
   }
 }
 
@@ -367,7 +367,7 @@ bool XMLDocumentParser::UpdateLeafTextNode() {
 
   leaf_text_node_->appendData(
       ToString(buffered_text_.Data(), buffered_text_.size()));
-  buffered_text_.Clear();
+  buffered_text_.clear();
   leaf_text_node_ = nullptr;
 
   // Mutation event handlers executed by appendData() might detach this parser.

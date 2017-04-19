@@ -970,8 +970,8 @@ void RuleFeatureSet::Add(const RuleFeatureSet& other) {
 
 void RuleFeatureSet::Clear() {
   CHECK(is_alive_);
-  sibling_rules_.Clear();
-  uncommon_attribute_rules_.Clear();
+  sibling_rules_.clear();
+  uncommon_attribute_rules_.clear();
   metadata_.Clear();
   class_invalidation_sets_.Clear();
   attribute_invalidation_sets_.Clear();
@@ -979,8 +979,8 @@ void RuleFeatureSet::Clear() {
   pseudo_invalidation_sets_.Clear();
   universal_sibling_invalidation_set_.Clear();
   nth_invalidation_set_.Clear();
-  viewport_dependent_media_query_results_.Clear();
-  device_dependent_media_query_results_.Clear();
+  viewport_dependent_media_query_results_.clear();
+  device_dependent_media_query_results_.clear();
 }
 
 void RuleFeatureSet::CollectInvalidationSetsForClass(

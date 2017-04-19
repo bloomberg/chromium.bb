@@ -207,7 +207,7 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
 }
 
 void PerformanceBase::clearResourceTimings() {
-  resource_timing_buffer_.Clear();
+  resource_timing_buffer_.clear();
 }
 
 void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
@@ -217,7 +217,7 @@ void PerformanceBase::setResourceTimingBufferSize(unsigned size) {
 }
 
 void PerformanceBase::clearFrameTimings() {
-  frame_timing_buffer_.Clear();
+  frame_timing_buffer_.clear();
 }
 
 void PerformanceBase::setFrameTimingBufferSize(unsigned size) {

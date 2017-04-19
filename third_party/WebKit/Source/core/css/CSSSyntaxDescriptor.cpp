@@ -117,7 +117,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
     }
 
     if (!success) {
-      syntax_components_.Clear();
+      syntax_components_.clear();
       return;
     }
 
@@ -128,7 +128,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
   } while (ConsumeCharacterAndWhitespace(input, '|', offset));
 
   if (offset != input.length())
-    syntax_components_.Clear();
+    syntax_components_.clear();
 }
 
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,

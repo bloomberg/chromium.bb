@@ -1524,7 +1524,7 @@ class PreFinalizerBackingShrinkForbidden
     // Check that vector_ hasn't shrunk.
     EXPECT_LT(31ul, vector_.Capacity());
     // Just releasing the backing is allowed.
-    vector_.Clear();
+    vector_.clear();
     EXPECT_EQ(0ul, vector_.Capacity());
 
     // Remove elemets so that map_ will try to shrink.

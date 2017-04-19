@@ -58,7 +58,7 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  selectors.Clear();
+  selectors.clear();
   selectors.push_back(".b");
   selectors.push_back(".c");
   selectors.push_back("#nomatch");

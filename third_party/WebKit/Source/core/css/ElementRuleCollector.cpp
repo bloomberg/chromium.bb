@@ -79,7 +79,7 @@ CSSRuleList* ElementRuleCollector::MatchedCSSRuleList() {
 }
 
 void ElementRuleCollector::ClearMatchedRules() {
-  matched_rules_.Clear();
+  matched_rules_.clear();
 }
 
 inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {

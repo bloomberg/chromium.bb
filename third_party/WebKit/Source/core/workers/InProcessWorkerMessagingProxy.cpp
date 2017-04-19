@@ -199,7 +199,7 @@ void InProcessWorkerMessagingProxy::WorkerThreadCreated() {
         CrossThreadUnretained(GetWorkerThread()));
     GetWorkerThread()->PostTask(BLINK_FROM_HERE, std::move(task));
   }
-  queued_early_tasks_.Clear();
+  queued_early_tasks_.clear();
 }
 
 void InProcessWorkerMessagingProxy::ParentObjectDestroyed() {

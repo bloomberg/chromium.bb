@@ -58,8 +58,8 @@ ViewportStyleResolver::ViewportStyleResolver(Document& document)
 }
 
 void ViewportStyleResolver::Reset() {
-  viewport_dependent_media_query_results_.Clear();
-  device_dependent_media_query_results_.Clear();
+  viewport_dependent_media_query_results_.clear();
+  device_dependent_media_query_results_.clear();
   property_set_ = nullptr;
   has_author_style_ = false;
   has_viewport_units_ = false;

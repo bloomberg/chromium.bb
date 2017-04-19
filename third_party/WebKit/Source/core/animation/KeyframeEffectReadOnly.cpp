@@ -321,7 +321,7 @@ bool KeyframeEffectReadOnly::CancelAnimationOnCompositor() {
     CompositorAnimations::CancelAnimationOnCompositor(*target_, *GetAnimation(),
                                                       compositor_animation_id);
   }
-  compositor_animation_ids_.Clear();
+  compositor_animation_ids_.clear();
   return true;
 }
 

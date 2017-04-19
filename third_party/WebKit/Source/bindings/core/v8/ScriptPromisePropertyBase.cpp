@@ -165,7 +165,7 @@ void ScriptPromisePropertyBase::ClearWrappers() {
       PromiseSymbol().Set(wrapper, v8::Undefined(isolate_));
     }
   }
-  wrappers_.Clear();
+  wrappers_.clear();
 }
 
 void ScriptPromisePropertyBase::CheckThis() {

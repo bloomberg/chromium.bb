@@ -82,7 +82,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
   void Cancel() override {
     state_ = PublicState::kClosed;
     form_data_ = nullptr;
-    flatten_form_data_.Clear();
+    flatten_form_data_.clear();
     flatten_form_data_offset_ = 0;
   }
   PublicState GetPublicState() const override { return state_; }

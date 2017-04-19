@@ -220,7 +220,7 @@ DispatchEventResult InputEventDispatchMediator::DispatchEvent(
   // Authors should explicitly call |getTargetRanges()|->|toRange()| if they
   // want to keep a copy of |Range|.  See Editing TF meeting notes:
   // https://docs.google.com/document/d/1hCj6QX77NYIVY0RWrMHT1Yra6t8_Qu8PopaWLG0AM58/edit?usp=sharing
-  Event().ranges_.Clear();
+  Event().ranges_.clear();
   return result;
 }
 

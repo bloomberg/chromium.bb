@@ -143,7 +143,7 @@ MutationRecordVector MutationObserver::takeRecords() {
 
 void MutationObserver::disconnect() {
   CancelInspectorAsyncTasks();
-  records_.Clear();
+  records_.clear();
   MutationObserverRegistrationSet registrations(registrations_);
   for (auto& registration : registrations) {
     // The registration may be already unregistered while iteration.

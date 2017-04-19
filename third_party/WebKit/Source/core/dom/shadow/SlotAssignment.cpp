@@ -160,7 +160,7 @@ HTMLSlotElement* SlotAssignment::FindSlotByName(const AtomicString& slot_name) {
 
 void SlotAssignment::CollectSlots() {
   DCHECK(needs_collect_slots_);
-  slots_.Clear();
+  slots_.clear();
 
   slots_.ReserveCapacity(slot_count_);
   for (HTMLSlotElement& slot :

@@ -384,7 +384,7 @@ bool MutableStylePropertySet::SetProperty(CSSPropertyID property_id,
 void MutableStylePropertySet::ParseDeclarationList(
     const String& style_declaration,
     StyleSheetContents* context_style_sheet) {
-  property_vector_.Clear();
+  property_vector_.clear();
 
   CSSParserContext* context;
   if (context_style_sheet) {
@@ -443,7 +443,7 @@ bool StylePropertySet::HasFailedOrCanceledSubresources() const {
 }
 
 void MutableStylePropertySet::Clear() {
-  property_vector_.Clear();
+  property_vector_.clear();
 }
 
 inline bool ContainsId(const CSSPropertyID* set,

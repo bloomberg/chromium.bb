@@ -90,7 +90,7 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
                           LocalFrame* main_frame,
                           Vector<IntRect>& good_targets,
                           HeapVector<Member<Node>>& highlight_nodes) {
-  good_targets.Clear();
+  good_targets.clear();
 
   int touch_point_padding = ceil(std::max(touch_box_in_root_frame.Width(),
                                           touch_box_in_root_frame.Height()) *

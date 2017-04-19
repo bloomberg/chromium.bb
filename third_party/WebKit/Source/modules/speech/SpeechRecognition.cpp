@@ -53,7 +53,7 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
     return;
   }
 
-  final_results_.Clear();
+  final_results_.clear();
   controller_->Start(this, grammars_, lang_, continuous_, interim_results_,
                      max_alternatives_, audio_track_);
   started_ = true;

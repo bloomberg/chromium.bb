@@ -53,7 +53,7 @@ class SVGPathByteStream {
   void Append(const unsigned char* data, size_t data_size) {
     data_.Append(data, data_size);
   }
-  void Clear() { data_.Clear(); }
+  void clear() { data_.clear(); }
   void ReserveInitialCapacity(size_t size) {
     data_.ReserveInitialCapacity(size);
   }

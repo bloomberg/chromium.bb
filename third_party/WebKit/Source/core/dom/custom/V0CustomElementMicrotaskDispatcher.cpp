@@ -69,7 +69,7 @@ void V0CustomElementMicrotaskDispatcher::DoDispatch() {
     element->ProcessInElementQueue(kMicrotaskQueueId);
   }
 
-  elements_.Clear();
+  elements_.clear();
   V0CustomElementScheduler::MicrotaskDispatcherDidFinish();
   phase_ = kQuiescent;
 }

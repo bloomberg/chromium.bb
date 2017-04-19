@@ -541,14 +541,14 @@ void HTMLFormElement::ParseAttribute(
 
 void HTMLFormElement::Associate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
-  listed_elements_.Clear();
+  listed_elements_.clear();
   if (ToHTMLElement(e).FastHasAttribute(formAttr))
     has_elements_associated_by_form_attribute_ = true;
 }
 
 void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
-  listed_elements_.Clear();
+  listed_elements_.clear();
   RemoveFromPastNamesMap(ToHTMLElement(e));
 }
 
@@ -563,12 +563,12 @@ bool HTMLFormElement::HasLegalLinkAttribute(const QualifiedName& name) const {
 
 void HTMLFormElement::Associate(HTMLImageElement& e) {
   image_elements_are_dirty_ = true;
-  image_elements_.Clear();
+  image_elements_.clear();
 }
 
 void HTMLFormElement::Disassociate(HTMLImageElement& e) {
   image_elements_are_dirty_ = true;
-  image_elements_.Clear();
+  image_elements_.clear();
   RemoveFromPastNamesMap(e);
 }
 
@@ -586,7 +586,7 @@ HTMLFormControlsCollection* HTMLFormElement::elements() {
 void HTMLFormElement::CollectListedElements(
     Node& root,
     ListedElement::List& elements) const {
-  elements.Clear();
+  elements.clear();
   for (HTMLElement& element : Traversal<HTMLElement>::StartsAfter(root)) {
     ListedElement* listed_element = 0;
     if (element.IsFormControlElement())
@@ -620,7 +620,7 @@ const ListedElement::List& HTMLFormElement::ListedElements() const {
 void HTMLFormElement::CollectImageElements(
     Node& root,
     HeapVector<Member<HTMLImageElement>>& elements) {
-  elements.Clear();
+  elements.clear();
   for (HTMLImageElement& image :
        Traversal<HTMLImageElement>::StartsAfter(root)) {
     if (image.formOwner() == this)

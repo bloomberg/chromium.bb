@@ -454,7 +454,7 @@ const Vector<InlineBox*>& CachedLogicallyOrderedLeafBoxes::CollectBoxes(
     const RootInlineBox* root) {
   if (root_inline_box_ != root) {
     root_inline_box_ = root;
-    leaf_boxes_.Clear();
+    leaf_boxes_.clear();
     root->CollectLeafBoxesInLogicalOrder(leaf_boxes_);
   }
   return leaf_boxes_;
@@ -574,7 +574,7 @@ static TextBreakIterator* WordBreakIteratorForMinOffsetBoundary(
       visible_position, text_box, previous_box_in_different_block, leaf_boxes);
 
   int len = 0;
-  string.Clear();
+  string.clear();
   if (previous_box) {
     previous_box_length = previous_box->Len();
     previous_box->GetLineLayoutItem().GetText().AppendTo(
@@ -602,7 +602,7 @@ static TextBreakIterator* WordBreakIteratorForMaxOffsetBoundary(
       visible_position, text_box, next_box_in_different_block, leaf_boxes);
 
   int len = 0;
-  string.Clear();
+  string.clear();
   text_box->GetLineLayoutItem().GetText().AppendTo(string, text_box->Start(),
                                                    text_box->Len());
   len += text_box->Len();

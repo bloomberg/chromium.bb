@@ -54,7 +54,7 @@ void HTMLImportsController::Dispose() {
 
   for (const auto& loader : loaders_)
     loader->Dispose();
-  loaders_.Clear();
+  loaders_.clear();
 }
 
 static bool MakesCycle(HTMLImport* parent, const KURL& url) {

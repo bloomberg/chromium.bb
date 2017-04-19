@@ -199,7 +199,7 @@ void FileInputType::SetValue(const String&,
   if (!value_changed)
     return;
 
-  file_list_->Clear();
+  file_list_->clear();
   GetElement().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(StyleChangeReason::kControlValue));

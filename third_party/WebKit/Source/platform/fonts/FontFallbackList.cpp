@@ -49,7 +49,7 @@ FontFallbackList::FontFallbackList()
 
 void FontFallbackList::Invalidate(FontSelector* font_selector) {
   ReleaseFontData();
-  font_list_.Clear();
+  font_list_.clear();
   cached_primary_simple_font_data_ = 0;
   family_index_ = 0;
   has_loading_fallback_ = false;

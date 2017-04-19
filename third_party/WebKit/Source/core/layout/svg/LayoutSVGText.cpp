@@ -72,7 +72,7 @@ LayoutSVGText::~LayoutSVGText() {
 }
 
 void LayoutSVGText::WillBeDestroyed() {
-  descendant_text_nodes_.Clear();
+  descendant_text_nodes_.clear();
 
   LayoutSVGBlock::WillBeDestroyed();
 }
@@ -104,7 +104,7 @@ static inline void CollectDescendantTextNodes(
 
 void LayoutSVGText::InvalidatePositioningValues(
     LayoutInvalidationReasonForTracing reason) {
-  descendant_text_nodes_.Clear();
+  descendant_text_nodes_.clear();
   SetNeedsPositioningValuesUpdate();
   SetNeedsLayoutAndFullPaintInvalidation(reason);
 }
@@ -208,7 +208,7 @@ void LayoutSVGText::UpdateLayout() {
   // When the x/y/dx/dy/rotate lists change, we need to recompute the layout
   // attributes.
   if (needs_positioning_values_update_) {
-    descendant_text_nodes_.Clear();
+    descendant_text_nodes_.clear();
     CollectDescendantTextNodes(*this, descendant_text_nodes_);
 
     SVGTextLayoutAttributesBuilder(*this).BuildLayoutAttributes();

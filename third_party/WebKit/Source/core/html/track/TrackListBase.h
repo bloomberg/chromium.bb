@@ -72,7 +72,7 @@ class TrackListBase : public EventTargetWithInlineData {
     for (const auto& track : tracks_)
       track->SetMediaElement(0);
 
-    tracks_.Clear();
+    tracks_.clear();
   }
 
   void ScheduleChangeEvent() {

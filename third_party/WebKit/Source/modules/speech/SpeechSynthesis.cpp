@@ -47,7 +47,7 @@ void SpeechSynthesis::SetPlatformSynthesizer(
 }
 
 void SpeechSynthesis::VoicesDidChange() {
-  voice_list_.Clear();
+  voice_list_.clear();
   if (GetExecutionContext())
     DispatchEvent(Event::Create(EventTypeNames::voiceschanged));
 }

@@ -49,7 +49,7 @@ void CachedMatchedProperties::Set(const ComputedStyle& style,
 }
 
 void CachedMatchedProperties::Clear() {
-  matched_properties.Clear();
+  matched_properties.clear();
   computed_style = nullptr;
   parent_computed_style = nullptr;
 }

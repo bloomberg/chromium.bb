@@ -63,7 +63,7 @@ bool FlexLayoutAlgorithm::ComputeNextFlexLine(
     double& total_flex_shrink,
     double& total_weighted_flex_shrink,
     LayoutUnit& sum_hypothetical_main_size) {
-  line_items.Clear();
+  line_items.clear();
   sum_flex_base_size = LayoutUnit();
   total_flex_grow = total_flex_shrink = total_weighted_flex_shrink = 0;
   sum_hypothetical_main_size = LayoutUnit();

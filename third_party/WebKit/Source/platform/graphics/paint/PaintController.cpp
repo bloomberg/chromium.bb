@@ -597,7 +597,7 @@ void PaintController::CommitNewDisplayItems(
   ResetCurrentListIndices();
   out_of_order_item_indices_.Clear();
   out_of_order_chunk_indices_.Clear();
-  items_moved_into_new_list_.Clear();
+  items_moved_into_new_list_.clear();
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     for (const auto& chunk : current_paint_artifact_.PaintChunks()) {

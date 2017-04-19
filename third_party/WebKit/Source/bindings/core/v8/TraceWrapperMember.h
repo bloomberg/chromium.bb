@@ -103,12 +103,12 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   for (auto item : a) {
     temp.push_back(TraceWrapperMember<T>(parent_for_b, item.Get()));
   }
-  a.Clear();
+  a.clear();
   a.ReserveCapacity(b.size());
   for (auto item : b) {
     a.push_back(TraceWrapperMember<T>(parent_for_a, item.Get()));
   }
-  b.Clear();
+  b.clear();
   b.ReserveCapacity(temp.size());
   for (auto item : temp) {
     b.push_back(TraceWrapperMember<T>(parent_for_b, item.Get()));
@@ -130,12 +130,12 @@ void swap(HeapVector<TraceWrapperMember<T>>& a,
   for (auto item : a) {
     temp.push_back(TraceWrapperMember<T>(item.Parent(), item.Get()));
   }
-  a.Clear();
+  a.clear();
   a.ReserveCapacity(b.size());
   for (auto item : b) {
     a.push_back(TraceWrapperMember<T>(parent_for_a, item.Get()));
   }
-  b.Clear();
+  b.clear();
   b.ReserveCapacity(temp.size());
   for (auto item : temp) {
     b.push_back(item.Get());

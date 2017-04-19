@@ -139,7 +139,7 @@ bool InspectorHistory::Redo(ExceptionState& exception_state) {
 
 void InspectorHistory::Reset() {
   after_last_action_index_ = 0;
-  history_.Clear();
+  history_.clear();
 }
 
 DEFINE_TRACE(InspectorHistory) {

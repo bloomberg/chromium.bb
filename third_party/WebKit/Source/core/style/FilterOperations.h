@@ -46,7 +46,7 @@ class CORE_EXPORT FilterOperations {
   bool operator==(const FilterOperations&) const;
   bool operator!=(const FilterOperations& o) const { return !(*this == o); }
 
-  void Clear() { operations_.Clear(); }
+  void clear() { operations_.clear(); }
 
   typedef HeapVector<Member<FilterOperation>> FilterOperationVector;
 

@@ -616,8 +616,8 @@ void IDBTransaction::Finished() {
   }
   old_store_metadata_.Clear();
 
-  deleted_indexes_.Clear();
-  deleted_object_stores_.Clear();
+  deleted_indexes_.clear();
+  deleted_object_stores_.clear();
 }
 
 }  // namespace blink

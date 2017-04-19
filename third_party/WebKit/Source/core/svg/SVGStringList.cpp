@@ -34,7 +34,7 @@ SVGStringList::SVGStringList() {}
 SVGStringList::~SVGStringList() {}
 
 void SVGStringList::Initialize(const String& item) {
-  values_.Clear();
+  values_.clear();
   values_.push_back(item);
 }
 
@@ -99,7 +99,7 @@ void SVGStringList::ParseInternal(const CharType*& ptr, const CharType* end) {
 
 SVGParsingError SVGStringList::SetValueAsString(const String& data) {
   // FIXME: Add more error checking and reporting.
-  values_.Clear();
+  values_.clear();
 
   if (data.IsEmpty())
     return SVGParseStatus::kNoError;

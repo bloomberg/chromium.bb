@@ -84,7 +84,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
                                 "100%",
                                 GetDocument().ElementSheet().Contents());
-  keyframes.Clear();
+  keyframes.clear();
   keyframes.push_back(keyframe.Release());
   timing = Timing::Defaults();
   timing.iteration_duration = 1;  // Seconds.

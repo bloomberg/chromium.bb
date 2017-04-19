@@ -61,7 +61,7 @@ void SourceBufferList::Remove(SourceBuffer* buffer) {
 }
 
 void SourceBufferList::Clear() {
-  list_.Clear();
+  list_.clear();
   ScheduleEvent(EventTypeNames::removesourcebuffer);
 }
 

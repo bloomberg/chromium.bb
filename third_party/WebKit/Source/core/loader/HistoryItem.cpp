@@ -125,7 +125,7 @@ Vector<String> HistoryItem::GetReferencedFilePaths() {
 
 void HistoryItem::ClearDocumentState() {
   document_state_.Clear();
-  document_state_vector_.Clear();
+  document_state_vector_.clear();
 }
 
 void HistoryItem::SetStateObject(PassRefPtr<SerializedScriptValue> object) {

@@ -307,7 +307,7 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
   if (!holes_queue.size())
     return false;
 
-  hint.Clear();
+  hint.clear();
 
   size_t num_chars_added = 0;
   for (auto it = holes_queue.begin(); it != holes_queue.end(); ++it) {

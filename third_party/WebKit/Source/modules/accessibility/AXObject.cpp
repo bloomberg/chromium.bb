@@ -762,7 +762,7 @@ String AXObject::GetName(AXNameFrom& name_from,
     text = CollapseWhitespace(text);
 
   if (name_objects) {
-    name_objects->Clear();
+    name_objects->clear();
     for (size_t i = 0; i < related_objects.size(); i++)
       name_objects->push_back(related_objects[i]->object);
   }
@@ -1211,7 +1211,7 @@ void AXObject::ClearChildren() {
   for (const auto& child : children_)
     child->DetachFromParent();
 
-  children_.Clear();
+  children_.clear();
   have_children_ = false;
 }
 

@@ -105,7 +105,7 @@ void ResizeObserver::DeliverObservations() {
 }
 
 void ResizeObserver::ClearObservations() {
-  active_observations_.Clear();
+  active_observations_.clear();
   skipped_observations_ = false;
 }
 

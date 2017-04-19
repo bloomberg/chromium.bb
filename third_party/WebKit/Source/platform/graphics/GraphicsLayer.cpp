@@ -125,7 +125,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
 GraphicsLayer::~GraphicsLayer() {
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->ClearCurrentGraphicsLayer();
-  link_highlights_.Clear();
+  link_highlights_.clear();
 
 #if DCHECK_IS_ON()
   if (client_)
@@ -482,7 +482,7 @@ void GraphicsLayer::ResetTrackedRasterInvalidations() {
     return;
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-    tracking->tracked_raster_invalidations.Clear();
+    tracking->tracked_raster_invalidations.clear();
   else
     GetRasterInvalidationTrackingMap().Remove(this);
 }

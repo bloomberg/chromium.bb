@@ -448,9 +448,9 @@ static void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, 
     // so that the serializer can consider the array buffers as
     // non-transferable and serialize them into the message.
     ArrayBufferArray transferableArrayBuffers = transferables.array_buffers;
-    transferables.array_buffers.Clear();
+    transferables.array_buffers.clear();
     ImageBitmapArray transferableImageBitmaps = transferables.image_bitmaps;
-    transferables.image_bitmaps.Clear();
+    transferables.image_bitmaps.clear();
     SerializedScriptValue::SerializeOptions options;
     options.transferables = &transferables;
     message = SerializedScriptValue::Serialize(info.GetIsolate(), info[0], options, exceptionState);

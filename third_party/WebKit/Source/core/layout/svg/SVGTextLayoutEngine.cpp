@@ -293,7 +293,7 @@ void SVGTextLayoutEngine::FinishLayout() {
   SVGTextChunkBuilder chunk_layout_builder;
   chunk_layout_builder.ProcessTextChunks(line_layout_boxes_);
 
-  line_layout_boxes_.Clear();
+  line_layout_boxes_.clear();
 }
 
 const LayoutSVGInlineText* SVGTextLayoutEngine::NextLogicalTextNode() {

@@ -146,8 +146,8 @@ void ContiguousContainerBase::RemoveLast() {
 }
 
 void ContiguousContainerBase::Clear() {
-  elements_.Clear();
-  buffers_.Clear();
+  elements_.clear();
+  buffers_.clear();
   end_index_ = 0;
 }
 

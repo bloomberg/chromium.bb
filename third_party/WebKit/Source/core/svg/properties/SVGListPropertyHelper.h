@@ -179,7 +179,7 @@ void SVGListPropertyHelper<Derived, ItemProperty>::Clear() {
     (*it)->SetOwnerList(nullptr);
   }
 
-  values_.Clear();
+  values_.clear();
 }
 
 template <typename Derived, typename ItemProperty>

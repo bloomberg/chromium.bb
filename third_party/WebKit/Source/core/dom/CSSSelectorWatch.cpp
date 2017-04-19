@@ -146,7 +146,7 @@ static bool AllCompound(const CSSSelectorList& selector_list) {
 }
 
 void CSSSelectorWatch::WatchCSSSelectors(const Vector<String>& selectors) {
-  watched_callback_selectors_.Clear();
+  watched_callback_selectors_.clear();
 
   StylePropertySet* callback_property_set =
       ImmutableStylePropertySet::Create(nullptr, 0, kUASheetMode);

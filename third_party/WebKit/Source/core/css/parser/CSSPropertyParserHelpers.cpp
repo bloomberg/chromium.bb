@@ -1273,7 +1273,7 @@ static CSSValue* ConsumePaint(CSSParserTokenRange& args,
     } else {
       if (!AddCSSPaintArgument(argument_tokens, &variable_data))
         return nullptr;
-      argument_tokens.Clear();
+      argument_tokens.clear();
       if (!ConsumeCommaIncludingWhitespace(args))
         return nullptr;
     }

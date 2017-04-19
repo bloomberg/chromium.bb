@@ -605,7 +605,7 @@ void DocumentWebSocketChannel::DidReceiveData(WebSocketHandle* handle,
                          ? g_empty_string
                          : String::FromUTF8(receiving_message_data_.Data(),
                                             receiving_message_data_.size());
-    receiving_message_data_.Clear();
+    receiving_message_data_.clear();
     if (message.IsNull()) {
       FailAsError("Could not decode a text frame as UTF-8.");
       // failAsError may delete this object.

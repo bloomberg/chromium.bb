@@ -673,7 +673,7 @@ void DocumentMarkerController::RemoveMarkersFromList(
         continue;
       }
       if (marker_types.Contains((*list->begin())->GetType())) {
-        list->Clear();
+        list->clear();
         list.Clear();
         ++empty_lists_count;
         needs_repainting = true;

@@ -196,7 +196,7 @@ void ValidateAndConvertShippingOptions(
 
     if (unique_ids.Contains(option.id())) {
       // Clear |output| instead of throwing an exception.
-      output.Clear();
+      output.clear();
       return;
     }
 

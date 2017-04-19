@@ -283,7 +283,7 @@ void V8PerIsolateData::RunEndOfScopeTasks() {
 }
 
 void V8PerIsolateData::ClearEndOfScopeTasks() {
-  end_of_scope_tasks_.Clear();
+  end_of_scope_tasks_.clear();
 }
 
 void V8PerIsolateData::SetThreadDebugger(

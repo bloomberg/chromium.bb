@@ -1174,7 +1174,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   GLint num_combined_texture_image_units = 0;
   ContextGL()->GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
                            &num_combined_texture_image_units);
-  texture_units_.Clear();
+  texture_units_.clear();
   texture_units_.Resize(num_combined_texture_image_units);
 
   GLint num_vertex_attribs = 0;
@@ -1298,7 +1298,7 @@ void WebGLRenderingContextBase::AddCompressedTextureFormat(GLenum format) {
 }
 
 void WebGLRenderingContextBase::RemoveAllCompressedTextureFormats() {
-  compressed_texture_formats_.Clear();
+  compressed_texture_formats_.clear();
 }
 
 // Helper function for V8 bindings to identify what version of WebGL a
@@ -7562,7 +7562,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
                 WrapWeakPersistent(this)));
 
   GetDrawingBuffer()->Bind(GL_FRAMEBUFFER);
-  lost_context_errors_.Clear();
+  lost_context_errors_.clear();
   context_lost_mode_ = kNotLostContext;
   auto_recovery_method_ = kManual;
   restore_allowed_ = false;

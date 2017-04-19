@@ -78,7 +78,7 @@ void FrameRequestCallbackCollection::ExecuteCallbacks(
     }
   }
 
-  callbacks_to_invoke_.Clear();
+  callbacks_to_invoke_.clear();
 }
 
 DEFINE_TRACE(FrameRequestCallbackCollection) {

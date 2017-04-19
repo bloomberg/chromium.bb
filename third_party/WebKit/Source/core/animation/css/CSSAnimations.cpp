@@ -930,7 +930,7 @@ void CSSAnimations::Cancel() {
     entry.value.animation->Update(kTimingUpdateOnDemand);
   }
 
-  running_animations_.Clear();
+  running_animations_.clear();
   transitions_.Clear();
   ClearPendingUpdate();
 }

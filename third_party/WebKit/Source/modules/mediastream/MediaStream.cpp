@@ -416,7 +416,7 @@ void MediaStream::ScheduledEventTimerFired(TimerBase*) {
   for (; it != events.end(); ++it)
     DispatchEvent((*it).Release());
 
-  events.Clear();
+  events.clear();
 }
 
 URLRegistry& MediaStream::Registry() const {

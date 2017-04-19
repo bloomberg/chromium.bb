@@ -253,8 +253,8 @@ void MediaQueryData::Clear() {
   media_type_ = MediaTypeNames::all;
   media_type_set_ = false;
   media_feature_ = String();
-  value_list_.Clear();
-  expressions_.Clear();
+  value_list_.clear();
+  expressions_.clear();
 }
 
 MediaQuery* MediaQueryData::TakeMediaQuery() {
@@ -269,7 +269,7 @@ bool MediaQueryData::AddExpression() {
       MediaQueryExp::CreateIfValid(media_feature_, value_list_);
   bool is_valid = !!expression;
   expressions_.push_back(expression);
-  value_list_.Clear();
+  value_list_.clear();
   return is_valid;
 }
 

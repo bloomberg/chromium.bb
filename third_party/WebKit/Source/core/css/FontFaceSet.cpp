@@ -362,11 +362,11 @@ void FontFaceSet::FireDoneEventIfPossible() {
     FontFaceSetLoadEvent* error_event = nullptr;
     done_event = FontFaceSetLoadEvent::CreateForFontFaces(
         EventTypeNames::loadingdone, loaded_fonts_);
-    loaded_fonts_.Clear();
+    loaded_fonts_.clear();
     if (!failed_fonts_.IsEmpty()) {
       error_event = FontFaceSetLoadEvent::CreateForFontFaces(
           EventTypeNames::loadingerror, failed_fonts_);
-      failed_fonts_.Clear();
+      failed_fonts_.clear();
     }
     is_loading_ = false;
     DispatchEvent(done_event);

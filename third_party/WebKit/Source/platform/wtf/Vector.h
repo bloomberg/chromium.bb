@@ -1091,7 +1091,7 @@ class Vector
 
   // Remove all the elements. This function actually releases the backing
   // buffer, thus any iterators will get invalidated (including begin()).
-  void Clear() { ShrinkCapacity(0); }
+  void clear() { ShrinkCapacity(0); }
 
   // Insertion to the back. All of these functions except uncheckedAppend() may
   // cause a reallocation.
@@ -1357,7 +1357,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
   if (size() > other.size()) {
     Shrink(other.size());
   } else if (other.size() > Capacity()) {
-    Clear();
+    clear();
     ReserveCapacity(other.size());
     DCHECK(begin());
   }
@@ -1386,7 +1386,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
   if (size() > other.size()) {
     Shrink(other.size());
   } else if (other.size() > Capacity()) {
-    Clear();
+    clear();
     ReserveCapacity(other.size());
     DCHECK(begin());
   }
@@ -1429,7 +1429,7 @@ operator=(std::initializer_list<T> elements) {
   if (size() > elements.size()) {
     Shrink(elements.size());
   } else if (elements.size() > Capacity()) {
-    Clear();
+    clear();
     ReserveCapacity(elements.size());
     DCHECK(begin());
   }
@@ -1479,7 +1479,7 @@ void Vector<T, inlineCapacity, Allocator>::Fill(const T& val, size_t new_size) {
   if (size() > new_size) {
     Shrink(new_size);
   } else if (new_size > Capacity()) {
-    Clear();
+    clear();
     ReserveCapacity(new_size);
     DCHECK(begin());
   }

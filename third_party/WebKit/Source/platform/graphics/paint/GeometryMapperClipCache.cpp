@@ -22,7 +22,7 @@ void GeometryMapperClipCache::ClearCache() {
 
 void GeometryMapperClipCache::InvalidateCacheIfNeeded() {
   if (cache_generation_ != g_clip_cache_generation) {
-    clip_cache_.Clear();
+    clip_cache_.clear();
     cache_generation_ = g_clip_cache_generation;
   }
 }

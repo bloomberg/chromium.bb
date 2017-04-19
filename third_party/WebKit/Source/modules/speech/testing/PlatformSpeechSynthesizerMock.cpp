@@ -76,7 +76,7 @@ void PlatformSpeechSynthesizerMock::SpeakNext() {
 }
 
 void PlatformSpeechSynthesizerMock::InitializeVoiceList() {
-  voice_list_.Clear();
+  voice_list_.clear();
   voice_list_.push_back(PlatformSpeechSynthesisVoice::Create(
       String("mock.voice.bruce"), String("bruce"), String("en-US"), true,
       true));

@@ -110,7 +110,7 @@ void VRController::Dispose() {
   for (const auto& display : displays_)
     display->Dispose();
 
-  displays_.Clear();
+  displays_.clear();
 
   // Ensure that any outstanding getDisplays promises are resolved.
   OnGetDisplays();
