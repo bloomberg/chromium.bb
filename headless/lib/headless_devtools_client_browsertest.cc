@@ -987,4 +987,39 @@ class DevToolsHeaderStrippingTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsHeaderStrippingTest);
 
+class RawDevtoolsProtocolTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public HeadlessDevToolsClient::RawProtocolListener {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->SetRawProtocolListener(this);
+
+    base::DictionaryValue message;
+    message.SetInteger("id", devtools_client_->GetNextRawDevToolsMessageId());
+    message.SetString("method", "Runtime.evaluate");
+    std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+    params->SetString("expression", "1+1");
+    message.Set("params", std::move(params));
+    devtools_client_->SendRawDevToolsMessage(message);
+  }
+
+  bool OnProtocolMessage(const std::string& devtools_agent_host_id,
+                         const std::string& json_message,
+                         const base::DictionaryValue& parsed_message) override {
+    EXPECT_EQ(
+        "{\"id\":1,\"result\":{\"result\":{\"type\":\"number\","
+        "\"value\":2,\"description\":\"2\"}}}",
+        json_message);
+
+    int frame_tree_node_id = 0;
+    EXPECT_TRUE(web_contents_->GetFrameTreeNodeIdForDevToolsAgentHostId(
+        devtools_agent_host_id, &frame_tree_node_id));
+    EXPECT_NE(0, frame_tree_node_id);
+    FinishAsynchronousTest();
+    return true;
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(RawDevtoolsProtocolTest);
+
 }  // namespace headless

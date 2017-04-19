@@ -213,6 +213,35 @@ void HeadlessWebContentsImpl::RenderFrameCreated(
                                      service.service_factory,
                                      browser()->BrowserMainThread());
   }
+
+  std::string devtools_agent_host_id =
+      content::DevToolsAgentHost::GetOrCreateFor(render_frame_host)->GetId();
+  render_frame_host_to_devtools_agent_host_id_[render_frame_host] =
+      devtools_agent_host_id;
+  devtools_agent_id_to_frame_tree_node_id_[devtools_agent_host_id] =
+      render_frame_host->GetFrameTreeNodeId();
+}
+
+void HeadlessWebContentsImpl::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  auto find_it =
+      render_frame_host_to_devtools_agent_host_id_.find(render_frame_host);
+  if (find_it == render_frame_host_to_devtools_agent_host_id_.end())
+    return;
+
+  devtools_agent_id_to_frame_tree_node_id_.erase(find_it->second);
+  render_frame_host_to_devtools_agent_host_id_.erase(find_it);
+}
+
+bool HeadlessWebContentsImpl::GetFrameTreeNodeIdForDevToolsAgentHostId(
+    const std::string& devtools_agent_host_id,
+    int* frame_tree_node_id) const {
+  const auto& find_it =
+      devtools_agent_id_to_frame_tree_node_id_.find(devtools_agent_host_id);
+  if (find_it == devtools_agent_id_to_frame_tree_node_id_.end())
+    return false;
+  *frame_tree_node_id = find_it->second;
+  return true;
 }
 
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {

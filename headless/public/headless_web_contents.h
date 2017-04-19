@@ -75,6 +75,12 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // Returns the headless tab socket for JS -> C++ if one was created.
   virtual HeadlessTabSocket* GetHeadlessTabSocket() const = 0;
 
+  // Returns the frame tree node id associated with the |devtools_agent_host_id|
+  // if any.
+  virtual bool GetFrameTreeNodeIdForDevToolsAgentHostId(
+      const std::string& devtools_agent_host_id,
+      int* frame_tree_node_id) const = 0;
+
  private:
   friend class HeadlessWebContentsImpl;
   HeadlessWebContents() {}
