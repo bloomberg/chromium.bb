@@ -33,6 +33,45 @@ std::vector<float> HmdVector3ToWebVR(const vr::HmdVector3_t& vec) {
   return out;
 }
 
+std::string GetOpenVRString(vr::IVRSystem* vr_system,
+                            vr::TrackedDeviceProperty prop) {
+  std::string out;
+
+  vr::TrackedPropertyError error = vr::TrackedProp_Success;
+  char openvr_string[vr::k_unMaxPropertyStringSize];
+  vr_system->GetStringTrackedDeviceProperty(
+      vr::k_unTrackedDeviceIndex_Hmd, prop, openvr_string,
+      vr::k_unMaxPropertyStringSize, &error);
+
+  if (error == vr::TrackedProp_Success)
+    out = openvr_string;
+
+  return out;
+}
+
+std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
+    const vr::HmdMatrix34_t& mat) {
+  std::vector<float> transform;
+  transform.resize(16);
+  transform[0] = mat.m[0][0];
+  transform[1] = mat.m[1][0];
+  transform[2] = mat.m[2][0];
+  transform[3] = 0.0f;
+  transform[4] = mat.m[0][1];
+  transform[5] = mat.m[1][1];
+  transform[6] = mat.m[2][1];
+  transform[7] = 0.0f;
+  transform[8] = mat.m[0][2];
+  transform[9] = mat.m[1][2];
+  transform[10] = mat.m[2][2];
+  transform[11] = 0.0f;
+  transform[12] = mat.m[0][3];
+  transform[13] = mat.m[1][3];
+  transform[14] = mat.m[2][3];
+  transform[15] = 1.0f;
+  return transform;
+}
+
 }  // namespace
 
 namespace device {
@@ -54,6 +93,9 @@ void OpenVRDevice::CreateVRDisplayInfo(
 
   mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
   device->index = id();
+  device->displayName =
+      GetOpenVRString(vr_system, vr::Prop_ManufacturerName_String) + " " +
+      GetOpenVRString(vr_system, vr::Prop_ModelNumber_String);
   device->capabilities = mojom::VRDisplayCapabilities::New();
   device->capabilities->hasPosition = true;
   device->capabilities->hasExternalDisplay = true;
@@ -89,6 +131,21 @@ void OpenVRDevice::CreateVRDisplayInfo(
   left_eye->renderHeight = height;
   right_eye->renderWidth = left_eye->renderWidth;
   right_eye->renderHeight = left_eye->renderHeight;
+
+  device->stageParameters = mojom::VRStageParameters::New();
+  vr::HmdMatrix34_t mat =
+      vr_system->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
+  device->stageParameters->standingTransform =
+      HmdMatrix34ToWebVRTransformMatrix(mat);
+
+  vr::IVRChaperone* chaperone = vr::VRChaperone();
+  if (chaperone) {
+    chaperone->GetPlayAreaSize(&device->stageParameters->sizeX,
+                               &device->stageParameters->sizeZ);
+  } else {
+    device->stageParameters->sizeX = 0.0f;
+    device->stageParameters->sizeZ = 0.0f;
+  }
 
   render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system);
 
