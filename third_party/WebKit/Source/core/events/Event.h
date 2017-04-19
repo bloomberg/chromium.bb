@@ -81,9 +81,6 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
 
   static Event* Create() { return new Event; }
 
-  // A factory for a simple event. The event doesn't bubble, and isn't
-  // cancelable.
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
   static Event* Create(const AtomicString& type) {
     return new Event(type, false, false);
   }
