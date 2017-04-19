@@ -34,20 +34,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     return __gCrWeb.stringify(formDataList);
   };
 
-  /**
-   * Returns true if the top window or any frames inside contain an input field
-   * of type 'password'. This method is only used for unit tests and are only
-   * kept for legacy reasons. Prefer to use the private
-   * {@code hasPasswordField_} within this file.
-   * @return {boolean} Whether a password field exists.
-   *
-   * TODO(crbug.com/614092): investigate if this method can be completely
-   * removed from the gCrWeb public interface.
-   */
-  __gCrWeb['hasPasswordField'] = function() {
-    return hasPasswordField_(window);
-  };
-
   /** Returns true if the supplied window or any frames inside contain an input
    * field of type 'password'.
    * @private

@@ -728,69 +728,54 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "<form name=\"f6'\">"
      "<input id=\"un6'\" type='text' name=\"u6'\">"
      "<input id=\"pw6'\" type='password' name=\"p6'\">"
-     "</form>";
-
-// A script that resets all text fields.
-static NSString* kClearInputFieldsScript =
-    @"var inputs = document.getElementsByTagName('input');"
-     "for(var i = 0; i < inputs.length; i++){"
-     "  inputs[i].value = '';"
-     "}";
-
-// A script that we run after autofilling forms.  It returns
-// ids and values of all non-empty fields.
-static NSString* kInputFieldValueVerificationScript =
-    @"var result='';"
-     "var inputs = document.getElementsByTagName('input');"
-     "for(var i = 0; i < inputs.length; i++){"
-     "  var input = inputs[i];"
-     "  if (input.value) {"
-     "    result += input.id + '=' + input.value +';';"
-     "  }"
-     "}; result";
-
-// Test html content and expected result for __gCrWeb.hasPasswordField call.
-struct TestDataForPasswordFormDetection {
-  NSString* page_content;
-  BOOL contains_password;
-};
-
-// Tests that the existence of (or the lack of) a password field in the page is
-// detected correctly.
-TEST_F(PasswordControllerTest, HasPasswordField) {
-  TestDataForPasswordFormDetection test_data[] = {
-      // Form without a password field.
-      {@"<form><input type='text' name='password'></form>", NO},
-      // Form with a password field.
-      {@"<form><input type='password' name='password'></form>", YES}};
-  for (size_t i = 0; i < arraysize(test_data); i++) {
-    TestDataForPasswordFormDetection& data = test_data[i];
-    LoadHtml(data.page_content);
-    id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
-    EXPECT_NSEQ(@(data.contains_password), result)
-        << " in test " << i << ": "
-        << base::SysNSStringToUTF8(data.page_content);
-  }
-}
-
-// Tests that the existence a password field in a nested iframe/ is detected
-// correctly.
-TEST_F(PasswordControllerTest, HasPasswordFieldinFrame) {
-  TestDataForPasswordFormDetection data = {
-    // Form with a password field in a nested iframe.
-    @"<iframe name='pf'></iframe>"
+     "</form>"
+     "<iframe name='pf'></iframe>"
      "<script>"
      "  var doc = frames['pf'].document.open();"
-     "  doc.write('<form><input type=\\'password\\'></form>');"
+     // Add a form inside iframe. It should also be matched and autofilled.
+     "  doc.write('<form><input id=\\'un7\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw7\\' type=\\'password\\' name=\\'p4\\'>');"
+     "  doc.write('</form>');"
+     // Add a non-password form inside iframe. It should not be matched.
+     "  doc.write('<form><input id=\\'un8\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw8\\' type=\\'text\\' name=\\'p4\\'>');"
+     "  doc.write('</form>');"
      "  doc.close();"
-     "</script>",
-    YES
-  };
-  LoadHtml(data.page_content);
-  id result = ExecuteJavaScript(@"__gCrWeb.hasPasswordField()");
-  EXPECT_NSEQ(@(data.contains_password), result)
-      << base::SysNSStringToUTF8(data.page_content);
-}
+     "</script>";
+
+// A script that resets all text fields, including those in iframes.
+static NSString* kClearInputFieldsScript =
+    @"function clearInputFields(win) {"
+     "  var inputs = win.document.getElementsByTagName('input');"
+     "  for (var i = 0; i < inputs.length; i++) {"
+     "    inputs[i].value = '';"
+     "  }"
+     "  var frames = win.frames;"
+     "  for (var i = 0; i < frames.length; i++) {"
+     "    clearInputFields(frames[i]);"
+     "  }"
+     "}"
+     "clearInputFields(window);";
+
+// A script that runs after autofilling forms.  It returns ids and values of all
+// non-empty fields, including those in iframes.
+static NSString* kInputFieldValueVerificationScript =
+    @"function findAllInputs(win) {"
+     "  var result = '';"
+     "  var inputs = win.document.getElementsByTagName('input');"
+     "  for (var i = 0; i < inputs.length; i++) {"
+     "    var input = inputs[i];"
+     "    if (input.value) {"
+     "      result += input.id + '=' + input.value + ';';"
+     "    }"
+     "  }"
+     "  var frames = win.frames;"
+     "  for (var i = 0; i < frames.length; i++) {"
+     "    result += findAllInputs(frames[i]);"
+     "  }"
+     "  return result;"
+     "};"
+     "var result = findAllInputs(window); result";
 
 struct FillPasswordFormTestData {
   const std::string origin;
@@ -807,12 +792,6 @@ struct FillPasswordFormTestData {
 TEST_F(PasswordControllerTest, FillPasswordForm) {
   LoadHtml(kHtmlWithMultiplePasswordForms);
 
-  // TODO(crbug.com/614092): can we remove this assertion? This call is the only
-  // reason why hasPasswordField is a public API on gCrWeb. If the page does
-  // not contain a password field, shouldn't one of the expectations of the
-  // remaining tests also fail?
-  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"__gCrWeb.hasPasswordField()"));
-
   const std::string base_url = BaseUrl();
   // clang-format off
   FillPasswordFormTestData test_data[] = {
@@ -827,7 +806,8 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       YES,
       @"un0=test_user;pw0=test_password;"
     },
-    // Multiple forms match: they should all be autofilled.
+    // Multiple forms match (including one in iframe): they should all be
+    // autofilled.
     {
       base_url,
       base_url,
@@ -837,6 +817,7 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       "test_password",
       YES,
       @"un4=test_user;pw4=test_password;un5=test_user;pw5=test_password;"
+      "un7=test_user;pw7=test_password;"
     },
     // The form matches despite a different action: the only difference
     // is a query and reference.
@@ -990,7 +971,6 @@ TEST_F(PasswordControllerTest, FindAndFillMultiplePasswordForms) {
 
 BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
-  EXPECT_NSEQ(@YES, ExecuteJavaScript(@"__gCrWeb.hasPasswordField()"));
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
   SetPasswordFormFillData(form_data, base_url, base_url, "u0", "test_user",
