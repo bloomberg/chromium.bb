@@ -1094,7 +1094,8 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ManifestHostNotInDB) {
-  precache::PrecacheManifest manifest = CreateManifestData(1);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
   InitializePrecacheResource(manifest.add_resource(),
                              "http://cdn.google.com/script.js", 0.9);
   InitializePrecacheResource(manifest.add_resource(),
@@ -1118,7 +1119,8 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestHostInDB) {
   InitializePredictor();
   EXPECT_EQ(2U, predictor_->manifest_table_cache_->size());
 
-  precache::PrecacheManifest manifest = CreateManifestData(1);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
   InitializePrecacheResource(manifest.add_resource(),
                              "http://google.com/image.jpg", 0.1);
 
@@ -1140,7 +1142,8 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestHostNotInDBAndDBFull) {
   InitializePredictor();
   EXPECT_EQ(2U, predictor_->manifest_table_cache_->size());
 
-  precache::PrecacheManifest manifest = CreateManifestData(1);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
   InitializePrecacheResource(manifest.add_resource(),
                              "http://en.wikipedia.org/logo.png", 1.0);
 
@@ -1154,7 +1157,8 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestHostNotInDBAndDBFull) {
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ManifestUnknownFieldsRemoved) {
-  precache::PrecacheManifest manifest = CreateManifestData(1);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
   InitializePrecacheResource(manifest.add_resource(),
                              "http://cdn.google.com/script.js", 0.9);
   InitializePrecacheResource(manifest.add_resource(),
@@ -1180,6 +1184,19 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestUnknownFieldsRemoved) {
   predictor_->OnManifestFetched("google.com", manifest_with_unknown_fields);
 }
 
+TEST_F(ResourcePrefetchPredictorTest, ManifestTooOld) {
+  base::Time old_time = base::Time::Now() - base::TimeDelta::FromDays(7);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(old_time.ToDoubleT());
+  InitializePrecacheResource(manifest.add_resource(),
+                             "http://cdn.google.com/script.js", 0.9);
+  InitializePrecacheResource(manifest.add_resource(),
+                             "http://cdn.google.com/style.css", 0.75);
+
+  // No calls to DB should happen.
+  predictor_->OnManifestFetched("google.com", manifest);
+}
+
 TEST_F(ResourcePrefetchPredictorTest, ManifestUnusedRemoved) {
   const std::string& script_url = "http://cdn.google.com/script.js";
   const std::string& style_url = "http://cdn.google.com/style.css";
@@ -1192,7 +1209,8 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestUnusedRemoved) {
                          net::MEDIUM, false, false);
   predictor_->host_table_cache_->insert({google.primary_key(), google});
 
-  precache::PrecacheManifest manifest = CreateManifestData(1);
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
   InitializePrecacheResource(manifest.add_resource(), script_url, 0.9);
   InitializePrecacheResource(manifest.add_resource(), style_url, 0.75);
   InitializeExperiment(&manifest, internal::kUnusedRemovedExperiment,
@@ -1773,6 +1791,52 @@ TEST_F(ResourcePrefetchPredictorTest, PopulatePrefetcherRequest) {
   EXPECT_TRUE(urls.empty());
 }
 
+TEST_F(ResourcePrefetchPredictorTest, PopulateFromManifest) {
+  // The data that will be used in populating.
+  precache::PrecacheManifest google =
+      CreateManifestData(base::Time::Now().ToDoubleT());
+  InitializePrecacheResource(google.add_resource(),
+                             "https://static.google.com/good", 0.9);
+  InitializePrecacheResource(google.add_resource(),
+                             "https://static.google.com/low_confidence", 0.6);
+  InitializePrecacheResource(google.add_resource(),
+                             "https://static.google.com/versionned_removed",
+                             0.8);
+  InitializePrecacheResource(google.add_resource(),
+                             "https://static.google.com/unused_removed", 0.8);
+  InitializePrecacheResource(google.add_resource(),
+                             "https://static.google.com/no_store", 0.8);
+  InitializeExperiment(&google, internal::kVersionedRemovedExperiment,
+                       {true, true, false, true, true});
+  InitializeExperiment(&google, internal::kUnusedRemovedExperiment,
+                       {true, true, true, false, true});
+  InitializeExperiment(&google, internal::kNoStoreRemovedExperiment,
+                       {true, true, true, true, false});
+
+  // The data that's too old.
+  base::Time old_time = base::Time::Now() - base::TimeDelta::FromDays(7);
+  precache::PrecacheManifest facebook =
+      CreateManifestData(old_time.ToDoubleT());
+  InitializePrecacheResource(facebook.add_resource(),
+                             "https://static.facebook.com/good", 0.9);
+
+  predictor_->manifest_table_cache_->insert({"google.com", google});
+  predictor_->manifest_table_cache_->insert({"facebook.com", facebook});
+
+  std::vector<GURL> urls;
+  EXPECT_TRUE(predictor_->PopulateFromManifest("google.com", &urls));
+  EXPECT_THAT(urls,
+              UnorderedElementsAre(GURL("https://static.google.com/good")));
+
+  urls.clear();
+  EXPECT_FALSE(predictor_->PopulateFromManifest("facebook.com", &urls));
+  EXPECT_TRUE(urls.empty());
+
+  urls.clear();
+  EXPECT_FALSE(predictor_->PopulateFromManifest("404.com", &urls));
+  EXPECT_TRUE(urls.empty());
+}
+
 TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
   // The data to be requested for the confident endpoint.
   RedirectData nyt = CreateRedirectData("http://nyt.com", 1);
@@ -1827,8 +1891,19 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   // No prefetch data.
   EXPECT_FALSE(predictor_->GetPrefetchData(main_frame_url, &prediction));
 
+  // Add a manifest associated with the main frame host.
+  const std::string& resource_url = "https://static.google.com/resource";
+  precache::PrecacheManifest manifest =
+      CreateManifestData(base::Time::Now().ToDoubleT());
+  InitializePrecacheResource(manifest.add_resource(), resource_url, 0.9);
+  predictor_->manifest_table_cache_->insert({"google.com", manifest});
+
+  urls.clear();
+  EXPECT_TRUE(predictor_->GetPrefetchData(main_frame_url, &prediction));
+  EXPECT_THAT(urls, UnorderedElementsAre(GURL(resource_url)));
+
   // Add a resource associated with the main frame host.
-  PrefetchData google_host = CreatePrefetchData("google.com", 1);
+  PrefetchData google_host = CreatePrefetchData("google.com", 2);
   const std::string script_url = "https://cdn.google.com/script.js";
   InitializeResourceData(google_host.add_resources(), script_url,
                          content::RESOURCE_TYPE_SCRIPT, 10, 0, 1, 2.1,
@@ -1843,7 +1918,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   // Add host-based redirect.
   RedirectData host_redirect = CreateRedirectData("google.com", 3);
   InitializeRedirectStat(host_redirect.add_redirect_endpoints(),
-                         "www.google.com", 10, 0, 0);
+                         "www.google.fr", 10, 0, 0);
   predictor_->host_redirect_table_cache_->insert(
       std::make_pair(host_redirect.primary_key(), host_redirect));
 
@@ -1852,7 +1927,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   EXPECT_FALSE(predictor_->GetPrefetchData(main_frame_url, &prediction));
 
   // Add a resource associated with host redirect endpoint.
-  PrefetchData www_google_host = CreatePrefetchData("www.google.com", 4);
+  PrefetchData www_google_host = CreatePrefetchData("www.google.fr", 4);
   const std::string style_url = "https://cdn.google.com/style.css";
   InitializeResourceData(www_google_host.add_resources(), style_url,
                          content::RESOURCE_TYPE_STYLESHEET, 10, 0, 1, 2.1,
@@ -1866,7 +1941,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
 
   // Add a resource associated with the main frame url.
   PrefetchData google_url =
-      CreatePrefetchData("http://google.com/?query=cats", 2);
+      CreatePrefetchData("http://google.com/?query=cats", 5);
   const std::string image_url = "https://cdn.google.com/image.png";
   InitializeResourceData(google_url.add_resources(), image_url,
                          content::RESOURCE_TYPE_IMAGE, 10, 0, 1, 2.1,
@@ -1880,7 +1955,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
 
   // Add url-based redirect.
   RedirectData url_redirect =
-      CreateRedirectData("http://google.com/?query=cats", 5);
+      CreateRedirectData("http://google.com/?query=cats", 6);
   InitializeRedirectStat(url_redirect.add_redirect_endpoints(),
                          "https://www.google.com/?query=cats", 10, 0, 0);
   predictor_->url_redirect_table_cache_->insert(
@@ -1894,7 +1969,7 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
 
   // Add a resource associated with url redirect endpoint.
   PrefetchData www_google_url =
-      CreatePrefetchData("https://www.google.com/?query=cats", 4);
+      CreatePrefetchData("https://www.google.com/?query=cats", 7);
   const std::string font_url = "https://cdn.google.com/comic-sans-ms.woff";
   InitializeResourceData(www_google_url.add_resources(), font_url,
                          content::RESOURCE_TYPE_FONT_RESOURCE, 10, 0, 1, 2.1,

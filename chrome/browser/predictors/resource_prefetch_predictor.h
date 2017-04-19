@@ -63,7 +63,9 @@ constexpr char kResourcePrefetchPredictorPrefetchMissesSize[] =
 constexpr char kResourcePrefetchPredictorRedirectStatusHistogram[] =
     "ResourcePrefetchPredictor.RedirectStatus";
 
+const uint32_t kVersionedRemovedExperiment = 0x03ff25e3;
 const uint32_t kUnusedRemovedExperiment = 0xf7f77166;
+const uint32_t kNoStoreRemovedExperiment = 0xd90a199a;
 }  // namespace internal
 
 class TestObserver;
@@ -288,6 +290,7 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, HandledResourceTypes);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            PopulatePrefetcherRequest);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, PopulateFromManifest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectEndpoint);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -359,10 +362,16 @@ class ResourcePrefetchPredictor
 
   // Returns true iff the |data_map| contains PrefetchData that can be used
   // for a |main_frame_key| and fills |urls| with resources that need to be
-  // prefetched. |urls| pointer may be equal nullptr to get return value only.
+  // prefetched. |urls| may be nullptr to get the return value only.
   bool PopulatePrefetcherRequest(const std::string& main_frame_key,
                                  const PrefetchDataMap& data_map,
                                  std::vector<GURL>* urls) const;
+
+  // Returns true iff the manifest table contains PrecacheManifest that can be
+  // used for a |manifest_host| and fills |urls| with resources that need to be
+  // prefetched. |urls| may be nullptr to get the return value only.
+  bool PopulateFromManifest(const std::string& manifest_host,
+                            std::vector<GURL>* urls) const;
 
   // Callback for task to read predictor database. Takes ownership of
   // all arguments.

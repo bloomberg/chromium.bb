@@ -111,12 +111,9 @@ RedirectData CreateRedirectData(const std::string& primary_key,
   return data;
 }
 
-precache::PrecacheManifest CreateManifestData(uint64_t id) {
-  precache::PrecacheManifestId* manifest_id =
-      new precache::PrecacheManifestId();
-  manifest_id->set_id(id);
+precache::PrecacheManifest CreateManifestData(int64_t id) {
   precache::PrecacheManifest manifest;
-  manifest.set_allocated_id(manifest_id);
+  manifest.mutable_id()->set_id(id);
   return manifest;
 }
 

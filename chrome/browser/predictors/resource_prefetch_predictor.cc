@@ -100,6 +100,12 @@ void InitializeOriginStatFromOriginRequestSummary(
   origin->set_accessed_network(summary.accessed_network);
 }
 
+bool IsManifestTooOld(const precache::PrecacheManifest& manifest) {
+  const base::TimeDelta kMaxManifestAge = base::TimeDelta::FromDays(5);
+  return base::Time::Now() - base::Time::FromDoubleT(manifest.id().id()) >
+         kMaxManifestAge;
+}
+
 // Used to fetch the visit count for a URL from the History database.
 class GetUrlVisitCountTask : public history::HistoryDBTask {
  public:
@@ -898,16 +904,33 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
   // Use host data if the URL-based prediction isn't available.
   std::string main_frame_url_host = main_frame_url.host();
   if (GetRedirectEndpoint(main_frame_url_host, *host_redirect_table_cache_,
-                          &redirect_endpoint) &&
-      PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_, urls)) {
-    if (prediction) {
-      prediction->is_host = true;
-      prediction->main_frame_key = redirect_endpoint;
-      prediction->is_redirected = (redirect_endpoint != main_frame_url_host);
+                          &redirect_endpoint)) {
+    if (PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_,
+                                  urls)) {
+      if (prediction) {
+        prediction->is_host = true;
+        prediction->main_frame_key = redirect_endpoint;
+        prediction->is_redirected = (redirect_endpoint != main_frame_url_host);
+      }
+      return true;
     }
-    return true;
-  }
 
+    if (config_.is_manifests_enabled) {
+      // Use manifest data for host if available.
+      std::string manifest_host = redirect_endpoint;
+      if (base::StartsWith(manifest_host, "www.", base::CompareCase::SENSITIVE))
+        manifest_host.assign(manifest_host, 4, std::string::npos);
+      if (PopulateFromManifest(manifest_host, urls)) {
+        if (prediction) {
+          prediction->is_host = true;
+          prediction->main_frame_key = redirect_endpoint;
+          prediction->is_redirected =
+              (redirect_endpoint != main_frame_url_host);
+        }
+        return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -925,6 +948,46 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
       has_prefetchable_resource = true;
       if (urls)
         urls->push_back(GURL(resource.resource_url()));
+    }
+  }
+
+  return has_prefetchable_resource;
+}
+
+bool ResourcePrefetchPredictor::PopulateFromManifest(
+    const std::string& manifest_host,
+    std::vector<GURL>* urls) const {
+  auto it = manifest_table_cache_->find(manifest_host);
+  if (it == manifest_table_cache_->end())
+    return false;
+
+  const precache::PrecacheManifest& manifest = it->second;
+
+  if (IsManifestTooOld(manifest))
+    return false;
+
+  // This is roughly in line with the threshold we use for resource confidence.
+  const float kMinWeight = 0.7f;
+
+  // Don't prefetch resource if it has false bit in any of the following
+  // bitsets. All bits assumed to be true if an optional has no value.
+  base::Optional<std::vector<bool>> not_unused =
+      precache::GetResourceBitset(manifest, internal::kUnusedRemovedExperiment);
+  base::Optional<std::vector<bool>> not_versioned = precache::GetResourceBitset(
+      manifest, internal::kVersionedRemovedExperiment);
+  base::Optional<std::vector<bool>> not_no_store = precache::GetResourceBitset(
+      manifest, internal::kNoStoreRemovedExperiment);
+
+  bool has_prefetchable_resource = false;
+  for (int i = 0; i < manifest.resource_size(); ++i) {
+    const precache::PrecacheResource& resource = manifest.resource(i);
+    if (resource.weight_ratio() > kMinWeight &&
+        (!not_unused.has_value() || not_unused.value()[i]) &&
+        (!not_versioned.has_value() || not_versioned.value()[i]) &&
+        (!not_no_store.has_value() || not_no_store.value()[i])) {
+      has_prefetchable_resource = true;
+      if (urls)
+        urls->emplace_back(resource.url());
     }
   }
 
@@ -1637,7 +1700,7 @@ void ResourcePrefetchPredictor::OnManifestFetched(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  if (!config_.is_manifests_enabled)
+  if (!config_.is_manifests_enabled || IsManifestTooOld(manifest))
     return;
 
   // The manifest host has "www." prefix stripped, the manifest host could
@@ -1688,10 +1751,11 @@ void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
   for (int i = 0; i < manifest.resource_size(); ++i)
     manifest_index.insert({manifest.resource(i).url(), i});
 
-  bool was_updated = false;
-  base::Optional<std::vector<bool>> unused_bitset =
+  base::Optional<std::vector<bool>> not_unused =
       precache::GetResourceBitset(manifest, internal::kUnusedRemovedExperiment);
-  if (unused_bitset.has_value()) {
+
+  bool was_updated = false;
+  if (not_unused.has_value()) {
     // Remove unused resources from |data|.
     auto new_end = std::remove_if(
         data.mutable_resources()->begin(), data.mutable_resources()->end(),
@@ -1699,7 +1763,7 @@ void ResourcePrefetchPredictor::UpdatePrefetchDataByManifest(
           auto it = manifest_index.find(x.resource_url());
           if (it == manifest_index.end())
             return false;
-          return !unused_bitset.value()[it->second];
+          return !not_unused.value()[it->second];
         });
     was_updated = new_end != data.mutable_resources()->end();
     data.mutable_resources()->erase(new_end, data.mutable_resources()->end());

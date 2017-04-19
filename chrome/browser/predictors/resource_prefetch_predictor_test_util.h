@@ -51,7 +51,7 @@ PrefetchData CreatePrefetchData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
 RedirectData CreateRedirectData(const std::string& primary_key,
                                 uint64_t last_visit_time = 0);
-precache::PrecacheManifest CreateManifestData(uint64_t id = 0);
+precache::PrecacheManifest CreateManifestData(int64_t id = 0);
 OriginData CreateOriginData(const std::string& host,
                             uint64_t last_visit_time = 0);
 
