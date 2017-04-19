@@ -537,16 +537,6 @@ class NET_EXPORT TransportSecurityState
   typedef std::map<std::string, PKPState> PKPStateMap;
   typedef std::map<std::string, ExpectCTState> ExpectCTStateMap;
 
-  // Send an UMA report on pin validation failure, if the host is in a
-  // statically-defined list of domains.
-  //
-  // TODO(palmer): This doesn't really belong here, and should be moved into
-  // the exactly one call site. This requires unifying |struct HSTSPreload|
-  // (an implementation detail of this class) with a more generic
-  // representation of first-class DomainStates, and exposing the preloads
-  // to the caller with |GetStaticDomainState|.
-  static void ReportUMAOnPinFailure(const std::string& host);
-
   // IsBuildTimely returns true if the current build is new enough ensure that
   // built in security information (i.e. HSTS preloading and pinning
   // information) is timely.

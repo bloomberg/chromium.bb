@@ -533,12 +533,7 @@ bool DecodeHSTSPreloadRaw(const std::string& search_hostname,
         tmp.pkp_include_subdomains = tmp.sts_include_subdomains;
 
         if (tmp.has_pins) {
-          // TODO(estark): This can be removed once the preload list
-          // format no longer includes |domain_id|.
-          // https://crbug.com/661206
-          uint32_t unused_domain_id;
           if (!reader.Read(4, &tmp.pinset_id) ||
-              !reader.Read(9, &unused_domain_id) ||
               (!tmp.sts_include_subdomains &&
                !reader.Next(&tmp.pkp_include_subdomains))) {
             return false;

@@ -11,8 +11,6 @@
 
 #include "net/http/transport_security_state_source.h"
 
-enum SecondLevelDomainName [[DOMAIN_IDS]];
-
 // These are SubjectPublicKeyInfo hashes for public key pinning. The
 // hashes are SHA256 digests.
 [[SPKI_HASHES]]
