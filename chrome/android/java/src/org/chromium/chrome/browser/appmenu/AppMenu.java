@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,6 +60,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private ListPopupWindow mPopup;
     private AppMenuAdapter mAdapter;
     private AppMenuHandler mHandler;
+    private View mPromptView;
     private int mCurrentScreenRotation = -1;
     private boolean mIsByPermanentButton;
     private AnimatorSet mMenuItemEnterAnimator;
@@ -159,11 +161,13 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int footerHeight = 0;
         if (footerResourceId != 0) {
             mPopup.setPromptPosition(ListPopupWindow.POSITION_PROMPT_BELOW);
-            View promptView = LayoutInflater.from(context).inflate(footerResourceId, null);
-            mPopup.setPromptView(promptView);
+            mPromptView = LayoutInflater.from(context).inflate(footerResourceId, null);
+            mPopup.setPromptView(mPromptView);
             int measureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
-            promptView.measure(measureSpec, measureSpec);
-            footerHeight = promptView.getMeasuredHeight();
+            mPromptView.measure(measureSpec, measureSpec);
+            footerHeight = mPromptView.getMeasuredHeight();
+        } else {
+            mPromptView = null;
         }
         mPopup.setOnDismissListener(new OnDismissListener() {
             @Override
@@ -262,6 +266,14 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 }
             });
         }
+    }
+
+    /**
+     * @return The prompt view for the menu or null if one has not been set.
+     */
+    @Nullable
+    public View getPromptView() {
+        return mPromptView;
     }
 
     private boolean isAnchorAtBottom(View anchorView, Rect visibleDisplayFrame) {

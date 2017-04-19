@@ -1265,12 +1265,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegate(this) {
             private boolean showDataSaverFooter() {
-                return DataReductionProxySettings.getInstance()
-                        .shouldUseDataReductionMainMenuItem();
+                return getBottomSheet() == null
+                        && DataReductionProxySettings.getInstance()
+                                   .shouldUseDataReductionMainMenuItem();
             }
 
             @Override
             public int getFooterResourceId() {
+                if (getBottomSheet() != null) {
+                    boolean isPageMenu = !isTablet() && !isInOverviewMode();
+                    return isPageMenu ? R.layout.icon_row_menu_footer : 0;
+                }
+
                 return showDataSaverFooter() ? R.layout.data_reduction_main_menu_footer : 0;
             }
 

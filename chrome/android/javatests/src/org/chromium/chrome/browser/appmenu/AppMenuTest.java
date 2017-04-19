@@ -33,7 +33,7 @@ import java.util.concurrent.Callable;
  */
 @RetryOnFailure
 public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-    private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>poit.</html>");
+    private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
     private AppMenu mAppMenu;
     private AppMenuHandler mAppMenuHandler;
