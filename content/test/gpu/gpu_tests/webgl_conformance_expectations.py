@@ -103,7 +103,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # canvas.commit() promise synchronization isn't fully reliable yet.
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
-              bug=709484)
+        bug=709484)
+
+    self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
+        bug=1966) # angle bug ID
 
     # Passthrough command decoder
     self.Fail('conformance/extensions/ext-sRGB.html',

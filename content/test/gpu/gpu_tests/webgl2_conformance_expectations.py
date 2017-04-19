@@ -46,7 +46,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # canvas.commit() promise synchronization isn't fully reliable yet.
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
-              bug=709484)
+        bug=709484)
 
     self.Fail('conformance2/rendering/depth-stencil-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
@@ -57,6 +57,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=483282) # owner:cwallez, test might be buggy
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=625738)
+
+    self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
+        bug=1966) # angle bug ID
+
+    self.Fail('conformance2/textures/misc/copy-texture-cube-map-AMD-bug.html',
+        bug=712584)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        bug=712584)
 
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
@@ -701,6 +709,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r32f-red-float.html',
+        ['linux', 'nvidia'], bug=713127)
+
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
@@ -738,8 +750,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
 
     # Linux Intel
-    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
-        ['linux', 'intel'], bug=640389)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['linux', 'intel'], bug=687210)
 
@@ -1009,8 +1019,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux', 'amd', 'no_angle'], bug=483282)
-    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
-        ['linux', 'amd'], bug=633022)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
 
