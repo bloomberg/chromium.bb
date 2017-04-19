@@ -25,8 +25,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     uint64_t sequence_number,
     base::TimeTicks frame_time) {
   return BeginFrameArgs::Create(
-      location, source_id, sequence_number,
-      BeginFrameArgs::kDefaultSourceFrameNumber, frame_time,
+      location, source_id, sequence_number, frame_time,
       frame_time + BeginFrameArgs::DefaultInterval() -
           BeginFrameArgs::DefaultEstimatedParentDrawTime(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
@@ -40,7 +39,6 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64_t deadline,
     int64_t interval) {
   return BeginFrameArgs::Create(location, source_id, sequence_number,
-                                BeginFrameArgs::kDefaultSourceFrameNumber,
                                 base::TimeTicks::FromInternalValue(frame_time),
                                 base::TimeTicks::FromInternalValue(deadline),
                                 base::TimeDelta::FromInternalValue(interval),
@@ -56,7 +54,6 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     int64_t interval,
     BeginFrameArgs::BeginFrameArgsType type) {
   return BeginFrameArgs::Create(location, source_id, sequence_number,
-                                BeginFrameArgs::kDefaultSourceFrameNumber,
                                 base::TimeTicks::FromInternalValue(frame_time),
                                 base::TimeTicks::FromInternalValue(deadline),
                                 base::TimeDelta::FromInternalValue(interval),
@@ -70,8 +67,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
     base::SimpleTestTickClock* now_src) {
   base::TimeTicks now = now_src->NowTicks();
   return BeginFrameArgs::Create(
-      location, source_id, sequence_number,
-      BeginFrameArgs::kDefaultSourceFrameNumber, now,
+      location, source_id, sequence_number, now,
       now + BeginFrameArgs::DefaultInterval() -
           BeginFrameArgs::DefaultEstimatedParentDrawTime(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);

@@ -97,8 +97,7 @@ TEST(BeginFrameArgsTest, Create) {
   EXPECT_TRUE(args1.on_critical_path);
 
   BeginFrameArgs args2 = BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 123, 10, BeginFrameArgs::kDefaultSourceFrameNumber,
-      base::TimeTicks::FromInternalValue(1),
+      BEGINFRAME_FROM_HERE, 123, 10, base::TimeTicks::FromInternalValue(1),
       base::TimeTicks::FromInternalValue(2),
       base::TimeDelta::FromInternalValue(3), BeginFrameArgs::NORMAL);
   EXPECT_TRUE(args2.IsValid()) << args2;

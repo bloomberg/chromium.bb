@@ -119,9 +119,6 @@ void ProxyMain::BeginMainFrame(
       benchmark_instrumentation::kDoBeginFrame,
       begin_main_frame_state->begin_frame_id);
 
-  begin_main_frame_state->begin_frame_args.source_frame_number =
-      layer_tree_host_->SourceFrameNumber();
-
   base::TimeTicks begin_main_frame_start_time = base::TimeTicks::Now();
 
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");

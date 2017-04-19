@@ -82,18 +82,9 @@ void Scheduler::SetCanDraw(bool can_draw) {
   ProcessScheduledActions();
 }
 
-void Scheduler::NotifyReadyToActivate(int source_frame_number) {
+void Scheduler::NotifyReadyToActivate() {
   compositor_timing_history_->ReadyToActivate();
   state_machine_.NotifyReadyToActivate();
-  if (source_frame_number != -1) {
-    if (ready_to_activate_time_.empty() ||
-        ready_to_activate_time_.back().first !=
-            static_cast<unsigned>(source_frame_number)) {
-      // Note the activate source-frame and timestamp
-      ready_to_activate_time_.emplace_back(source_frame_number,
-                                           base::TimeTicks::Now());
-    }
-  }
   ProcessScheduledActions();
 }
 
@@ -616,6 +607,7 @@ void Scheduler::ProcessScheduledActions() {
   // The top-level call will iteratively execute the next action for us anyway.
   if (inside_process_scheduled_actions_)
     return;
+
   base::AutoReset<bool> mark_inside(&inside_process_scheduled_actions_, true);
 
   SchedulerStateMachine::Action action;
@@ -634,9 +626,6 @@ void Scheduler::ProcessScheduledActions() {
             begin_main_frame_args_.frame_time);
         state_machine_.WillSendBeginMainFrame();
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
-        begin_main_frame_args_.ready_to_activate_time =
-            std::move(ready_to_activate_time_);
-        ready_to_activate_time_.clear();
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {

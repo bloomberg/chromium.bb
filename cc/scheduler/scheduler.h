@@ -77,7 +77,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetVisible(bool visible);
   bool visible() { return state_machine_.visible(); }
   void SetCanDraw(bool can_draw);
-  void NotifyReadyToActivate(int source_frame_number);
+  void NotifyReadyToActivate();
   void NotifyReadyToDraw();
   void SetBeginFrameSource(BeginFrameSource* source);
 
@@ -190,13 +190,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
       SchedulerStateMachine::ACTION_NONE;
 
   bool stopped_ = false;
-
-  // This is to report Activation (ReadyToActivate signal) time back to Main.
-  // A vector of pairs of source_frame_number and timestamp is captured, and
-  // sent back in BeginFrameArgs with the next ProxyMain::BeginMainFrame. A
-  // vector is needed as there can be multiple ReadyToActivate signals before
-  // the next BeginMainFrame.
-  std::vector<std::pair<uint32_t, base::TimeTicks>> ready_to_activate_time_;
 
  private:
   void ScheduleBeginImplFrameDeadline();

@@ -329,10 +329,7 @@ void ProxyImpl::OnCanDrawStateChanged(bool can_draw) {
 void ProxyImpl::NotifyReadyToActivate() {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToActivate");
   DCHECK(IsImplThread());
-  scheduler_->NotifyReadyToActivate(
-      layer_tree_host_impl_->pending_tree()
-          ? layer_tree_host_impl_->pending_tree()->source_frame_number()
-          : -1);
+  scheduler_->NotifyReadyToActivate();
 }
 
 void ProxyImpl::NotifyReadyToDraw() {

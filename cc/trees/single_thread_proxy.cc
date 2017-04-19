@@ -322,11 +322,8 @@ void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
 void SingleThreadProxy::NotifyReadyToActivate() {
   TRACE_EVENT0("cc", "SingleThreadProxy::NotifyReadyToActivate");
   DebugScopedSetImplThread impl(task_runner_provider_);
-  if (scheduler_on_impl_thread_) {
-    // The argument to NotifyReadyToActivate is the pending-tree for computing
-    // Activation time in ProxyImpl. However this is not applicable here.
-    scheduler_on_impl_thread_->NotifyReadyToActivate(-1);
-  }
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->NotifyReadyToActivate();
 }
 
 void SingleThreadProxy::NotifyReadyToDraw() {
@@ -467,8 +464,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
 
   BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, BeginFrameArgs::kManualSourceId, 1,
-      BeginFrameArgs::kDefaultSourceFrameNumber, frame_begin_time,
-      base::TimeTicks(), BeginFrameArgs::DefaultInterval(),
+      frame_begin_time, base::TimeTicks(), BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::NORMAL));
 
   // Start the impl frame.
