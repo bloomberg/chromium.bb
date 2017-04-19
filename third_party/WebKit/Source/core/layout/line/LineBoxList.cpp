@@ -289,18 +289,20 @@ void LineBoxList::DirtyLinesFromChangedChild(LineLayoutItem container,
 
   // Try to figure out which line box we belong in. First try to find a previous
   // line box by examining our siblings. If we are a float inside an inline then
-  // check the siblings of our inline parent. If we didn't find a line box, then
-  // use our parent's first line box.
+  // check our nearest inline ancestor with siblings. If we didn't find a line
+  // box, then use our parent's first line box.
   RootInlineBox* box = nullptr;
   LineLayoutItem curr = child.PreviousSibling();
   if (child.IsFloating() && !curr) {
-    LineLayoutInline outer_inline;
-    for (LineLayoutItem parent = child.Parent();
-         parent && parent.IsLayoutInline() && !parent.PreviousSibling();
-         parent = parent.Parent())
-      outer_inline = LineLayoutInline(parent);
-    if (outer_inline)
-      curr = outer_inline.PreviousSibling();
+    DCHECK(child.Parent());
+    if (child.Parent().IsLayoutInline()) {
+      LineLayoutItem outer_inline = child.Parent();
+      while (outer_inline && !outer_inline.PreviousSibling() &&
+             outer_inline.Parent().IsLayoutInline())
+        outer_inline = outer_inline.Parent();
+      if (outer_inline)
+        curr = outer_inline.PreviousSibling();
+    }
   }
 
   for (; curr; curr = curr.PreviousSibling()) {
