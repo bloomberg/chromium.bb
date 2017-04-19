@@ -1619,7 +1619,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // See http://crbug.com/335503.
 // The test fails on Mac OSX with ASAN.
 // See http://crbug.com/699062.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_MACOSX) && defined(THREAD_SANITIZER)
 #define MAYBE_RendererDebugURLsDontSwap DISABLED_RendererDebugURLsDontSwap
 #else
 #define MAYBE_RendererDebugURLsDontSwap RendererDebugURLsDontSwap
