@@ -49,7 +49,8 @@ class UpdateClientImpl : public UpdateClient {
   void Stop() override;
   void SendUninstallPing(const std::string& id,
                          const base::Version& version,
-                         int reason) override;
+                         int reason,
+                         const Callback& callback) override;
 
  private:
   ~UpdateClientImpl() override;

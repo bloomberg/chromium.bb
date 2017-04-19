@@ -2233,6 +2233,13 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 }
 
 TEST_F(UpdateClientTest, SendUninstallPing) {
+  class CompletionCallbackFake {
+   public:
+    static void Callback(const base::Closure& quit_closure, Error error) {
+      quit_closure.Run();
+    }
+  };
+
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
@@ -2286,8 +2293,11 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       config(), std::move(ping_manager), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
-  update_client->SendUninstallPing("jebgalgnebhfojomionfpkfelancnnkf",
-                                   base::Version("1.0"), 10);
+  update_client->SendUninstallPing(
+      "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.0"), 10,
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+
+  RunThreads();
 }
 
 TEST_F(UpdateClientTest, RetryAfter) {

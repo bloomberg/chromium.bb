@@ -234,7 +234,8 @@ void UpdateClientImpl::Stop() {
 
 void UpdateClientImpl::SendUninstallPing(const std::string& id,
                                          const base::Version& version,
-                                         int reason) {
+                                         int reason,
+                                         const Callback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // The implementation of PingManager::SendPing contains a self-deleting
@@ -247,6 +248,9 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
   item.extra_code1 = reason;
 
   ping_manager_->SendPing(&item);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, Error::NONE));
 }
 
 scoped_refptr<UpdateClient> UpdateClientFactory(

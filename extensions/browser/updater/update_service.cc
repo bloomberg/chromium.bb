@@ -18,6 +18,8 @@ namespace {
 
 void UpdateCheckCompleteCallback(update_client::Error error) {}
 
+void SendUninstallPingCompleteCallback(update_client::Error error) {}
+
 void InstallUpdateCallback(content::BrowserContext* context,
                            const std::string& extension_id,
                            const base::FilePath& temp_dir) {
@@ -46,7 +48,8 @@ void UpdateService::Shutdown() {
 void UpdateService::SendUninstallPing(const std::string& id,
                                       const base::Version& version,
                                       int reason) {
-  update_client_->SendUninstallPing(id, version, reason);
+  update_client_->SendUninstallPing(
+      id, version, reason, base::Bind(&SendUninstallPingCompleteCallback));
 }
 
 void UpdateService::StartUpdateCheck(

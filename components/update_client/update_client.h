@@ -328,7 +328,8 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // of this class.
   virtual void SendUninstallPing(const std::string& id,
                                  const base::Version& version,
-                                 int reason) = 0;
+                                 int reason,
+                                 const Callback& callback) = 0;
 
   // Returns status details about a CRX update. The function returns true in
   // case of success and false in case of errors, such as |id| was

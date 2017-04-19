@@ -65,7 +65,8 @@ class FakeUpdateClient : public update_client::UpdateClient {
   void Stop() override {}
   void SendUninstallPing(const std::string& id,
                          const base::Version& version,
-                         int reason) override {
+                         int reason,
+                         const update_client::Callback& callback) override {
     uninstall_pings_.emplace_back(id, version, reason);
   }
 
