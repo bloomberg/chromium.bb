@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
@@ -66,9 +67,9 @@ public class PopupWindowTest extends AwTestBase {
         assertEquals(POPUP_TITLE, getTitleOnUiThread(popupContents));
     }
 
+    @DisabledTest
     @SmallTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testOnPageFinishedCalledOnDomModificationAfterNavigation() throws Throwable {
         final String popupPath = "/popup.html";
         final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
