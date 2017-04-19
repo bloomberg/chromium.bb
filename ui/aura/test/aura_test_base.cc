@@ -157,6 +157,8 @@ void AuraTestBase::OnPointerEventObserved(const ui::PointerEvent& event,
 
 void AuraTestBase::SetWindowManagerClient(WindowManagerClient* client) {}
 
+void AuraTestBase::OnWmConnected() {}
+
 void AuraTestBase::OnWmSetBounds(Window* window, const gfx::Rect& bounds) {}
 
 bool AuraTestBase::OnWmSetProperty(

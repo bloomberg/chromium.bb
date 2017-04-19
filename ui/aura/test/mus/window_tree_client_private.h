@@ -55,6 +55,8 @@ class WindowTreeClientPrivate {
 
   void CallOnCaptureChanged(Window* new_capture, Window* old_capture);
 
+  void CallOnConnect();
+
   // Sets the WindowTree and client id.
   void SetTreeAndClientId(ui::mojom::WindowTree* window_tree,
                           ClientSpecificId client_id);

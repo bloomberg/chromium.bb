@@ -79,6 +79,9 @@ class AURA_EXPORT WindowManagerDelegate {
   // the WindowManager.
   virtual void SetWindowManagerClient(WindowManagerClient* client) = 0;
 
+  // Called when the connection to mus has been fully established.
+  virtual void OnWmConnected();
+
   // A client requested the bounds of |window| to change to |bounds|.
   virtual void OnWmSetBounds(Window* window, const gfx::Rect& bounds) = 0;
 

@@ -97,6 +97,7 @@ class AuraTestBase : public testing::Test,
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(WindowManagerClient* client) override;
+  void OnWmConnected() override;
   void OnWmSetBounds(Window* window, const gfx::Rect& bounds) override;
   bool OnWmSetProperty(
       Window* window,

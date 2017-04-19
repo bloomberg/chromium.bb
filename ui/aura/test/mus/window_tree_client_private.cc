@@ -81,6 +81,11 @@ void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
       old_capture ? WindowPortMus::Get(old_capture)->server_id() : 0);
 }
 
+void WindowTreeClientPrivate::CallOnConnect() {
+  const ClientSpecificId client_id = 1;
+  tree_client_impl_->OnConnect(client_id);
+}
+
 void WindowTreeClientPrivate::SetTreeAndClientId(
     ui::mojom::WindowTree* window_tree,
     ClientSpecificId client_id) {

@@ -96,6 +96,7 @@ class TestWM : public service_manager::Service,
   void SetWindowManagerClient(aura::WindowManagerClient* client) override {
     window_manager_client_ = client;
   }
+  void OnWmConnected() override {}
   void OnWmSetBounds(aura::Window* window, const gfx::Rect& bounds) override {
     window->SetBounds(bounds);
   }

@@ -330,6 +330,8 @@ void WindowManager::SetWindowManagerClient(aura::WindowManagerClient* client) {
   ash::Shell::set_window_manager_client(client);
 }
 
+void WindowManager::OnWmConnected() {}
+
 void WindowManager::OnWmSetBounds(aura::Window* window,
                                   const gfx::Rect& bounds) {
   // TODO(sky): this indirectly sets bounds, which is against what

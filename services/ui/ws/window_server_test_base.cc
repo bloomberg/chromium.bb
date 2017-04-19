@@ -154,6 +154,8 @@ void WindowServerTestBase::SetWindowManagerClient(
   window_manager_client_ = client;
 }
 
+void WindowServerTestBase::OnWmConnected() {}
+
 void WindowServerTestBase::OnWmSetBounds(aura::Window* window,
                                          const gfx::Rect& bounds) {
   if (!window_manager_delegate_)

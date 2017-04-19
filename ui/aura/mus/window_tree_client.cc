@@ -1422,6 +1422,8 @@ bool WindowTreeClient::WaitForInitialDisplays() {
 
 void WindowTreeClient::OnConnect(ClientSpecificId client_id) {
   client_id_ = client_id;
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmConnected();
 }
 
 void WindowTreeClient::WmNewDisplayAdded(

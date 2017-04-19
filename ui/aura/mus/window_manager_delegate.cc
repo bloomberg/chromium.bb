@@ -6,6 +6,8 @@
 
 namespace aura {
 
+void WindowManagerDelegate::OnWmConnected() {}
+
 ui::mojom::EventResult WindowManagerDelegate::OnAccelerator(
     uint32_t id,
     const ui::Event& event,
