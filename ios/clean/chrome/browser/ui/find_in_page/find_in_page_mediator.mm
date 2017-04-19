@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/scoped_observer.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -36,6 +37,8 @@
   // Observes the WebStateList so that this mediator can update the UI when the
   // active WebState changes.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserverBridge>>
+      _scopedWebStateListObserver;
 }
 
 @synthesize dispatcher = _dispatcher;
@@ -55,13 +58,12 @@
     _dispatcher = dispatcher;
 
     _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
-    _webStateList->AddObserver(_webStateListObserver.get());
+    _scopedWebStateListObserver = base::MakeUnique<
+        ScopedObserver<WebStateList, WebStateListObserverBridge>>(
+        _webStateListObserver.get());
+    _scopedWebStateListObserver->Add(_webStateList);
   }
   return self;
-}
-
-- (void)dealloc {
-  _webStateList->RemoveObserver(_webStateListObserver.get());
 }
 
 - (void)stopFinding {
