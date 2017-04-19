@@ -155,9 +155,9 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)waitForErrorPage {
-  NSString* const kInternetDisconnectedError =
+  NSString* const kErrorPageText =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [self waitForStaticHTMLViewContainingText:kInternetDisconnectedError];
+  [self waitForStaticHTMLViewContainingText:kErrorPageText];
 }
 
 + (void)waitForStaticHTMLViewContainingText:(NSString*)text {
