@@ -722,9 +722,7 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   if (IsSchemeSupportedForAppCache(common_params_.url)) {
-    RenderFrameHostImpl* render_frame_host =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-    if (render_frame_host->GetRenderViewHost()
+    if (navigating_frame_host->GetRenderViewHost()
             ->GetWebkitPreferences()
             .application_cache_enabled) {
       navigation_handle_->InitAppCacheHandle(
