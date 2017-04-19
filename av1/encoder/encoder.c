@@ -2828,7 +2828,7 @@ void aom_write_yuv_frame_420(YV12_BUFFER_CONFIG *s, FILE *f) {
 }
 #endif
 
-#if CONFIG_EXT_REFS
+#if CONFIG_EXT_REFS && !CONFIG_XIPHRC
 static void check_show_existing_frame(AV1_COMP *cpi) {
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   AV1_COMMON *const cm = &cpi->common;
@@ -2857,7 +2857,7 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
   }
   cpi->rc.is_src_frame_ext_arf = 0;
 }
-#endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_REFS && !CONFIG_XIPHRC
 
 #ifdef OUTPUT_YUV_REC
 void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
@@ -4690,7 +4690,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_XIPHRC
   int frame_type;
   int drop_this_frame = 0;
-#endif
+#endif  // CONFIG_XIPHRC
   set_ext_overrides(cpi);
   aom_clear_system_state();
 
@@ -4761,7 +4761,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (cpi->rc.is_src_frame_alt_ref) {
       av1_set_target_rate(cpi);
 #if CONFIG_XIPHRC
-      int frame_type = cm->frame_type == INTER_FRAME ? OD_P_FRAME : OD_I_FRAME;
+      frame_type = cm->frame_type == INTER_FRAME ? OD_P_FRAME : OD_I_FRAME;
       drop_this_frame = od_enc_rc_update_state(
           &cpi->od_rc, *size << 3, cpi->refresh_golden_frame,
           cpi->refresh_alt_ref_frame, frame_type, cpi->droppable);
@@ -5052,9 +5052,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif
     return;
   }
-#else
+#else   // !CONFIG_XIPHRC
   av1_rc_postencode_update(cpi, *size);
-#endif
+#endif  // CONFIG_XIPHRC
 
 #if 0
   output_frame_level_debug_stats(cpi);
@@ -5531,7 +5531,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif  // CONFIG_EXT_REFS
   cpi->refresh_alt_ref_frame = 0;
 
-#if CONFIG_EXT_REFS
+#if CONFIG_EXT_REFS && !CONFIG_XIPHRC
   if (oxcf->pass == 2 && cm->show_existing_frame) {
     // Manage the source buffer and flush out the source frame that has been
     // coded already; Also get prepared for PSNR calculation if needed.
@@ -5546,9 +5546,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     *time_end = source->ts_end;
 
     // We need to adjust frame rate for an overlay frame
-    if (cpi->rc.is_src_frame_alt_ref) {
-      adjust_frame_rate(cpi, source);
-    }
+    if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
 
     // Find a free buffer for the new frame, releasing the reference previously
     // held.
@@ -5566,11 +5564,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     *size = 0;
 
     // We need to update the gf_group for show_existing overlay frame
-    if (cpi->rc.is_src_frame_alt_ref) {
-#if !CONFIG_XIPHRC
-      av1_rc_get_second_pass_params(cpi);
-#endif
-    }
+    if (cpi->rc.is_src_frame_alt_ref) av1_rc_get_second_pass_params(cpi);
 
     Pass2Encode(cpi, size, dest, frame_flags);
 
@@ -5587,7 +5581,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cm->show_existing_frame = 0;
     return 0;
   }
-#endif  // CONFIG_EXT_REFS
+#endif  // CONFIG_EXT_REFS && !CONFIG_XIPHRC
 
   // Should we encode an arf frame.
   arf_src_index = get_arf_src_index(cpi);
