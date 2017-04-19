@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
@@ -30,7 +29,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
@@ -52,8 +50,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::WebContentsObserver,
                              public chromeos::SessionManagerClient::Observer,
                              public chromeos::CrasAudioHandler::AudioObserver,
-                             public ash::ShellObserver,
-                             public keyboard::KeyboardControllerObserver,
                              public display::DisplayObserver,
                              public views::WidgetRemovalsObserver,
                              public chrome::MultiUserWindowManager::Observer {
@@ -120,14 +116,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Overridden from chromeos::CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
-
-  // ash::ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     ash::WmWindow* root_window) override;
-
-  // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
 
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
@@ -315,9 +303,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // feedback is enabled.  Otherwise, startup sound should be played
   // in any case.
   bool startup_sound_honors_spoken_feedback_ = false;
-
-  // True is subscribed as keyboard controller observer.
-  bool is_observing_keyboard_ = false;
 
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.

@@ -373,15 +373,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
 
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
-  if (keyboard::KeyboardController::GetInstance()) {
-    keyboard::KeyboardController::GetInstance()->AddObserver(this);
-    is_observing_keyboard_ = true;
-  }
 
-  if (!ash_util::IsRunningInMash())
-    ash::Shell::Get()->AddShellObserver(this);
-  else
-    NOTIMPLEMENTED();
   display::Screen::GetScreen()->AddObserver(this);
 
   // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
@@ -492,15 +484,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
-    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    is_observing_keyboard_ = false;
-  }
-
-  if (!ash_util::IsRunningInMash())
-    ash::Shell::Get()->RemoveShellObserver(this);
-  else
-    NOTIMPLEMENTED();
   display::Screen::GetScreen()->RemoveObserver(this);
 
   if (login_view_ && login_window_)
@@ -1020,43 +1003,6 @@ void LoginDisplayHostImpl::EmitLoginPromptVisibleCalled() {
 void LoginDisplayHostImpl::OnActiveOutputNodeChanged() {
   TryToPlayStartupSound();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostImpl, ash::ShellObserver:
-
-void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(
-    bool activated,
-    ash::WmWindow* root_window) {
-  if (keyboard::KeyboardController::GetInstance()) {
-    if (activated) {
-      if (!is_observing_keyboard_) {
-        keyboard::KeyboardController::GetInstance()->AddObserver(this);
-        is_observing_keyboard_ = true;
-      }
-    } else {
-      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-      is_observing_keyboard_ = false;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// LoginDisplayHostImpl, keyboard::KeyboardControllerObserver:
-
-void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
-    const gfx::Rect& new_bounds) {
-  if (new_bounds.IsEmpty()) {
-    // Keyboard has been hidden.
-    if (GetOobeUI())
-      GetOobeUI()->GetCoreOobeView()->ShowControlBar(true);
-  } else if (!new_bounds.IsEmpty()) {
-    // Keyboard has been shown.
-    if (GetOobeUI())
-      GetOobeUI()->GetCoreOobeView()->ShowControlBar(false);
-  }
-}
-
-void LoginDisplayHostImpl::OnKeyboardClosed() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, display::DisplayObserver:

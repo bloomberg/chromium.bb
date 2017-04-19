@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/shell_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,7 +22,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/display/display_observer.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -50,8 +48,6 @@ class WebUIScreenLocker : public WebUILoginView,
                           public ash::LockStateObserver,
                           public views::WidgetObserver,
                           public PowerManagerClient::Observer,
-                          public ash::ShellObserver,
-                          public keyboard::KeyboardControllerObserver,
                           public display::DisplayObserver,
                           public content::WebContentsObserver {
  public:
@@ -138,14 +134,6 @@ class WebUIScreenLocker : public WebUILoginView,
   // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
 
-  // ash::ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     ash::WmWindow* root_window) override;
-
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
-
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
@@ -192,9 +180,6 @@ class WebUIScreenLocker : public WebUILoginView,
   base::TimeTicks lock_time_;
 
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
-
-  // True iff this object is observing a keyboard controller.
-  bool is_observing_keyboard_ = false;
 
   base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
 

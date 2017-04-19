@@ -88,8 +88,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void NotifyKeyboardBoundsChanging(const gfx::Rect& new_bounds);
 
   // Management of the observer list.
-  virtual void AddObserver(KeyboardControllerObserver* observer);
-  virtual void RemoveObserver(KeyboardControllerObserver* observer);
+  void AddObserver(KeyboardControllerObserver* observer);
+  bool HasObserver(KeyboardControllerObserver* observer);
+  void RemoveObserver(KeyboardControllerObserver* observer);
 
   KeyboardUI* ui() { return ui_.get(); }
 

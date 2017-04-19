@@ -54,6 +54,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -111,6 +112,14 @@ const char WebUILoginView::kViewClassName[] =
 
 WebUILoginView::WebUILoginView(const WebViewSettings& settings)
     : settings_(settings) {
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->AddObserver(this);
+  // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in mash
+  if (!ash_util::IsRunningInMash())
+    ash::Shell::Get()->AddShellObserver(this);
+  else
+    NOTIMPLEMENTED();
+
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
@@ -170,6 +179,12 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
 WebUILoginView::~WebUILoginView() {
   for (auto& observer : observer_list_)
     observer.OnHostDestroying();
+
+  // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in mash
+  if (!ash_util::IsRunningInMash())
+    ash::Shell::Get()->RemoveShellObserver(this);
+  if (keyboard::KeyboardController::GetInstance())
+    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
 
   if (!ash_util::IsRunningInMash() &&
       ash::Shell::Get()->HasPrimaryStatusArea()) {
@@ -405,6 +420,42 @@ void WebUILoginView::Observe(int type,
 views::WebView* WebUILoginView::web_view() {
   return webui_login_.get();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ash::ShellObserver:
+
+void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
+                                                   ash::WmWindow* root_window) {
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    if (activated) {
+      if (!keyboard_controller->HasObserver(this))
+        keyboard_controller->AddObserver(this);
+    } else {
+      keyboard_controller->RemoveObserver(this);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// keyboard::KeyboardControllerObserver:
+
+void WebUILoginView::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
+  if (!GetOobeUI())
+    return;
+  CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
+  if (new_bounds.IsEmpty()) {
+    // Keyboard has been hidden.
+    view->ShowControlBar(true);
+    view->SetVirtualKeyboardShown(false);
+  } else {
+    // Keyboard has been shown.
+    view->ShowControlBar(false);
+    view->SetVirtualKeyboardShown(true);
+  }
+}
+
+void WebUILoginView::OnKeyboardClosed() {}
 
 // WebUILoginView private: -----------------------------------------------------
 

@@ -275,6 +275,10 @@ void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
+bool KeyboardController::HasObserver(KeyboardControllerObserver* observer) {
+  return observer_list_.HasObserver(observer);
+}
+
 void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }

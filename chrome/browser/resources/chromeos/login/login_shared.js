@@ -412,10 +412,11 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows/hides pin keyboard on the lock screen.
+   * Changes some UI which depends on the virtual keyboard being shown/hidden.
    */
-  Oobe.showPinKeyboard = function(show) {
-    Oobe.getInstance().pinHidden = !show;
+  Oobe.setVirtualKeyboardShown = function(shown) {
+    Oobe.getInstance().virtualKeyboardShown = shown;
+    $('pod-row').setFocusedPodPinVisibility(!shown);
   };
 
   /**

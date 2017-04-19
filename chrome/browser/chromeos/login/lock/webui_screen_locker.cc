@@ -43,7 +43,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
 
@@ -126,21 +125,14 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
   ash::ShellPort::Get()->AddLockStateObserver(this);
-  ash::Shell::Get()->AddShellObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-
-  if (keyboard::KeyboardController::GetInstance()) {
-    keyboard::KeyboardController::GetInstance()->AddObserver(this);
-    is_observing_keyboard_ = true;
-  }
 }
 
 WebUIScreenLocker::~WebUIScreenLocker() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   ash::ShellPort::Get()->RemoveLockStateObserver(this);
-  ash::Shell::Get()->RemoveShellObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);
@@ -150,11 +142,6 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   // delegate set in ShowSigninScreen so that it no longer points to us.
   if (login_display_.get() && GetOobeUI())
     GetOobeUI()->ResetSigninScreenHandlerDelegate();
-
-  if (keyboard::KeyboardController::GetInstance() && is_observing_keyboard_) {
-    keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-    is_observing_keyboard_ = false;
-  }
 
   ResetKeyboardOverscrollOverride();
 
@@ -412,47 +399,6 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
     Signout();
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// ash::ShellObserver:
-
-void WebUIScreenLocker::OnVirtualKeyboardStateChanged(
-    bool activated,
-    ash::WmWindow* root_window) {
-  if (keyboard::KeyboardController::GetInstance()) {
-    if (activated) {
-      if (!is_observing_keyboard_) {
-        keyboard::KeyboardController::GetInstance()->AddObserver(this);
-        is_observing_keyboard_ = true;
-      }
-    } else {
-      keyboard::KeyboardController::GetInstance()->RemoveObserver(this);
-      is_observing_keyboard_ = false;
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// keyboard::KeyboardControllerObserver:
-
-void WebUIScreenLocker::OnKeyboardBoundsChanging(
-    const gfx::Rect& new_bounds) {
-  if (new_bounds.IsEmpty()) {
-    // Keyboard has been hidden.
-    if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeView()->ShowControlBar(true);
-      GetOobeUI()->GetCoreOobeView()->ShowPinKeyboard(true);
-    }
-  } else {
-    // Keyboard has been shown.
-    if (GetOobeUI()) {
-      GetOobeUI()->GetCoreOobeView()->ShowControlBar(false);
-      GetOobeUI()->GetCoreOobeView()->ShowPinKeyboard(false);
-    }
-  }
-}
-
-void WebUIScreenLocker::OnKeyboardClosed() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver:

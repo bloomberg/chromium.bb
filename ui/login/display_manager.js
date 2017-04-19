@@ -267,11 +267,6 @@ cr.define('cr.ui.login', function() {
       $('login-header-bar').hidden = hidden;
     },
 
-    set pinHidden(hidden) {
-      this.virtualKeyboardShown = hidden;
-      $('pod-row').setFocusedPodPinVisibility(!hidden);
-    },
-
     /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
