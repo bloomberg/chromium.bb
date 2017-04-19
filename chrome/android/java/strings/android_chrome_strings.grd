@@ -671,19 +671,19 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Suggestions preferences -->
-      <message name="IDS_PREFS_SUGGESTIONS" desc="Title for the Suggestions preferences. [CHAR-LIMIT=32]">
+      <message name="IDS_PREFS_SUGGESTIONS" desc="Title for the Suggestions preferences. [CHAR-LIMIT=32]" translateable="false">
         Suggestions
       </message>
-      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions feature on or off.">
+      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions feature on or off." translateable="false">
         Suggestions
       </message>
-      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_ON_SUMMARY" desc="Description for the Suggestions switch when the feature is enabled.">
+      <message name="IDS_SUGGESTIONS_FEATURE_SWITCH_ON_SUMMARY" desc="Description for the Suggestions switch when the feature is enabled." translateable="false">
         Use Google servers to provide browsing suggestions.
       </message>
-      <message name="IDS_SUGGESTIONS_CAVEATS_DESCRIPTION" desc="Description text for suggestions usage caveats">
+      <message name="IDS_SUGGESTIONS_CAVEATS_DESCRIPTION" desc="Description text for suggestions usage caveats" translateable="false">
         When this feature is turned on, Chrome will use Google servers to provide browsing suggestions, e.g. when you open a new tab. This include popular websites, trending articles as well as personalized suggestions.
       </message>
-      <message name="IDS_SUGGESTIONS_NOTIFICATIONS_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions notifications on or off.">
+      <message name="IDS_SUGGESTIONS_NOTIFICATIONS_SWITCH_TITLE" desc="Title for switch used to toggle the Content Suggestions notifications on or off." translateable="false">
         Notifications
       </message>
 
