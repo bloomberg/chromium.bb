@@ -190,7 +190,8 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // Add items to the "Task" category.
   for (ShellLinkItemList::const_iterator it = link_items.begin();
        it != link_items.end(); ++it) {
-    AddShellLink(collection, application_path.value(), *it);
+    if (!AddShellLink(collection, application_path.value(), *it))
+      return false;
   }
 
   // We can now add the new list to the JumpList.
@@ -236,8 +237,8 @@ bool JumpListUpdater::AddCustomCategory(const std::wstring& category_name,
 
   for (ShellLinkItemList::const_iterator item = link_items.begin();
        item != link_items.end() && max_items > 0; ++item, --max_items) {
-    scoped_refptr<ShellLinkItem> link(*item);
-    AddShellLink(collection, application_path.value(), link);
+    if (!AddShellLink(collection, application_path.value(), *item))
+      return false;
   }
 
   // We can now add the new list to the JumpList.

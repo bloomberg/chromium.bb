@@ -196,6 +196,8 @@ bool UpdateJumpList(const wchar_t* app_id,
   // and 40% to "recently-closed" items, respectively.
   // Nevertheless, if there are not so many items in |recently_closed_pages|,
   // we give the remaining slots to "most-visited" items.
+  // The default maximum number of items to display in JumpList is 10.
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/dd378398(v=vs.85).aspx
   const int kMostVisited = 60;
   const int kRecentlyClosed = 40;
   const int kTotal = kMostVisited + kRecentlyClosed;
@@ -207,6 +209,9 @@ bool UpdateJumpList(const wchar_t* app_id,
     most_visited_items += recently_closed_items - recently_closed_pages.size();
     recently_closed_items = recently_closed_pages.size();
   }
+
+  // Delete the content in JumpListIcons folder and log the results to UMA.
+  DeleteDirectoryContentAndLogResults(icon_dir, kFileDeleteLimit);
 
   // If JumpListIcons directory doesn't exist (we have tried to create it
   // already) or is not empty, skip updating the jumplist icons. The jumplist
@@ -276,9 +281,6 @@ void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
     local_most_visited_pages = data->most_visited_pages_;
     local_recently_closed_pages = data->recently_closed_pages_;
   }
-
-  // Delete the content in JumpListIcons folder and log the results to UMA.
-  DeleteDirectoryContentAndLogResults(icon_dir, kFileDeleteLimit);
 
   // Create a new JumpList and replace the current JumpList with it. The
   // jumplist links are updated anyway, while the jumplist icons may not as

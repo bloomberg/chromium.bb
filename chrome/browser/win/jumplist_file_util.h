@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 
 // Maximum number of icon files allowed to delete per jumplist update.
-const int kFileDeleteLimit = 60;
+const int kFileDeleteLimit = 30;
 
 // Folder delete status enumeration, used in Delete* methods below.
 // This is used for UMA. Do not delete entries, and keep in sync with
