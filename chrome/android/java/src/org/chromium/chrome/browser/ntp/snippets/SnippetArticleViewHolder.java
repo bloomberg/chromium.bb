@@ -65,7 +65,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     public static final RefreshOfflineBadgeVisibilityCallback
             REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK = new RefreshOfflineBadgeVisibilityCallback();
 
-    private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
+    private static final String ARTICLE_AGE_FORMAT_STRING = " - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
@@ -79,6 +79,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
+    private final TextView mArticleAgeTextView;
     private final TintedImageView mThumbnailView;
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
@@ -113,6 +114,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
+        mArticleAgeTextView = (TextView) itemView.findViewById(R.id.article_age);
         mPublisherBar = itemView.findViewById(R.id.publisher_bar);
         mOfflineBadge = (ImageView) itemView.findViewById(R.id.offline_icon);
 
@@ -188,7 +190,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
-        mPublisherTextView.setText(getAttributionString(mArticle));
 
         // The favicon of the publisher should match the TextView height.
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
@@ -197,7 +198,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mPublisherFaviconSizePx = mPublisherTextView.getMeasuredHeight();
 
         mArticleSnippetTextView.setText(mArticle.mPreviewText);
-
+        mPublisherTextView.setText(getPublisherString(mArticle));
+        mArticleAgeTextView.setText(getArticleAge(mArticle));
         setThumbnail();
 
         // Set the favicon of the publisher.
@@ -270,8 +272,14 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         return true;
     }
 
-    private static String getAttributionString(SnippetArticle article) {
-        if (article.mPublishTimestampMilliseconds == 0) return article.mPublisher;
+    private static String getPublisherString(SnippetArticle article) {
+        // We format the publisher here so that having a publisher name in an RTL language
+        // doesn't mess up the formatting on an LTR device and vice versa.
+        return BidiFormatter.getInstance().unicodeWrap(article.mPublisher);
+    }
+
+    private static String getArticleAge(SnippetArticle article) {
+        if (article.mPublishTimestampMilliseconds == 0) return "";
 
         // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
         // has never been called before it loads the current time zone from disk. In most likelihood
@@ -289,10 +297,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-        // We format the publisher here so that having a publisher name in an RTL language
-        // doesn't mess up the formatting on an LTR device and vice versa.
-        return String.format(PUBLISHER_FORMAT_STRING,
-                BidiFormatter.getInstance().unicodeWrap(article.mPublisher), relativeTimeSpan);
+
+        // We add a dash before the elapsed time, e.g. " - 14 minutes ago".
+        return String.format(ARTICLE_AGE_FORMAT_STRING,
+                BidiFormatter.getInstance().unicodeWrap(relativeTimeSpan));
     }
 
     private void setThumbnailFromBitmap(Bitmap thumbnail) {
