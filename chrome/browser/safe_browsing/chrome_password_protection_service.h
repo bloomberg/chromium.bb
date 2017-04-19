@@ -20,6 +20,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
  public:
   ChromePasswordProtectionService(SafeBrowsingService* sb_service,
                                   Profile* profile);
+
   ~ChromePasswordProtectionService() override;
 
  protected:

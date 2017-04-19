@@ -63,6 +63,8 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 
 }  // namespace
 
+PasswordProtectionFrame::~PasswordProtectionFrame() = default;
+
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -80,6 +82,7 @@ PasswordProtectionService::PasswordProtectionService(
 }
 
 PasswordProtectionService::~PasswordProtectionService() {
+  tracker_.TryCancelAll();
   CancelPendingRequests();
   history_service_observer_.RemoveAll();
   weak_factory_.InvalidateWeakPtrs();
@@ -88,27 +91,21 @@ PasswordProtectionService::~PasswordProtectionService() {
 void PasswordProtectionService::RecordPasswordReuse(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(database_manager_);
-  if (!url.is_valid())
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &PasswordProtectionService::CheckCsdWhitelistOnIOThread, GetWeakPtr(),
-          url,
-          base::Bind(&PasswordProtectionService::OnMatchCsdWhiteListResult,
-                     base::Unretained(this))));
+  bool* match_whitelist = new bool(false);
+  tracker_.PostTaskAndReply(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
+      base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,
+                 base::Unretained(this), url, match_whitelist),
+      base::Bind(&PasswordProtectionService::OnMatchCsdWhiteListResult,
+                 base::Unretained(this), base::Owned(match_whitelist)));
 }
 
 void PasswordProtectionService::CheckCsdWhitelistOnIOThread(
     const GURL& url,
-    const CheckCsdWhitelistCallback& callback) {
+    bool* check_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(database_manager_);
-  bool check_result = database_manager_->MatchCsdWhitelistUrl(url);
-  DCHECK(callback);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, check_result));
+  *check_result =
+      url.is_valid() ? database_manager_->MatchCsdWhitelistUrl(url) : true;
 }
 
 LoginReputationClientResponse::VerdictType
@@ -201,17 +198,33 @@ void PasswordProtectionService::CacheVerdict(
 
 void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
-    LoginReputationClientRequest::TriggerType type) {
+    LoginReputationClientRequest::TriggerType type,
+    std::unique_ptr<PasswordProtectionFrameList> password_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!IsPingingEnabled())
-    return;
-  std::unique_ptr<PasswordProtectionRequest> request =
-      base::MakeUnique<PasswordProtectionRequest>(
-          main_frame_url, type, IsExtendedReporting(), IsIncognito(),
-          GetWeakPtr(), GetRequestTimeoutInMS());
+  scoped_refptr<PasswordProtectionRequest> request(
+      new PasswordProtectionRequest(main_frame_url, type,
+                                    std::move(password_frames), this,
+                                    GetRequestTimeoutInMS()));
   DCHECK(request);
   request->Start();
   requests_.insert(std::move(request));
+}
+
+void PasswordProtectionService::MaybeStartLowReputationRequest(
+    const GURL& main_frame_url,
+    std::unique_ptr<PasswordProtectionFrameList> password_frames) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!IsPingingEnabled())
+    return;
+
+  // Skip URLs that we can't get a reliable reputation for.
+  if (!main_frame_url.is_valid() || !main_frame_url.SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+
+  StartRequest(main_frame_url,
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+               std::move(password_frames));
 }
 
 void PasswordProtectionService::RequestFinished(
@@ -222,7 +235,7 @@ void PasswordProtectionService::RequestFinished(
   DCHECK(request);
   // TODO(jialiul): We don't cache verdict for incognito mode for now.
   // Later we may consider temporarily caching verdict.
-  if (!request->is_incognito() && response)
+  if (response && !IsIncognito())
     CacheVerdict(request->main_frame_url(), response.get(), base::Time::Now());
 
   // Finished processing this request. Remove it from pending list.
@@ -244,6 +257,11 @@ void PasswordProtectionService::CancelPendingRequests() {
     request->Cancel(false);
   }
   DCHECK(requests_.empty());
+}
+
+scoped_refptr<SafeBrowsingDatabaseManager>
+PasswordProtectionService::database_manager() {
+  return database_manager_;
 }
 
 GURL PasswordProtectionService::GetPasswordProtectionRequestUrl() {
@@ -284,10 +302,10 @@ int PasswordProtectionService::GetRequestTimeoutInMS() {
 }
 
 void PasswordProtectionService::OnMatchCsdWhiteListResult(
-    bool match_whitelist) {
+    const bool* match_whitelist) {
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist",
-      match_whitelist);
+      *match_whitelist);
 }
 
 void PasswordProtectionService::OnURLsDeleted(
@@ -400,7 +418,10 @@ void PasswordProtectionService::GeneratePathVariantsWithoutQuery(
 // "foo.com/foo/bar/"  -> "/foo/bar/"
 std::string PasswordProtectionService::GetCacheExpressionPath(
     const std::string& cache_expression) {
-  DCHECK(!cache_expression.empty());
+  // TODO(jialiul): Change this to a DCHECk when SB server is ready.
+  if (cache_expression.empty())
+    return std::string("/");
+
   std::string out_put(cache_expression);
   // Append a trailing slash if needed.
   if (out_put[out_put.length() - 1] != '/')

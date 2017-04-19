@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_SERVICE_H_
 #define COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_PASSWORD_PROTECTION_SERVICE_H_
 
-#include <unordered_set>
+#include <set>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -13,10 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace history {
 class HistoryService;
@@ -30,14 +32,31 @@ namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
 
+using PasswordFormList = google::protobuf::RepeatedPtrField<
+    LoginReputationClientRequest::Frame::Form>;
+
+// The PasswordProtectionFrame struct encapsulates information about a render
+// frame that has password form(s).
+struct PasswordProtectionFrame {
+  int render_frame_routing_id;
+  int parent_frame_routing_id;
+  GURL last_committed_url;
+  std::unique_ptr<PasswordFormList> password_forms;
+
+  PasswordProtectionFrame() = delete;
+
+  ~PasswordProtectionFrame();
+};
+
+using PasswordProtectionFrameList =
+    std::vector<std::unique_ptr<PasswordProtectionFrame>>;
+
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
 // associated with a unique HistoryService instance and a unique
 // HostContentSettingsMap instance.
-class PasswordProtectionService : history::HistoryServiceObserver {
+class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
-  using CheckCsdWhitelistCallback = base::Callback<void(bool)>;
-
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -70,8 +89,16 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
-  void StartRequest(const GURL& main_frame_url,
-                    LoginReputationClientRequest::TriggerType type);
+  void StartRequest(
+      const GURL& main_frame_url,
+      LoginReputationClientRequest::TriggerType type,
+      std::unique_ptr<PasswordProtectionFrameList> password_frames);
+
+  void MaybeStartLowReputationRequest(
+      const GURL& main_frame_url,
+      std::unique_ptr<PasswordProtectionFrameList> password_frames);
+
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
  protected:
   friend class PasswordProtectionRequest;
@@ -113,15 +140,15 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   // If we can send ping to Safe Browsing backend.
   virtual bool IsPingingEnabled() = 0;
 
-  void CheckCsdWhitelistOnIOThread(const GURL& url,
-                                   const CheckCsdWhitelistCallback& callback);
+  void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 
   // Increases "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist" UMA
   // metric based on input.
-  void OnMatchCsdWhiteListResult(bool match_whitelist);
+  void OnMatchCsdWhiteListResult(const bool* match_whitelist);
 
  private:
   friend class PasswordProtectionServiceTest;
+  friend class TestPasswordProtectionService;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestParseInvalidVerdictEntry);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
@@ -177,13 +204,17 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // Set of pending PasswordProtectionRequests.
-  std::unordered_set<std::unique_ptr<PasswordProtectionRequest>> requests_;
+  std::set<scoped_refptr<PasswordProtectionRequest>> requests_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
 
   // Content settings map associated with this instance.
   HostContentSettingsMap* content_settings_;
+
+  // Weakptr can only cancel task if it is posted to the same thread. Therefore,
+  // we need CancelableTaskTracker to cancel tasks posted to IO thread.
+  base::CancelableTaskTracker tracker_;
 
   base::WeakPtrFactory<PasswordProtectionService> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionService);

@@ -7,7 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -20,15 +20,14 @@ namespace safe_browsing {
 PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
     LoginReputationClientRequest::TriggerType type,
-    bool is_extended_reporting,
-    bool is_incognito,
-    base::WeakPtr<PasswordProtectionService> pps,
+    std::unique_ptr<PasswordProtectionFrameList> password_frames,
+    PasswordProtectionService* pps,
     int request_timeout_in_ms)
     : main_frame_url_(main_frame_url),
       request_type_(type),
-      is_extended_reporting_(is_extended_reporting),
-      is_incognito_(is_incognito),
+      password_frames_(std::move(password_frames)),
       password_protection_service_(pps),
+      database_manager_(password_protection_service_->database_manager()),
       request_timeout_in_ms_(request_timeout_in_ms),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -42,33 +41,34 @@ void PasswordProtectionRequest::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Initially we only send ping for Safe Browsing Extended Reporting users when
   // they are not in incognito mode. We may loose these conditions later.
-  if (is_incognito_) {
+  if (password_protection_service_->IsIncognito()) {
     Finish(RequestOutcome::INCOGNITO, nullptr);
     return;
   }
-  if (!is_extended_reporting_) {
+  if (!password_protection_service_->IsExtendedReporting()) {
     Finish(RequestOutcome::NO_EXTENDED_REPORTING, nullptr);
     return;
   }
 
-  CheckWhitelistsOnUIThread();
+  CheckWhitelistOnUIThread();
 }
 
-void PasswordProtectionRequest::CheckWhitelistsOnUIThread() {
+void PasswordProtectionRequest::CheckWhitelistOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(password_protection_service_);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  bool* match_whitelist = new bool(false);
+  tracker_.PostTaskAndReply(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
       base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,
-                 password_protection_service_, main_frame_url_,
-                 base::Bind(&PasswordProtectionRequest::OnWhitelistCheckDone,
-                            GetWeakPtr())));
+                 base::Unretained(password_protection_service_),
+                 main_frame_url_, match_whitelist),
+      base::Bind(&PasswordProtectionRequest::OnWhitelistCheckDone, this,
+                 base::Owned(match_whitelist)));
 }
 
-void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
+void PasswordProtectionRequest::OnWhitelistCheckDone(
+    const bool* match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (match_whitelist)
+  if (*match_whitelist)
     Finish(RequestOutcome::MATCHED_WHITELIST, nullptr);
   else
     CheckCachedVerdicts();
@@ -100,9 +100,14 @@ void PasswordProtectionRequest::FillRequestProto() {
   LoginReputationClientRequest::Frame* main_frame =
       request_proto_->add_frames();
   main_frame->set_url(main_frame_url_.spec());
+  main_frame->set_frame_index(0 /* main frame */);
+  main_frame->set_has_password_field(true);
   password_protection_service_->FillReferrerChain(
       main_frame_url_, -1 /* tab id not available */, main_frame);
-  // TODO(jialiul): Add sub-frame information and password form information.
+
+  // TODO(jialiul): Fill more password form related info based on
+  // |password_frame_map_| when Safe Browsing backend is ready to handle these
+  // pieces of information.
 }
 
 void PasswordProtectionRequest::SendRequest() {
@@ -169,17 +174,17 @@ void PasswordProtectionRequest::OnURLFetchComplete(
   fetcher_.reset();  // We don't need it anymore.
   UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
-  if (response->ParseFromString(response_body)) {
+  if (response->ParseFromString(response_body))
     Finish(RequestOutcome::SUCCEEDED, std::move(response));
-  } else {
+  else
     Finish(RequestOutcome::RESPONSE_MALFORMED, nullptr);
-  }
 }
 
 void PasswordProtectionRequest::Finish(
     RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  tracker_.TryCancelAll();
 
   UMA_HISTOGRAM_ENUMERATION("PasswordProtection.RequestOutcome", outcome,
                             RequestOutcome::MAX_OUTCOME);

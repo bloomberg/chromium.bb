@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -19,7 +21,24 @@ namespace safe_browsing {
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by
 // PasswordProtectionService indicated by |password_protection_service_|.
-class PasswordProtectionRequest : public net::URLFetcherDelegate {
+// PasswordProtectionService is RefCountedThreadSafe such that it can post task
+// safely between IO and UI threads. It can only be destroyed on UI thread.
+//
+// PasswordProtectionRequest flow:
+// Step| Thread |                    Task
+// (1) |   UI   | If incognito or !SBER, quit request.
+// (2) |   UI   | Add task to IO thread for whitelist checking.
+// (3) |   IO   | Check whitelist and return the result back to UI thread.
+// (4) |   UI   | If whitelisted, check verdict cache; else quit request.
+// (5) |   UI   | If verdict cached, quit request; else prepare request proto.
+// (6) |   UI   | Start a timeout task, and send network request.
+// (7) |   UI   | On receiving response, handle response and finish.
+//     |        | On request timeout, cancel request.
+//     |        | On deletion of |password_protection_service_|, cancel request.
+class PasswordProtectionRequest : public base::RefCountedThreadSafe<
+                                      PasswordProtectionRequest,
+                                      content::BrowserThread::DeleteOnUIThread>,
+                                  public net::URLFetcherDelegate {
  public:
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -39,14 +58,12 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
     MAX_OUTCOME
   };
 
-  PasswordProtectionRequest(const GURL& main_frame_url,
-                            LoginReputationClientRequest::TriggerType type,
-                            bool is_extended_reporting,
-                            bool is_incognito,
-                            base::WeakPtr<PasswordProtectionService> pps,
-                            int request_timeout_in_ms);
-
-  ~PasswordProtectionRequest() override;
+  PasswordProtectionRequest(
+      const GURL& main_frame_url,
+      LoginReputationClientRequest::TriggerType type,
+      std::unique_ptr<PasswordProtectionFrameList> pending_password_frames,
+      PasswordProtectionService* pps,
+      int request_timeout_in_ms);
 
   base::WeakPtr<PasswordProtectionRequest> GetWeakPtr() {
     return weakptr_factory_.GetWeakPtr();
@@ -66,12 +83,23 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
 
   GURL main_frame_url() const { return main_frame_url_; }
 
-  bool is_incognito() const { return is_incognito_; }
-
  private:
+  friend class base::RefCountedThreadSafe<PasswordProtectionRequest>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<PasswordProtectionRequest>;
+  ~PasswordProtectionRequest() override;
+
+  void CheckWhitelistOnUIThread();
+
   // If |main_frame_url_| matches whitelist, call Finish() immediately;
-  // otherwise call CheckCachedVerdicts().
-  void OnWhitelistCheckDone(bool match_whitelist);
+  // otherwise call CheckCachedVerdicts(). It is the task posted back to UI
+  // thread by the PostTaskAndReply() in CheckWhitelistOnUIThread().
+  // |match_whitelist| boolean pointer is used to pass whitelist checking result
+  // between UI and IO thread. The object it points to will be deleted at the
+  // end of OnWhitelistCheckDone(), since base::Owned() transfers its ownership
+  // to this callback function.
+  void OnWhitelistCheckDone(const bool* match_whitelist);
 
   // Looks up cached verdicts. If verdict is already cached, call SendRequest();
   // otherwise call Finish().
@@ -90,19 +118,14 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
   void Finish(RequestOutcome outcome,
               std::unique_ptr<LoginReputationClientResponse> response);
 
-  void CheckWhitelistsOnUIThread();
-
   // Main frame URL of the login form.
   GURL main_frame_url_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
   const LoginReputationClientRequest::TriggerType request_type_;
 
-  // If user is opted-in Safe Browsing Extended Reporting.
-  const bool is_extended_reporting_;
-
-  // If current session is in incognito mode.
-  const bool is_incognito_;
+  // The list of PasswordProtectionFrame this request is concerning.
+  std::unique_ptr<PasswordProtectionFrameList> password_frames_;
 
   // When request is sent.
   base::TimeTicks request_start_time_;
@@ -111,13 +134,21 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
   std::unique_ptr<net::URLFetcher> fetcher_;
 
   // The PasswordProtectionService instance owns |this|.
-  base::WeakPtr<PasswordProtectionService> password_protection_service_;
+  // Can only be accessed on UI thread.
+  PasswordProtectionService* password_protection_service_;
+
+  // Safe Browsing database manager used to look up CSD whitelist.
+  // Can only be accessed on IO thread.
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
   // If we haven't receive response after this period of time, we cancel this
   // request.
   const int request_timeout_in_ms_;
 
   std::unique_ptr<LoginReputationClientRequest> request_proto_;
+
+  // Needed for canceling tasks posted to different threads.
+  base::CancelableTaskTracker tracker_;
 
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);

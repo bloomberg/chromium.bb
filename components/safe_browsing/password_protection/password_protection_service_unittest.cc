@@ -80,7 +80,9 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     latest_response_ = std::move(response);
   }
 
-  // Intentionally do nothing.
+  // Since referrer chain logic has been thoroughly tested in
+  // SBNavigationObserverBrowserTest class, we intentionally leave this function
+  // as a no-op here.
   void FillReferrerChain(const GURL& event_url,
                          int event_tab_id,
                          LoginReputationClientRequest::Frame* frame) override {}
@@ -100,6 +102,10 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   LoginReputationClientResponse* latest_response() {
     return latest_response_.get();
   }
+
+  ~TestPasswordProtectionService() override {}
+
+  size_t GetPendingRequestsCount() { return requests_.size(); }
 
  private:
   bool is_extended_reporting_;
@@ -143,11 +149,9 @@ class PasswordProtectionServiceTest : public testing::Test {
     EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
         .WillRepeatedly(testing::Return(match_whitelist));
 
-    request_ = base::MakeUnique<PasswordProtectionRequest>(
+    request_ = new PasswordProtectionRequest(
         target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-        password_protection_service_->IsExtendedReporting(),
-        password_protection_service_->IsIncognito(),
-        password_protection_service_->GetWeakPtr(), timeout_in_ms);
+        nullptr, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -184,7 +188,7 @@ class PasswordProtectionServiceTest : public testing::Test {
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   scoped_refptr<DummyURLRequestContextGetter> dummy_request_context_getter_;
   std::unique_ptr<TestPasswordProtectionService> password_protection_service_;
-  std::unique_ptr<PasswordProtectionRequest> request_;
+  scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
 };
 
@@ -199,24 +203,26 @@ TEST_F(PasswordProtectionServiceTest,
       .WillOnce(testing::Return(false));
   histograms_.ExpectTotalCount(kPasswordReuseMatchWhitelistHistogramName, 0);
 
-  // Empty url should not increment metric.
+  // Empty url should increase "True" bucket by 1.
   password_protection_service_->RecordPasswordReuse(GURL());
   base::RunLoop().RunUntilIdle();
-  histograms_.ExpectTotalCount(kPasswordReuseMatchWhitelistHistogramName, 0);
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
+      testing::ElementsAre(base::Bucket(1, 1)));
 
   // Whitelisted url should increase "True" bucket by 1.
   password_protection_service_->RecordPasswordReuse(whitelisted_url);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
-      testing::ElementsAre(base::Bucket(1, 1)));
+      testing::ElementsAre(base::Bucket(1, 2)));
 
   // Non-whitelisted url should increase "False" bucket by 1.
   password_protection_service_->RecordPasswordReuse(not_whitelisted_url);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordReuseMatchWhitelistHistogramName),
-      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
+      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 2)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
@@ -393,12 +399,33 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
       true /* all_history */, history::URLRows());
   EXPECT_EQ(0U, GetStoredVerdictCount());
 }
+TEST_F(PasswordProtectionServiceTest,
+       TestNoRequestCreatedIfMainFrameURLIsNotValid) {
+  ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+  password_protection_service_->MaybeStartLowReputationRequest(GURL(), nullptr);
+  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+}
+
+TEST_F(PasswordProtectionServiceTest,
+       TestNoRequestCreatedIfMainFrameURLIsNotHttpOrHttps) {
+  ASSERT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+  // If main frame url is data url, don't create request.
+  password_protection_service_->MaybeStartLowReputationRequest(
+      GURL("data:text/html, <p>hellow"), nullptr);
+  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+
+  // If main frame url is ftp, don't create request.
+  password_protection_service_->MaybeStartLowReputationRequest(
+      GURL("ftp://foo.com:21"), nullptr);
+  EXPECT_EQ(0u, password_protection_service_->GetPendingRequestsCount());
+}
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForIncognito) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   password_protection_service_->set_incognito(true);
   password_protection_service_->StartRequest(
-      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(histograms_.GetAllSamples(kRequestOutcomeHistogramName),
@@ -410,7 +437,8 @@ TEST_F(PasswordProtectionServiceTest,
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   password_protection_service_->set_extended_reporting(false);
   password_protection_service_->StartRequest(
-      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+      nullptr);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -520,7 +548,7 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
       .WillRepeatedly(testing::Return(false));
   password_protection_service_->StartRequest(
-      target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
+      target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, nullptr);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
