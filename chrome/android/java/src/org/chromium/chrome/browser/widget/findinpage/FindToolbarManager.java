@@ -70,6 +70,7 @@ public class FindToolbarManager {
             mFindToolbar = (FindToolbar) ((ViewStub) mActivity.findViewById(stubId)).inflate();
             mFindToolbar.setTabModelSelector(mActivity.getTabModelSelector());
             mFindToolbar.setWindowAndroid(mActivity.getWindowAndroid());
+            if (mActivity.getBottomSheet() != null) mFindToolbar.disableHideKeyboardWhileFinding();
             mFindToolbar.setActionModeCallbackForTextEdit(mCallback);
             mFindToolbar.setObserver(new FindToolbarObserver() {
                 @Override
