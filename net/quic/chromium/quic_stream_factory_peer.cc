@@ -119,6 +119,20 @@ size_t QuicStreamFactoryPeer::GetNumberOfActiveJobs(
   return it->second.size();
 }
 
+void QuicStreamFactoryPeer::MaybeInitialize(QuicStreamFactory* factory) {
+  factory->MaybeInitialize();
+}
+
+bool QuicStreamFactoryPeer::HasInitializedData(QuicStreamFactory* factory) {
+  return factory->has_initialized_data_;
+}
+
+bool QuicStreamFactoryPeer::SupportsQuicAtStartUp(QuicStreamFactory* factory,
+                                                  HostPortPair host_port_pair) {
+  return base::ContainsKey(factory->quic_supported_servers_at_startup_,
+                           host_port_pair);
+}
+
 bool QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
     QuicStreamFactory* factory,
     const QuicServerId& quic_server_id) {

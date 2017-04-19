@@ -70,8 +70,11 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.retry_without_alt_svc_on_quic_errors);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
+  EXPECT_EQ(0.25f, params_.quic_load_server_info_timeout_srtt_multiplier);
+  EXPECT_FALSE(params_.quic_enable_connection_racing);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_enable_non_blocking_io);
+  EXPECT_FALSE(params_.quic_disable_disk_cache);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
@@ -336,6 +339,29 @@ TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
   EXPECT_EQ(expected_settings, params_.http2_settings);
 }
 
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicLoadServerInfoTimeToSmoothedRttFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["load_server_info_time_to_srtt"] = "0.5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(0.5f, params_.quic_load_server_info_timeout_srtt_multiplier);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicEnableConnectionRacing) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_connection_racing"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_enable_connection_racing);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, QuicEnableNonBlockingIO) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["enable_non_blocking_io"] = "true";
@@ -345,6 +371,17 @@ TEST_F(NetworkSessionConfiguratorTest, QuicEnableNonBlockingIO) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_enable_non_blocking_io);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicDisableDiskCache) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_disk_cache"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_disable_disk_cache);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {

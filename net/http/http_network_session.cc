@@ -123,7 +123,10 @@ HttpNetworkSession::Params::Params()
       enable_quic(false),
       mark_quic_broken_when_network_blackholes(false),
       retry_without_alt_svc_on_quic_errors(false),
+      quic_load_server_info_timeout_srtt_multiplier(0.25f),
+      quic_enable_connection_racing(false),
       quic_enable_non_blocking_io(false),
+      quic_disable_disk_cache(false),
       quic_max_server_configs_stored_in_properties(0u),
       quic_clock(nullptr),
       quic_random(nullptr),
@@ -187,8 +190,11 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_max_packet_length,
           params.quic_user_agent_id,
           params.quic_supported_versions,
+          params.quic_load_server_info_timeout_srtt_multiplier,
+          params.quic_enable_connection_racing,
           params.quic_enable_non_blocking_io,
-          params.quic_max_server_configs_stored_in_properties > 0,
+          params.quic_disable_disk_cache,
+          params.quic_max_server_configs_stored_in_properties,
           params.quic_close_sessions_on_ip_change,
           params.mark_quic_broken_when_network_blackholes,
           params.quic_idle_connection_timeout_seconds,
@@ -320,6 +326,11 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   }
   dict->Set("origins_to_force_quic_on", std::move(origins_to_force_quic_on));
 
+  dict->SetDouble("load_server_info_timeout_srtt_multiplier",
+                  params_.quic_load_server_info_timeout_srtt_multiplier);
+  dict->SetBoolean("enable_connection_racing",
+                   params_.quic_enable_connection_racing);
+  dict->SetBoolean("disable_disk_cache", params_.quic_disable_disk_cache);
   dict->SetInteger("max_server_configs_stored_in_properties",
                    params_.quic_max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",

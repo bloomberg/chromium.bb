@@ -101,18 +101,23 @@ const char kServer4Url[] = "https://images.example.org/";
 // and enable_connection_racting.
 struct TestParams {
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
-    os << "{ version: " << QuicVersionToString(p.version) << " }";
+    os << "{ version: " << QuicVersionToString(p.version)
+       << ", enable_connection_racing: "
+       << (p.enable_connection_racing ? "true" : "false") << " }";
     return os;
   }
 
   QuicVersion version;
+  bool enable_connection_racing;
 };
 
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   QuicVersionVector all_supported_versions = AllSupportedVersions();
-  for (const auto& version : all_supported_versions)
-    params.push_back(TestParams{version});
+  for (const QuicVersion version : all_supported_versions) {
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
+  }
   return params;
 }
 
@@ -122,6 +127,8 @@ struct PoolingTestParams {
   friend std::ostream& operator<<(std::ostream& os,
                                   const PoolingTestParams& p) {
     os << "{ version: " << QuicVersionToString(p.version)
+       << ", enable_connection_racing: "
+       << (p.enable_connection_racing ? "true" : "false")
        << ", destination_type: ";
     switch (p.destination_type) {
       case SAME_AS_FIRST:
@@ -139,6 +146,7 @@ struct PoolingTestParams {
   }
 
   QuicVersion version;
+  bool enable_connection_racing;
   DestinationType destination_type;
 };
 
@@ -146,9 +154,12 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
-    params.push_back(PoolingTestParams{version, SAME_AS_FIRST});
-    params.push_back(PoolingTestParams{version, SAME_AS_SECOND});
-    params.push_back(PoolingTestParams{version, DIFFERENT});
+    params.push_back(PoolingTestParams{version, false, SAME_AS_FIRST});
+    params.push_back(PoolingTestParams{version, false, SAME_AS_SECOND});
+    params.push_back(PoolingTestParams{version, false, DIFFERENT});
+    params.push_back(PoolingTestParams{version, true, SAME_AS_FIRST});
+    params.push_back(PoolingTestParams{version, true, SAME_AS_SECOND});
+    params.push_back(PoolingTestParams{version, true, DIFFERENT});
   }
   return params;
 }
@@ -162,9 +173,50 @@ class QuicHttpStreamPeer {
   }
 };
 
+class MockQuicServerInfo : public QuicServerInfo {
+ public:
+  explicit MockQuicServerInfo(const QuicServerId& server_id)
+      : QuicServerInfo(server_id) {}
+  ~MockQuicServerInfo() override {}
+
+  void Start() override {}
+
+  int WaitForDataReady(const CompletionCallback& callback) override {
+    return ERR_IO_PENDING;
+  }
+
+  void ResetWaitForDataReadyCallback() override {}
+
+  void CancelWaitForDataReadyCallback() override {}
+
+  bool IsDataReady() override { return false; }
+
+  bool IsReadyToPersist() override { return false; }
+
+  void Persist() override {}
+
+  void OnExternalCacheHit() override {}
+
+  size_t EstimateMemoryUsage() const override {
+    NOTREACHED();
+    return 0;
+  }
+};
+
+class MockQuicServerInfoFactory : public QuicServerInfoFactory {
+ public:
+  MockQuicServerInfoFactory() {}
+  ~MockQuicServerInfoFactory() override {}
+
+  std::unique_ptr<QuicServerInfo> GetForServer(
+      const QuicServerId& server_id) override {
+    return base::MakeUnique<MockQuicServerInfo>(server_id);
+  }
+};
+
 class QuicStreamFactoryTestBase {
  protected:
-  explicit QuicStreamFactoryTestBase(QuicVersion version)
+  QuicStreamFactoryTestBase(QuicVersion version, bool enable_connection_racing)
       : ssl_config_service_(new MockSSLConfigService),
         random_generator_(0),
         runner_(new TestTaskRunner(&clock_)),
@@ -191,7 +243,10 @@ class QuicStreamFactoryTestBase {
         url3_(kServer3Url),
         url4_(kServer4Url),
         privacy_mode_(PRIVACY_MODE_DISABLED),
+        load_server_info_timeout_srtt_multiplier_(0.0f),
+        enable_connection_racing_(enable_connection_racing),
         enable_non_blocking_io_(true),
+        disable_disk_cache_(false),
         close_sessions_on_ip_change_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         reduced_ping_timeout_seconds_(kPingTimeoutSecs),
@@ -216,7 +271,9 @@ class QuicStreamFactoryTestBase {
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
-        enable_non_blocking_io_, store_server_configs_in_properties_,
+        load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
+        enable_non_blocking_io_, disable_disk_cache_,
+        /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         /*mark_quic_broken_when_network_blackholes*/ false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
@@ -226,6 +283,9 @@ class QuicStreamFactoryTestBase {
         /*do_not_fragment*/ true, estimate_initial_rtt_, QuicTagVector(),
         /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
+    EXPECT_FALSE(factory_->has_quic_server_info_factory());
+    factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
+    EXPECT_TRUE(factory_->has_quic_server_info_factory());
   }
 
   void InitializeConnectionMigrationTest(
@@ -481,14 +541,10 @@ class QuicStreamFactoryTestBase {
   // a non proxy server that support alternative services is added to the
   // HttpServerProperties map.
   void VerifyInitialization(bool proxy_delegate_provides_quic_supported_proxy) {
-    store_server_configs_in_properties_ = true;
     idle_connection_timeout_seconds_ = 500;
     Initialize();
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-    crypto_client_stream_factory_.set_handshake_mode(
-        MockCryptoClientStream::ZERO_RTT);
     const QuicConfig* config = QuicStreamFactoryPeer::GetConfig(factory_.get());
     EXPECT_EQ(500, config->IdleNetworkTimeout().ToSeconds());
 
@@ -528,11 +584,14 @@ class QuicStreamFactoryTestBase {
     http_server_properties_.SetMaxServerConfigsStoredInProperties(
         kMaxQuicServersToPersist);
 
-    QuicServerId quic_server_id(kDefaultServerHostName, 443,
+    QuicServerId quic_server_id(kDefaultServerHostName, 80,
                                 PRIVACY_MODE_DISABLED);
-    std::unique_ptr<QuicServerInfo> quic_server_info =
-        base::MakeUnique<PropertiesBasedQuicServerInfo>(
-            quic_server_id, &http_server_properties_);
+    QuicServerInfoFactory* quic_server_info_factory =
+        new PropertiesBasedQuicServerInfoFactory(&http_server_properties_);
+    factory_->set_quic_server_info_factory(quic_server_info_factory);
+
+    std::unique_ptr<QuicServerInfo> quic_server_info(
+        quic_server_info_factory->GetForServer(quic_server_id));
 
     // Update quic_server_info's server_config and persist it.
     QuicServerInfo::State* state = quic_server_info->mutable_state();
@@ -568,10 +627,10 @@ class QuicStreamFactoryTestBase {
 
     quic_server_info->Persist();
 
-    QuicServerId quic_server_id2(kServer2HostName, 443, PRIVACY_MODE_DISABLED);
-    std::unique_ptr<QuicServerInfo> quic_server_info2 =
-        base::MakeUnique<PropertiesBasedQuicServerInfo>(
-            quic_server_id2, &http_server_properties_);
+    QuicServerId quic_server_id2(kServer2HostName, 80, PRIVACY_MODE_DISABLED);
+    std::unique_ptr<QuicServerInfo> quic_server_info2(
+        quic_server_info_factory->GetForServer(quic_server_id2));
+
     // Update quic_server_info2's server_config and persist it.
     QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
 
@@ -608,6 +667,9 @@ class QuicStreamFactoryTestBase {
 
     quic_server_info2->Persist();
 
+    QuicStreamFactoryPeer::MaybeInitialize(factory_.get());
+    EXPECT_TRUE(QuicStreamFactoryPeer::HasInitializedData(factory_.get()));
+
     // Verify the MRU order is maintained.
     const QuicServerInfoMap& quic_server_info_map =
         http_server_properties_.quic_server_info_map();
@@ -618,21 +680,8 @@ class QuicStreamFactoryTestBase {
     ++quic_server_info_map_it;
     EXPECT_EQ(quic_server_info_map_it->first, quic_server_id);
 
-    host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                             "192.168.0.1", "");
-
-    // Create a session and verify that the cached state is loaded.
-    MockQuicData socket_data;
-    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    socket_data.AddSocketDataToFactory(&socket_factory_);
-
-    QuicStreamRequest request(factory_.get(), &http_server_properties_);
-    EXPECT_EQ(ERR_IO_PENDING,
-              request.Request(quic_server_id.host_port_pair(), privacy_mode_,
-                              /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                              callback_.callback()));
-    EXPECT_THAT(callback_.WaitForResult(), IsOk());
-
+    EXPECT_TRUE(QuicStreamFactoryPeer::SupportsQuicAtStartUp(factory_.get(),
+                                                             host_port_pair_));
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
         factory_.get(), quic_server_id));
     QuicCryptoClientConfig* crypto_config =
@@ -649,24 +698,8 @@ class QuicStreamFactoryTestBase {
     ASSERT_EQ(1U, cached->certs().size());
     EXPECT_EQ(test_cert, cached->certs()[0]);
 
-    EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-
-    // Create a session and verify that the cached state is loaded.
-    MockQuicData socket_data2;
-    socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-    socket_data2.AddSocketDataToFactory(&socket_factory_);
-
-    host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
-                                             "192.168.0.2", "");
-
-    QuicStreamRequest request2(factory_.get(), &http_server_properties_);
-    EXPECT_EQ(ERR_IO_PENDING,
-              request2.Request(quic_server_id2.host_port_pair(), privacy_mode_,
-                               /*cert_verify_flags=*/0,
-                               GURL("https://mail.example.org/"), "GET",
-                               net_log_, callback_.callback()));
-    EXPECT_THAT(callback_.WaitForResult(), IsOk());
-
+    EXPECT_TRUE(QuicStreamFactoryPeer::SupportsQuicAtStartUp(factory_.get(),
+                                                             host_port_pair2));
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
         factory_.get(), quic_server_id2));
     QuicCryptoClientConfig::CachedState* cached2 =
@@ -736,8 +769,10 @@ class QuicStreamFactoryTestBase {
   TestCompletionCallback callback_;
 
   // Variables to configure QuicStreamFactory.
+  double load_server_info_timeout_srtt_multiplier_;
+  bool enable_connection_racing_;
   bool enable_non_blocking_io_;
-  bool store_server_configs_in_properties_;
+  bool disable_disk_cache_;
   bool close_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;
   int reduced_ping_timeout_seconds_;
@@ -753,7 +788,9 @@ class QuicStreamFactoryTestBase {
 class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
                               public ::testing::TestWithParam<TestParams> {
  protected:
-  QuicStreamFactoryTest() : QuicStreamFactoryTestBase(GetParam().version) {}
+  QuicStreamFactoryTest()
+      : QuicStreamFactoryTestBase(GetParam().version,
+                                  GetParam().enable_connection_racing) {}
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -4380,7 +4417,62 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
   }
 }
 
+TEST_P(QuicStreamFactoryTest, RacingConnections) {
+  disable_disk_cache_ = false;
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  if (!enable_connection_racing_)
+    return;
+
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
+
+  const AlternativeService alternative_service1(
+      kProtoQUIC, host_port_pair_.host(), host_port_pair_.port());
+  AlternativeServiceInfoVector alternative_service_info_vector;
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  alternative_service_info_vector.push_back(
+      AlternativeServiceInfo(alternative_service1, expiration));
+
+  http_server_properties_.SetAlternativeServices(
+      url::SchemeHostPort(url_), alternative_service_info_vector);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(factory_.get(), &http_server_properties_);
+  QuicServerId server_id(host_port_pair_, privacy_mode_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+  EXPECT_EQ(2u, QuicStreamFactoryPeer::GetNumberOfActiveJobs(factory_.get(),
+                                                             server_id));
+
+  runner_->RunNextTask();
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumberOfActiveJobs(factory_.get(),
+                                                             server_id));
+}
+
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
+  disable_disk_cache_ = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4414,6 +4506,7 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 
 TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   reduced_ping_timeout_seconds_ = 10;
+  disable_disk_cache_ = true;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4503,6 +4596,50 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, DelayTcpRace) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
+      ConstructSettingsPacket(1, SETTINGS_MAX_HEADER_LIST_SIZE,
+                              kDefaultMaxUncompressedHeaderSize, nullptr));
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  http_server_properties_.SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                stats1);
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+
+  QuicStreamRequest request(factory_.get(), &http_server_properties_);
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "POST", net_log_,
+                            callback_.callback()));
+
+  // Verify delay is one RTT and that server supports QUIC.
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(15),
+            request.GetTimeDelayForWaitingJob());
+
+  // Confirm the handshake and verify that the stream is created.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 // Verifies that the QUIC stream factory is initialized correctly.
@@ -4856,7 +4993,8 @@ class QuicStreamFactoryWithDestinationTest
       public ::testing::TestWithParam<PoolingTestParams> {
  protected:
   QuicStreamFactoryWithDestinationTest()
-      : QuicStreamFactoryTestBase(GetParam().version),
+      : QuicStreamFactoryTestBase(GetParam().version,
+                                  GetParam().enable_connection_racing),
         destination_type_(GetParam().destination_type),
         hanging_read_(SYNCHRONOUS, ERR_IO_PENDING, 0) {}
 

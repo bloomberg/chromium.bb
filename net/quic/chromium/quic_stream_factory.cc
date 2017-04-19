@@ -331,7 +331,15 @@ class QuicStreamFactory::Job {
       const QuicSessionKey& key,
       bool was_alternative_service_recently_broken,
       int cert_verify_flags,
+      std::unique_ptr<QuicServerInfo> server_info,
       const NetLogWithSource& net_log);
+
+  // Creates a new job to handle the resumption of for connecting an
+  // existing session.
+  Job(QuicStreamFactory* factory,
+      HostResolver* host_resolver,
+      QuicChromiumClientSession* session,
+      const QuicSessionKey& key);
 
   ~Job();
 
@@ -340,12 +348,18 @@ class QuicStreamFactory::Job {
   int DoLoop(int rv);
   int DoResolveHost();
   int DoResolveHostComplete(int rv);
+  int DoLoadServerInfo();
+  int DoLoadServerInfoComplete(int rv);
   int DoConnect();
   int DoConnectComplete(int rv);
 
   void OnIOComplete(int rv);
 
+  void RunAuxilaryJob();
+
   void Cancel();
+
+  void CancelWaitForDataReadyCallback();
 
   const QuicSessionKey& key() const { return key_; }
 
@@ -361,6 +375,8 @@ class QuicStreamFactory::Job {
     STATE_NONE,
     STATE_RESOLVE_HOST,
     STATE_RESOLVE_HOST_COMPLETE,
+    STATE_LOAD_SERVER_INFO,
+    STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_CONNECT,
     STATE_CONNECT_COMPLETE,
   };
@@ -372,6 +388,8 @@ class QuicStreamFactory::Job {
   const QuicSessionKey key_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
+  std::unique_ptr<QuicServerInfo> server_info_;
+  bool started_another_job_;
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
   QuicChromiumClientSession* session_;
@@ -388,6 +406,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             const QuicSessionKey& key,
                             bool was_alternative_service_recently_broken,
                             int cert_verify_flags,
+                            std::unique_ptr<QuicServerInfo> server_info,
                             const NetLogWithSource& net_log)
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
@@ -396,6 +415,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       cert_verify_flags_(cert_verify_flags),
       was_alternative_service_recently_broken_(
           was_alternative_service_recently_broken),
+      server_info_(std::move(server_info)),
+      started_another_job_(false),
       net_log_(
           NetLogWithSource::Make(net_log.net_log(),
                                  NetLogSourceType::QUIC_STREAM_FACTORY_JOB)),
@@ -417,6 +438,10 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
 QuicStreamFactory::Job::~Job() {
   net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB);
   DCHECK(callback_.is_null());
+
+  // If disk cache has a pending WaitForDataReadyCallback, cancel that callback.
+  if (server_info_)
+    server_info_->ResetWaitForDataReadyCallback();
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
@@ -440,6 +465,13 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
       case STATE_RESOLVE_HOST_COMPLETE:
         rv = DoResolveHostComplete(rv);
         break;
+      case STATE_LOAD_SERVER_INFO:
+        CHECK_EQ(OK, rv);
+        rv = DoLoadServerInfo();
+        break;
+      case STATE_LOAD_SERVER_INFO_COMPLETE:
+        rv = DoLoadServerInfoComplete(rv);
+        break;
       case STATE_CONNECT:
         CHECK_EQ(OK, rv);
         rv = DoConnect();
@@ -461,6 +493,13 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
     base::ResetAndReturn(&callback_).Run(rv);
 }
 
+void QuicStreamFactory::Job::RunAuxilaryJob() {
+  int rv = Run(base::Bind(&QuicStreamFactory::OnJobComplete,
+                          base::Unretained(factory_), this));
+  if (rv != ERR_IO_PENDING)
+    factory_->OnJobComplete(this, rv);
+}
+
 void QuicStreamFactory::Job::Cancel() {
   callback_.Reset();
   if (session_)
@@ -469,12 +508,24 @@ void QuicStreamFactory::Job::Cancel() {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
+void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
+  // If we are waiting for WaitForDataReadyCallback, then cancel the callback.
+  if (io_state_ != STATE_LOAD_SERVER_INFO_COMPLETE)
+    return;
+  server_info_->CancelWaitForDataReadyCallback();
+  OnIOComplete(OK);
+}
+
 size_t QuicStreamFactory::Job::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(key_);
+  return base::trace_event::EstimateMemoryUsage(key_) +
+         base::trace_event::EstimateMemoryUsage(server_info_);
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
   dns_resolution_start_time_ = base::TimeTicks::Now();
+  // Start loading the data now, and wait for it after we resolve the host.
+  if (server_info_)
+    server_info_->Start();
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return host_resolver_->Resolve(
@@ -496,6 +547,71 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
   if (factory_->OnResolution(key_, address_list_))
     return OK;
 
+  if (server_info_)
+    io_state_ = STATE_LOAD_SERVER_INFO;
+  else
+    io_state_ = STATE_CONNECT;
+  return OK;
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfo() {
+  net_log_.BeginEvent(
+      NetLogEventType::QUIC_STREAM_FACTORY_JOB_LOAD_SERVER_INFO);
+
+  io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
+
+  DCHECK(server_info_);
+
+  // To mitigate the effects of disk cache taking too long to load QUIC server
+  // information, set up a timer to cancel WaitForDataReady's callback.
+  if (factory_->load_server_info_timeout_srtt_multiplier_ > 0) {
+    const int kMaxLoadServerInfoTimeoutMs = 50;
+    // Wait for DiskCache a maximum of 50ms.
+    int64_t load_server_info_timeout_ms =
+        std::min(static_cast<int>(
+                     (factory_->load_server_info_timeout_srtt_multiplier_ *
+                      factory_->GetServerNetworkStatsSmoothedRttInMicroseconds(
+                          key_.server_id())) /
+                     1000),
+                 kMaxLoadServerInfoTimeoutMs);
+    if (load_server_info_timeout_ms > 0) {
+      factory_->task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&QuicStreamFactory::Job::CancelWaitForDataReadyCallback,
+                     GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(load_server_info_timeout_ms));
+    }
+  }
+
+  int rv = server_info_->WaitForDataReady(
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()));
+  if (rv == ERR_IO_PENDING && factory_->enable_connection_racing()) {
+    // If we are waiting to load server config from the disk cache, then start
+    // another job.
+    started_another_job_ = true;
+    factory_->CreateAuxilaryJob(key_, cert_verify_flags_, net_log_);
+  }
+  return rv;
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
+  net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB_LOAD_SERVER_INFO);
+  UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
+                      base::TimeTicks::Now() - dns_resolution_end_time_);
+
+  if (rv != OK)
+    server_info_.reset();
+
+  if (started_another_job_ &&
+      (!server_info_ || server_info_->state().server_config.empty() ||
+       !factory_->CryptoConfigCacheIsEmpty(key_.server_id()))) {
+    // If we have started another job and if we didn't load the server config
+    // from the disk cache or if we have received a new server config from the
+    // server, then cancel the current job.
+    io_state_ = STATE_NONE;
+    return ERR_CONNECTION_CLOSED;
+  }
+
   io_state_ = STATE_CONNECT;
   return OK;
 }
@@ -509,10 +625,10 @@ int QuicStreamFactory::Job::DoConnect() {
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT,
       NetLog::BoolCallback("require_confirmation", require_confirmation));
 
-  int rv =
-      factory_->CreateSession(key_, cert_verify_flags_, require_confirmation,
-                              address_list_, dns_resolution_start_time_,
-                              dns_resolution_end_time_, net_log_, &session_);
+  int rv = factory_->CreateSession(
+      key_, cert_verify_flags_, std::move(server_info_), require_confirmation,
+      address_list_, dns_resolution_start_time_, dns_resolution_end_time_,
+      net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -655,8 +771,11 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
+    float load_server_info_timeout_srtt_multiplier,
+    bool enable_connection_racing,
     bool enable_non_blocking_io,
-    bool store_server_configs_in_properties,
+    bool disable_disk_cache,
+    int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
     bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
@@ -694,10 +813,13 @@ QuicStreamFactory::QuicStreamFactory(
                                     transport_security_state,
                                     cert_transparency_verifier))),
       supported_versions_(supported_versions),
+      load_server_info_timeout_srtt_multiplier_(
+          load_server_info_timeout_srtt_multiplier),
+      enable_connection_racing_(enable_connection_racing),
       enable_non_blocking_io_(enable_non_blocking_io),
+      disable_disk_cache_(disable_disk_cache),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
-      store_server_configs_in_properties_(store_server_configs_in_properties),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
       reduced_ping_timeout_(
           QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
@@ -716,6 +838,7 @@ QuicStreamFactory::QuicStreamFactory(
       do_not_fragment_(do_not_fragment),
       estimate_initial_rtt(estimate_initial_rtt),
       check_persisted_supports_quic_(true),
+      has_initialized_data_(false),
       num_push_streams_created_(0),
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
@@ -743,6 +866,13 @@ QuicStreamFactory::QuicStreamFactory(
                         has_aes_hardware_support);
   if (has_aes_hardware_support)
     crypto_config_.PreferAesGcm();
+  // When disk cache is used to store the server configs, HttpCache code calls
+  // |set_quic_server_info_factory| if |quic_server_info_factory_| wasn't
+  // created.
+  if (max_server_configs_stored_in_properties > 0) {
+    quic_server_info_factory_.reset(
+        new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
+  }
 
   // migrate_sessions_early should only be set to true if
   // migrate_sessions_on_network_change is set to true.
@@ -798,6 +928,11 @@ base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
   if (!srtt)
     srtt = kDefaultRTT;
   return base::TimeDelta::FromMicroseconds(srtt);
+}
+
+void QuicStreamFactory::set_quic_server_info_factory(
+    QuicServerInfoFactory* quic_server_info_factory) {
+  quic_server_info_factory_.reset(quic_server_info_factory);
 }
 
 void QuicStreamFactory::DumpMemoryStats(
@@ -934,12 +1069,25 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   if (!task_runner_)
     task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
 
+  std::unique_ptr<QuicServerInfo> quic_server_info;
+  if (quic_server_info_factory_.get()) {
+    bool load_from_disk_cache = !disable_disk_cache_;
+    MaybeInitialize();
+    if (!base::ContainsKey(quic_supported_servers_at_startup_, destination)) {
+      // If there is no entry for QUIC, consider that as a new server and
+      // don't wait for Cache thread to load the data for that server.
+      load_from_disk_cache = false;
+    }
+    if (load_from_disk_cache && CryptoConfigCacheIsEmpty(server_id))
+      quic_server_info = quic_server_info_factory_->GetForServer(server_id);
+  }
+
   ignore_result(StartCertVerifyJob(server_id, cert_verify_flags, net_log));
 
   QuicSessionKey key(destination, server_id);
   std::unique_ptr<Job> job = base::MakeUnique<Job>(
       this, host_resolver_, key, WasQuicRecentlyBroken(server_id),
-      cert_verify_flags, net_log);
+      cert_verify_flags, std::move(quic_server_info), net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -983,6 +1131,18 @@ bool QuicStreamFactory::QuicSessionKey::operator==(
 size_t QuicStreamFactory::QuicSessionKey::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(destination_) +
          EstimateServerIdMemoryUsage(server_id_);
+}
+
+void QuicStreamFactory::CreateAuxilaryJob(const QuicSessionKey& key,
+                                          int cert_verify_flags,
+                                          const NetLogWithSource& net_log) {
+  Job* aux_job =
+      new Job(this, host_resolver_, key, WasQuicRecentlyBroken(key.server_id()),
+              cert_verify_flags, nullptr, net_log);
+  active_jobs_[key.server_id()][aux_job] = base::WrapUnique(aux_job);
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&QuicStreamFactory::Job::RunAuxilaryJob,
+                                    aux_job->GetWeakPtr()));
 }
 
 bool QuicStreamFactory::OnResolution(const QuicSessionKey& key,
@@ -1483,6 +1643,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
 int QuicStreamFactory::CreateSession(
     const QuicSessionKey& key,
     int cert_verify_flags,
+    std::unique_ptr<QuicServerInfo> server_info,
     bool require_confirmation,
     const AddressList& address_list,
     base::TimeTicks dns_resolution_start_time,
@@ -1511,13 +1672,7 @@ int QuicStreamFactory::CreateSession(
     alarm_factory_.reset(new QuicChromiumAlarmFactory(
         base::ThreadTaskRunnerHandle::Get().get(), clock_));
   }
-
   QuicConnectionId connection_id = random_generator_->RandUint64();
-  std::unique_ptr<QuicServerInfo> server_info;
-  if (store_server_configs_in_properties_) {
-    server_info = base::MakeUnique<PropertiesBasedQuicServerInfo>(
-        server_id, http_server_properties_);
-  }
   InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);
 
   QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(socket.get());
@@ -1538,6 +1693,14 @@ int QuicStreamFactory::CreateSession(
 
   if (force_hol_blocking_)
     config.SetForceHolBlocking();
+
+  if (quic_server_info_factory_.get() && !server_info) {
+    // Start the disk cache loading so that we can persist the newer QUIC server
+    // information and/or inform the disk cache that we have reused
+    // |server_info|.
+    server_info = quic_server_info_factory_->GetForServer(server_id);
+    server_info->Start();
+  }
 
   // Use the factory to create a new socket performance watcher, and pass the
   // ownership to QuicChromiumClientSession.
@@ -1681,8 +1844,19 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
   if (!cached->IsEmpty())
     return;
 
-  if (!server_info || !server_info->Load())
+  // |server_info| will be NULL, if a non-empty server config already exists in
+  // the memory cache.
+  if (!server_info)
     return;
+
+  // TODO(rtenneti): Delete the following histogram after collecting stats.
+  // If the AlternativeServiceMap contained an entry for this host, check if
+  // the disk cache contained an entry for it.
+  if (base::ContainsKey(quic_supported_servers_at_startup_,
+                        server_id.host_port_pair())) {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicServerInfo.ExpectConfigMissingFromDiskCache",
+                          server_info->state().server_config.empty());
+  }
 
   cached->Initialize(server_info->state().server_config,
                      server_info->state().source_address_token,
@@ -1690,6 +1864,60 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
                      server_info->state().chlo_hash,
                      server_info->state().server_config_sig, clock_->WallNow(),
                      QuicWallTime::Zero());
+}
+
+void QuicStreamFactory::MaybeInitialize() {
+  // We don't initialize data from HttpServerProperties in the constructor
+  // because HttpServerProperties has not yet initialized. We're guaranteed
+  // HttpServerProperties has been initialized by the first time a request is
+  // made.
+  if (has_initialized_data_)
+    return;
+
+  has_initialized_data_ = true;
+
+  // Query the proxy delegate for the default alternative proxy server.
+  ProxyServer default_alternative_proxy_server =
+      proxy_delegate_ ? proxy_delegate_->GetDefaultAlternativeProxy()
+                      : ProxyServer();
+  if (default_alternative_proxy_server.is_quic()) {
+    quic_supported_servers_at_startup_.insert(
+        default_alternative_proxy_server.host_port_pair());
+  }
+
+  for (const std::pair<const url::SchemeHostPort, AlternativeServiceInfoVector>&
+           key_value : http_server_properties_->alternative_service_map()) {
+    HostPortPair host_port_pair(key_value.first.host(), key_value.first.port());
+    for (const AlternativeServiceInfo& alternative_service_info :
+         key_value.second) {
+      if (alternative_service_info.alternative_service.protocol == kProtoQUIC) {
+        quic_supported_servers_at_startup_.insert(host_port_pair);
+        break;
+      }
+    }
+  }
+
+  if (http_server_properties_->max_server_configs_stored_in_properties() == 0)
+    return;
+  // Create a temporary QuicServerInfo object to deserialize and to populate the
+  // in-memory crypto server config cache in the MRU order.
+  std::unique_ptr<QuicServerInfo> server_info;
+  CompletionCallback callback;
+  // Get the list of servers to be deserialized first because WaitForDataReady
+  // touches quic_server_info_map.
+  const QuicServerInfoMap& quic_server_info_map =
+      http_server_properties_->quic_server_info_map();
+  std::vector<QuicServerId> server_list;
+  for (const auto& key_value : quic_server_info_map)
+    server_list.push_back(key_value.first);
+  for (auto it = server_list.rbegin(); it != server_list.rend(); ++it) {
+    const QuicServerId& server_id = *it;
+    server_info = quic_server_info_factory_->GetForServer(server_id);
+    if (server_info->WaitForDataReady(callback) == OK) {
+      DVLOG(1) << "Initialized server config for: " << server_id.ToString();
+      InitializeCachedStateInCryptoConfig(server_id, server_info, nullptr);
+    }
+  }
 }
 
 void QuicStreamFactory::ProcessGoingAwaySession(

@@ -122,8 +122,17 @@ class NET_EXPORT HttpNetworkSession
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
+    // If not zero, the task to load QUIC server configs from the disk cache
+    // will timeout after this value multiplied by the smoothed RTT for the
+    // server.
+    float quic_load_server_info_timeout_srtt_multiplier;
+    // Causes QUIC to race reading the server config from disk with
+    // sending an inchoate CHLO.
+    bool quic_enable_connection_racing;
     // Use non-blocking IO for UDP sockets.
     bool quic_enable_non_blocking_io;
+    // Disables using the disk cache to store QUIC server configs.
+    bool quic_disable_disk_cache;
     // Maximum number of server configs that are to be stored in
     // HttpServerProperties, instead of the disk cache.
     size_t quic_max_server_configs_stored_in_properties;
