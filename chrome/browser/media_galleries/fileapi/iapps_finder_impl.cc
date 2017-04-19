@@ -23,7 +23,7 @@ void PostResultToUIThread(storage_monitor::StorageInfo::Type type,
     device_id = storage_monitor::StorageInfo::MakeDeviceId(type, unique_id);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, device_id));
+                                   base::BindOnce(callback, device_id));
 }
 
 }  // namespace
@@ -36,9 +36,8 @@ void FindIAppsOnFileThread(storage_monitor::StorageInfo::Type type,
   DCHECK(!callback.is_null());
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(task, base::Bind(PostResultToUIThread, type, callback)));
+      content::BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(task, base::Bind(PostResultToUIThread, type, callback)));
 }
 
 // iTunes is only support on OSX and Windows.

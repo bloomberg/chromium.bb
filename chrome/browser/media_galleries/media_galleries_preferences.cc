@@ -670,10 +670,9 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
     if (!gallery_name.empty()) {
       pre_initialization_callbacks_waiting_++;
       content::BrowserThread::PostTaskAndReply(
-          content::BrowserThread::FILE,
-          FROM_HERE,
-          base::Bind(&InitializeImportedMediaGalleryRegistryOnFileThread),
-          base::Bind(
+          content::BrowserThread::FILE, FROM_HERE,
+          base::BindOnce(&InitializeImportedMediaGalleryRegistryOnFileThread),
+          base::BindOnce(
               &MediaGalleriesPreferences::OnInitializationCallbackReturned,
               weak_factory_.GetWeakPtr()));
     }

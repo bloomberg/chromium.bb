@@ -58,7 +58,8 @@ void SafeMediaMetadataParser::Start(const DoneCallback& callback) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeMediaMetadataParser::StartOnIOThread, this, callback));
+      base::BindOnce(&SafeMediaMetadataParser::StartOnIOThread, this,
+                     callback));
 }
 
 SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
@@ -99,8 +100,8 @@ void SafeMediaMetadataParser::ParseMediaMetadataFailed() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, false, base::Passed(&metadata_dictionary),
-                 base::Passed(&attached_images)));
+      base::BindOnce(callback_, false, base::Passed(&metadata_dictionary),
+                     base::Passed(&attached_images)));
 }
 
 void SafeMediaMetadataParser::ParseMediaMetadataDone(
@@ -119,8 +120,9 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, parse_success, base::Passed(&metadata_dictionary),
-                 base::Passed(&attached_images_copy)));
+      base::BindOnce(callback_, parse_success,
+                     base::Passed(&metadata_dictionary),
+                     base::Passed(&attached_images_copy)));
 }
 
 void SafeMediaMetadataParser::StartBlobRequest(
@@ -131,8 +133,8 @@ void SafeMediaMetadataParser::StartBlobRequest(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&SafeMediaMetadataParser::StartBlobReaderOnUIThread, this,
-                 callback, position, length));
+      base::BindOnce(&SafeMediaMetadataParser::StartBlobReaderOnUIThread, this,
+                     callback, position, length));
 }
 
 void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
@@ -157,8 +159,8 @@ void SafeMediaMetadataParser::BlobReaderDoneOnUIThread(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeMediaMetadataParser::FinishBlobRequest, this, callback,
-                 base::Passed(std::move(data))));
+      base::BindOnce(&SafeMediaMetadataParser::FinishBlobRequest, this,
+                     callback, base::Passed(std::move(data))));
 }
 
 void SafeMediaMetadataParser::FinishBlobRequest(

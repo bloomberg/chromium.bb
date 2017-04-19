@@ -75,7 +75,7 @@ void OnPreferencesInit(
   if (!contents) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
     return;
   }
   MediaFileSystemRegistry* registry =
@@ -123,9 +123,8 @@ void AttemptAutoMountOnUIThread(
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(callback, base::File::FILE_ERROR_NOT_FOUND));
 }
 
 }  // namespace
@@ -223,9 +222,9 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&AttemptAutoMountOnUIThread,
-                 request_info->GetWebContentsGetterForRequest(), storage_domain,
-                 mount_point, callback));
+      base::BindOnce(&AttemptAutoMountOnUIThread,
+                     request_info->GetWebContentsGetterForRequest(),
+                     storage_domain, mount_point, callback));
   return true;
 }
 
@@ -252,11 +251,8 @@ void MediaFileSystemBackend::ResolveURL(
     const OpenFileSystemCallback& callback) {
   // We never allow opening a new FileSystem via usual ResolveURL.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 GURL(),
-                 std::string(),
-                 base::File::FILE_ERROR_SECURITY));
+      FROM_HERE, base::BindOnce(callback, GURL(), std::string(),
+                                base::File::FILE_ERROR_SECURITY));
 }
 
 storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(

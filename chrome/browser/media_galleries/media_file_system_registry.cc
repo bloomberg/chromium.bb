@@ -464,7 +464,7 @@ class ExtensionGalleriesHost
       CleanUp();
     }
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, result));
+                            base::BindOnce(callback, result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -560,7 +560,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
       !base::ContainsKey(permitted_galleries, pref_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+        base::BindOnce(callback, base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
 
