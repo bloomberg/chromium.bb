@@ -45,6 +45,9 @@
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
+        ],
+        "utility": [
+          "memory_instrumentation::mojom::Coordinator"
         ]
       },
       "requires": {
