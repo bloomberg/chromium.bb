@@ -47,15 +47,15 @@
 # TODO(fhorschig|tnagel): Revisit policy tags after reviews.
 #
 # Policy group descriptions, policy captions and similar texts are localized
-# strings taken from the <message> nodes of the .grd file. Their name
-# attributes are generated from the JSON keys.
+# strings taken from the <message> nodes of the .grd file. Their name attributes
+# are generated from the JSON keys.
 # Each item (policy or group) may have the following messages:
 #   - description:
 #     Describes the item it applies to.
 #   - caption
 #     A short, one-line summary of the item it applies to. This can appear
 #     both in policy or group listings or on title bars of policy-setting
-#     windows.
+#     windows. (The caption should not end with a punctuation mark.)
 #   - label (Optional, defaults to caption if not specified.)
 #     A short, one-line summary of the item it applies to. The difference
 #     from caption is that label always appears next to the entry field
@@ -1517,7 +1517,7 @@
       },
       'example_value': True,
       'id': 358,
-      'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.''',
+      'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data''',
       'tags': ['local-data-access'],
       'desc': '''Enables the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.
 
@@ -3842,7 +3842,7 @@
           },
           'example_value': False,
           'id': 253,
-          'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions).''',
+          'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions)''',
           'tags': [],
           'desc': '''Enables user-level installation of Native Messaging hosts.
 
@@ -5920,7 +5920,7 @@
       'schema': { 'type': 'boolean' },
       'tags': [],
       'supported_on': ['chrome_os:54-'],
-      'caption': '''Treat external storage devices as read-only.''',
+      'caption': '''Treat external storage devices as read-only''',
       'desc': '''When this policy is set to true, users cannot write anything to external storage devices.
 
       If this setting is set to false or not configured, then users can create and modify files of external storage devices which are physically writable.
@@ -8169,7 +8169,7 @@
       },
       'example_value': False,
       'id': 346,
-      'caption': '''Enables force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'caption': '''Enables force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
       'desc': '''If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false.
 
@@ -8567,7 +8567,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'id': 303,
-      'caption': 'Enable showing the welcome page on the first browser launch following OS upgrade.',
+      'caption': 'Enable showing the welcome page on the first browser launch following OS upgrade',
       'tags': [],
       'desc': '''Enable showing the welcome page on the first browser launch following OS upgrade.
 
@@ -8611,7 +8611,7 @@
       },
       'example_value': True,
       'id': 307,
-      'caption': '''Make Unified Desktop available and turn on by default.''',
+      'caption': '''Make Unified Desktop available and turn on by default''',
       'tags': [],
       'desc': '''If this policy is set to true, Unified Desktop is allowed and
       enabled by default, which allows applications to span multiple displays.
@@ -8875,27 +8875,27 @@
         {
           'name': 'TimezoneAutomaticDetectionUsersDecide',
           'value': 0,
-          'caption': '''Let users decide.''',
+          'caption': '''Let users decide''',
         },
         {
           'name': 'TimezoneAutomaticDetectionDisabled',
           'value': 1,
-          'caption': '''Never auto-detect timezone.''',
+          'caption': '''Never auto-detect timezone''',
         },
         {
           'name': 'TimezoneAutomaticDetectionIPOnly',
           'value': 2,
-          'caption': '''Always use coarse timezone detection.''',
+          'caption': '''Always use coarse timezone detection''',
         },
         {
           'name': 'TimezoneAutomaticDetectionSendWiFiAccessPoints',
           'value': 3,
-          'caption': '''Always send WiFi access-points to server while resolving timezone.''',
+          'caption': '''Always send WiFi access-points to server while resolving timezone''',
         },
         {
           'name': 'TimezoneAutomaticDetectionSendAllLocationInfo',
           'value': 4,
-          'caption': '''Always send any available location signals to the server while resolving timezone.''',
+          'caption': '''Always send any available location signals to the server while resolving timezone''',
         },
       ],
       'supported_on': ['chrome_os:53-'],
@@ -9304,7 +9304,7 @@
       },
       'example_value': True,
       'id': 342,
-      'caption': '''Enables component updates in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'caption': '''Enables component updates in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
       'desc': '''Enables component updates for all components in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when not set or set to True.
 
@@ -9400,7 +9400,7 @@
           'example_value': ['PIN'],
           'default_for_enterprise_users': [],
           'id': 352,
-          'caption': '''Configure allowed quick unlock modes.''',
+          'caption': '''Configure allowed quick unlock modes''',
           'tags': [],
           'desc': '''A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
 
@@ -9421,22 +9421,22 @@
             {
               'name': 'SixHours',
               'value': 0,
-              'caption': '''Password entry is required every six hours.''',
+              'caption': '''Password entry is required every six hours''',
             },
             {
               'name': 'TweleveHours',
               'value': 1,
-              'caption': '''Password entry is required every twelve hours.''',
+              'caption': '''Password entry is required every twelve hours''',
             },
             {
               'name': 'Day',
               'value': 2,
-              'caption': '''Password entry is required every day (24 hours).''',
+              'caption': '''Password entry is required every day (24 hours)''',
             },
             {
               'name': 'Week',
               'value': 3,
-              'caption': '''Password entry is required every week (168 hours).''',
+              'caption': '''Password entry is required every week (168 hours)''',
             },
           ],
           'supported_on': ['chrome_os:57-'],
@@ -9446,7 +9446,7 @@
           },
           'example_value': 2,
           'id': 353,
-          'caption': '''Sets how often user has to enter password to use quick unlock.''',
+          'caption': '''Sets how often user has to enter password to use quick unlock''',
           'tags': [],
           'desc': '''This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
 
@@ -9465,7 +9465,7 @@
           },
           'example_value': 6,
           'id': 354,
-          'caption': '''Sets the minimum length of the lock screen PIN.''',
+          'caption': '''Sets the minimum length of the lock screen PIN''',
           'tags': [],
           'desc': '''This setting controls the minimum PIN length.
 
@@ -9484,7 +9484,7 @@
           },
           'example_value': 0,
           'id': 355,
-          'caption': '''Sets the maximum length of the lock screen PIN.''',
+          'caption': '''Sets the maximum length of the lock screen PIN''',
           'tags': [],
           'desc': '''This setting controls the maximum PIN length.
 
@@ -9505,7 +9505,7 @@
           },
           'example_value': False,
           'id': 356,
-          'caption': '''Enables users to set weak PINs for the lock screen PIN.''',
+          'caption': '''Enables users to set weak PINs for the lock screen PIN''',
           'tags': [],
           'desc': '''If false, users will be unable to set PINs which are weak and easy to guess.
 
