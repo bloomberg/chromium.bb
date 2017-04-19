@@ -36,7 +36,7 @@ void RunTest(TestType test) {
   }
   {
     SkIRect clip =
-        SkIRect::MakeSize(canvas.getBaseLayerSize())
+        SkIRect::MakeWH(kWidth, kHeight)
             .makeOffset(
                 (test & kTestTranslate) ? -(static_cast<int>(kWidth)) / 2 : 0,
                 0);
