@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.blink.mojom.document_metadata.Entity;
@@ -165,6 +166,7 @@ public class CopylessPasteTest extends ChromeTabbedActivityTestBase {
      */
     @LargeTest
     @Feature({"CopylessPaste"})
+    @DisabledTest(message = "Flaky: crbug.com/713172")
     public void testCache() throws InterruptedException, TimeoutException {
         // The URLs used here should be unique in CopylessPasteTest.
         String uniqueTag = "#123";
