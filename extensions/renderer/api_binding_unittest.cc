@@ -148,10 +148,16 @@ class APIBindingUnittest : public APIBindingTest {
   }
 
   void TearDown() override {
+    DisposeAllContexts();
     request_handler_.reset();
     event_handler_.reset();
     binding_.reset();
     APIBindingTest::TearDown();
+  }
+
+  void OnWillDisposeContext(v8::Local<v8::Context> context) override {
+    event_handler_->InvalidateContext(context);
+    request_handler_->InvalidateContext(context);
   }
 
   void SetFunctions(const char* functions) {
@@ -506,7 +512,7 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
 }
 
 TEST_F(APIBindingUnittest, RestrictedAPIs) {
-  const char kRestrictedFunctions[] =
+  const char kFunctions[] =
       "[{"
       "  'name': 'allowedOne',"
       "  'parameters': []"
@@ -520,18 +526,22 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
       "  'name': 'restrictedTwo',"
       "  'parameters': []"
       "}]";
-  SetFunctions(kRestrictedFunctions);
+  SetFunctions(kFunctions);
+  const char kEvents[] =
+      "[{'name': 'allowedEvent'}, {'name': 'restrictedEvent'}]";
+  SetEvents(kEvents);
   InitializeBinding();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
   auto is_available = [](const std::string& name) {
-    std::set<std::string> functions = {"test.allowedOne", "test.allowedTwo",
-                                       "test.restrictedOne",
-                                       "test.restrictedTwo"};
-    EXPECT_TRUE(functions.count(name));
-    return name == "test.allowedOne" || name == "test.allowedTwo";
+    std::set<std::string> allowed = {"test.allowedOne", "test.allowedTwo",
+                                     "test.allowedEvent"};
+    std::set<std::string> restricted = {
+        "test.restrictedOne", "test.restrictedTwo", "test.restrictedEvent"};
+    EXPECT_TRUE(allowed.count(name) || restricted.count(name)) << name;
+    return allowed.count(name) != 0;
   };
 
   v8::Local<v8::Object> binding_object =
@@ -546,8 +556,10 @@ TEST_F(APIBindingUnittest, RestrictedAPIs) {
 
   EXPECT_TRUE(is_defined("allowedOne"));
   EXPECT_TRUE(is_defined("allowedTwo"));
+  EXPECT_TRUE(is_defined("allowedEvent"));
   EXPECT_FALSE(is_defined("restrictedOne"));
   EXPECT_FALSE(is_defined("restrictedTwo"));
+  EXPECT_FALSE(is_defined("restrictedEvent"));
 }
 
 // Tests that events specified in the API are created as properties of the API

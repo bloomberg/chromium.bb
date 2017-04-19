@@ -311,6 +311,14 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
       CHECK(success.FromJust());
     }
   }
+  for (const auto& event : events_) {
+    if (!is_available.Run(event->full_name)) {
+      v8::Maybe<bool> success = object->Delete(
+          context, gin::StringToSymbol(isolate, event->exposed_name));
+      CHECK(success.IsJust());
+      CHECK(success.FromJust());
+    }
+  }
 
   return object;
 }

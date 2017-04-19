@@ -793,4 +793,49 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
   check_properties_inequal(context_a, context_b, "chrome.idle.onStateChanged");
 }
 
+// Tests that API methods and events that are conditionally available based on
+// context are properly present or absent from the API object.
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       CheckRestrictedFeaturesBasedOnContext) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("extension", ItemType::EXTENSION, {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> blessed_context = MainContext();
+  v8::Local<v8::Context> webpage_context = AddContext();
+
+  // Create two contexts - a blessed extension context and a normal web page
+  // context.
+  ScriptContext* blessed_script_context = CreateScriptContext(
+      blessed_context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  blessed_script_context->set_url(extension->url());
+  bindings_system()->UpdateBindingsForContext(blessed_script_context);
+
+  ScriptContext* webpage_script_context =
+      CreateScriptContext(webpage_context, nullptr, Feature::WEB_PAGE_CONTEXT);
+  webpage_script_context->set_url(GURL("http://example.com"));
+  bindings_system()->UpdateBindingsForContext(webpage_script_context);
+
+  auto property_exists = [](v8::Local<v8::Context> context,
+                            base::StringPiece property) {
+    v8::Local<v8::Value> value = V8ValueFromScriptSource(context, property);
+    EXPECT_FALSE(value.IsEmpty());
+    return !value->IsUndefined();
+  };
+
+  // Check that properties are correctly restricted. The blessed context should
+  // have access to the whole runtime API, but the webpage should only have
+  // access to sendMessage.
+  const char kSendMessage[] = "chrome.runtime.sendMessage";
+  const char kGetUrl[] = "chrome.runtime.getURL";
+  const char kOnMessage[] = "chrome.runtime.onMessage";
+  EXPECT_TRUE(property_exists(blessed_context, kSendMessage));
+  EXPECT_TRUE(property_exists(blessed_context, kGetUrl));
+  EXPECT_TRUE(property_exists(blessed_context, kOnMessage));
+  EXPECT_TRUE(property_exists(webpage_context, kSendMessage));
+  EXPECT_FALSE(property_exists(webpage_context, kGetUrl));
+  EXPECT_FALSE(property_exists(webpage_context, kOnMessage));
+}
+
 }  // namespace extensions
