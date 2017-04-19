@@ -215,6 +215,11 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
   return false;
 }
 
+bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
+  return nomodule && script_type == ScriptType::kClassic &&
+         RuntimeEnabledFeatures::moduleScriptsEnabled();
+}
+
 bool ScriptLoader::IsScriptTypeSupported(LegacyTypeSupport support_legacy_types,
                                          ScriptType& out_script_type) const {
   return IsValidScriptTypeAndLanguage(element_->TypeAttributeValue(),
@@ -296,7 +301,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // 11. "If the script element has a nomodule content attribute
   //      and the script's type is "classic", then abort these steps.
   //      The script is not executed."
-  // TODO(japhet): Implement this step.
+  if (BlockForNoModule(script_type_, element_->NomoduleAttributeValue()))
+    return false;
 
   // 13.
   if (!IsScriptForEventSupported())

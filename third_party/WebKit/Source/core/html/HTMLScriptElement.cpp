@@ -152,6 +152,10 @@ String HTMLScriptElement::LanguageAttributeValue() const {
   return getAttribute(languageAttr).GetString();
 }
 
+bool HTMLScriptElement::NomoduleAttributeValue() const {
+  return FastHasAttribute(nomoduleAttr);
+}
+
 String HTMLScriptElement::ForAttributeValue() const {
   return getAttribute(forAttr).GetString();
 }

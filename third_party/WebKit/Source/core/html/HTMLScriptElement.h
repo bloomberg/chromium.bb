@@ -79,6 +79,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String CharsetAttributeValue() const override;
   String TypeAttributeValue() const override;
   String LanguageAttributeValue() const override;
+  bool NomoduleAttributeValue() const override;
   String ForAttributeValue() const override;
   String EventAttributeValue() const override;
   String CrossOriginAttributeValue() const override;

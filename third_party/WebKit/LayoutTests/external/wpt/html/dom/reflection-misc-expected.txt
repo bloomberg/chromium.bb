@@ -16,39 +16,7 @@ PASS script.accessKey: 32 tests
 PASS script.tabIndex: 24 tests
 PASS script.src: 38 tests
 PASS script.type: 32 tests
-FAIL script.noModule: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL script.noModule: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL script.noModule: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: setAttribute() to "noModule" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL script.noModule: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL script.noModule: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL script.noModule: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL script.noModule: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL script.noModule: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL script.noModule: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS script.noModule: IDL set to true 
-FAIL script.noModule: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL script.noModule: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL script.noModule: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL script.noModule: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL script.noModule: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL script.noModule: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL script.noModule: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL script.noModule: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+PASS script.noModule: 33 tests
 PASS script.charset: 32 tests
 PASS script.defer: 33 tests
 PASS script.crossOrigin: 52 tests

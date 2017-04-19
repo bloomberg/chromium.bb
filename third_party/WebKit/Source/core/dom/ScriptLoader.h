@@ -65,6 +65,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
       LegacyTypeSupport support_legacy_types,
       ScriptType& out_script_type);
 
+  static bool BlockForNoModule(ScriptType, bool nomodule);
+
   // https://html.spec.whatwg.org/#prepare-a-script
   bool PrepareScript(const TextPosition& script_start_position =
                          TextPosition::MinimumPosition(),

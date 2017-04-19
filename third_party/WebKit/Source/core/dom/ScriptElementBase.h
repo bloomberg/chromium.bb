@@ -51,6 +51,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual String ForAttributeValue() const = 0;
   virtual String IntegrityAttributeValue() const = 0;
   virtual String LanguageAttributeValue() const = 0;
+  virtual bool NomoduleAttributeValue() const = 0;
   virtual String SourceAttributeValue() const = 0;
   virtual String TypeAttributeValue() const = 0;
 

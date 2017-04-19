@@ -176,6 +176,7 @@
     "muted",
     "name",
     "nohref",
+    "nomodule",
     "nonce",
     "noresize",
     "noshade",

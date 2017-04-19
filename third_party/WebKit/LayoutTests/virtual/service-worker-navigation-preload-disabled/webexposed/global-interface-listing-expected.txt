@@ -3217,6 +3217,7 @@ interface HTMLScriptElement : HTMLElement
     getter event
     getter htmlFor
     getter integrity
+    getter noModule
     getter nonce
     getter src
     getter text
@@ -3229,6 +3230,7 @@ interface HTMLScriptElement : HTMLElement
     setter event
     setter htmlFor
     setter integrity
+    setter noModule
     setter nonce
     setter src
     setter text

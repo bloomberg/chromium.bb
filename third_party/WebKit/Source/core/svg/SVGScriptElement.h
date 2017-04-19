@@ -77,6 +77,7 @@ class SVGScriptElement final : public SVGElement,
   String ForAttributeValue() const { return String(); }
   String IntegrityAttributeValue() const { return String(); }
   String LanguageAttributeValue() const { return String(); }
+  bool NomoduleAttributeValue() const { return false; }
   String SourceAttributeValue() const override;
   String TypeAttributeValue() const override;
   String TextFromChildren() override;

@@ -836,6 +836,7 @@ html element script
     property event
     property htmlFor
     property integrity
+    property noModule
     property nonce
     property src
     property text
@@ -1433,6 +1434,7 @@ svg element script
     property event
     property htmlFor
     property integrity
+    property noModule
     property nonce
     property src
     property text

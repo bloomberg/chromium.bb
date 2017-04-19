@@ -144,6 +144,7 @@ class TokenPreloadScanner::StartTagScanner {
         link_is_import_(false),
         matched_(true),
         input_is_image_(false),
+        nomodule_attribute_value_(false),
         source_size_(0),
         source_size_set_(false),
         defer_(FetchParameters::kNoDefer),
@@ -289,6 +290,8 @@ class TokenPreloadScanner::StartTagScanner {
       type_attribute_value_ = attribute_value;
     else if (Match(attribute_name, languageAttr))
       language_attribute_value_ = attribute_value;
+    else if (Match(attribute_name, nomoduleAttr))
+      nomodule_attribute_value_ = true;
   }
 
   template <typename NameType>
@@ -521,12 +524,17 @@ class TokenPreloadScanner::StartTagScanner {
       return ShouldPreloadLink(type);
     if (Match(tag_impl_, inputTag) && !input_is_image_)
       return false;
-    ScriptType script_type = ScriptType::kClassic;
-    if (Match(tag_impl_, scriptTag) &&
-        !ScriptLoader::IsValidScriptTypeAndLanguage(
-            type_attribute_value_, language_attribute_value_,
-            ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
-      return false;
+    if (Match(tag_impl_, scriptTag)) {
+      ScriptType script_type = ScriptType::kClassic;
+      if (!ScriptLoader::IsValidScriptTypeAndLanguage(
+              type_attribute_value_, language_attribute_value_,
+              ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
+        return false;
+      }
+      if (ScriptLoader::BlockForNoModule(script_type,
+                                         nomodule_attribute_value_)) {
+        return false;
+      }
     }
     return true;
   }
@@ -556,6 +564,7 @@ class TokenPreloadScanner::StartTagScanner {
   String as_attribute_value_;
   String type_attribute_value_;
   String language_attribute_value_;
+  bool nomodule_attribute_value_;
   float source_size_;
   bool source_size_set_;
   FetchParameters::DeferOption defer_;
