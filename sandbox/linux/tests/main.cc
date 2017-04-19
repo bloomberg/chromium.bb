@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -37,7 +38,10 @@ void RunPostTestsChecks(const base::FilePath& orig_cwd) {
 }  // namespace sandbox
 
 #if !defined(SANDBOX_USES_BASE_TEST_SUITE)
-void UnitTestAssertHandler(const std::string& str) {
+void UnitTestAssertHandler(const char* file,
+                           int line,
+                           const base::StringPiece message,
+                           const base::StringPiece stack_trace) {
   _exit(1);
 }
 #endif
@@ -64,7 +68,8 @@ int main(int argc, char* argv[]) {
   // Death tests rely on LOG(FATAL) triggering an exit (the default behavior is
   // SIGABRT).  The normal test launcher does this at initialization, but since
   // we still do not use this on Android, we must install the handler ourselves.
-  logging::SetLogAssertHandler(UnitTestAssertHandler);
+  logging::ScopedLogAssertHandler scoped_assert_handler(
+      base::Bind(UnitTestAssertHandler));
 #endif
   // Always go through re-execution for death tests.
   // This makes gtest only marginally slower for us and has the

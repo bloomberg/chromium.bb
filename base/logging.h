@@ -15,9 +15,11 @@
 #include <utility>
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
 
@@ -274,11 +276,24 @@ BASE_EXPORT void SetLogItems(bool enable_process_id, bool enable_thread_id,
 BASE_EXPORT void SetShowErrorDialogs(bool enable_dialogs);
 
 // Sets the Log Assert Handler that will be used to notify of check failures.
+// Resets Log Assert Handler on object destruction.
 // The default handler shows a dialog box and then terminate the process,
 // however clients can use this function to override with their own handling
 // (e.g. a silent one for Unit Tests)
-typedef void (*LogAssertHandlerFunction)(const std::string& str);
-BASE_EXPORT void SetLogAssertHandler(LogAssertHandlerFunction handler);
+using LogAssertHandlerFunction =
+    base::Callback<void(const char* file,
+                        int line,
+                        const base::StringPiece message,
+                        const base::StringPiece stack_trace)>;
+
+class BASE_EXPORT ScopedLogAssertHandler {
+ public:
+  explicit ScopedLogAssertHandler(LogAssertHandlerFunction handler);
+  ~ScopedLogAssertHandler();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedLogAssertHandler);
+};
 
 // Sets the Log Message Handler that gets passed every log message before
 // it's sent to other log destinations (if any).

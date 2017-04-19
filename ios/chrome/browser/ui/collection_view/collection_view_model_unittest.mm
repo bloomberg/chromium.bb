@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/string_piece.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -54,7 +57,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWeasleyFooter,
 };
 
-void LogSink(const std::string& str) {
+void LogSink(const char* file,
+             int line,
+             const base::StringPiece message,
+             const base::StringPiece stack_trace) {
   // No-op.
 }
 
@@ -312,7 +318,7 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
 
-  logging::SetLogAssertHandler(&LogSink);
+  logging::ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
   bool out_of_bounds_exception_thrown = false;
   @try {
     [model indexInItemTypeForIndexPath:[NSIndexPath indexPathForItem:0
@@ -323,7 +329,6 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
     }
   }
   EXPECT_TRUE(out_of_bounds_exception_thrown);
-  logging::SetLogAssertHandler(nullptr);
 }
 
 TEST(CollectionViewModelTest, RemoveItems) {
