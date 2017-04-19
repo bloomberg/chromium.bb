@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -65,7 +64,6 @@ InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id,
   JNIEnv* env = AttachCurrentThread();
   java_ref_.Reset(
       Java_InstanceIDBridge_create(env, reinterpret_cast<intptr_t>(this),
-                                   base::android::GetApplicationContext(),
                                    ConvertUTF8ToJavaString(env, subtype)));
 }
 

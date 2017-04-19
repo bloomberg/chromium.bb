@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -19,7 +18,6 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::GetApplicationContext;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaIntArray;
@@ -140,8 +138,7 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!checked_api_support_) {
     DVLOG(1) << "Checking API support.";
-    j_api_handler_ = Java_SafeBrowsingApiBridge_create(AttachCurrentThread(),
-                                                       GetApplicationContext());
+    j_api_handler_ = Java_SafeBrowsingApiBridge_create(AttachCurrentThread());
     checked_api_support_ = true;
   }
   return j_api_handler_.obj() != nullptr;

@@ -116,7 +116,7 @@ public class VariationsSeedFetcherTest {
         mFetcher.fetchSeed("");
 
         assertTrue(mPrefs.getBoolean(VariationsSeedFetcher.VARIATIONS_INITIALIZED_PREF, false));
-        assertFalse(VariationsSeedBridge.hasJavaPref(ContextUtils.getApplicationContext()));
+        assertFalse(VariationsSeedBridge.hasJavaPref());
     }
 
     /**
@@ -129,6 +129,6 @@ public class VariationsSeedFetcherTest {
         mFetcher.fetchSeed("");
 
         assertTrue(mPrefs.getBoolean(VariationsSeedFetcher.VARIATIONS_INITIALIZED_PREF, false));
-        assertFalse(VariationsSeedBridge.hasJavaPref(ContextUtils.getApplicationContext()));
+        assertFalse(VariationsSeedBridge.hasJavaPref());
     }
 }
