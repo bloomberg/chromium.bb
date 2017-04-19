@@ -11,9 +11,7 @@ class MockGit(object):
     # Arguments are listed below, even if they're unused, in order to match
     # the Git class. pylint: disable=unused-argument
 
-    executable_name = 'mock-git'
-
-    def __init__(self, cwd=None, filesystem=None, executive=None):
+    def __init__(self, cwd=None, filesystem=None, executive=None, platform=None):
         self.checkout_root = '/mock-checkout'
         self.cwd = cwd or self.checkout_root
         self.added_paths = set()

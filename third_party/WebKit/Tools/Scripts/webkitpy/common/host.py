@@ -79,7 +79,7 @@ class Host(SystemHost):
 
     def git(self, path=None):
         if path:
-            return Git(cwd=path, executive=self.executive, filesystem=self.filesystem)
+            return Git(cwd=path, executive=self.executive, filesystem=self.filesystem, platform=self.platform)
         if not self._git:
-            self._git = Git(filesystem=self.filesystem, executive=self.executive)
+            self._git = Git(filesystem=self.filesystem, executive=self.executive, platform=self.platform)
         return self._git

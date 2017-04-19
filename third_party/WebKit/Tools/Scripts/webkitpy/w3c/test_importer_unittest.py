@@ -162,7 +162,7 @@ class TestImporterTest(LoggingTestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations',
             '## Owners: someone@chromium.org\n'
             '# external/wpt/foo [ Pass ]\n')
-        git = MockGit()
+        git = MockGit(filesystem=host.filesystem, executive=host.executive, platform=host.platform)
         git.changed_files = lambda: ['third_party/WebKit/LayoutTests/external/wpt/foo/x.html']
         host.git = lambda: git
         importer = TestImporter(host)

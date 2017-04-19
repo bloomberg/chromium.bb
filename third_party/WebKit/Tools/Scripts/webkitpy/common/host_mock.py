@@ -69,9 +69,9 @@ class MockHost(MockSystemHost):
 
     def git(self, path=None):
         if path:
-            return MockGit(cwd=path, filesystem=self.filesystem, executive=self.executive)
+            return MockGit(cwd=path, filesystem=self.filesystem, executive=self.executive, platform=self.platform)
         if not self._git:
-            self._git = MockGit(filesystem=self.filesystem, executive=self.executive)
+            self._git = MockGit(filesystem=self.filesystem, executive=self.executive, platform=self.platform)
         # Various pieces of code (wrongly) call filesystem.chdir(checkout_root).
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
         self.filesystem.maybe_make_directory(self._git.checkout_root)

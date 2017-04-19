@@ -46,27 +46,26 @@ class Git(object):
     # 1 or 128, mostly.
     ERROR_FILE_IS_MISSING = 128
 
-    executable_name = 'git'
-
-    def __init__(self, cwd=None, executive=None, filesystem=None):
+    def __init__(self, cwd=None, executive=None, filesystem=None, platform=None):
         self._executive = executive or Executive()
         self._filesystem = filesystem or FileSystem()
+        self._executable_name = self.find_executable_name(self._executive, platform)
 
         self.cwd = cwd or self._filesystem.abspath(self._filesystem.getcwd())
-        if not Git.in_working_directory(self.cwd, executive=self._executive):
+        if not self.in_working_directory(self.cwd):
             module_directory = self._filesystem.abspath(
                 self._filesystem.dirname(self._filesystem.path_to_module(self.__module__)))
             _log.info('The current directory (%s) is not in a git repo, trying directory %s.',
                       cwd, module_directory)
-            if Git.in_working_directory(module_directory, executive=self._executive):
+            if self.in_working_directory(module_directory):
                 self.cwd = module_directory
             _log.error('Failed to find Git repo for %s or %s', cwd, module_directory)
 
-        self._init_executable_name()
         self.checkout_root = self.find_checkout_root(self.cwd)
 
-    def _init_executable_name(self):
-        """Sets the executable name on Windows.
+    @staticmethod
+    def find_executable_name(executive, platform):
+        """Finds the git executable name which may be different on Windows.
 
         The Win port uses the depot_tools package, which contains a number
         of development tools, including Python and git. Instead of using a
@@ -78,19 +77,18 @@ class Git(object):
         FIXME: This is a hack and should be resolved in a different way if
         possible.
         """
+        if not platform or not platform.is_win():
+            return 'git'
         try:
-            self._executive.run_command(['git', 'help'])
+            executive.run_command(['git', 'help'])
+            return 'git'
         except OSError:
-            try:
-                self._executive.run_command(['git.bat', 'help'])
-                _log.debug('Engaging git.bat Windows hack.')
-                self.executable_name = 'git.bat'
-            except OSError:
-                _log.debug('Failed to engage git.bat Windows hack.')
+            _log.debug('Using "git.bat" as git executable.')
+            return 'git.bat'
 
     def run(self, command_args, cwd=None, stdin=None, decode_output=True, return_exit_code=False):
         """Invokes git with the given args."""
-        full_command_args = [self.executable_name] + command_args
+        full_command_args = [self._executable_name] + command_args
         cwd = cwd or self.checkout_root
         return self._executive.run_command(
             full_command_args,
@@ -103,18 +101,14 @@ class Git(object):
         """Converts repository-relative paths to absolute paths."""
         return self._filesystem.join(self.checkout_root, repository_relative_path)
 
-    @classmethod
-    def in_working_directory(cls, path, executive=None):
+    def in_working_directory(self, path):
         try:
-            executive = executive or Executive()
-            return executive.run_command(
-                [cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
+            self._executive.run_command(
+                [self._executable_name, 'rev-parse', '--is-inside-work-tree'],
                 cwd=path, error_handler=Executive.ignore_error).rstrip() == 'true'
         except OSError:
             # The Windows bots seem to throw a WindowsError when git isn't installed.
-            # TODO(qyearsley): This might be because the git executable name
-            # isn't initialized yet; maybe this would be fixed by using the
-            # _init_executable_name hack above.
+            # TODO(qyearsley): Check if this is still necessary and remove if possible.
             _log.warn('Got OSError when running Git.in_working_directory.')
             return False
 
