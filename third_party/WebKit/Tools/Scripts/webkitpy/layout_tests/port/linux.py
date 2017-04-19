@@ -65,7 +65,6 @@ class LinuxPort(base.Port):
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
         self._original_home = None
-        self._xvfb_process = None
 
     def additional_driver_flag(self):
         flags = super(LinuxPort, self).additional_driver_flag()
@@ -105,12 +104,10 @@ class LinuxPort(base.Port):
 
     def setup_test_run(self):
         super(LinuxPort, self).setup_test_run()
-        self._start_xvfb()
         self._setup_dummy_home_dir()
 
     def clean_up_test_run(self):
         super(LinuxPort, self).clean_up_test_run()
-        self._stop_xvfb()
         self._clean_up_dummy_home_dir()
 
     #
@@ -144,45 +141,6 @@ class LinuxPort(base.Port):
         assert dummy_home != self._original_home
         self._filesystem.rmtree(dummy_home)
         self.host.environ['HOME'] = self._original_home
-
-    def _start_xvfb(self):
-        display = self._find_display()
-        if not display:
-            _log.warn('Failed to find a free display to start Xvfb.')
-            return
-
-        _log.info('Starting Xvfb with display "%s".', display)
-        self._xvfb_process = self.host.executive.popen(
-            ['Xvfb', display, '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            stderr=self.host.executive.DEVNULL)
-
-        # By setting DISPLAY here, the individual worker processes will
-        # get the right DISPLAY. Note, if this environment could be passed
-        # when creating workers, then we wouldn't need to modify DISPLAY here.
-        self.host.environ['DISPLAY'] = display
-
-        # The poll() method will return None if the process has not terminated:
-        # https://docs.python.org/2/library/subprocess.html#subprocess.Popen.poll
-        if self._xvfb_process.poll() is not None:
-            _log.warn('Failed to start Xvfb on display "%s."', display)
-
-    def _find_display(self):
-        """Tries to find a free X display, looping if necessary."""
-        # The "xvfb-run" command uses :99 by default.
-        for display_number in range(99, 120):
-            display = ':%d' % display_number
-            exit_code = self.host.executive.run_command(
-                ['xdpyinfo', '-display', display], return_exit_code=True)
-            if exit_code == 1:
-                return display
-        return None
-
-    def _stop_xvfb(self):
-        if not self._xvfb_process:
-            return
-        _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
-        self._xvfb_process.kill()
-        self._xvfb_process.wait()
 
     def _path_to_driver(self, target=None):
         binary_name = self.driver_name()

@@ -114,33 +114,3 @@ class LinuxPortTest(port_testcase.PortTestCase):
         port.clean_up_test_run()
         self.assertEqual(port.host.environ['HOME'], '/home/user')
         self.assertFalse(port.host.filesystem.exists(temp_home_dir))
-
-    def test_setup_test_run_starts_xvfb(self):
-        port = self.make_port()
-        port.host.executive = MockExecutive(exit_code=1)
-        port.setup_test_run()
-        self.assertEqual(
-            port.host.executive.calls,
-            [
-                ['xdpyinfo', '-display', ':99'],
-                ['Xvfb', ':99', '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            ])
-        env = port.setup_environ_for_server()
-        self.assertEqual(env['DISPLAY'], ':99')
-
-    def test_setup_test_runs_finds_free_display(self):
-        port = self.make_port()
-        port.host.executive = MockExecutive(
-            run_command_fn=lambda args: 1 if ':102' in args else 0)
-        port.setup_test_run()
-        self.assertEqual(
-            port.host.executive.calls,
-            [
-                ['xdpyinfo', '-display', ':99'],
-                ['xdpyinfo', '-display', ':100'],
-                ['xdpyinfo', '-display', ':101'],
-                ['xdpyinfo', '-display', ':102'],
-                ['Xvfb', ':102', '-screen', '0', '1280x800x24', '-ac', '-dpi', '96'],
-            ])
-        env = port.setup_environ_for_server()
-        self.assertEqual(env['DISPLAY'], ':102')
