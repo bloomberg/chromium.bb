@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Tests that TouchMoves are suppressed if within the slop suppression region. assert_equals: expected 7 but got 3
+Harness: the test ran to completion.
+
