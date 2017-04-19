@@ -186,11 +186,6 @@ int DelayableCertReportURLRequestJob::ReadRawData(net::IOBuffer* buf,
   return 0;
 }
 
-int DelayableCertReportURLRequestJob::GetResponseCode() const {
-  // Report sender ignores responses. Return empty response.
-  return 200;
-}
-
 void DelayableCertReportURLRequestJob::GetResponseInfo(
     net::HttpResponseInfo* info) {
   // Report sender ignores responses. Return empty response.

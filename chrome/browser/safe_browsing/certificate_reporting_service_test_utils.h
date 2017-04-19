@@ -116,7 +116,6 @@ class DelayableCertReportURLRequestJob : public net::URLRequestJob,
   // net::URLRequestJob methods:
   void Start() override;
   int ReadRawData(net::IOBuffer* buf, int buf_size) override;
-  int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
 
   // Resumes a previously started request that was delayed. If no

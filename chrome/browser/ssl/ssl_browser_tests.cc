@@ -2939,8 +2939,6 @@ class DelayableNetworkTimeURLRequestJob : public net::URLRequestJob {
     return bytes_read;
   }
 
-  int GetResponseCode() const override { return 200; }
-
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     std::string headers;
     headers.append(

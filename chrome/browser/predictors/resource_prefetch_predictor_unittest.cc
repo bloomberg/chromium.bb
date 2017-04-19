@@ -71,7 +71,6 @@ class MockURLRequestJob : public net::URLRequestJob {
 
  protected:
   void Start() override { NotifyHeadersComplete(); }
-  int GetResponseCode() const override { return 200; }
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     *info = response_info_;
   }
