@@ -1350,6 +1350,7 @@ source_set("unit_tests") {
     "loader/TextResourceDecoderBuilderTest.cpp",
     "loader/ThreadableLoaderTest.cpp",
     "loader/modulescript/ModuleScriptLoaderTest.cpp",
+    "loader/modulescript/ModuleTreeLinkerTest.cpp",
     "loader/resource/CSSStyleSheetResourceTest.cpp",
     "loader/resource/FontResourceTest.cpp",
     "loader/resource/ImageResourceTest.cpp",

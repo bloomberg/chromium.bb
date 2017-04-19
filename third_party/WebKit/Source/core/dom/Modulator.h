@@ -89,6 +89,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // Synchronously retrieves a single module script from existing module map
   // entry.
+  // Note: returns nullptr if the module map entry is still "fetching".
   virtual ModuleScript* GetFetchedModuleScript(const KURL&) = 0;
 
   // https://html.spec.whatwg.org/#resolve-a-module-specifier

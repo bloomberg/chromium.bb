@@ -4,18 +4,36 @@
 
 #include "core/dom/ModuleScript.h"
 
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "v8/include/v8.h"
+
 namespace blink {
 
-void ModuleScript::SetInstantiationError(v8::Isolate* isolate,
-                                         v8::Local<v8::Value> error) {
+void ModuleScript::SetInstantiationErrorAndClearRecord(ScriptValue error) {
+  // Implements Step 7.1 of:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+
+  // "set script's instantiation state to "errored", ..."
   DCHECK_EQ(instantiation_state_, ModuleInstantiationState::kUninstantiated);
   instantiation_state_ = ModuleInstantiationState::kErrored;
 
+  // "its instantiation error to instantiationStatus.[[Value]], and ..."
   DCHECK(!error.IsEmpty());
-  instantiation_error_.Set(isolate, error);
+  {
+    ScriptState::Scope scope(error.GetScriptState());
+    instantiation_error_.Set(error.GetIsolate(), error.V8Value());
+  }
+
+  // "its module record to null."
+  record_ = ScriptModule();
 }
 
 void ModuleScript::SetInstantiationSuccess() {
+  // Implements Step 7.2 of:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+
+  // "set script's instantiation state to "instantiated"."
   DCHECK_EQ(instantiation_state_, ModuleInstantiationState::kUninstantiated);
   instantiation_state_ = ModuleInstantiationState::kInstantiated;
 }

@@ -43,15 +43,18 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ~ModuleScript() override = default;
 
   ScriptModule& Record() { return record_; }
-  void ClearRecord() { record_ = ScriptModule(); }
   const KURL& BaseURL() const { return base_url_; }
 
   ModuleInstantiationState InstantiationState() const {
     return instantiation_state_;
   }
 
+  // Implements Step 7.1 of:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+  void SetInstantiationErrorAndClearRecord(ScriptValue error);
+  // Implements Step 7.2 of:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
   void SetInstantiationSuccess();
-  void SetInstantiationError(v8::Isolate*, v8::Local<v8::Value> error);
 
   ParserDisposition ParserState() const { return parser_state_; }
   WebURLRequest::FetchCredentialsMode CredentialsMode() const {
