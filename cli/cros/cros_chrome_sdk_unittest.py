@@ -277,19 +277,19 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
         return True
     return False
 
-  def testGomaInPath(self, inverted=False):
+  def testGomaInPath(self):
     """Verify that we do indeed add Goma to the PATH."""
-    extra_args = ['--nogoma'] if inverted else None
-    self.SetupCommandMock(extra_args)
+    self.SetupCommandMock()
     self.cmd_mock.inst.Run()
 
-    expect = 'use_goma = ' + ('false' if inverted else 'true')
-    gn_args_str = self.cmd_mock.env['GN_ARGS']
-    self.assertIn(expect, gn_args_str)
+    self.assertIn('use_goma = true', self.cmd_mock.env['GN_ARGS'])
 
   def testNoGoma(self):
     """Verify that we do not add Goma to the PATH."""
-    self.testGomaInPath(inverted=True)
+    self.SetupCommandMock(extra_args=['--nogoma'])
+    self.cmd_mock.inst.Run()
+
+    self.assertIn('use_goma = false', self.cmd_mock.env['GN_ARGS'])
 
   def testClang(self):
     """Verifies clang codepath."""
