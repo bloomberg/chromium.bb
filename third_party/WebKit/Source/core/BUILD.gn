@@ -177,6 +177,7 @@ component("core") {
     "//third_party/WebKit/Source/core/dom",
     "//third_party/WebKit/Source/core/editing",
     "//third_party/WebKit/Source/core/events",
+    "//third_party/WebKit/Source/core/exported",
     "//third_party/WebKit/Source/core/fileapi",
     "//third_party/WebKit/Source/core/frame",
     "//third_party/WebKit/Source/core/geometry",

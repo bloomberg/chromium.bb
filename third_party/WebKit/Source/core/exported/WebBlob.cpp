@@ -30,12 +30,13 @@
 
 #include "public/web/WebBlob.h"
 
+#include <memory>
+
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "core/fileapi/Blob.h"
 #include "platform/FileMetadata.h"
 #include "platform/blob/BlobData.h"
-#include <memory>
 
 namespace blink {
 

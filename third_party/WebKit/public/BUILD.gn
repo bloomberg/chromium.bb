@@ -18,6 +18,7 @@ group("blink") {
     ":blink_headers",
   ]
   deps = [
+    "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/web",
   ]
