@@ -1044,12 +1044,14 @@ void PaymentRequest::OnAbort(bool aborted_successfully) {
   DCHECK(show_resolver_);
 
   if (!aborted_successfully) {
-    abort_resolver_->Reject(DOMException::Create(kInvalidStateError));
+    abort_resolver_->Reject(DOMException::Create(
+        kInvalidStateError, "Unable to abort the payment"));
     abort_resolver_.Clear();
     return;
   }
 
-  show_resolver_->Reject(DOMException::Create(kAbortError));
+  show_resolver_->Reject(
+      DOMException::Create(kAbortError, "The website has aborted the payment"));
   abort_resolver_->Resolve();
   ClearResolversAndCloseMojoConnection();
 }
