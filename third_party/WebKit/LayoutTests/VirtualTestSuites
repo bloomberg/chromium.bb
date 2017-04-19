@@ -463,6 +463,11 @@
     "args": ["--enable-blink-features=LayoutNG"]
   },
   {
+    "prefix": "layout_ng",
+    "base": "external/wpt/css/CSS2/normal-flow",
+    "args": ["--enable-blink-features=LayoutNG"]
+  },
+  {
     "prefix": "feature-policy",
     "base": "http/tests/feature-policy",
     "args": ["--enable-blink-features=FeaturePolicy"]
