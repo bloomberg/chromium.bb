@@ -68,7 +68,7 @@ class ManagePasswordsBubbleTest : public ManagePasswordsTest {
     return [bwc locationBarBridge]->manage_passwords_decoration();
   }
 
-  ManagePasswordsIcon* view() override { return decoration()->icon(); }
+  ManagePasswordsIconCocoa* GetView() { return decoration()->icon(); }
 };
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest,
@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest,
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_EQ([SavePendingPasswordViewController class],
             [controller().currentController class]);
-  EXPECT_TRUE(view()->active());
+  EXPECT_TRUE(GetView()->active());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, IconClickTogglesBubble) {
@@ -119,13 +119,13 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenBubble) {
   base::scoped_nsobject<ManagePasswordsBubbleController> bubble_controller(
       [controller() retain]);
   EXPECT_TRUE(bubble_controller);
-  EXPECT_TRUE(view()->active());
+  EXPECT_TRUE(GetView()->active());
 
   // Open the bubble again, the first one should be replaced.
   DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
   EXPECT_NSNE(bubble_controller, controller());
   EXPECT_TRUE(controller());
-  EXPECT_TRUE(view()->active());
+  EXPECT_TRUE(GetView()->active());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenDifferentBubbles) {
@@ -136,11 +136,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenDifferentBubbles) {
     SetupAutoSignin(std::move(local_credentials));
   });
   EXPECT_TRUE(controller());
-  EXPECT_TRUE(view()->active());
+  EXPECT_TRUE(GetView()->active());
 
   // Open the save bubble. The previous one is closed twice (with and without
   // animation). It shouldn't cause DCHECK.
   DoWithSwizzledNSWindow(^{ SetupPendingPassword(); });
   EXPECT_TRUE(controller());
-  EXPECT_TRUE(view()->active());
+  EXPECT_TRUE(GetView()->active());
 }

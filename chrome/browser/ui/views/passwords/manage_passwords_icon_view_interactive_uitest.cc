@@ -22,16 +22,13 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   ManagePasswordsIconViewTest() {}
   ~ManagePasswordsIconViewTest() override {}
 
-  ManagePasswordsIconView* view() override {
-    BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<ManagePasswordsIconViews*>(
-        browser_view->toolbar()->location_bar()->manage_passwords_icon_view());
-  }
-
   password_manager::ui::State ViewState() { return GetView()->state_; }
 
   ManagePasswordsIconViews* GetView() {
-    return static_cast<ManagePasswordsIconViews*>(view());
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar()
+        ->location_bar()
+        ->manage_passwords_icon_view();
   }
 
   base::string16 GetTooltipText() {

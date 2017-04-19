@@ -63,21 +63,7 @@ bool IsBubbleShowing() {
 
 namespace metrics_util = password_manager::metrics_util;
 
-class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
- public:
-  ManagePasswordsBubbleViewTest() {}
-  ~ManagePasswordsBubbleViewTest() override {}
-
-  ManagePasswordsIconView* view() override {
-    BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-    return browser_view->toolbar()
-        ->location_bar()
-        ->manage_passwords_icon_view();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleViewTest);
-};
+using ManagePasswordsBubbleViewTest = ManagePasswordsTest;
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   EXPECT_FALSE(IsBubbleShowing());

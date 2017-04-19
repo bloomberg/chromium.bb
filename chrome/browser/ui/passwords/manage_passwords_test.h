@@ -18,7 +18,6 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class ManagePasswordsIconView;
 class PasswordsClientUIDelegate;
 
 // Test class for the various password management view bits and pieces. Provides
@@ -30,9 +29,6 @@ class ManagePasswordsTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
-
-  // Get the icon view for the current WebContents.
-  virtual ManagePasswordsIconView* view() = 0;
 
   // Execute the browser command to open the manage passwords bubble.
   void ExecuteManagePasswordsCommand();
