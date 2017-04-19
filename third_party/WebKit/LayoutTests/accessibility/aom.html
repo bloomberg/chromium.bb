@@ -21,14 +21,14 @@ test(function(t) {
 test(function(t) {
     var button = document.getElementById("button");
     assert_equals(button.nodeType, Node.ELEMENT_NODE);
-    assert_not_equals(button.accessibleNode, null);
+    assert_true(Boolean(button.accessibleNode));
 }, "DOM Elements have an AccessibleNode");
 
 test(function(t) {
     var button = document.getElementById("button");
     var staticText = button.firstChild;
     assert_equals(staticText.nodeType, Node.TEXT_NODE);
-    assert_not_equals(staticText.accessibleNode, null);
+    assert_false(Boolean(staticText.accessibleNode));
 }, "DOM Text nodes do not have an AccessibleNode.");
 
 test(function(t) {
