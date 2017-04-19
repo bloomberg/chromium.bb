@@ -1091,23 +1091,26 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin properties.
-  static Length InitialMargin() { return Length(kFixed); }
 
   // margin-top
+  static Length InitialMarginTop() { return Length(kFixed); }
   const Length& MarginTop() const { return surround_->margin_.Top(); }
   void SetMarginTop(const Length& v) { SET_VAR(surround_, margin_.top_, v); }
 
   // margin-bottom
+  static Length InitialMarginBottom() { return Length(kFixed); }
   const Length& MarginBottom() const { return surround_->margin_.Bottom(); }
   void SetMarginBottom(const Length& v) {
     SET_VAR(surround_, margin_.bottom_, v);
   }
 
   // margin-left
+  static Length InitialMarginLeft() { return Length(kFixed); }
   const Length& MarginLeft() const { return surround_->margin_.Left(); }
   void SetMarginLeft(const Length& v) { SET_VAR(surround_, margin_.left_, v); }
 
   // margin-right
+  static Length InitialMarginRight() { return Length(kFixed); }
   const Length& MarginRight() const { return surround_->margin_.Right(); }
   void SetMarginRight(const Length& v) {
     SET_VAR(surround_, margin_.right_, v);

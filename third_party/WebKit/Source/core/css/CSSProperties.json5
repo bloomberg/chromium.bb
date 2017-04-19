@@ -1264,7 +1264,6 @@
       api_class: "CSSPropertyAPIMargin",
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
-      initial: "InitialMargin",
       interpolable: true,
     },
     {
@@ -1272,7 +1271,6 @@
       api_class: "CSSPropertyAPIMargin",
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
-      initial: "InitialMargin",
       interpolable: true,
     },
     {
@@ -1280,7 +1278,6 @@
       api_class: "CSSPropertyAPIMargin",
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
-      initial: "InitialMargin",
       interpolable: true,
     },
     {
@@ -1288,7 +1285,6 @@
       api_class: "CSSPropertyAPIMargin",
       api_methods: ["parseSingleValue"],
       converter: "ConvertQuirkyLength",
-      initial: "InitialMargin",
       interpolable: true,
     },
     {
