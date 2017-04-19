@@ -102,29 +102,39 @@ class CC_SURFACES_EXPORT Surface {
   }
 
   const std::vector<SurfaceId>* active_referenced_surfaces() const {
-    return active_frame_ ? &active_frame_->metadata.referenced_surfaces
-                         : nullptr;
+    return active_frame_data_
+               ? &active_frame_data_->frame.metadata.referenced_surfaces
+               : nullptr;
   }
 
   const SurfaceDependencies& blocking_surfaces() const {
     return blocking_surfaces_;
   }
 
-  bool HasActiveFrame() const { return active_frame_.has_value(); }
-  bool HasPendingFrame() const { return pending_frame_.has_value(); }
+  bool HasActiveFrame() const { return active_frame_data_.has_value(); }
+  bool HasPendingFrame() const { return pending_frame_data_.has_value(); }
 
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
  private:
+  struct FrameData {
+    FrameData(CompositorFrame&& frame, const DrawCallback& draw_callback);
+    FrameData(FrameData&& other);
+    ~FrameData();
+    FrameData& operator=(FrameData&& other);
+    CompositorFrame frame;
+    DrawCallback draw_callback;
+  };
+
   void ActivatePendingFrame();
   // Called when all of the surface's dependencies have been resolved.
-  void ActivateFrame(CompositorFrame frame);
-  void UpdateBlockingSurfaces(
-      const base::Optional<CompositorFrame>& previous_pending_frame,
-      const CompositorFrame& current_frame);
+  void ActivateFrame(FrameData frame_data);
+  void UpdateBlockingSurfaces(bool has_previous_pending_frame,
+                              const CompositorFrame& current_frame);
 
-  void UnrefFrameResources(const CompositorFrame& frame_data);
+  void UnrefFrameResourcesAndRunDrawCallback(
+      base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
 
   void TakeLatencyInfoFromPendingFrame(
@@ -136,9 +146,9 @@ class CC_SURFACES_EXPORT Surface {
   SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
-  // TODO(jamesr): Support multiple frames in flight.
-  base::Optional<CompositorFrame> pending_frame_;
-  base::Optional<CompositorFrame> active_frame_;
+
+  base::Optional<FrameData> pending_frame_data_;
+  base::Optional<FrameData> active_frame_data_;
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
@@ -149,8 +159,6 @@ class CC_SURFACES_EXPORT Surface {
 
   SurfaceDependencies blocking_surfaces_;
   base::ObserverList<PendingFrameObserver, true> observers_;
-
-  DrawCallback draw_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

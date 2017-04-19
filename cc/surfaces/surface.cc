@@ -32,25 +32,20 @@ Surface::Surface(const SurfaceId& id, base::WeakPtr<SurfaceFactory> factory)
 
 Surface::~Surface() {
   ClearCopyRequests();
-  if (factory_) {
-    if (pending_frame_)
-      UnrefFrameResources(*pending_frame_);
-    if (active_frame_)
-      UnrefFrameResources(*active_frame_);
-  }
-  if (!draw_callback_.is_null())
-    draw_callback_.Run();
-
   for (auto& observer : observers_)
     observer.OnSurfaceDiscarded(this);
   observers_.Clear();
+
+  UnrefFrameResourcesAndRunDrawCallback(std::move(pending_frame_data_));
+  UnrefFrameResourcesAndRunDrawCallback(std::move(active_frame_data_));
 }
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
-  DCHECK(surface);
+  DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   frame_index_ = surface->frame_index() + 1;
   previous_frame_surface_id_ = surface->surface_id();
-  CompositorFrame& frame = active_frame_ ? *active_frame_ : *pending_frame_;
+  CompositorFrame& frame = active_frame_data_ ? active_frame_data_->frame
+                                              : pending_frame_data_->frame;
   surface->TakeLatencyInfo(&frame.metadata.latency_info);
   surface->TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 }
@@ -58,49 +53,47 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
 void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
   TakeLatencyInfoFromPendingFrame(&frame.metadata.latency_info);
 
-  base::Optional<CompositorFrame> previous_pending_frame =
-      std::move(pending_frame_);
-  pending_frame_.reset();
+  base::Optional<FrameData> previous_pending_frame_data =
+      std::move(pending_frame_data_);
+  pending_frame_data_.reset();
 
-  UpdateBlockingSurfaces(previous_pending_frame, frame);
+  UpdateBlockingSurfaces(previous_pending_frame_data.has_value(), frame);
 
   // Receive and track the resources referenced from the CompositorFrame
   // regardless of whether it's pending or active.
   factory_->ReceiveFromChild(frame.resource_list);
 
-  if (!blocking_surfaces_.empty()) {
-    pending_frame_ = std::move(frame);
+  bool is_pending_frame = !blocking_surfaces_.empty();
+
+  if (is_pending_frame) {
+    pending_frame_data_ = FrameData(std::move(frame), callback);
     // Ask the surface manager to inform |this| when its dependencies are
     // resolved.
     factory_->manager()->RequestSurfaceResolution(this);
   } else {
     // If there are no blockers, then immediately activate the frame.
-    ActivateFrame(std::move(frame));
+    ActivateFrame(FrameData(std::move(frame), callback));
   }
 
   // Returns resources for the previous pending frame.
-  if (previous_pending_frame)
-    UnrefFrameResources(*previous_pending_frame);
-
-  if (!draw_callback_.is_null())
-    draw_callback_.Run();
-  draw_callback_ = callback;
+  UnrefFrameResourcesAndRunDrawCallback(std::move(previous_pending_frame_data));
 }
 
 void Surface::EvictFrame() {
   QueueFrame(CompositorFrame(), DrawCallback());
-  active_frame_.reset();
+  active_frame_data_.reset();
 }
 
 void Surface::RequestCopyOfOutput(
     std::unique_ptr<CopyOutputRequest> copy_request) {
-  if (!active_frame_ || active_frame_->render_pass_list.empty()) {
+  if (!active_frame_data_ ||
+      active_frame_data_->frame.render_pass_list.empty()) {
     copy_request->SendEmptyResult();
     return;
   }
 
   std::vector<std::unique_ptr<CopyOutputRequest>>& copy_requests =
-      active_frame_->render_pass_list.back()->copy_requests;
+      active_frame_data_->frame.render_pass_list.back()->copy_requests;
 
   if (copy_request->has_source()) {
     const base::UnguessableToken& source = copy_request->source();
@@ -138,8 +131,8 @@ void Surface::RemoveObserver(PendingFrameObserver* observer) {
 }
 
 void Surface::ActivatePendingFrameForDeadline() {
-  if (!pending_frame_ ||
-      !pending_frame_->metadata.can_activate_before_dependencies) {
+  if (!pending_frame_data_ ||
+      !pending_frame_data_->frame.metadata.can_activate_before_dependencies) {
     return;
   }
 
@@ -149,52 +142,62 @@ void Surface::ActivatePendingFrameForDeadline() {
   ActivatePendingFrame();
 }
 
+Surface::FrameData::FrameData(CompositorFrame&& frame,
+                              const DrawCallback& draw_callback)
+    : frame(std::move(frame)), draw_callback(draw_callback) {}
+
+Surface::FrameData::FrameData(FrameData&& other) = default;
+
+Surface::FrameData& Surface::FrameData::operator=(FrameData&& other) = default;
+
+Surface::FrameData::~FrameData() = default;
+
 void Surface::ActivatePendingFrame() {
-  DCHECK(pending_frame_);
-  ActivateFrame(std::move(pending_frame_.value()));
-  pending_frame_.reset();
+  DCHECK(pending_frame_data_);
+  ActivateFrame(std::move(*pending_frame_data_));
+  pending_frame_data_.reset();
 }
 
 // A frame is activated if all its Surface ID dependences are active or a
 // deadline has hit and the frame was forcibly activated by the display
 // compositor.
-void Surface::ActivateFrame(CompositorFrame frame) {
+void Surface::ActivateFrame(FrameData frame_data) {
   DCHECK(factory_);
 
   // Save root pass copy requests.
   std::vector<std::unique_ptr<CopyOutputRequest>> old_copy_requests;
-  if (active_frame_ && !active_frame_->render_pass_list.empty()) {
+  if (active_frame_data_ &&
+      !active_frame_data_->frame.render_pass_list.empty()) {
     std::swap(old_copy_requests,
-              active_frame_->render_pass_list.back()->copy_requests);
+              active_frame_data_->frame.render_pass_list.back()->copy_requests);
   }
 
   ClearCopyRequests();
 
-  TakeLatencyInfo(&frame.metadata.latency_info);
+  TakeLatencyInfo(&frame_data.frame.metadata.latency_info);
 
-  base::Optional<CompositorFrame> previous_frame = std::move(active_frame_);
-  active_frame_ = std::move(frame);
+  base::Optional<FrameData> previous_frame_data = std::move(active_frame_data_);
+
+  active_frame_data_ = std::move(frame_data);
 
   for (auto& copy_request : old_copy_requests)
     RequestCopyOfOutput(std::move(copy_request));
 
   // Empty frames shouldn't be drawn and shouldn't contribute damage, so don't
   // increment frame index for them.
-  if (!active_frame_->render_pass_list.empty())
+  if (!active_frame_data_->frame.render_pass_list.empty())
     ++frame_index_;
 
   previous_frame_surface_id_ = surface_id();
 
-  if (previous_frame)
-    UnrefFrameResources(*previous_frame);
+  UnrefFrameResourcesAndRunDrawCallback(std::move(previous_frame_data));
 
   for (auto& observer : observers_)
     observer.OnSurfaceActivated(this);
 }
 
-void Surface::UpdateBlockingSurfaces(
-    const base::Optional<CompositorFrame>& previous_pending_frame,
-    const CompositorFrame& current_frame) {
+void Surface::UpdateBlockingSurfaces(bool has_previous_pending_frame,
+                                     const CompositorFrame& current_frame) {
   // If there is no SurfaceDependencyTracker installed then the |current_frame|
   // does not block on anything.
   if (!factory_->manager()->dependency_tracker()) {
@@ -215,7 +218,7 @@ void Surface::UpdateBlockingSurfaces(
   // If this Surface has a previous pending frame, then we must determine the
   // changes in dependencies so that we can update the SurfaceDependencyTracker
   // map.
-  if (previous_pending_frame.has_value()) {
+  if (has_previous_pending_frame) {
     SurfaceDependencies removed_dependencies;
     for (const SurfaceId& surface_id : blocking_surfaces_) {
       if (!new_blocking_surfaces.count(surface_id))
@@ -243,10 +246,10 @@ void Surface::UpdateBlockingSurfaces(
 void Surface::TakeCopyOutputRequests(
     std::multimap<int, std::unique_ptr<CopyOutputRequest>>* copy_requests) {
   DCHECK(copy_requests->empty());
-  if (!active_frame_)
+  if (!active_frame_data_)
     return;
 
-  for (const auto& render_pass : active_frame_->render_pass_list) {
+  for (const auto& render_pass : active_frame_data_->frame.render_pass_list) {
     for (auto& request : render_pass->copy_requests) {
       copy_requests->insert(
           std::make_pair(render_pass->id, std::move(request)));
@@ -256,25 +259,25 @@ void Surface::TakeCopyOutputRequests(
 }
 
 const CompositorFrame& Surface::GetActiveFrame() const {
-  DCHECK(active_frame_);
-  return active_frame_.value();
+  DCHECK(active_frame_data_);
+  return active_frame_data_->frame;
 }
 
 const CompositorFrame& Surface::GetPendingFrame() {
-  DCHECK(pending_frame_);
-  return pending_frame_.value();
+  DCHECK(pending_frame_data_);
+  return pending_frame_data_->frame;
 }
 
 void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
-  if (!active_frame_)
+  if (!active_frame_data_)
     return;
-  TakeLatencyInfoFromFrame(&active_frame_.value(), latency_info);
+  TakeLatencyInfoFromFrame(&active_frame_data_->frame, latency_info);
 }
 
 void Surface::RunDrawCallbacks() {
-  if (!draw_callback_.is_null()) {
-    DrawCallback callback = draw_callback_;
-    draw_callback_ = DrawCallback();
+  if (active_frame_data_ && !active_frame_data_->draw_callback.is_null()) {
+    DrawCallback callback = active_frame_data_->draw_callback;
+    active_frame_data_->draw_callback = DrawCallback();
     callback.Run();
   }
 }
@@ -293,18 +296,26 @@ void Surface::SatisfyDestructionDependencies(
                 });
 }
 
-void Surface::UnrefFrameResources(const CompositorFrame& frame) {
+void Surface::UnrefFrameResourcesAndRunDrawCallback(
+    base::Optional<FrameData> frame_data) {
+  if (!frame_data || !factory_)
+    return;
+
   ReturnedResourceArray resources;
-  TransferableResource::ReturnResources(frame.resource_list, &resources);
+  TransferableResource::ReturnResources(frame_data->frame.resource_list,
+                                        &resources);
   // No point in returning same sync token to sender.
   for (auto& resource : resources)
     resource.sync_token.Clear();
   factory_->UnrefResources(resources);
+
+  if (!frame_data->draw_callback.is_null())
+    frame_data->draw_callback.Run();
 }
 
 void Surface::ClearCopyRequests() {
-  if (active_frame_) {
-    for (const auto& render_pass : active_frame_->render_pass_list) {
+  if (active_frame_data_) {
+    for (const auto& render_pass : active_frame_data_->frame.render_pass_list) {
       for (const auto& copy_request : render_pass->copy_requests)
         copy_request->SendEmptyResult();
     }
@@ -313,9 +324,9 @@ void Surface::ClearCopyRequests() {
 
 void Surface::TakeLatencyInfoFromPendingFrame(
     std::vector<ui::LatencyInfo>* latency_info) {
-  if (!pending_frame_)
+  if (!pending_frame_data_)
     return;
-  TakeLatencyInfoFromFrame(&pending_frame_.value(), latency_info);
+  TakeLatencyInfoFromFrame(&pending_frame_data_->frame, latency_info);
 }
 
 // static

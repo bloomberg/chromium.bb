@@ -4,7 +4,6 @@
 
 #include "cc/surfaces/compositor_frame_sink_support.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -127,7 +126,8 @@ TransferableResource MakeResource(ResourceId id,
 
 }  // namespace
 
-class CompositorFrameSinkSupportTest : public testing::Test {
+class CompositorFrameSinkSupportTest : public testing::Test,
+                                       public SurfaceObserver {
  public:
   CompositorFrameSinkSupportTest()
       : surface_manager_(SurfaceManager::LifetimeType::REFERENCES) {}
@@ -194,6 +194,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     surface_manager_.SetDependencyTracker(
         base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_,
                                                    begin_frame_source_.get()));
+    surface_manager_.AddObserver(this);
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &surface_manager_, kDisplayFrameSink, is_root,
         handles_frame_sink_id_invalidation, needs_sync_points));
@@ -216,6 +217,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   }
 
   void TearDown() override {
+    surface_manager_.RemoveObserver(this);
     surface_manager_.SetDependencyTracker(nullptr);
     surface_manager_.UnregisterBeginFrameSource(begin_frame_source_.get());
 
@@ -224,12 +226,25 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     begin_frame_source_.reset();
 
     supports_.clear();
+
+    damaged_surfaces_.clear();
+  }
+
+  bool IsSurfaceDamaged(const SurfaceId& surface_id) const {
+    return damaged_surfaces_.count(surface_id) > 0;
+  }
+
+  // SurfaceObserver implementation:
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
+  void OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) override {
+    damaged_surfaces_.insert(surface_id);
   }
 
  protected:
   testing::NiceMock<MockCompositorFrameSinkSupportClient> support_client_;
 
  private:
+  base::flat_set<SurfaceId> damaged_surfaces_;
   SurfaceManager surface_manager_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::vector<std::unique_ptr<CompositorFrameSinkSupport>> supports_;
@@ -321,6 +336,8 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
+  // The parent should not report damage until it activates.
+  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
                                          MakeCompositorFrame({child_id2}));
@@ -331,6 +348,9 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
   EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
+  // The parent and child should not report damage until they activate.
+  EXPECT_FALSE(IsSurfaceDamaged(parent_id));
+  EXPECT_FALSE(IsSurfaceDamaged(child_id1));
 
   // The parent should still be blocked on |child_id1| because it's pending.
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
@@ -352,6 +372,12 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
+
+  // All three surfaces |parent_id|, |child_id1|, and |child_id2| should
+  // now report damage. This would trigger a new display frame.
+  EXPECT_TRUE(IsSurfaceDamaged(parent_id));
+  EXPECT_TRUE(IsSurfaceDamaged(child_id1));
+  EXPECT_TRUE(IsSurfaceDamaged(child_id2));
 }
 
 // parent_surface and child_surface1 are blocked on |child_id2|.
@@ -541,8 +567,11 @@ TEST_F(CompositorFrameSinkSupportTest,
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   // child_support1 submits a CompositorFrame without any dependencies.
+  // DidReceiveCompositorFrameAck should call on immediate activation.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(1);
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
                                          MakeCompositorFrame());
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child surface is not blocked.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
@@ -554,7 +583,10 @@ TEST_F(CompositorFrameSinkSupportTest,
 
   // parent_support submits a CompositorFrame that depends on |child_id1|
   // (which is already active) and |child_id2|. Thus, the parent should not
-  // activate immediately.
+  // activate immediately. DidReceiveCompositorFrameAck should not be called
+  // immediately because the parent CompositorFrame is also blocked on
+  // |child_id2|.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
       MakeCompositorFrame({child_id1, child_id2}));
@@ -563,14 +595,19 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
   EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that there's a temporary reference for |child_id1| that still
   // exists.
   EXPECT_TRUE(HasTemporaryReference(child_id1));
 
   // child_support2 submits a CompositorFrame without any dependencies.
+  // Both the child and the parent should immediately ACK CompositorFrames
+  // on activation.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
                                          MakeCompositorFrame());
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child surface is not blocked.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
@@ -689,6 +726,7 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
 
   // The parent submits a CompositorFrame that depends on |child_id1| before the
   // child submits a CompositorFrame.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
                                          MakeCompositorFrame({child_id1}));
 
@@ -697,12 +735,17 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
   EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that no references are added while the CompositorFrame is pending.
   EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
 
+  // DidReceiveCompositorFrameAck should get called twice: once for the child
+  // and once for the now active parent CompositorFrame.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
   child_support1().SubmitCompositorFrame(
       child_id1.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child CompositorFrame activates immediately.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
@@ -720,8 +763,11 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
 
   // The parent submits another CompositorFrame that depends on |child_id2|.
+  // Submitting a pending CompositorFrame will not trigger a CompositorFrameAck.
+  EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(0);
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
                                          MakeCompositorFrame({child_id2}));
+  testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // The parent surface should now have both a pending and activate
   // CompositorFrame. Verify that the set of child references from

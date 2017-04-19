@@ -66,10 +66,6 @@ void SurfaceFactory::SubmitCompositorFrame(
   }
   surface->QueueFrame(std::move(frame), callback);
 
-  if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_surface_id))) {
-    TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
-    surface->RunDrawCallbacks();
-  }
   if (current_surface_ && create_new_surface) {
     surface->SetPreviousFrameSurface(current_surface_.get());
     Destroy(std::move(current_surface_));
@@ -133,6 +129,10 @@ void SurfaceFactory::OnSurfaceActivated(Surface* surface) {
   // is potentially transformed into a real reference by the client.
   client_->ReferencedSurfacesChanged(surface->surface_id().local_surface_id(),
                                      surface->active_referenced_surfaces());
+  if (!manager_->SurfaceModified(surface->surface_id())) {
+    TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
+    surface->RunDrawCallbacks();
+  }
 }
 
 void SurfaceFactory::OnSurfaceDependenciesChanged(
