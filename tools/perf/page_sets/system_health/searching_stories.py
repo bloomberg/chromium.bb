@@ -43,6 +43,7 @@ class SearchGoogleStory(system_health_story.SystemHealthStory):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
 
+@decorators.Disabled('android-webview')  # Webview does not have omnibox
 class SearchOmniboxStory(system_health_story.SystemHealthStory):
   """Story that peforms search by using omnibox search provider
 
