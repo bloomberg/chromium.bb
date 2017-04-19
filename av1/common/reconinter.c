@@ -1762,8 +1762,8 @@ int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
     case BLOCK_8X4:
     case BLOCK_4X8: return 1; break;
 #else
-    case BLOCK_4X4: return dir == 1; break;
-    case BLOCK_8X4: return dir == 0; break;
+    case BLOCK_4X4:
+    case BLOCK_8X4:
     case BLOCK_4X8: return dir == 1; break;
 #endif
     default: return 0;
