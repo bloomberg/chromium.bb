@@ -23,7 +23,7 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // Java side and only register a subset of JNI methods.
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (base::android::isSelectiveJniRegistrationEnabled(env)) {
+  if (base::android::IsSelectiveJniRegistrationEnabled(env)) {
     base::android::SetJniRegistrationType(
         base::android::SELECTIVE_JNI_REGISTRATION);
   }
