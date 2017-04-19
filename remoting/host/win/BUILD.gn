@@ -330,6 +330,10 @@ shared_library("remoting_core") {
               "VERSION=$chrome_version_full",
             ]
 
+  if (is_chrome_branded && is_official_build) {
+    defines += [ "REMOTING_ENABLE_BREAKPAD" ]
+  }
+
   if (remoting_multi_process != 0 && remoting_rdp_session != 0) {
     defines += [ "REMOTING_RDP_SESSION" ]
   }

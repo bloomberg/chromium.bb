@@ -148,16 +148,6 @@ int HostMain(int argc, char** argv) {
 
   base::CommandLine::Init(argc, argv);
 
-  // Initialize Breakpad as early as possible. On Mac the command-line needs to
-  // be initialized first, so that the preference for crash-reporting can be
-  // looked up in the config file.
-#if defined(REMOTING_ENABLE_BREAKPAD)
-  // TODO(nicholss): Commenting out Breakpad. See crbug.com/637884
-  // if (IsUsageStatsAllowed()) {
-  //   InitializeCrashReporting();
-  // }
-#endif  // defined(REMOTING_ENABLE_BREAKPAD)
-
   // This object instance is required by Chrome code (for example,
   // LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
@@ -165,8 +155,17 @@ int HostMain(int argc, char** argv) {
   // Enable debug logs.
   InitHostLogging();
 
-  // Register and initialize common controls.
+#if defined(REMOTING_ENABLE_BREAKPAD)
+  // Initialize Breakpad as early as possible. On Mac the command-line needs to
+  // be initialized first, so that the preference for crash-reporting can be
+  // looked up in the config file.
+  if (IsUsageStatsAllowed()) {
+    InitializeCrashReporting();
+  }
+#endif  // defined(REMOTING_ENABLE_BREAKPAD)
+
 #if defined(OS_WIN)
+  // Register and initialize common controls.
   INITCOMMONCONTROLSEX info;
   info.dwSize = sizeof(info);
   info.dwICC = ICC_STANDARD_CLASSES;

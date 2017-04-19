@@ -46,9 +46,9 @@ bool GetUsageStatsConsent(bool* allowed, bool* set_by_policy) {
   // supported.
   *set_by_policy = false;
 
-  // The user's consent to collect crash dumps is recored as the "usagestats"
-  // value in the ClientState or ClientStateMedium key. Probe
-  // the ClientStateMedium key first.
+  // The user's consent to collect crash dumps is recorded as the "usagestats"
+  // value in the ClientState or ClientStateMedium key. Probe the
+  // ClientStateMedium key first.
   DWORD value = 0;
   if (ReadUsageStatsValue(kOmahaClientStateMedium, &value) == ERROR_SUCCESS) {
     *allowed = value != 0;
