@@ -221,17 +221,9 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     }
     gfx::Rect display_bounds(state->origin(), mode_info->size());
 
-    std::string name;
-    switch (state->type()) {
-      case DISPLAY_CONNECTION_TYPE_INTERNAL:
-        name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL);
-        break;
-      case DISPLAY_CONNECTION_TYPE_VIRTUAL:
-        name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_VIRTUAL);
-        break;
-      default:
-        name = state->display_name();
-    }
+    std::string name = (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
+                           ? l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL)
+                           : state->display_name();
 
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);

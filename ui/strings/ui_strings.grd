@@ -691,9 +691,6 @@ need to be translated for each locale.-->
       <message name="IDS_DISPLAY_NAME_INTERNAL" desc="The name used for internal displays, which is shown in the display settings.">
         Internal Display
       </message>
-      <message name="IDS_DISPLAY_NAME_VIRTUAL" desc="The name used for virtual displays, which is shown in the display settings. Virtual displays are not associated with a physical monitor.">
-        Virtual Display
-      </message>
     </messages>
   </release>
 </grit>

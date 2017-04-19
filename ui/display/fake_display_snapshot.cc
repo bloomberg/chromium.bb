@@ -60,8 +60,6 @@ std::string DisplayConnectionTypeString(DisplayConnectionType type) {
       return "dp";
     case DISPLAY_CONNECTION_TYPE_NETWORK:
       return "network";
-    case DISPLAY_CONNECTION_TYPE_VIRTUAL:
-      return "virtual";
   }
   NOTREACHED();
   return "";

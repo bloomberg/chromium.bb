@@ -31,8 +31,8 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
                 std::vector<bool>* display_power);
 
 // Returns whether the DisplayConnectionType |type| is a physically connected
-// display. Currently DISPLAY_CONNECTION_TYPE_VIRTUAL and
-// DISPLAY_CONNECTION_TYPE_NETWORK return false. All other types return true.
+// display. Currently only DISPLAY_CONNECTION_TYPE_NETWORK return false.
+// All other types return true.
 bool IsPhysicalDisplayType(DisplayConnectionType type);
 
 }  // namespace display

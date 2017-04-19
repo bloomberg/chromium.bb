@@ -19,7 +19,6 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/manager/chromeos/display_snapshot_virtual.h"
 #include "ui/display/manager/chromeos/query_content_protection_task.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
@@ -284,10 +283,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   bool SetColorCalibrationProfile(int64_t display_id,
                                   ColorCalibrationProfile new_profile);
 
-  // Enables/disables virtual display.
-  int64_t AddVirtualDisplay(const gfx::Size& display_size);
-  bool RemoveVirtualDisplay(int64_t display_id);
-
   // Returns true if there is at least one display on.
   bool IsDisplayOn() const;
 
@@ -462,12 +457,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Whether the displays are currently suspended.
   bool displays_suspended_;
-
-  // Virtual display control.
-  std::vector<std::unique_ptr<DisplaySnapshot>> virtual_display_snapshots_;
-
-  // Last used virtual display id.
-  uint8_t last_virtual_display_id_ = 0;
 
   std::unique_ptr<DisplayLayoutManager> layout_manager_;
 

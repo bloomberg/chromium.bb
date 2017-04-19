@@ -9,6 +9,7 @@
 #include "ash/system/devicetype_utils.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ash {
 
