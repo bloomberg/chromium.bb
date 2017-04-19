@@ -209,9 +209,12 @@ class ArcCustomNotificationView::ContentViewDelegate
 ArcCustomNotificationView::ControlButton::ControlButton(
     ArcCustomNotificationView* owner)
     : message_center::PaddedButton(owner), owner_(owner) {
-  if (!owner_->item_) {
+  if (owner_->item_) {
     set_background(views::Background::CreateSolidBackground(
         GetControlButtonBackgroundColor(owner_->item_->shown_contents())));
+  } else {
+    set_background(views::Background::CreateSolidBackground(
+        message_center::kControlButtonBackgroundColor));
   }
 }
 
