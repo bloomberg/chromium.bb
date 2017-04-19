@@ -62,8 +62,12 @@
 #     where the value of the policy can be entered. 'main' policies on
 #     Windows ignore this. Policies on Mac are using this instead of caption.
 #
-# Non-translateable strings should be tagged using <ph name="..."></ph> as
-# described in https://www.chromium.org/developers/tools-we-use-in-chromium/grit/grit-users-guide
+# As a reference for translators, non-translateable strings must be tagged using
+# <ph name="..."></ph> as described in [1]. As these tags are pruned before
+# generating the comments for .proto files, paragraphs containing such tags
+# should not be line-wrapped (use one long line per paragraph instead) to allow
+# for correct re-flowing of the text.
+# [1] https://www.chromium.org/developers/tools-we-use-in-chromium/grit/grit-users-guide.
 #
 # Generated grd names:
 #   Each name has two parts: the second part is either CAPTION, DESC or LABEL,
@@ -733,10 +737,7 @@
       'caption': '''Configure remote access options''',
       'desc': '''Configure remote access options in Chrome Remote Desktop host.
 
-      Chrome Remote Desktop host is a native service that runs on the target
-      machine that a user can connect to using Chrome Remote Desktop
-      application.  The native service is packaged and executed separately from
-      the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser.
+      Chrome Remote Desktop host is a native service that runs on the target machine that a user can connect to using Chrome Remote Desktop application.  The native service is packaged and executed separately from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser.
 
       These policies are ignored unless the
       Chrome Remote Desktop host is installed.''',
@@ -1299,17 +1300,12 @@
           'caption': '''Enable saving passwords to the password manager''',
           'tags': [],
           'desc': '''
-          If this setting is enabled, users can have <ph
-          name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords
-          and provide them automatically the next time they log in to a site.
+          If this setting is enabled, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
 
           If this settings is disabled, users cannot save new passwords but they
           may still use passwords that have been saved previously.
 
-          If this policy is enabled or disabled, users cannot change or override
-          it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If this
-          policy is unset, password saving is allowed (but can be turned off by
-          the user).''',
+          If this policy is enabled or disabled, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If this policy is unset, password saving is allowed (but can be turned off by the user).''',
           'arc_support': 'This policy has no effect on Android apps.',
         },
         {
@@ -7891,17 +7887,7 @@
       'tags': [],
       'desc': '''Configures a list of managed bookmarks.
 
-      The policy consists of a list of bookmarks whereas each bookmark is a
-      dictionary containing the keys <ph name="NAME">"name"</ph> and <ph
-      name="URL_LABEL">"url"</ph> which hold the bookmark's name and its target. A
-      subfolder may be configured by defining a bookmark without an <ph
-      name="URL_LABEL">"url"</ph> key but with an additional <ph
-      name="CHILDREN">"children"</ph> key which itself contains a list of
-      bookmarks as defined above (some of which may be folders again). <ph
-      name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs
-      as if they were submitted via the Omnibox, for example <ph
-      name="GOOGLE_COM">"google.com"</ph> becomes <ph
-      name="HTTPS_GOOGLE_COM">"https://google.com/"</ph>.
+      The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys <ph name="NAME">"name"</ph> and <ph name="URL_LABEL">"url"</ph> which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an <ph name="URL_LABEL">"url"</ph> key but with an additional <ph name="CHILDREN">"children"</ph> key which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs as if they were submitted via the Omnibox, for example <ph name="GOOGLE_COM">"google.com"</ph> becomes <ph name="HTTPS_GOOGLE_COM">"https://google.com/"</ph>.
 
       These bookmarks are placed in a "Managed bookmarks" folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.
 
@@ -8876,11 +8862,7 @@
       When this policy is set to false, the device will not attempt to
       contact the Quirks Server to download configuration files.
 
-      If this policy is true or not configured then
-      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will
-      automatically contact the Quirks Server and download configuration files,
-      if available, and store them on the device.  Such files might, for
-      example, be used to improve display quality of attached monitors.''',
+      If this policy is true or not configured then <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will automatically contact the Quirks Server and download configuration files, if available, and store them on the device.  Such files might, for example, be used to improve display quality of attached monitors.''',
     },
     {
       'name': 'SystemTimezoneAutomaticDetection',
@@ -9044,28 +9026,11 @@
       implicitly, without user interaction, including any additional
       permissions requested by future versions of the app.
 
-      If an app that previously had been force-installed is removed from
-      this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google
-      Chrome</ex></ph>.
+      If an app that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Each list item of the policy is a string that contains an extension ID
-      and an "update" URL separated by a semicolon (<ph
-      name="SEMICOLON">;</ph>). The extension ID is the 32-letter string
-      found e.g. on <ph
-      name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in
-      developer mode. The "update" URL should point to an Update Manifest
-      XML document as described at <ph
-      name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note
-      that the "update" URL set in this policy is only used for the initial
-      installation; subsequent updates of the extension employ the update
-      URL indicated in the extension's manifest.
+      Each list item of the policy is a string that contains an extension ID and an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest.
 
-      For example, <ph
-      name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph>
-      installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome
-      Remote Desktop</ph> app from the standard Chrome Web Store "update"
-      URL. For more information about hosting extensions, see: <ph
-      name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.''',
+      For example, <ph name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome Remote Desktop</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.''',
     },
     {
       'name': 'AllowScreenLock',
@@ -9130,9 +9095,7 @@
       'id': 331,
       'caption': '''Define domains allowed to access Google Apps''',
       'tags': ['filtering'],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s
-      restricted log in feature in Google Apps and prevents users from
-      changing this setting.
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in Google Apps and prevents users from changing this setting.
 
       If you define this setting, the user will only be able to access
       Google Apps (such as Gmail) using accounts from the specified domains.
@@ -9397,23 +9360,9 @@
       This policy allows administrators to provide printer configurations for
       their users.
 
-      <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph
-      name="PRINTER_DESCRIPTION">description</ph> are free form strings that
-      can be customized for ease of printer selection. <ph
-      name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph
-      name="PRINTER_MODEL">model</ph> serve to ease printer identification by
-      end users. They represent the manufcaturer and model of the printer. <ph
-      name="PRINTER_URI">uri</ph> should be an address reachable
-      from a client computer including the <ph name="URI_SCHEME">scheme</ph>,
-      <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>.  <ph
-      name="PRINTER_UUID">uuid</ph> is optional.  If provided, it is used to
-      help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
+      <ph name="PRINTER_DISPLAY_NAME">display_name</ph> and <ph name="PRINTER_DESCRIPTION">description</ph> are free form strings that can be customized for ease of printer selection. <ph name="PRINTER_MANUFACTURER">manufacturer</ph> and <ph name="PRINTER_MODEL">model</ph> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI">uri</ph> should be an address reachable from a client computer including the <ph name="URI_SCHEME">scheme</ph>, <ph name="URI_PORT">port</ph>, and <ph name="URI_QUEUE">queue</ph>. <ph name="PRINTER_UUID">uuid</ph> is optional.  If provided, it is used to help deduplicate <ph name="ZEROCONF_DISCOVERY">zeroconf</ph> printers.
 
-      <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of
-      the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome
-      OS</ex></ph> supported printer. The string will be used to identify and
-      install the appropriate PPD for the printer. More information can be
-      found at https://support.google.com/chrome?p=noncloudprint.
+      <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
 
       Printer setup is completed upon the first use of a printer.  PPDs are not
       downloaded until the printer is used.  After that time, frequently used
