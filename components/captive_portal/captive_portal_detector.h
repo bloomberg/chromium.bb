@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/captive_portal/captive_portal_export.h"
 #include "components/captive_portal/captive_portal_types.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -54,7 +55,10 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector
 
   // Triggers a check for a captive portal. After completion, runs the
   // |callback|.
-  void DetectCaptivePortal(const GURL& url, const DetectionCallback& callback);
+  void DetectCaptivePortal(
+      const GURL& url,
+      const DetectionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Cancels captive portal check.
   void Cancel();
