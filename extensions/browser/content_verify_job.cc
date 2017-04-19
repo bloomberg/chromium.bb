@@ -41,14 +41,14 @@ class ScopedElapsedTimer {
 }  // namespace
 
 ContentVerifyJob::ContentVerifyJob(ContentHashReader* hash_reader,
-                                   const FailureCallback& failure_callback)
+                                   FailureCallback failure_callback)
     : done_reading_(false),
       hashes_ready_(false),
       total_bytes_read_(0),
       current_block_(0),
       current_hash_byte_count_(0),
       hash_reader_(hash_reader),
-      failure_callback_(failure_callback),
+      failure_callback_(std::move(failure_callback)),
       failed_(false) {
   // It's ok for this object to be constructed on a different thread from where
   // it's used.
@@ -227,8 +227,7 @@ void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
     VLOG(1) << "job failed for " << hash_reader_->extension_id() << " "
             << hash_reader_->relative_path().MaybeAsASCII()
             << " reason:" << reason;
-    failure_callback_.Run(reason);
-    failure_callback_.Reset();
+    std::move(failure_callback_).Run(reason);
   }
   if (g_test_observer) {
     g_test_observer->JobFinished(hash_reader_->extension_id(),

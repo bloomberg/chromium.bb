@@ -86,7 +86,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                        const std::set<base::FilePath>& hash_mismatch_paths);
 
   void OnFetchCompleteHelper(const std::string& extension_id,
-                             bool shouldVerifyAnyPathsResult);
+                             bool should_verify_any_paths_result);
 
   // Returns true if any of the paths in |relative_paths| *should* have their
   // contents verified. (Some files get transcoded during the install process,

@@ -49,11 +49,11 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
     FAILURE_REASON_MAX
   };
-  typedef base::Callback<void(FailureReason)> FailureCallback;
+  using FailureCallback = base::OnceCallback<void(FailureReason)>;
 
   // The |failure_callback| will be called at most once if there was a failure.
   ContentVerifyJob(ContentHashReader* hash_reader,
-                   const FailureCallback& failure_callback);
+                   FailureCallback failure_callback);
 
   // This begins the process of getting expected hashes, so it should be called
   // as early as possible.
