@@ -17,8 +17,9 @@ class PlatformWindowDelegate;
 
 class STUB_WINDOW_EXPORT StubWindow : NON_EXPORTED_BASE(public PlatformWindow) {
  public:
-  StubWindow(PlatformWindowDelegate* delegate,
-             bool use_default_accelerated_widget = true);
+  explicit StubWindow(PlatformWindowDelegate* delegate,
+                      bool use_default_accelerated_widget = true,
+                      const gfx::Rect& bounds = gfx::Rect());
   ~StubWindow() override;
 
  private:

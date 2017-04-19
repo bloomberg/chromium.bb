@@ -10,8 +10,9 @@
 namespace ui {
 
 StubWindow::StubWindow(PlatformWindowDelegate* delegate,
-                       bool use_default_accelerated_widget)
-    : delegate_(delegate) {
+                       bool use_default_accelerated_widget,
+                       const gfx::Rect& bounds)
+    : delegate_(delegate), bounds_(bounds) {
   DCHECK(delegate);
   if (use_default_accelerated_widget)
     delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
