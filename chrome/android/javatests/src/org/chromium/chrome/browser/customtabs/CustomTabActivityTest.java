@@ -46,10 +46,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -64,7 +61,6 @@ import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -80,8 +76,6 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -150,19 +144,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(true);
-            }
-        });
-
         Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(appContext);
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         mWebServer = TestWebServer.start();
 
         CustomTabsConnection connection =
@@ -176,13 +161,6 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         CustomTabsConnection connection =
                 CustomTabsConnection.getInstance((Application) appContext);
         connection.setForcePrerender(false);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                FirstRunStatus.setFirstRunFlowComplete(false);
-            }
-        });
 
         mTestServer.stopAndDestroyServer();
 
@@ -2279,38 +2257,6 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
         Tab tab = getActivity().getActivityTab();
         assertEquals(mTestPage, tab.getUrl());
-    }
-
-    private CustomTabsConnection warmUpAndWait() {
-        final Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        CustomTabsConnection connection =
-                CustomTabsTestUtils.setUpConnection((Application) context);
-        final CallbackHelper startupCallbackHelper = new CallbackHelper();
-        assertTrue(connection.warmup(0));
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(new StartupCallback() {
-                            @Override
-                            public void onSuccess(boolean alreadyStarted) {
-                                startupCallbackHelper.notifyCalled();
-                            }
-
-                            @Override
-                            public void onFailure() {
-                                fail();
-                            }
-                        });
-            }
-        });
-
-        try {
-            startupCallbackHelper.waitForCallback(0);
-        } catch (TimeoutException | InterruptedException e) {
-            fail();
-        }
-        return connection;
     }
 
     private ChromeActivity reparentAndVerifyTab() throws InterruptedException {

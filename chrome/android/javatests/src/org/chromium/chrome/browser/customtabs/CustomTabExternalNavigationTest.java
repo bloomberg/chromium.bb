@@ -15,14 +15,16 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
- * Instrumentation test for external navigation handling of a Custom Tab.
+ * Instrumentation tests for external navigation handling of a Custom Tab.
  */
 @RetryOnFailure
 public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
-
     /**
      * A dummy activity that claims to handle "customtab://customtabtest".
      */
@@ -62,30 +64,14 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
         super.tearDown();
     }
 
-    @Override
-    public void startMainActivity() throws InterruptedException {
-        super.startMainActivity();
-        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), mTestServer.getURL(TEST_PATH)));
-        Tab tab = getActivity().getActivityTab();
-        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
-        assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
-        CustomTabDelegateFactory customTabDelegateFactory =
-                ((CustomTabDelegateFactory) delegateFactory);
-        mUrlHandler = customTabDelegateFactory.getExternalNavigationHandler();
-        assertTrue(customTabDelegateFactory.getExternalNavigationDelegate()
-                instanceof CustomTabNavigationDelegate);
-        mNavigationDelegate = (CustomTabNavigationDelegate) customTabDelegateFactory
-                .getExternalNavigationDelegate();
-    }
-
     /**
      * For urls with special schemes and hosts, and there is exactly one activity having a matching
      * intent filter, the framework will make that activity the default handler of the special url.
      * This test tests whether chrome is able to start the default external handler.
      */
     @SmallTest
-    public void testExternalActivityStartedForDefaultUrl() {
+    public void testExternalActivityStartedForDefaultUrl() throws Exception {
+        startCustomTabActivity(mTestServer.getURL(TEST_PATH));
         final String testUrl = "customtab://customtabtest/intent";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
@@ -100,7 +86,8 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
      * be shown, even if other activities such as {@link DummyActivityForHttp} claim to handle it.
      */
     @SmallTest
-    public void testIntentPickerNotShownForNormalUrl() {
+    public void testIntentPickerNotShownForNormalUrl() throws Exception {
+        startCustomTabActivity(mTestServer.getURL(TEST_PATH));
         final String testUrl = "http://customtabtest.com";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
                 .build();
@@ -108,5 +95,41 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
         assertEquals(OverrideUrlLoadingResult.NO_OVERRIDE, result);
         assertFalse("External activities should not be started to handle the url",
                 mNavigationDelegate.hasExternalActivityStarted());
+    }
+
+    /**
+     * Launches a Custom Tab, clicks on an external app scheme link, and check that an external
+     * activity has been launched.
+     */
+    @SmallTest
+    public void testExternalApplicationLink() throws Exception {
+        warmUpAndWait();
+        startCustomTabActivity(mTestServer.getURL(TEST_PATH));
+
+        Tab tab = getActivity().getActivityTab();
+        assertTrue(DOMUtils.clickNode(tab.getContentViewCore(), "customtab-external-link"));
+
+        CriteriaHelper.pollUiThread(new Criteria("External Activity not launched.") {
+            @Override
+            public boolean isSatisfied() {
+                return mNavigationDelegate.hasExternalActivityStarted();
+            }
+        });
+    }
+
+    private void startCustomTabActivity(String url) throws InterruptedException {
+        super.startMainActivity();
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), url));
+        Tab tab = getActivity().getActivityTab();
+        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
+        CustomTabDelegateFactory customTabDelegateFactory =
+                ((CustomTabDelegateFactory) delegateFactory);
+        mUrlHandler = customTabDelegateFactory.getExternalNavigationHandler();
+        assertTrue(customTabDelegateFactory.getExternalNavigationDelegate()
+                           instanceof CustomTabNavigationDelegate);
+        mNavigationDelegate = (CustomTabNavigationDelegate)
+                                      customTabDelegateFactory.getExternalNavigationDelegate();
     }
 }
