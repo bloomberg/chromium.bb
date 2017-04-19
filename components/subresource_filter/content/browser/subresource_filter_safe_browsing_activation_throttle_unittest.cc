@@ -166,7 +166,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
         new testing::ScopedSubresourceFilterFeatureToggle(
             base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationLevelEnabled,
             kActivationScopeActivationList, kActivationListSubresourceFilter));
-    auto client = base::MakeUnique<MockSubresourceFilterClient>();
+    // Note: Using NiceMock to allow uninteresting calls and suppress warnings.
+    auto client =
+        base::MakeUnique<::testing::NiceMock<MockSubresourceFilterClient>>();
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
         RenderViewHostTestHarness::web_contents(), std::move(client));
     fake_safe_browsing_database_ = new FakeSafeBrowsingDatabaseManager();
