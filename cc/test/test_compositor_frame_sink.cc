@@ -117,6 +117,7 @@ void TestCompositorFrameSink::DetachFromClient() {
   client_->SetBeginFrameSource(nullptr);
   support_ = nullptr;
   display_ = nullptr;
+  begin_frame_source_ = nullptr;
   local_surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   test_client_ = nullptr;
