@@ -347,9 +347,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   GURL _defaultURL;
   // Show overlay view, don't reload web page.
   BOOL _overlayPreviewMode;
-  // If |YES|, calls |setShouldSuppressDialogs:YES| when window id is injected
-  // into the web view.
-  BOOL _shouldSuppressDialogsOnWindowIDInjection;
   // The URL of an expected future recreation of the |webView|. Valid
   // only if the web view was discarded for non-user-visible reasons, such that
   // if the next load request is for that URL, it should be treated as a
@@ -731,9 +728,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isCurrentNavigationBackForward;
 // Returns whether the given navigation is triggered by a user link click.
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
-
-// Inject windowID if not yet injected.
-- (void)injectWindowID;
 
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
@@ -1258,19 +1252,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
 }
 
-- (void)setShouldSuppressDialogs:(BOOL)shouldSuppressDialogs {
-  _shouldSuppressDialogs = shouldSuppressDialogs;
-  if (_webView) {
-    NSString* const kSetSuppressDialogs = [NSString
-        stringWithFormat:@"__gCrWeb.setSuppressGeolocationDialogs(%d);",
-                         shouldSuppressDialogs];
-    [self executeJavaScript:kSetSuppressDialogs completionHandler:nil];
-    _shouldSuppressDialogsOnWindowIDInjection = NO;
-  } else {
-    _shouldSuppressDialogsOnWindowIDInjection = shouldSuppressDialogs;
-  }
-}
-
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
   if (_webView) {
@@ -1422,17 +1403,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;
-}
-
-- (void)injectWindowID {
-  // Default value for shouldSuppressDialogs is NO, so updating them only
-  // when necessary is a good optimization.
-  if (_shouldSuppressDialogsOnWindowIDInjection) {
-    self.shouldSuppressDialogs = YES;
-    _shouldSuppressDialogsOnWindowIDInjection = NO;
-  }
-
-  [_windowIDJSManager inject];
 }
 
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView {
@@ -4612,7 +4582,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // In unit tests MIME type will be empty, because loadHTML:forURL: does not
     // notify web view delegate about received response, so web controller does
     // not get a chance to properly update MIME type.
-    [self injectWindowID];
+    [_windowIDJSManager inject];
   }
 
   if (isLastNavigation) {

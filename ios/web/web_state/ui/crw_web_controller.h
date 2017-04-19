@@ -96,8 +96,8 @@ class WebStateImpl;
 // Returns whether the top of the content is visible.
 @property(nonatomic, readonly) BOOL atTop;
 
-// YES if JavaScript dialogs, HTTP authentication dialogs and window.open
-// calls should be suppressed. Default is NO. When dialog is suppressed
+// YES if JavaScript dialogs and window open requests should be suppressed.
+// Default is NO. When dialog is suppressed
 // |WebStateObserver::DidSuppressDialog| will be called.
 @property(nonatomic, assign) BOOL shouldSuppressDialogs;
 

@@ -363,23 +363,6 @@ TEST_F(DialogsSuppressionTest, AllowPrompt) {
   ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that geolocation dialog is suppressed.
-TEST_F(DialogsSuppressionTest, SuppressGeolocation) {
-  // The geolocation APIs require HTTPS on iOS 10, which can not be simulated
-  // even using |loadHTMLString:baseURL:| WKWebView API.
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    return;
-  }
-  web::TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_suppress_dialog_info());
-  ASSERT_TRUE(requested_dialogs().empty());
-
-  web_state()->SetShouldSuppressDialogs(true);
-  ExecuteJavaScript(@"navigator.geolocation.getCurrentPosition()");
-  ASSERT_TRUE(observer.did_suppress_dialog_info());
-  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
-}
-
 // Tests that window.open is suppressed.
 TEST_F(DialogsSuppressionTest, SuppressWindowOpen) {
   web::TestWebStateObserver observer(web_state());
