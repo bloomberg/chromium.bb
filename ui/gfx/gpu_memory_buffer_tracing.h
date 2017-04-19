@@ -9,7 +9,7 @@
 namespace gfx {
 
 base::trace_event::MemoryAllocatorDumpGuid GFX_EXPORT
-GetGpuMemoryBufferGUIDForTracing(uint64_t tracing_process_id,
-                                 GpuMemoryBufferId buffer_id);
+GetSharedMemoryGUIDForTracing(uint64_t tracing_process_id,
+                              GpuMemoryBufferId buffer_id);
 
 }  // namespace gfx

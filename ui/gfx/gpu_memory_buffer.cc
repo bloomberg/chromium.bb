@@ -4,6 +4,8 @@
 
 #include "ui/gfx/gpu_memory_buffer.h"
 
+#include "ui/gfx/generic_shared_memory_id.h"
+
 namespace gfx {
 
 GpuMemoryBufferHandle::GpuMemoryBufferHandle()
@@ -47,6 +49,12 @@ GpuMemoryBufferHandle CloneHandleForIPC(
       return source_handle;
   }
   return gfx::GpuMemoryBufferHandle();
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GpuMemoryBuffer::GetGUIDForTracing(
+    uint64_t tracing_process_id) const {
+  return gfx::GetGenericSharedGpuMemoryGUIDForTracing(tracing_process_id,
+                                                      GetId());
 }
 
 }  // namespace gfx

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
@@ -97,6 +98,10 @@ class GFX_EXPORT GpuMemoryBuffer {
 
   // Type-checking downcast routine.
   virtual ClientBuffer AsClientBuffer() = 0;
+
+  // Returns the GUID for tracing.
+  virtual base::trace_event::MemoryAllocatorDumpGuid GetGUIDForTracing(
+      uint64_t tracing_process_id) const;
 };
 
 // Returns an instance of |handle| which can be sent over IPC. This duplicates

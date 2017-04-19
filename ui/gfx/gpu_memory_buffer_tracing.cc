@@ -4,16 +4,18 @@
 
 #include "ui/gfx/gpu_memory_buffer_tracing.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
+
 namespace gfx {
 
-base::trace_event::MemoryAllocatorDumpGuid GetGpuMemoryBufferGUIDForTracing(
+base::trace_event::MemoryAllocatorDumpGuid GetSharedMemoryGUIDForTracing(
     uint64_t tracing_process_id,
     GpuMemoryBufferId buffer_id) {
-  // TODO(ericrk): Currently this function just wraps
-  // GetGenericSharedMemoryGUIDForTracing, we may want to special case this if
-  // the GPU memory buffer is not backed by shared memory.
-  return gfx::GetGenericSharedMemoryGUIDForTracing(tracing_process_id,
-                                                   buffer_id);
+  // TODO(hajimehoshi): This should be unified to shared memory GUIDs in
+  // base/memory/shared_memory_tracker.cc
+  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
+      "shared_memory_gpu/%" PRIx64 "/%d", tracing_process_id, buffer_id.id));
 }
 
 }  // namespace gfx

@@ -12,6 +12,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/gpu_memory_buffer_tracing.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -209,6 +210,12 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
   handle.stride = stride_;
   handle.handle = shared_memory_->handle();
   return handle;
+}
+
+base::trace_event::MemoryAllocatorDumpGuid
+GpuMemoryBufferImplSharedMemory::GetGUIDForTracing(
+    uint64_t tracing_process_id) const {
+  return gfx::GetSharedMemoryGUIDForTracing(tracing_process_id, id_);
 }
 
 }  // namespace gpu

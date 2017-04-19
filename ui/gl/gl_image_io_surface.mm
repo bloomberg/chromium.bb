@@ -375,8 +375,8 @@ void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
         base::trace_event::MemoryDumpManager::kInvalidTracingProcessId;
   }
 
-  auto guid =
-      GetGenericSharedMemoryGUIDForTracing(process_tracing_id, io_surface_id_);
+  auto guid = GetGenericSharedGpuMemoryGUIDForTracing(process_tracing_id,
+                                                      io_surface_id_);
   pmd->CreateSharedGlobalAllocatorDump(guid);
   pmd->AddOwnershipEdge(dump->guid(), guid);
 }

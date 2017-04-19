@@ -2174,8 +2174,8 @@ bool ResourceProvider::OnMemoryDump(
     base::trace_event::MemoryAllocatorDumpGuid guid;
     switch (resource.type) {
       case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-        guid = gfx::GetGpuMemoryBufferGUIDForTracing(
-            tracing_process_id, resource.gpu_memory_buffer->GetHandle().id);
+        guid =
+            resource.gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
         break;
       case RESOURCE_TYPE_GL_TEXTURE:
         DCHECK(resource.gl_id);

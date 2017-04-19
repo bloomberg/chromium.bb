@@ -114,8 +114,8 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
   const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
-  MemoryAllocatorDumpGuid shared_buffer_guid =
-      gfx::GetGpuMemoryBufferGUIDForTracing(tracing_process_id, buffer_id);
+  auto shared_buffer_guid =
+      gpu_memory_buffer->GetGUIDForTracing(tracing_process_id);
   pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
 
   // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)

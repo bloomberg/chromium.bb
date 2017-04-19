@@ -9,7 +9,8 @@
 
 namespace gfx {
 
-base::trace_event::MemoryAllocatorDumpGuid GetGenericSharedMemoryGUIDForTracing(
+base::trace_event::MemoryAllocatorDumpGuid
+GetGenericSharedGpuMemoryGUIDForTracing(
     uint64_t tracing_process_id,
     GenericSharedMemoryId generic_shared_memory_id) {
   return base::trace_event::MemoryAllocatorDumpGuid(

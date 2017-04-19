@@ -41,7 +41,7 @@ class GFX_EXPORT GenericSharedMemoryId {
 // Generates GUID which can be used to trace shared memory using its
 // GenericSharedMemoryId.
 GFX_EXPORT base::trace_event::MemoryAllocatorDumpGuid
-GetGenericSharedMemoryGUIDForTracing(
+GetGenericSharedGpuMemoryGUIDForTracing(
     uint64_t tracing_process_id,
     GenericSharedMemoryId generic_shared_memory_id);
 
