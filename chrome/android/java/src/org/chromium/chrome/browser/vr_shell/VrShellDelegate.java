@@ -152,7 +152,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         public void unregister() {
             ChromeActivity activity = mTargetActivity.get();
             if (activity == null) return;
-            activity.unregisterReceiver(VrBroadcastReceiver.this);
+            try {
+                activity.unregisterReceiver(VrBroadcastReceiver.this);
+            } catch (IllegalArgumentException e) {
+                // Ignore this. This means our receiver was already unregistered somehow.
+            }
         }
     }
 
