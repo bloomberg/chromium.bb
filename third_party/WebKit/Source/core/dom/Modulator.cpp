@@ -6,6 +6,10 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8PerContextData.h"
+#include "core/dom/Document.h"
+#include "core/dom/ModulatorImpl.h"
+#include "core/frame/LocalFrame.h"
 
 namespace blink {
 
@@ -16,10 +20,20 @@ const char kPerContextDataKey[] = "Modulator";
 Modulator* Modulator::From(ScriptState* script_state) {
   if (!script_state)
     return nullptr;
+
   V8PerContextData* per_context_data = script_state->PerContextData();
   if (!per_context_data)
     return nullptr;
-  return static_cast<Modulator*>(per_context_data->GetData(kPerContextDataKey));
+
+  Modulator* modulator =
+      static_cast<Modulator*>(per_context_data->GetData(kPerContextDataKey));
+  if (!modulator) {
+    if (Document* document = ToDocument(ExecutionContext::From(script_state))) {
+      modulator = ModulatorImpl::Create(script_state, *document);
+      Modulator::SetModulator(script_state, modulator);
+    }
+  }
+  return modulator;
 }
 
 Modulator::~Modulator() {}
