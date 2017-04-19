@@ -1,5 +1,5 @@
 AXWebArea
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -11,7 +11,7 @@ AXWebArea
 ++++++++AXStaticText AXValue='B'
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -23,7 +23,7 @@ AXWebArea
 ++++++++AXStaticText AXValue='B'
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXAscendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -35,7 +35,7 @@ AXWebArea
 ++++++++AXStaticText AXValue='B'
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXDescendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -47,7 +47,7 @@ AXWebArea
 ++++++++AXStaticText AXValue='A'
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXUnknownSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -59,7 +59,7 @@ AXWebArea
 ++++++++AXStaticText AXValue='A'
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -71,7 +71,7 @@ AXWebArea
 ++++AXColumn
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -83,7 +83,7 @@ AXWebArea
 ++++AXColumn
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXAscendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -95,7 +95,7 @@ AXWebArea
 ++++AXColumn
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXDescendingSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'
@@ -107,7 +107,7 @@ AXWebArea
 ++++AXColumn
 ++++AXColumn
 ++++AXGroup
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Alphabet' AXSortDirection='AXUnknownSortDirection'
 ++++++++AXStaticText AXValue='Alphabet'

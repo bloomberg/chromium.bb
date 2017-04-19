@@ -32,9 +32,9 @@ android.webkit.WebView focusable focused scrollable
 ++android.view.View role_description='tree' collection hierarchical
 ++android.view.View role_description='tree' collection hierarchical
 ++android.view.View role_description='tree' collection hierarchical
-++android.widget.GridView role_description='table' collection
+++android.widget.GridView role_description='tree grid' collection
 ++++android.view.View
-++android.widget.GridView role_description='table' collection
+++android.widget.GridView role_description='tree grid' collection
 ++++android.view.View
-++android.widget.GridView role_description='table' collection
+++android.widget.GridView role_description='tree grid' collection
 ++++android.view.View

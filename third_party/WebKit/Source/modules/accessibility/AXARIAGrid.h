@@ -48,6 +48,10 @@ class AXARIAGrid final : public AXTable {
 
   bool IsAriaTable() const override { return true; }
 
+  AccessibilityRole RoleValue() const final {
+    return AXLayoutObject::RoleValue();
+  }  // Use ARIA role
+
   void AddChildren() override;
 
  private:

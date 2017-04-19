@@ -672,7 +672,10 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)
       dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
 
-    if (dst->role == ui::AX_ROLE_TABLE) {
+    const bool is_table_like_role = dst->role == ui::AX_ROLE_TABLE ||
+                                    dst->role == ui::AX_ROLE_GRID ||
+                                    dst->role == ui::AX_ROLE_TREE_GRID;
+    if (is_table_like_role) {
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
       if (column_count > 0 && row_count > 0) {
@@ -700,11 +703,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         dst->AddIntListAttribute(ui::AX_ATTR_CELL_IDS, cell_ids);
         dst->AddIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS, unique_cell_ids);
       }
-    }
 
-    if (dst->role == ui::AX_ROLE_TABLE ||
-        dst->role == ui::AX_ROLE_GRID ||
-        dst->role == ui::AX_ROLE_TREE_GRID) {
       int aria_colcount = src.AriaColumnCount();
       if (aria_colcount)
         dst->AddIntAttribute(ui::AX_ATTR_ARIA_COL_COUNT, aria_colcount);

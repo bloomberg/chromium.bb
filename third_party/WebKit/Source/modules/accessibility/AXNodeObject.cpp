@@ -1486,8 +1486,6 @@ AccessibilityOrientation AXNodeObject::Orientation() const {
       return orientation;
     case kRadioGroupRole:
     case kTreeGridRole:
-    // TODO(nektar): Fix bug 532670 and remove table role.
-    case kTableRole:
       return orientation;
     default:
       return AXObject::Orientation();

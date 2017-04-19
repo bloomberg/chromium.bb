@@ -3802,7 +3802,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   // Expose table cell index.
   if (IsCellOrTableHeaderRole()) {
     BrowserAccessibility* table = PlatformGetParent();
-    while (table && table->GetRole() != ui::AX_ROLE_TABLE)
+    while (table && !table->IsTableLikeRole())
       table = table->PlatformGetParent();
     if (table) {
       const std::vector<int32_t>& unique_cell_ids =
@@ -3817,7 +3817,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   }
 
   // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
-  if (IsTableOrGridOrTreeGridRole()) {
+  if (IsTableLikeRole()) {
     IntAttributeToIA2(ui::AX_ATTR_ARIA_COL_COUNT, "colcount");
     IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
   }
@@ -5306,7 +5306,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_GRID:
       ia_role = ROLE_SYSTEM_TABLE;
-      ia_state |= STATE_SYSTEM_READONLY;
+      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
+      // need to determine whether grids/treegrids should really be readonly
+      // or editable by default
+      // ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_GROUP: {
       base::string16 aria_role = GetString16Attribute(
@@ -5537,16 +5540,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_TAB:
       ia_role = ROLE_SYSTEM_PAGETAB;
       break;
-    case ui::AX_ROLE_TABLE: {
-      base::string16 aria_role = GetString16Attribute(
-          ui::AX_ATTR_ROLE);
-      if (aria_role == L"treegrid") {
-        ia_role = ROLE_SYSTEM_OUTLINE;
-      } else {
-        ia_role = ROLE_SYSTEM_TABLE;
-      }
+    case ui::AX_ROLE_TABLE:
+      ia_role = ROLE_SYSTEM_TABLE;
       break;
-    }
     case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
       ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
@@ -5668,10 +5664,7 @@ bool BrowserAccessibilityWin::IsInTreeGrid(const BrowserAccessibility* item) {
     return false;
   }
 
-  const ui::AXRole role = container->GetRole();
-  return role == ui::AX_ROLE_TREE_GRID ||
-         (role == ui::AX_ROLE_TABLE &&
-          container->GetString16Attribute(ui::AX_ATTR_ROLE) == L"treegrid");
+  return container->GetRole() == ui::AX_ROLE_TREE_GRID;
 }
 
 BrowserAccessibilityWin* ToBrowserAccessibilityWin(BrowserAccessibility* obj) {

@@ -23,7 +23,7 @@
 <script>
 test(function(t) {
     var axGrid = accessibilityController.accessibleElementById("grid");
-    assert_equals(axGrid.role, "AXRole: AXTable");
+    assert_equals(axGrid.role, "AXRole: AXGrid");
     assert_equals(axGrid.columnCount, 3);
     assert_equals(axGrid.rowCount, 2);
 }, "Aria-owns works on ARIA grids.");

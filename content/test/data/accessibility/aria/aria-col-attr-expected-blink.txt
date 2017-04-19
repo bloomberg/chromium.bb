@@ -1,5 +1,5 @@
 rootWebArea
-++table ariaColCount=5
+++grid ariaColCount=5
 ++++row
 ++++++columnHeader name='cell 2' ariaColIndex=2
 ++++++++staticText name='cell 2'

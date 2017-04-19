@@ -950,6 +950,9 @@ void BrowserAccessibilityAuraLinux::InitRoleAndState() {
     case ui::AX_ROLE_TREE_ITEM:
       atk_role_ = ATK_ROLE_TREE_ITEM;
       break;
+    case ui::AX_ROLE_TREE_GRID:
+      atk_role_ = ATK_ROLE_TREE_TABLE;
+      break;
     case ui::AX_ROLE_VIDEO:
 #if defined(ATK_CHECK_VERSION)
 #if ATK_CHECK_VERSION(2, 12, 0)

@@ -1,5 +1,5 @@
 AXWebArea
-++AXTable AXARIARowCount='5'
+++AXGrid AXARIARowCount='5'
 ++++AXRow
 ++++++AXCell AXTitle='cell 2' AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='cell 2'

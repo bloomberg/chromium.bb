@@ -174,11 +174,9 @@ bool BrowserAccessibilityAndroid::IsCollapsed() const {
 }
 
 bool BrowserAccessibilityAndroid::IsCollection() const {
-  return (GetRole() == ui::AX_ROLE_GRID ||
-          GetRole() == ui::AX_ROLE_LIST ||
+  return (IsTableLikeRole() || GetRole() == ui::AX_ROLE_LIST ||
           GetRole() == ui::AX_ROLE_LIST_BOX ||
           GetRole() == ui::AX_ROLE_DESCRIPTION_LIST ||
-          GetRole() == ui::AX_ROLE_TABLE ||
           GetRole() == ui::AX_ROLE_TREE);
 }
 
@@ -375,6 +373,7 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       class_name = ui::kAXTabWidgetClassname;
       break;
     case ui::AX_ROLE_GRID:
+    case ui::AX_ROLE_TREE_GRID:
     case ui::AX_ROLE_TABLE:
       class_name = ui::kAXGridViewClassname;
       break;
@@ -1246,8 +1245,7 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 }
 
 int BrowserAccessibilityAndroid::RowCount() const {
-  if (GetRole() == ui::AX_ROLE_GRID ||
-      GetRole() == ui::AX_ROLE_TABLE) {
+  if (IsTableLikeRole()) {
     return CountChildrenWithRole(ui::AX_ROLE_ROW);
   }
 
@@ -1262,8 +1260,7 @@ int BrowserAccessibilityAndroid::RowCount() const {
 }
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
-  if (GetRole() == ui::AX_ROLE_GRID ||
-      GetRole() == ui::AX_ROLE_TABLE) {
+  if (IsTableLikeRole()) {
     return CountChildrenWithRole(ui::AX_ROLE_COLUMN);
   }
   return 0;

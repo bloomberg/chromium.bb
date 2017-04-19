@@ -409,8 +409,7 @@ bool AccessibilityRadioGroupPredicate(
 
 bool AccessibilityTablePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return (node->GetRole() == ui::AX_ROLE_TABLE ||
-          node->GetRole() == ui::AX_ROLE_GRID);
+  return node->IsTableLikeRole();
 }
 
 bool AccessibilityTextfieldPredicate(

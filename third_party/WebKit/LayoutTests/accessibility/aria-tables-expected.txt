@@ -10,7 +10,7 @@ col head
 End of test
 
 AXRole: AXWebArea
-    AXRole: AXTable
+    AXRole: AXGrid
         AXRole: AXRow
             AXRole: AXColumnHeader "col head"
                 AXRole: AXStaticText "col head"

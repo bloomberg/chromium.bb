@@ -362,7 +362,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsCellOrTableHeaderRole() const;
 
   // Returns true if this node is a table, a grid or a treegrid.
-  bool IsTableOrGridOrTreeGridRole() const;
+  bool IsTableLikeRole() const;
 
   // Returns true if the caret is active on this object.
   bool HasCaret() const;

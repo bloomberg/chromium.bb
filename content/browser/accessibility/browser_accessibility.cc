@@ -781,13 +781,13 @@ bool BrowserAccessibility::GetAriaTristate(
 
 BrowserAccessibility* BrowserAccessibility::GetTable() const {
   BrowserAccessibility* table = const_cast<BrowserAccessibility*>(this);
-  while (table && !table->IsTableOrGridOrTreeGridRole())
+  while (table && !table->IsTableLikeRole())
     table = table->PlatformGetParent();
   return table;
 }
 
 BrowserAccessibility* BrowserAccessibility::GetTableCell(int index) const {
-  if (!IsTableOrGridOrTreeGridRole() && !IsCellOrTableHeaderRole())
+  if (!IsTableLikeRole() && !IsCellOrTableHeaderRole())
     return nullptr;
 
   BrowserAccessibility* table = GetTable();
@@ -802,7 +802,7 @@ BrowserAccessibility* BrowserAccessibility::GetTableCell(int index) const {
 
 BrowserAccessibility* BrowserAccessibility::GetTableCell(int row,
                                                          int column) const {
-  if (!IsTableOrGridOrTreeGridRole() && !IsCellOrTableHeaderRole())
+  if (!IsTableLikeRole() && !IsCellOrTableHeaderRole())
     return nullptr;
   if (row < 0 || row >= GetTableRowCount() || column < 0 ||
       column >= GetTableColumnCount()) {
@@ -901,7 +901,7 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
           GetRole() == ui::AX_ROLE_ROW_HEADER);
 }
 
-bool BrowserAccessibility::IsTableOrGridOrTreeGridRole() const {
+bool BrowserAccessibility::IsTableLikeRole() const {
   return (GetRole() == ui::AX_ROLE_TABLE ||
           GetRole() == ui::AX_ROLE_GRID ||
           GetRole() == ui::AX_ROLE_TREE_GRID);

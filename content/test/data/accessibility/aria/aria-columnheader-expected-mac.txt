@@ -1,5 +1,5 @@
 AXWebArea
-++AXTable
+++AXGrid
 ++++AXRow
 ++++++AXCell AXTitle='Browser'
 ++++++++AXStaticText AXValue='Browser'

@@ -658,7 +658,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnCount {
-  if (!browserAccessibility_->IsTableOrGridOrTreeGridRole())
+  if (!browserAccessibility_->IsTableLikeRole())
     return nil;
   int count = -1;
   if (!browserAccessibility_->GetIntAttribute(
@@ -699,7 +699,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowCount {
-  if (!browserAccessibility_->IsTableOrGridOrTreeGridRole())
+  if (!browserAccessibility_->IsTableLikeRole())
     return nil;
   int count = -1;
   if (!browserAccessibility_->GetIntAttribute(
@@ -778,8 +778,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSArray*)columnHeaders {
   if (![self instanceActive])
     return nil;
-  if ([self internalRole] != ui::AX_ROLE_TABLE &&
-      [self internalRole] != ui::AX_ROLE_GRID) {
+  if (!browserAccessibility_->IsTableLikeRole()) {
     return nil;
   }
 
@@ -1007,8 +1006,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self instanceActive])
     return nil;
   int headerElementId = -1;
-  if ([self internalRole] == ui::AX_ROLE_TABLE ||
-      [self internalRole] == ui::AX_ROLE_GRID) {
+  if (browserAccessibility_->IsTableLikeRole()) {
     browserAccessibility_->GetIntAttribute(
         ui::AX_ATTR_TABLE_HEADER_ID, &headerElementId);
   } else if ([self internalRole] == ui::AX_ROLE_COLUMN) {
@@ -1516,8 +1514,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSArray*)rowHeaders {
   if (![self instanceActive])
     return nil;
-  if ([self internalRole] != ui::AX_ROLE_TABLE &&
-      [self internalRole] != ui::AX_ROLE_GRID) {
+  if (!browserAccessibility_->IsTableLikeRole()) {
     return nil;
   }
 

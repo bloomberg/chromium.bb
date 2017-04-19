@@ -211,8 +211,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
       break;
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
-      if (node->GetRole() == ui::AX_ROLE_GRID ||
-          node->GetRole() == ui::AX_ROLE_TABLE) {
+      if (node->IsTableLikeRole()) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else {
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;

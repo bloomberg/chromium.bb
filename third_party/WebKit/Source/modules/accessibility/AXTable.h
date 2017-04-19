@@ -54,7 +54,7 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
   bool IsAXTable() const final;
   bool IsDataTable() const final;
 
-  AccessibilityRole RoleValue() const final;
+  AccessibilityRole RoleValue() const;
 
   void AddChildren() override;
   void ClearChildren() final;

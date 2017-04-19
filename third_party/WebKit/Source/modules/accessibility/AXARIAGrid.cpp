@@ -48,29 +48,31 @@ AXARIAGrid* AXARIAGrid::Create(LayoutObject* layout_object,
 bool AXARIAGrid::AddTableRowChild(AXObject* child,
                                   HeapHashSet<Member<AXObject>>& appended_rows,
                                   unsigned& column_count) {
-  if (!child || !child->IsTableRow() || child->RoleValue() != kRowRole)
+  if (!child || child->RoleValue() != kRowRole)
     return false;
 
-  AXTableRow* row = ToAXTableRow(child);
-  if (appended_rows.Contains(row))
+  if (appended_rows.Contains(child))
     return false;
 
   // store the maximum number of columns
-  unsigned row_cell_count = row->Children().size();
+  const unsigned row_cell_count = child->Children().size();
   if (row_cell_count > column_count)
     column_count = row_cell_count;
 
-  row->SetRowIndex((int)rows_.size());
-  rows_.push_back(row);
+  AXTableRow* row = child->IsTableRow() ? ToAXTableRow(child) : 0;
+  if (row) {
+    row->SetRowIndex((int)rows_.size());
+  }
+  rows_.push_back(child);
 
   // Try adding the row if it's not ignoring accessibility,
   // otherwise add its children (the cells) as the grid's children.
-  if (!row->AccessibilityIsIgnored())
-    children_.push_back(row);
+  if (!child->AccessibilityIsIgnored())
+    children_.push_back(child);
   else
-    children_.AppendVector(row->Children());
+    children_.AppendVector(child->Children());
 
-  appended_rows.insert(row);
+  appended_rows.insert(child);
   return true;
 }
 

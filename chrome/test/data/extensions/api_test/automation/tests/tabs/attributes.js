@@ -168,7 +168,7 @@ var allTests = [
   },
 
   function testTableAttributes() {
-    var table = rootNode.find({ role: 'table' });;
+    var table = rootNode.find({ role: 'grid' });;
     assertEq(3, table.tableRowCount);
     assertEq(3, table.tableColumnCount);
 
