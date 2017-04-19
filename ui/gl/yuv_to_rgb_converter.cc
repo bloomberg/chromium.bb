@@ -129,6 +129,7 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture1_binding);
 
   // Allocate the rgb texture.
+  glActiveTexture(old_active_texture);
   glBindTexture(target, rgb_texture);
   glTexImage2D(target, 0, GL_RGB, size.width(), size.height(),
                0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
