@@ -14,6 +14,37 @@ interface Accelerometer : Sensor
     getter y
     getter z
     method constructor
+interface AccessibleNode
+    attribute @@toStringTag
+    getter autocomplete
+    getter checked
+    getter current
+    getter invalid
+    getter keyShortcuts
+    getter label
+    getter live
+    getter orientation
+    getter placeholder
+    getter relevant
+    getter role
+    getter roleDescription
+    getter sort
+    getter valueText
+    method constructor
+    setter autocomplete
+    setter checked
+    setter current
+    setter invalid
+    setter keyShortcuts
+    setter label
+    setter live
+    setter orientation
+    setter placeholder
+    setter relevant
+    setter role
+    setter roleDescription
+    setter sort
+    setter valueText
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter illuminance
@@ -1682,6 +1713,7 @@ interface DynamicsCompressorNode : AudioNode
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
+    getter accessibleNode
     getter assignedSlot
     getter attributes
     getter childElementCount

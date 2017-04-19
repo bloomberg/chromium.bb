@@ -2664,10 +2664,6 @@ crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ P
 # Flaky on trybots
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 
-# Flaky when run in parallel
-crbug.com/712332 accessibility/aom.html [ Failure Pass ]
-crbug.com/712332 accessibility/aom-string-properties.html [ Failure Pass ]
-
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pass Timeout ]

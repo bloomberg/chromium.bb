@@ -14,8 +14,9 @@ Spec: https://wicg.github.io/aom/spec/
 <button id="button">Click Me</button>
 
 <script>
-if (window.internals)
-    internals.runtimeFlags.accessibilityObjectModelEnabled = true;
+test(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
 
 test(function(t) {
     var button = document.getElementById("button");

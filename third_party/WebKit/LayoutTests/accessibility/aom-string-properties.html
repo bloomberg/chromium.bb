@@ -12,8 +12,9 @@ Spec: https://wicg.github.io/aom/spec/
 -->
 
 <script>
-if (window.internals)
-    internals.runtimeFlags.accessibilityObjectModelEnabled = true;
+test(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
 </script>
 
 <div role="combobox" id="autocomplete"></div>
@@ -34,18 +35,22 @@ test(function(t) {
 test(function(t) {
     var node = document.getElementById("checked");
     var axNode = accessibilityController.accessibleElementById("checked");
-    assert_equals(axNode.checkedState, 0);
+    assert_equals(axNode.isChecked, false);
+    assert_equals(axNode.isButtonStateMixed, false);
     node.accessibleNode.checked = "true";
-    assert_equals(axNode.checkedState, 1);
+    assert_equals(axNode.isChecked, true);
+    assert_equals(axNode.isButtonStateMixed, false);
     node.accessibleNode.checked = "mixed";
-    assert_equals(axNode.checkedState, 2);
+    assert_equals(axNode.isChecked, true);
     assert_equals(axNode.isButtonStateMixed, true);
 
     // It also works to set it to just true or false (no quotes).
     node.accessibleNode.checked = true;
-    assert_equals(axNode.checkedState, 1);
+    assert_equals(axNode.isChecked, true);
+    assert_equals(axNode.isButtonStateMixed, false);
     node.accessibleNode.checked = false;
-    assert_equals(axNode.checkedState, 0);
+    assert_equals(axNode.isChecked, false);
+    assert_equals(axNode.isButtonStateMixed, false);
 
 }, "AccessibleNode.checked");
 </script>

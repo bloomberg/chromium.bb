@@ -68,7 +68,7 @@
     {
       name: "AccessibilityObjectModel",
       settable_from_internals: true,
-      status: "experimental",
+      status: "test",
     },
     {
       name: "AudioOutputDevices",

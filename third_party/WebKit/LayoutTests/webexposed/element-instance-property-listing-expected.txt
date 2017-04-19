@@ -25,6 +25,7 @@ namespace http://www.w3.org/1999/xhtml
     property PROCESSING_INSTRUCTION_NODE
     property TEXT_NODE
     property accessKey
+    property accessibleNode
     property addEventListener
     property after
     property animate
@@ -1125,6 +1126,7 @@ namespace http://www.w3.org/2000/svg
     property PROCESSING_INSTRUCTION_NODE
     property TEXT_NODE
     property accessKey
+    property accessibleNode
     property addEventListener
     property after
     property animate
