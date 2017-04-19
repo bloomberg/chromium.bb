@@ -23,6 +23,7 @@
 #include "chrome/common/partial_circular_buffer.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/zlib/zlib.h"
@@ -449,6 +450,8 @@ void WebRtcLogUploader::UploadCompressedLog(
   std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
       GURL(chrome::kUploadURL), net::URLFetcher::POST, this));
   url_fetcher->SetUploadData(content_type, *post_data);
+  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                            net::LOAD_DO_NOT_SAVE_COOKIES);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLogUploader::SetRequestContextOnUIThread,
           base::Unretained(this), base::Unretained(url_fetcher.release()),
