@@ -5286,7 +5286,11 @@
       'id': 125,
       'caption': '''Show usernames on login screen''',
       'tags': [],
-      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the username/password prompt for login.''',
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one.
+
+      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstital screen (if enabled via the <ph name="LOGINAUTHENTICATIONBEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Public Session is configured. When a Public Session is configured, only the Public Session accounts will be shown, allowing to pick one of them.
+
+      Note that this policy does not affect whether the device keeps or discards the local user data.''',
     },
     {
       'name': 'DeviceDataRoamingEnabled',
