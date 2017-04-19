@@ -1178,7 +1178,7 @@ String AXLayoutObject::StringValue() const {
     if (layout_object_->GetFrame())
       return String();
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   if (IsTextControl())

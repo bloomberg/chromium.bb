@@ -1800,7 +1800,7 @@ static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
     current = current->Parent();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

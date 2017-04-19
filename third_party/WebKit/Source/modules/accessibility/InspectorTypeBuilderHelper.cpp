@@ -55,7 +55,7 @@ String IgnoredReasonName(AXIgnoredReason reason) {
     case kAXUninteresting:
       return "uninteresting";
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
