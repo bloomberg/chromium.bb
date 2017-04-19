@@ -34,11 +34,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   // both recording and gpu work.
   virtual void flush() = 0;
 
-  virtual bool writePixels(const SkImageInfo& info,
-                           const void* pixels,
-                           size_t row_bytes,
-                           int x,
-                           int y) = 0;
   virtual int save() = 0;
   virtual int saveLayer(const SkRect* bounds, const PaintFlags* flags) = 0;
   virtual int saveLayerAlpha(const SkRect* bounds, U8CPU alpha) = 0;

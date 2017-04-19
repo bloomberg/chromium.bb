@@ -38,11 +38,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
   void flush() override;
 
-  bool writePixels(const SkImageInfo& info,
-                   const void* pixels,
-                   size_t row_bytes,
-                   int x,
-                   int y) override;
   int save() override;
   int saveLayer(const SkRect* bounds, const PaintFlags* flags) override;
   int saveLayerAlpha(const SkRect* bounds, U8CPU alpha) override;

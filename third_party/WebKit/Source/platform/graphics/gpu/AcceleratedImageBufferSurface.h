@@ -56,6 +56,11 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
   bool IsAccelerated() const override { return true; }
   sk_sp<SkImage> NewImageSnapshot(AccelerationHint, SnapshotReason) override;
   GLuint GetBackingTextureHandleForOverwrite() override;
+  bool WritePixels(const SkImageInfo& orig_info,
+                   const void* pixels,
+                   size_t row_bytes,
+                   int x,
+                   int y) override;
 
  private:
   unsigned context_id_;

@@ -89,4 +89,12 @@ GLuint AcceleratedImageBufferSurface::GetBackingTextureHandleForOverwrite() {
       ->fID;
 }
 
+bool AcceleratedImageBufferSurface::WritePixels(const SkImageInfo& orig_info,
+                                                const void* pixels,
+                                                size_t row_bytes,
+                                                int x,
+                                                int y) {
+  return surface_->getCanvas()->writePixels(orig_info, pixels, row_bytes, x, y);
+}
+
 }  // namespace blink

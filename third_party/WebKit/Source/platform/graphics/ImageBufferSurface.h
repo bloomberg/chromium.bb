@@ -96,7 +96,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
                            const void* pixels,
                            size_t row_bytes,
                            int x,
-                           int y);
+                           int y) = 0;
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.

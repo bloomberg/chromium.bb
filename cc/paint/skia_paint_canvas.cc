@@ -38,14 +38,6 @@ void SkiaPaintCanvas::flush() {
   canvas_->flush();
 }
 
-bool SkiaPaintCanvas::writePixels(const SkImageInfo& info,
-                                  const void* pixels,
-                                  size_t row_bytes,
-                                  int x,
-                                  int y) {
-  return canvas_->writePixels(info, pixels, row_bytes, x, y);
-}
-
 int SkiaPaintCanvas::save() {
   return canvas_->save();
 }
