@@ -280,6 +280,43 @@
                     ]
                 }
             ]
+        },
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "BackgroundOptimizationEnabled",
+                    "params": {
+                        "max_keyframe_distance_media_source_ms": "10000",
+                        "max_keyframe_distance_ms": "1000"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "BackgroundOptimizationEnabled",
+                    "params": {
+                        "max_keyframe_distance_media_source_ms": "10000",
+                        "max_keyframe_distance_ms": "0"
+                    },
+                    "enable_features": [
+                        "BackgroundVideoTrackOptimization"
+                    ]
+                }
+            ]
         }
     ],
     "BrowserBlacklist": [
