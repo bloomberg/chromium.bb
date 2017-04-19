@@ -44,8 +44,9 @@ public class ResourceExtractor {
         private void extractResourceHelper(InputStream is, File outFile, byte[] buffer)
                 throws IOException {
             OutputStream os = null;
+            File tmpOutputFile = new File(outFile.getPath() + ".tmp");
             try {
-                os = new FileOutputStream(outFile);
+                os = new FileOutputStream(tmpOutputFile);
                 Log.i(TAG, "Extracting resource %s", outFile);
 
                 int count = 0;
@@ -53,15 +54,11 @@ public class ResourceExtractor {
                     os.write(buffer, 0, count);
                 }
             } finally {
-                try {
-                    if (os != null) {
-                        os.close();
-                    }
-                } finally {
-                    if (is != null) {
-                        is.close();
-                    }
-                }
+                StreamUtil.closeQuietly(os);
+                StreamUtil.closeQuietly(is);
+            }
+            if (!tmpOutputFile.renameTo(outFile)) {
+                throw new IOException();
             }
         }
 
@@ -88,7 +85,7 @@ public class ResourceExtractor {
             }
 
             TraceEvent.begin("WalkAssets");
-            byte[] buffer = new byte[BUFFER_SIZE];
+            byte[] buffer = null;
             try {
                 for (String assetName : mAssetsToExtract) {
                     File output = new File(outputDir, assetName);
@@ -98,6 +95,9 @@ public class ResourceExtractor {
                         continue;
                     }
                     TraceEvent.begin("ExtractResource");
+                    if (buffer == null) {
+                        buffer = new byte[BUFFER_SIZE];
+                    }
                     InputStream inputStream =
                             ContextUtils.getApplicationContext().getAssets().open(assetName);
                     try {
