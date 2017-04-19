@@ -3297,7 +3297,7 @@ class ChangeDescription(object):
       owners_db = owners.Database(change.RepositoryRoot(),
                                   fopen=file, os_path=os.path)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
-                                                     (tbrs + reviewers))
+                                                     (tbrs | reviewers))
       LOOKUP[add_owners_to].update(
         owners_db.reviewers_for(missing_files, change.author_email))
 
