@@ -174,8 +174,7 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
     return;
   }
 
-  const GURL& domain_with_favicon =
-      position->url_with_favicon().GetWithEmptyPath();
+  const GURL& domain_with_favicon = position->url_with_favicon();
 
   // TODO(jkrcal): Create a general wrapper function in LargeIconService that
   // does handle the get-from-cache-and-fallback-to-google-server functionality

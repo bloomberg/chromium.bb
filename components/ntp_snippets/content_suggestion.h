@@ -112,9 +112,12 @@ class ContentSuggestion {
   // This may be an AMP URL.
   const GURL& url() const { return url_; }
 
-  // The URL of a page that links to a favicon that represents the suggestion.
-  const GURL& url_with_favicon() const {
-    return url_with_favicon_.is_valid() ? url_with_favicon_ : url_;
+  // The URL of the page that links to a favicon that represents the suggestion.
+  // Path is trimmed for the URL because the current favicon server backend
+  // prefers it this way.
+  GURL url_with_favicon() const {
+    return url_with_favicon_.is_valid() ? url_with_favicon_.GetWithEmptyPath()
+                                        : url_.GetWithEmptyPath();
   }
   void set_url_with_favicon(const GURL& url_with_favicon) {
     url_with_favicon_ = url_with_favicon;
