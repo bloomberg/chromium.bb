@@ -261,7 +261,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
 
   // Let subclasses provide a way of asking for and servicing scroll
   // animations.
-  virtual bool ScheduleAnimation();
+  virtual bool ScheduleAnimation() { return false; }
   virtual void ServiceScrollAnimations(double monotonic_time);
   virtual void UpdateCompositorScrollAnimations();
   virtual void RegisterForAnimation() {}
@@ -340,9 +340,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
   virtual int HorizontalScrollbarHeight(
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
-
-  // Returns the widget associated with this ScrollableArea.
-  virtual FrameViewBase* GetFrameViewBase() { return nullptr; }
 
   virtual LayoutBox* GetLayoutBox() const { return nullptr; }
 

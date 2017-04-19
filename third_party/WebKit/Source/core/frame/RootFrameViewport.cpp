@@ -449,10 +449,6 @@ void RootFrameViewport::CancelProgrammaticScrollAnimation() {
   VisualViewport().CancelProgrammaticScrollAnimation();
 }
 
-FrameViewBase* RootFrameViewport::GetFrameViewBase() {
-  return VisualViewport().GetFrameViewBase();
-}
-
 void RootFrameViewport::ClearScrollableArea() {
   ScrollableArea::ClearScrollableArea();
   LayoutViewport().ClearScrollableArea();

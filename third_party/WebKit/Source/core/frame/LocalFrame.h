@@ -61,6 +61,7 @@ class FrameSelection;
 class FrameView;
 class InputMethodController;
 class CoreProbeSink;
+class HostWindow;
 class InterfaceProvider;
 class InterfaceRegistry;
 class IntPoint;
@@ -234,6 +235,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // were added using registerInitializationCallback, and there are no checks
   // for adding a callback multiple times.
   static void RegisterInitializationCallback(FrameInitCallback);
+
+  bool ScheduleAnimation(HostWindow*);
 
  private:
   friend class FrameNavigationDisabler;

@@ -34,6 +34,7 @@
 namespace blink {
 class IntRect;
 class FrameViewBase;
+class LocalFrame;
 
 class PLATFORM_EXPORT HostWindow
     : public GarbageCollectedFinalized<HostWindow> {
@@ -55,7 +56,7 @@ class PLATFORM_EXPORT HostWindow
   // scale.
   virtual float WindowToViewportScalar(const float) const = 0;
 
-  virtual void ScheduleAnimation(FrameViewBase*) = 0;
+  virtual void ScheduleAnimation(LocalFrame*) = 0;
 };
 
 }  // namespace blink

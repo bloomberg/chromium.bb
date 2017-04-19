@@ -209,7 +209,7 @@ class CORE_EXPORT VisualViewport final
   GraphicsLayer* LayerForScrolling() const override;
   GraphicsLayer* LayerForHorizontalScrollbar() const override;
   GraphicsLayer* LayerForVerticalScrollbar() const override;
-  FrameViewBase* GetFrameViewBase() override;
+  bool ScheduleAnimation() override;
   CompositorAnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   IntRect VisibleContentRect(

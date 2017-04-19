@@ -164,11 +164,11 @@ class InspectorOverlay::InspectorOverlayChromeClient final
 
   void InvalidateRect(const IntRect&) override { overlay_->Invalidate(); }
 
-  void ScheduleAnimation(FrameViewBase* frame_view_base) override {
+  void ScheduleAnimation(LocalFrame* frame) override {
     if (overlay_->in_layout_)
       return;
 
-    client_->ScheduleAnimation(frame_view_base);
+    client_->ScheduleAnimation(frame);
   }
 
  private:
@@ -401,10 +401,12 @@ void InspectorOverlay::ScheduleUpdate() {
     return;
   }
   needs_update_ = true;
-  FrameView* view = frame_impl_->GetFrameView();
   LocalFrame* frame = frame_impl_->GetFrame();
-  if (view && frame)
-    frame->GetPage()->GetChromeClient().ScheduleAnimation(view);
+  if (frame) {
+    // TODO(joelhockey): Remove this check once all tests pass.
+    CHECK(frame_impl_->GetFrameView());
+    frame->GetPage()->GetChromeClient().ScheduleAnimation(frame);
+  }
 }
 
 void InspectorOverlay::RebuildOverlayPage() {

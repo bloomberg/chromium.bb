@@ -2747,6 +2747,10 @@ void FrameView::ScrollbarStyleChanged() {
   PositionScrollbarLayers();
 }
 
+bool FrameView::ScheduleAnimation() {
+  return frame_->ScheduleAnimation(GetHostWindow());
+}
+
 void FrameView::NotifyPageThatContentAreaWillPaint() const {
   Page* page = frame_->GetPage();
   if (!page)
@@ -4575,10 +4579,6 @@ bool FrameView::UserInputScrollable(ScrollbarOrientation orientation) const {
 
 bool FrameView::ShouldPlaceVerticalScrollbarOnLeft() const {
   return false;
-}
-
-FrameViewBase* FrameView::GetFrameViewBase() {
-  return this;
 }
 
 LayoutRect FrameView::ScrollIntoView(const LayoutRect& rect_in_content,

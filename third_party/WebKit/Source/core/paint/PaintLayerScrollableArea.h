@@ -427,7 +427,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect RectForHorizontalScrollbar(const IntRect& border_box_rect) const;
   IntRect RectForVerticalScrollbar(const IntRect& border_box_rect) const;
 
-  FrameViewBase* GetFrameViewBase() override;
+  bool ScheduleAnimation() override;
   bool ShouldPerformScrollAnchoring() const override;
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   bool IsPaintLayerScrollableArea() const override { return true; }

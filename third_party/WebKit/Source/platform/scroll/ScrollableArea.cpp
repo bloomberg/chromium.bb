@@ -493,14 +493,6 @@ void ScrollableArea::LayerForScrollingDidChange(
     scroll_animator->LayerForCompositedScrollingDidChange(timeline);
 }
 
-bool ScrollableArea::ScheduleAnimation() {
-  if (HostWindow* window = GetHostWindow()) {
-    window->ScheduleAnimation(GetFrameViewBase());
-    return true;
-  }
-  return false;
-}
-
 void ScrollableArea::ServiceScrollAnimations(double monotonic_time) {
   bool requires_animation_service = false;
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator()) {

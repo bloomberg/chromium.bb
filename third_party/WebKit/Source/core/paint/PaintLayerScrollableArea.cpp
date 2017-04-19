@@ -1901,8 +1901,8 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
              controller.GlobalRootScroller()) == this;
 }
 
-FrameViewBase* PaintLayerScrollableArea::GetFrameViewBase() {
-  return Box().GetFrame()->View();
+bool PaintLayerScrollableArea::ScheduleAnimation() {
+  return Box().GetFrame()->ScheduleAnimation(GetHostWindow());
 }
 
 void PaintLayerScrollableArea::ResetRebuildScrollbarLayerFlags() {

@@ -451,7 +451,7 @@ class CORE_EXPORT FrameView final
   bool UpdateAfterCompositingChange() override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
-  FrameViewBase* GetFrameViewBase() override;
+  bool ScheduleAnimation() override;
   CompositorAnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   LayoutBox* GetLayoutBox() const override;
