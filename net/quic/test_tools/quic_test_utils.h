@@ -476,7 +476,13 @@ class MockQuicSession : public QuicSession {
   explicit MockQuicSession(QuicConnection* connection);
   ~MockQuicSession() override;
 
-  QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
+  QuicCryptoStream* GetMutableCryptoStream() override {
+    return crypto_stream_.get();
+  }
+
+  const QuicCryptoStream* GetCryptoStream() const override {
+    return crypto_stream_.get();
+  }
 
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,
@@ -492,7 +498,7 @@ class MockQuicSession : public QuicSession {
                        QuicStreamId id,
                        QuicIOVector data,
                        QuicStreamOffset offset,
-                       bool fin,
+                       StreamSendingState state,
                        QuicReferenceCountedPointer<QuicAckListenerInterface>));
 
   MOCK_METHOD3(SendRstStream,
@@ -506,7 +512,7 @@ class MockQuicSession : public QuicSession {
                void(QuicStreamId stream_id, SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
-  MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
   using QuicSession::ActivateStream;
 
@@ -517,7 +523,7 @@ class MockQuicSession : public QuicSession {
       QuicStreamId id,
       const QuicIOVector& data,
       QuicStreamOffset offset,
-      bool fin,
+      StreamSendingState state,
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
           ack_listener);
 
@@ -533,7 +539,12 @@ class MockQuicSpdySession : public QuicSpdySession {
   explicit MockQuicSpdySession(QuicConnection* connection);
   ~MockQuicSpdySession() override;
 
-  QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
+  QuicCryptoStream* GetMutableCryptoStream() override {
+    return crypto_stream_.get();
+  }
+  const QuicCryptoStream* GetCryptoStream() const override {
+    return crypto_stream_.get();
+  }
   const SpdyHeaderBlock& GetWriteHeaders() { return write_headers_; }
 
   // From QuicSession.
@@ -553,7 +564,7 @@ class MockQuicSpdySession : public QuicSpdySession {
           QuicStreamId id,
           QuicIOVector data,
           QuicStreamOffset offset,
-          bool fin,
+          StreamSendingState state,
           QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
 
   MOCK_METHOD3(SendRstStream,
@@ -572,7 +583,7 @@ class MockQuicSpdySession : public QuicSpdySession {
                     bool fin,
                     size_t frame_len,
                     const QuicHeaderList& header_list));
-  MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
   MOCK_METHOD2(OnPromiseHeaders,
                void(QuicStreamId stream_id, QuicStringPiece headers_data));
   MOCK_METHOD3(OnPromiseHeadersComplete,
@@ -633,7 +644,9 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
 
-  QuicCryptoServerStream* GetCryptoStream() override;
+  QuicCryptoServerStream* GetMutableCryptoStream() override;
+
+  const QuicCryptoServerStream* GetCryptoStream() const override;
 
   MockQuicCryptoServerStreamHelper* helper() { return &helper_; }
 
@@ -689,7 +702,8 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
 
-  QuicCryptoClientStream* GetCryptoStream() override;
+  QuicCryptoClientStream* GetMutableCryptoStream() override;
+  const QuicCryptoClientStream* GetCryptoStream() const override;
 
  private:
   std::unique_ptr<QuicCryptoClientStream> crypto_stream_;

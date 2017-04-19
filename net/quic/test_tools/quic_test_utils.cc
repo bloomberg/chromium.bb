@@ -14,11 +14,11 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_data_writer.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_endian.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -84,7 +84,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
 
 QuicFlagSaver::QuicFlagSaver() {
 #define QUIC_FLAG(type, flag, value)                                 \
-  CHECK_EQ(value, base::GetFlag(flag))                               \
+  CHECK_EQ(value, GetQuicFlag(flag))                                 \
       << "Flag set to an unexpected value.  A prior test is likely " \
       << "setting a flag without using a QuicFlagSaver";
 #include "net/quic/core/quic_flags_list.h"
@@ -92,7 +92,7 @@ QuicFlagSaver::QuicFlagSaver() {
 }
 
 QuicFlagSaver::~QuicFlagSaver() {
-#define QUIC_FLAG(type, flag, value) base::SetFlag(&flag, value);
+#define QUIC_FLAG(type, flag, value) SetQuicFlag(&flag, value);
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 }
@@ -394,10 +394,10 @@ QuicConsumedData MockQuicSession::ConsumeAllData(
     QuicStreamId /*id*/,
     const QuicIOVector& data,
     QuicStreamOffset /*offset*/,
-    bool fin,
+    StreamSendingState state,
     const QuicReferenceCountedPointer<
         QuicAckListenerInterface>& /*ack_listener*/) {
-  return QuicConsumedData(data.total_length, fin);
+  return QuicConsumedData(data.total_length, state != NO_FIN);
 }
 
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
@@ -445,8 +445,14 @@ TestQuicSpdyServerSession::CreateQuicCryptoServerStream(
       &helper_);
 }
 
-QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
+QuicCryptoServerStream* TestQuicSpdyServerSession::GetMutableCryptoStream() {
   return static_cast<QuicCryptoServerStream*>(
+      QuicServerSessionBase::GetMutableCryptoStream());
+}
+
+const QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream()
+    const {
+  return static_cast<const QuicCryptoServerStream*>(
       QuicServerSessionBase::GetCryptoStream());
 }
 
@@ -468,7 +474,12 @@ bool TestQuicSpdyClientSession::IsAuthorized(const string& authority) {
   return true;
 }
 
-QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
+QuicCryptoClientStream* TestQuicSpdyClientSession::GetMutableCryptoStream() {
+  return crypto_stream_.get();
+}
+
+const QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream()
+    const {
   return crypto_stream_.get();
 }
 

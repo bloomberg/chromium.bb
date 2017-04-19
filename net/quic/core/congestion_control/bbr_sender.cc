@@ -10,9 +10,9 @@
 #include "net/quic/core/congestion_control/rtt_stats.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
 namespace net {
@@ -80,9 +80,6 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       last_sent_packet_(0),
       current_round_trip_end_(0),
       max_bandwidth_(kBandwidthWindowSize, QuicBandwidth::Zero(), 0),
-      max_ack_spacing_(kBandwidthWindowSize, QuicTime::Delta::Zero(), 0),
-      largest_acked_time_(QuicTime::Zero()),
-      largest_acked_sent_time_(QuicTime::Zero()),
       max_ack_height_(kBandwidthWindowSize, 0, 0),
       aggregation_epoch_start_time_(QuicTime::Zero()),
       aggregation_epoch_bytes_(0),
@@ -96,9 +93,9 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       pacing_gain_(1),
       congestion_window_gain_(1),
       congestion_window_gain_constant_(
-          static_cast<float>(base::GetFlag(FLAGS_quic_bbr_cwnd_gain))),
-      rtt_variance_weight_(static_cast<float>(
-          base::GetFlag(FLAGS_quic_bbr_rtt_variation_weight))),
+          static_cast<float>(GetQuicFlag(FLAGS_quic_bbr_cwnd_gain))),
+      rtt_variance_weight_(
+          static_cast<float>(GetQuicFlag(FLAGS_quic_bbr_rtt_variation_weight))),
       num_startup_rtts_(kRoundTripsWithoutGrowthBeforeExitingStartup),
       cycle_current_offset_(0),
       last_cycle_start_(QuicTime::Zero()),
@@ -145,10 +142,20 @@ QuicTime::Delta BbrSender::TimeUntilSend(QuicTime /* now */,
   return QuicTime::Delta::Infinite();
 }
 
-QuicBandwidth BbrSender::PacingRate(QuicByteCount /*bytes_in_flight*/) const {
+QuicBandwidth BbrSender::PacingRate(QuicByteCount bytes_in_flight) const {
   if (pacing_rate_.IsZero()) {
     return kHighGain * QuicBandwidth::FromBytesAndTimeDelta(
                            initial_congestion_window_, GetMinRtt());
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_keep_sending_at_recent_rate &&
+      mode_ == PROBE_BW && bytes_in_flight > congestion_window_) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_keep_sending_at_recent_rate,
+                      1, 2);
+    if (pacing_gain_ > 1) {
+      return max_bandwidth_.GetBest();
+    } else {
+      return max_bandwidth_.GetThirdBest();
+    }
   }
   return pacing_rate_;
 }
@@ -164,6 +171,15 @@ QuicByteCount BbrSender::GetCongestionWindow() const {
 
   if (InRecovery()) {
     return std::min(congestion_window_, recovery_window_);
+  }
+
+  if (FLAGS_quic_reloadable_flag_quic_bbr_keep_sending_at_recent_rate &&
+      mode_ == PROBE_BW && pacing_gain_ >= 1) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_keep_sending_at_recent_rate,
+                      2, 2);
+    // Send for another SRTT at a more recently measured bandwidth.
+    return congestion_window_ +
+           max_bandwidth_.GetThirdBest() * rtt_stats_->smoothed_rtt();
   }
 
   return congestion_window_;
@@ -197,6 +213,8 @@ void BbrSender::ResumeConnectionState(
     return;
   }
 
+  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_bandwidth_resumption);
+
   QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
       max_bandwidth_resumption
           ? cached_network_params.max_bandwidth_estimate_bytes_per_second()
@@ -229,10 +247,6 @@ void BbrSender::OnCongestionEvent(bool /*rtt_updated*/,
     min_rtt_expired = UpdateBandwidthAndMinRtt(event_time, acked_packets);
     UpdateRecoveryState(last_acked_packet, !lost_packets.empty(),
                         is_round_start);
-    if (FLAGS_quic_reloadable_flag_quic_bbr_ack_spacing2) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_spacing2, 1, 2);
-      UpdateAckSpacing(event_time, last_acked_packet, acked_packets);
-    }
     if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes) {
       QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_bytes, 1,
                         2);
@@ -279,6 +293,10 @@ QuicTime::Delta BbrSender::GetMinRtt() const {
 
 QuicByteCount BbrSender::GetTargetCongestionWindow(float gain) const {
   QuicByteCount bdp = GetMinRtt() * BandwidthEstimate();
+  if (FLAGS_quic_reloadable_flag_quic_bbr_base_cwnd_on_srtt &&
+      mode_ == PROBE_BW && gain >= 1 && !rtt_stats_->smoothed_rtt().IsZero()) {
+    bdp = rtt_stats_->smoothed_rtt() * BandwidthEstimate();
+  }
   QuicByteCount congestion_window = gain * bdp;
 
   // BDP estimate will be zero if no bandwidth samples are available yet.
@@ -502,42 +520,6 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
   }
 }
 
-// TODO(ianswett): Move this logic into BandwidthSampler.
-void BbrSender::UpdateAckSpacing(QuicTime ack_time,
-                                 QuicPacketNumber largest_newly_acked,
-                                 const CongestionVector& acked_packets) {
-  // Ignore acks of reordered packets.
-  if (largest_newly_acked < unacked_packets_->largest_observed()) {
-    return;
-  }
-  // Ignore acks of only one packet to filter out delayed acks.
-  if (acked_packets.size() == 1) {
-    return;
-  }
-  QuicTime largest_newly_acked_sent_time =
-      unacked_packets_->GetTransmissionInfo(largest_newly_acked).sent_time;
-  // Initialize on the first ack.
-  if (!largest_acked_time_.IsInitialized()) {
-    largest_acked_time_ = ack_time;
-    largest_acked_sent_time_ = largest_newly_acked_sent_time;
-    return;
-  }
-  QuicTime::Delta ack_delta = ack_time - largest_acked_time_;
-  QuicTime::Delta send_delta =
-      largest_newly_acked_sent_time - largest_acked_sent_time_;
-  largest_acked_time_ = ack_time;
-  largest_acked_sent_time_ = largest_newly_acked_sent_time;
-  if (ack_delta <= send_delta) {
-    return;
-  }
-
-  // Limit the ack spacing to SRTT to filter outliers.
-  QuicTime::Delta ack_spacing =
-      std::min(ack_delta - send_delta, rtt_stats_->smoothed_rtt());
-  max_ack_spacing_.Update(ack_spacing, round_trip_count_);
-}
-
-// TODO(ianswett): Move this logic into BandwidthSampler.
 void BbrSender::UpdateAckAggregationBytes(QuicTime ack_time,
                                           QuicByteCount newly_acked_bytes) {
   // Compute how many bytes are expected to be delivered, assuming max bandwidth
@@ -594,11 +576,6 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked) {
   if (rtt_variance_weight_ > 0.f && !BandwidthEstimate().IsZero()) {
     target_window += rtt_variance_weight_ * rtt_stats_->mean_deviation() *
                      BandwidthEstimate();
-  } else if (FLAGS_quic_reloadable_flag_quic_bbr_ack_spacing2 &&
-             is_at_full_bandwidth_) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_spacing2, 2, 2);
-    // Add CWND for inter-ack spacing once STARTUP has been exited.
-    target_window += max_ack_spacing_.GetBest() * BandwidthEstimate();
   } else if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_bytes &&
              is_at_full_bandwidth_) {
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_bytes, 2,

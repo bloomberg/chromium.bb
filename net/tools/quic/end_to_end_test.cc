@@ -22,13 +22,13 @@
 #include "net/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/core/crypto/null_encrypter.h"
 #include "net/quic/core/quic_client_session_base.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
@@ -153,9 +153,8 @@ std::vector<TestParams> GetTestParams() {
   QuicVersionVector version_buckets[1];
 
   for (const QuicVersion version : all_supported_versions) {
-    // Versions: 34+
-    // QUIC_VERSION_34 deprecates entropy and uses new ack and stop waiting
-    // wire formats.
+    // Versions: 35+
+    // QUIC_VERSION_35 allows endpoints to independently set stream limit.
     version_buckets[0].push_back(version);
   }
 
@@ -634,7 +633,7 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   QuicCryptoStream* crypto_stream =
-      QuicSessionPeer::GetCryptoStream(client_->client()->session());
+      QuicSessionPeer::GetMutableCryptoStream(client_->client()->session());
   QuicStreamSequencer* sequencer = QuicStreamPeer::sequencer(crypto_stream);
   EXPECT_NE(FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
             QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
@@ -642,7 +641,7 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicSession* server_session = dispatcher->session_map().begin()->second.get();
-  crypto_stream = QuicSessionPeer::GetCryptoStream(server_session);
+  crypto_stream = QuicSessionPeer::GetMutableCryptoStream(server_session);
   sequencer = QuicStreamPeer::sequencer(crypto_stream);
   EXPECT_NE(FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
             QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
@@ -1279,41 +1278,6 @@ TEST_P(EndToEndTest, Timeout) {
   }
 }
 
-TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
-  // Negotiate 1 max open stream.
-  client_config_.SetMaxStreamsPerConnection(1, 1);
-  ASSERT_TRUE(Initialize());
-  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
-
-  if (negotiated_version_ > QUIC_VERSION_34) {
-    // Newer versions use max incoming dynamic streams.
-    return;
-  }
-
-  // Make the client misbehave after negotiation.
-  const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
-  QuicSessionPeer::SetMaxOpenOutgoingStreams(client_->client()->session(),
-                                             kServerMaxStreams + 1);
-
-  SpdyHeaderBlock headers;
-  headers[":method"] = "POST";
-  headers[":path"] = "/foo";
-  headers[":scheme"] = "https";
-  headers[":authority"] = server_hostname_;
-  headers["content-length"] = "3";
-
-  // The server supports a small number of additional streams beyond the
-  // negotiated limit. Open enough streams to go beyond that limit.
-  for (int i = 0; i < kServerMaxStreams + 1; ++i) {
-    client_->SendMessage(headers, "", /*fin=*/false);
-  }
-  client_->WaitForResponse();
-
-  EXPECT_TRUE(client_->connected());
-  EXPECT_EQ(QUIC_REFUSED_STREAM, client_->stream_error());
-  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
-}
-
 TEST_P(EndToEndTest, MaxIncomingDynamicStreamsLimitRespected) {
   // Set a limit on maximum number of incoming dynamic streams.
   // Make sure the limit is respected.
@@ -1322,11 +1286,6 @@ TEST_P(EndToEndTest, MaxIncomingDynamicStreamsLimitRespected) {
       kServerMaxIncomingDynamicStreams);
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
-
-  if (negotiated_version_ <= QUIC_VERSION_34) {
-    // Earlier versions negotiated max open streams.
-    return;
-  }
 
   // Make the client misbehave after negotiation.
   const int kServerMaxStreams =
@@ -1363,11 +1322,6 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
       kServerMaxIncomingDynamicStreams);
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
-
-  if (negotiated_version_ <= QUIC_VERSION_34) {
-    // Earlier versions negotiated max open streams.
-    return;
-  }
 
   // The client has received the server's limit and vice versa.
   EXPECT_EQ(kServerMaxIncomingDynamicStreams,
@@ -1407,22 +1361,6 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
                 *GetSentPacketManagerFromFirstServerSession())
                 ->GetCongestionControlType());
   server_thread_->Resume();
-}
-
-TEST_P(EndToEndTest, LimitMaxOpenStreams) {
-  // Server limits the number of max streams to 2.
-  server_config_.SetMaxStreamsPerConnection(2, 2);
-  // Client tries to negotiate for 10.
-  client_config_.SetMaxStreamsPerConnection(10, 5);
-
-  ASSERT_TRUE(Initialize());
-  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
-  if (negotiated_version_ > QUIC_VERSION_34) {
-    // No negotiated max streams beyond version 34.
-    return;
-  }
-  QuicConfig* client_negotiated_config = client_->client()->session()->config();
-  EXPECT_EQ(2u, client_negotiated_config->MaxStreamsPerConnection());
 }
 
 TEST_P(EndToEndTest, ClientSuggestsRTT) {
@@ -1764,8 +1702,6 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 
 // Test negotiation of IFWA connection option.
 TEST_P(EndToEndTest, NegotiatedServerInitialFlowControlWindow) {
-  FLAGS_quic_reloadable_flag_quic_large_ifw_options = true;
-
   const uint32_t kClientStreamIFCW = 123456;
   const uint32_t kClientSessionIFCW = 234567;
   set_client_initial_stream_flow_control_receive_window(kClientStreamIFCW);
@@ -1828,7 +1764,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
   QuicCryptoStream* crypto_stream =
-      QuicSessionPeer::GetCryptoStream(client_->client()->session());
+      QuicSessionPeer::GetMutableCryptoStream(client_->client()->session());
   EXPECT_LT(
       QuicFlowControllerPeer::SendWindowSize(crypto_stream->flow_controller()),
       kStreamIFCW);
@@ -1879,8 +1815,10 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
   ExpectFlowControlsSynced(client_session->flow_controller(),
                            server_session->flow_controller());
   ExpectFlowControlsSynced(
-      QuicSessionPeer::GetCryptoStream(client_session)->flow_controller(),
-      QuicSessionPeer::GetCryptoStream(server_session)->flow_controller());
+      QuicSessionPeer::GetMutableCryptoStream(client_session)
+          ->flow_controller(),
+      QuicSessionPeer::GetMutableCryptoStream(server_session)
+          ->flow_controller());
   SpdyFramer spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
   SpdySettingsIR settings_frame;
   settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE,

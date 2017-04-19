@@ -5,9 +5,9 @@
 #include "net/quic/core/quic_versions.h"
 
 #include "net/quic/core/quic_error_codes.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_types.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 
 using std::string;
@@ -31,29 +31,12 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
   filtered_versions.clear();  // Guaranteed by spec not to change capacity.
   for (QuicVersion version : versions) {
     if (version == QUIC_VERSION_39) {
-      if (base::GetFlag(FLAGS_quic_enable_version_39) &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_38 &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_37 &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_36_v3) {
+      if (GetQuicFlag(FLAGS_quic_enable_version_39) &&
+          FLAGS_quic_reloadable_flag_quic_enable_version_38) {
         filtered_versions.push_back(version);
       }
     } else if (version == QUIC_VERSION_38) {
-      if (FLAGS_quic_reloadable_flag_quic_enable_version_38 &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_37 &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_36_v3) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version == QUIC_VERSION_37) {
-      if (FLAGS_quic_reloadable_flag_quic_enable_version_37 &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_36_v3) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version == QUIC_VERSION_36) {
-      if (FLAGS_quic_reloadable_flag_quic_enable_version_36_v3) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version == QUIC_VERSION_34) {
-      if (!FLAGS_quic_reloadable_flag_quic_disable_version_34) {
+      if (FLAGS_quic_reloadable_flag_quic_enable_version_38) {
         filtered_versions.push_back(version);
       }
     } else {
@@ -76,8 +59,6 @@ QuicVersionVector VersionOfIndex(const QuicVersionVector& versions, int index) {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_34:
-      return MakeQuicTag('Q', '0', '3', '4');
     case QUIC_VERSION_35:
       return MakeQuicTag('Q', '0', '3', '5');
     case QUIC_VERSION_36:
@@ -114,7 +95,6 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_34);
     RETURN_STRING_LITERAL(QUIC_VERSION_35);
     RETURN_STRING_LITERAL(QUIC_VERSION_36);
     RETURN_STRING_LITERAL(QUIC_VERSION_37);

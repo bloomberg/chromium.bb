@@ -62,8 +62,10 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   // Called when bytes are sent to the peer.
   void AddBytesSent(QuicByteCount bytes_sent);
 
-  // Set a new send window offset.
-  // Returns true if this increases send_window_offset_ and is now blocked.
+  // Increases |send_window_offset_| if |new_send_window_offset| is
+  // greater than the current value.  Returns true if this increase
+  // also causes us to change from a blocked state to unblocked.  In
+  // all other cases, returns false.
   bool UpdateSendWindowOffset(QuicStreamOffset new_send_window_offset);
 
   // QuicFlowControllerInterface.

@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_text_utils.h"
@@ -123,7 +124,7 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
           QuicStreamId id,
           QuicIOVector iov,
           QuicStreamOffset offset,
-          bool fin,
+          StreamSendingState state,
           QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
 };
 
@@ -490,7 +491,7 @@ class QuicSimpleServerSessionServerPushTest
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
         if (!session_->force_hol_blocking()) {
-          EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, false, _))
+          EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN, _))
               .WillOnce(Return(
                   QuicConsumedData(kStreamFlowControlWindowSize, false)));
           EXPECT_CALL(*connection_, SendBlocked(stream_id));
@@ -499,7 +500,7 @@ class QuicSimpleServerSessionServerPushTest
           // HTTP/2 DATA frames within the headers stream.  HTTP/2
           // DATA frames are limited to a max size of 16KB, so the
           // 64KB body will be fragemented into four DATA frames.
-          EXPECT_CALL(*connection_, SendStreamData(_, _, _, false, _))
+          EXPECT_CALL(*connection_, SendStreamData(_, _, _, NO_FIN, _))
               .Times(body_size / 16384)
               .WillOnce(Return(QuicConsumedData(9 + 16394, false)))
               .WillOnce(Return(QuicConsumedData(9 + 16394, false)))
@@ -548,7 +549,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   EXPECT_CALL(*session_, WriteHeadersMock(next_out_going_stream_id, _, false,
                                           kDefaultPriority, _));
   EXPECT_CALL(*connection_,
-              SendStreamData(next_out_going_stream_id, _, 0, false, _))
+              SendStreamData(next_out_going_stream_id, _, 0, NO_FIN, _))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   EXPECT_CALL(*connection_, SendBlocked(next_out_going_stream_id));
   session_->StreamDraining(2);
@@ -585,7 +586,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
                                           kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, false, _))
+  EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN, _))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   EXPECT_CALL(*connection_, SendBlocked(stream_not_reset));
   EXPECT_CALL(*session_,
@@ -614,7 +615,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
               SendRstStream(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT, _));
   EXPECT_CALL(*session_,
               WriteHeadersMock(stream_to_open, _, false, kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, false, _))
+  EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN, _))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
 
   EXPECT_CALL(*connection_, SendBlocked(stream_to_open));

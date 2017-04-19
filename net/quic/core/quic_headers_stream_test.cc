@@ -10,10 +10,10 @@
 #include <tuple>
 #include <utility>
 
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_str_cat.h"
@@ -317,7 +317,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
                                 bool is_request) {
     // Write the headers and capture the outgoing data
     EXPECT_CALL(session_,
-                WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+                WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
         .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     QuicSpdySessionPeer::WriteHeadersImpl(
         &session_, stream_id, headers_.Clone(), fin, priority, nullptr);
@@ -433,8 +433,8 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
     if (perspective() == Perspective::IS_SERVER) {
       // Write the headers and capture the outgoing data
-      EXPECT_CALL(session_,
-                  WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+      EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
+                                       NO_FIN, _))
           .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
       session_.WritePushPromise(stream_id, promised_stream_id,
                                 headers_.Clone());
@@ -539,9 +539,8 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
                         "Unsupported field of HTTP/2 SETTINGS frame: 2", _));
   }
   headers_stream_->OnStreamFrame(stream_frame_);
-  EXPECT_EQ(
-      session_.server_push_enabled(),
-      (perspective() == Perspective::IS_CLIENT && version() > QUIC_VERSION_34));
+  EXPECT_EQ(session_.server_push_enabled(),
+            perspective() == Perspective::IS_CLIENT);
 }
 
 TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
@@ -944,8 +943,8 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
       if (use_ack_listener) {
         ack_listener = new ForceHolAckListener();
       }
-      EXPECT_CALL(session_,
-                  WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+      EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
+                                       NO_FIN, _))
           .WillRepeatedly(WithArgs<2, 5>(Invoke(
               this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
 
@@ -983,7 +982,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataFinOnly) {
   string data;
 
   EXPECT_CALL(session_,
-              WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
       .WillOnce(WithArgs<2, 5>(
           Invoke(this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
 
@@ -1015,7 +1014,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
   // In that case, |WritevStreamData| should consume just one
   // HTTP/2 data frame's worth of data.
   EXPECT_CALL(session_,
-              WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
       .WillOnce(
           WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIovShort)));
 

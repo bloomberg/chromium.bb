@@ -73,7 +73,8 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
                        session_->flow_controller()),
       connection_flow_controller_(session_->flow_controller()),
       stream_contributes_to_connection_flow_control_(true),
-      busy_counter_(0) {
+      busy_counter_(0),
+      add_random_padding_after_fin_(false) {
   SetFromConfig();
 }
 
@@ -356,7 +357,11 @@ QuicConsumedData QuicStream::WritevDataInner(
     QuicStreamOffset offset,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  return session()->WritevData(this, id(), iov, offset, fin,
+  StreamSendingState state = fin ? FIN : NO_FIN;
+  if (fin && add_random_padding_after_fin_) {
+    state = FIN_AND_PADDING;
+  }
+  return session()->WritevData(this, id(), iov, offset, state,
                                std::move(ack_listener));
 }
 
@@ -481,6 +486,10 @@ void QuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
   if (flow_controller_.UpdateSendWindowOffset(new_window)) {
     OnCanWrite();
   }
+}
+
+void QuicStream::AddRandomPaddingAfterFin() {
+  add_random_padding_after_fin_ = true;
 }
 
 }  // namespace net

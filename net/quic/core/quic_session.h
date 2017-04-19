@@ -122,7 +122,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
       QuicStreamId id,
       QuicIOVector iov,
       QuicStreamOffset offset,
-      bool fin,
+      StreamSendingState state,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Called by streams when they want to close the stream in both directions.
@@ -138,11 +138,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Returns true if outgoing packets will be encrypted, even if the server
   // hasn't confirmed the handshake yet.
-  virtual bool IsEncryptionEstablished();
+  virtual bool IsEncryptionEstablished() const;
 
   // For a client, returns true if the server has confirmed our handshake. For
   // a server, returns true if a full, valid client hello has been received.
-  virtual bool IsCryptoHandshakeConfirmed();
+  virtual bool IsCryptoHandshakeConfirmed() const;
 
   // Called by the QuicCryptoStream when a new QuicConfig has been negotiated.
   virtual void OnConfigNegotiated();
@@ -267,7 +267,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual QuicStream* CreateOutgoingDynamicStream(SpdyPriority priority) = 0;
 
   // Return the reserved crypto stream.
-  virtual QuicCryptoStream* GetCryptoStream() = 0;
+  virtual QuicCryptoStream* GetMutableCryptoStream() = 0;
+
+  // Return the reserved crypto stream as a constant pointer.
+  virtual const QuicCryptoStream* GetCryptoStream() const = 0;
 
   // Adds |stream| to the dynamic stream map.
   virtual void ActivateStream(std::unique_ptr<QuicStream> stream);

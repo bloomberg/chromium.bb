@@ -29,13 +29,13 @@
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/proto/source_address_token.pb.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_clock.h"
 #include "net/quic/platform/api/quic_endian.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_hostname_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_reference_counted.h"
@@ -1751,8 +1751,8 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
 }
 
 void QuicCryptoServerConfig::SetEphemeralKeySource(
-    EphemeralKeySource* ephemeral_key_source) {
-  ephemeral_key_source_.reset(ephemeral_key_source);
+    std::unique_ptr<EphemeralKeySource> ephemeral_key_source) {
+  ephemeral_key_source_ = std::move(ephemeral_key_source);
 }
 
 void QuicCryptoServerConfig::set_replay_protection(bool on) {

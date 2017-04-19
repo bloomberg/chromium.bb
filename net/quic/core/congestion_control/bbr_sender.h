@@ -196,11 +196,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                            bool has_losses,
                            bool is_round_start);
 
-  // Updates the ack spacing max filter if a larger value is observed.
-  void UpdateAckSpacing(QuicTime ack_time,
-                        QuicPacketNumber largest_newly_acked,
-                        const CongestionVector& acked_packets);
-
   // Updates the ack aggregation max filter in bytes.
   void UpdateAckAggregationBytes(QuicTime ack_time,
                                  QuicByteCount newly_acked_bytes);
@@ -235,13 +230,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The filter that tracks the maximum bandwidth over the multiple recent
   // round-trips.
   MaxBandwidthFilter max_bandwidth_;
-
-  // Tracks the maximum spacing between two acks acknowledging in order packets.
-  MaxAckDelayFilter max_ack_spacing_;
-
-  // The time the largest acked packet was acked and when it was sent.
-  QuicTime largest_acked_time_;
-  QuicTime largest_acked_sent_time_;
 
   // Tracks the maximum number of bytes acked faster than the sending rate.
   MaxAckHeightFilter max_ack_height_;

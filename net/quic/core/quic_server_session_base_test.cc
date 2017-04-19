@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_crypto_server_stream.h"
 #include "net/quic/core/quic_utils.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -193,11 +194,7 @@ TEST_P(QuicServerSessionBaseTest, ServerPushDisabledByDefault) {
       session_->config()->HasReceivedConnectionOptions() &&
       ContainsQuicTag(session_->config()->ReceivedConnectionOptions(), kSPSH));
   session_->OnConfigNegotiated();
-  if (GetParam() <= QUIC_VERSION_34) {
-    EXPECT_FALSE(session_->server_push_enabled());
-  } else {
-    EXPECT_TRUE(session_->server_push_enabled());
-  }
+  EXPECT_TRUE(session_->server_push_enabled());
 }
 
 TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
@@ -277,10 +274,6 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   // streams.  The server accepts slightly more than the negotiated stream limit
   // to deal with rare cases where a client FIN/RST is lost.
 
-  if (GetParam() <= QUIC_VERSION_34) {
-    EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
-  }
-
   // The slightly increased stream limit is set during config negotiation.  It
   // is either an increase of 10 over negotiated limit, or a fixed percentage
   // scaling, whichever is larger. Test both before continuing.
@@ -319,10 +312,6 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
   // streams available.  The server accepts slightly more than the negotiated
   // stream limit to deal with rare cases where a client FIN/RST is lost.
 
-  if (GetParam() <= QUIC_VERSION_34) {
-    // The slightly increased stream limit is set during config negotiation.
-    EXPECT_EQ(kMaxStreamsForTest, session_->max_open_incoming_streams());
-  }
   session_->OnConfigNegotiated();
   const size_t kAvailableStreamLimit = session_->MaxAvailableStreams();
   EXPECT_EQ(
@@ -525,7 +514,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthResumptionExperiment) {
       QuicTime::Delta::FromSeconds(kNumSecondsPerHour + 1));
 
   QuicCryptoServerStream* crypto_stream = static_cast<QuicCryptoServerStream*>(
-      QuicSessionPeer::GetCryptoStream(session_.get()));
+      QuicSessionPeer::GetMutableCryptoStream(session_.get()));
 
   // No effect if no CachedNetworkParameters provided.
   EXPECT_CALL(*connection_, ResumeConnectionState(_, _)).Times(0);

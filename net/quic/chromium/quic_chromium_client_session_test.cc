@@ -32,8 +32,8 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_client_promised_info.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packet_writer.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_promised_info_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
@@ -792,7 +792,8 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
   session_->WritevData(stream, stream->id(),
-                       QuicIOVector(iov, arraysize(iov), 4), 0, false, nullptr);
+                       QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN,
+                       nullptr);
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

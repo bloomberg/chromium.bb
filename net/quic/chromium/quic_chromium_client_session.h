@@ -173,7 +173,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnStreamFrame(const QuicStreamFrame& frame) override;
   QuicChromiumClientStream* CreateOutgoingDynamicStream(
       SpdyPriority priority) override;
-  QuicCryptoClientStream* GetCryptoStream() override;
+  const QuicCryptoClientStream* GetCryptoStream() const override;
+  QuicCryptoClientStream* GetMutableCryptoStream() override;
   void CloseStream(QuicStreamId stream_id) override;
   void SendRstStream(QuicStreamId id,
                      QuicRstStreamErrorCode error,

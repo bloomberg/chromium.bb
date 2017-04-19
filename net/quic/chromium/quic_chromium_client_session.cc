@@ -561,7 +561,12 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
   return stream;
 }
 
-QuicCryptoClientStream* QuicChromiumClientSession::GetCryptoStream() {
+QuicCryptoClientStream* QuicChromiumClientSession::GetMutableCryptoStream() {
+  return crypto_stream_.get();
+}
+
+const QuicCryptoClientStream* QuicChromiumClientSession::GetCryptoStream()
+    const {
   return crypto_stream_.get();
 }
 

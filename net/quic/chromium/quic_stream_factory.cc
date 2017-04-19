@@ -51,8 +51,8 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_connection.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/platform/api/quic_clock.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_performance_watcher.h"
@@ -1684,7 +1684,6 @@ int QuicStreamFactory::CreateSession(
   connection->SetMaxPacketLength(max_packet_length_);
 
   QuicConfig config = config_;
-  config.SetSocketReceiveBufferToSend(kQuicSocketReceiveBufferSize);
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
   config.SetInitialSessionFlowControlWindowToSend(
       kQuicSessionMaxRecvWindowSize);

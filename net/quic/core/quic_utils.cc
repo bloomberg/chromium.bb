@@ -11,7 +11,7 @@
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "net/quic/core/quic_constants.h"
-#include "net/quic/core/quic_flags.h"
+#include "net/quic/platform/api/quic_flags.h"
 
 using std::string;
 
