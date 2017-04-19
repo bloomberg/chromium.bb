@@ -391,6 +391,9 @@ void PermissionManager::OnPermissionsRequestResponseStatus(
     int permission_id,
     ContentSetting content_setting) {
   PendingRequest* pending_request = pending_requests_.Lookup(request_id);
+  if (!pending_request)
+    return;
+
   pending_request->SetContentSetting(permission_id, content_setting);
 
   if (!pending_request->IsComplete())
