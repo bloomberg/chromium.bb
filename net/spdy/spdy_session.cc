@@ -2695,6 +2695,8 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
   if (error_code == ERROR_CODE_HTTP_1_1_REQUIRED) {
     // TODO(bnc): Record histogram with number of open streams capped at 50.
     DoDrainSession(ERR_HTTP_1_1_REQUIRED, "HTTP_1_1_REQUIRED for stream.");
+  } else if (error_code == ERROR_CODE_NO_ERROR) {
+    StartGoingAway(last_accepted_stream_id, ERR_SPDY_SERVER_REFUSED_STREAM);
   } else {
     StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
   }

@@ -3995,12 +3995,16 @@ TEST_F(SpdyNetworkTransactionTest, BufferedCancelled) {
   helper.VerifyDataConsumed();
 }
 
-TEST_F(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
+// Request should fail upon receiving a GOAWAY frame
+// with Last-Stream-ID lower than the stream id corresponding to the request
+// and with error code other than NO_ERROR.
+TEST_F(SpdyNetworkTransactionTest, FailOnGoAway) {
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway());
+  SpdySerializedFrame go_away(
+      spdy_util_.ConstructSpdyGoAway(0, ERROR_CODE_INTERNAL_ERROR, ""));
   MockRead reads[] = {
       CreateMockRead(go_away, 1),
   };
@@ -4008,10 +4012,46 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      NetLogWithSource(), nullptr);
-  helper.AddData(&data);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
+}
+
+// Request should be retried on a new connection upon receiving a GOAWAY frame
+// with Last-Stream-ID lower than the stream id corresponding to the request
+// and with error code NO_ERROR.
+TEST_F(SpdyNetworkTransactionTest, RetryOnGoAway) {
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     NetLogWithSource(), nullptr);
+
+  // First connection.
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  MockWrite writes1[] = {CreateMockWrite(req, 0)};
+  SpdySerializedFrame go_away(
+      spdy_util_.ConstructSpdyGoAway(0, ERROR_CODE_NO_ERROR, ""));
+  MockRead reads1[] = {CreateMockRead(go_away, 1)};
+  SequencedSocketData data1(reads1, arraysize(reads1), writes1,
+                            arraysize(writes1));
+  helper.AddData(&data1);
+
+  // Second connection.
+  MockWrite writes2[] = {CreateMockWrite(req, 0)};
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads2[] = {CreateMockRead(resp, 1), CreateMockRead(body, 2),
+                       MockRead(ASYNC, 0, 3)};
+  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
+                            arraysize(writes2));
+  helper.AddData(&data2);
+
+  helper.RunPreTestSetup();
+  helper.RunDefaultTest();
+
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+
+  helper.VerifyDataConsumed();
 }
 
 // A server can gracefully shut down by sending a GOAWAY frame

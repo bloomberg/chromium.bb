@@ -642,8 +642,11 @@ NET_ERROR(RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION, -349)
 // The HTTP response contained multiple Location headers.
 NET_ERROR(RESPONSE_HEADERS_MULTIPLE_LOCATION, -350)
 
-// SPDY server refused the stream. Client should retry. This should never be a
-// user-visible error.
+// HTTP/2 server refused the request without processing, and sent either a
+// GOAWAY frame with error code NO_ERROR and Last-Stream-ID lower than the
+// stream id corresponding to the request indicating that this request has not
+// been processed yet, or a RST_STREAM frame with error code REFUSED_STREAM.
+// Client MAY retry (on a different connection).  See RFC7540 Section 8.1.4.
 NET_ERROR(SPDY_SERVER_REFUSED_STREAM, -351)
 
 // SPDY server didn't respond to the PING message.
