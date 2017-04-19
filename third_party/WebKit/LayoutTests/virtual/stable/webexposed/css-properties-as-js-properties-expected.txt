@@ -192,7 +192,6 @@ minInlineSize
 minWidth
 minZoom
 mixBlendMode
-motion
 objectFit
 objectPosition
 offset

@@ -2814,10 +2814,6 @@
       longhands: "marker-start;marker-mid;marker-end",
     },
     {
-      name: "motion",
-      longhands: "offset-path;offset-distance;offset-rotation",
-    },
-    {
       name: "offset",
       longhands: "offset-path;offset-distance;offset-rotation",
     },

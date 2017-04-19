@@ -3412,10 +3412,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyBackgroundRepeatY:
       return nullptr;
 
-    case CSSPropertyMotion:
-      return ValuesForShorthandProperty(motionShorthand(), style, layout_object,
-                                        styled_node, allow_visited_style);
-
     case CSSPropertyOffset:
       return ValuesForShorthandProperty(offsetShorthand(), style, layout_object,
                                         styled_node, allow_visited_style);

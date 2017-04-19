@@ -335,7 +335,6 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyGridArea:
     case CSSPropertyGridGap:
     case CSSPropertyListStyle:
-    case CSSPropertyMotion:
     case CSSPropertyOffset:
     case CSSPropertyTextDecoration:
     case CSSPropertyWebkitMarginCollapse:
@@ -475,8 +474,6 @@ String StylePropertySerializer::GetPropertyValue(
       return FontVariantValue();
     case CSSPropertyMargin:
       return Get4Values(marginShorthand());
-    case CSSPropertyMotion:
-      return GetShorthandValue(motionShorthand());
     case CSSPropertyOffset:
       return GetShorthandValue(offsetShorthand());
     case CSSPropertyWebkitMarginCollapse:

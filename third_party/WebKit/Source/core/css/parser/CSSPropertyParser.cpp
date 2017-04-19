@@ -1951,9 +1951,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumePathOrNone(range_);
     case CSSPropertyOffsetPath:
       return ConsumeOffsetPath(
-          range_, context_,
-          current_shorthand == CSSPropertyMotion ||
-              unresolved_property == CSSPropertyAliasMotionPath);
+          range_, context_, unresolved_property == CSSPropertyAliasMotionPath);
     case CSSPropertyOffsetDistance:
       return ConsumeLengthOrPercent(range_, context_->Mode(), kValueRangeAll);
     case CSSPropertyOffsetRotate:
@@ -3478,8 +3476,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return Consume4Values(marginShorthand(), important);
     case CSSPropertyPadding:
       return Consume4Values(paddingShorthand(), important);
-    case CSSPropertyMotion:
-      return ConsumeShorthandGreedily(motionShorthand(), important);
     case CSSPropertyOffset:
       return ConsumeOffsetShorthand(important);
     case CSSPropertyWebkitTextEmphasis:
