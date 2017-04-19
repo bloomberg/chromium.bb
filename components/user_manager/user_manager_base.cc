@@ -294,8 +294,8 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
                                                  RemoveUserDelegate* delegate) {
   if (delegate)
     delegate->OnBeforeUserRemoved(account_id);
-  RemoveUserFromList(account_id);
   AsyncRemoveCryptohome(account_id);
+  RemoveUserFromList(account_id);
 
   if (delegate)
     delegate->OnUserRemoved(account_id);
