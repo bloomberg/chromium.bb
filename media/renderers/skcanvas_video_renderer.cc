@@ -209,7 +209,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
   }
   GrBackendTextureDesc desc;
-  desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+  desc.fFlags = kNone_GrBackendTextureFlag;
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
   desc.fWidth = video_frame->coded_size().width();
   desc.fHeight = video_frame->coded_size().height();
