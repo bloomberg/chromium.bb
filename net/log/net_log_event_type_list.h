@@ -586,6 +586,24 @@ EVENT_TYPE(SSL_VERIFICATION_MERGED)
 //   }
 EVENT_TYPE(SSL_NSS_ERROR)
 
+// An SSL connection sent or received an alert.
+// The following parameters are attached:
+//   {
+//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string>
+//   }
+EVENT_TYPE(SSL_ALERT_RECEIVED)
+EVENT_TYPE(SSL_ALERT_SENT)
+
+// An SSL connection sent or received a handshake message.
+// The following parameters are attached:
+//   {
+//     "type": <The type of the handshake message, as an integer>
+//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string. May
+//                           be elided in some cases>
+//   }
+EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_RECEIVED)
+EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
+
 // The specified number of bytes were sent on the socket.  Depending on the
 // source of the event, may be logged either once the data is sent, or when it
 // is queued to be sent.

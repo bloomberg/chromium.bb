@@ -215,6 +215,12 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   void OnPrivateKeyComplete(Error error, const std::vector<uint8_t>& signature);
 
+  // Called whenever BoringSSL processes a protocol message.
+  void MessageCallback(int is_write,
+                       int content_type,
+                       const void* buf,
+                       size_t len);
+
   int TokenBindingAdd(const uint8_t** out,
                       size_t* out_len,
                       int* out_alert_value);

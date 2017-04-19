@@ -255,6 +255,43 @@ bssl::UniquePtr<CRYPTO_BUFFER> OSCertHandleToBuffer(
 }
 #endif
 
+std::unique_ptr<base::Value> NetLogSSLAlertCallback(
+    const void* bytes,
+    size_t len,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, len));
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogSSLMessageCallback(
+    bool is_write,
+    const void* bytes,
+    size_t len,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  if (len == 0) {
+    NOTREACHED();
+    return std::move(dict);
+  }
+
+  // The handshake message type is the first byte. Include it so elided messages
+  // still report their type.
+  uint8_t type = reinterpret_cast<const uint8_t*>(bytes)[0];
+  dict->SetInteger("type", type);
+
+  // Elide client certificate messages unless logging socket bytes. The client
+  // certificate does not contain information needed to impersonate the user
+  // (that's the private key which isn't sent over the wire), but it may contain
+  // information on the user's identity.
+  if (!is_write || type != SSL3_MT_CERTIFICATE ||
+      capture_mode.include_socket_bytes()) {
+    dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, len));
+  }
+
+  return std::move(dict);
+}
+
 }  // namespace
 
 class SSLClientSocketImpl::SSLContext {
@@ -314,6 +351,8 @@ class SSLClientSocketImpl::SSLContext {
 
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
+
+    SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
 
     if (!SSL_CTX_add_client_custom_ext(ssl_ctx_.get(), kTbExtNum,
                                        &TokenBindingAddCallback,
@@ -404,6 +443,17 @@ class SSLClientSocketImpl::SSLContext {
     GetInstance()->ssl_key_logger_->WriteLine(line);
   }
 #endif
+
+  static void MessageCallback(int is_write,
+                              int version,
+                              int content_type,
+                              const void* buf,
+                              size_t len,
+                              SSL* ssl,
+                              void* arg) {
+    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
+    return socket->MessageCallback(is_write, content_type, buf, len);
+  }
 
   // This is the index used with SSL_get_ex_data to retrieve the owner
   // SSLClientSocketImpl object from an SSL instance.
@@ -1810,6 +1860,27 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
   // During a renegotiation, either Read or Write calls may be blocked on an
   // asynchronous private key operation.
   RetryAllOperations();
+}
+
+void SSLClientSocketImpl::MessageCallback(int is_write,
+                                          int content_type,
+                                          const void* buf,
+                                          size_t len) {
+  switch (content_type) {
+    case SSL3_RT_ALERT:
+      net_log_.AddEvent(is_write ? NetLogEventType::SSL_ALERT_SENT
+                                 : NetLogEventType::SSL_ALERT_RECEIVED,
+                        base::Bind(&NetLogSSLAlertCallback, buf, len));
+      break;
+    case SSL3_RT_HANDSHAKE:
+      net_log_.AddEvent(
+          is_write ? NetLogEventType::SSL_HANDSHAKE_MESSAGE_SENT
+                   : NetLogEventType::SSL_HANDSHAKE_MESSAGE_RECEIVED,
+          base::Bind(&NetLogSSLMessageCallback, !!is_write, buf, len));
+      break;
+    default:
+      return;
+  }
 }
 
 int SSLClientSocketImpl::TokenBindingAdd(const uint8_t** out,
