@@ -204,7 +204,9 @@ crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ W
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ WontFix ]
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ WontFix ]
 crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001-vertical.html [ WontFix ]
+crbug.com/702176 [ Win7 Debug ] virtual/mojo-loading/fast/table/border-collapsing/001-vertical.html [ WontFix ]
 crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001.html [ WontFix ]
+crbug.com/702176 [ Win7 Debug ] virtual/mojo-loading/fast/table/border-collapsing/001.html [ WontFix ]
 
 # Rendering issue only seen in Layout Tests on Android.
 # R and B color channels switched on decoded images.
