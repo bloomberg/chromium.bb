@@ -25,6 +25,10 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
 
 constexpr uint64_t BeginFrameArgs::kInvalidFrameNumber;
 constexpr uint64_t BeginFrameArgs::kStartingFrameNumber;
+constexpr uint32_t BeginFrameArgs::kDefaultSourceFrameNumber;
+
+BeginFrameArgs::BeginFrameArgs(const BeginFrameArgs& other) = default;
+BeginFrameArgs::~BeginFrameArgs() = default;
 
 BeginFrameArgs::BeginFrameArgs()
     : frame_time(base::TimeTicks()),
@@ -37,6 +41,7 @@ BeginFrameArgs::BeginFrameArgs()
 
 BeginFrameArgs::BeginFrameArgs(uint32_t source_id,
                                uint64_t sequence_number,
+                               uint32_t source_frame_number,
                                base::TimeTicks frame_time,
                                base::TimeTicks deadline,
                                base::TimeDelta interval,
@@ -54,6 +59,7 @@ BeginFrameArgs::BeginFrameArgs(uint32_t source_id,
 BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
                                       uint32_t source_id,
                                       uint64_t sequence_number,
+                                      uint32_t source_frame_number,
                                       base::TimeTicks frame_time,
                                       base::TimeTicks deadline,
                                       base::TimeDelta interval,
@@ -61,11 +67,12 @@ BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
   DCHECK_NE(type, BeginFrameArgs::INVALID);
   DCHECK_NE(type, BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX);
 #ifdef NDEBUG
-  return BeginFrameArgs(source_id, sequence_number, frame_time, deadline,
-                        interval, type);
+  return BeginFrameArgs(source_id, sequence_number, source_frame_number,
+                        frame_time, deadline, interval, type);
 #else
-  BeginFrameArgs args = BeginFrameArgs(source_id, sequence_number, frame_time,
-                                       deadline, interval, type);
+  BeginFrameArgs args =
+      BeginFrameArgs(source_id, sequence_number, source_frame_number,
+                     frame_time, deadline, interval, type);
   args.created_from = location;
   return args;
 #endif

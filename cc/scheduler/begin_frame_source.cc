@@ -129,7 +129,8 @@ void BackToBackBeginFrameSource::OnTimerTick() {
   base::TimeTicks frame_time = time_source_->LastTickTime();
   base::TimeDelta default_interval = BeginFrameArgs::DefaultInterval();
   BeginFrameArgs args = BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
+      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_,
+      BeginFrameArgs::kDefaultSourceFrameNumber, frame_time,
       frame_time + default_interval, default_interval, BeginFrameArgs::NORMAL);
   next_sequence_number_++;
 
@@ -178,7 +179,8 @@ BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
     BeginFrameArgs::BeginFrameArgsType type) {
   uint64_t sequence_number = next_sequence_number_++;
   return BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time,
+      BEGINFRAME_FROM_HERE, source_id(), sequence_number,
+      BeginFrameArgs::kDefaultSourceFrameNumber, frame_time,
       time_source_->NextTickTime(), time_source_->Interval(), type);
 }
 

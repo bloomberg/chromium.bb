@@ -102,8 +102,9 @@ void WindowAndroid::WindowBeginFrameSource::OnVSync(
   // frame time is in the past, so give the next vsync period as the deadline.
   base::TimeTicks deadline = frame_time + vsync_period;
   last_begin_frame_args_ = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
-      deadline, vsync_period, cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_,
+      cc::BeginFrameArgs::kDefaultSourceFrameNumber, frame_time, deadline,
+      vsync_period, cc::BeginFrameArgs::NORMAL);
   DCHECK(last_begin_frame_args_.IsValid());
   next_sequence_number_++;
 

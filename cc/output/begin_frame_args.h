@@ -59,8 +59,11 @@ struct CC_EXPORT BeginFrameArgs {
   static constexpr uint64_t kInvalidFrameNumber = 0;
   static constexpr uint64_t kStartingFrameNumber = 1;
 
+  static constexpr uint32_t kDefaultSourceFrameNumber = 0;
+
   // Creates an invalid set of values.
   BeginFrameArgs();
+  ~BeginFrameArgs();
 
 #ifdef NDEBUG
   typedef const void* CreationLocation;
@@ -75,10 +78,12 @@ struct CC_EXPORT BeginFrameArgs {
   static BeginFrameArgs Create(CreationLocation location,
                                uint32_t source_id,
                                uint64_t sequence_number,
+                               uint32_t source_frame_number,
                                base::TimeTicks frame_time,
                                base::TimeTicks deadline,
                                base::TimeDelta interval,
                                BeginFrameArgsType type);
+  BeginFrameArgs(const BeginFrameArgs&);
 
   // This is the default delta that will be used to adjust the deadline when
   // proper draw-time estimations are not yet available.
@@ -104,12 +109,26 @@ struct CC_EXPORT BeginFrameArgs {
   uint64_t sequence_number;
   uint32_t source_id;  // |source_id| after |sequence_number| for packing.
 
+  // |source_frame_number| is set by the LayerTreeHost when the BeginFrame
+  // reaches blink and corresponds to the commit count.
+  uint32_t source_frame_number;
+
+  // This is to report Activation (ReadyToActivate signal) time back to main.
+  // A vector of pairs of source_frame_number and timestamp is captured, and
+  // sent back with the next ProxyMain::BeginMainFrame, and from there routed to
+  // the Blink Scheduler. A vector is needed as there can be multiple
+  // ReadyToActivate signals before the next BeginMainFrame.
+  // TODO(panicker): Sub-class BeginFrameArgs as BeginMainFrameArgs and move
+  // this there.
+  std::vector<std::pair<uint32_t, base::TimeTicks>> ready_to_activate_time;
+
   BeginFrameArgsType type;
   bool on_critical_path;
 
  private:
   BeginFrameArgs(uint32_t source_id,
                  uint64_t sequence_number,
+                 uint32_t source_frame_number,
                  base::TimeTicks frame_time,
                  base::TimeTicks deadline,
                  base::TimeDelta interval,

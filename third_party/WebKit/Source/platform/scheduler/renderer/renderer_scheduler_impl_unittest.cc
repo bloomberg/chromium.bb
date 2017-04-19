@@ -107,7 +107,7 @@ void WillBeginFrameIdleTask(RendererScheduler* scheduler,
                             base::SimpleTestTickClock* clock,
                             base::TimeTicks deadline) {
   scheduler->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, sequence_number, clock->NowTicks(),
+      BEGINFRAME_FROM_HERE, 0, sequence_number, 0, clock->NowTicks(),
       base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
       cc::BeginFrameArgs::NORMAL));
 }
@@ -311,9 +311,9 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void DoMainFrame() {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = false;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidCommitFrameToCompositor();
@@ -321,9 +321,9 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void DoMainFrameOnCriticalPath() {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
   }
@@ -724,9 +724,9 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no WillBeginFrame.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run as no DidCommitFrameToCompositor.
 
@@ -736,9 +736,9 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   EXPECT_EQ(0, run_count);  // We missed the deadline.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   clock_->Advance(base::TimeDelta::FromMilliseconds(800));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();
@@ -798,18 +798,18 @@ TEST_F(RendererSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
 
   // Trigger the beginning of an idle period for 1000ms.
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   DoMainFrame();
 
   // End the idle period early (after 500ms), and send a WillBeginFrame which
   // specifies that the next idle period should end 1000ms from now.
   clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
 
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Not currently in an idle period.
@@ -2241,9 +2241,9 @@ TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   // Next long idle period will be for the maximum time, so
   // CanExceedIdleDeadlineIfRequired should return true.
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
 }
 
@@ -2455,9 +2455,9 @@ TEST_F(RendererSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
   scheduler_->WillBeginFrame(begin_frame_args);
   ASSERT_TRUE(scheduler_->BeginMainFrameOnCriticalPath());
 
@@ -2834,9 +2834,9 @@ TEST_F(RendererSchedulerImplTest, ModeratelyExpensiveTimer_NotBlocked) {
     simulate_timer_task_ran_ = false;
 
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = false;
     scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -2873,9 +2873,9 @@ TEST_F(RendererSchedulerImplTest,
     simulate_timer_task_ran_ = false;
 
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = false;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidAnimateForInputOnCompositorThread();
@@ -2915,9 +2915,9 @@ TEST_F(RendererSchedulerImplTest,
     simulate_timer_task_ran_ = false;
 
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = false;
     scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -2980,9 +2980,9 @@ TEST_F(RendererSchedulerImplTest,
   SimulateMainThreadGestureStart(TouchEventPolicy::SEND_TOUCH_START,
                                  blink::WebInputEvent::kGestureScrollUpdate);
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
   begin_frame_args.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -3004,9 +3004,9 @@ TEST_F(
     RendererSchedulerImplTest,
     EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
   begin_frame_args.on_critical_path = false;
   scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -3029,9 +3029,9 @@ TEST_F(RendererSchedulerImplTest,
   SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
   begin_frame_args.on_critical_path = true;
   scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -3141,9 +3141,9 @@ TEST_F(RendererSchedulerImplTest,
   SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
   begin_frame_args.on_critical_path = true;
   scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -3187,9 +3187,9 @@ TEST_F(RendererSchedulerImplTest,
 
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3251,9 +3251,9 @@ TEST_F(RendererSchedulerImplTest,
   bool suspended = false;
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3309,9 +3309,9 @@ TEST_F(RendererSchedulerImplTest,
 
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3349,9 +3349,9 @@ TEST_F(RendererSchedulerImplTest,
       RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 
   cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-      base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-      cc::BeginFrameArgs::NORMAL);
+      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+      clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
   begin_frame_args.on_critical_path = true;
   scheduler_->WillBeginFrame(begin_frame_args);
 
@@ -3411,9 +3411,9 @@ TEST_F(RendererSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
 
   for (int i = 0; i < 100; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3453,9 +3453,9 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
 
   for (int i = 0; i < 100; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3497,9 +3497,9 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_GESTURE) {
 
   for (int i = 0; i < 100; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(
@@ -3622,9 +3622,9 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
 
   for (int i = 0; i < 1000; i++) {
     cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
-        base::TimeTicks(), base::TimeDelta::FromMilliseconds(16),
-        cc::BeginFrameArgs::NORMAL);
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, 0,
+        clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
     begin_frame_args.on_critical_path = true;
     scheduler_->WillBeginFrame(begin_frame_args);
     scheduler_->DidHandleInputEventOnCompositorThread(

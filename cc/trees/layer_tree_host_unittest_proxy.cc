@@ -420,4 +420,79 @@ class LayerTreeHostProxyTestCommitWaitsForActivationMFBA
 
 MULTI_THREAD_TEST_F(LayerTreeHostProxyTestCommitWaitsForActivationMFBA);
 
+// Test for activation time passed in BeginFrameArgs.
+class LayerTreeHostProxyTestActivationTime : public LayerTreeHostProxyTest {
+ protected:
+  LayerTreeHostProxyTestActivationTime() = default;
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->main_frame_before_activation_enabled = true;
+    LayerTreeHostProxyTest::InitializeSettings(settings);
+  }
+
+  void DidSendBeginMainFrameOnThread(LayerTreeHostImpl* impl) override {
+    if (activate_blocked_) {
+      impl->BlockNotifyReadyToActivateForTesting(false);
+      {
+        base::AutoLock hold(activate_blocked_lock_);
+        activate_blocked_ = false;
+      }
+    }
+  }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    switch (args.source_frame_number) {
+      case 0:
+        // Initial frame, no activation yet.
+        EXPECT_EQ(0UL, args.ready_to_activate_time.size());
+        break;
+      case 1:
+        // Frame #1, activation for Frame #0.
+        EXPECT_EQ(1UL, args.ready_to_activate_time.size());
+        EXPECT_EQ(0UL, args.ready_to_activate_time[0].first);
+        break;
+      case 2:
+        // Frame #2, activation is delayed in BeginCommitOnThread.
+        EXPECT_EQ(0UL, args.ready_to_activate_time.size());
+        break;
+      case 3:
+        // Frame #3, received activation for Frame #1 & #2.
+        EXPECT_EQ(2UL, args.ready_to_activate_time.size());
+        EXPECT_EQ(1UL, args.ready_to_activate_time[0].first);
+        EXPECT_EQ(2UL, args.ready_to_activate_time[1].first);
+        EndTest();
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    if (impl->sync_tree()->source_frame_number() == 0 ||
+        impl->sync_tree()->source_frame_number() == 2)
+      PostSetNeedsCommitToMainThread();  // invoke for Frame #3
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    // Block activation for Frame #1
+    if (impl->sync_tree()->source_frame_number() == 1) {
+      impl->BlockNotifyReadyToActivateForTesting(true);
+      PostSetNeedsCommitToMainThread();
+      {
+        base::AutoLock hold(activate_blocked_lock_);
+        activate_blocked_ = true;
+      }
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  base::Lock activate_blocked_lock_;
+  bool activate_blocked_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostProxyTestActivationTime);
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostProxyTestActivationTime);
+
 }  // namespace cc

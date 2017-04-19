@@ -30,8 +30,9 @@ void GpuVSyncBeginFrameSource::OnVSync(base::TimeTicks timestamp,
 
   next_sequence_number_++;
   OnBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, timestamp,
-      deadline, interval, cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_,
+      cc::BeginFrameArgs::kDefaultSourceFrameNumber, timestamp, deadline,
+      interval, cc::BeginFrameArgs::NORMAL));
 }
 
 void GpuVSyncBeginFrameSource::OnNeedsBeginFrames(bool needs_begin_frames) {

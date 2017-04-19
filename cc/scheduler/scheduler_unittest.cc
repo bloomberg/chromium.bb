@@ -348,7 +348,7 @@ class SchedulerTest : public testing::Test {
 
       scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
       scheduler_->NotifyReadyToCommit();
-      scheduler_->NotifyReadyToActivate();
+      scheduler_->NotifyReadyToActivate(0);
       scheduler_->NotifyReadyToDraw();
 
       EXPECT_FALSE(scheduler_->CommitPending());
@@ -530,7 +530,7 @@ TEST_F(SchedulerTest, RequestCommit) {
   client_->Reset();
 
   // NotifyReadyToActivate should trigger the activation.
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   EXPECT_TRUE(scheduler_->begin_frames_expected());
   client_->Reset();
@@ -648,7 +648,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   client_->Reset();
 
   // Activate it.
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -676,7 +676,7 @@ TEST_F(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -851,7 +851,7 @@ TEST_F(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_TRUE(client->needs_begin_frames());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
 
   EXPECT_SCOPED(AdvanceFrame());
   task_runner().RunPendingTasks();  // Run posted deadline.
@@ -1229,7 +1229,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   // Scheduler won't post deadline in the mode.
@@ -1268,7 +1268,7 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostCompositorFrameSink) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   // Scheduler won't post deadline in the mode.
@@ -1299,7 +1299,7 @@ void SchedulerTest::AdvanceAndMissOneFrame() {
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_ACTION("AddObserver(this)", client_, 0, 5);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 5);
@@ -1509,7 +1509,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterCanDrawChanges) {
   // Make us abort the upcoming draw.
   client_->Reset();
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 2);
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
@@ -1552,7 +1552,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateAck(
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
@@ -1599,7 +1599,7 @@ void SchedulerTest::ImplFrameSkippedAfterLateAck(
     client_->Reset();
     scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
     scheduler_->NotifyReadyToCommit();
-    scheduler_->NotifyReadyToActivate();
+    scheduler_->NotifyReadyToActivate(0);
     task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
     EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
     EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 3);
@@ -1731,7 +1731,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateAck() {
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 3);
@@ -1756,7 +1756,7 @@ void SchedulerTest::ImplFrameNotSkippedAfterLateAck() {
     scheduler_->DidReceiveCompositorFrameAck();
     scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
     scheduler_->NotifyReadyToCommit();
-    scheduler_->NotifyReadyToActivate();
+    scheduler_->NotifyReadyToActivate(0);
     task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
 
     // Verify that we don't skip the actions of the BeginImplFrame
@@ -1831,7 +1831,7 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 
   EXPECT_ACTION("AddObserver(this)", client_, 0, 5);
@@ -1849,7 +1849,7 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
 
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 5);
@@ -1917,7 +1917,7 @@ TEST_F(SchedulerTest, MainFrameThenImplFrameSkippedAfterLateCommitAndLateAck) {
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
   scheduler_->DidReceiveCompositorFrameAck();
@@ -1956,7 +1956,7 @@ TEST_F(
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_FALSE(scheduler_->CommitPending());
   EXPECT_ACTION("AddObserver(this)", client_, 0, 6);
   EXPECT_ACTION("WillBeginImplFrame", client_, 1, 6);
@@ -1972,7 +1972,7 @@ TEST_F(
   EXPECT_SCOPED(AdvanceFrame());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -2052,7 +2052,7 @@ TEST_F(
   // Activate the pending tree, which also unblocks the commit immediately
   // while we are in an idle state.
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionCommit", client_, 1, 2);
 }
@@ -2086,7 +2086,7 @@ void SchedulerTest::BeginFramesNotFromClient(BeginFrameSourceType bfs_type) {
   client_->Reset();
 
   // NotifyReadyToActivate should trigger the activation.
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   client_->Reset();
 
@@ -2142,7 +2142,7 @@ void SchedulerTest::BeginFramesNotFromClient_IsDrawThrottled(
   client_->Reset();
 
   // NotifyReadyToActivate should trigger the activation and draw.
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   client_->Reset();
 
@@ -2387,7 +2387,7 @@ TEST_F(SchedulerTest,
 
   // NotifyReadyToActivate should trigger the activation.
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   EXPECT_TRUE(scheduler_->begin_frames_expected());
 
@@ -2424,7 +2424,7 @@ TEST_F(SchedulerTest, DidLoseCompositorFrameSinkWhenIdle) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   client_->Reset();
@@ -2674,7 +2674,7 @@ TEST_F(SchedulerTest, SwitchFrameSourceWhenNotObserving) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
 
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   // Scheduler loses CompositorFrameSink, and stops waiting for ready to draw
@@ -2721,7 +2721,7 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
   EXPECT_SCOPED(AdvanceFrame());
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   task_runner().RunPendingTasks();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 5);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 5);
@@ -2907,7 +2907,7 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
 
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   client_->Reset();
 
@@ -2974,7 +2974,7 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
 
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   client_->Reset();
 
@@ -3087,7 +3087,7 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
 
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   client_->Reset();
 
@@ -3139,7 +3139,7 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
 
   scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
   scheduler_->NotifyReadyToCommit();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
 
   // Test changing the interval on the frame source external to the scheduler.
@@ -3286,7 +3286,7 @@ TEST_F(SchedulerTest, AbortedCommitsTriggerImplSideInvalidations) {
 
   // Activate the sync tree.
   client_->Reset();
-  scheduler_->NotifyReadyToActivate();
+  scheduler_->NotifyReadyToActivate(0);
   EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 
   // Second impl frame.
