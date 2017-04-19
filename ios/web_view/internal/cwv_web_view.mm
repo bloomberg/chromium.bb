@@ -39,6 +39,23 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 }
 
 @interface CWVWebView ()<CRWWebStateDelegate, CRWWebStateObserver> {
+  // |_configuration| must come before |_webState| here to avoid crash on
+  // deallocating CWVWebView. This is because the destructor of |_webState|
+  // indirectly accesses the BrowserState instance, which is owned by
+  // |_configuration|.
+  //
+  // Looks like the fields of the object are deallocated in the reverse order of
+  // their definition. If |_webState| comes before |_configuration|, the order
+  // of execution is like this:
+  //
+  // 1. |_configuration| is deallocated
+  // 1.1. BrowserState is deallocated
+  // 2. |_webState| is deallocated
+  // 2.1. The destructor of |_webState| indirectly accesses the BrowserState
+  //      deallocated above, causing crash.
+  //
+  // See crbug.com/712556 for the full stack trace.
+  CWVWebViewConfiguration* _configuration;
   std::unique_ptr<web::WebState> _webState;
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
