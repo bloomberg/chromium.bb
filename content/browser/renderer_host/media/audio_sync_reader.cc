@@ -53,6 +53,7 @@ AudioSyncReader::AudioSyncReader(
     : shared_memory_(std::move(shared_memory)),
       mute_audio_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMuteAudio)),
+      had_socket_error_(false),
       socket_(std::move(socket)),
       foreign_socket_(std::move(foreign_socket)),
       packet_size_(shared_memory_->requested_size()),
@@ -176,12 +177,18 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
 
   size_t sent_bytes = socket_->Send(&control_signal, sizeof(control_signal));
   if (sent_bytes != sizeof(control_signal)) {
-    const std::string error_message = "ASR: No room in socket buffer.";
-    LOG(WARNING) << error_message;
-    MediaStreamManager::SendMessageToNativeLog(error_message);
-    TRACE_EVENT_INSTANT0("audio",
-                         "AudioSyncReader: No room in socket buffer",
-                         TRACE_EVENT_SCOPE_THREAD);
+    // Ensure we don't log consecutive errors as this can lead to a large
+    // amount of logs.
+    if (!had_socket_error_) {
+      had_socket_error_ = true;
+      const std::string error_message = "ASR: No room in socket buffer.";
+      PLOG(WARNING) << error_message;
+      MediaStreamManager::SendMessageToNativeLog(error_message);
+      TRACE_EVENT_INSTANT0("audio", "AudioSyncReader: No room in socket buffer",
+                           TRACE_EVENT_SCOPE_THREAD);
+    }
+  } else {
+    had_socket_error_ = false;
   }
   ++buffer_index_;
 }

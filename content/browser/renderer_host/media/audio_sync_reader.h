@@ -67,6 +67,10 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // during automated testing.
   const bool mute_audio_;
 
+  // Denotes that the most recent socket error has been logged. Used to avoid
+  // log spam.
+  bool had_socket_error_;
+
   // Socket for transmitting audio data.
   std::unique_ptr<base::CancelableSyncSocket> socket_;
 

@@ -10,6 +10,7 @@
 
 #include <deque>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -141,6 +142,10 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // Counts the number of errors that causes data to be dropped, due to either
   // the fifo or the socket buffer being full.
   size_t write_error_count_;
+
+  // Denotes that the most recent socket error has been logged. Used to avoid
+  // log spam.
+  bool had_socket_error_;
 
   // Counts the fifo writes and errors we get during renderer process teardown
   // so that we can account for that (subtract) when we calculate the overall
