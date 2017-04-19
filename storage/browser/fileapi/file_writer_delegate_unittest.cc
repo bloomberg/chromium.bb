@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
@@ -201,6 +202,14 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   }
 
   int GetResponseCode() const override { return 200; }
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    const char kStatus[] = "HTTP/1.1 200 OK\0";
+    const size_t kStatusLen = arraysize(kStatus);
+
+    info->headers =
+        new net::HttpResponseHeaders(std::string(kStatus, kStatusLen));
+  }
 
  protected:
   ~FileWriterDelegateTestJob() override {}

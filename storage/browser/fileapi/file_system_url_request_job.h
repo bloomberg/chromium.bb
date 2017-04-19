@@ -45,7 +45,6 @@ class STORAGE_EXPORT FileSystemURLRequestJob : public net::URLRequestJob {
   bool IsRedirectResponse(GURL* location, int* http_status_code) override;
   void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers) override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
-  int GetResponseCode() const override;
 
   // FilterContext methods (via URLRequestJob):
   bool GetMimeType(std::string* mime_type) const override;

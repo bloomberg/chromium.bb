@@ -138,13 +138,6 @@ void StreamURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
     *info = *response_info_;
 }
 
-int StreamURLRequestJob::GetResponseCode() const {
-  if (!response_info_)
-    return -1;
-
-  return response_info_->headers->response_code();
-}
-
 int64_t StreamURLRequestJob::GetTotalReceivedBytes() const {
   int64_t total_received_bytes = 0;
   if (response_info_)

@@ -143,12 +143,6 @@ void FileSystemURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
     *info = *response_info_;
 }
 
-int FileSystemURLRequestJob::GetResponseCode() const {
-  if (response_info_)
-    return 200;
-  return URLRequestJob::GetResponseCode();
-}
-
 void FileSystemURLRequestJob::StartAsync() {
   if (!request_)
     return;
