@@ -310,6 +310,13 @@ class Rietveld(object):
       'private': private,
       'commit': commit,
     }
+    # The integer values were determined by checking HTML source of Rietveld on
+    # https://codereview.chromium.org/search. See also http://crbug.com/712060.
+    three_state_value_map = {
+        None: 1,   # Unknown.
+        True: 2,   # Yes.
+        False: 3,  # No.
+    }
 
     url = '/search?format=json'
     # Sort the keys mainly to ease testing.
@@ -320,7 +327,7 @@ class Rietveld(object):
     for key in sorted(three_state_keys):
       value = three_state_keys[key]
       if value is not None:
-        url += '&%s=%s' % (key, value)
+        url += '&%s=%d' % (key, three_state_value_map[value])
 
     if keys_only:
       url += '&keys_only=True'
