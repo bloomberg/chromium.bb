@@ -306,6 +306,28 @@ def CopyDlls(target_dir, configuration, target_cpu):
   if configuration == 'Debug':
     _CopyRuntime(target_dir, runtime_dir, target_cpu, debug=True)
 
+  _CopyDebugger(target_dir, target_cpu)
+
+
+def _CopyDebugger(target_dir, target_cpu):
+  """Copy dbghelp.dll into the requested directory as needed.
+
+  target_cpu is one of 'x86' or 'x64'.
+
+  dbghelp.dll is used when Chrome needs to symbolize stacks. Copying this file
+  from the SDK directory avoids using the system copy of dbghelp.dll which then
+  ensures compatibility with recent debug information formats, such as VS
+  2017 /debug:fastlink PDBs.
+  """
+  win_sdk_dir = SetEnvironmentAndGetSDKDir()
+  if not win_sdk_dir:
+    return
+
+  debug_file = 'dbghelp.dll'
+  full_path = os.path.join(win_sdk_dir, 'Debuggers', target_cpu, debug_file)
+  target_path = os.path.join(target_dir, debug_file)
+  _CopyRuntimeImpl(target_path, full_path)
+
 
 def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
