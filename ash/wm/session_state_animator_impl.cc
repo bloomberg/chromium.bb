@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/wm_window_animations.h"
+#include "base/barrier_closure.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -548,10 +549,12 @@ void SessionStateAnimatorImpl::StartAnimationWithCallback(
     base::Closure callback) {
   aura::Window::Windows containers;
   GetContainers(container_mask, &containers);
+  base::Closure animation_done_closure =
+      base::BarrierClosure(containers.size(), callback);
   for (aura::Window::Windows::const_iterator it = containers.begin();
        it != containers.end(); ++it) {
     ui::LayerAnimationObserver* observer =
-        new CallbackAnimationObserver(callback);
+        new CallbackAnimationObserver(animation_done_closure);
     RunAnimationForWindow(*it, type, speed, observer);
   }
 }

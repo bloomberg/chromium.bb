@@ -192,8 +192,8 @@ class ASH_EXPORT SessionStateAnimator {
                               AnimationSpeed speed) = 0;
 
   // Apply animation |type| to all containers included in |container_mask| with
-  // specified |speed| and call a |callback| at the end of the animation, if it
-  // is not null.
+  // specified |speed| and call a |callback| once at the end of the animations,
+  // if it is not null.
   virtual void StartAnimationWithCallback(int container_mask,
                                           AnimationType type,
                                           AnimationSpeed speed,

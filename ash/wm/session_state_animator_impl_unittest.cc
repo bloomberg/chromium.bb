@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/session_state_animator_impl.h"
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm/session_state_animator_impl.h"
+#include "base/bind.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 
 typedef ash::test::AshTestBase SessionStateAnimatiorImplContainersTest;
@@ -78,6 +81,24 @@ TEST_F(SessionStateAnimatiorImplContainersTest, ContainersHaveIdTest) {
   // Empty mask should clear the container.
   SessionStateAnimatorImpl::GetContainers(0, &containers);
   EXPECT_TRUE(containers.empty());
+}
+
+// Test that SessionStateAnimatorImpl invokes the callback only once on
+// multi-display env, where it needs to run multiple animations on multiple
+// containers. See http://crbug.com/712422 for details.
+TEST_F(SessionStateAnimatiorImplContainersTest,
+       AnimationCallbackOnMultiDisplay) {
+  UpdateDisplay("200x200,400x400");
+
+  int callback_count = 0;
+  SessionStateAnimatorImpl animator;
+  animator.StartAnimationWithCallback(
+      SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      SessionStateAnimator::ANIMATION_LIFT,
+      SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE,
+      base::Bind([](int* count) { ++(*count); }, &callback_count));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, callback_count);
 }
 
 }  // namespace ash
