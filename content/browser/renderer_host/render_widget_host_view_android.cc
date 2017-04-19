@@ -929,8 +929,8 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   // If a browser-based widget consumes the touch event, it's critical that
   // touch event interception be disabled. This avoids issues with
   // double-handling for embedder-detected gestures like side swipe.
-  if (selection_controller_ &&
-      selection_controller_->WillHandleTouchEvent(event)) {
+  if (touch_selection_controller_ &&
+      touch_selection_controller_->WillHandleTouchEvent(event)) {
     RequestDisallowInterceptTouchEvent();
     return true;
   }
@@ -969,8 +969,8 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
 bool RenderWidgetHostViewAndroid::OnTouchHandleEvent(
     const ui::MotionEvent& event) {
-  return selection_controller_ &&
-         selection_controller_->WillHandleTouchEvent(event);
+  return touch_selection_controller_ &&
+         touch_selection_controller_->WillHandleTouchEvent(event);
 }
 
 void RenderWidgetHostViewAndroid::ResetGestureDetection() {
@@ -1300,7 +1300,7 @@ void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ui::SelectionEventType event) {
   DCHECK(content_view_core_);
-  DCHECK(selection_controller_);
+  DCHECK(touch_selection_controller_);
   // If a selection drag has started, it has taken over the active touch
   // sequence. Immediately cancel gesture detection and any downstream touch
   // listeners (e.g., web content) to communicate this transfer.
@@ -1309,8 +1309,8 @@ void RenderWidgetHostViewAndroid::OnSelectionEvent(
     ResetGestureDetection();
   }
   content_view_core_->OnSelectionEvent(
-      event, selection_controller_->GetStartPosition(),
-      GetSelectionRect(*selection_controller_));
+      event, touch_selection_controller_->GetStartPosition(),
+      GetSelectionRect(*touch_selection_controller_));
 }
 
 std::unique_ptr<ui::TouchHandleDrawable>
@@ -1381,8 +1381,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (overscroll_controller_)
     overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
 
-  if (selection_controller_) {
-    selection_controller_->OnSelectionBoundsChanged(
+  if (touch_selection_controller_) {
+    touch_selection_controller_->OnSelectionBoundsChanged(
         frame_metadata.selection.start, frame_metadata.selection.end);
 
     // Set parameters for adaptive handle orientation.
@@ -1391,7 +1391,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     gfx::RectF viewport_rect(0.0f, frame_metadata.top_controls_height *
                                        frame_metadata.top_controls_shown_ratio,
                              viewport_size.width(), viewport_size.height());
-    selection_controller_->OnViewportChanged(viewport_rect);
+    touch_selection_controller_->OnViewportChanged(viewport_rect);
   }
 
   UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
@@ -1600,8 +1600,8 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
     needs_animate |= overscroll_controller_->Animate(
         frame_time, content_view_core_->GetViewAndroid()->GetLayer());
   }
-  if (selection_controller_)
-    needs_animate |= selection_controller_->Animate(frame_time);
+  if (touch_selection_controller_)
+    needs_animate |= touch_selection_controller_->Animate(frame_time);
   return needs_animate;
 }
 
@@ -1645,26 +1645,26 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (selection_controller_ &&
+  if (touch_selection_controller_ &&
       blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
     const blink::WebGestureEvent& gesture_event =
         static_cast<const blink::WebGestureEvent&>(input_event);
     switch (gesture_event.GetType()) {
       case blink::WebInputEvent::kGestureLongPress:
-        selection_controller_->HandleLongPressEvent(
+        touch_selection_controller_->HandleLongPressEvent(
             base::TimeTicks() +
                 base::TimeDelta::FromSecondsD(input_event.TimeStampSeconds()),
             gfx::PointF(gesture_event.x, gesture_event.y));
         break;
 
       case blink::WebInputEvent::kGestureTap:
-        selection_controller_->HandleTapEvent(
+        touch_selection_controller_->HandleTapEvent(
             gfx::PointF(gesture_event.x, gesture_event.y),
             gesture_event.data.tap.tap_count);
         break;
 
       case blink::WebInputEvent::kGestureScrollBegin:
-        selection_controller_->OnScrollBeginEvent();
+        touch_selection_controller_->OnScrollBeginEvent();
         break;
 
       default:
@@ -1831,13 +1831,13 @@ void RenderWidgetHostViewAndroid::ShowContextMenuAtPoint(
 }
 
 void RenderWidgetHostViewAndroid::DismissTextHandles() {
-  if (selection_controller_)
-    selection_controller_->HideAndDisallowShowingAutomatically();
+  if (touch_selection_controller_)
+    touch_selection_controller_->HideAndDisallowShowingAutomatically();
 }
 
 void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(bool hidden) {
-  if (selection_controller_)
-    selection_controller_->SetTemporarilyHidden(hidden);
+  if (touch_selection_controller_)
+    touch_selection_controller_->SetTemporarilyHidden(hidden);
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
@@ -1884,7 +1884,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   bool resize = false;
   if (content_view_core != content_view_core_) {
-    selection_controller_.reset();
+    touch_selection_controller_.reset();
     RunAckCallbacks();
     // TODO(yusufo) : Get rid of the below conditions and have a better handling
     // for resizing after crbug.com/628302 is handled.
@@ -1928,8 +1928,9 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (resize)
     WasResized();
 
-  if (!selection_controller_)
-    selection_controller_ = CreateSelectionController(this, content_view_core_);
+  if (!touch_selection_controller_)
+    touch_selection_controller_ =
+        CreateSelectionController(this, content_view_core_);
 
   if (content_view_core_)
     CreateOverscrollControllerIfPossible();

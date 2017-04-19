@@ -394,7 +394,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.
-  std::unique_ptr<ui::TouchSelectionController> selection_controller_;
+  std::unique_ptr<ui::TouchSelectionController> touch_selection_controller_;
 
   // Bounds to use if we have no backing ContentViewCore
   gfx::Rect default_bounds_;
