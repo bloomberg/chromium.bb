@@ -2679,6 +2679,7 @@
     "SettingsEnforcement": [
         {
             "platforms": [
+                "mac",
                 "win"
             ],
             "experiments": [
