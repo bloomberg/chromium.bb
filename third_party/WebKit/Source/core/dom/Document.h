@@ -609,7 +609,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // To understand how these concepts relate to one another, please see the
   // comments surrounding their declaration.
-  const KURL& BaseURL() const { return base_url_; }
+  const KURL& BaseURL() const;
   void SetBaseURLOverride(const KURL&);
   const KURL& BaseURLOverride() const { return base_url_override_; }
   KURL ValidBaseElementURL() const;

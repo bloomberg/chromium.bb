@@ -3408,6 +3408,12 @@ void Document::UpdateBaseURL() {
   }
 }
 
+const KURL& Document::BaseURL() const {
+  if (!base_url_.IsNull())
+    return base_url_;
+  return BlankURL();
+}
+
 void Document::SetBaseURLOverride(const KURL& url) {
   base_url_override_ = url;
   UpdateBaseURL();

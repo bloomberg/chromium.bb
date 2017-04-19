@@ -38,7 +38,7 @@
     [ImplementedAs=getNodeType] readonly attribute unsigned short nodeType;
     readonly attribute DOMString nodeName;
 
-    readonly attribute DOMString? baseURI;
+    readonly attribute USVString baseURI;
 
     [Measure] readonly attribute boolean isConnected;
     [PerWorldBindings] readonly attribute Document? ownerDocument;
