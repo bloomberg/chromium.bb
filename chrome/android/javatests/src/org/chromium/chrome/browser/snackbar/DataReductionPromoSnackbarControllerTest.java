@@ -151,7 +151,9 @@ public class DataReductionPromoSnackbarControllerTest extends ChromeTabbedActivi
 
     @UiThreadTest
     @MediumTest
-    @CommandLineFlags.Add({ "enable-data-reduction-proxy-savings-promo" })
+    @CommandLineFlags.Add({
+            "enable-data-reduction-proxy-savings-promo",
+            "disable-field-trial-config"})
     public void testDataReductionPromoSnackbarControllerCommandLineFlag() {
         assertFalse(DataReductionPromoUtils.hasSnackbarPromoBeenInitWithStartingSavedBytes());
         mController.maybeShowDataReductionPromoSnackbar(0);
