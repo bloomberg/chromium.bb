@@ -89,4 +89,4 @@
     attribute unrestricted double lineDashOffset;
 };
 
-OffscreenCanvasRenderingContext2D implements CanvasPathMethods;
+OffscreenCanvasRenderingContext2D implements CanvasPath;

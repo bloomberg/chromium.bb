@@ -10,7 +10,7 @@
 #include "core/html/ImageData.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasGradient.h"
-#include "modules/canvas2d/CanvasPathMethods.h"
+#include "modules/canvas2d/CanvasPath.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "modules/canvas2d/CanvasStyle.h"
 #include "platform/graphics/ColorBehavior.h"
@@ -31,7 +31,7 @@ typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTML
     CanvasImageSourceUnion;
 
 class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
-                                              public CanvasPathMethods {
+                                              public CanvasPath {
   WTF_MAKE_NONCOPYABLE(BaseRenderingContext2D);
 
  public:

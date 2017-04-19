@@ -364,9 +364,7 @@ void Path::AddEllipse(const FloatPoint& p,
                       float start_angle,
                       float end_angle,
                       bool anticlockwise) {
-#if DCHECK_IS_ON()
   DCHECK(EllipseIsRenderable(start_angle, end_angle));
-#endif
   DCHECK_GE(start_angle, 0);
   DCHECK_LT(start_angle, twoPiFloat);
   DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
@@ -428,9 +426,7 @@ void Path::AddEllipse(const FloatPoint& p,
                       float start_angle,
                       float end_angle,
                       bool anticlockwise) {
-#if DCHECK_IS_ON()
   DCHECK(EllipseIsRenderable(start_angle, end_angle));
-#endif
   DCHECK_GE(start_angle, 0);
   DCHECK_LT(start_angle, twoPiFloat);
   DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
@@ -551,11 +547,9 @@ bool Path::IntersectPath(const Path& other) {
   return Op(path_, other.path_, kIntersect_SkPathOp, &path_);
 }
 
-#if DCHECK_IS_ON()
 bool EllipseIsRenderable(float start_angle, float end_angle) {
   return (std::abs(end_angle - start_angle) < twoPiFloat) ||
          WebCoreFloatNearlyEqual(std::abs(end_angle - start_angle), twoPiFloat);
 }
-#endif
 
 }  // namespace blink

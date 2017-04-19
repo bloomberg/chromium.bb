@@ -47,7 +47,7 @@
     void fillRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
     void strokeRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
 
-    // path API (see also CanvasPathMethods)
+    // path API (see also CanvasPath)
     void beginPath();
     void fill(optional CanvasFillRule winding);
     void fill(Path2D path, optional CanvasFillRule winding);
@@ -78,4 +78,4 @@
     sequence<unrestricted double> getLineDash();
     attribute unrestricted double lineDashOffset;
 };
-PaintRenderingContext2D implements CanvasPathMethods;
+PaintRenderingContext2D implements CanvasPath;

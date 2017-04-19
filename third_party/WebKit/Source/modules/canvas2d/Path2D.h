@@ -31,14 +31,14 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGPathUtilities.h"
-#include "modules/canvas2d/CanvasPathMethods.h"
+#include "modules/canvas2d/CanvasPath.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
 class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
-                                    public CanvasPathMethods,
+                                    public CanvasPath,
                                     public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(Path2D);
@@ -65,13 +65,13 @@ class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
   DEFINE_INLINE_TRACE() {}
 
  private:
-  Path2D() : CanvasPathMethods() {}
+  Path2D() : CanvasPath() {}
 
-  Path2D(const Path& path) : CanvasPathMethods(path) {}
+  Path2D(const Path& path) : CanvasPath(path) {}
 
-  Path2D(Path2D* path) : CanvasPathMethods(path->GetPath()) {}
+  Path2D(Path2D* path) : CanvasPath(path->GetPath()) {}
 
-  Path2D(const String& path_data) : CanvasPathMethods() {
+  Path2D(const String& path_data) : CanvasPath() {
     BuildPathFromString(path_data, path_);
   }
 };

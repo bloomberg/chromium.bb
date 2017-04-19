@@ -202,9 +202,8 @@ class PLATFORM_EXPORT Path {
   SkPath path_;
 };
 
-#if DCHECK_IS_ON()
+// Only used for DCHECKs
 PLATFORM_EXPORT bool EllipseIsRenderable(float start_angle, float end_angle);
-#endif
 
 }  // namespace blink
 

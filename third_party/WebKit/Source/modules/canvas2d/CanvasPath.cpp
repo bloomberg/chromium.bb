@@ -33,7 +33,7 @@
  * SUCH DAMAGE.
  */
 
-#include "modules/canvas2d/CanvasPathMethods.h"
+#include "modules/canvas2d/CanvasPath.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -43,7 +43,7 @@
 
 namespace blink {
 
-void CanvasPathMethods::closePath() {
+void CanvasPath::closePath() {
   if (path_.IsEmpty())
     return;
 
@@ -52,7 +52,7 @@ void CanvasPathMethods::closePath() {
     path_.CloseSubpath();
 }
 
-void CanvasPathMethods::moveTo(float x, float y) {
+void CanvasPath::moveTo(float x, float y) {
   if (!std::isfinite(x) || !std::isfinite(y))
     return;
   if (!IsTransformInvertible())
@@ -60,7 +60,7 @@ void CanvasPathMethods::moveTo(float x, float y) {
   path_.MoveTo(FloatPoint(x, y));
 }
 
-void CanvasPathMethods::lineTo(float x, float y) {
+void CanvasPath::lineTo(float x, float y) {
   if (!std::isfinite(x) || !std::isfinite(y))
     return;
   if (!IsTransformInvertible())
@@ -73,10 +73,7 @@ void CanvasPathMethods::lineTo(float x, float y) {
   path_.AddLineTo(p1);
 }
 
-void CanvasPathMethods::quadraticCurveTo(float cpx,
-                                         float cpy,
-                                         float x,
-                                         float y) {
+void CanvasPath::quadraticCurveTo(float cpx, float cpy, float x, float y) {
   if (!std::isfinite(cpx) || !std::isfinite(cpy) || !std::isfinite(x) ||
       !std::isfinite(y))
     return;
@@ -91,12 +88,12 @@ void CanvasPathMethods::quadraticCurveTo(float cpx,
   path_.AddQuadCurveTo(cp, p1);
 }
 
-void CanvasPathMethods::bezierCurveTo(float cp1x,
-                                      float cp1y,
-                                      float cp2x,
-                                      float cp2y,
-                                      float x,
-                                      float y) {
+void CanvasPath::bezierCurveTo(float cp1x,
+                               float cp1y,
+                               float cp2x,
+                               float cp2y,
+                               float x,
+                               float y) {
   if (!std::isfinite(cp1x) || !std::isfinite(cp1y) || !std::isfinite(cp2x) ||
       !std::isfinite(cp2y) || !std::isfinite(x) || !std::isfinite(y))
     return;
@@ -112,12 +109,12 @@ void CanvasPathMethods::bezierCurveTo(float cp1x,
   path_.AddBezierCurveTo(cp1, cp2, p1);
 }
 
-void CanvasPathMethods::arcTo(float x1,
-                              float y1,
-                              float x2,
-                              float y2,
-                              float r,
-                              ExceptionState& exception_state) {
+void CanvasPath::arcTo(float x1,
+                       float y1,
+                       float x2,
+                       float y2,
+                       float r,
+                       ExceptionState& exception_state) {
   if (!std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(x2) ||
       !std::isfinite(y2) || !std::isfinite(r))
     return;
@@ -157,36 +154,37 @@ float AdjustEndAngle(float start_angle, float end_angle, bool anticlockwise) {
    * from the ellipse's semi-major axis, acts as both the start point and the
    * end point.
    */
-  if (!anticlockwise && end_angle - start_angle >= twoPiFloat)
+  if (!anticlockwise && end_angle - start_angle >= twoPiFloat) {
     new_end_angle = start_angle + twoPiFloat;
-  else if (anticlockwise && start_angle - end_angle >= twoPiFloat)
+  } else if (anticlockwise && start_angle - end_angle >= twoPiFloat) {
     new_end_angle = start_angle - twoPiFloat;
 
-  /*
-   * Otherwise, the arc is the path along the circumference of this ellipse
-   * from the start point to the end point, going anti-clockwise if the
-   * anticlockwise argument is true, and clockwise otherwise.
-   * Since the points are on the ellipse, as opposed to being simply angles
-   * from zero, the arc can never cover an angle greater than 2pi radians.
-   */
-  /* NOTE: When startAngle = 0, endAngle = 2Pi and anticlockwise = true, the
-   * spec does not indicate clearly.
-   * We draw the entire circle, because some web sites use arc(x, y, r, 0,
-   * 2*Math.PI, true) to draw circle.
-   * We preserve backward-compatibility.
-   */
-  else if (!anticlockwise && start_angle > end_angle)
+    /*
+     * Otherwise, the arc is the path along the circumference of this ellipse
+     * from the start point to the end point, going anti-clockwise if the
+     * anticlockwise argument is true, and clockwise otherwise.
+     * Since the points are on the ellipse, as opposed to being simply angles
+     * from zero, the arc can never cover an angle greater than 2pi radians.
+     */
+    /* NOTE: When startAngle = 0, endAngle = 2Pi and anticlockwise = true, the
+     * spec does not indicate clearly.
+     * We draw the entire circle, because some web sites use arc(x, y, r, 0,
+     * 2*Math.PI, true) to draw circle.
+     * We preserve backward-compatibility.
+     */
+  } else if (!anticlockwise && start_angle > end_angle) {
     new_end_angle =
         start_angle + (twoPiFloat - fmodf(start_angle - end_angle, twoPiFloat));
-  else if (anticlockwise && start_angle < end_angle)
+  } else if (anticlockwise && start_angle < end_angle) {
     new_end_angle =
         start_angle - (twoPiFloat - fmodf(end_angle - start_angle, twoPiFloat));
+  }
 
-  ASSERT(EllipseIsRenderable(start_angle, new_end_angle));
+  DCHECK(EllipseIsRenderable(start_angle, new_end_angle));
   return new_end_angle;
 }
 
-inline void LineToFloatPoint(CanvasPathMethods* path, const FloatPoint& p) {
+inline void LineToFloatPoint(CanvasPath* path, const FloatPoint& p) {
   path->lineTo(p.X(), p.Y());
 }
 
@@ -212,7 +210,7 @@ void CanonicalizeAngle(float* start_angle, float* end_angle) {
   *start_angle = new_start_angle;
   *end_angle = *end_angle + delta;
 
-  ASSERT(new_start_angle >= 0 && new_start_angle < twoPiFloat);
+  DCHECK(new_start_angle >= 0 && new_start_angle < twoPiFloat);
 }
 
 /*
@@ -248,7 +246,7 @@ void CanonicalizeAngle(float* start_angle, float* end_angle) {
  * NOTE: Before ellipse() calls this function, adjustEndAngle() is called, so
  * endAngle - startAngle must be equal to or less than 2Pi.
  */
-void DegenerateEllipse(CanvasPathMethods* path,
+void DegenerateEllipse(CanvasPath* path,
                        float x,
                        float y,
                        float radius_x,
@@ -257,9 +255,9 @@ void DegenerateEllipse(CanvasPathMethods* path,
                        float start_angle,
                        float end_angle,
                        bool anticlockwise) {
-  ASSERT(EllipseIsRenderable(start_angle, end_angle));
-  ASSERT(start_angle >= 0 && start_angle < twoPiFloat);
-  ASSERT((anticlockwise && (start_angle - end_angle) >= 0) ||
+  DCHECK(EllipseIsRenderable(start_angle, end_angle));
+  DCHECK(start_angle >= 0 && start_angle < twoPiFloat);
+  DCHECK((anticlockwise && (start_angle - end_angle) >= 0) ||
          (!anticlockwise && (end_angle - start_angle) >= 0));
 
   FloatPoint center(x, y);
@@ -279,16 +277,18 @@ void DegenerateEllipse(CanvasPathMethods* path,
     // the clockwise direction.
     for (float angle =
              start_angle - fmodf(start_angle, piOverTwoFloat) + piOverTwoFloat;
-         angle < end_angle; angle += piOverTwoFloat)
+         angle < end_angle; angle += piOverTwoFloat) {
       LineToFloatPoint(
           path, center + rotation_matrix.MapPoint(
                              GetPointOnEllipse(radius_x, radius_y, angle)));
+    }
   } else {
     for (float angle = start_angle - fmodf(start_angle, piOverTwoFloat);
-         angle > end_angle; angle -= piOverTwoFloat)
+         angle > end_angle; angle -= piOverTwoFloat) {
       LineToFloatPoint(
           path, center + rotation_matrix.MapPoint(
                              GetPointOnEllipse(radius_x, radius_y, angle)));
+    }
   }
 
   LineToFloatPoint(path, center + rotation_matrix.MapPoint(GetPointOnEllipse(
@@ -297,13 +297,13 @@ void DegenerateEllipse(CanvasPathMethods* path,
 
 }  // namespace
 
-void CanvasPathMethods::arc(float x,
-                            float y,
-                            float radius,
-                            float start_angle,
-                            float end_angle,
-                            bool anticlockwise,
-                            ExceptionState& exception_state) {
+void CanvasPath::arc(float x,
+                     float y,
+                     float radius,
+                     float start_angle,
+                     float end_angle,
+                     bool anticlockwise,
+                     ExceptionState& exception_state) {
   if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius) ||
       !std::isfinite(start_angle) || !std::isfinite(end_angle))
     return;
@@ -331,15 +331,15 @@ void CanvasPathMethods::arc(float x,
                anticlockwise);
 }
 
-void CanvasPathMethods::ellipse(float x,
-                                float y,
-                                float radius_x,
-                                float radius_y,
-                                float rotation,
-                                float start_angle,
-                                float end_angle,
-                                bool anticlockwise,
-                                ExceptionState& exception_state) {
+void CanvasPath::ellipse(float x,
+                         float y,
+                         float radius_x,
+                         float radius_y,
+                         float rotation,
+                         float start_angle,
+                         float end_angle,
+                         bool anticlockwise,
+                         ExceptionState& exception_state) {
   if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(radius_x) ||
       !std::isfinite(radius_y) || !std::isfinite(rotation) ||
       !std::isfinite(start_angle) || !std::isfinite(end_angle))
@@ -376,7 +376,7 @@ void CanvasPathMethods::ellipse(float x,
                    adjusted_end_angle, anticlockwise);
 }
 
-void CanvasPathMethods::rect(float x, float y, float width, float height) {
+void CanvasPath::rect(float x, float y, float width, float height) {
   if (!IsTransformInvertible())
     return;
 

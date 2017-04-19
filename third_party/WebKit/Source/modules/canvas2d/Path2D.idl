@@ -38,4 +38,4 @@
     [RuntimeEnabled=ExperimentalCanvasFeatures] void addPath(Path2D path, optional SVGMatrix? transform);
 };
 
-Path2D implements CanvasPathMethods;
+Path2D implements CanvasPath;

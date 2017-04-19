@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CanvasPathMethods_h
-#define CanvasPathMethods_h
+#ifndef CanvasPath_h
+#define CanvasPath_h
 
 #include "modules/ModulesExport.h"
 #include "platform/graphics/Path.h"
@@ -37,9 +37,9 @@ namespace blink {
 
 class ExceptionState;
 
-class MODULES_EXPORT CanvasPathMethods {
+class MODULES_EXPORT CanvasPath {
  public:
-  virtual ~CanvasPathMethods() {}
+  virtual ~CanvasPath() {}
 
   void closePath();
   void moveTo(float x, float y);
@@ -78,10 +78,8 @@ class MODULES_EXPORT CanvasPathMethods {
   virtual bool IsTransformInvertible() const { return true; }
 
  protected:
-  CanvasPathMethods() { path_.SetIsVolatile(true); }
-  CanvasPathMethods(const Path& path) : path_(path) {
-    path_.SetIsVolatile(true);
-  }
+  CanvasPath() { path_.SetIsVolatile(true); }
+  CanvasPath(const Path& path) : path_(path) { path_.SetIsVolatile(true); }
   Path path_;
 };
 }  // namespace blink
