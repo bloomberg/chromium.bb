@@ -12,7 +12,6 @@ namespace blink {
 using cc::PaintCanvas;
 using cc::SkiaPaintCanvas;
 using cc::PaintCanvasAutoRestore;
-using cc::ToPixmap;
 }
 
 #endif  // PaintCanvas_h

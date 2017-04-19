@@ -18,10 +18,6 @@ const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
 
 namespace cc {
 
-bool ToPixmap(PaintCanvas* canvas, SkPixmap* output) {
-  return canvas->ToPixmap(output);
-}
-
 #if defined(OS_MACOSX)
 void SetIsPreviewMetafile(PaintCanvas* canvas, bool is_preview) {
   SkMetaData& meta = canvas->getMetaData();

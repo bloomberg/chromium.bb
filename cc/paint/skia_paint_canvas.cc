@@ -259,19 +259,6 @@ void SkiaPaintCanvas::PlaybackPaintRecord(sk_sp<const PaintRecord> record) {
   record->playback(canvas_);
 }
 
-bool SkiaPaintCanvas::ToPixmap(SkPixmap* output) {
-  SkImageInfo info;
-  size_t row_bytes;
-  void* pixels = canvas_->accessTopLayerPixels(&info, &row_bytes);
-  if (!pixels) {
-    output->reset();
-    return false;
-  }
-
-  output->reset(info, pixels, row_bytes);
-  return true;
-}
-
 void SkiaPaintCanvas::Annotate(AnnotationType type,
                                const SkRect& rect,
                                sk_sp<SkData> data) {
