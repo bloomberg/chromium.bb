@@ -1406,20 +1406,18 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
+
   // The input |size| is from the decoded video frame, which is the original
   // natural size and need to be rotated accordingly.
   gfx::Size rotated_size =
       GetRotatedVideoSize(pipeline_metadata_.video_rotation, size);
 
-  if (rotated_size == pipeline_metadata_.natural_size)
+  RecordVideoNaturalSize(rotated_size);
+
+  gfx::Size old_size = pipeline_metadata_.natural_size;
+  if (rotated_size == old_size)
     return;
-
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
-  media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
-      rotated_size.width(), rotated_size.height()));
-
-  if (overlay_enabled_ && surface_manager_)
-    surface_manager_->NaturalSizeChanged(rotated_size);
 
   pipeline_metadata_.natural_size = rotated_size;
 
@@ -1427,6 +1425,9 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   // size or the previous size was too small for reporting.
   if (!watch_time_reporter_->IsSizeLargeEnoughToReportWatchTime())
     CreateWatchTimeReporter();
+
+  if (overlay_enabled_ && surface_manager_)
+    surface_manager_->NaturalSizeChanged(rotated_size);
 
   client_->SizeChanged();
 
@@ -2371,5 +2372,33 @@ void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
   else
     UMA_HISTOGRAM_TIMES("Media.UnderflowDuration.MSE", duration);
 }
+
+#define UMA_HISTOGRAM_VIDEO_HEIGHT(name, sample) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 100, 10000, 50)
+
+void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
+  // Always report video natural size to MediaLog.
+  media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
+      natural_size.width(), natural_size.height()));
+
+  if (initial_video_height_recorded_)
+    return;
+
+  initial_video_height_recorded_ = true;
+
+  int height = natural_size.height();
+
+  if (load_type_ == kLoadTypeURL)
+    UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.SRC", height);
+  else if (load_type_ == kLoadTypeMediaSource)
+    UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.MSE", height);
+
+  if (is_encrypted_)
+    UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.EME", height);
+
+  UMA_HISTOGRAM_VIDEO_HEIGHT("Media.VideoHeight.Initial.All", height);
+}
+
+#undef UMA_HISTOGRAM_VIDEO_HEIGHT
 
 }  // namespace media

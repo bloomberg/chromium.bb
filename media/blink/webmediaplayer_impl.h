@@ -457,6 +457,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // handling a src= or MSE based playback.
   void RecordUnderflowDuration(base::TimeDelta duration);
 
+  // Records |natural_size| to MediaLog and video height to UMA.
+  void RecordVideoNaturalSize(const gfx::Size& natural_size);
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -719,6 +722,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::TimeDelta last_uploaded_frame_timestamp_;
 
   base::CancelableCallback<void(base::TimeTicks)> frame_time_report_cb_;
+
+  bool initial_video_height_recorded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
