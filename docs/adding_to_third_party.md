@@ -65,8 +65,8 @@ Run the following scripts:
 * `src/tools/licenses.py scan` - This will complain about incomplete or missing
   data for third_party checkins. We use 'licenses.py credits' to generate the
   about:credits page in Google Chrome builds.
-* `src/tools/checklicenses/checklicenses.py` - See below for info how to handle
-  possible failures.
+* `src/tools/checklicenses/checklicenses.py` - See below for info on how to
+  handle possible failures.
 * If you are adding code that will be present in the content layer, please make
   sure that the license used is compliant with Android tree requirements because
   this code will also be used in Android WebView. You need to run
