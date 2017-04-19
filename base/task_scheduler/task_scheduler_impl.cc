@@ -57,7 +57,7 @@ size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
 
 // static
 std::unique_ptr<TaskSchedulerImpl> TaskSchedulerImpl::Create(
-    const std::string& name,
+    StringPiece name,
     const TaskScheduler::InitParams& init_params) {
   auto task_scheduler = WrapUnique(new TaskSchedulerImpl(name));
   task_scheduler->Initialize(init_params);
@@ -151,7 +151,7 @@ void TaskSchedulerImpl::JoinForTesting() {
 #endif
 }
 
-TaskSchedulerImpl::TaskSchedulerImpl(const std::string& name)
+TaskSchedulerImpl::TaskSchedulerImpl(StringPiece name)
     : name_(name), service_thread_("TaskSchedulerServiceThread") {}
 
 void TaskSchedulerImpl::Initialize(

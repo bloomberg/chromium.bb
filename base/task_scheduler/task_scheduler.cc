@@ -38,7 +38,7 @@ TaskScheduler::InitParams::~InitParams() = default;
 
 #if !defined(OS_NACL)
 // static
-void TaskScheduler::CreateAndSetSimpleTaskScheduler(const std::string& name) {
+void TaskScheduler::CreateAndSetSimpleTaskScheduler(StringPiece name) {
   using StandbyThreadPolicy = SchedulerWorkerPoolParams::StandbyThreadPolicy;
 
   // Values were chosen so that:
@@ -66,7 +66,7 @@ void TaskScheduler::CreateAndSetSimpleTaskScheduler(const std::string& name) {
 #endif  // !defined(OS_NACL)
 
 void TaskScheduler::CreateAndSetDefaultTaskScheduler(
-    const std::string& name,
+    StringPiece name,
     const InitParams& init_params) {
   SetInstance(internal::TaskSchedulerImpl::Create(name, init_params));
 }

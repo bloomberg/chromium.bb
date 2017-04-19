@@ -6,7 +6,6 @@
 #define BASE_TASK_SCHEDULER_TASK_SCHEDULER_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/base_export.h"
@@ -14,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_traits.h"
@@ -137,7 +137,7 @@ class BASE_EXPORT TaskScheduler {
   // label threads and histograms. It should identify the component that calls
   // this. CHECKs on failure. For tests, prefer base::test::ScopedTaskScheduler
   // (ensures isolation).
-  static void CreateAndSetSimpleTaskScheduler(const std::string& name);
+  static void CreateAndSetSimpleTaskScheduler(StringPiece name);
 #endif  // !defined(OS_NACL)
 
   // Creates and sets a task scheduler using custom params. |name| is used to
@@ -148,7 +148,7 @@ class BASE_EXPORT TaskScheduler {
   //
   // Note: The names and priority hints in |init_params| are ignored (ref. TODO
   // to remove them).
-  static void CreateAndSetDefaultTaskScheduler(const std::string& name,
+  static void CreateAndSetDefaultTaskScheduler(StringPiece name,
                                                const InitParams& init_params);
 
   // Registers |task_scheduler| to handle tasks posted through the post_task.h

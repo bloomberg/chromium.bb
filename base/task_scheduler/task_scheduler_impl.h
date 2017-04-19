@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task_scheduler/scheduler_worker_pool_impl.h"
 #include "base/task_scheduler/sequence.h"
@@ -46,7 +47,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // Note: The names and priority hints in |init_params| are ignored.
   // https://crbug.com/690706
   static std::unique_ptr<TaskSchedulerImpl> Create(
-      const std::string& name,
+      StringPiece name,
       const TaskScheduler::InitParams& init_params);
 
   ~TaskSchedulerImpl() override;
@@ -74,7 +75,7 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   void JoinForTesting() override;
 
  private:
-  explicit TaskSchedulerImpl(const std::string& name);
+  explicit TaskSchedulerImpl(StringPiece name);
 
   void Initialize(const TaskScheduler::InitParams& init_params);
 
