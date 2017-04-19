@@ -19,8 +19,8 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/CoreExport.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/FlexibleArrayBufferView.h"
-#include "core/dom/NotShared.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

@@ -32,6 +32,7 @@
 #
 
 ActiveScriptWrappable
+AllowShared
 CEReactions
 CachedAccessor
 CachedAttribute=*

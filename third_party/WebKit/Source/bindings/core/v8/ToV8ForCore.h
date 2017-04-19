@@ -9,7 +9,7 @@
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include "bindings/core/v8/ToV8.h"
-#include "core/dom/NotShared.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {

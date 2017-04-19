@@ -47,7 +47,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/core/v8/V8ValueCache.h"
 #include "core/CoreExport.h"
-#include "core/dom/NotShared.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringView.h"
@@ -1117,6 +1117,18 @@ NotSharedType ToNotShared(v8::Isolate* isolate,
     return NotSharedType();
   }
   return NotSharedType(dom_typed_array);
+}
+
+// Wrap a typed array value in MaybeShared<>, to signify that it may be backed
+// by a SharedArrayBuffer.
+template <typename MaybeSharedType>
+MaybeSharedType ToMaybeShared(v8::Isolate* isolate,
+                              v8::Local<v8::Value> value,
+                              ExceptionState& exception_state) {
+  using DOMTypedArray = typename MaybeSharedType::TypedArrayType;
+  DOMTypedArray* dom_typed_array =
+      V8TypeOf<DOMTypedArray>::Type::toImplWithTypeCheck(isolate, value);
+  return MaybeSharedType(dom_typed_array);
 }
 
 }  // namespace blink

@@ -30,8 +30,8 @@
 #define AudioBuffer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"

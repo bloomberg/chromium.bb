@@ -6,8 +6,8 @@
 #define PresentationConnection_h
 
 #include <memory>
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/NotShared.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"

@@ -6,7 +6,7 @@
 #define DOMMatrix_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/NotShared.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
 

@@ -31,8 +31,8 @@
 #ifndef MIDIOutput_h
 #define MIDIOutput_h
 
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/NotShared.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace blink {

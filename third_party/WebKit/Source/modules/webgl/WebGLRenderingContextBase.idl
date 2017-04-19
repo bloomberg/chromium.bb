@@ -486,7 +486,7 @@ typedef unrestricted float GLclampf;
     // FIXME: should be union type
     // https://www.khronos.org/bugzilla/show_bug.cgi?id=1172
     void bufferData(GLenum target, GLsizeiptr size, GLenum usage);
-    void bufferData(GLenum target, ArrayBufferView data, GLenum usage);
+    void bufferData(GLenum target, [AllowShared] ArrayBufferView data, GLenum usage);
     void bufferData(GLenum target, ArrayBuffer? data, GLenum usage);
     void bufferSubData(GLenum target, GLintptr offset, [FlexibleArrayBufferView] ArrayBufferView data);
     void bufferSubData(GLenum target, GLintptr offset, ArrayBuffer data);
@@ -500,9 +500,9 @@ typedef unrestricted float GLclampf;
     void compileShader(WebGLShader shader);
 
     void compressedTexImage2D(GLenum target, GLint level, GLenum internalformat,
-                              GLsizei width, GLsizei height, GLint border, ArrayBufferView data);
+                              GLsizei width, GLsizei height, GLint border, [AllowShared] ArrayBufferView data);
     void compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                                 GLsizei width, GLsizei height, GLenum format, ArrayBufferView data);
+                                 GLsizei width, GLsizei height, GLenum format, [AllowShared] ArrayBufferView data);
 
     void copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
     void copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
@@ -595,7 +595,7 @@ typedef unrestricted float GLclampf;
     void pixelStorei(GLenum pname, GLint param);
     void polygonOffset(GLfloat factor, GLfloat units);
 
-    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, ArrayBufferView? pixels);
+    void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, [AllowShared] ArrayBufferView? pixels);
 
     void renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
     void sampleCoverage(GLclampf value, GLboolean invert);
@@ -617,7 +617,7 @@ typedef unrestricted float GLclampf;
     void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLsizei width, GLsizei height, GLint border,
-        GLenum format, GLenum type, ArrayBufferView? pixels);
+        GLenum format, GLenum type, [AllowShared] ArrayBufferView? pixels);
     void texImage2D(
         GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, ImageData pixels);
@@ -637,7 +637,7 @@ typedef unrestricted float GLclampf;
     void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLsizei width, GLsizei height,
-        GLenum format, GLenum type, ArrayBufferView? pixels);
+        GLenum format, GLenum type, [AllowShared] ArrayBufferView? pixels);
     void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, ImageData pixels);
@@ -679,27 +679,27 @@ typedef unrestricted float GLclampf;
     void uniform4iv(WebGLUniformLocation? location, [FlexibleArrayBufferView] Int32Array v);
     void uniform4iv(WebGLUniformLocation? location, sequence<GLint> v);
 
-    void uniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, Float32Array array);
+    void uniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, [AllowShared] Float32Array array);
     void uniformMatrix2fv(WebGLUniformLocation? location, GLboolean transpose, sequence<GLfloat> array);
-    void uniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, Float32Array array);
+    void uniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, [AllowShared] Float32Array array);
     void uniformMatrix3fv(WebGLUniformLocation? location, GLboolean transpose, sequence<GLfloat> array);
-    void uniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, Float32Array array);
+    void uniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, [AllowShared] Float32Array array);
     void uniformMatrix4fv(WebGLUniformLocation? location, GLboolean transpose, sequence<GLfloat> array);
 
     void useProgram(WebGLProgram? program);
     void validateProgram(WebGLProgram program);
 
     void vertexAttrib1f(GLuint indx, GLfloat x);
-    void vertexAttrib1fv(GLuint indx, Float32Array values);
+    void vertexAttrib1fv(GLuint indx, [AllowShared] Float32Array values);
     void vertexAttrib1fv(GLuint indx, sequence<GLfloat> values);
     void vertexAttrib2f(GLuint indx, GLfloat x, GLfloat y);
-    void vertexAttrib2fv(GLuint indx, Float32Array values);
+    void vertexAttrib2fv(GLuint indx, [AllowShared] Float32Array values);
     void vertexAttrib2fv(GLuint indx, sequence<GLfloat> values);
     void vertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z);
-    void vertexAttrib3fv(GLuint indx, Float32Array values);
+    void vertexAttrib3fv(GLuint indx, [AllowShared] Float32Array values);
     void vertexAttrib3fv(GLuint indx, sequence<GLfloat> values);
     void vertexAttrib4f(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void vertexAttrib4fv(GLuint indx, Float32Array values);
+    void vertexAttrib4fv(GLuint indx, [AllowShared] Float32Array values);
     void vertexAttrib4fv(GLuint indx, sequence<GLfloat> values);
     void vertexAttribPointer(GLuint indx, GLint size, GLenum type, GLboolean normalized,
                                                     GLsizei stride, GLintptr offset);

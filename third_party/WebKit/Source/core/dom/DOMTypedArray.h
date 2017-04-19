@@ -68,6 +68,7 @@ class CORE_TEMPLATE_CLASS_EXPORT DOMTypedArray final
   }
 
   ValueType* Data() const { return View()->Data(); }
+  ValueType* DataMaybeShared() const { return View()->DataMaybeShared(); }
   unsigned length() const { return View()->length(); }
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.

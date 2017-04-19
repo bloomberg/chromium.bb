@@ -297,6 +297,8 @@ interface TestObject {
     void voidMethodFloat32ArrayArg(Float32Array float32ArrayArg);
     void voidMethodInt32ArrayArg(Int32Array int32ArrayArg);
     void voidMethodUint8ArrayArg(Uint8Array uint8ArrayArg);
+    void voidMethodAllowSharedArrayBufferViewArg([AllowShared] ArrayBufferView arrayBufferViewArg);
+    void voidMethodAllowSharedUint8ArrayArg([AllowShared] Uint8Array uint8ArrayArg);
     // Arrays
     long[] longArrayMethod();
     DOMString[] stringArrayMethod();

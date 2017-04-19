@@ -32,6 +32,7 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/modules/v8/HTMLCanvasElementOrOffscreenCanvas.h"
 #include "bindings/modules/v8/WebGLAny.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExecutionContext.h"
@@ -1904,13 +1905,13 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target,
-                                           NotShared<DOMArrayBufferView> data,
+                                           MaybeShared<DOMArrayBufferView> data,
                                            GLenum usage) {
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferDataImpl(target, data.View()->byteLength(), data.View()->BaseAddress(),
-                 usage);
+  BufferDataImpl(target, data.View()->byteLength(),
+                 data.View()->BaseAddressMaybeShared(), usage);
 }
 
 void WebGLRenderingContextBase::BufferSubDataImpl(GLenum target,
@@ -2084,7 +2085,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(
     GLsizei width,
     GLsizei height,
     GLint border,
-    NotShared<DOMArrayBufferView> data) {
+    MaybeShared<DOMArrayBufferView> data) {
   if (isContextLost())
     return;
   if (!ValidateTexture2DBinding("compressedTexImage2D", target))
@@ -2093,7 +2094,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(
     return;
   ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
                                     height, border, data.View()->byteLength(),
-                                    data.View()->BaseAddress());
+                                    data.View()->BaseAddressMaybeShared());
 }
 
 void WebGLRenderingContextBase::compressedTexSubImage2D(
@@ -2104,7 +2105,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
     GLsizei width,
     GLsizei height,
     GLenum format,
-    NotShared<DOMArrayBufferView> data) {
+    MaybeShared<DOMArrayBufferView> data) {
   if (isContextLost())
     return;
   if (!ValidateTexture2DBinding("compressedTexSubImage2D", target))
@@ -2113,7 +2114,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
     return;
   ContextGL()->CompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format,
-      data.View()->byteLength(), data.View()->BaseAddress());
+      data.View()->byteLength(), data.View()->BaseAddressMaybeShared());
 }
 
 bool WebGLRenderingContextBase::ValidateSettableTexFormat(
@@ -4116,7 +4117,7 @@ void WebGLRenderingContextBase::readPixels(
     GLsizei height,
     GLenum format,
     GLenum type,
-    NotShared<DOMArrayBufferView> pixels) {
+    MaybeShared<DOMArrayBufferView> pixels) {
   ReadPixelsHelper(x, y, width, height, format, type, pixels.View(), 0);
 }
 
@@ -4166,7 +4167,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     return;
   }
   ClearIfComposited();
-  uint8_t* data = static_cast<uint8_t*>(pixels->BaseAddress()) +
+  uint8_t* data = static_cast<uint8_t*>(pixels->BaseAddressMaybeShared()) +
                   offset_in_bytes.ValueOrDie();
   {
     ScopedDrawingBufferBinder binder(GetDrawingBuffer(), framebuffer);
@@ -4682,7 +4683,7 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
                            format, type, pixels, null_disposition, src_offset))
     return;
   uint8_t* data =
-      reinterpret_cast<uint8_t*>(pixels ? pixels->BaseAddress() : 0);
+      reinterpret_cast<uint8_t*>(pixels ? pixels->BaseAddressMaybeShared() : 0);
   if (src_offset) {
     DCHECK(pixels);
     // No need to check overflow because validateTexFuncData() already did.
@@ -4733,7 +4734,7 @@ void WebGLRenderingContextBase::texImage2D(
     GLint border,
     GLenum format,
     GLenum type,
-    NotShared<DOMArrayBufferView> pixels) {
+    MaybeShared<DOMArrayBufferView> pixels) {
   TexImageHelperDOMArrayBufferView(kTexImage2D, target, level, internalformat,
                                    width, height, 1, border, format, type, 0, 0,
                                    0, pixels.View(), kNullAllowed, 0);
@@ -5600,7 +5601,7 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLsizei height,
     GLenum format,
     GLenum type,
-    NotShared<DOMArrayBufferView> pixels) {
+    MaybeShared<DOMArrayBufferView> pixels) {
   TexImageHelperDOMArrayBufferView(kTexSubImage2D, target, level, 0, width,
                                    height, 1, 0, format, type, xoffset, yoffset,
                                    0, pixels.View(), kNullNotAllowed, 0);
@@ -5966,13 +5967,13 @@ void WebGLRenderingContextBase::uniform4iv(const WebGLUniformLocation* location,
 void WebGLRenderingContextBase::uniformMatrix2fv(
     const WebGLUniformLocation* location,
     GLboolean transpose,
-    NotShared<DOMFloat32Array> v) {
+    MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix2fv", location, transpose,
                                        v.View(), 4, 0, v.View()->length()))
     return;
   ContextGL()->UniformMatrix2fv(location->Location(), v.View()->length() >> 2,
-                                transpose, v.View()->Data());
+                                transpose, v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix2fv(
@@ -5990,13 +5991,13 @@ void WebGLRenderingContextBase::uniformMatrix2fv(
 void WebGLRenderingContextBase::uniformMatrix3fv(
     const WebGLUniformLocation* location,
     GLboolean transpose,
-    NotShared<DOMFloat32Array> v) {
+    MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix3fv", location, transpose,
                                        v.View(), 9, 0, v.View()->length()))
     return;
   ContextGL()->UniformMatrix3fv(location->Location(), v.View()->length() / 9,
-                                transpose, v.View()->Data());
+                                transpose, v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix3fv(
@@ -6014,13 +6015,13 @@ void WebGLRenderingContextBase::uniformMatrix3fv(
 void WebGLRenderingContextBase::uniformMatrix4fv(
     const WebGLUniformLocation* location,
     GLboolean transpose,
-    NotShared<DOMFloat32Array> v) {
+    MaybeShared<DOMFloat32Array> v) {
   if (isContextLost() ||
       !ValidateUniformMatrixParameters("uniformMatrix4fv", location, transpose,
                                        v.View(), 16, 0, v.View()->length()))
     return;
   ContextGL()->UniformMatrix4fv(location->Location(), v.View()->length() >> 4,
-                                transpose, v.View()->Data());
+                                transpose, v.View()->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::uniformMatrix4fv(
@@ -6078,14 +6079,14 @@ void WebGLRenderingContextBase::vertexAttrib1f(GLuint index, GLfloat v0) {
 
 void WebGLRenderingContextBase::vertexAttrib1fv(
     GLuint index,
-    NotShared<const DOMFloat32Array> v) {
+    MaybeShared<const DOMFloat32Array> v) {
   if (isContextLost())
     return;
   if (!v.View() || v.View()->length() < 1) {
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttrib1fv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttrib1fv(index, v.View()->Data());
+  ContextGL()->VertexAttrib1fv(index, v.View()->DataMaybeShared());
   SetVertexAttribType(index, kFloat32ArrayType);
 }
 
@@ -6112,14 +6113,14 @@ void WebGLRenderingContextBase::vertexAttrib2f(GLuint index,
 
 void WebGLRenderingContextBase::vertexAttrib2fv(
     GLuint index,
-    NotShared<const DOMFloat32Array> v) {
+    MaybeShared<const DOMFloat32Array> v) {
   if (isContextLost())
     return;
   if (!v.View() || v.View()->length() < 2) {
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttrib2fv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttrib2fv(index, v.View()->Data());
+  ContextGL()->VertexAttrib2fv(index, v.View()->DataMaybeShared());
   SetVertexAttribType(index, kFloat32ArrayType);
 }
 
@@ -6147,14 +6148,14 @@ void WebGLRenderingContextBase::vertexAttrib3f(GLuint index,
 
 void WebGLRenderingContextBase::vertexAttrib3fv(
     GLuint index,
-    NotShared<const DOMFloat32Array> v) {
+    MaybeShared<const DOMFloat32Array> v) {
   if (isContextLost())
     return;
   if (!v.View() || v.View()->length() < 3) {
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttrib3fv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttrib3fv(index, v.View()->Data());
+  ContextGL()->VertexAttrib3fv(index, v.View()->DataMaybeShared());
   SetVertexAttribType(index, kFloat32ArrayType);
 }
 
@@ -6183,14 +6184,14 @@ void WebGLRenderingContextBase::vertexAttrib4f(GLuint index,
 
 void WebGLRenderingContextBase::vertexAttrib4fv(
     GLuint index,
-    NotShared<const DOMFloat32Array> v) {
+    MaybeShared<const DOMFloat32Array> v) {
   if (isContextLost())
     return;
   if (!v.View() || v.View()->length() < 4) {
     SynthesizeGLError(GL_INVALID_VALUE, "vertexAttrib4fv", "invalid array");
     return;
   }
-  ContextGL()->VertexAttrib4fv(index, v.View()->Data());
+  ContextGL()->VertexAttrib4fv(index, v.View()->DataMaybeShared());
   SetVertexAttribType(index, kFloat32ArrayType);
 }
 
@@ -7245,7 +7246,7 @@ bool WebGLRenderingContextBase::ValidateUniformMatrixParameters(
     return false;
   }
   return ValidateUniformMatrixParameters(
-      function_name, location, transpose, v->Data(), v->length(),
+      function_name, location, transpose, v->DataMaybeShared(), v->length(),
       required_min_size, src_offset, src_length);
 }
 

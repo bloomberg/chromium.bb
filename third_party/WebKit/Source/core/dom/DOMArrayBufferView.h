@@ -69,6 +69,10 @@ class CORE_EXPORT DOMArrayBufferView
   void SetNeuterable(bool flag) { return View()->SetNeuterable(flag); }
   bool IsShared() const { return View()->IsShared(); }
 
+  void* BaseAddressMaybeShared() const {
+    return View()->BaseAddressMaybeShared();
+  }
+
   v8::Local<v8::Object> Wrap(v8::Isolate*,
                              v8::Local<v8::Object> creation_context) override {
     NOTREACHED();

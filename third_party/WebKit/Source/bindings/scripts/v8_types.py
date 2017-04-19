@@ -210,7 +210,10 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return 'Flexible' + base_idl_type + 'View'
     if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
         if not used_in_cpp_sequence:
-            return cpp_template_type('NotShared', idl_type.implemented_as)
+            if 'AllowShared' in extended_attributes:
+                return cpp_template_type('MaybeShared', idl_type.implemented_as)
+            else:
+                return cpp_template_type('NotShared', idl_type.implemented_as)
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
         if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected) or not used_in_cpp_sequence:
@@ -352,7 +355,7 @@ IdlRecordType.is_traceable = property(
 INCLUDES_FOR_TYPE = {
     'object': set(),
     'ArrayBufferView': set(['bindings/core/v8/V8ArrayBufferView.h',
-                            'core/dom/NotShared.h',
+                            'core/dom/ArrayBufferViewHelpers.h',
                             'core/dom/FlexibleArrayBufferView.h']),
     'Dictionary': set(['bindings/core/v8/Dictionary.h']),
     'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
@@ -472,7 +475,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
     if idl_type.is_array_buffer_view_or_typed_array:
-        return set(['core/dom/DOMTypedArray.h', 'core/dom/NotShared.h'])
+        return set(['core/dom/DOMTypedArray.h', 'core/dom/ArrayBufferViewHelpers.h'])
     return includes_for_type
 
 
@@ -593,6 +596,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
             raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
         base_idl_type = 'FlexibleArrayBufferView'
 
+    if 'AllowShared' in extended_attributes and not idl_type.is_array_buffer_view_or_typed_array:
+        raise ValueError("Unrecognized base type for extended attribute 'AllowShared': %s" % (idl_type.base_type))
+
     if idl_type.is_integer_type:
         configuration = 'kNormalConversion'
         if 'EnforceRange' in extended_attributes:
@@ -612,8 +618,12 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Local<v8::{idl_type}>::Cast({v8_value})) : 0')
     elif idl_type.is_array_buffer_view_or_typed_array:
-        this_cpp_type = idl_type.cpp_type
-        cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
+        this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes)
+        if 'AllowShared' in extended_attributes:
+            cpp_expression_format = ('ToMaybeShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
+        else:
+            cpp_expression_format = ('ToNotShared<%s>({isolate}, {v8_value}, exceptionState)' % this_cpp_type)
+
     elif idl_type.is_union_type:
         nullable = 'UnionTypeConversionMode::kNullable' if idl_type.includes_nullable_type \
             else 'UnionTypeConversionMode::kNotNullable'

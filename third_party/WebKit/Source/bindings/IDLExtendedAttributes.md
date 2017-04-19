@@ -1425,6 +1425,21 @@ The FlexibleArrayBufferView itself can then either refer to an actual ArrayBuffe
 
 Usage: Applies to arguments of methods. See modules/webgl/WebGLRenderingContextBase.idl for an example.
 
+### [AllowShared] _(p)_
+
+Summary: `[AllowShared]` indicates that a parameter, which must be an ArrayBufferView (or subtype of, e.g. typed arrays), is allowed to be backed by a SharedArrayBuffer.
+
+Usage: `[AllowShared]` must be specified on a parameter to a method:
+
+```webidl
+interface Context {
+    void bufferData1([AllowShared] ArrayBufferView buffer);
+    void bufferData2([AllowShared] Float32Array buffer);
+}
+```
+
+A SharedArrayBuffer is a distinct type from an ArrayBuffer, but both types use ArrayBufferViews to view the data in the buffer. Most methods do not permit an ArrayBufferView that is backed by a SharedArrayBuffer, and will throw an exception. This attribute indicates that this method permits a shared ArrayBufferView.
+
 ### [PermissiveDictionaryConversion] _(p, d)_
 
 Summary: `[PermissiveDictionaryConversion]` relaxes the rules about what types of values may be passed for an argument of dictionary type.

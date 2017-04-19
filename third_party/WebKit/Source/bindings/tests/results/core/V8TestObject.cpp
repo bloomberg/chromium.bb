@@ -57,11 +57,11 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8XPathNSResolver.h"
 #include "core/HTMLNames.h"
+#include "core/dom/ArrayBufferViewHelpers.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/FlexibleArrayBufferView.h"
-#include "core/dom/NotShared.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/frame/Deprecation.h"
@@ -4876,6 +4876,52 @@ static void voidMethodUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Val
   }
 
   impl->voidMethodUint8ArrayArg(uint8ArrayArg);
+}
+
+static void voidMethodAllowSharedArrayBufferViewArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodAllowSharedArrayBufferViewArg");
+
+  TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  MaybeShared<TestArrayBufferView> arrayBufferViewArg;
+  arrayBufferViewArg = ToMaybeShared<MaybeShared<TestArrayBufferView>>(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+  if (!arrayBufferViewArg) {
+    exceptionState.ThrowTypeError("parameter 1 is not of type 'ArrayBufferView'.");
+
+    return;
+  }
+
+  impl->voidMethodAllowSharedArrayBufferViewArg(arrayBufferViewArg);
+}
+
+static void voidMethodAllowSharedUint8ArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodAllowSharedUint8ArrayArg");
+
+  TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  MaybeShared<DOMUint8Array> uint8ArrayArg;
+  uint8ArrayArg = ToMaybeShared<MaybeShared<DOMUint8Array>>(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+  if (!uint8ArrayArg) {
+    exceptionState.ThrowTypeError("parameter 1 is not of type 'Uint8Array'.");
+
+    return;
+  }
+
+  impl->voidMethodAllowSharedUint8ArrayArg(uint8ArrayArg);
 }
 
 static void longArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -11001,6 +11047,14 @@ void V8TestObject::voidMethodUint8ArrayArgMethodCallback(const v8::FunctionCallb
   TestObjectV8Internal::voidMethodUint8ArrayArgMethod(info);
 }
 
+void V8TestObject::voidMethodAllowSharedArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::voidMethodAllowSharedArrayBufferViewArgMethod(info);
+}
+
+void V8TestObject::voidMethodAllowSharedUint8ArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::voidMethodAllowSharedUint8ArrayArgMethod(info);
+}
+
 void V8TestObject::longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::longArrayMethodMethod(info);
 }
@@ -12076,6 +12130,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodFloat32ArrayArg", V8TestObject::voidMethodFloat32ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodInt32ArrayArg", V8TestObject::voidMethodInt32ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodUint8ArrayArg", V8TestObject::voidMethodUint8ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodAllowSharedArrayBufferViewArg", V8TestObject::voidMethodAllowSharedArrayBufferViewArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodAllowSharedUint8ArrayArg", V8TestObject::voidMethodAllowSharedUint8ArrayArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"longArrayMethod", V8TestObject::longArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"stringArrayMethod", V8TestObject::stringArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"testInterfaceEmptyArrayMethod", V8TestObject::testInterfaceEmptyArrayMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
