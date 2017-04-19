@@ -403,8 +403,6 @@ void InspectorOverlay::ScheduleUpdate() {
   needs_update_ = true;
   LocalFrame* frame = frame_impl_->GetFrame();
   if (frame) {
-    // TODO(joelhockey): Remove this check once all tests pass.
-    CHECK(frame_impl_->GetFrameView());
     frame->GetPage()->GetChromeClient().ScheduleAnimation(frame);
   }
 }
