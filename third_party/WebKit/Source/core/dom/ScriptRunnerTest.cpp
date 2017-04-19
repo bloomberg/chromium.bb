@@ -4,8 +4,7 @@
 
 #include "core/dom/ScriptRunner.h"
 
-#include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
-#include "core/dom/Document.h"
+#include "core/dom/MockScriptElementBase.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -21,47 +20,6 @@ using ::testing::WhenSorted;
 using ::testing::ElementsAreArray;
 
 namespace blink {
-
-class MockScriptElementBase
-    : public GarbageCollectedFinalized<MockScriptElementBase>,
-      public ScriptElementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScriptElementBase);
-
- public:
-  static MockScriptElementBase* Create() {
-    return new testing::StrictMock<MockScriptElementBase>();
-  }
-
-  MOCK_METHOD0(DispatchLoadEvent, void());
-  MOCK_METHOD0(DispatchErrorEvent, void());
-  MOCK_CONST_METHOD0(AsyncAttributeValue, bool());
-  MOCK_CONST_METHOD0(CharsetAttributeValue, String());
-  MOCK_CONST_METHOD0(CrossOriginAttributeValue, String());
-  MOCK_CONST_METHOD0(DeferAttributeValue, bool());
-  MOCK_CONST_METHOD0(EventAttributeValue, String());
-  MOCK_CONST_METHOD0(ForAttributeValue, String());
-  MOCK_CONST_METHOD0(IntegrityAttributeValue, String());
-  MOCK_CONST_METHOD0(LanguageAttributeValue, String());
-  MOCK_CONST_METHOD0(SourceAttributeValue, String());
-  MOCK_CONST_METHOD0(TypeAttributeValue, String());
-
-  MOCK_METHOD0(TextFromChildren, String());
-  MOCK_CONST_METHOD0(TextContent, String());
-  MOCK_CONST_METHOD0(HasSourceAttribute, bool());
-  MOCK_CONST_METHOD0(IsConnected, bool());
-  MOCK_CONST_METHOD0(HasChildren, bool());
-  MOCK_CONST_METHOD0(IsNonceableElement, bool());
-  MOCK_CONST_METHOD0(InitiatorName, AtomicString());
-  MOCK_METHOD3(AllowInlineScriptForCSP,
-               bool(const AtomicString&,
-                    const WTF::OrdinalNumber&,
-                    const String&));
-  MOCK_CONST_METHOD0(GetDocument, Document&());
-  MOCK_METHOD1(SetScriptElementForBinding,
-               void(HTMLScriptElementOrSVGScriptElement&));
-
-  DEFINE_INLINE_VIRTUAL_TRACE() { ScriptElementBase::Trace(visitor); }
-};
 
 class MockScriptLoader final : public ScriptLoader {
  public:

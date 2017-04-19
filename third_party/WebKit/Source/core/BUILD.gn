@@ -1185,6 +1185,7 @@ source_set("unit_tests") {
     "dom/ExecutionContextTaskTest.cpp",
     "dom/IdleDeadlineTest.cpp",
     "dom/LayoutTreeBuilderTraversalTest.cpp",
+    "dom/MockScriptElementBase.h",
     "dom/ModulatorTest.cpp",
     "dom/ModuleMapTest.cpp",
     "dom/MutationObserverTest.cpp",
