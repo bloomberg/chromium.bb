@@ -648,8 +648,6 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
     behavior_options |= PROCESS_STARTUP;
   if (is_post_crash_launch)
     behavior_options |= IS_POST_CRASH_LAUNCH;
-  if (command_line_.HasSwitch(switches::kRestoreLastSession))
-    behavior_options |= HAS_RESTORE_SWITCH;
   if (command_line_.HasSwitch(switches::kOpenInNewWindow))
     behavior_options |= HAS_NEW_WINDOW_SWITCH;
   if (!cmd_line_tabs.empty())
@@ -883,8 +881,8 @@ StartupBrowserCreatorImpl::DetermineBrowserOpenBehavior(
 
   if (pref.type == SessionStartupPref::LAST) {
     // Don't perform a session restore on a post-crash launch, as this could
-    // cause a crash loop. These checks can be overridden by a switch.
-    if (!(options & IS_POST_CRASH_LAUNCH) || (options & HAS_RESTORE_SWITCH))
+    // cause a crash loop.
+    if (!(options & IS_POST_CRASH_LAUNCH))
       return BrowserOpenBehavior::SYNCHRONOUS_RESTORE;
   }
 

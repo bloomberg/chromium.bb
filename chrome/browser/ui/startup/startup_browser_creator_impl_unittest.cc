@@ -253,12 +253,6 @@ TEST(StartupBrowserCreatorImplTest, DetermineBrowserOpenBehavior_PostCrash) {
   Creator::BrowserOpenBehavior output = Creator::DetermineBrowserOpenBehavior(
       pref_last, Creator::PROCESS_STARTUP | Creator::IS_POST_CRASH_LAUNCH);
   EXPECT_EQ(Creator::BrowserOpenBehavior::NEW, output);
-
-  // Exception: this can be overridden by passing a switch.
-  output = Creator::DetermineBrowserOpenBehavior(
-      pref_last, Creator::PROCESS_STARTUP | Creator::IS_POST_CRASH_LAUNCH |
-                     Creator::HAS_RESTORE_SWITCH);
-  EXPECT_EQ(Creator::BrowserOpenBehavior::SYNCHRONOUS_RESTORE, output);
 }
 
 TEST(StartupBrowserCreatorImplTest, DetermineBrowserOpenBehavior_NotStartup) {

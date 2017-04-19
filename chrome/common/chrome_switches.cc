@@ -746,7 +746,10 @@ const char kQuicVersion[] = "quic-version";
 const char kRemoteDebuggingTargets[] = "remote-debugging-targets";
 
 // Indicates the last session should be restored on startup. This overrides the
-// preferences value.
+// preferences value. Note that this does not force automatic session restore
+// following a crash, so as to prevent a crash loop. This switch is used to
+// implement support for OS-specific "continue where you left off" functionality
+// on OS X and Windows.
 const char kRestoreLastSession[]            = "restore-last-session";
 
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete

@@ -98,11 +98,10 @@ class StartupBrowserCreatorImpl {
 
   // Boolean flags used to indicate state for DetermineBrowserOpenBehavior.
   enum BehaviorFlags {
-    PROCESS_STARTUP       = (1 << 0),
-    IS_POST_CRASH_LAUNCH  = (1 << 1),
-    HAS_RESTORE_SWITCH    = (1 << 2),
-    HAS_NEW_WINDOW_SWITCH = (1 << 3),
-    HAS_CMD_LINE_TABS     = (1 << 4),
+    PROCESS_STARTUP = (1 << 0),
+    IS_POST_CRASH_LAUNCH = (1 << 1),
+    HAS_NEW_WINDOW_SWITCH = (1 << 2),
+    HAS_CMD_LINE_TABS = (1 << 3),
   };
 
   using BrowserOpenBehaviorOptions = uint32_t;
