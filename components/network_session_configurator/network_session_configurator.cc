@@ -134,12 +134,6 @@ net::QuicTagVector GetQuicConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
-bool ShouldQuicEnableNonBlockingIO(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_non_blocking_io"), "true");
-}
-
 bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
@@ -273,8 +267,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
 
   if (params->enable_quic) {
-    params->quic_enable_non_blocking_io =
-        ShouldQuicEnableNonBlockingIO(quic_trial_params);
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);

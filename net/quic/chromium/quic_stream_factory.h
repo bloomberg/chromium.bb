@@ -207,7 +207,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       size_t max_packet_length,
       const std::string& user_agent_id,
       const QuicVersionVector& supported_versions,
-      bool enable_non_blocking_io,
       bool store_server_configs_in_properties,
       bool close_sessions_on_ip_change,
       bool mark_quic_broken_when_network_blackholes,
@@ -524,9 +523,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CertVerifierJobMap active_cert_verifier_jobs_;
 
   const QuicVersionVector supported_versions_;
-
-  // Set if experimental non-blocking IO should be used on windows sockets.
-  bool enable_non_blocking_io_;
 
   // True if QUIC should be marked as broken when a connection blackholes after
   // the handshake is confirmed.

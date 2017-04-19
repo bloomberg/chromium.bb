@@ -122,8 +122,6 @@ class NET_EXPORT HttpNetworkSession
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
-    // Use non-blocking IO for UDP sockets.
-    bool quic_enable_non_blocking_io;
     // Maximum number of server configs that are to be stored in
     // HttpServerProperties, instead of the disk cache.
     size_t quic_max_server_configs_stored_in_properties;

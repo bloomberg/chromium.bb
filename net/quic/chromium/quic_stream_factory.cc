@@ -655,7 +655,6 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
-    bool enable_non_blocking_io,
     bool store_server_configs_in_properties,
     bool close_sessions_on_ip_change,
     bool mark_quic_broken_when_network_blackholes,
@@ -694,7 +693,6 @@ QuicStreamFactory::QuicStreamFactory(
                                     transport_security_state,
                                     cert_transparency_verifier))),
       supported_versions_(supported_versions),
-      enable_non_blocking_io_(enable_non_blocking_io),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),
@@ -1424,8 +1422,7 @@ bool QuicStreamFactory::HasActiveCertVerifierJob(
 int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
                                        IPEndPoint addr,
                                        NetworkHandle network) {
-  if (enable_non_blocking_io_)
-    socket->UseNonBlockingIO();
+  socket->UseNonBlockingIO();
 
   int rv;
   if (migrate_sessions_on_network_change_) {

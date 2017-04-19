@@ -191,7 +191,6 @@ class QuicStreamFactoryTestBase {
         url3_(kServer3Url),
         url4_(kServer4Url),
         privacy_mode_(PRIVACY_MODE_DISABLED),
-        enable_non_blocking_io_(true),
         store_server_configs_in_properties_(false),
         close_sessions_on_ip_change_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
@@ -217,8 +216,7 @@ class QuicStreamFactoryTestBase {
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, &clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
-        enable_non_blocking_io_, store_server_configs_in_properties_,
-        close_sessions_on_ip_change_,
+        store_server_configs_in_properties_, close_sessions_on_ip_change_,
         /*mark_quic_broken_when_network_blackholes*/ false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         packet_reader_yield_after_duration_milliseconds_,
@@ -737,7 +735,6 @@ class QuicStreamFactoryTestBase {
   TestCompletionCallback callback_;
 
   // Variables to configure QuicStreamFactory.
-  bool enable_non_blocking_io_;
   bool store_server_configs_in_properties_;
   bool close_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;

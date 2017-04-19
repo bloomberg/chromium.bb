@@ -71,7 +71,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
-  EXPECT_FALSE(params_.quic_enable_non_blocking_io);
   EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
@@ -334,17 +333,6 @@ TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
   expected_settings[static_cast<net::SpdySettingsIds>(7)] = 1234;
   expected_settings[static_cast<net::SpdySettingsIds>(25)] = 5678;
   EXPECT_EQ(expected_settings, params_.http2_settings);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicEnableNonBlockingIO) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["enable_non_blocking_io"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_enable_non_blocking_io);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {
