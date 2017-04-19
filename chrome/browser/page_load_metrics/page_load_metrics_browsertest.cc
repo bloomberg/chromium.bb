@@ -479,7 +479,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, BadXhtml) {
+// TODO(crbug.com/712935): Flaky on Linux dbg.
+#if defined(OS_LINUX) && !defined(NDEBUG)
+#define MAYBE_BadXhtml DISABLED_BadXhtml
+#else
+#define MAYBE_BadXhtml BadXhtml
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   scoped_refptr<TimingUpdatedObserver> timing_observer =
