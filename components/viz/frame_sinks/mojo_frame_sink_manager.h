@@ -46,7 +46,7 @@ class VIZ_EXPORT MojoFrameSinkManager
 
   cc::SurfaceManager* surface_manager() { return &manager_; }
 
-  // cc::mojom::MojoFrameSinkManager implementation:
+  // cc::mojom::FrameSinkManager implementation:
   void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
