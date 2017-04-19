@@ -390,6 +390,14 @@ class CBuildBotTest(ChromeosConfigTestBase):
             'Build %s runs image_test but does not have base image' %
             build_name)
 
+  def testDisableHWQualWithoutTestImage(self):
+    """Don't run steps that need a test image, without a test image."""
+    for build_name, config in self.site_config.iteritems():
+      if config.hwqual and config.upload_hw_test_artifacts:
+        self.assertIn('test', config.images,
+                      'Build %s must create a test image '
+                      'to enable hwqual' % build_name)
+
   def testBuildType(self):
     """Verifies that all configs use valid build types."""
     for build_name, config in self.site_config.iteritems():

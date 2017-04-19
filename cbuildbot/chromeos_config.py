@@ -1513,6 +1513,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'firmware_base',
       site_config.templates.no_vmtest_builder,
       images=[],
+      hwqual=False,
       factory_toolkit=False,
       packages=['virtual/chromeos-firmware', 'chromeos-base/autotest-all'],
       usepkg_build_packages=True,
