@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -105,6 +106,15 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   void RequestUpdateCheck(const UpdateCheckCallback& callback) override {
+    if (!service_available_) {
+      // TODO(alemate): we probably need to remember callbacks only.
+      // When service becomes available, we can do a single request,
+      // and trigger all callbacks with the same return value.
+      pending_tasks_.push_back(
+          base::Bind(&UpdateEngineClientImpl::RequestUpdateCheck,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+      return;
+    }
     dbus::MethodCall method_call(
         update_engine::kUpdateEngineInterface,
         update_engine::kAttemptUpdate);
@@ -255,6 +265,13 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
  private:
   void OnServiceInitiallyAvailable(bool service_is_available) {
     if (service_is_available) {
+      service_available_ = true;
+      std::vector<base::Closure> callbacks;
+      callbacks.swap(pending_tasks_);
+      for (const auto& callback : callbacks) {
+        callback.Run();
+      }
+
       // Get update engine status for the initial status. Update engine won't
       // send StatusUpdate signal unless there is a status change. If chrome
       // crashes after UPDATE_STATUS_UPDATED_NEED_REBOOT status is set,
@@ -262,6 +279,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       GetUpdateEngineStatus();
     } else {
       LOG(ERROR) << "Failed to wait for D-Bus service to become available";
+      pending_tasks_.clear();
     }
   }
 
@@ -481,6 +499,13 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   dbus::ObjectProxy* update_engine_proxy_;
   base::ObserverList<Observer> observers_;
   Status last_status_;
+
+  // True after update_engine's D-Bus service has become available.
+  bool service_available_ = false;
+
+  // This is a list of postponed calls to update engine to be called
+  // after it becomes available.
+  std::vector<base::Closure> pending_tasks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
