@@ -674,7 +674,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ClearCurrentlyScrollingNode();
 
-  LayerImpl* FindScrollLayerForDeviceViewportPoint(
+  ScrollNode* FindScrollNodeForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
       InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,

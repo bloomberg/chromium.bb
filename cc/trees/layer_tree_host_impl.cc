@@ -575,21 +575,20 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
 
   bool scroll_on_main_thread = false;
   uint32_t main_thread_scrolling_reasons;
-  LayerImpl* test_layer_impl = FindScrollLayerForDeviceViewportPoint(
+  auto* test_scroll_node = FindScrollNodeForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread,
       &main_thread_scrolling_reasons);
 
   if (scroll_on_main_thread)
     return false;
 
-  int test_scroll_tree_index = test_layer_impl->scroll_tree_index();
-  if (scrolling_node->id == test_scroll_tree_index)
+  if (scrolling_node == test_scroll_node)
     return true;
 
   // For active scrolling state treat the inner/outer viewports interchangeably.
   if (scrolling_node->scrolls_inner_viewport ||
       scrolling_node->scrolls_outer_viewport) {
-    return test_layer_impl == viewport()->MainScrollLayer();
+    return test_scroll_node == OuterViewportScrollNode();
   }
 
   return false;
@@ -2626,7 +2625,7 @@ static bool IsMainThreadScrolling(const InputHandler::ScrollStatus& status,
   return false;
 }
 
-LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
+ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     const gfx::PointF& device_viewport_point,
     InputHandler::ScrollInputType type,
     LayerImpl* layer_impl,
@@ -2651,7 +2650,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       if (IsMainThreadScrolling(status, scroll_node)) {
         *scroll_on_main_thread = true;
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-        return active_tree_->LayerById(scroll_node->owning_layer_id);
+        return scroll_node;
       }
 
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
@@ -2681,11 +2680,7 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     }
   }
 
-  // TODO(pdr): Refactor this function to directly return |impl_scroll_node|
-  // instead of using ScrollNode's owning_layer_id to return a LayerImpl.
-  if (!impl_scroll_node)
-    return nullptr;
-  return active_tree_->LayerById(impl_scroll_node->owning_layer_id);
+  return impl_scroll_node;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
@@ -2770,13 +2765,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    auto* scrolling_layer = FindScrollLayerForDeviceViewportPoint(
+    scrolling_node = FindScrollNodeForDeviceViewportPoint(
         device_viewport_point, type, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
-    ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-    scrolling_node =
-        scrolling_layer ? scroll_tree.Node(scrolling_layer->scroll_tree_index())
-                        : nullptr;
   }
 
   if (scroll_on_main_thread) {
@@ -3418,44 +3409,44 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
 
   // Check if mouse is over a scrollbar or not.
   // TODO(sahel): get rid of this extera checking when
-  // FindScrollLayerForDeviceViewportPoint finds the proper layer for
-  // scrolling on main thread when mouse is over scrollbar as well.
-  ElementId new_element_id;
+  // FindScrollNodeForDeviceViewportPoint finds the proper node for scrolling on
+  // the main thread when the mouse is over a scrollbar as well.
+  ElementId scroll_element_id;
   if (layer_impl && layer_impl->ToScrollbarLayer())
-    new_element_id = layer_impl->ToScrollbarLayer()->scroll_element_id();
-  if (!new_element_id) {
+    scroll_element_id = layer_impl->ToScrollbarLayer()->scroll_element_id();
+  if (!scroll_element_id) {
     bool scroll_on_main_thread = false;
     uint32_t main_thread_scrolling_reasons;
-    LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
+    auto* scroll_node = FindScrollNodeForDeviceViewportPoint(
         device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
         &scroll_on_main_thread, &main_thread_scrolling_reasons);
+    if (scroll_node)
+      scroll_element_id = scroll_node->element_id;
 
     // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (scroll_layer_impl == InnerViewportScrollLayer())
-      scroll_layer_impl = OuterViewportScrollLayer();
-
-    if (scroll_layer_impl)
-      new_element_id = scroll_layer_impl->element_id();
+    if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
+        scroll_element_id == InnerViewportScrollLayer()->element_id())
+      scroll_element_id = OuterViewportScrollLayer()->element_id();
   }
 
-  if (new_element_id != scroll_element_id_mouse_currently_over_) {
+  if (scroll_element_id != scroll_element_id_mouse_currently_over_) {
     ScrollbarAnimationController* old_animation_controller =
         ScrollbarAnimationControllerForElementId(
             scroll_element_id_mouse_currently_over_);
     if (old_animation_controller) {
       old_animation_controller->DidMouseLeave();
     }
-    scroll_element_id_mouse_currently_over_ = new_element_id;
+    scroll_element_id_mouse_currently_over_ = scroll_element_id;
   }
 
   ScrollbarAnimationController* new_animation_controller =
-      ScrollbarAnimationControllerForElementId(new_element_id);
+      ScrollbarAnimationControllerForElementId(scroll_element_id);
   if (!new_animation_controller)
     return;
 
-  int new_layer_id = active_tree_->LayerIdByElementId(new_element_id);
+  int scroll_layer_id = active_tree_->LayerIdByElementId(scroll_element_id);
   for (ScrollbarLayerImplBase* scrollbar :
-       active_tree_->ScrollbarsFor(new_layer_id)) {
+       active_tree_->ScrollbarsFor(scroll_layer_id)) {
     new_animation_controller->DidMouseMoveNear(
         scrollbar->orientation(),
         DeviceSpaceDistanceToLayer(device_viewport_point, scrollbar) /
