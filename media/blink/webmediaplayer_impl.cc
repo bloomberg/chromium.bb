@@ -2097,15 +2097,27 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const PipelineStatistics stats = GetPipelineStatistics();
   const int64_t data_source_memory_usage =
       data_source_ ? data_source_->GetMemoryUsage() : 0;
+
+  // If we have video and no video memory usage, assume the VideoFrameCompositor
+  // is holding onto the last frame after we've suspended the pipeline; which
+  // thus reports zero memory usage from the video renderer.
+  //
+  // Technically this should use the coded size, but that requires us to hop to
+  // the compositor to get and byte-perfect accuracy isn't important here.
+  const int64_t video_memory_usage =
+      stats.video_memory_usage +
+      (pipeline_metadata_.has_video && !stats.video_memory_usage
+           ? VideoFrame::AllocationSize(PIXEL_FORMAT_YV12,
+                                        pipeline_metadata_.natural_size)
+           : 0);
+
   const int64_t current_memory_usage =
-      stats.audio_memory_usage + stats.video_memory_usage +
-      data_source_memory_usage + demuxer_memory_usage;
+      stats.audio_memory_usage + video_memory_usage + data_source_memory_usage +
+      demuxer_memory_usage;
 
-  // Note, this isn't entirely accurate, there may be VideoFrames held by the
-  // compositor or other resources that we're unaware of.
-
-  DVLOG(2) << "Memory Usage -- Audio: " << stats.audio_memory_usage
-           << ", Video: " << stats.video_memory_usage
+  DVLOG(2) << "Memory Usage -- Total: " << current_memory_usage
+           << " Audio: " << stats.audio_memory_usage
+           << ", Video: " << video_memory_usage
            << ", DataSource: " << data_source_memory_usage
            << ", Demuxer: " << demuxer_memory_usage;
 
@@ -2119,7 +2131,7 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   }
   if (HasVideo()) {
     UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.Video",
-                            stats.video_memory_usage / 1024);
+                            video_memory_usage / 1024);
   }
   if (data_source_) {
     UMA_HISTOGRAM_MEMORY_KB("Media.WebMediaPlayerImpl.Memory.DataSource",
