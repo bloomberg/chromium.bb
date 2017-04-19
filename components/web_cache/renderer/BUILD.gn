@@ -11,6 +11,7 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/web_cache/public/interfaces",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
     "//services/service_manager/public/cpp",

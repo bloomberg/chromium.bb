@@ -38,7 +38,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   std::unique_ptr<gfx::ICCProfile> GetImageDecodeColorProfile() override;
   void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) override;
-  void RunScriptsAtDocumentEnd(RenderFrame* render_frame) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
 
  private:

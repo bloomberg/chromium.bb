@@ -34,9 +34,6 @@ class ShellContentRendererClient : public ContentRendererClient {
   void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) override;
 
-  void ExposeInterfacesToBrowser(
-      service_manager::InterfaceRegistry* interface_registry) override;
-
 #if defined(ENABLE_MOJO_CDM)
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)

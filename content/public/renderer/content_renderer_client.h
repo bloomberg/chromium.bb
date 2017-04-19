@@ -65,10 +65,6 @@ namespace media {
 class KeySystemProperties;
 }
 
-namespace service_manager {
-class InterfaceRegistry;
-}
-
 namespace content {
 class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
@@ -362,11 +358,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // from the worker thread.
   virtual void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) {}
-
-  // Allows the client to expose interfaces from the renderer process to the
-  // browser process via |registry|.
-  virtual void ExposeInterfacesToBrowser(
-      service_manager::InterfaceRegistry* interface_registry) {}
 
   // Overwrites the given URL to use an HTML5 embed if possible.
   // An empty URL is returned if the URL is not overriden.

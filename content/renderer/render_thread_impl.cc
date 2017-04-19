@@ -83,7 +83,9 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -141,9 +143,9 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/public/cpp/bitmap/child_shared_bitmap_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -691,10 +693,17 @@ void RenderThreadImpl::Init(
   }
 #endif
 
-  // Must be called before RenderThreadStarted() below.
-  StartServiceManagerConnection();
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::Bind(&CreateFrameFactory),
+                         base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(base::Bind(&EmbeddedWorkerInstanceClientImpl::Create),
+                         base::ThreadTaskRunnerHandle::Get());
+  GetServiceManagerConnection()->AddConnectionFilter(
+      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
 
   GetContentClient()->renderer()->RenderThreadStarted();
+
+  StartServiceManagerConnection();
 
   field_trial_syncer_.InitFieldTrialObserving(
       *base::CommandLine::ForCurrentProcess(), switches::kSingleProcess);
@@ -858,13 +867,6 @@ void RenderThreadImpl::Init(
   // See crbug.com/503724.
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
-
-  GetContentClient()->renderer()->ExposeInterfacesToBrowser(
-      GetInterfaceRegistry());
-
-  GetInterfaceRegistry()->AddInterface(base::Bind(&CreateFrameFactory));
-  GetInterfaceRegistry()->AddInterface(
-      base::Bind(&EmbeddedWorkerInstanceClientImpl::Create));
 
   GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                 mojo::MakeRequest(&storage_partition_service_));

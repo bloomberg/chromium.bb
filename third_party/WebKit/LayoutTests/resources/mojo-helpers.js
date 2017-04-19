@@ -36,11 +36,8 @@ define(
       'content/public/renderer/connector',
       'content/public/renderer/frame_interfaces',
       'content/public/renderer/interfaces',
-      'content/shell/renderer/layout_test/frame_interface_registry',
-      'content/shell/renderer/layout_test/interface_registry',
     ],
-    (core, router, support, connector, frameInterfaces, interfaces,
-     frameInterfaceRegistry, interfaceRegistry) => {
+    (core, router, support, connector, frameInterfaces, interfaces) => {
       let tearDown = () => {
         connector.clearInterfaceOverridesForTesting();
         frameInterfaces.clearInterfaceOverridesForTesting();
@@ -56,9 +53,7 @@ define(
           support,
           connector,
           frameInterfaces,
-          frameInterfaceRegistry,
           interfaces,
-          interfaceRegistry,
       };
     });
 

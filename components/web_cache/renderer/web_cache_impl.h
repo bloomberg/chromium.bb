@@ -21,7 +21,7 @@ class WebCacheImpl : public mojom::WebCache {
   WebCacheImpl();
   ~WebCacheImpl() override;
 
-  void BindRequest(mojo::InterfaceRequest<mojom::WebCache> web_cache_request);
+  void BindRequest(mojom::WebCacheRequest web_cache_request);
 
   // Needs to be called by RenderViews in case of navigations to execute
   // any 'clear cache' commands that were delayed until the next navigation.
