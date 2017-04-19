@@ -14,7 +14,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   device::UsbDeviceDescriptor desc;
   desc.Parse(std::vector<uint8_t>(data, data + size));
-  mojo::ConvertTo<std::vector<device::usb::ConfigurationInfoPtr>>(
+  mojo::ConvertTo<std::vector<device::mojom::UsbConfigurationInfoPtr>>(
       desc.configurations);
   return 0;
 }

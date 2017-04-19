@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device.usb;
+module device.mojom;
 
 import "device.mojom";
 
-struct DeviceFilter {
+struct UsbDeviceFilter {
   bool has_vendor_id;
   uint16 vendor_id;
 
@@ -25,27 +25,27 @@ struct DeviceFilter {
   string? serial_number;
 };
 
-struct EnumerationOptions {
-  array<DeviceFilter>? filters;
+struct UsbEnumerationOptions {
+  array<UsbDeviceFilter>? filters;
 };
 
-interface DeviceManager {
+interface UsbDeviceManager {
   // Retrieves information about all devices available to the DeviceManager
   // implementation.
-  GetDevices(EnumerationOptions? options) => (array<DeviceInfo> results);
+  GetDevices(UsbEnumerationOptions? options) => (array<UsbDeviceInfo> results);
 
   // Requests a device by guid.
-  GetDevice(string guid, Device& device_request);
+  GetDevice(string guid, UsbDevice& device_request);
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.
-  SetClient(DeviceManagerClient client);
+  SetClient(UsbDeviceManagerClient client);
 };
 
-interface DeviceManagerClient {
+interface UsbDeviceManagerClient {
   // Called when a device is connected to the host.
-  OnDeviceAdded(DeviceInfo device_info);
+  OnDeviceAdded(UsbDeviceInfo device_info);
 
   // Called when a device is disconnected from the host.
-  OnDeviceRemoved(DeviceInfo device_info);
+  OnDeviceRemoved(UsbDeviceInfo device_info);
 };

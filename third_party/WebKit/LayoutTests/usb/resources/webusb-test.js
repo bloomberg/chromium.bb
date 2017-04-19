@@ -128,21 +128,21 @@ function fakeDeviceInitToDeviceInfo(guid, init) {
           };
           switch (endpoint.direction) {
           case "in":
-            endpointInfo.direction = mojo.device.TransferDirection.INBOUND;
+            endpointInfo.direction = mojo.device.UsbTransferDirection.INBOUND;
             break;
           case "out":
-            endpointInfo.direction = mojo.device.TransferDirection.OUTBOUND;
+            endpointInfo.direction = mojo.device.UsbTransferDirection.OUTBOUND;
             break;
           }
           switch (endpoint.type) {
           case "bulk":
-            endpointInfo.type = mojo.device.EndpointType.BULK;
+            endpointInfo.type = mojo.device.UsbEndpointType.BULK;
             break;
           case "interrupt":
-            endpointInfo.type = mojo.device.EndpointType.INTERRUPT;
+            endpointInfo.type = mojo.device.UsbEndpointType.INTERRUPT;
             break;
           case "isochronous":
-            endpointInfo.type = mojo.device.EndpointType.ISOCHRONOUS;
+            endpointInfo.type = mojo.device.UsbEndpointType.ISOCHRONOUS;
             break;
           }
           alternateInfo.endpoints.push(endpointInfo);
@@ -201,7 +201,7 @@ class FakeDevice {
   open() {
     assert_false(this.opened_);
     this.opened_ = true;
-    return Promise.resolve({ error: mojo.device.OpenDeviceError.OK });
+    return Promise.resolve({ error: mojo.device.UsbOpenDeviceError.OK });
   }
 
   close() {
@@ -273,7 +273,7 @@ class FakeDevice {
     assert_true(this.opened_);
     assert_false(this.currentConfiguration_ == null, 'device configured');
     return Promise.resolve({
-      status: mojo.device.TransferStatus.OK,
+      status: mojo.device.UsbTransferStatus.OK,
       data: [length >> 8, length & 0xff, params.request, params.value >> 8,
              params.value & 0xff, params.index >> 8, params.index & 0xff]
     });
@@ -283,7 +283,7 @@ class FakeDevice {
     assert_true(this.opened_);
     assert_false(this.currentConfiguration_ == null, 'device configured');
     return Promise.resolve({
-      status: mojo.device.TransferStatus.OK,
+      status: mojo.device.UsbTransferStatus.OK,
       bytesWritten: data.byteLength
     });
   }
@@ -296,7 +296,7 @@ class FakeDevice {
     for (let i = 0; i < length; ++i)
       data[i] = i & 0xff;
     return Promise.resolve({
-      status: mojo.device.TransferStatus.OK,
+      status: mojo.device.UsbTransferStatus.OK,
       data: data
     });
   }
@@ -306,7 +306,7 @@ class FakeDevice {
     assert_false(this.currentConfiguration_ == null, 'device configured');
     // TODO(reillyg): Assert that endpoint is valid.
     return Promise.resolve({
-      status: mojo.device.TransferStatus.OK,
+      status: mojo.device.UsbTransferStatus.OK,
       bytesWritten: data.byteLength
     });
   }
@@ -324,7 +324,7 @@ class FakeDevice {
       packets[i] = {
         length: packetLengths[i],
         transferred_length: packetLengths[i],
-        status: mojo.device.TransferStatus.OK
+        status: mojo.device.UsbTransferStatus.OK
       };
     }
     return Promise.resolve({ data: data, packets: packets });
@@ -339,7 +339,7 @@ class FakeDevice {
       packets[i] = {
         length: packetLengths[i],
         transferred_length: packetLengths[i],
-        status: mojo.device.TransferStatus.OK
+        status: mojo.device.UsbTransferStatus.OK
       };
     }
     return Promise.resolve({ packets: packets });
@@ -349,7 +349,7 @@ class FakeDevice {
 class FakeDeviceManager {
   constructor() {
     this.bindingSet_ =
-        new mojo.bindings.BindingSet(mojo.deviceManager.DeviceManager);
+        new mojo.bindings.BindingSet(mojo.deviceManager.UsbDeviceManager);
     this.devices_ = new Map();
     this.devicesByGuid_ = new Map();
     this.client_ = null;
@@ -411,7 +411,7 @@ class FakeDeviceManager {
     let device = this.devicesByGuid_.get(guid);
     if (device) {
       let binding = new mojo.bindings.Binding(
-          mojo.device.Device, new FakeDevice(device.info), request);
+          mojo.device.UsbDevice, new FakeDevice(device.info), request);
       binding.setConnectionErrorHandler(() => {
         if (g_closeListener)
           g_closeListener(device.fakeDevice);
@@ -430,7 +430,7 @@ class FakeDeviceManager {
 class FakeChooserService {
   constructor() {
     this.bindingSet_ = new mojo.bindings.BindingSet(
-        mojo.chooserService.ChooserService);
+        mojo.chooserService.UsbChooserService);
     this.chosenDevice_ = null;
     this.lastFilters_ = null;
   }
@@ -497,12 +497,12 @@ class USBTest {
 
           g_deviceManager = new FakeDeviceManager();
           mojo.frameInterfaces.addInterfaceOverrideForTesting(
-              mojo.deviceManager.DeviceManager.name,
+              mojo.deviceManager.UsbDeviceManager.name,
               handle => g_deviceManager.addBinding(handle));
 
           g_chooserService = new FakeChooserService();
           mojo.frameInterfaces.addInterfaceOverrideForTesting(
-              mojo.chooserService.ChooserService.name,
+              mojo.chooserService.UsbChooserService.name,
               handle => g_chooserService.addBinding(handle));
 
           addEventListener('unload', () => {
@@ -527,10 +527,10 @@ class USBTest {
         'content/public/renderer/frame_interfaces'
       ], frameInterfaces => {
         frameInterfaces.addInterfaceOverrideForTesting(
-            mojo.deviceManager.DeviceManager.name,
+            mojo.deviceManager.UsbDeviceManager.name,
             handle => g_deviceManager.addBinding(handle));
         frameInterfaces.addInterfaceOverrideForTesting(
-            mojo.chooserService.ChooserService.name,
+            mojo.chooserService.UsbChooserService.name,
             handle => g_chooserService.addBinding(handle));
         resolve();
       });

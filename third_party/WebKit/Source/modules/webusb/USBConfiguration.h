@@ -29,7 +29,7 @@ class USBConfiguration : public GarbageCollected<USBConfiguration>,
 
   const USBDevice* Device() const;
   size_t Index() const;
-  const device::usb::blink::ConfigurationInfo& Info() const;
+  const device::mojom::blink::UsbConfigurationInfo& Info() const;
 
   uint8_t configurationValue() const { return Info().configuration_value; }
   String configurationName() const { return Info().configuration_name; }

@@ -927,7 +927,7 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
 
 void CreateUsbDeviceManager(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::DeviceManager> request) {
+    mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {
@@ -942,7 +942,7 @@ void CreateUsbDeviceManager(
 
 void CreateWebUsbChooserService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+    mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents) {

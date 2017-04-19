@@ -17,55 +17,56 @@
 namespace mojo {
 
 // static
-device::usb::TransferDirection
-TypeConverter<device::usb::TransferDirection, device::UsbEndpointDirection>::
-    Convert(const device::UsbEndpointDirection& direction) {
+device::mojom::UsbTransferDirection TypeConverter<
+    device::mojom::UsbTransferDirection,
+    device::UsbEndpointDirection>::Convert(const device::UsbEndpointDirection&
+                                               direction) {
   if (direction == device::USB_DIRECTION_INBOUND)
-    return device::usb::TransferDirection::INBOUND;
+    return device::mojom::UsbTransferDirection::INBOUND;
   DCHECK(direction == device::USB_DIRECTION_OUTBOUND);
-  return device::usb::TransferDirection::OUTBOUND;
+  return device::mojom::UsbTransferDirection::OUTBOUND;
 }
 
 // static
-device::usb::TransferStatus
-TypeConverter<device::usb::TransferStatus, device::UsbTransferStatus>::Convert(
-    const device::UsbTransferStatus& status) {
+device::mojom::UsbTransferStatus
+TypeConverter<device::mojom::UsbTransferStatus, device::UsbTransferStatus>::
+    Convert(const device::UsbTransferStatus& status) {
   switch (status) {
     case device::USB_TRANSFER_COMPLETED:
-      return device::usb::TransferStatus::COMPLETED;
+      return device::mojom::UsbTransferStatus::COMPLETED;
     case device::USB_TRANSFER_ERROR:
-      return device::usb::TransferStatus::TRANSFER_ERROR;
+      return device::mojom::UsbTransferStatus::TRANSFER_ERROR;
     case device::USB_TRANSFER_TIMEOUT:
-      return device::usb::TransferStatus::TIMEOUT;
+      return device::mojom::UsbTransferStatus::TIMEOUT;
     case device::USB_TRANSFER_CANCELLED:
-      return device::usb::TransferStatus::CANCELLED;
+      return device::mojom::UsbTransferStatus::CANCELLED;
     case device::USB_TRANSFER_STALLED:
-      return device::usb::TransferStatus::STALLED;
+      return device::mojom::UsbTransferStatus::STALLED;
     case device::USB_TRANSFER_DISCONNECT:
-      return device::usb::TransferStatus::DISCONNECT;
+      return device::mojom::UsbTransferStatus::DISCONNECT;
     case device::USB_TRANSFER_OVERFLOW:
-      return device::usb::TransferStatus::BABBLE;
+      return device::mojom::UsbTransferStatus::BABBLE;
     case device::USB_TRANSFER_LENGTH_SHORT:
-      return device::usb::TransferStatus::SHORT_PACKET;
+      return device::mojom::UsbTransferStatus::SHORT_PACKET;
     default:
       NOTREACHED();
-      return device::usb::TransferStatus::TRANSFER_ERROR;
+      return device::mojom::UsbTransferStatus::TRANSFER_ERROR;
   }
 }
 
 // static
 device::UsbDeviceHandle::TransferRequestType
 TypeConverter<device::UsbDeviceHandle::TransferRequestType,
-              device::usb::ControlTransferType>::
-    Convert(const device::usb::ControlTransferType& type) {
+              device::mojom::UsbControlTransferType>::
+    Convert(const device::mojom::UsbControlTransferType& type) {
   switch (type) {
-    case device::usb::ControlTransferType::STANDARD:
+    case device::mojom::UsbControlTransferType::STANDARD:
       return device::UsbDeviceHandle::STANDARD;
-    case device::usb::ControlTransferType::CLASS:
+    case device::mojom::UsbControlTransferType::CLASS:
       return device::UsbDeviceHandle::CLASS;
-    case device::usb::ControlTransferType::VENDOR:
+    case device::mojom::UsbControlTransferType::VENDOR:
       return device::UsbDeviceHandle::VENDOR;
-    case device::usb::ControlTransferType::RESERVED:
+    case device::mojom::UsbControlTransferType::RESERVED:
       return device::UsbDeviceHandle::RESERVED;
     default:
       NOTREACHED();
@@ -76,16 +77,16 @@ TypeConverter<device::UsbDeviceHandle::TransferRequestType,
 // static
 device::UsbDeviceHandle::TransferRecipient
 TypeConverter<device::UsbDeviceHandle::TransferRecipient,
-              device::usb::ControlTransferRecipient>::
-    Convert(const device::usb::ControlTransferRecipient& recipient) {
+              device::mojom::UsbControlTransferRecipient>::
+    Convert(const device::mojom::UsbControlTransferRecipient& recipient) {
   switch (recipient) {
-    case device::usb::ControlTransferRecipient::DEVICE:
+    case device::mojom::UsbControlTransferRecipient::DEVICE:
       return device::UsbDeviceHandle::DEVICE;
-    case device::usb::ControlTransferRecipient::INTERFACE:
+    case device::mojom::UsbControlTransferRecipient::INTERFACE:
       return device::UsbDeviceHandle::INTERFACE;
-    case device::usb::ControlTransferRecipient::ENDPOINT:
+    case device::mojom::UsbControlTransferRecipient::ENDPOINT:
       return device::UsbDeviceHandle::ENDPOINT;
-    case device::usb::ControlTransferRecipient::OTHER:
+    case device::mojom::UsbControlTransferRecipient::OTHER:
       return device::UsbDeviceHandle::OTHER;
     default:
       NOTREACHED();
@@ -94,45 +95,46 @@ TypeConverter<device::UsbDeviceHandle::TransferRecipient,
 }
 
 // static
-device::usb::EndpointType
-TypeConverter<device::usb::EndpointType, device::UsbTransferType>::Convert(
+device::mojom::UsbEndpointType
+TypeConverter<device::mojom::UsbEndpointType, device::UsbTransferType>::Convert(
     const device::UsbTransferType& type) {
   switch (type) {
     case device::USB_TRANSFER_ISOCHRONOUS:
-      return device::usb::EndpointType::ISOCHRONOUS;
+      return device::mojom::UsbEndpointType::ISOCHRONOUS;
     case device::USB_TRANSFER_BULK:
-      return device::usb::EndpointType::BULK;
+      return device::mojom::UsbEndpointType::BULK;
     case device::USB_TRANSFER_INTERRUPT:
-      return device::usb::EndpointType::INTERRUPT;
+      return device::mojom::UsbEndpointType::INTERRUPT;
     // Note that we do not expose control transfer in the public interface
     // because control endpoints are implied rather than explicitly enumerated
     // there.
     default:
       NOTREACHED();
-      return device::usb::EndpointType::BULK;
+      return device::mojom::UsbEndpointType::BULK;
   }
 }
 
 // static
-device::usb::EndpointInfoPtr
-TypeConverter<device::usb::EndpointInfoPtr, device::UsbEndpointDescriptor>::
-    Convert(const device::UsbEndpointDescriptor& endpoint) {
-  device::usb::EndpointInfoPtr info = device::usb::EndpointInfo::New();
+device::mojom::UsbEndpointInfoPtr TypeConverter<
+    device::mojom::UsbEndpointInfoPtr,
+    device::UsbEndpointDescriptor>::Convert(const device::UsbEndpointDescriptor&
+                                                endpoint) {
+  auto info = device::mojom::UsbEndpointInfo::New();
   info->endpoint_number = endpoint.address & 0xf;
   info->direction =
-      ConvertTo<device::usb::TransferDirection>(endpoint.direction);
-  info->type = ConvertTo<device::usb::EndpointType>(endpoint.transfer_type);
+      ConvertTo<device::mojom::UsbTransferDirection>(endpoint.direction);
+  info->type =
+      ConvertTo<device::mojom::UsbEndpointType>(endpoint.transfer_type);
   info->packet_size = static_cast<uint32_t>(endpoint.maximum_packet_size);
   return info;
 }
 
 // static
-device::usb::AlternateInterfaceInfoPtr
-TypeConverter<device::usb::AlternateInterfaceInfoPtr,
+device::mojom::UsbAlternateInterfaceInfoPtr
+TypeConverter<device::mojom::UsbAlternateInterfaceInfoPtr,
               device::UsbInterfaceDescriptor>::
     Convert(const device::UsbInterfaceDescriptor& interface) {
-  device::usb::AlternateInterfaceInfoPtr info =
-      device::usb::AlternateInterfaceInfo::New();
+  auto info = device::mojom::UsbAlternateInterfaceInfo::New();
   info->alternate_setting = interface.alternate_setting;
   info->class_code = interface.interface_class;
   info->subclass_code = interface.interface_subclass;
@@ -142,29 +144,30 @@ TypeConverter<device::usb::AlternateInterfaceInfoPtr,
   info->endpoints.reserve(interface.endpoints.size());
   for (const auto& endpoint : interface.endpoints) {
     if (endpoint.transfer_type != device::USB_TRANSFER_CONTROL)
-      info->endpoints.push_back(device::usb::EndpointInfo::From(endpoint));
+      info->endpoints.push_back(device::mojom::UsbEndpointInfo::From(endpoint));
   }
 
   return info;
 }
 
 // static
-std::vector<device::usb::InterfaceInfoPtr>
-TypeConverter<std::vector<device::usb::InterfaceInfoPtr>,
+std::vector<device::mojom::UsbInterfaceInfoPtr>
+TypeConverter<std::vector<device::mojom::UsbInterfaceInfoPtr>,
               std::vector<device::UsbInterfaceDescriptor>>::
     Convert(const std::vector<device::UsbInterfaceDescriptor>& interfaces) {
-  std::vector<device::usb::InterfaceInfoPtr> infos;
+  std::vector<device::mojom::UsbInterfaceInfoPtr> infos;
 
   // Aggregate each alternate setting into an InterfaceInfo corresponding to its
   // interface number.
-  std::map<uint8_t, device::usb::InterfaceInfo*> interface_map;
+  std::map<uint8_t, device::mojom::UsbInterfaceInfo*> interface_map;
   for (size_t i = 0; i < interfaces.size(); ++i) {
-    auto alternate = device::usb::AlternateInterfaceInfo::From(interfaces[i]);
+    auto alternate =
+        device::mojom::UsbAlternateInterfaceInfo::From(interfaces[i]);
     auto iter = interface_map.find(interfaces[i].interface_number);
     if (iter == interface_map.end()) {
       // This is the first time we're seeing an alternate with this interface
       // number, so add a new InterfaceInfo to the array and map the number.
-      auto info = device::usb::InterfaceInfo::New();
+      auto info = device::mojom::UsbInterfaceInfo::New();
       info->interface_number = interfaces[i].interface_number;
       iter = interface_map
                  .insert(
@@ -179,23 +182,23 @@ TypeConverter<std::vector<device::usb::InterfaceInfoPtr>,
 }
 
 // static
-device::usb::ConfigurationInfoPtr
-TypeConverter<device::usb::ConfigurationInfoPtr, device::UsbConfigDescriptor>::
-    Convert(const device::UsbConfigDescriptor& config) {
-  device::usb::ConfigurationInfoPtr info =
-      device::usb::ConfigurationInfo::New();
+device::mojom::UsbConfigurationInfoPtr TypeConverter<
+    device::mojom::UsbConfigurationInfoPtr,
+    device::UsbConfigDescriptor>::Convert(const device::UsbConfigDescriptor&
+                                              config) {
+  auto info = device::mojom::UsbConfigurationInfo::New();
   info->configuration_value = config.configuration_value;
   info->interfaces =
-      mojo::ConvertTo<std::vector<device::usb::InterfaceInfoPtr>>(
+      mojo::ConvertTo<std::vector<device::mojom::UsbInterfaceInfoPtr>>(
           config.interfaces);
   return info;
 }
 
 // static
-device::usb::DeviceInfoPtr
-TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
+device::mojom::UsbDeviceInfoPtr
+TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
     const device::UsbDevice& device) {
-  device::usb::DeviceInfoPtr info = device::usb::DeviceInfo::New();
+  auto info = device::mojom::UsbDeviceInfo::New();
   info->guid = device.guid();
   info->usb_version_major = device.usb_version() >> 8;
   info->usb_version_minor = device.usb_version() >> 4 & 0xf;
@@ -214,21 +217,21 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   const device::UsbConfigDescriptor* config = device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
   info->configurations =
-      mojo::ConvertTo<std::vector<device::usb::ConfigurationInfoPtr>>(
+      mojo::ConvertTo<std::vector<device::mojom::UsbConfigurationInfoPtr>>(
           device.configurations());
   return info;
 }
 
 // static
-device::usb::IsochronousPacketPtr
-TypeConverter<device::usb::IsochronousPacketPtr,
+device::mojom::UsbIsochronousPacketPtr
+TypeConverter<device::mojom::UsbIsochronousPacketPtr,
               device::UsbDeviceHandle::IsochronousPacket>::
     Convert(const device::UsbDeviceHandle::IsochronousPacket& packet) {
-  device::usb::IsochronousPacketPtr info =
-      device::usb::IsochronousPacket::New();
+  auto info = device::mojom::UsbIsochronousPacket::New();
   info->length = packet.length;
   info->transferred_length = packet.transferred_length;
-  info->status = mojo::ConvertTo<device::usb::TransferStatus>(packet.status);
+  info->status =
+      mojo::ConvertTo<device::mojom::UsbTransferStatus>(packet.status);
   return info;
 }
 

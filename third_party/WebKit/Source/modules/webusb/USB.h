@@ -24,7 +24,7 @@ class USBDeviceRequestOptions;
 
 class USB final : public EventTargetWithInlineData,
                   public ContextLifecycleObserver,
-                  public device::usb::blink::DeviceManagerClient {
+                  public device::mojom::blink::UsbDeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(USB);
   USING_PRE_FINALIZER(USB, Dispose);
@@ -49,20 +49,20 @@ class USB final : public EventTargetWithInlineData,
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  USBDevice* GetOrCreateDevice(device::usb::blink::DeviceInfoPtr);
+  USBDevice* GetOrCreateDevice(device::mojom::blink::UsbDeviceInfoPtr);
 
-  device::usb::blink::DeviceManager* GetDeviceManager() const {
+  device::mojom::blink::UsbDeviceManager* GetDeviceManager() const {
     return device_manager_.get();
   }
 
   void OnGetDevices(ScriptPromiseResolver*,
-                    Vector<device::usb::blink::DeviceInfoPtr>);
+                    Vector<device::mojom::blink::UsbDeviceInfoPtr>);
   void OnGetPermission(ScriptPromiseResolver*,
-                       device::usb::blink::DeviceInfoPtr);
+                       device::mojom::blink::UsbDeviceInfoPtr);
 
   // DeviceManagerClient implementation.
-  void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
-  void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
+  void OnDeviceAdded(device::mojom::blink::UsbDeviceInfoPtr);
+  void OnDeviceRemoved(device::mojom::blink::UsbDeviceInfoPtr);
 
   void OnDeviceManagerConnectionError();
   void OnChooserServiceConnectionError();
@@ -79,11 +79,11 @@ class USB final : public EventTargetWithInlineData,
 
   void EnsureDeviceManagerConnection();
 
-  device::usb::blink::DeviceManagerPtr device_manager_;
+  device::mojom::blink::UsbDeviceManagerPtr device_manager_;
   HeapHashSet<Member<ScriptPromiseResolver>> device_manager_requests_;
-  device::usb::blink::ChooserServicePtr chooser_service_;
+  device::mojom::blink::UsbChooserServicePtr chooser_service_;
   HeapHashSet<Member<ScriptPromiseResolver>> chooser_service_requests_;
-  mojo::Binding<device::usb::blink::DeviceManagerClient> client_binding_;
+  mojo::Binding<device::mojom::blink::UsbDeviceManagerClient> client_binding_;
   HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };
 

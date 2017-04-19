@@ -34,6 +34,12 @@ using ::testing::Invoke;
 using ::testing::_;
 
 namespace device {
+
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbDevicePtr;
+
 namespace usb {
 
 namespace {
@@ -58,9 +64,9 @@ class ConfigBuilder {
   UsbConfigDescriptor config_;
 };
 
-void ExpectOpenAndThen(OpenDeviceError expected,
+void ExpectOpenAndThen(mojom::UsbOpenDeviceError expected,
                        const base::Closure& continuation,
-                       OpenDeviceError error) {
+                       mojom::UsbOpenDeviceError error) {
   EXPECT_EQ(expected, error);
   continuation.Run();
 }
@@ -73,10 +79,10 @@ void ExpectResultAndThen(bool expected_result,
 }
 
 void ExpectTransferInAndThen(
-    TransferStatus expected_status,
+    mojom::UsbTransferStatus expected_status,
     const std::vector<uint8_t>& expected_bytes,
     const base::Closure& continuation,
-    TransferStatus actual_status,
+    mojom::UsbTransferStatus actual_status,
     const base::Optional<std::vector<uint8_t>>& actual_bytes) {
   EXPECT_EQ(expected_status, actual_status);
   ASSERT_TRUE(actual_bytes);
@@ -88,14 +94,15 @@ void ExpectTransferInAndThen(
   continuation.Run();
 }
 
-void ExpectPacketsOutAndThen(const std::vector<uint32_t>& expected_packets,
-                             const base::Closure& continuation,
-                             std::vector<IsochronousPacketPtr> actual_packets) {
+void ExpectPacketsOutAndThen(
+    const std::vector<uint32_t>& expected_packets,
+    const base::Closure& continuation,
+    std::vector<UsbIsochronousPacketPtr> actual_packets) {
   ASSERT_EQ(expected_packets.size(), actual_packets.size());
   for (size_t i = 0; i < expected_packets.size(); ++i) {
     EXPECT_EQ(expected_packets[i], actual_packets[i]->transferred_length)
         << "Packet lengths differ at index: " << i;
-    EXPECT_EQ(TransferStatus::COMPLETED, actual_packets[i]->status)
+    EXPECT_EQ(mojom::UsbTransferStatus::COMPLETED, actual_packets[i]->status)
         << "Packet at index " << i << " not completed.";
   }
   continuation.Run();
@@ -106,12 +113,12 @@ void ExpectPacketsInAndThen(
     const std::vector<uint32_t>& expected_packets,
     const base::Closure& continuation,
     const base::Optional<std::vector<uint8_t>>& actual_bytes,
-    std::vector<IsochronousPacketPtr> actual_packets) {
+    std::vector<UsbIsochronousPacketPtr> actual_packets) {
   ASSERT_EQ(expected_packets.size(), actual_packets.size());
   for (size_t i = 0; i < expected_packets.size(); ++i) {
     EXPECT_EQ(expected_packets[i], actual_packets[i]->transferred_length)
         << "Packet lengths differ at index: " << i;
-    EXPECT_EQ(TransferStatus::COMPLETED, actual_packets[i]->status)
+    EXPECT_EQ(mojom::UsbTransferStatus::COMPLETED, actual_packets[i]->status)
         << "Packet at index " << i << " not completed.";
   }
   ASSERT_TRUE(actual_bytes);
@@ -123,9 +130,9 @@ void ExpectPacketsInAndThen(
   continuation.Run();
 }
 
-void ExpectTransferStatusAndThen(TransferStatus expected_status,
+void ExpectTransferStatusAndThen(mojom::UsbTransferStatus expected_status,
                                  const base::Closure& continuation,
-                                 TransferStatus actual_status) {
+                                 mojom::UsbTransferStatus actual_status) {
   EXPECT_EQ(expected_status, actual_status);
   continuation.Run();
 }
@@ -151,16 +158,16 @@ class USBDeviceImplTest : public testing::Test {
 
   // Creates a mock device and binds a Device proxy to a Device service impl
   // wrapping the mock device.
-  DevicePtr GetMockDeviceProxy(uint16_t vendor_id,
-                               uint16_t product_id,
-                               const std::string& manufacturer,
-                               const std::string& product,
-                               const std::string& serial) {
+  UsbDevicePtr GetMockDeviceProxy(uint16_t vendor_id,
+                                  uint16_t product_id,
+                                  const std::string& manufacturer,
+                                  const std::string& product,
+                                  const std::string& serial) {
     mock_device_ =
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
-    DevicePtr proxy;
+    UsbDevicePtr proxy;
     DeviceImpl::Create(mock_device_, permission_provider_.GetWeakPtr(),
                        mojo::MakeRequest(&proxy));
 
@@ -194,7 +201,7 @@ class USBDeviceImplTest : public testing::Test {
     return proxy;
   }
 
-  DevicePtr GetMockDeviceProxy() {
+  UsbDevicePtr GetMockDeviceProxy() {
     return GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
   }
 
@@ -425,7 +432,7 @@ class USBDeviceImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(USBDeviceImplTest, Disconnect) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   base::RunLoop loop;
   device.set_connection_error_handler(loop.QuitClosure());
@@ -434,7 +441,7 @@ TEST_F(USBDeviceImplTest, Disconnect) {
 }
 
 TEST_F(USBDeviceImplTest, Open) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_FALSE(is_device_open());
 
@@ -442,14 +449,15 @@ TEST_F(USBDeviceImplTest, Open) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::ALREADY_OPEN,
+    device->Open(base::Bind(&ExpectOpenAndThen,
+                            mojom::UsbOpenDeviceError::ALREADY_OPEN,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -458,7 +466,7 @@ TEST_F(USBDeviceImplTest, Open) {
 }
 
 TEST_F(USBDeviceImplTest, Close) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_FALSE(is_device_open());
 
@@ -466,7 +474,7 @@ TEST_F(USBDeviceImplTest, Close) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -483,13 +491,13 @@ TEST_F(USBDeviceImplTest, Close) {
 }
 
 TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -510,13 +518,13 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
 }
 
 TEST_F(USBDeviceImplTest, SetValidConfiguration) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -540,13 +548,13 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 // Verify that the result of Reset() reflects the underlying UsbDeviceHandle's
 // ResetDevice() result.
 TEST_F(USBDeviceImplTest, Reset) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -575,13 +583,13 @@ TEST_F(USBDeviceImplTest, Reset) {
 }
 
 TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -641,13 +649,13 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
 }
 
 TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -679,13 +687,13 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
 }
 
 TEST_F(USBDeviceImplTest, ControlTransfer) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -715,17 +723,18 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   EXPECT_CALL(permission_provider(), HasConfigurationPermission(1, _));
 
   {
-    auto params = ControlTransferParams::New();
-    params->type = ControlTransferType::STANDARD;
-    params->recipient = ControlTransferRecipient::DEVICE;
+    auto params = mojom::UsbControlTransferParams::New();
+    params->type = UsbControlTransferType::STANDARD;
+    params->recipient = UsbControlTransferRecipient::DEVICE;
     params->request = 5;
     params->value = 6;
     params->index = 7;
     base::RunLoop loop;
-    device->ControlTransferIn(
-        std::move(params), static_cast<uint32_t>(fake_data.size()), 0,
-        base::Bind(&ExpectTransferInAndThen, TransferStatus::COMPLETED,
-                   fake_data, loop.QuitClosure()));
+    device->ControlTransferIn(std::move(params),
+                              static_cast<uint32_t>(fake_data.size()), 0,
+                              base::Bind(&ExpectTransferInAndThen,
+                                         mojom::UsbTransferStatus::COMPLETED,
+                                         fake_data, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -737,17 +746,17 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
   EXPECT_CALL(permission_provider(), HasFunctionPermission(7, 1, _));
 
   {
-    auto params = ControlTransferParams::New();
-    params->type = ControlTransferType::STANDARD;
-    params->recipient = ControlTransferRecipient::INTERFACE;
+    auto params = mojom::UsbControlTransferParams::New();
+    params->type = UsbControlTransferType::STANDARD;
+    params->recipient = UsbControlTransferRecipient::INTERFACE;
     params->request = 5;
     params->value = 6;
     params->index = 7;
     base::RunLoop loop;
     device->ControlTransferOut(
         std::move(params), fake_data, 0,
-        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
-                   loop.QuitClosure()));
+        base::Bind(&ExpectTransferStatusAndThen,
+                   mojom::UsbTransferStatus::COMPLETED, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -755,13 +764,13 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 }
 
 TEST_F(USBDeviceImplTest, GenericTransfer) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -785,8 +794,8 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferOut(
         1, fake_outbound_data, 0,
-        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
-                   loop.QuitClosure()));
+        base::Bind(&ExpectTransferStatusAndThen,
+                   mojom::UsbTransferStatus::COMPLETED, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -797,8 +806,9 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferIn(
         1, static_cast<uint32_t>(fake_inbound_data.size()), 0,
-        base::Bind(&ExpectTransferInAndThen, TransferStatus::COMPLETED,
-                   fake_inbound_data, loop.QuitClosure()));
+        base::Bind(&ExpectTransferInAndThen,
+                   mojom::UsbTransferStatus::COMPLETED, fake_inbound_data,
+                   loop.QuitClosure()));
     loop.Run();
   }
 
@@ -806,13 +816,13 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
 }
 
 TEST_F(USBDeviceImplTest, IsochronousTransfer) {
-  DevicePtr device = GetMockDeviceProxy();
+  UsbDevicePtr device = GetMockDeviceProxy();
 
   EXPECT_CALL(mock_device(), Open(_));
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, mojom::UsbOpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }

@@ -27,16 +27,16 @@ class PermissionProvider;
 // Implementation of the public Device interface. Instances of this class are
 // constructed by DeviceManagerImpl and are strongly bound to their MessagePipe
 // lifetime.
-class DeviceImpl : public Device, public device::UsbDevice::Observer {
+class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
  public:
-  static void Create(scoped_refptr<UsbDevice> device,
+  static void Create(scoped_refptr<device::UsbDevice> device,
                      base::WeakPtr<PermissionProvider> permission_provider,
-                     DeviceRequest request);
+                     mojom::UsbDeviceRequest request);
 
   ~DeviceImpl() override;
 
  private:
-  DeviceImpl(scoped_refptr<UsbDevice> device,
+  DeviceImpl(scoped_refptr<device::UsbDevice> device,
              base::WeakPtr<PermissionProvider> permission_provider);
 
   // Closes the device if it's open. This will always set |device_handle_| to
@@ -44,8 +44,9 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   void CloseHandle();
 
   // Checks interface permissions for control transfers.
-  bool HasControlTransferPermission(ControlTransferRecipient recipient,
-                                    uint16_t index);
+  bool HasControlTransferPermission(
+      mojom::UsbControlTransferRecipient recipient,
+      uint16_t index);
 
   // Handles completion of an open request.
   static void OnOpen(base::WeakPtr<DeviceImpl> device,
@@ -68,11 +69,11 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
       const SetInterfaceAlternateSettingCallback& callback) override;
   void Reset(const ResetCallback& callback) override;
   void ClearHalt(uint8_t endpoint, const ClearHaltCallback& callback) override;
-  void ControlTransferIn(ControlTransferParamsPtr params,
+  void ControlTransferIn(mojom::UsbControlTransferParamsPtr params,
                          uint32_t length,
                          uint32_t timeout,
                          const ControlTransferInCallback& callback) override;
-  void ControlTransferOut(ControlTransferParamsPtr params,
+  void ControlTransferOut(mojom::UsbControlTransferParamsPtr params,
                           const std::vector<uint8_t>& data,
                           uint32_t timeout,
                           const ControlTransferOutCallback& callback) override;
@@ -99,7 +100,7 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   // device::UsbDevice::Observer implementation:
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
-  const scoped_refptr<UsbDevice> device_;
+  const scoped_refptr<device::UsbDevice> device_;
   base::WeakPtr<PermissionProvider> permission_provider_;
   ScopedObserver<device::UsbDevice, device::UsbDevice::Observer> observer_;
 
@@ -107,7 +108,7 @@ class DeviceImpl : public Device, public device::UsbDevice::Observer {
   // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
-  mojo::StrongBindingPtr<Device> binding_;
+  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);

@@ -48,7 +48,7 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     std::vector<device::UsbDeviceFilter> device_filters;
-    device::usb::ChooserService::GetPermissionCallback callback;
+    device::mojom::UsbChooserService::GetPermissionCallback callback;
     content::WebContentsTester* web_contents_tester =
         content::WebContentsTester::For(web_contents());
     web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));

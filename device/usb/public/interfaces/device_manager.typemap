@@ -12,4 +12,4 @@ sources = [
 deps = [
   "//device/usb",
 ]
-type_mappings = [ "device.usb.DeviceFilter=device::UsbDeviceFilter" ]
+type_mappings = [ "device.mojom.UsbDeviceFilter=device::UsbDeviceFilter" ]

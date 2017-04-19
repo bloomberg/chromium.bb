@@ -30,7 +30,7 @@ class USBInterface : public GarbageCollected<USBInterface>,
                size_t configuration_index,
                size_t interface_index);
 
-  const device::usb::blink::InterfaceInfo& Info() const;
+  const device::mojom::blink::UsbInterfaceInfo& Info() const;
 
   uint8_t interfaceNumber() const { return Info().interface_number; }
   USBAlternateInterface* alternate() const;

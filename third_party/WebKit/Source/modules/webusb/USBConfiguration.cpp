@@ -43,7 +43,8 @@ size_t USBConfiguration::Index() const {
   return configuration_index_;
 }
 
-const device::usb::blink::ConfigurationInfo& USBConfiguration::Info() const {
+const device::mojom::blink::UsbConfigurationInfo& USBConfiguration::Info()
+    const {
   return *device_->Info().configurations[configuration_index_];
 }
 

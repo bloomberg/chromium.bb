@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<device::usb::DeviceFilterDataView,
+struct StructTraits<device::mojom::UsbDeviceFilterDataView,
                     device::UsbDeviceFilter> {
   static bool has_vendor_id(const device::UsbDeviceFilter& filter) {
     return filter.vendor_id.has_value();
@@ -58,7 +58,7 @@ struct StructTraits<device::usb::DeviceFilterDataView,
     return filter.serial_number;
   }
 
-  static bool Read(device::usb::DeviceFilterDataView input,
+  static bool Read(device::mojom::UsbDeviceFilterDataView input,
                    device::UsbDeviceFilter* output);
 };
 

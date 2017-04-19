@@ -21,7 +21,15 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 
-namespace usb = device::usb::blink;
+using device::mojom::blink::UsbControlTransferParamsPtr;
+using device::mojom::blink::UsbControlTransferType;
+using device::mojom::blink::UsbControlTransferRecipient;
+using device::mojom::blink::UsbDeviceInfoPtr;
+using device::mojom::blink::UsbDevicePtr;
+using device::mojom::blink::UsbIsochronousPacketPtr;
+using device::mojom::blink::UsbOpenDeviceError;
+using device::mojom::blink::UsbTransferDirection;
+using device::mojom::blink::UsbTransferStatus;
 
 namespace blink {
 
@@ -37,24 +45,24 @@ const char kInterfaceStateChangeInProgress[] =
     "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
 
-DOMException* ConvertFatalTransferStatus(const usb::TransferStatus& status) {
+DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
   switch (status) {
-    case usb::TransferStatus::TRANSFER_ERROR:
+    case UsbTransferStatus::TRANSFER_ERROR:
       return DOMException::Create(kNetworkError,
                                   "A transfer error has occured.");
-    case usb::TransferStatus::PERMISSION_DENIED:
+    case UsbTransferStatus::PERMISSION_DENIED:
       return DOMException::Create(kSecurityError,
                                   "The transfer was not allowed.");
-    case usb::TransferStatus::TIMEOUT:
+    case UsbTransferStatus::TIMEOUT:
       return DOMException::Create(kTimeoutError, "The transfer timed out.");
-    case usb::TransferStatus::CANCELLED:
+    case UsbTransferStatus::CANCELLED:
       return DOMException::Create(kAbortError, "The transfer was cancelled.");
-    case usb::TransferStatus::DISCONNECT:
+    case UsbTransferStatus::DISCONNECT:
       return DOMException::Create(kNotFoundError, kDeviceUnavailable);
-    case usb::TransferStatus::COMPLETED:
-    case usb::TransferStatus::STALLED:
-    case usb::TransferStatus::BABBLE:
-    case usb::TransferStatus::SHORT_PACKET:
+    case UsbTransferStatus::COMPLETED:
+    case UsbTransferStatus::STALLED:
+    case UsbTransferStatus::BABBLE:
+    case UsbTransferStatus::SHORT_PACKET:
       return nullptr;
     default:
       ASSERT_NOT_REACHED();
@@ -62,14 +70,14 @@ DOMException* ConvertFatalTransferStatus(const usb::TransferStatus& status) {
   }
 }
 
-String ConvertTransferStatus(const usb::TransferStatus& status) {
+String ConvertTransferStatus(const UsbTransferStatus& status) {
   switch (status) {
-    case usb::TransferStatus::COMPLETED:
-    case usb::TransferStatus::SHORT_PACKET:
+    case UsbTransferStatus::COMPLETED:
+    case UsbTransferStatus::SHORT_PACKET:
       return "ok";
-    case usb::TransferStatus::STALLED:
+    case UsbTransferStatus::STALLED:
       return "stall";
-    case usb::TransferStatus::BABBLE:
+    case UsbTransferStatus::BABBLE:
       return "babble";
     default:
       ASSERT_NOT_REACHED();
@@ -93,8 +101,8 @@ Vector<uint8_t> ConvertBufferSource(
 
 }  // namespace
 
-USBDevice::USBDevice(usb::DeviceInfoPtr device_info,
-                     usb::DevicePtr device,
+USBDevice::USBDevice(UsbDeviceInfoPtr device_info,
+                     UsbDevicePtr device,
                      ExecutionContext* context)
     : ContextLifecycleObserver(context),
       device_info_(std::move(device_info)),
@@ -580,17 +588,17 @@ bool USBDevice::AnyInterfaceChangeInProgress() const {
   return false;
 }
 
-usb::ControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
+UsbControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
     const USBControlTransferParameters& parameters,
     ScriptPromiseResolver* resolver) const {
-  auto mojo_parameters = usb::ControlTransferParams::New();
+  auto mojo_parameters = device::mojom::blink::UsbControlTransferParams::New();
 
   if (parameters.requestType() == "standard") {
-    mojo_parameters->type = usb::ControlTransferType::STANDARD;
+    mojo_parameters->type = UsbControlTransferType::STANDARD;
   } else if (parameters.requestType() == "class") {
-    mojo_parameters->type = usb::ControlTransferType::CLASS;
+    mojo_parameters->type = UsbControlTransferType::CLASS;
   } else if (parameters.requestType() == "vendor") {
-    mojo_parameters->type = usb::ControlTransferType::VENDOR;
+    mojo_parameters->type = UsbControlTransferType::VENDOR;
   } else {
     resolver->Reject(DOMException::Create(
         kTypeMismatchError,
@@ -599,20 +607,20 @@ usb::ControlTransferParamsPtr USBDevice::ConvertControlTransferParameters(
   }
 
   if (parameters.recipient() == "device") {
-    mojo_parameters->recipient = usb::ControlTransferRecipient::DEVICE;
+    mojo_parameters->recipient = UsbControlTransferRecipient::DEVICE;
   } else if (parameters.recipient() == "interface") {
     size_t interface_number = parameters.index() & 0xff;
     if (!EnsureInterfaceClaimed(interface_number, resolver))
       return nullptr;
-    mojo_parameters->recipient = usb::ControlTransferRecipient::INTERFACE;
+    mojo_parameters->recipient = UsbControlTransferRecipient::INTERFACE;
   } else if (parameters.recipient() == "endpoint") {
     bool in_transfer = parameters.index() & 0x80;
     size_t endpoint_number = parameters.index() & 0x0f;
     if (!EnsureEndpointAvailable(in_transfer, endpoint_number, resolver))
       return nullptr;
-    mojo_parameters->recipient = usb::ControlTransferRecipient::ENDPOINT;
+    mojo_parameters->recipient = UsbControlTransferRecipient::ENDPOINT;
   } else if (parameters.recipient() == "other") {
-    mojo_parameters->recipient = usb::ControlTransferRecipient::OTHER;
+    mojo_parameters->recipient = UsbControlTransferRecipient::OTHER;
   } else {
     resolver->Reject(DOMException::Create(
         kTypeMismatchError,
@@ -635,7 +643,7 @@ void USBDevice::SetEndpointsForInterface(size_t interface_index, bool set) {
     uint8_t endpoint_number = endpoint->endpoint_number;
     if (endpoint_number == 0 || endpoint_number >= 16)
       continue;  // Ignore endpoints with invalid indices.
-    auto& bit_vector = endpoint->direction == usb::TransferDirection::INBOUND
+    auto& bit_vector = endpoint->direction == UsbTransferDirection::INBOUND
                            ? in_endpoints_
                            : out_endpoints_;
     if (set)
@@ -646,19 +654,19 @@ void USBDevice::SetEndpointsForInterface(size_t interface_index, bool set) {
 }
 
 void USBDevice::AsyncOpen(ScriptPromiseResolver* resolver,
-                          usb::OpenDeviceError error) {
+                          UsbOpenDeviceError error) {
   if (!MarkRequestComplete(resolver))
     return;
 
   switch (error) {
-    case usb::OpenDeviceError::ALREADY_OPEN:
+    case UsbOpenDeviceError::ALREADY_OPEN:
       ASSERT_NOT_REACHED();
     // fall through
-    case usb::OpenDeviceError::OK:
+    case UsbOpenDeviceError::OK:
       OnDeviceOpenedOrClosed(true /* opened */);
       resolver->Resolve();
       return;
-    case usb::OpenDeviceError::ACCESS_DENIED:
+    case UsbOpenDeviceError::ACCESS_DENIED:
       OnDeviceOpenedOrClosed(false /* not opened */);
       resolver->Reject(DOMException::Create(kSecurityError, "Access denied."));
       return;
@@ -776,7 +784,7 @@ void USBDevice::AsyncSelectAlternateInterface(size_t interface_index,
 }
 
 void USBDevice::AsyncControlTransferIn(ScriptPromiseResolver* resolver,
-                                       usb::TransferStatus status,
+                                       UsbTransferStatus status,
                                        const Optional<Vector<uint8_t>>& data) {
   if (!MarkRequestComplete(resolver))
     return;
@@ -792,7 +800,7 @@ void USBDevice::AsyncControlTransferIn(ScriptPromiseResolver* resolver,
 
 void USBDevice::AsyncControlTransferOut(unsigned transfer_length,
                                         ScriptPromiseResolver* resolver,
-                                        usb::TransferStatus status) {
+                                        UsbTransferStatus status) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -817,7 +825,7 @@ void USBDevice::AsyncClearHalt(ScriptPromiseResolver* resolver, bool success) {
 }
 
 void USBDevice::AsyncTransferIn(ScriptPromiseResolver* resolver,
-                                usb::TransferStatus status,
+                                UsbTransferStatus status,
                                 const Optional<Vector<uint8_t>>& data) {
   if (!MarkRequestComplete(resolver))
     return;
@@ -833,7 +841,7 @@ void USBDevice::AsyncTransferIn(ScriptPromiseResolver* resolver,
 
 void USBDevice::AsyncTransferOut(unsigned transfer_length,
                                  ScriptPromiseResolver* resolver,
-                                 usb::TransferStatus status) {
+                                 UsbTransferStatus status) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -849,7 +857,7 @@ void USBDevice::AsyncTransferOut(unsigned transfer_length,
 void USBDevice::AsyncIsochronousTransferIn(
     ScriptPromiseResolver* resolver,
     const Optional<Vector<uint8_t>>& data,
-    Vector<usb::IsochronousPacketPtr> mojo_packets) {
+    Vector<UsbIsochronousPacketPtr> mojo_packets) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -878,7 +886,7 @@ void USBDevice::AsyncIsochronousTransferIn(
 
 void USBDevice::AsyncIsochronousTransferOut(
     ScriptPromiseResolver* resolver,
-    Vector<usb::IsochronousPacketPtr> mojo_packets) {
+    Vector<UsbIsochronousPacketPtr> mojo_packets) {
   if (!MarkRequestComplete(resolver))
     return;
 

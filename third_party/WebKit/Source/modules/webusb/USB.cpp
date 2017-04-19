@@ -21,15 +21,17 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
-namespace usb = device::usb::blink;
+using device::mojom::blink::UsbDeviceFilterPtr;
+using device::mojom::blink::UsbDeviceInfoPtr;
+using device::mojom::blink::UsbDevicePtr;
 
 namespace blink {
 namespace {
 
 const char kNoDeviceSelected[] = "No device selected.";
 
-usb::DeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
-  auto mojo_filter = usb::DeviceFilter::New();
+UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
+  auto mojo_filter = device::mojom::blink::UsbDeviceFilter::New();
   mojo_filter->has_vendor_id = filter.hasVendorId();
   if (mojo_filter->has_vendor_id)
     mojo_filter->vendor_id = filter.vendorId();
@@ -107,7 +109,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         kSecurityError,
         "Must be handling a user gesture to show a permission request."));
   } else {
-    Vector<usb::DeviceFilterPtr> filters;
+    Vector<UsbDeviceFilterPtr> filters;
     if (options.hasFilters()) {
       filters.ReserveCapacity(options.filters().size());
       for (const auto& filter : options.filters())
@@ -137,11 +139,11 @@ void USB::ContextDestroyed(ExecutionContext*) {
   chooser_service_requests_.Clear();
 }
 
-USBDevice* USB::GetOrCreateDevice(usb::DeviceInfoPtr device_info) {
+USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
   USBDevice* device = device_cache_.at(device_info->guid);
   if (!device) {
     String guid = device_info->guid;
-    usb::DevicePtr pipe;
+    UsbDevicePtr pipe;
     device_manager_->GetDevice(guid, mojo::MakeRequest(&pipe));
     device = USBDevice::Create(std::move(device_info), std::move(pipe),
                                GetExecutionContext());
@@ -151,7 +153,7 @@ USBDevice* USB::GetOrCreateDevice(usb::DeviceInfoPtr device_info) {
 }
 
 void USB::OnGetDevices(ScriptPromiseResolver* resolver,
-                       Vector<usb::DeviceInfoPtr> device_infos) {
+                       Vector<UsbDeviceInfoPtr> device_infos) {
   auto request_entry = device_manager_requests_.Find(resolver);
   if (request_entry == device_manager_requests_.end())
     return;
@@ -165,7 +167,7 @@ void USB::OnGetDevices(ScriptPromiseResolver* resolver,
 }
 
 void USB::OnGetPermission(ScriptPromiseResolver* resolver,
-                          usb::DeviceInfoPtr device_info) {
+                          UsbDeviceInfoPtr device_info) {
   auto request_entry = chooser_service_requests_.Find(resolver);
   if (request_entry == chooser_service_requests_.end())
     return;
@@ -180,7 +182,7 @@ void USB::OnGetPermission(ScriptPromiseResolver* resolver,
   }
 }
 
-void USB::OnDeviceAdded(usb::DeviceInfoPtr device_info) {
+void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
   if (!device_manager_)
     return;
 
@@ -188,7 +190,7 @@ void USB::OnDeviceAdded(usb::DeviceInfoPtr device_info) {
       EventTypeNames::connect, GetOrCreateDevice(std::move(device_info))));
 }
 
-void USB::OnDeviceRemoved(usb::DeviceInfoPtr device_info) {
+void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   String guid = device_info->guid;
   USBDevice* device = device_cache_.at(guid);
   if (!device) {

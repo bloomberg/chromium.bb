@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module device.usb;
+module device.mojom;
 
-enum OpenDeviceError {
+enum UsbOpenDeviceError {
   // Opening the device succeeded.
   OK,
 
@@ -15,59 +15,59 @@ enum OpenDeviceError {
   ALREADY_OPEN,
 };
 
-enum TransferDirection {
+enum UsbTransferDirection {
   INBOUND,
   OUTBOUND,
 };
 
-enum ControlTransferType {
+enum UsbControlTransferType {
   STANDARD,
   CLASS,
   VENDOR,
   RESERVED
 };
 
-enum ControlTransferRecipient {
+enum UsbControlTransferRecipient {
   DEVICE,
   INTERFACE,
   ENDPOINT,
   OTHER
 };
 
-enum EndpointType {
+enum UsbEndpointType {
   BULK,
   INTERRUPT,
   ISOCHRONOUS,
 };
 
-struct EndpointInfo {
+struct UsbEndpointInfo {
   uint8 endpoint_number;
-  TransferDirection direction;
-  EndpointType type;
+  UsbTransferDirection direction;
+  UsbEndpointType type;
   uint32 packet_size;
 };
 
-struct AlternateInterfaceInfo {
+struct UsbAlternateInterfaceInfo {
   uint8 alternate_setting;
   uint8 class_code;
   uint8 subclass_code;
   uint8 protocol_code;
   string? interface_name;
-  array<EndpointInfo> endpoints;
+  array<UsbEndpointInfo> endpoints;
 };
 
-struct InterfaceInfo {
+struct UsbInterfaceInfo {
   uint8 interface_number;
-  array<AlternateInterfaceInfo> alternates;
+  array<UsbAlternateInterfaceInfo> alternates;
 };
 
-struct ConfigurationInfo {
+struct UsbConfigurationInfo {
   uint8 configuration_value;
   string? configuration_name;
-  array<InterfaceInfo> interfaces;
+  array<UsbInterfaceInfo> interfaces;
 };
 
-struct DeviceInfo {
+struct UsbDeviceInfo {
   string guid;
   uint8 usb_version_major;
   uint8 usb_version_minor;
@@ -84,18 +84,18 @@ struct DeviceInfo {
   string? product_name;
   string? serial_number;
   uint8 active_configuration;
-  array<ConfigurationInfo> configurations;
+  array<UsbConfigurationInfo> configurations;
 };
 
-struct ControlTransferParams {
-  ControlTransferType type;
-  ControlTransferRecipient recipient;
+struct UsbControlTransferParams {
+  UsbControlTransferType type;
+  UsbControlTransferRecipient recipient;
   uint8 request;
   uint16 value;
   uint16 index;
 };
 
-enum TransferStatus {
+enum UsbTransferStatus {
   // The transfer completed successfully.
   COMPLETED,
 
@@ -126,15 +126,15 @@ enum TransferStatus {
   SHORT_PACKET,
 };
 
-struct IsochronousPacket {
+struct UsbIsochronousPacket {
   uint32 length;
   uint32 transferred_length;
-  TransferStatus status;
+  UsbTransferStatus status;
 };
 
-interface Device {
+interface UsbDevice {
   // Opens the device. Methods below require the device be opened first.
-  Open() => (OpenDeviceError error);
+  Open() => (UsbOpenDeviceError error);
 
   // Closes the device.
   Close() => ();
@@ -170,8 +170,10 @@ interface Device {
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
-  ControlTransferIn(ControlTransferParams params, uint32 length, uint32 timeout)
-      => (TransferStatus status, array<uint8>? data);
+  ControlTransferIn(UsbControlTransferParams params,
+                    uint32 length,
+                    uint32 timeout)
+      => (UsbTransferStatus status, array<uint8>? data);
 
   // Initiates an inbound control transfer request. |params| determine the
   // details of the request. Transfers to recipients other than DEVICE require a
@@ -182,10 +184,10 @@ interface Device {
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
-  ControlTransferOut(ControlTransferParams params,
+  ControlTransferOut(UsbControlTransferParams params,
                      array<uint8> data,
                      uint32 timeout)
-      => (TransferStatus status);
+      => (UsbTransferStatus status);
 
   // Initiates an inbound generic transfer request on a specific endpoint. The
   // interface to which |endpoint_number| belongs must be claimed, and the
@@ -201,7 +203,7 @@ interface Device {
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
   GenericTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
-      => (TransferStatus status, array<uint8>? data);
+      => (UsbTransferStatus status, array<uint8>? data);
 
   // Initiates an outbound generic transfer request on a specific endpoint. The
   // interface to which |endpoint_number| belongs must be claimed, and the
@@ -215,7 +217,7 @@ interface Device {
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
   GenericTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
-      => (TransferStatus status);
+      => (UsbTransferStatus status);
 
   // Initiates an inbound isochronous transfer request on a specific endpoint.
   // The interface to which |endpoint_number| belongs must be claimed, and the
@@ -238,7 +240,7 @@ interface Device {
   IsochronousTransferIn(uint8 endpoint_number,
                         array<uint32> packet_lengths,
                         uint32 timeout)
-      => (array<uint8>? data, array<IsochronousPacket> packets);
+      => (array<uint8>? data, array<UsbIsochronousPacket> packets);
 
   // Initiates an outbound isochronous transfer request on a specific endpoint.
   // The interface to which |endpoint_number| belongs must be claimed, and the
@@ -260,5 +262,5 @@ interface Device {
                          array<uint8> data,
                          array<uint32> packet_lengths,
                          uint32 timeout)
-      => (array<IsochronousPacket> packets);
+      => (array<UsbIsochronousPacket> packets);
 };

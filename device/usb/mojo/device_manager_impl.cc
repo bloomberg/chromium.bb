@@ -28,7 +28,7 @@ namespace usb {
 // static
 void DeviceManagerImpl::Create(
     base::WeakPtr<PermissionProvider> permission_provider,
-    DeviceManagerRequest request) {
+    mojom::UsbDeviceManagerRequest request) {
   DCHECK(DeviceClient::Get());
   UsbService* service = DeviceClient::Get()->GetUsbService();
   if (!service)
@@ -56,7 +56,7 @@ DeviceManagerImpl::DeviceManagerImpl(
 DeviceManagerImpl::~DeviceManagerImpl() {
 }
 
-void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
+void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    const GetDevicesCallback& callback) {
   usb_service_->GetDevices(base::Bind(&DeviceManagerImpl::OnGetDevices,
                                       weak_factory_.GetWeakPtr(),
@@ -64,7 +64,7 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
 }
 
 void DeviceManagerImpl::GetDevice(const std::string& guid,
-                                  DeviceRequest device_request) {
+                                  mojom::UsbDeviceRequest device_request) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device)
     return;
@@ -76,24 +76,24 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
   }
 }
 
-void DeviceManagerImpl::SetClient(DeviceManagerClientPtr client) {
+void DeviceManagerImpl::SetClient(mojom::UsbDeviceManagerClientPtr client) {
   client_ = std::move(client);
 }
 
 void DeviceManagerImpl::OnGetDevices(
-    EnumerationOptionsPtr options,
+    mojom::UsbEnumerationOptionsPtr options,
     const GetDevicesCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<UsbDeviceFilter> filters;
   if (options && options->filters)
     filters.swap(*options->filters);
 
-  std::vector<DeviceInfoPtr> device_infos;
+  std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
     if (UsbDeviceFilter::MatchesAny(*device, filters)) {
       if (permission_provider_ &&
           permission_provider_->HasDevicePermission(device)) {
-        device_infos.push_back(DeviceInfo::From(*device));
+        device_infos.push_back(mojom::UsbDeviceInfo::From(*device));
       }
     }
   }
@@ -104,13 +104,13 @@ void DeviceManagerImpl::OnGetDevices(
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
   if (client_ && permission_provider_ &&
       permission_provider_->HasDevicePermission(device))
-    client_->OnDeviceAdded(DeviceInfo::From(*device));
+    client_->OnDeviceAdded(mojom::UsbDeviceInfo::From(*device));
 }
 
 void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
   if (client_ && permission_provider_ &&
       permission_provider_->HasDevicePermission(device))
-    client_->OnDeviceRemoved(DeviceInfo::From(*device));
+    client_->OnDeviceRemoved(mojom::UsbDeviceInfo::From(*device));
 }
 
 void DeviceManagerImpl::WillDestroyUsbService() {

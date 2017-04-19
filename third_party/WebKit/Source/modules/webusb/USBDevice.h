@@ -28,18 +28,20 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBDevice* Create(device::usb::blink::DeviceInfoPtr device_info,
-                           device::usb::blink::DevicePtr device,
+  static USBDevice* Create(device::mojom::blink::UsbDeviceInfoPtr device_info,
+                           device::mojom::blink::UsbDevicePtr device,
                            ExecutionContext* context) {
     return new USBDevice(std::move(device_info), std::move(device), context);
   }
 
-  explicit USBDevice(device::usb::blink::DeviceInfoPtr,
-                     device::usb::blink::DevicePtr,
+  explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,
+                     device::mojom::blink::UsbDevicePtr,
                      ExecutionContext*);
   virtual ~USBDevice();
 
-  const device::usb::blink::DeviceInfo& Info() const { return *device_info_; }
+  const device::mojom::blink::UsbDeviceInfo& Info() const {
+    return *device_info_;
+  }
   bool IsInterfaceClaimed(size_t configuration_index,
                           size_t interface_index) const;
   size_t SelectedAlternateInterface(size_t interface_index) const;
@@ -117,12 +119,13 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
                                uint8_t endpoint_number,
                                ScriptPromiseResolver*) const;
   bool AnyInterfaceChangeInProgress() const;
-  device::usb::blink::ControlTransferParamsPtr ConvertControlTransferParameters(
-      const USBControlTransferParameters&,
-      ScriptPromiseResolver*) const;
+  device::mojom::blink::UsbControlTransferParamsPtr
+  ConvertControlTransferParameters(const USBControlTransferParameters&,
+                                   ScriptPromiseResolver*) const;
   void SetEndpointsForInterface(size_t interface_index, bool set);
 
-  void AsyncOpen(ScriptPromiseResolver*, device::usb::blink::OpenDeviceError);
+  void AsyncOpen(ScriptPromiseResolver*,
+                 device::mojom::blink::UsbOpenDeviceError);
   void AsyncClose(ScriptPromiseResolver*);
   void OnDeviceOpenedOrClosed(bool);
   void AsyncSelectConfiguration(size_t configuration_index,
@@ -141,32 +144,32 @@ class USBDevice : public GarbageCollectedFinalized<USBDevice>,
                                      ScriptPromiseResolver*,
                                      bool success);
   void AsyncControlTransferIn(ScriptPromiseResolver*,
-                              device::usb::blink::TransferStatus,
+                              device::mojom::blink::UsbTransferStatus,
                               const Optional<Vector<uint8_t>>&);
   void AsyncControlTransferOut(unsigned,
                                ScriptPromiseResolver*,
-                               device::usb::blink::TransferStatus);
+                               device::mojom::blink::UsbTransferStatus);
   void AsyncClearHalt(ScriptPromiseResolver*, bool success);
   void AsyncTransferIn(ScriptPromiseResolver*,
-                       device::usb::blink::TransferStatus,
+                       device::mojom::blink::UsbTransferStatus,
                        const Optional<Vector<uint8_t>>&);
   void AsyncTransferOut(unsigned,
                         ScriptPromiseResolver*,
-                        device::usb::blink::TransferStatus);
+                        device::mojom::blink::UsbTransferStatus);
   void AsyncIsochronousTransferIn(
       ScriptPromiseResolver*,
       const Optional<Vector<uint8_t>>&,
-      Vector<device::usb::blink::IsochronousPacketPtr>);
+      Vector<device::mojom::blink::UsbIsochronousPacketPtr>);
   void AsyncIsochronousTransferOut(
       ScriptPromiseResolver*,
-      Vector<device::usb::blink::IsochronousPacketPtr>);
+      Vector<device::mojom::blink::UsbIsochronousPacketPtr>);
   void AsyncReset(ScriptPromiseResolver*, bool success);
 
   void OnConnectionError();
   bool MarkRequestComplete(ScriptPromiseResolver*);
 
-  device::usb::blink::DeviceInfoPtr device_info_;
-  device::usb::blink::DevicePtr device_;
+  device::mojom::blink::UsbDeviceInfoPtr device_info_;
+  device::mojom::blink::UsbDevicePtr device_;
   HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
   bool opened_;
   bool device_state_change_in_progress_;

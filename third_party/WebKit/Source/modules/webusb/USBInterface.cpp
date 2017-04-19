@@ -43,7 +43,7 @@ USBInterface::USBInterface(const USBDevice* device,
       device_->Info().configurations[configuration_index_]->interfaces.size());
 }
 
-const device::usb::blink::InterfaceInfo& USBInterface::Info() const {
+const device::mojom::blink::UsbInterfaceInfo& USBInterface::Info() const {
   return *device_->Info()
               .configurations[configuration_index_]
               ->interfaces[interface_index_];

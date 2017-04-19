@@ -7,9 +7,10 @@
 namespace mojo {
 
 // static
-bool StructTraits<device::usb::DeviceFilterDataView, device::UsbDeviceFilter>::
-    Read(device::usb::DeviceFilterDataView input,
-         device::UsbDeviceFilter* output) {
+bool StructTraits<
+    device::mojom::UsbDeviceFilterDataView,
+    device::UsbDeviceFilter>::Read(device::mojom::UsbDeviceFilterDataView input,
+                                   device::UsbDeviceFilter* output) {
   if (input.has_vendor_id())
     output->vendor_id = input.vendor_id();
   if (input.has_product_id())

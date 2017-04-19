@@ -20,7 +20,7 @@ class RenderFrameHost;
 // Implementation of the public device::usb::ChooserService interface.
 // This interface can be used by a webpage to request permission from user
 // to access a certain device.
-class WebUsbChooserService : public device::usb::ChooserService {
+class WebUsbChooserService : public device::mojom::UsbChooserService {
  public:
   explicit WebUsbChooserService(content::RenderFrameHost* render_frame_host);
 
@@ -30,11 +30,11 @@ class WebUsbChooserService : public device::usb::ChooserService {
   void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
                      const GetPermissionCallback& callback) override;
 
-  void Bind(mojo::InterfaceRequest<device::usb::ChooserService> request);
+  void Bind(device::mojom::UsbChooserServiceRequest request);
 
  private:
   content::RenderFrameHost* const render_frame_host_;
-  mojo::BindingSet<device::usb::ChooserService> bindings_;
+  mojo::BindingSet<device::mojom::UsbChooserService> bindings_;
   std::vector<BubbleReference> bubbles_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbChooserService);

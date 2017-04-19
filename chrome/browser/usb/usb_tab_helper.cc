@@ -48,7 +48,7 @@ UsbTabHelper::~UsbTabHelper() {}
 
 void UsbTabHelper::CreateDeviceManager(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::DeviceManager> request) {
+    mojo::InterfaceRequest<device::mojom::UsbDeviceManager> request) {
   DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
   device::usb::DeviceManagerImpl::Create(
       GetPermissionProvider(render_frame_host), std::move(request));
@@ -56,7 +56,7 @@ void UsbTabHelper::CreateDeviceManager(
 
 void UsbTabHelper::CreateChooserService(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+    mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
   GetChooserService(render_frame_host, std::move(request));
 }
 
@@ -119,7 +119,7 @@ UsbTabHelper::GetPermissionProvider(RenderFrameHost* render_frame_host) {
 
 void UsbTabHelper::GetChooserService(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+    mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
   FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
   if (!frame_usb_services->chooser_service) {
     frame_usb_services->chooser_service.reset(

@@ -45,7 +45,7 @@ void WebUsbChooserService::GetPermission(
 }
 
 void WebUsbChooserService::Bind(
-    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+    device::mojom::UsbChooserServiceRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bindings_.AddBinding(this, std::move(request));
 }

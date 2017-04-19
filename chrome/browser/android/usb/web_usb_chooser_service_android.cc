@@ -28,7 +28,7 @@ void WebUsbChooserServiceAndroid::GetPermission(
 }
 
 void WebUsbChooserServiceAndroid::Bind(
-    mojo::InterfaceRequest<device::usb::ChooserService> request) {
+    mojo::InterfaceRequest<device::mojom::UsbChooserService> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bindings_.AddBinding(this, std::move(request));
 }

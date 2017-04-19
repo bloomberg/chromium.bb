@@ -38,11 +38,11 @@ namespace {
 
 void OnDevicePermissionRequestComplete(
     scoped_refptr<UsbDevice> device,
-    const device::usb::ChooserService::GetPermissionCallback& callback,
+    const device::mojom::UsbChooserService::GetPermissionCallback& callback,
     bool granted) {
-  device::usb::DeviceInfoPtr device_info;
+  device::mojom::UsbDeviceInfoPtr device_info;
   if (granted)
-    device_info = device::usb::DeviceInfo::From(*device);
+    device_info = device::mojom::UsbDeviceInfo::From(*device);
   callback.Run(std::move(device_info));
 }
 
@@ -51,7 +51,7 @@ void OnDevicePermissionRequestComplete(
 UsbChooserDialogAndroid::UsbChooserDialogAndroid(
     const std::vector<device::UsbDeviceFilter>& filters,
     content::RenderFrameHost* render_frame_host,
-    const device::usb::ChooserService::GetPermissionCallback& callback)
+    const device::mojom::UsbChooserService::GetPermissionCallback& callback)
     : render_frame_host_(render_frame_host),
       callback_(callback),
       usb_service_observer_(this),

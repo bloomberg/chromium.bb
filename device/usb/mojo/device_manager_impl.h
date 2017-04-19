@@ -28,10 +28,11 @@ class PermissionProvider;
 
 // Implementation of the public DeviceManager interface. This interface can be
 // requested from the devices app located at "devices", if available.
-class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
+class DeviceManagerImpl : public mojom::UsbDeviceManager,
+                          public UsbService::Observer {
  public:
   static void Create(base::WeakPtr<PermissionProvider> permission_provider,
-                     DeviceManagerRequest request);
+                     mojom::UsbDeviceManagerRequest request);
 
   ~DeviceManagerImpl() override;
 
@@ -40,14 +41,14 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
                     UsbService* usb_service);
 
   // DeviceManager implementation:
-  void GetDevices(EnumerationOptionsPtr options,
+  void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
   void GetDevice(const std::string& guid,
-                 DeviceRequest device_request) override;
-  void SetClient(DeviceManagerClientPtr client) override;
+                 mojom::UsbDeviceRequest device_request) override;
+  void SetClient(mojom::UsbDeviceManagerClientPtr client) override;
 
   // Callbacks to handle the async responses from the underlying UsbService.
-  void OnGetDevices(EnumerationOptionsPtr options,
+  void OnGetDevices(mojom::UsbEnumerationOptionsPtr options,
                     const GetDevicesCallback& callback,
                     const std::vector<scoped_refptr<UsbDevice>>& devices);
 
@@ -58,12 +59,12 @@ class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
 
   void MaybeRunDeviceChangesCallback();
 
-  mojo::StrongBindingPtr<DeviceManager> binding_;
+  mojo::StrongBindingPtr<mojom::UsbDeviceManager> binding_;
   base::WeakPtr<PermissionProvider> permission_provider_;
 
   UsbService* usb_service_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
-  DeviceManagerClientPtr client_;
+  mojom::UsbDeviceManagerClientPtr client_;
 
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 

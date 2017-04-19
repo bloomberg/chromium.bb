@@ -58,10 +58,10 @@ class FakeChooserView : public ChooserController::View {
   DISALLOW_COPY_AND_ASSIGN(FakeChooserView);
 };
 
-class FakeChooserService : public device::usb::ChooserService {
+class FakeChooserService : public device::mojom::UsbChooserService {
  public:
   static void Create(RenderFrameHost* render_frame_host,
-                     device::usb::ChooserServiceRequest request) {
+                     device::mojom::UsbChooserServiceRequest request) {
     mojo::MakeStrongBinding(
         base::MakeUnique<FakeChooserService>(render_frame_host),
         std::move(request));
@@ -72,7 +72,7 @@ class FakeChooserService : public device::usb::ChooserService {
 
   ~FakeChooserService() override {}
 
-  // device::usb::ChooserService:
+  // device::mojom::UsbChooserService:
   void GetPermission(const std::vector<device::UsbDeviceFilter>& device_filters,
                      const GetPermissionCallback& callback) override {
     auto chooser_controller = base::MakeUnique<UsbChooserController>(
