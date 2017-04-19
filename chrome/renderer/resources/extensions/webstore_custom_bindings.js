@@ -5,35 +5,46 @@
 // Custom binding for the webstore API.
 
 var webstoreNatives = requireNative('webstore');
-var Event = require('event_bindings').Event;
+
+var onInstallStageChanged;
+var onDownloadProgress;
 
 function Installer() {
   this._pendingInstall = null;
-  this.onInstallStageChanged =
-      new Event(null, [{name: 'stage', type: 'string'}], {unmanaged: true});
-  this.onDownloadProgress =
-      new Event(null, [{name: 'progress', type: 'number'}], {unmanaged: true});
 }
 
 Installer.prototype.install = function(url, onSuccess, onFailure) {
   if (this._pendingInstall)
     throw new Error('A Chrome Web Store installation is already pending.');
-  if (url !== undefined && typeof(url) !== 'string') {
+
+  // With native bindings, these calls go through argument validation, which
+  // sets optional/missing arguments to null. The native webstore bindings
+  // expect either present or undefined, so transform null to undefined.
+  if (url === null)
+    url = undefined;
+  if (onSuccess === null)
+    onSuccess = undefined;
+  if (onFailure === null)
+    onFailure = undefined;
+
+  if (url !== undefined && typeof url !== 'string') {
     throw new Error(
         'The Chrome Web Store item link URL parameter must be a string.');
   }
-  if (onSuccess !== undefined && typeof(onSuccess) !== 'function')
+  if (onSuccess !== undefined && typeof onSuccess !== 'function') {
     throw new Error('The success callback parameter must be a function.');
-  if (onFailure !== undefined && typeof(onFailure) !== 'function')
+  }
+  if (onFailure !== undefined && typeof onFailure !== 'function') {
     throw new Error('The failure callback parameter must be a function.');
+  }
 
   // Since we call Install() with a bool for if we have listeners, listeners
   // must be set prior to the inline installation starting (this is also
   // noted in the Event documentation in
   // chrome/common/extensions/api/webstore.json).
   var installId = webstoreNatives.Install(
-      this.onInstallStageChanged.hasListeners(),
-      this.onDownloadProgress.hasListeners(),
+      onInstallStageChanged.hasListeners(),
+      onDownloadProgress.hasListeners(),
       url,
       onSuccess,
       onFailure);
@@ -68,29 +79,48 @@ Installer.prototype.onInstallResponse =
 };
 
 Installer.prototype.onInstallStageChanged = function(installStage) {
-  this.onInstallStageChanged.dispatch(installStage);
+  onInstallStageChanged.dispatch(installStage);
 };
 
 Installer.prototype.onDownloadProgress = function(progress) {
-  this.onDownloadProgress.dispatch(progress);
+  onDownloadProgress.dispatch(progress);
 };
 
 var installer = new Installer();
 
-var chromeWebstore = {
-  install: function (url, onSuccess, onFailure) {
-    installer.install(url, onSuccess, onFailure);
-  },
-  onInstallStageChanged: installer.onInstallStageChanged,
-  onDownloadProgress: installer.onDownloadProgress
-};
 
-exports.$set('binding', chromeWebstore);
+if (apiBridge) {
+  apiBridge.registerCustomHook(function(api) {
+    api.apiFunctions.setHandleRequest('install',
+                                      function(url, onSuccess, onFailure) {
+      installer.install(url, onSuccess, onFailure);
+    });
+
+    onInstallStageChanged = api.compiledApi.onInstallStageChanged;
+    onDownloadProgress = api.compiledApi.onDownloadProgress;
+  });
+} else {
+  var Event = require('event_bindings').Event;
+  onInstallStageChanged =
+      new Event(null, [{name: 'stage', type: 'string'}], {unmanaged: true});
+  onDownloadProgress =
+      new Event(null, [{name: 'progress', type: 'number'}], {unmanaged: true});
+
+  var chromeWebstore = {
+    install: function (url, onSuccess, onFailure) {
+      installer.install(url, onSuccess, onFailure);
+    },
+    onInstallStageChanged: onInstallStageChanged,
+    onDownloadProgress: onDownloadProgress,
+  };
+  exports.$set('binding', chromeWebstore);
+}
 
 // Called by webstore_bindings.cc.
-exports.onInstallResponse =
-    Installer.prototype.onInstallResponse.bind(installer);
-exports.onInstallStageChanged =
-    Installer.prototype.onInstallStageChanged.bind(installer);
-exports.onDownloadProgress =
-    Installer.prototype.onDownloadProgress.bind(installer);
+exports.$set('onInstallResponse',
+             $Function.bind(Installer.prototype.onInstallResponse, installer));
+exports.$set('onInstallStageChanged',
+             $Function.bind(Installer.prototype.onInstallStageChanged,
+                            installer));
+exports.$set('onDownloadProgress',
+             $Function.bind(Installer.prototype.onDownloadProgress, installer));
