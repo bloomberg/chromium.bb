@@ -508,13 +508,11 @@ void HitTestResult::ResolveRectBasedTest(
 }
 
 Element* HitTestResult::InnerElement() const {
-  for (Node* node = inner_node_.Get(); node;
-       node = FlatTreeTraversal::Parent(*node)) {
-    if (node->IsElementNode())
-      return ToElement(node);
-  }
-
-  return nullptr;
+  if (!inner_node_)
+    return nullptr;
+  if (inner_node_->IsElementNode())
+    return ToElement(inner_node_);
+  return FlatTreeTraversal::ParentElement(*inner_node_);
 }
 
 Node* HitTestResult::InnerNodeOrImageMapImage() const {

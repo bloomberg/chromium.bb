@@ -651,8 +651,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   mouse_event_manager_->SetClickCount(mouse_event.click_count);
-  mouse_event_manager_->SetClickElement(
-      EventHandlingUtil::ParentElementIfNeeded(mev.InnerNode()));
+  mouse_event_manager_->SetClickElement(mev.InnerElement());
 
   if (!mouse_event.FromTouch())
     frame_->Selection().SetCaretBlinkingSuspended(true);
@@ -957,8 +956,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev =
       EventHandlingUtil::PerformMouseEventHitTest(frame_, request, mouse_event);
-  Element* mouse_release_target =
-      EventHandlingUtil::ParentElementIfNeeded(mev.InnerNode());
+  Element* mouse_release_target = mev.InnerElement();
   LocalFrame* subframe =
       capturing_mouse_events_node_.Get()
           ? SubframeForTargetNode(capturing_mouse_events_node_.Get())

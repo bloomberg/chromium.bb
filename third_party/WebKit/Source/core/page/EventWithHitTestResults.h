@@ -47,6 +47,7 @@ class EventWithHitTestResults {
     return hit_test_result_.IsOverFrameViewBase();
   }
   Node* InnerNode() const { return hit_test_result_.InnerNode(); }
+  Element* InnerElement() const { return hit_test_result_.InnerElement(); }
   const String& CanvasRegionId() const {
     return hit_test_result_.CanvasRegionId();
   }
