@@ -206,11 +206,17 @@ DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
 
 void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
   sandbox_flags_ = flags;
-  // Don't notify about updates if contentFrame() is null, for example when
+  // Recalculate the container policy in case the allow-same-origin flag has
+  // changed.
+  container_policy_ = GetContainerPolicyFromAllowedFeatures(
+      AllowedFeatures(), GetOriginForFeaturePolicy());
+
+  // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
-  if (ContentFrame())
-    GetDocument().GetFrame()->Loader().Client()->DidChangeSandboxFlags(
-        ContentFrame(), flags);
+  if (ContentFrame()) {
+    GetDocument().GetFrame()->Loader().Client()->DidChangeFramePolicy(
+        ContentFrame(), sandbox_flags_, container_policy_);
+  }
 }
 
 bool HTMLFrameOwnerElement::IsKeyboardFocusable() const {
@@ -226,12 +232,24 @@ void HTMLFrameOwnerElement::DisposeFrameOrPluginSoon(
   frame_or_plugin->Dispose();
 }
 
-void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
-  // Don't notify about updates if contentFrame() is null, for example when
+void HTMLFrameOwnerElement::UpdateContainerPolicy() {
+  container_policy_ = GetContainerPolicyFromAllowedFeatures(
+      AllowedFeatures(), GetOriginForFeaturePolicy());
+  // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
-  if (ContentFrame())
+  if (ContentFrame()) {
+    GetDocument().GetFrame()->Loader().Client()->DidChangeFramePolicy(
+        ContentFrame(), sandbox_flags_, container_policy_);
+  }
+}
+
+void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
+  // Don't notify about updates if ContentFrame() is null, for example when
+  // the subframe hasn't been created yet.
+  if (ContentFrame()) {
     GetDocument().GetFrame()->Loader().Client()->DidChangeFrameOwnerProperties(
         this);
+  }
 }
 
 void HTMLFrameOwnerElement::DispatchLoad() {
@@ -242,6 +260,10 @@ const WebVector<WebFeaturePolicyFeature>&
 HTMLFrameOwnerElement::AllowedFeatures() const {
   DEFINE_STATIC_LOCAL(WebVector<WebFeaturePolicyFeature>, features, ());
   return features;
+}
+
+const WebParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
+  return container_policy_;
 }
 
 Document* HTMLFrameOwnerElement::getSVGDocument(
@@ -312,6 +334,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     const KURL& url,
     const AtomicString& frame_name,
     bool replace_current_item) {
+  UpdateContainerPolicy();
+
   LocalFrame* parent_frame = GetDocument().GetFrame();
   if (ContentFrame()) {
     ContentFrame()->Navigate(GetDocument(), url, replace_current_item,

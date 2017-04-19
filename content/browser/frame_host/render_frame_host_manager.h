@@ -703,9 +703,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
                                 bool was_caused_by_user_gesture);
 
-  // Commits any pending sandbox flag updates when the renderer's frame
-  // navigates.
-  void CommitPendingSandboxFlags();
+  // Commits any pending sandbox flag or feature policy updates when the
+  // renderer's frame navigates.
+  void CommitPendingFramePolicy();
 
   // Runs the unload handler in the old RenderFrameHost, after the new
   // RenderFrameHost has committed.  |old_render_frame_host| will either be

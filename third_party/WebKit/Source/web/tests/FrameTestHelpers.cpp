@@ -166,7 +166,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame* parent,
   WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent->CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
       static_cast<TestWebFrameClient*>(client)->GetInterfaceProvider(), nullptr,
-      previous_sibling, properties, nullptr));
+      previous_sibling, WebParsedFeaturePolicy(), properties, nullptr));
 
   if (!widget_client)
     widget_client = DefaultWebWidgetClient();
@@ -178,9 +178,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame* parent,
 WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame* parent,
                                       WebRemoteFrameClient* client,
                                       const WebString& name) {
-  return ToWebRemoteFrameImpl(
-      parent->CreateRemoteChild(WebTreeScopeType::kDocument, name,
-                                WebSandboxFlags::kNone, client, nullptr));
+  return ToWebRemoteFrameImpl(parent->CreateRemoteChild(
+      WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
+      WebParsedFeaturePolicy(), client, nullptr));
 }
 
 WebViewHelper::WebViewHelper(SettingOverrider* setting_overrider)
@@ -306,6 +306,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const WebString& name,
     const WebString& fallback_name,
     WebSandboxFlags sandbox_flags,
+    const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties) {
   WebLocalFrame* frame =
       WebLocalFrame::Create(scope, this, GetInterfaceProvider(), nullptr);

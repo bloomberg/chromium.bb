@@ -42,6 +42,18 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
 
 ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() {}
 
+bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
+                const ParsedFeaturePolicyDeclaration& rhs) {
+  // This method returns true only when the arguments are actually identical,
+  // including the order of elements in the origins vector.
+  // TODO(iclelland): Consider making this return true when comparing equal-
+  // but-not-identical whitelists, or eliminate those comparisons by maintaining
+  // the whiteslists in a normalized form.
+  // https://crbug.com/710324
+  return std::tie(lhs.feature, lhs.matches_all_origins, lhs.origins) ==
+         std::tie(rhs.feature, rhs.matches_all_origins, rhs.origins);
+}
+
 FeaturePolicy::Whitelist::Whitelist() : matches_all_origins_(false) {}
 
 FeaturePolicy::Whitelist::Whitelist(const Whitelist& rhs) = default;
@@ -112,9 +124,8 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
   auto whitelist = whitelists_.find(feature);
   if (whitelist != whitelists_.end())
     return whitelist->second->Contains(origin);
-  if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll) {
+  if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll)
     return true;
-  }
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf) {
     // TODO(iclelland): Remove the pointer equality check once it is possible to
     // compare opaque origins successfully against themselves.

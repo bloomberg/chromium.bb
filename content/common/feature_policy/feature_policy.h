@@ -102,6 +102,9 @@ struct CONTENT_EXPORT ParsedFeaturePolicyDeclaration {
 
 using ParsedFeaturePolicyHeader = std::vector<ParsedFeaturePolicyDeclaration>;
 
+bool CONTENT_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
+                               const ParsedFeaturePolicyDeclaration& rhs);
+
 class CONTENT_EXPORT FeaturePolicy : public blink::WebFeaturePolicy {
  public:
   // Represents a collection of origins which make up a whitelist in a feature

@@ -127,11 +127,13 @@ class WEB_EXPORT WebRemoteFrameImpl final
                                   blink::InterfaceProvider*,
                                   blink::InterfaceRegistry*,
                                   WebFrame* previous_sibling,
+                                  const WebParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&,
                                   WebFrame* opener) override;
   WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                     const WebString& name,
                                     WebSandboxFlags,
+                                    const WebParsedFeaturePolicy&,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
   void SetWebLayer(WebLayer*) override;

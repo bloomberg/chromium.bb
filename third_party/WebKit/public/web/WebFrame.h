@@ -31,13 +31,14 @@
 #ifndef WebFrame_h
 #define WebFrame_h
 
+#include <memory>
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "public/platform/WebCanvas.h"
+#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebTreeScopeType.h"
-#include <memory>
 
 namespace v8 {
 class Context;
@@ -141,11 +142,13 @@ class WebFrame {
   // The security origin of this frame.
   BLINK_EXPORT WebSecurityOrigin GetSecurityOrigin() const;
 
-  // Updates the sandbox flags in the frame's FrameOwner.  This is used when
-  // this frame's parent is in another process and it dynamically updates
-  // this frame's sandbox flags.  The flags won't take effect until the next
-  // navigation.
-  BLINK_EXPORT void SetFrameOwnerSandboxFlags(WebSandboxFlags);
+  // Updates the snapshotted policy attributes (sandbox flags and feature policy
+  // container policy) in the frame's FrameOwner. This is used when this frame's
+  // parent is in another process and it dynamically updates this frame's
+  // sandbox flags or container policy. The new policy won't take effect until
+  // the next navigation.
+  BLINK_EXPORT void SetFrameOwnerPolicy(WebSandboxFlags,
+                                        const blink::WebParsedFeaturePolicy&);
 
   // The frame's insecure request policy.
   BLINK_EXPORT WebInsecureRequestPolicy GetInsecureRequestPolicy() const;

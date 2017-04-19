@@ -244,7 +244,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DidUpdateToUniqueOrigin() {}
 
-  virtual void DidChangeSandboxFlags(Frame* child_frame, SandboxFlags) {}
+  virtual void DidChangeFramePolicy(Frame* child_frame,
+                                    SandboxFlags,
+                                    const WebParsedFeaturePolicy&) {}
 
   virtual void DidSetFeaturePolicyHeader(
       const WebParsedFeaturePolicy& parsed_header) {}

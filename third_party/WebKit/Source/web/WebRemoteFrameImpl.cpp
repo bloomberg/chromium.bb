@@ -324,13 +324,15 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     blink::InterfaceProvider* interface_provider,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* previous_sibling,
+    const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
   WebLocalFrameImpl* child = WebLocalFrameImpl::Create(
       scope, client, interface_provider, interface_registry, opener);
   InsertAfter(child, previous_sibling);
-  RemoteFrameOwner* owner = RemoteFrameOwner::Create(
-      static_cast<SandboxFlags>(sandbox_flags), frame_owner_properties);
+  RemoteFrameOwner* owner =
+      RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),
+                               container_policy, frame_owner_properties);
   // FIXME: currently this calls LocalFrame::init() on the created LocalFrame,
   // which may result in the browser observing two navigations to about:blank
   // (one from the initial frame creation, and one from swapping it into the
@@ -356,12 +358,14 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     WebTreeScopeType scope,
     const WebString& name,
     WebSandboxFlags sandbox_flags,
+    const WebParsedFeaturePolicy& container_policy,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
   WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client, opener);
   AppendChild(child);
-  RemoteFrameOwner* owner = RemoteFrameOwner::Create(
-      static_cast<SandboxFlags>(sandbox_flags), WebFrameOwnerProperties());
+  RemoteFrameOwner* owner =
+      RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),
+                               container_policy, WebFrameOwnerProperties());
   child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
   return child;
 }

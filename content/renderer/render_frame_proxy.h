@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/feature_policy/feature_policy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
@@ -165,7 +166,9 @@ class CONTENT_EXPORT RenderFrameProxy
                               const cc::SurfaceSequence& sequence);
   void OnUpdateOpener(int opener_routing_id);
   void OnDidStopLoading();
-  void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
+  void OnDidUpdateFramePolicy(
+      blink::WebSandboxFlags flags,
+      const ParsedFeaturePolicyHeader& container_policy);
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnAddContentSecurityPolicies(

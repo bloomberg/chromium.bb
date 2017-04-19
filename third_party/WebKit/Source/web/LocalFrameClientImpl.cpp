@@ -71,6 +71,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
@@ -844,12 +845,15 @@ void LocalFrameClientImpl::DidUpdateToUniqueOrigin() {
       web_frame_->GetSecurityOrigin().IsPotentiallyTrustworthy());
 }
 
-void LocalFrameClientImpl::DidChangeSandboxFlags(Frame* child_frame,
-                                                 SandboxFlags flags) {
+void LocalFrameClientImpl::DidChangeFramePolicy(
+    Frame* child_frame,
+    SandboxFlags flags,
+    const WebParsedFeaturePolicy& container_policy) {
   if (!web_frame_->Client())
     return;
-  web_frame_->Client()->DidChangeSandboxFlags(
-      WebFrame::FromFrame(child_frame), static_cast<WebSandboxFlags>(flags));
+  web_frame_->Client()->DidChangeFramePolicy(
+      WebFrame::FromFrame(child_frame), static_cast<WebSandboxFlags>(flags),
+      container_policy);
 }
 
 void LocalFrameClientImpl::DidSetFeaturePolicyHeader(

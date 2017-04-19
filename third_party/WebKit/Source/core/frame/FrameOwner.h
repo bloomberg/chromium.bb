@@ -51,6 +51,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool IsDisplayNone() const = 0;
   virtual AtomicString Csp() const = 0;
   virtual const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const = 0;
+  virtual const WebParsedFeaturePolicy& ContainerPolicy() const = 0;
 };
 
 // TODO(dcheng): This class is an internal implementation detail of provisional
@@ -87,6 +88,10 @@ class CORE_EXPORT DummyFrameOwner
   const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
     DEFINE_STATIC_LOCAL(WebVector<WebFeaturePolicyFeature>, features, ());
     return features;
+  }
+  const WebParsedFeaturePolicy& ContainerPolicy() const override {
+    DEFINE_STATIC_LOCAL(WebParsedFeaturePolicy, container_policy, ());
+    return container_policy;
   }
 
  private:

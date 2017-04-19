@@ -176,6 +176,7 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
                          const std::string& frame_name,
                          const std::string& frame_unique_name,
                          blink::WebSandboxFlags sandbox_flags,
+                         const ParsedFeaturePolicyHeader& container_policy,
                          const FrameOwnerProperties& frame_owner_properties) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
@@ -203,10 +204,12 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
   if (last_committed_entry)
     last_committed_entry->ClearStaleFrameEntriesForNewFrame(added_node);
 
-  // Set sandbox flags and make them effective immediately, since initial
-  // sandbox flags should apply to the initial empty document in the frame.
+  // Set sandbox flags and container policy and make them effective immediately,
+  // since initial sandbox flags and feature policy should apply to the initial
+  // empty document in the frame.
   added_node->SetPendingSandboxFlags(sandbox_flags);
-  added_node->CommitPendingSandboxFlags();
+  added_node->SetPendingContainerPolicy(container_policy);
+  added_node->CommitPendingFramePolicy();
 
   // Now that the new node is part of the FrameTree and has a RenderFrameHost,
   // we can announce the creation of the initial RenderFrame which already

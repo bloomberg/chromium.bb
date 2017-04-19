@@ -446,6 +446,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
         static_cast<InputRouterImpl*>(render_widget_host_->input_router());
     ir->SetFrameTreeNodeId(frame_tree_node_->frame_tree_node_id());
   }
+  ResetFeaturePolicy();
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -778,8 +779,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
                         OnUpdateToUniqueOrigin)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeSandboxFlags,
-                        OnDidChangeSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
+                        OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
@@ -1097,6 +1098,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     blink::WebSandboxFlags sandbox_flags,
+    const ParsedFeaturePolicyHeader& container_policy,
     const FrameOwnerProperties& frame_owner_properties) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
@@ -1109,9 +1111,9 @@ void RenderFrameHostImpl::OnCreateChildFrame(
       !render_frame_created_)
     return;
 
-  frame_tree_->AddFrame(
-      frame_tree_node_, GetProcess()->GetID(), new_routing_id, scope,
-      frame_name, frame_unique_name, sandbox_flags, frame_owner_properties);
+  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+                        scope, frame_name, frame_unique_name, sandbox_flags,
+                        container_policy, frame_owner_properties);
 }
 
 void RenderFrameHostImpl::OnCreateNewWindow(
@@ -1987,28 +1989,31 @@ FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
   return child;
 }
 
-void RenderFrameHostImpl::OnDidChangeSandboxFlags(
+void RenderFrameHostImpl::OnDidChangeFramePolicy(
     int32_t frame_routing_id,
-    blink::WebSandboxFlags flags) {
-  // Ensure that a frame can only update sandbox flags for its immediate
-  // children.  If this is not the case, the renderer is considered malicious
-  // and is killed.
+    blink::WebSandboxFlags flags,
+    const ParsedFeaturePolicyHeader& container_policy) {
+  // Ensure that a frame can only update sandbox flags or feature policy for its
+  // immediate children.  If this is not the case, the renderer is considered
+  // malicious and is killed.
   FrameTreeNode* child = FindAndVerifyChild(
+      // TODO(iclelland): Rename this message
       frame_routing_id, bad_message::RFH_SANDBOX_FLAGS);
   if (!child)
     return;
 
   child->SetPendingSandboxFlags(flags);
+  child->SetPendingContainerPolicy(container_policy);
 
-  // Notify the RenderFrame if it lives in a different process from its
-  // parent. The frame's proxies in other processes also need to learn about
-  // the updated sandbox flags, but these notifications are sent later in
-  // RenderFrameHostManager::CommitPendingSandboxFlags(), when the frame
-  // navigates and the new sandbox flags take effect.
+  // Notify the RenderFrame if it lives in a different process from its parent.
+  // The frame's proxies in other processes also need to learn about the updated
+  // flags and policy, but these notifications are sent later in
+  // RenderFrameHostManager::CommitPendingFramePolicy(), when the frame
+  // navigates and the new policies take effect.
   RenderFrameHost* child_rfh = child->current_frame_host();
   if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
-    child_rfh->Send(
-        new FrameMsg_DidUpdateSandboxFlags(child_rfh->GetRoutingID(), flags));
+    child_rfh->Send(new FrameMsg_DidUpdateFramePolicy(child_rfh->GetRoutingID(),
+                                                      flags, container_policy));
   }
 }
 
@@ -3498,8 +3503,8 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
   RenderFrameHostImpl* parent_frame_host = GetParent();
   const FeaturePolicy* parent_policy =
       parent_frame_host ? parent_frame_host->get_feature_policy() : nullptr;
-  // TODO(iclelland): Get the frame owner properties here to reset properly.
-  ParsedFeaturePolicyHeader container_policy;
+  ParsedFeaturePolicyHeader container_policy =
+      frame_tree_node()->effective_container_policy();
   feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
       parent_policy, container_policy, last_committed_origin_);
 }

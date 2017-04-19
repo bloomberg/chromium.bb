@@ -631,6 +631,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // base URL of parent will be returned, passed base URL override otherwise.
   const KURL& BaseURLForOverride(const KURL& base_url_override) const;
 
+  // Determines whether a new document should take on the same origin as that of
+  // the document which created it.
+  static bool ShouldInheritSecurityOriginFromOwner(const KURL&);
+
   String UserAgent() const final;
   void DisableEval(const String& error_message) final;
 

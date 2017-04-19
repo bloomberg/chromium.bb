@@ -26,6 +26,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -95,6 +96,10 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool IsDisplayNone() const override { return !widget_; }
   AtomicString Csp() const override { return g_null_atom; }
   const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override;
+  const WebParsedFeaturePolicy& ContainerPolicy() const override;
+
+  // For unit tests, manually trigger the UpdateContainerPolicy method.
+  void UpdateContainerPolicyForTests() { UpdateContainerPolicy(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -109,6 +114,19 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void DisposeFrameOrPluginSoon(FrameOrPlugin*);
   void FrameOwnerPropertiesChanged();
+
+  // Return the origin which is to be used for feature policy container
+  // policies, as "the origin of the URL in the frame's src attribute" (see
+  // https://wicg.github.io/feature-policy/#iframe-allow-attribute).
+  // This method is intended to be overridden by specific frame classes.
+  virtual RefPtr<SecurityOrigin> GetOriginForFeaturePolicy() const {
+    return SecurityOrigin::CreateUnique();
+  }
+
+  // Construct a new feature policy container policy for this frame, based on
+  // the frame attributes and the effective origin specified in the frame
+  // attributes.
+  void UpdateContainerPolicy();
 
  private:
   // Intentionally private to prevent redundant checks when the type is
@@ -125,6 +143,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   Member<Frame> content_frame_;
   Member<FrameViewBase> widget_;
   SandboxFlags sandbox_flags_;
+
+  WebParsedFeaturePolicy container_policy_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, IsFrameOwnerElement());

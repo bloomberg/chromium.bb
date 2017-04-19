@@ -164,6 +164,22 @@ void HTMLFrameElementBase::ParseAttribute(
   }
 }
 
+RefPtr<SecurityOrigin> HTMLFrameElementBase::GetOriginForFeaturePolicy() const {
+  // Sandboxed frames have a unique origin.
+  if (GetSandboxFlags() & kSandboxOrigin)
+    return SecurityOrigin::CreateUnique();
+
+  // If the frame will inherit its origin from the owner, then use the owner's
+  // origin when constructing the container policy.
+  KURL url = GetDocument().CompleteURL(url_);
+  if (Document::ShouldInheritSecurityOriginFromOwner(url))
+    return GetDocument().GetSecurityOrigin();
+
+  // Other frames should use the origin defined by the absolute URL (this will
+  // be a unique origin for data: URLs)
+  return SecurityOrigin::Create(url);
+}
+
 void HTMLFrameElementBase::SetNameAndOpenURL() {
   frame_name_ = GetNameAttribute();
   OpenURL();

@@ -40,12 +40,14 @@ class WebRemoteFrame : public WebFrame {
                                           blink::InterfaceProvider*,
                                           blink::InterfaceRegistry*,
                                           WebFrame* previous_sibling,
+                                          const WebParsedFeaturePolicy&,
                                           const WebFrameOwnerProperties&,
                                           WebFrame* opener) = 0;
 
   virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                             const WebString& name,
                                             WebSandboxFlags,
+                                            const WebParsedFeaturePolicy&,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;
 

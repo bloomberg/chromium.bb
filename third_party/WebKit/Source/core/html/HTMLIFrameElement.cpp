@@ -134,12 +134,15 @@ void HTMLIFrameElement::ParseAttribute(
                 kHTMLIFrameElementAllowfullscreenAttributeSetAfterContentLoad);
       }
       FrameOwnerPropertiesChanged();
+      UpdateContainerPolicy();
     }
   } else if (name == allowpaymentrequestAttr) {
     bool old_allow_payment_request = allow_payment_request_;
     allow_payment_request_ = !value.IsNull();
-    if (allow_payment_request_ != old_allow_payment_request)
+    if (allow_payment_request_ != old_allow_payment_request) {
       FrameOwnerPropertiesChanged();
+      UpdateContainerPolicy();
+    }
   } else if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
              name == cspAttr) {
     // TODO(amalika): add more robust validation of the value
@@ -214,6 +217,7 @@ void HTMLIFrameElement::AllowValueWasSet() {
   }
   SetSynchronizedLazyAttribute(allowAttr, allow_->value());
   FrameOwnerPropertiesChanged();
+  UpdateContainerPolicy();
 }
 
 ReferrerPolicy HTMLIFrameElement::ReferrerPolicyAttribute() {

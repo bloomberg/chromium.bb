@@ -179,12 +179,14 @@ class BLINK_EXPORT WebFrameClient {
   // to prevent the new child frame from being attached. Otherwise, embedders
   // should create a new WebLocalFrame, insert it into the frame tree, and
   // return the created frame.
-  virtual WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                          WebTreeScopeType,
-                                          const WebString& name,
-                                          const WebString& fallback_name,
-                                          WebSandboxFlags sandbox_flags,
-                                          const WebFrameOwnerProperties&) {
+  virtual WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType,
+      const WebString& name,
+      const WebString& fallback_name,
+      WebSandboxFlags sandbox_flags,
+      const WebParsedFeaturePolicy& container_policy,
+      const WebFrameOwnerProperties&) {
     return nullptr;
   }
 
@@ -222,9 +224,12 @@ class BLINK_EXPORT WebFrameClient {
   virtual void DidUpdateToUniqueOrigin(
       bool is_potentially_trustworthy_unique_origin) {}
 
-  // The sandbox flags have changed for a child frame of this frame.
-  virtual void DidChangeSandboxFlags(WebFrame* child_frame,
-                                     WebSandboxFlags flags) {}
+  // The sandbox flags or container policy have changed for a child frame of
+  // this frame.
+  virtual void DidChangeFramePolicy(
+      WebFrame* child_frame,
+      WebSandboxFlags flags,
+      const WebParsedFeaturePolicy& container_policy) {}
 
   // Called when a Feature-Policy HTTP header is encountered while loading the
   // frame's document.

@@ -89,18 +89,6 @@ static bool IsArchiveMIMEType(const String& mime_type) {
   return DeprecatedEqualIgnoringCase("multipart/related", mime_type);
 }
 
-static bool ShouldInheritSecurityOriginFromOwner(const KURL& url) {
-  // https://html.spec.whatwg.org/multipage/browsers.html#origin
-  //
-  // If a Document is the initial "about:blank" document The origin and
-  // effective script origin of the Document are those it was assigned when its
-  // browsing context was created.
-  //
-  // Note: We generalize this to all "blank" URLs and invalid URLs because we
-  // treat all of these URLs as about:blank.
-  return url.IsEmpty() || url.ProtocolIsAbout();
-}
-
 DocumentLoader::DocumentLoader(LocalFrame* frame,
                                const ResourceRequest& req,
                                const SubstituteData& substitute_data,
@@ -663,7 +651,7 @@ void DocumentLoader::EnsureWriter(const AtomicString& mime_type,
   Document* owner = nullptr;
   // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
   // origin is inherited from the document that loaded the URL.
-  if (ShouldInheritSecurityOriginFromOwner(Url())) {
+  if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
     Frame* owner_frame = frame_->Tree().Parent();
     if (!owner_frame)
       owner_frame = frame_->Loader().Opener();
@@ -1001,11 +989,8 @@ void SetFeaturePolicy(Document* document, const String& feature_policy_header) {
       feature_policy_header, frame->GetSecurityContext()->GetSecurityOrigin(),
       &messages);
   WebParsedFeaturePolicy container_policy;
-  if (frame->Owner()) {
-    container_policy = GetContainerPolicyFromAllowedFeatures(
-        frame->Owner()->AllowedFeatures(),
-        frame->GetSecurityContext()->GetSecurityOrigin());
-  }
+  if (frame->Owner())
+    container_policy = frame->Owner()->ContainerPolicy();
   frame->GetSecurityContext()->InitializeFeaturePolicy(
       parsed_header, container_policy, parent_feature_policy);
 

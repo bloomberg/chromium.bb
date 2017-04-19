@@ -127,7 +127,9 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->CreateRemoteChild(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
-        replicated_state.sandbox_flags, proxy.get(), opener);
+        replicated_state.sandbox_flags,
+        FeaturePolicyHeaderToWeb(replicated_state.container_policy),
+        proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget();
@@ -235,7 +237,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 }
 
 // Update the proxy's SecurityContext and FrameOwner with new sandbox flags
-// that were set by its parent in another process.
+// and container policy that were set by its parent in another process.
 //
 // Normally, when a frame's sandbox attribute is changed dynamically, the
 // frame's FrameOwner is updated with the new sandbox flags right away, while
@@ -250,9 +252,12 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 // properly if this proxy ever parents a local frame.  The proxy's FrameOwner
 // flags are also updated here with the caveat that the FrameOwner won't learn
 // about updates to its flags until they take effect.
-void RenderFrameProxy::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
+void RenderFrameProxy::OnDidUpdateFramePolicy(
+    blink::WebSandboxFlags flags,
+    const ParsedFeaturePolicyHeader& container_policy) {
   web_frame_->SetReplicatedSandboxFlags(flags);
-  web_frame_->SetFrameOwnerSandboxFlags(flags);
+  web_frame_->SetFrameOwnerPolicy(flags,
+                                  FeaturePolicyHeaderToWeb(container_policy));
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
@@ -272,7 +277,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,

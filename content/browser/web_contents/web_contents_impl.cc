@@ -620,7 +620,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
         blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
     if ((opener_flags & inherit_flag) == inherit_flag) {
       new_root->SetPendingSandboxFlags(opener_flags);
-      new_root->CommitPendingSandboxFlags();
+      new_root->CommitPendingFramePolicy();
     }
   }
 

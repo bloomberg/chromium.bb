@@ -1700,7 +1700,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
           owner_element->getAttribute(
               owner_element->SubResourceAttributeName()),
           static_cast<WebSandboxFlags>(owner_element->GetSandboxFlags()),
-          owner_properties));
+          owner_element->ContainerPolicy(), owner_properties));
   if (!webframe_child)
     return nullptr;
 

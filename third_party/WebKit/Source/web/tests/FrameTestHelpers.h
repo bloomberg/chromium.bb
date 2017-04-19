@@ -258,6 +258,7 @@ class TestWebFrameClient : public WebFrameClient {
                                   const WebString& name,
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
+                                  const WebParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&) override;
   void DidStartLoading(bool) override;
   void DidStopLoading() override;

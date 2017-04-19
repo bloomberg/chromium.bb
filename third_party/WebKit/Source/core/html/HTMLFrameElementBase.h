@@ -40,9 +40,12 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   int MarginHeight() const final { return margin_height_; }
 
  protected:
+  friend class HTMLIFrameElementTest;
+
   HTMLFrameElementBase(const QualifiedName&, Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
+
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void DidNotifySubtreeInsertionsToDocument() final;
   void AttachLayoutTree(const AttachContext& = AttachContext()) override;
@@ -50,6 +53,14 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   void SetScrollingMode(ScrollbarMode);
   void SetMarginWidth(int);
   void SetMarginHeight(int);
+
+  // Return the origin which is to be used for feature policy container
+  // policies, when the "allow" attribute is used. When that attribute is used,
+  // the feature policy which is constructed should only allow a given feature
+  // on the origin which is specified by the frame's "src" attribute.
+  // It also takes into account details such as the frame's sandbox status, and
+  // whether the frame should inherit its parent's origin.
+  RefPtr<SecurityOrigin> GetOriginForFeaturePolicy() const override;
 
  private:
   bool SupportsFocus() const final;

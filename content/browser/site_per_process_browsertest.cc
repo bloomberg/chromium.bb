@@ -740,12 +740,6 @@ class SitePerProcessFeaturePolicyBrowserTest
   }
 };
 
-bool operator==(const ParsedFeaturePolicyDeclaration& first,
-                const ParsedFeaturePolicyDeclaration& second) {
-  return std::tie(first.feature, first.matches_all_origins, first.origins) ==
-         std::tie(second.feature, second.matches_all_origins, second.origins);
-}
-
 IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
                        SubframeLoadsWithCorrectDeviceScaleFactor) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -9509,6 +9503,84 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
             blink::WebFeaturePolicyFeature::kFullscreen);
   EXPECT_EQ(root->child_at(3)->frame_owner_properties().allowed_features[1],
             blink::WebFeaturePolicyFeature::kVibrate);
+}
+
+// Test iframe container policy is replicated properly to the browser.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       ContainerPolicy) {
+  GURL url(embedded_test_server()->GetURL("/allowed_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  EXPECT_EQ(0UL, root->effective_container_policy().size());
+  EXPECT_EQ(0UL, root->child_at(0)->effective_container_policy().size());
+  EXPECT_EQ(0UL, root->child_at(1)->effective_container_policy().size());
+  EXPECT_EQ(2UL, root->child_at(2)->effective_container_policy().size());
+  EXPECT_EQ(2UL, root->child_at(3)->effective_container_policy().size());
+}
+
+// Test dynamic updates to iframe "allow" attribute are propagated correctly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       ContainerPolicyDynamic) {
+  GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
+  GURL nav_url(
+      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  EXPECT_EQ(2UL, root->child_at(2)->effective_container_policy().size());
+
+  // Removing the "allow" attribute; pending policy should update, but effective
+  // policy remains unchanged.
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-2').setAttribute('allow','')"));
+  EXPECT_EQ(2UL, root->child_at(2)->effective_container_policy().size());
+  EXPECT_EQ(0UL, root->child_at(2)->pending_container_policy_.size());
+
+  // Navigate the frame; pending policy should be committed.
+  NavigateFrameToURL(root->child_at(2), nav_url);
+  EXPECT_EQ(0UL, root->child_at(2)->effective_container_policy().size());
+}
+
+// Test that dynamic updates to iframe sandbox attribute correctly set the
+// replicated container policy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       ContainerPolicySandboxDynamic) {
+  GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
+  GURL nav_url(
+      embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Validate that the effective container policy contains a single non-unique
+  // origin.
+  const ParsedFeaturePolicyHeader initial_effective_policy =
+      root->child_at(2)->effective_container_policy();
+  EXPECT_EQ(1UL, initial_effective_policy[0].origins.size());
+  EXPECT_FALSE(initial_effective_policy[0].origins[0].unique());
+
+  // Set the "sandbox" attribute; pending policy should update, and should now
+  // contain a unique origin, but effective policy should remain unchanged.
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.getElementById('child-2').setAttribute('sandbox','')"));
+  const ParsedFeaturePolicyHeader updated_effective_policy =
+      root->child_at(2)->effective_container_policy();
+  const ParsedFeaturePolicyHeader updated_pending_policy =
+      root->child_at(2)->pending_container_policy_;
+  EXPECT_EQ(1UL, updated_effective_policy[0].origins.size());
+  EXPECT_FALSE(updated_effective_policy[0].origins[0].unique());
+  EXPECT_EQ(1UL, updated_pending_policy[0].origins.size());
+  EXPECT_TRUE(updated_pending_policy[0].origins[0].unique());
+
+  // Navigate the frame; pending policy should now be committed.
+  NavigateFrameToURL(root->child_at(2), nav_url);
+  const ParsedFeaturePolicyHeader final_effective_policy =
+      root->child_at(2)->effective_container_policy();
+  EXPECT_EQ(1UL, final_effective_policy[0].origins.size());
+  EXPECT_TRUE(final_effective_policy[0].origins[0].unique());
 }
 
 // Test harness that allows for "barrier" style delaying of requests matching

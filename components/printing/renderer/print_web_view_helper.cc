@@ -678,6 +678,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebString& name,
       const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
+      const blink::WebParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
 
   void CallOnReady();
@@ -837,6 +838,7 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
     const blink::WebString& name,
     const blink::WebString& fallback_name,
     blink::WebSandboxFlags sandbox_flags,
+    const blink::WebParsedFeaturePolicy& container_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
   blink::WebLocalFrame* frame =
       blink::WebLocalFrame::Create(scope, this, nullptr, nullptr);

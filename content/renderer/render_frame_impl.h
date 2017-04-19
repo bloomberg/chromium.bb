@@ -514,6 +514,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& name,
       const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
+      const blink::WebParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(blink::WebLocalFrame* frame, DetachType type) override;
@@ -524,8 +525,10 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebInsecureRequestPolicy policy) override;
   void DidUpdateToUniqueOrigin(
       bool is_potentially_trustworthy_unique_origin) override;
-  void DidChangeSandboxFlags(blink::WebFrame* child_frame,
-                             blink::WebSandboxFlags flags) override;
+  void DidChangeFramePolicy(
+      blink::WebFrame* child_frame,
+      blink::WebSandboxFlags flags,
+      const blink::WebParsedFeaturePolicy& container_policy) override;
   void DidSetFeaturePolicyHeader(
       const blink::WebParsedFeaturePolicy& parsed_header) override;
   void DidAddContentSecurityPolicies(
@@ -881,7 +884,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSnapshotAccessibilityTree(int callback_id);
   void OnExtractSmartClipData(uint32_t callback_id, const gfx::Rect& rect);
   void OnUpdateOpener(int opener_routing_id);
-  void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
+  void OnDidUpdateFramePolicy(
+      blink::WebSandboxFlags flags,
+      const ParsedFeaturePolicyHeader& container_policy);
   void OnSetFrameOwnerProperties(
       const FrameOwnerProperties& frame_owner_properties);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);

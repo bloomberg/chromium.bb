@@ -24,8 +24,10 @@ class RemoteFrameOwner final
  public:
   static RemoteFrameOwner* Create(
       SandboxFlags flags,
+      const WebParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties& frame_owner_properties) {
-    return new RemoteFrameOwner(flags, frame_owner_properties);
+    return new RemoteFrameOwner(flags, container_policy,
+                                frame_owner_properties);
   }
 
   // FrameOwner overrides:
@@ -52,6 +54,9 @@ class RemoteFrameOwner final
   const WebVector<WebFeaturePolicyFeature>& AllowedFeatures() const override {
     return allowed_features_;
   }
+  const WebParsedFeaturePolicy& ContainerPolicy() const override {
+    return container_policy_;
+  }
 
   void SetBrowsingContextContainerName(const WebString& name) {
     browsing_context_container_name_ = name;
@@ -73,11 +78,16 @@ class RemoteFrameOwner final
       const WebVector<WebFeaturePolicyFeature>& allowed_features) {
     allowed_features_ = allowed_features;
   }
+  void SetContainerPolicy(const WebParsedFeaturePolicy& container_policy) {
+    container_policy_ = container_policy;
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  RemoteFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
+  RemoteFrameOwner(SandboxFlags,
+                   const WebParsedFeaturePolicy&,
+                   const WebFrameOwnerProperties&);
 
   // Intentionally private to prevent redundant checks when the type is
   // already HTMLFrameOwnerElement.
@@ -95,6 +105,7 @@ class RemoteFrameOwner final
   bool is_display_none_;
   WebString csp_;
   WebVector<WebFeaturePolicyFeature> allowed_features_;
+  WebParsedFeaturePolicy container_policy_;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner,

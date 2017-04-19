@@ -7303,6 +7303,7 @@ class TestCachePolicyWebFrameClient
       const WebString&,
       const WebString&,
       WebSandboxFlags,
+      const WebParsedFeaturePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties) override {
     DCHECK(child_client_);
     child_frame_creation_count_++;
@@ -7712,6 +7713,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
       const WebString& name,
       const WebString& fallback_name,
       WebSandboxFlags sandbox_flags,
+      const WebParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties& frame_owner_properties) override {
     ++call_count_;
     return nullptr;
@@ -11746,12 +11748,14 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
 
   class MainFrameClient : public FrameTestHelpers::TestWebFrameClient {
    public:
-    WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                    WebTreeScopeType scope,
-                                    const WebString& name,
-                                    const WebString& fallback_name,
-                                    WebSandboxFlags sandbox_flags,
-                                    const WebFrameOwnerProperties&) override {
+    WebLocalFrame* CreateChildFrame(
+        WebLocalFrame* parent,
+        WebTreeScopeType scope,
+        const WebString& name,
+        const WebString& fallback_name,
+        WebSandboxFlags sandbox_flags,
+        const WebParsedFeaturePolicy& container_policy,
+        const WebFrameOwnerProperties&) override {
       WebLocalFrame* frame =
           WebLocalFrame::Create(scope, &child_client_, nullptr, nullptr);
       parent->AppendChild(frame);
@@ -11953,6 +11957,7 @@ class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
       const WebString&,
       const WebString&,
       WebSandboxFlags,
+      const WebParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties& frameOwnerProperties) override {
     DCHECK(child_client_);
     WebLocalFrame* frame =

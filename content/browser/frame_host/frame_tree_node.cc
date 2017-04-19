@@ -321,6 +321,14 @@ void FrameTreeNode::SetPendingSandboxFlags(
     pending_sandbox_flags_ |= parent()->effective_sandbox_flags();
 }
 
+void FrameTreeNode::SetPendingContainerPolicy(
+    const ParsedFeaturePolicyHeader& container_policy) {
+  // This should only be called on subframes; container policy is not mutable on
+  // main frame.
+  DCHECK(!IsMainFrame());
+  pending_container_policy_ = container_policy;
+}
+
 bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
   if (!other || !other->child_count())
     return false;
@@ -364,11 +372,16 @@ bool FrameTreeNode::IsLoading() const {
   return current_frame_host->is_loading();
 }
 
-bool FrameTreeNode::CommitPendingSandboxFlags() {
+bool FrameTreeNode::CommitPendingFramePolicy() {
   bool did_change_flags =
       pending_sandbox_flags_ != replication_state_.sandbox_flags;
-  replication_state_.sandbox_flags = pending_sandbox_flags_;
-  return did_change_flags;
+  bool did_change_container_policy =
+      pending_container_policy_ != replication_state_.container_policy;
+  if (did_change_flags)
+    replication_state_.sandbox_flags = pending_sandbox_flags_;
+  if (did_change_container_policy)
+    replication_state_.container_policy = pending_container_policy_;
+  return did_change_flags || did_change_container_policy;
 }
 
 void FrameTreeNode::CreatedNavigationRequest(

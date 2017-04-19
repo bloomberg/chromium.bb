@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/frame_tree_node_blame_context.h"
@@ -206,9 +207,29 @@ class CONTENT_EXPORT FrameTreeNode {
   // sandboxed, the parent's sandbox flags are combined with |sandbox_flags|.
   void SetPendingSandboxFlags(blink::WebSandboxFlags sandbox_flags);
 
-  // Set any pending sandbox flags as active, and return true if the sandbox
-  // flags were changed.
-  bool CommitPendingSandboxFlags();
+  // Returns the currently active container policy for this frame, which is set
+  // by the iframe allowfullscreen, allowpaymentrequest, and allow attributes,
+  // along with the origin of the iframe's src attribute (which may be different
+  // from the URL of the document currently loaded into the frame). This does
+  // not include policy changes that have been made by updating the containing
+  // iframe element attributes since the frame was last navigated.
+  const ParsedFeaturePolicyHeader& effective_container_policy() const {
+    return replication_state_.container_policy;
+  }
+
+  // Update this frame's container policy. This is used when a parent frame
+  // updates feature-policy attributes in the <iframe> element for this frame.
+  // These attributes include allow, allowfullscreen, allowpaymentrequest, and
+  // src. Updates to the container policy will not take effect until next
+  // navigation.
+  // This method must only be called on a subframe; changing the container
+  // policy on the main frame is not allowed.
+  void SetPendingContainerPolicy(
+      const ParsedFeaturePolicyHeader& container_policy);
+
+  // Set any pending sandbox flags and container policy as active, and return
+  // true if either was changed.
+  bool CommitPendingFramePolicy();
 
   const FrameOwnerProperties& frame_owner_properties() {
     return frame_owner_properties_;
@@ -314,6 +335,11 @@ class CONTENT_EXPORT FrameTreeNode {
   void OnSetHasReceivedUserGesture();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
+                           ContainerPolicyDynamic);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
+                           ContainerPolicySandboxDynamic);
+
   class OpenerDestroyedObserver;
 
   FrameTreeNode* GetSibling(int relative_offset) const;
@@ -378,6 +404,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // replication_state_.sandbox_flags when they take effect on the next frame
   // navigation.
   blink::WebSandboxFlags pending_sandbox_flags_;
+
+  // Tracks the computed container policy for this frame. When the iframe
+  // allowfullscreen, allowpaymentrequest, allow or src attributes are changed,
+  // the updated policy for the frame is stored here, and transferred into
+  // replication_state_.container_policy on the next frame navigation.
+  ParsedFeaturePolicyHeader pending_container_policy_;
 
   // Tracks the scrolling and margin properties for this frame.  These
   // properties affect the child renderer but are stored on its parent's

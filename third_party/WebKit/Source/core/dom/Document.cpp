@@ -5113,6 +5113,19 @@ const KURL& Document::BaseURLForOverride(const KURL& base_url_override) const {
   return base_url_from_parent ? *base_url_from_parent : base_url_override;
 }
 
+// static
+bool Document::ShouldInheritSecurityOriginFromOwner(const KURL& url) {
+  // https://html.spec.whatwg.org/multipage/browsers.html#origin
+  //
+  // If a Document is the initial "about:blank" document The origin and
+  // effective script origin of the Document are those it was assigned when its
+  // browsing context was created.
+  //
+  // Note: We generalize this to all "blank" URLs and invalid URLs because we
+  // treat all of these URLs as about:blank.
+  return url.IsEmpty() || url.ProtocolIsAbout();
+}
+
 KURL Document::OpenSearchDescriptionURL() {
   static const char kOpenSearchMIMEType[] =
       "application/opensearchdescription+xml";

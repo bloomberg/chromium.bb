@@ -90,6 +90,9 @@ struct CONTENT_EXPORT FrameReplicationState {
   // document.
   ParsedFeaturePolicyHeader feature_policy_header;
 
+  // Container Policy. May be empty if this is the top-level frame.
+  ParsedFeaturePolicyHeader container_policy;
+
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).
   std::vector<ContentSecurityPolicyHeader> accumulated_csp_headers;

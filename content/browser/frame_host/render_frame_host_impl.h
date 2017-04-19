@@ -249,6 +249,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           blink::WebSandboxFlags sandbox_flags,
+                          const ParsedFeaturePolicyHeader& container_policy,
                           const FrameOwnerProperties& frame_owner_properties);
 
   // Called when this frame tries to open a new WebContents, e.g. via a script
@@ -735,8 +736,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
-  void OnDidChangeSandboxFlags(int32_t frame_routing_id,
-                               blink::WebSandboxFlags flags);
+  void OnDidChangeFramePolicy(
+      int32_t frame_routing_id,
+      blink::WebSandboxFlags flags,
+      const ParsedFeaturePolicyHeader& container_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,

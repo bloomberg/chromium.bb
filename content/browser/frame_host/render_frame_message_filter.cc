@@ -62,6 +62,7 @@ void CreateChildFrameOnUI(int process_id,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           blink::WebSandboxFlags sandbox_flags,
+                          const ParsedFeaturePolicyHeader& container_policy,
                           const FrameOwnerProperties& frame_owner_properties,
                           int new_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -70,9 +71,9 @@ void CreateChildFrameOnUI(int process_id,
   // Handles the RenderFrameHost being deleted on the UI thread while
   // processing a subframe creation message.
   if (render_frame_host) {
-    render_frame_host->OnCreateChildFrame(new_routing_id, scope, frame_name,
-                                          frame_unique_name, sandbox_flags,
-                                          frame_owner_properties);
+    render_frame_host->OnCreateChildFrame(
+        new_routing_id, scope, frame_name, frame_unique_name, sandbox_flags,
+        container_policy, frame_owner_properties);
   }
 }
 
@@ -305,7 +306,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
       base::Bind(&CreateChildFrameOnUI, render_process_id_,
                  params.parent_routing_id, params.scope, params.frame_name,
                  params.frame_unique_name, params.sandbox_flags,
-                 params.frame_owner_properties, *new_routing_id));
+                 params.container_policy, params.frame_owner_properties,
+                 *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(

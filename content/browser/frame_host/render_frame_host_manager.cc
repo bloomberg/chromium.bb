@@ -435,9 +435,9 @@ void RenderFrameHostManager::DidNavigateFrame(
     bool was_caused_by_user_gesture) {
   CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture);
 
-  // Make sure any dynamic changes to this frame's sandbox flags that were made
-  // prior to navigation take effect.
-  CommitPendingSandboxFlags();
+  // Make sure any dynamic changes to this frame's sandbox flags and feature
+  // policy that were made prior to navigation take effect.
+  CommitPendingFramePolicy();
 }
 
 void RenderFrameHostManager::CommitPendingIfNecessary(
@@ -537,23 +537,25 @@ void RenderFrameHostManager::DidChangeOpener(
   }
 }
 
-void RenderFrameHostManager::CommitPendingSandboxFlags() {
-  // Return early if there were no pending sandbox flags updates.
-  if (!frame_tree_node_->CommitPendingSandboxFlags())
+void RenderFrameHostManager::CommitPendingFramePolicy() {
+  // Return early if there were no pending updates to sandbox flags or container
+  // policy.
+  if (!frame_tree_node_->CommitPendingFramePolicy())
     return;
 
-  // Sandbox flags updates can only happen when the frame has a parent.
+  // Policy updates can only happen when the frame has a parent.
   CHECK(frame_tree_node_->parent());
 
-  // Notify all of the frame's proxies about updated sandbox flags, excluding
-  // the parent process since it already knows the latest flags.
+  // Notify all of the frame's proxies about updated policies, excluding
+  // the parent process since it already knows the latest state.
   SiteInstance* parent_site_instance =
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
-      pair.second->Send(new FrameMsg_DidUpdateSandboxFlags(
+      pair.second->Send(new FrameMsg_DidUpdateFramePolicy(
           pair.second->GetRoutingID(),
-          frame_tree_node_->current_replication_state().sandbox_flags));
+          frame_tree_node_->current_replication_state().sandbox_flags,
+          frame_tree_node_->current_replication_state().container_policy));
     }
   }
 }
