@@ -438,7 +438,7 @@ class NativeBackendGnomeTest : public testing::Test {
     // That way we can run both loops and be sure that the UI thread loop will
     // quit so we can get on with the rest of the test.
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&PostQuitTask, &message_loop_));
+                            base::BindOnce(&PostQuitTask, &message_loop_));
     base::RunLoop().Run();
   }
 
@@ -528,11 +528,9 @@ class NativeBackendGnomeTest : public testing::Test {
     backend.Init();
 
     BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                   base::Unretained(&backend),
-                   credentials));
+        BrowserThread::DB, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                       base::Unretained(&backend), credentials));
 
     PasswordStore::FormDigest target_form = {scheme, url.spec(), url};
     if (scheme != PasswordForm::SCHEME_HTML) {
@@ -609,11 +607,9 @@ class NativeBackendGnomeTest : public testing::Test {
 
     // Add the PSL-matched copy to saved logins.
     BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                   base::Unretained(&backend),
-                   m_facebook));
+        BrowserThread::DB, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                       base::Unretained(&backend), m_facebook));
     RunBothThreads();
     EXPECT_EQ(2u, mock_keyring_items.size());
 
@@ -732,17 +728,13 @@ class NativeBackendGnomeTest : public testing::Test {
     }
 
     BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                   base::Unretained(&backend),
-                   form_google_));
+        BrowserThread::DB, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                       base::Unretained(&backend), form_google_));
     BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                   base::Unretained(&backend),
-                   form_isc_));
+        BrowserThread::DB, FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                       base::Unretained(&backend), form_isc_));
 
     PasswordStoreChangeList expected_changes;
     expected_changes.push_back(
@@ -824,8 +816,8 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
@@ -938,8 +930,8 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
   // First add google login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunBothThreads();
 
@@ -975,8 +967,8 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunBothThreads();
 
@@ -1005,8 +997,8 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunBothThreads();
 
@@ -1038,8 +1030,8 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
   // First add an unrelated login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunBothThreads();
 
@@ -1081,8 +1073,8 @@ TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
   // First add an unrelated login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunBothThreads();
 
@@ -1114,8 +1106,8 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
   // First add an unrelated login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
   RunBothThreads();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
@@ -1224,12 +1216,12 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_facebook_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_facebook_));
 
   RunBothThreads();
 
@@ -1277,14 +1269,14 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
       GURL(std::string("http://www.google.com/") + unique_string);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
   form_google_.origin =
       GURL(std::string("http://www.google.com/") + unique_string_replacement);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
   RunBothThreads();
 
   // Read the raw value back. Change the |unique_string| to
@@ -1322,13 +1314,13 @@ TEST_F(NativeBackendGnomeTest, GetAllLogins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_facebook_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                     base::Unretained(&backend), form_facebook_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(

@@ -302,7 +302,7 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::Bind(ThreadDone, &event));
+                            base::BindOnce(ThreadDone, &event));
     event.Wait();
     // Some of the tests may post messages to the UI thread, but we don't need
     // to run those until after the DB thread is finished. So run it here.
@@ -439,17 +439,13 @@ void NativeBackendKWalletTest::TestRemoveLoginsBetween(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend),
-                 form_google_));
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
   BrowserThread::PostTask(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend),
-                 form_isc_));
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_isc_));
 
   PasswordStoreChangeList expected_changes;
   expected_changes.push_back(
@@ -737,8 +733,8 @@ TEST_P(NativeBackendKWalletTest, BasicUpdateLogin) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunDBThread();
 
@@ -776,8 +772,8 @@ TEST_P(NativeBackendKWalletTest, BasicListLogins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(
@@ -806,8 +802,8 @@ TEST_P(NativeBackendKWalletTest, BasicRemoveLogin) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunDBThread();
 
@@ -841,8 +837,8 @@ TEST_P(NativeBackendKWalletTest, UpdateNonexistentLogin) {
   // First add an unrelated login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunDBThread();
 
@@ -876,8 +872,8 @@ TEST_P(NativeBackendKWalletTest, RemoveNonexistentLogin) {
   // First add an unrelated login.
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunDBThread();
 
@@ -1011,12 +1007,12 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
-                 base::Unretained(&backend), form_isc_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
+                     base::Unretained(&backend), form_isc_));
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
+                     base::Unretained(&backend), form_google_));
 
   RunDBThread();
 
@@ -1060,14 +1056,14 @@ TEST_P(NativeBackendKWalletTest, ReadDuplicateForms) {
       GURL(std::string("http://www.google.com/") + unique_string);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
   form_google_.origin =
       GURL(std::string("http://www.google.com/") + unique_string_replacement);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
   RunDBThread();
 
   // Read the raw value back. Change the |unique_string| to
@@ -1119,9 +1115,10 @@ TEST_P(NativeBackendKWalletTest, GetAllLoginsErrorHandling) {
 
   // Verify that nothing is in fact returned, because KWallet fails to respond.
   std::vector<std::unique_ptr<PasswordForm>> form_list;
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          base::Bind(&CheckGetAutofillableLoginsFails,
-                                     base::Unretained(&backend), &form_list));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(&CheckGetAutofillableLoginsFails,
+                     base::Unretained(&backend), &form_list));
   RunDBThread();
   EXPECT_EQ(0u, form_list.size());
 }
@@ -1132,12 +1129,12 @@ TEST_P(NativeBackendKWalletTest, GetAllLogins) {
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_google_));
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_isc_));
+      base::BindOnce(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
+                     base::Unretained(&backend), form_isc_));
 
   std::vector<std::unique_ptr<PasswordForm>> form_list;
   BrowserThread::PostTaskAndReplyWithResult(

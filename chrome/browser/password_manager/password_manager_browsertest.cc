@@ -1556,9 +1556,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // migration is completed.
   const auto empty_lambda = []() {};
   base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                           FROM_HERE, base::Bind(empty_lambda),
-                                           run_loop.QuitClosure());
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE, base::BindOnce(empty_lambda),
+      run_loop.QuitClosure());
   run_loop.Run();
 
   // Only HTTPS passwords should be present.

@@ -308,8 +308,8 @@ NativeBackendKWallet::~NativeBackendKWallet() {
   // destroyed before that occurs, but that's OK.
   if (kwallet_dbus_.GetSessionBus()) {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::Bind(&dbus::Bus::ShutdownAndBlock,
-                                       kwallet_dbus_.GetSessionBus()));
+                            base::BindOnce(&dbus::Bus::ShutdownAndBlock,
+                                           kwallet_dbus_.GetSessionBus()));
   }
 }
 
@@ -327,10 +327,10 @@ bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   // NativeBackendKWallet isn't reference counted, but we wait for InitWithBus
   // to finish, so we can safely use base::Unretained here.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                          base::Bind(&NativeBackendKWallet::InitOnDBThread,
-                                     base::Unretained(this),
-                                     optional_bus, &event, &success));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::BindOnce(&NativeBackendKWallet::InitOnDBThread,
+                     base::Unretained(this), optional_bus, &event, &success));
 
   // This ScopedAllowWait should not be here. http://crbug.com/125331
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
