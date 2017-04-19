@@ -1818,6 +1818,27 @@
             ]
         }
     ],
+    "ParallelDownloading": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "min_slice_size": "2097152",
+                        "parallel_request_delay": "5000",
+                        "parallel_request_remaining_time": "2",
+                        "request_count": "2"
+                    },
+                    "enable_features": [
+                        "ParallelDownloading"
+                    ]
+                }
+            ]
+        }
+    ],
     "PassiveDocumentEventListeners": [
         {
             "platforms": [
