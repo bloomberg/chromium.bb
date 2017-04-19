@@ -297,6 +297,8 @@ source_set("unit_tests") {
   sources = [
     "activity_log_converter_strategy_unittest.cc",
     "api/mojo_private/mojo_private_unittest.cc",
+    "api_binding_hooks_test_delegate.cc",
+    "api_binding_hooks_test_delegate.h",
     "api_binding_js_util_unittest.cc",
     "api_binding_test.cc",
     "api_binding_test.h",

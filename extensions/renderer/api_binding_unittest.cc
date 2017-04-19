@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_hooks.h"
+#include "extensions/renderer/api_binding_hooks_test_delegate.h"
 #include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_event_handler.h"
@@ -178,6 +179,12 @@ class APIBindingUnittest : public APIBindingTest {
     ASSERT_TRUE(binding_hooks_);
   }
 
+  void SetHooksDelegate(
+      std::unique_ptr<APIBindingHooksDelegate> hooks_delegate) {
+    binding_hooks_delegate_ = std::move(hooks_delegate);
+    ASSERT_TRUE(binding_hooks_delegate_);
+  }
+
   void SetCreateCustomType(const APIBinding::CreateCustomType& callback) {
     create_custom_type_ = callback;
   }
@@ -187,6 +194,8 @@ class APIBindingUnittest : public APIBindingTest {
       binding_hooks_ = base::MakeUnique<APIBindingHooks>(
           kBindingName, binding::RunJSFunctionSync());
     }
+    if (binding_hooks_delegate_)
+      binding_hooks_->SetDelegate(std::move(binding_hooks_delegate_));
     event_handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&OnEventListenersChanged));
@@ -253,6 +262,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<base::ListValue> binding_types_;
   std::unique_ptr<base::DictionaryValue> binding_properties_;
   std::unique_ptr<APIBindingHooks> binding_hooks_;
+  std::unique_ptr<APIBindingHooksDelegate> binding_hooks_delegate_;
   APIBinding::CreateCustomType create_custom_type_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingUnittest);
@@ -691,8 +701,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   SetFunctions(kFunctions);
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
-      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -708,8 +717,8 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
     EXPECT_EQ("foo", gin::V8ToString(arguments->at(0)));
     return result;
   };
-  hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
-  SetHooks(std::move(hooks));
+  hooks->AddHandler("test.oneString", base::Bind(hook, &did_call));
+  SetHooksDelegate(std::move(hooks));
 
   InitializeBinding();
 
@@ -990,8 +999,7 @@ TEST_F(APIBindingUnittest,
   v8::Local<v8::Context> context = MainContext();
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
-      kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
+  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -1015,9 +1023,9 @@ TEST_F(APIBindingUnittest,
         gin::StringToV8(context->GetIsolate(), arg_value + " pong");
     return result;
   };
-  hooks->RegisterHandleRequest("test.oneString", base::Bind(hook, &did_call));
+  hooks->AddHandler("test.oneString", base::Bind(hook, &did_call));
 
-  SetHooks(std::move(hooks));
+  SetHooksDelegate(std::move(hooks));
   SetFunctions(kFunctions);
   InitializeBinding();
 

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_API_BINDING_HOOKS_DELEGATE_H_
 #define EXTENSIONS_RENDERER_API_BINDING_HOOKS_DELEGATE_H_
 
+#include "extensions/renderer/api_binding_hooks.h"
 #include "extensions/renderer/api_binding_types.h"
 #include "v8/include/v8.h"
 
@@ -23,7 +24,13 @@ class APIBindingHooksDelegate {
                                  const std::string& event_name,
                                  v8::Local<v8::Value>* event_out);
 
-  // TODO(devlin): Add a virtual HandleRequest() method.
+  // Allows custom implementations to handle a given request.
+  virtual APIBindingHooks::RequestResult HandleRequest(
+      const std::string& method_name,
+      const APISignature* signature,
+      v8::Local<v8::Context> context,
+      std::vector<v8::Local<v8::Value>>* arguments,
+      const APITypeReferenceMap& refs);
 };
 
 }  // namespace extensions

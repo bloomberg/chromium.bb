@@ -16,4 +16,14 @@ bool APIBindingHooksDelegate::CreateCustomEvent(
   return false;
 }
 
+APIBindingHooks::RequestResult APIBindingHooksDelegate::HandleRequest(
+    const std::string& method_name,
+    const APISignature* signature,
+    v8::Local<v8::Context> context,
+    std::vector<v8::Local<v8::Value>>* arguments,
+    const APITypeReferenceMap& refs) {
+  return APIBindingHooks::RequestResult(
+      APIBindingHooks::RequestResult::NOT_HANDLED);
+}
+
 }  // namespace extensions
