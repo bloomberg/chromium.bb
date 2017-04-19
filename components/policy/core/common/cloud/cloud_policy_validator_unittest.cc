@@ -72,7 +72,8 @@ class CloudPolicyValidatorTest : public testing::Test {
     // Run validation and check the result.
     EXPECT_CALL(*this, ValidationCompletion(validator.get())).WillOnce(
         check_action);
-    validator.release()->StartValidation(
+    UserCloudPolicyValidator::StartValidation(
+        std::move(validator),
         base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -84,8 +85,9 @@ class CloudPolicyValidatorTest : public testing::Test {
     std::string public_key = PolicyBuilder::GetPublicTestKeyAsString();
     EXPECT_FALSE(public_key.empty());
 
-    UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
-        std::move(policy_response), base::ThreadTaskRunnerHandle::Get());
+    std::unique_ptr<UserCloudPolicyValidator> validator =
+        UserCloudPolicyValidator::Create(std::move(policy_response),
+                                         base::ThreadTaskRunnerHandle::Get());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);
@@ -104,7 +106,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     } else {
       validator->ValidateSignature(public_key);
     }
-    return base::WrapUnique(validator);
+    return validator;
   }
 
 

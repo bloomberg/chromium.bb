@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -128,7 +129,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   Status status() const { return status_; }
   bool success() const { return status_ == VALIDATION_OK; }
 
-  // The policy objects owned by the validator. These are scoped_ptr
+  // The policy objects owned by the validator. These are unique_ptr
   // references, so ownership can be passed on once validation is complete.
   std::unique_ptr<enterprise_management::PolicyFetchResponse>& policy() {
     return policy_;
@@ -233,9 +234,11 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
       google::protobuf::MessageLite* payload,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
-  // Posts an asynchronous calls to PerformValidation, which will eventually
-  // report its result via |completion_callback|.
-  void PostValidationTask(const base::Closure& completion_callback);
+  // Posts an asynchronous call to PerformValidation of the passed |validator|,
+  // which will eventually report its result via |completion_callback|.
+  static void PostValidationTask(
+      std::unique_ptr<CloudPolicyValidatorBase> validator,
+      const base::Closure& completion_callback);
 
  private:
   // Internal flags indicating what to check.
@@ -344,32 +347,32 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
 template<typename PayloadProto>
 class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
  public:
-  typedef base::Callback<void(CloudPolicyValidator<PayloadProto>*)>
-      CompletionCallback;
+  using CompletionCallback = base::Callback<void(CloudPolicyValidator*)>;
 
   virtual ~CloudPolicyValidator() {}
 
   // Creates a new validator.
   // |background_task_runner| is optional; if RunValidation() is used directly
   // and StartValidation() is not used then it can be nullptr.
-  static CloudPolicyValidator<PayloadProto>* Create(
+  static std::unique_ptr<CloudPolicyValidator> Create(
       std::unique_ptr<enterprise_management::PolicyFetchResponse>
           policy_response,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-    return new CloudPolicyValidator(
-        std::move(policy_response),
-        std::unique_ptr<PayloadProto>(new PayloadProto()),
-        background_task_runner);
+    return base::WrapUnique<CloudPolicyValidator>(new CloudPolicyValidator(
+        std::move(policy_response), base::MakeUnique<PayloadProto>(),
+        background_task_runner));
   }
 
   std::unique_ptr<PayloadProto>& payload() { return payload_; }
 
-  // Kicks off asynchronous validation. |completion_callback| is invoked when
-  // done. From this point on, the validator manages its own lifetime - this
-  // allows callers to provide a WeakPtr in the callback without leaking the
-  // validator.
-  void StartValidation(const CompletionCallback& completion_callback) {
-    PostValidationTask(base::Bind(completion_callback, this));
+  // Kicks off asynchronous validation through |validator|.
+  // |completion_callback| is invoked when done.
+  static void StartValidation(std::unique_ptr<CloudPolicyValidator> validator,
+                              const CompletionCallback& completion_callback) {
+    CloudPolicyValidator* const validator_ptr = validator.release();
+    PostValidationTask(
+        base::WrapUnique<CloudPolicyValidatorBase>(validator_ptr),
+        base::Bind(completion_callback, validator_ptr));
   }
 
  private:
@@ -388,12 +391,12 @@ class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidator);
 };
 
-typedef CloudPolicyValidator<enterprise_management::CloudPolicySettings>
-    UserCloudPolicyValidator;
+using UserCloudPolicyValidator =
+    CloudPolicyValidator<enterprise_management::CloudPolicySettings>;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-typedef CloudPolicyValidator<enterprise_management::ExternalPolicyData>
-    ComponentCloudPolicyValidator;
+using ComponentCloudPolicyValidator =
+    CloudPolicyValidator<enterprise_management::ExternalPolicyData>;
 #endif
 
 }  // namespace policy

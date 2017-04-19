@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -161,9 +162,9 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
         cached_policy_key_, ExtractDomain(account_id_.GetUserEmail()));
   }
 
-  // Start validation. The Validator will delete itself once validation is
-  // complete.
-  validator.release()->StartValidation(
+  // Start validation.
+  UserCloudPolicyValidator::StartValidation(
+      std::move(validator),
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
                  weak_factory_.GetWeakPtr()));
 }
@@ -245,12 +246,8 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
 
 void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
-  // Create and configure a validator for the loaded policy.
-  std::unique_ptr<UserCloudPolicyValidator> validator =
-      CreateValidatorForLoad(std::move(policy));
-  // Start validation. The Validator will delete itself once validation is
-  // complete.
-  validator.release()->StartValidation(
+  UserCloudPolicyValidator::StartValidation(
+      CreateValidatorForLoad(std::move(policy)),
       base::Bind(&UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated,
                  weak_factory_.GetWeakPtr()));
 }

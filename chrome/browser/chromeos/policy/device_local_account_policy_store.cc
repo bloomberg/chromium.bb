@@ -212,10 +212,8 @@ void DeviceLocalAccountPolicyStore::Validate(
   validator->ValidateSignature(key->as_string());
 
   if (validate_in_background) {
-    // The Validator will delete itself once validation is
-    // complete.
-    validator.release()->StartValidation(
-        base::Bind(callback, key->as_string()));
+    UserCloudPolicyValidator::StartValidation(
+        std::move(validator), base::Bind(callback, key->as_string()));
   } else {
     validator->RunValidation();
 

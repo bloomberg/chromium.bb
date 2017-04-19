@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -195,8 +196,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
 
   std::unique_ptr<DeviceCloudPolicyValidator> validator(
       DeviceCloudPolicyValidator::Create(
-          std::unique_ptr<em::PolicyFetchResponse>(
-              new em::PolicyFetchResponse(*policy)),
+          base::MakeUnique<em::PolicyFetchResponse>(*policy),
           background_task_runner_));
 
   validator->ValidateTimestamp(
@@ -221,7 +221,8 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   // can validate the username on the resulting policy, and use the domain from
   // that username to validate the key below (http://crbug.com/343074).
   validator->ValidateInitialKey(domain);
-  validator.release()->StartValidation(
+  DeviceCloudPolicyValidator::StartValidation(
+      std::move(validator),
       base::Bind(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }

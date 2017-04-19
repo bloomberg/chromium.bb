@@ -408,9 +408,8 @@ void UserCloudPolicyStore::Validate(
   }
 
   if (validate_in_background) {
-    // Start validation in the background. The Validator will free itself once
-    // validation is complete.
-    validator.release()->StartValidation(callback);
+    // Start validation in the background.
+    UserCloudPolicyValidator::StartValidation(std::move(validator), callback);
   } else {
     // Run validation immediately and invoke the callback with the results.
     validator->RunValidation();
