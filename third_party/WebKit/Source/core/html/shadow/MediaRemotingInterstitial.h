@@ -34,6 +34,7 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
   // Show/Hide Media Remoting interstitial.
   void Show();
   void Hide();
+
   void OnPosterImageChanged();
 
   HTMLVideoElement& GetVideoElement() const { return *video_element_; }
@@ -43,7 +44,15 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
  private:
   // Node override.
   bool IsMediaRemotingInterstitial() const override { return true; }
+  void DidMoveToNewDocument(Document&) override;
 
+  void ToggleInterstitialTimerFired(TimerBase*);
+
+  // Indicates whether the interstitial should be visible. It is set/changed
+  // when SHow()/Hide() is called.
+  bool should_be_visible_ = false;
+
+  TaskRunnerTimer<MediaRemotingInterstitial> toggle_insterstitial_timer_;
   Member<HTMLVideoElement> video_element_;
   Member<HTMLImageElement> background_image_;
   Member<MediaRemotingExitButtonElement> exit_button_;

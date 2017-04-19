@@ -492,7 +492,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
 }
 
 void HTMLVideoElement::MediaRemotingStarted() {
-  DCHECK_EQ(media_remoting_status_, MediaRemotingStatus::kNotStarted);
+  DCHECK(media_remoting_status_ == MediaRemotingStatus::kNotStarted);
   media_remoting_status_ = MediaRemotingStatus::kStarted;
   if (!remoting_interstitial_) {
     remoting_interstitial_ = new MediaRemotingInterstitial(*this);
@@ -504,9 +504,13 @@ void HTMLVideoElement::MediaRemotingStarted() {
 }
 
 void HTMLVideoElement::MediaRemotingStopped() {
-  if (media_remoting_status_ != MediaRemotingStatus::kDisabled)
-    media_remoting_status_ = MediaRemotingStatus::kNotStarted;
+  // Early return because this was already called when media remoting was
+  // disabled.
+  if (media_remoting_status_ == MediaRemotingStatus::kDisabled)
+    return;
+  DCHECK(media_remoting_status_ == MediaRemotingStatus::kStarted);
   DCHECK(remoting_interstitial_);
+  media_remoting_status_ = MediaRemotingStatus::kNotStarted;
   remoting_interstitial_->Hide();
 }
 

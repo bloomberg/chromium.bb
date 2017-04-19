@@ -157,7 +157,8 @@ video::-internal-media-remoting-interstitial {
     align-items: center;
     font-size: 16px;
     background-color: black;
-    transition: opacity .2s ease-in-out;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
 }
 
 video::-internal-media-remoting-background-image {
