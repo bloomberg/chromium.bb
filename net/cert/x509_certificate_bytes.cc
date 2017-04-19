@@ -17,9 +17,9 @@
 #include "net/cert/internal/verify_name_match.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_util.h"
-#include "net/cert/x509_util_openssl.h"
 #include "net/der/parser.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/pkcs7.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -141,16 +141,17 @@ void CreateOSCertHandlesFromPKCS7Bytes(
 
   CBS der_data;
   CBS_init(&der_data, reinterpret_cast<const uint8_t*>(data), length);
-  STACK_OF(X509)* certs = sk_X509_new_null();
+  STACK_OF(CRYPTO_BUFFER)* certs = sk_CRYPTO_BUFFER_new_null();
 
-  if (PKCS7_get_certificates(certs, &der_data)) {
-    for (size_t i = 0; i < sk_X509_num(certs); ++i) {
-      base::StringPiece stringpiece;
-      x509_util::GetDER(sk_X509_value(certs, i), &stringpiece);
-      handles->push_back(x509_util::CreateCryptoBuffer(stringpiece).release());
+  if (PKCS7_get_raw_certificates(certs, &der_data,
+                                 x509_util::GetBufferPool())) {
+    for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(certs); ++i) {
+      handles->push_back(sk_CRYPTO_BUFFER_value(certs, i));
     }
   }
-  sk_X509_pop_free(certs, X509_free);
+  // |handles| took ownership of the individual buffers, so only free the list
+  // itself.
+  sk_CRYPTO_BUFFER_free(certs);
 }
 
 }  // namespace
