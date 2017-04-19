@@ -25,16 +25,19 @@
 #include "core/dom/PendingScript.h"
 #include "core/dom/Script.h"
 #include "core/dom/ScriptRunner.h"
-#include "core/loader/resource/ScriptResource.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "core/html/CrossOriginAttribute.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
 class ScriptElementBase;
 class Script;
+
+class ResourceFetcher;
+class ScriptResource;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                                  public PendingScriptClient {
@@ -70,7 +73,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   String ScriptContent() const;
 
   // Creates a PendingScript for external script whose fetch is started in
-  // fetchScript().
+  // FetchClassicScript().
   PendingScript* CreatePendingScript();
 
   // Returns false if and only if execution was blocked.
@@ -132,9 +135,20 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool IgnoresLoadRequest() const;
   bool IsScriptForEventSupported() const;
 
-  bool FetchScript(const String& source_url,
-                   const String& encoding,
-                   FetchParameters::DeferOption);
+  // FetchClassicScript corresponds to Step 21.6 of
+  // https://html.spec.whatwg.org/#prepare-a-script
+  // and must NOT be called from outside of PendingScript().
+  //
+  // https://html.spec.whatwg.org/#fetch-a-classic-script
+  bool FetchClassicScript(const KURL&,
+                          ResourceFetcher*,
+                          const String& nonce,
+                          const IntegrityMetadataSet&,
+                          ParserDisposition,
+                          CrossOriginAttributeValue,
+                          SecurityOrigin*,
+                          const String& encoding);
+
   bool DoExecuteScript(const Script*);
 
   // Clears the connection to the PendingScript.

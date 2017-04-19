@@ -42,9 +42,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/CrossOriginAttribute.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/loader/resource/ScriptResource.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -302,32 +302,115 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!IsScriptForEventSupported())
     return false;
 
-  // 14. "If the script element has a charset attribute,
-  //      then let encoding be the result of
-  //      getting an encoding from the value of the charset attribute."
-  //     "If the script element does not have a charset attribute,
-  //      or if getting an encoding failed, let encoding
-  //      be the same as the encoding of the script element's node document."
-  // TODO(hiroshige): Should we handle failure in getting an encoding?
-  String encoding;
-  if (!element_->CharsetAttributeValue().IsEmpty())
-    encoding = element_->CharsetAttributeValue();
-  else
-    encoding = element_document.characterSet();
+  // 14. is handled below.
 
-  // Steps 15--20 are handled in fetchScript().
+  // 15. "Let CORS setting be the current state of the element's
+  //      crossorigin content attribute."
+  CrossOriginAttributeValue cross_origin =
+      GetCrossOriginAttributeValue(element_->CrossOriginAttributeValue());
+
+  // 16. will be handled below once module script support is implemented.
+
+  // 17. "If the script element has a nonce attribute,
+  //      then let cryptographic nonce be that attribute's value.
+  //      Otherwise, let cryptographic nonce be the empty string."
+  String nonce;
+  if (element_->IsNonceableElement())
+    nonce = element_->nonce();
+
+  // 18. is handled below.
+
+  // 19. "Let parser state be "parser-inserted"
+  //      if the script element has been flagged as "parser-inserted",
+  //      and "not parser-inserted" otherwise."
+  ParserDisposition parser_state =
+      IsParserInserted() ? kParserInserted : kNotParserInserted;
 
   // 21. "If the element has a src content attribute, run these substeps:"
   if (element_->HasSourceAttribute()) {
-    FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
-    if (!parser_inserted_ || element_->AsyncAttributeValue() ||
-        element_->DeferAttributeValue())
-      defer = FetchParameters::kLazyLoad;
-    if (document_write_intervention_ ==
-        DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle)
-      defer = FetchParameters::kIdleLoad;
-    if (!FetchScript(element_->SourceAttributeValue(), encoding, defer))
+    // 21.1. Let src be the value of the element's src attribute.
+    String src =
+        StripLeadingAndTrailingHTMLSpaces(element_->SourceAttributeValue());
+
+    // 21.2. "If src is the empty string, queue a task to
+    //        fire an event named error at the element, and abort these steps."
+    if (src.IsEmpty()) {
+      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
+      // event synchronously to keep the existing behavior.
+      DispatchErrorEvent();
       return false;
+    }
+
+    // 21.3. "Set the element's from an external file flag."
+    is_external_script_ = true;
+
+    // 21.4. "Parse src relative to the element's node document."
+    // TODO(hiroshige): Use CompleteURL(src) instead.
+    KURL url = element_document.CompleteURL(element_->SourceAttributeValue());
+
+    // 21.5. "If the previous step failed, queue a task to
+    //        fire an event named error at the element, and abort these steps."
+    if (!url.IsValid()) {
+      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
+      // event synchronously to keep the existing behavior.
+      DispatchErrorEvent();
+      return false;
+    }
+
+    DCHECK(!resource_);
+
+    // 21.6. "Switch on the script's type:"
+    // - "classic":
+
+    // 14. "If the script element has a charset attribute,
+    //      then let encoding be the result of
+    //      getting an encoding from the value of the charset attribute."
+    //     "If the script element does not have a charset attribute,
+    //      or if getting an encoding failed, let encoding
+    //      be the same as the encoding of the script element's node
+    //      document."
+    // TODO(hiroshige): Should we handle failure in getting an encoding?
+    String encoding;
+    if (!element_->CharsetAttributeValue().IsEmpty())
+      encoding = element_->CharsetAttributeValue();
+    else
+      encoding = element_document.characterSet();
+
+    // Step 16 is skipped because "module script credentials" is not used
+    // for classic scripts.
+
+    // 18. "If the script element has an integrity attribute,
+    //      then let integrity metadata be that attribute's value.
+    //      Otherwise, let integrity metadata be the empty string."
+    String integrity_attr = element_->IntegrityAttributeValue();
+    IntegrityMetadataSet integrity_metadata;
+    if (!integrity_attr.IsEmpty()) {
+      SubresourceIntegrity::ParseIntegrityAttribute(
+          integrity_attr, integrity_metadata, &element_document);
+    }
+
+    if (!FetchClassicScript(url, element_document.Fetcher(), nonce,
+                            integrity_metadata, parser_state, cross_origin,
+                            element_document.GetSecurityOrigin(), encoding)) {
+      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
+      // event synchronously to keep the existing behavior.
+      DispatchErrorEvent();
+      return false;
+    }
+
+    DCHECK(resource_);
+
+    // - "module":
+    // TODO(hiroshige): Implement this.
+
+    // "When the chosen algorithm asynchronously completes, set
+    //  the script's script to the result. At that time, the script is ready."
+    // When the script is ready, PendingScriptClient::pendingScriptFinished()
+    // is used as the notification, and the action to take when
+    // the script is ready is specified later, in
+    // - ScriptLoader::PrepareScript(), or
+    // - HTMLParserScriptRunner,
+    // depending on the conditions in Step 23 of "prepare a script".
   }
 
   // 22. "If the element does not have a src content attribute,
@@ -511,108 +594,62 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   return true;
 }
 
-// Steps 15--21 of https://html.spec.whatwg.org/#prepare-a-script
-bool ScriptLoader::FetchScript(const String& source_url,
-                               const String& encoding,
-                               FetchParameters::DeferOption defer) {
-  Document* element_document = &(element_->GetDocument());
-  if (!element_->IsConnected() || element_->GetDocument() != element_document)
-    return false;
+bool ScriptLoader::FetchClassicScript(
+    const KURL& url,
+    ResourceFetcher* fetcher,
+    const String& nonce,
+    const IntegrityMetadataSet& integrity_metadata,
+    ParserDisposition parser_state,
+    CrossOriginAttributeValue cross_origin,
+    SecurityOrigin* security_origin,
+    const String& encoding) {
+  // https://html.spec.whatwg.org/#prepare-a-script
+  // 21.6, "classic":
+  // "Fetch a classic script given url, settings, ..."
+  ResourceRequest resource_request(url);
 
-  DCHECK(!resource_);
-  // 21. "If the element has a src content attribute, run these substeps:"
-  if (!StripLeadingAndTrailingHTMLSpaces(source_url).IsEmpty()) {
-    // 21.4. "Parse src relative to the element's node document."
-    ResourceRequest resource_request(element_document->CompleteURL(source_url));
-
-    // [Intervention]
-    if (document_write_intervention_ ==
-        DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-      resource_request.SetHTTPHeaderField(
-          "Intervention",
-          "<https://www.chromestatus.com/feature/5718547946799104>");
-    }
-
-    FetchParameters params(resource_request, element_->InitiatorName());
-
-    // 15. "Let CORS setting be the current state of the element's
-    //      crossorigin content attribute."
-    CrossOriginAttributeValue cross_origin =
-        GetCrossOriginAttributeValue(element_->CrossOriginAttributeValue());
-
-    // 16. "Let module script credentials mode be determined by switching
-    //      on CORS setting:"
-    // TODO(hiroshige): Implement this step for "module".
-
-    // 21.6, "classic": "Fetch a classic script given ... CORS setting
-    //                   ... and encoding."
-    if (cross_origin != kCrossOriginAttributeNotSet) {
-      params.SetCrossOriginAccessControl(element_document->GetSecurityOrigin(),
-                                         cross_origin);
-    }
-
-    params.SetCharset(encoding);
-
-    // 17. "If the script element has a nonce attribute,
-    //      then let cryptographic nonce be that attribute's value.
-    //      Otherwise, let cryptographic nonce be the empty string."
-    if (element_->IsNonceableElement())
-      params.SetContentSecurityPolicyNonce(element_->nonce());
-
-    // 19. "Let parser state be "parser-inserted"
-    //      if the script element has been flagged as "parser-inserted",
-    //      and "not parser-inserted" otherwise."
-    params.SetParserDisposition(IsParserInserted() ? kParserInserted
-                                                   : kNotParserInserted);
-
-    params.SetDefer(defer);
-
-    // 18. "If the script element has an integrity attribute,
-    //      then let integrity metadata be that attribute's value.
-    //      Otherwise, let integrity metadata be the empty string."
-    String integrity_attr = element_->IntegrityAttributeValue();
-    if (!integrity_attr.IsEmpty()) {
-      IntegrityMetadataSet metadata_set;
-      SubresourceIntegrity::ParseIntegrityAttribute(
-          integrity_attr, metadata_set, element_document);
-      params.SetIntegrityMetadata(metadata_set);
-    }
-
-    // 21.6. "Switch on the script's type:"
-
-    // - "classic":
-    //   "Fetch a classic script given url, settings, cryptographic nonce,
-    //    integrity metadata, parser state, CORS setting, and encoding."
-    resource_ = ScriptResource::Fetch(params, element_document->Fetcher());
-
-    // - "module":
-    //   "Fetch a module script graph given url, settings, "script",
-    //    cryptographic nonce, parser state, and
-    //    module script credentials mode."
-    // TODO(kouhei, hiroshige): Implement this.
-
-    // "When the chosen algorithm asynchronously completes, set
-    //  the script's script to the result. At that time, the script is ready."
-    // When the script is ready, PendingScriptClient::pendingScriptFinished()
-    // is used as the notification, and the action to take when
-    // the script is ready is specified later, in
-    // - ScriptLoader::prepareScript(), or
-    // - HTMLParserScriptRunner,
-    // depending on the conditions in Step 23 of "prepare a script".
-
-    // 21.3. "Set the element's from an external file flag."
-    is_external_script_ = true;
+  // [Intervention]
+  if (document_write_intervention_ ==
+      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
+    resource_request.SetHTTPHeaderField(
+        "Intervention",
+        "<https://www.chromestatus.com/feature/5718547946799104>");
   }
 
-  if (!resource_) {
-    // 21.2. "If src is the empty string, queue a task to
-    //        fire an event named error at the element, and abort these steps."
-    // 21.5. "If the previous step failed, queue a task to
-    //        fire an event named error at the element, and abort these steps."
-    // TODO(hiroshige): Make this asynchronous.
-    DispatchErrorEvent();
-    return false;
+  FetchParameters params(resource_request, element_->InitiatorName());
+
+  // "... cryptographic nonce, ..."
+  params.SetContentSecurityPolicyNonce(nonce);
+
+  // "... integrity metadata, ..."
+  params.SetIntegrityMetadata(integrity_metadata);
+
+  // "... parser state, ..."
+  params.SetParserDisposition(parser_state);
+
+  // "... CORS setting, ..."
+  if (cross_origin != kCrossOriginAttributeNotSet) {
+    params.SetCrossOriginAccessControl(security_origin, cross_origin);
   }
+
+  // "... and encoding."
+  params.SetCharset(encoding);
+
+  // This DeferOption logic is only for classic scripts, as we always set
+  // |kLazyLoad| for module scripts in ModuleScriptLoader.
+  FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
+  if (!parser_inserted_ || element_->AsyncAttributeValue() ||
+      element_->DeferAttributeValue())
+    defer = FetchParameters::kLazyLoad;
+  if (document_write_intervention_ ==
+      DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle)
+    defer = FetchParameters::kIdleLoad;
+  params.SetDefer(defer);
+
+  resource_ = ScriptResource::Fetch(params, fetcher);
+
+  if (!resource_)
+    return false;
 
   // [Intervention]
   if (created_during_document_write_ &&
