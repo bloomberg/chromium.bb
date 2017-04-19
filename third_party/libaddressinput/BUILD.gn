@@ -15,13 +15,14 @@ config("internal_config") {
       "-Wno-deprecated-register",
     ]
   }
+
+  # libaddressinput just says `#include "messages.h"` for grit-generated
+  # headers.
+  include_dirs = [ target_gen_dir ]
 }
 
 grit("strings") {
   source = "//chrome/app/address_input_strings.grd"
-
-  # libaddressinput's tests just say `#include "messages.h"`.
-  use_qualified_include = false
 
   outputs = [
     "messages.h",
