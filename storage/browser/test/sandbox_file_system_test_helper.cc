@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/sandbox_file_system_test_helper.h"
+#include "storage/browser/test/sandbox_file_system_test_helper.h"
 
 #include <memory>
 

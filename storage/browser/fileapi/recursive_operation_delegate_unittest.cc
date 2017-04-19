@@ -17,10 +17,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/sandbox_file_system_test_helper.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/test/sandbox_file_system_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileSystemContext;

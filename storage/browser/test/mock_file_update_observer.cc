@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/fileapi/mock_file_update_observer.h"
+#include "storage/browser/test/mock_file_update_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/fileapi/mock_file_change_observer.h"
+#include "storage/browser/test/mock_file_change_observer.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 
