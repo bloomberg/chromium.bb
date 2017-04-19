@@ -4,13 +4,6 @@
 
 // Custom binding for the app API.
 
-var GetAvailability = requireNative('v8_context').GetAvailability;
-if (!GetAvailability('app').is_available) {
-  exports.$set('binding', {});
-  exports.$set('onInstallStateResponse', function(){});
-  return;
-}
-
 var appNatives = requireNative('app');
 var process = requireNative('process');
 var extensionId = process.GetExtensionId();
