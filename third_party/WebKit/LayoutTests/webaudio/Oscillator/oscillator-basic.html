@@ -8,7 +8,7 @@ Create an oscillator of each type and verify that the type is set correctly.
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -18,44 +18,52 @@ var renderLengthSeconds = 0.25;
 
 var oscTypes = ["sine", "square", "sawtooth", "triangle", "custom"];
 
-function runTest() 
-{
+let audit = Audit.createTaskRunner();
+      
+audit.define("basic osc tests", (task, should) => {
     // Create offline audio context.
-    var context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
+    var context = new OfflineAudioContext(2, sampleRate *
+        renderLengthSeconds, sampleRate);
     var osc = context.createOscillator();
 
-    // Set each possible oscillator type (except CUSTOM) and verify that the type is correct.
-    // Here we're setting the type using WebIDL enum values which are strings.
+    // Set each possible oscillator type (except CUSTOM) and verify that the
+    // type is correct.  Here we're setting the type using WebIDL enum values
+    // which are strings.
     for (var k = 0; k < oscTypes.length - 1; ++k) {
         osc.type = oscTypes[k];
-        Should("osc.type = '" + oscTypes[k] + "'", osc.type).beEqualTo(oscTypes[k]);
+        should(osc.type, "osc.type = '" + oscTypes[k] + "'")
+            .beEqualTo(oscTypes[k]);
     }
 
-    // Verify that setting a custom type directly does not set the custom type. This test has to be
-    // done before using setPeriodicWave.
-      
-    Should("osc.type = 'custom'", function () {
-      osc.type = "custom";
-    }).throw('InvalidStateError');
+    // Verify that setting a custom type directly does not set the custom
+    // type. This test has to be done before using setPeriodicWave.
+
+    should(function () {
+            osc.type = "custom";
+        }, "osc.type = 'custom'")
+        .throw('InvalidStateError');
 
     // Now set a custom oscillator
     var coeffA = new Float32Array([0, 1, 0.5]);
-    var coeffB = new Float32Array([0, 0, 0]);        
+    var coeffB = new Float32Array([0, 0, 0]);
     var wave = context.createPeriodicWave(coeffA, coeffB);
 
-    Should("osc.setPeriodicWave(wave)", function () {
-      osc.setPeriodicWave(wave);
-    }).notThrow();
-    Should("After setting periodicWave, osc.type", osc.type).beEqualTo("custom");
-     
+    should(function () {
+        osc.setPeriodicWave(wave);
+    }, "osc.setPeriodicWave(wave)").notThrow();
+    should(osc.type, "After setting periodicWave, osc.type")
+        .beEqualTo("custom");
+
     // Check that numerical values are no longer supported
     var oldType = osc.type;
     osc.type = 0;
-    Should("osc.type = 0", osc.type).notBeEqualTo(0);
-    Should("osc.type", osc.type).beEqualTo(oldType);
-}
+    should(osc.type, "osc.type = 0").notBeEqualTo(0);
+    should(osc.type, "osc.type").beEqualTo(oldType);
 
-runTest();
+    task.done();
+});
+
+audit.run();
 </script>
 
 

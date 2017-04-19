@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test OscillatorNode with Negative Frequency</title>
   </head>
 
@@ -22,40 +22,40 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("sine", function (done) {
-        runTest({
+      audit.define("sine", (task, should) => {
+        runTest(should, {
           message: "Sum of positive and negative frequency sine oscillators",
           type: "sine",
           threshold: 3.5763e-7
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("square", function (done) {
-        runTest({
+      audit.define("square", (task, should) => {
+        runTest(should, {
           message: "Sum of positive and negative frequency square oscillators",
           type: "square",
           threshold: 1.4753e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("sawtooth", function (done) {
-        runTest({
+      audit.define("sawtooth", (task, should) => {
+        runTest(should, {
           message: "Sum of positive and negative frequency sawtooth oscillators",
           type: "sawtooth",
           threshold: 1.4753e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("triangle", function (done) {
-        runTest({
+      audit.define("triangle", (task, should) => {
+        runTest(should, {
           message: "Sum of positive and negative frequency triangle oscillators",
           type: "triangle",
           threshold: 2.9803e-7
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("auto-sawtooth", function (done) {
-        runTest({
+      audit.define("auto-sawtooth", (task, should) => {
+        runTest(should, {
           message: "Sum of positive and negative frequency-ramped sawtooth oscillators",
           type: "sawtooth",
           automation: {
@@ -66,10 +66,10 @@
             endFrequency: sampleRate / 4
           },
           threshold: 1.2368e-6
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("periodic-wave", function (done) {
+      audit.define("periodic-wave", (task, should) => {
         // Test negative frequencies for a custom oscillator.  Two channels are
         // needed for the context; one for the expected result, and one for the
         // actual, as explained below.
@@ -139,17 +139,17 @@
           var expected = buffer.getChannelData(0);
           var actual = buffer.getChannelData(1);
 
-          Should("Sum of positive and negative frequency custom oscillators",
-              actual, {
-                precision: 6
-              })
-            .beCloseToArray(expected, 3.5763e-7);
-        }).then(done);
+          should(actual,
+              "Sum of positive and negative frequency custom oscillators")
+            .beCloseToArray(expected, {
+              absoluteThreshold: 3.5763e-7
+            });
+        }).then(() => task.done());
       });
 
-      audit.runTasks();
+      audit.run();
 
-      function runTest(options) {
+      function runTest(should, options) {
         // To test if negative frequencies work, create two oscillators.  One
         // has a positive frequency and the other has a negative frequency.
         // Sum the oscillator outputs; the output should be zero because all of
@@ -183,11 +183,10 @@
         return context.startRendering().then(function (buffer) {
           var result = buffer.getChannelData(0);
 
-          var zero = new Float32Array(result.length);
-          zero.fill(0);
-          Should(options.message, result, {
-            verbose: true
-          }).beCloseToArray(zero, options.threshold || 0);
+          should(result, options.message)
+            .beCloseToArray(new Float32Array(result.length), {
+              absoluteThreshold: options.threshold || 0
+            });
         });
       }
     </script>

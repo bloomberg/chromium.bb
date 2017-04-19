@@ -13,7 +13,7 @@ function runLateStartTest(audit, context, node) {
   node.connect(context.destination);
 
   // Task: schedule a suspend and start rendering.
-  audit.defineTask('test-late-start', function (done) {
+  audit.define('test-late-start', (task, should) => {
     // The node's start time will be clamped to the render quantum boundary
     // >0.1 sec. Thus the rendered buffer will have non-zero frames.
     // See issue: crbug.com/462167
@@ -35,17 +35,13 @@ function runLateStartTest(audit, context, node) {
         }
       }
 
-      var success =
-          Should('The index of first non-zero value',nonZeroValueIndex)
+      should(nonZeroValueIndex, 'The index of first non-zero value')
               .notBeEqualTo(-1);
-      success = Should('The first sample value', channelData[0])
-          .beEqualTo(0) && success;
-      Should('The rendered buffer', success)
-          .summarize('contains non-zero values after the first sample',
-                     'was all zeros or has non-zero first sample.');
-      done();
+      should(channelData[0], 'The first sample value')
+          .beEqualTo(0);
+      task.done();
     });
   });
 
-  audit.runTasks();
+  audit.run();
 }

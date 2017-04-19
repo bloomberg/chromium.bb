@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -34,7 +34,7 @@
       var audit = Audit.createTaskRunner();
 
       // Compute the SNR between the actual result and expected cosine wave
-      function checkCosineResult(result, freq, sampleRate) {
+      function checkCosineResult(should, result, freq, sampleRate) {
         var signal = 0;
         var noise = 0;
         var omega = 2 * Math.PI * freq / sampleRate;
@@ -50,13 +50,11 @@
 
         var snr = 10 * Math.log10(signal / noise);
 
-        Should("SNR of " + desiredFrequencyHz + " Hz sine wave", snr, {
-          brief: true
-        }).beGreaterThanOrEqualTo(snrThreshold);
-        testPassed("PeriodicWave coefficients that must be ignored were correctly ignored.");
+        should(snr, "SNR of " + desiredFrequencyHz + " Hz sine wave")
+          .beGreaterThanOrEqualTo(snrThreshold);
       }
 
-      function runTest() {
+      audit.define("low-freq-oscillator", (task, should) => {
         context = new OfflineAudioContext(1, sampleRate, sampleRate);
         osc = context.createOscillator();
 
@@ -76,11 +74,12 @@
         osc.connect(context.destination);
         osc.start();
         context.startRendering().then(function (buffer) {
-          checkCosineResult(buffer, desiredFrequencyHz, sampleRate);
-        });
-      };
+          checkCosineResult(should, buffer, desiredFrequencyHz, sampleRate);
+        })
+        .then(() => task.done());
+      });
 
-      runTest();
+      audit.run();
     </script>
   </body>
 </html>
