@@ -12,6 +12,7 @@
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
@@ -62,6 +63,22 @@ const CGFloat kCardTypeIconDimension = 25.0;
     _editorFields = [self createEditorFields];
   }
   return self;
+}
+
+- (CollectionViewItem*)serverCardSummaryItem {
+  if (!_creditCard || autofill::IsCreditCardLocal(*_creditCard))
+    return nil;
+
+  PaymentMethodItem* cardSummaryItem = [[PaymentMethodItem alloc] init];
+  cardSummaryItem.methodID =
+      base::SysUTF16ToNSString(_creditCard->TypeAndLastFourDigits());
+  cardSummaryItem.methodDetail = base::SysUTF16ToNSString(
+      _creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+  const int cardTypeIconID =
+      autofill::data_util::GetPaymentRequestData(_creditCard->type())
+          .icon_resource_id;
+  cardSummaryItem.methodTypeIcon = NativeImage(cardTypeIconID);
+  return cardSummaryItem;
 }
 
 - (NSString*)billingAddressLabelForProfileWithGUID:(NSString*)profileGUID {

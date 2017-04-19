@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -31,12 +32,14 @@ NSString* const kCreditCardEditCollectionViewId =
     @"kCreditCardEditCollectionViewId";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierBillingAddress = kSectionIdentifierEnumStart,
+  SectionIdentifierCardSummary = kSectionIdentifierEnumStart,
+  SectionIdentifierBillingAddress,
   SectionIdentifierSaveCard,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeBillingAddress = kItemTypeEnumStart,
+  ItemTypeCardSummary = kItemTypeEnumStart,
+  ItemTypeBillingAddress,
   ItemTypeSaveCard,
 };
 
@@ -155,6 +158,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
+- (void)loadHeaderItems {
+  [super loadHeaderItems];
+  CollectionViewModel* model = self.collectionViewModel;
+
+  // Server card summary section.
+  CollectionViewItem* serverCardSummaryItem =
+      [_dataSource serverCardSummaryItem];
+  if (serverCardSummaryItem) {
+    [model addSectionWithIdentifier:SectionIdentifierCardSummary];
+    serverCardSummaryItem.type = ItemTypeCardSummary;
+    [model addItem:serverCardSummaryItem
+        toSectionWithIdentifier:SectionIdentifierCardSummary];
+  }
+}
+
 - (void)loadFooterItems {
   CollectionViewModel* model = self.collectionViewModel;
 
@@ -267,6 +285,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
+    case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       break;
     case ItemTypeBillingAddress: {
@@ -287,6 +306,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (item.type) {
     case ItemTypeBillingAddress:
       return MDCCellDefaultOneLineHeight;
+    case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
@@ -301,6 +321,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
+    case ItemTypeCardSummary:
     case ItemTypeSaveCard:
       return YES;
     default:

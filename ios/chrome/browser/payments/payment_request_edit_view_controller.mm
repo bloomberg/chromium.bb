@@ -136,6 +136,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
+  [self loadHeaderItems];
+
   // Iterate over the fields and add the respective sections and items.
   int sectionIdentifier = static_cast<int>(SectionIdentifierFirstTextField);
   for (EditorField* field in _fields) {
@@ -401,6 +403,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     field.value = item.textFieldValue;
   }
   return YES;
+}
+
+- (void)loadHeaderItems {
 }
 
 - (void)loadFooterItems {
