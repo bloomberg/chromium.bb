@@ -14,17 +14,17 @@ tweak_info_plist("tweak_info_plist") {
 compile_plist("entitlements") {
   format = "xml1"
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
-  output_name = "$target_gen_dir/today_extension.appex.entitlements"
+  output_name = "$target_gen_dir/search_widget_extension.appex.entitlements"
   plist_templates =
-      [ "entitlements/external/widget_extension.appex.entitlements" ]
+      [ "entitlements/external/search_widget_extension.appex.entitlements" ]
 }
 
-ios_appex_bundle("widget_extension") {
+ios_appex_bundle("search_widget_extension") {
   sources = [
-    "widget_view.h",
-    "widget_view.mm",
-    "widget_view_controller.h",
-    "widget_view_controller.mm",
+    "search_widget_view.h",
+    "search_widget_view.mm",
+    "search_widget_view_controller.h",
+    "search_widget_view_controller.mm",
   ]
 
   deps = [
@@ -52,11 +52,7 @@ ios_appex_bundle("widget_extension") {
   extra_substitutions = [
     "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
-
-    # The widget_extension and today_extension are using the same provisioning
-    # profile during development work.
-    # TODO(crbug.com/682238) : Request provisioning profile if widget is kept.
-    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.TodayExtension",
+    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.SearchTodayExtension",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

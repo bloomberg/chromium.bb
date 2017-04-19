@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/widget_extension/widget_view_controller.h"
+#import "ios/chrome/search_widget_extension/search_widget_view_controller.h"
 
 #import <NotificationCenter/NotificationCenter.h>
 
@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
-#import "ios/chrome/widget_extension/widget_view.h"
+#import "ios/chrome/search_widget_extension/search_widget_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,8 +25,8 @@ namespace {
 NSString* const kXCallbackURLHost = @"x-callback-url";
 }  // namespace
 
-@interface WidgetViewController ()<WidgetViewActionTarget>
-@property(nonatomic, weak) WidgetView* widgetView;
+@interface SearchWidgetViewController ()<SearchWidgetViewActionTarget>
+@property(nonatomic, weak) SearchWidgetView* widgetView;
 @property(nonatomic, strong) NSURL* copiedURL;
 @property(nonatomic, strong)
     ClipboardRecentContentImplIOS* clipboardRecentContent;
@@ -45,7 +45,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 @end
 
-@implementation WidgetViewController
+@implementation SearchWidgetViewController
 
 @synthesize widgetView = _widgetView;
 @synthesize copiedURL = _copiedURL;
@@ -70,7 +70,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   // A local variable is necessary here as the property is declared weak and the
   // object would be deallocated before being retained by the addSubview call.
-  WidgetView* widgetView = [[WidgetView alloc] initWithActionTarget:self];
+  SearchWidgetView* widgetView =
+      [[SearchWidgetView alloc] initWithActionTarget:self];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
 
@@ -172,9 +173,10 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
       [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()];
   NSString* defaultsKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandPreference);
-  [sharedDefaults setObject:[WidgetViewController dictForCommand:command
-                                                       parameter:parameter]
-                     forKey:defaultsKey];
+  [sharedDefaults
+      setObject:[SearchWidgetViewController dictForCommand:command
+                                                 parameter:parameter]
+         forKey:defaultsKey];
   [sharedDefaults synchronize];
 
   NSString* scheme = base::mac::ObjCCast<NSString>([[NSBundle mainBundle]

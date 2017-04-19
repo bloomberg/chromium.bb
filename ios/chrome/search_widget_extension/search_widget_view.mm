@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/widget_extension/widget_view.h"
+#import "ios/chrome/search_widget_extension/search_widget_view.h"
 
 #include "base/logging.h"
 
@@ -21,8 +21,8 @@ const CGFloat kFakeboxVerticalPadding = 40;
 
 }  // namespace
 
-@interface WidgetView () {
-  __weak id<WidgetViewActionTarget> _target;
+@interface SearchWidgetView () {
+  __weak id<SearchWidgetViewActionTarget> _target;
 }
 
 @property(nonatomic, copy) NSString* copiedURL;
@@ -35,14 +35,14 @@ const CGFloat kFakeboxVerticalPadding = 40;
 
 @end
 
-@implementation WidgetView
+@implementation SearchWidgetView
 
 @synthesize copiedURL = _copiedURL;
 @synthesize copiedURLLabel = _copiedURLLabel;
 
 @synthesize cursor = _cursor;
 
-- (instancetype)initWithActionTarget:(id<WidgetViewActionTarget>)target {
+- (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(target);

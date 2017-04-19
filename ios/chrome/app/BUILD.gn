@@ -274,8 +274,8 @@ ios_app_bundle("chrome") {
     if (ios_enable_today_extension) {
       deps += [ ":today_extension_bundle" ]
     }
-    if (ios_enable_widget_extension) {
-      deps += [ ":widget_extension_bundle" ]
+    if (ios_enable_search_widget_extension) {
+      deps += [ ":search_widget_extension_bundle" ]
     }
     if (ios_enable_share_extension) {
       deps += [ ":share_extension_bundle" ]
@@ -314,22 +314,16 @@ if (current_toolchain == default_toolchain) {
     }
   }
 
-  if (ios_enable_widget_extension) {
-    bundle_data("widget_extension_bundle") {
+  if (ios_enable_search_widget_extension) {
+    bundle_data("search_widget_extension_bundle") {
       public_deps = [
-        "//ios/chrome/widget_extension",
+        "//ios/chrome/search_widget_extension",
       ]
       sources = [
-        "$root_out_dir/widget_extension.appex",
+        "$root_out_dir/search_widget_extension.appex",
       ]
-
-      # The output is renamed today_extension.appex so that signing in canary
-      # works and clobbering is not necessary when switching between this
-      # extension and the today extension.
-      # TODO(crbug.com/682230) : Rename this when widget gets its own
-      # mobileprovision.
       outputs = [
-        "{{bundle_plugins_dir}}/today_extension.appex",
+        "{{bundle_plugins_dir}}/{{source_file_part}}",
       ]
     }
   }

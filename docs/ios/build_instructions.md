@@ -142,6 +142,7 @@ application extensions:
 -   `${prefix}.chrome.ios.herebedragons`
 -   `${prefix}.chrome.ios.herebedragons.ShareExtension`
 -   `${prefix}.chrome.ios.herebedragons.TodayExtension`
+-   `${prefix}.chrome.ios.herebedragons.SearchTodayExtension`
 
 All these certificates need to have the "App Groups"
 (`com.apple.security.application-groups`) capability enabled for

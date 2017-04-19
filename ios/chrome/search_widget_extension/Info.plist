@@ -7,13 +7,13 @@
 	<key>CFBundleDisplayName</key>
 	<string>${CHROMIUM_SHORT_NAME}</string>
 	<key>CFBundleExecutable</key>
-	<string>widget_extension</string>
+	<string>search_widget_extension</string>
 	<key>CFBundleIdentifier</key>
 	<string>${IOS_BUNDLE_ID_PREFIX}.${WIDGET_EXTENSION_BUNDLE_ID}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>widget_extension</string>
+	<string>search_widget_extension</string>
 	<key>CFBundlePackageType</key>
 	<string>XPC!</string>
 	<key>CFBundleShortVersionString</key>
@@ -25,7 +25,7 @@
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPrincipalClass</key>
-		<string>WidgetViewController</string>
+		<string>SearchWidgetViewController</string>
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widget-extension</string>
 	</dict>
