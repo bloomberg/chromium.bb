@@ -42,17 +42,17 @@ cr.define('bookmarks.util', function() {
 
   /**
    * @param {BookmarkTreeNode} rootNode
-   * @return {NodeList}
+   * @return {NodeMap}
    */
   function normalizeNodes(rootNode) {
-    /** @type {NodeList} */
-    var nodeList = {};
+    /** @type {NodeMap} */
+    var nodeMap = {};
     var stack = [];
     stack.push(rootNode);
 
     while (stack.length > 0) {
       var node = stack.pop();
-      nodeList[node.id] = normalizeNode(node);
+      nodeMap[node.id] = normalizeNode(node);
       if (!node.children)
         continue;
 
@@ -61,7 +61,7 @@ cr.define('bookmarks.util', function() {
       });
     }
 
-    return nodeList;
+    return nodeMap;
   }
 
   /** @return {!BookmarksPageState} */
@@ -92,7 +92,7 @@ cr.define('bookmarks.util', function() {
 
   /**
    * @param {string} id
-   * @param {NodeList} nodes
+   * @param {NodeMap} nodes
    * @return {boolean}
    */
   function hasChildFolders(id, nodes) {
@@ -106,7 +106,7 @@ cr.define('bookmarks.util', function() {
 
   /**
    * Get all descendants of a node, including the node itself.
-   * @param {NodeList} nodes
+   * @param {NodeMap} nodes
    * @param {string} baseId
    * @return {!Set<string>}
    */

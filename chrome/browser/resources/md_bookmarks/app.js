@@ -43,10 +43,10 @@ Polymer({
     });
 
     chrome.bookmarks.getTree(function(results) {
-      var nodeList = bookmarks.util.normalizeNodes(results[0]);
+      var nodeMap = bookmarks.util.normalizeNodes(results[0]);
       var initialState = bookmarks.util.createEmptyState();
-      initialState.nodes = nodeList;
-      initialState.selectedFolder = nodeList[ROOT_NODE_ID].children[0];
+      initialState.nodes = nodeMap;
+      initialState.selectedFolder = nodeMap[ROOT_NODE_ID].children[0];
       var closedFoldersString =
           window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY];
       initialState.closedFolders = closedFoldersString ?

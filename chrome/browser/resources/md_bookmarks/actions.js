@@ -70,7 +70,7 @@ cr.define('bookmarks.actions', function() {
    * @param {string} id
    * @param {string} parentId
    * @param {number} index
-   * @param {NodeList} nodes
+   * @param {NodeMap} nodes
    * @return {!Action}
    */
   function removeBookmark(id, parentId, index, nodes) {
@@ -85,7 +85,7 @@ cr.define('bookmarks.actions', function() {
   }
 
   /**
-   * @param {NodeList} nodeMap
+   * @param {NodeMap} nodeMap
    * @return {!Action}
    */
   function refreshNodes(nodeMap) {

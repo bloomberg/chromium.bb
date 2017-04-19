@@ -89,7 +89,7 @@ suite('selection state', function() {
   });
 
   test('deselects items when they are deleted', function() {
-    var nodeList = testTree(createFolder('0', [
+    var nodeMap = testTree(createFolder('0', [
       createFolder(
           '1',
           [
@@ -103,7 +103,7 @@ suite('selection state', function() {
     action = select(['2', '4', '5'], '4', false);
     selection = bookmarks.SelectionState.updateSelection(selection, action);
 
-    action = bookmarks.actions.removeBookmark('1', '0', 0, nodeList);
+    action = bookmarks.actions.removeBookmark('1', '0', 0, nodeMap);
     selection = bookmarks.SelectionState.updateSelection(selection, action);
 
     assertDeepEquals(['5'], normalizeSet(selection.items));

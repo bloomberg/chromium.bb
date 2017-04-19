@@ -24,7 +24,7 @@ var BookmarkNode;
 /**
  * @typedef {!Object<string, BookmarkNode>}
  */
-var NodeList;
+var NodeMap;
 
 /**
  * @typedef {{
@@ -50,7 +50,7 @@ var ClosedFolderState;
 
 /**
  * @typedef {{
- *   nodes: NodeList,
+ *   nodes: NodeMap,
  *   selectedFolder: string,
  *   closedFolders: ClosedFolderState,
  *   search: SearchState,
