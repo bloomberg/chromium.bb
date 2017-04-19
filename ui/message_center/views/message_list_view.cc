@@ -312,7 +312,8 @@ void MessageListView::DoUpdateIfPossible() {
   }
 
   if (!clearing_all_views_.empty()) {
-    AnimateClearingOneNotification();
+    if (!clear_all_started_)
+      AnimateClearingOneNotification();
     return;
   }
 
