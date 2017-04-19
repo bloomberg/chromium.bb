@@ -1930,7 +1930,8 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
 
 #if CONFIG_EXT_REFS
     // Check if we need to update the ARF
-    if (cpi->num_extra_arfs && frame_index > arf_pos[which_arf]) {
+    if (is_sg_bipred_enabled && cpi->num_extra_arfs && which_arf > 0 &&
+        frame_index > arf_pos[which_arf]) {
       --which_arf;
       accumulative_subgroup_interval += subgroup_interval[which_arf] + 1;
       // Meet the new subgroup. Reset the bipred_group_end flag;

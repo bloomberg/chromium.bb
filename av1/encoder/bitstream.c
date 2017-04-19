@@ -3911,11 +3911,11 @@ static int get_refresh_mask(AV1_COMP *cpi) {
     // (like RTC/temporal scalability).
     return refresh_mask | (cpi->refresh_golden_frame << cpi->alt_fb_idx);
   } else {
-    int arf_idx = cpi->alt_fb_idx;
 #if CONFIG_EXT_REFS
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    arf_idx = cpi->arf_map[gf_group->arf_update_idx[gf_group->index]];
+    int arf_idx = cpi->arf_map[gf_group->arf_update_idx[gf_group->index]];
 #else
+    int arf_idx = cpi->alt_fb_idx;
     if ((cpi->oxcf.pass == 2) && cpi->multi_arf_allowed) {
       const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
       arf_idx = gf_group->arf_update_idx[gf_group->index];
