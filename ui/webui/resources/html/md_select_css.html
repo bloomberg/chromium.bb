@@ -11,15 +11,20 @@
 
       .md-select {
         --md-arrow-width: 0.9em;
+
+        /* The offset of the arrow from the end of the underline. */
+        --md-arrow-offset: 3%;
+
         -webkit-appearance: none;
         -webkit-margin-end: calc(-1 * var(--md-side-padding));
-        /* Ensure that the text does not overlap with the down arrow. */
+        /* Ensure that there is a 3px space between the text and the arrow. */
         -webkit-padding-end: calc(var(--md-side-padding) +
-            var(--md-arrow-width) * 1.8);
+            var(--md-arrow-offset) + var(--md-arrow-width) + 3px);
         -webkit-padding-start: var(--md-side-padding);
         background: url(
             chrome://resources/images/arrow_down.svg)
-            calc(97% - var(--md-side-padding)) center no-repeat;
+            calc(100% - var(--md-arrow-offset) - var(--md-side-padding))
+            center no-repeat;
         background-size: var(--md-arrow-width);
         border: none;
         color: var(--primary-text-color);
@@ -44,7 +49,8 @@
       }
 
       :host-context([dir=rtl]) .md-select {
-        background-position-x: calc(var(--md-side-padding) + 3%);
+        background-position-x: calc(var(--md-side-padding) +
+            var(--md-arrow-offset));
       }
 
       /* Persistent underline */
