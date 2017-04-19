@@ -2210,19 +2210,12 @@ const char kUpdateMenuItemDescription[] =
     R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
     R"*(menu.)*";
 
-const char kUpdateMenuItemSummaryName[] = "Update menu item summary";
-
-const char kUpdateMenuItemSummaryDescription[] =
+const char kUpdateMenuItemCustomSummaryDescription[] =
     "When this flag and the force show update menu item flag are enabled, a "
-    "summary will be displayed below the update menu item.";
+    "custom summary string will be displayed below the update menu item.";
 
-const char kUpdateMenuItemNoSummary[] = "No summary";
-
-const char kUpdateMenuItemDefaultSummary[] = "Default summary";
-
-const char kUpdateMenuItemNewFeaturesSummary[] = "New features summary";
-
-const char kUpdateMenuItemCustomSummary[] = "Custom summary";
+const char kUpdateMenuItemCustomSummaryName[] =
+    "Update menu item custom summary";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 

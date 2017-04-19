@@ -907,13 +907,6 @@ const char kForceShowUpdateMenuItem[] = "force-show-update-menu-item";
 // Forces a custom summary to be displayed below the update menu item.
 const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
 
-// Forces the new features summary to be displayed below the update menu item.
-const char kForceShowUpdateMenuItemNewFeaturesSummary[] =
-    "use_new_features_summary";
-
-// Forces a summary to be displayed below the update menu item.
-const char kForceShowUpdateMenuItemSummary[] = "show_summary";
-
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
 

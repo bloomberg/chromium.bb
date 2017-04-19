@@ -2416,24 +2416,11 @@ extern const char kUpdateMenuItemName[];
 // Description of the flag to force show the update menu item.
 extern const char kUpdateMenuItemDescription[];
 
-// Name of the flag to show a summary below the update menu item.
-extern const char kUpdateMenuItemSummaryName[];
+// Description of the flag to show a custom summary below the update menu item.
+extern const char kUpdateMenuItemCustomSummaryDescription[];
 
-// Description of the flag to show a summary below the update menu item.
-extern const char kUpdateMenuItemSummaryDescription[];
-
-// Option to not show a summary for the update menu item.
-extern const char kUpdateMenuItemNoSummary[];
-
-// Option to show the default summary for the update menu item.
-extern const char kUpdateMenuItemDefaultSummary[];
-
-// Option to show a summary for the update menu item prompting users to 'get the
-// latest features'.
-extern const char kUpdateMenuItemNewFeaturesSummary[];
-
-// Option to show a custom summary for the update menu item.
-extern const char kUpdateMenuItemCustomSummary[];
+// Name of the flag to show a custom summary below the update menu item.
+extern const char kUpdateMenuItemCustomSummaryName[];
 
 // Name of the flag to force show the update menu badge.
 extern const char kUpdateMenuBadgeName[];

@@ -653,18 +653,6 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::Choice kUpdateMenuItemSummaryChoices[] = {
-    {flag_descriptions::kUpdateMenuItemNoSummary, "", ""},
-    {flag_descriptions::kUpdateMenuItemDefaultSummary,
-     switches::kForceShowUpdateMenuItemSummary, ""},
-    {flag_descriptions::kUpdateMenuItemNewFeaturesSummary,
-     switches::kForceShowUpdateMenuItemNewFeaturesSummary, ""},
-    {flag_descriptions::kUpdateMenuItemCustomSummary,
-     switches::kForceShowUpdateMenuItemCustomSummary, "Custom summary"},
-};
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
 const FeatureEntry::Choice kHerbPrototypeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceDisabled,
@@ -2117,9 +2105,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-show-update-menu-item", flag_descriptions::kUpdateMenuItemName,
      flag_descriptions::kUpdateMenuItemDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuItem)},
-    {"update-menu-item-summary", flag_descriptions::kUpdateMenuItemSummaryName,
-     flag_descriptions::kUpdateMenuItemSummaryDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kUpdateMenuItemSummaryChoices)},
+    {"update-menu-item-custom-summary",
+     flag_descriptions::kUpdateMenuItemCustomSummaryName,
+     flag_descriptions::kUpdateMenuItemCustomSummaryDescription, kOsAndroid,
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kForceShowUpdateMenuItemCustomSummary,
+         "Custom Summary")},
     {"force-show-update-menu-badge", flag_descriptions::kUpdateMenuBadgeName,
      flag_descriptions::kUpdateMenuBadgeDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kForceShowUpdateMenuBadge)},
